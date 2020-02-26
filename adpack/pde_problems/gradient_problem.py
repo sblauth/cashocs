@@ -10,7 +10,20 @@ import numpy as np
 
 
 class GradientProblem:
+	
 	def __init__(self, form_handler, state_problem, adjoint_problem):
+		"""The class that handles the computation of the gradient
+		
+		Parameters
+		----------
+		form_handler : adpack.forms.FormHandler
+			the FormHandler object of the optimization problem
+		state_problem : adpack.pde_problems.state_problem.StateProblem
+			the StateProblem object used to solve the state equations
+		adjoint_problem : adpack.pde_problems.adjoint_problem.AdjointProblem
+			the AdjointProblem used to solve the adjoint equations
+		"""
+		
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 		self.adjoint_problem = adjoint_problem
@@ -22,6 +35,15 @@ class GradientProblem:
 	
 	
 	def solve(self):
+		"""Solves the Riesz projection problem in order to obtain the gradient of the cost functional
+		
+		Returns
+		-------
+		self.gradient : dolfin.function.function.Function
+			the function representing the gradient of the (reduced) cost functional
+
+		"""
+		
 		self.state_problem.solve()
 		self.adjoint_problem.solve()
 		
@@ -40,6 +62,15 @@ class GradientProblem:
 	
 	
 	def return_norm_squared(self):
+		"""Returns the norm of the gradient squared, used e.g. in the Armijo line search
+		
+		Returns
+		-------
+		self.gradient_norm_squared : float
+			|| self.gradient || in L^2 (corresponding to the domain given by control_measure)
+
+		"""
+		
 		self.solve()
 		
 		return self.gradient_norm_squared

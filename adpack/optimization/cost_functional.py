@@ -9,24 +9,33 @@ import numpy as np
 
 
 
-class CostFunctionalForm:
-	def __init__(self, state_form):
-		_, _, self.state, self.control, _ = state_form.return_data()
-		self.discretization = state_form.discretization
-		
-		self.form = fenics.Constant(0)*self.discretization.dx
+class ReducedCostFunctional:
 	
-
-
-
-
-class CostFunctional:
 	def __init__(self, form_handler, state_problem):
+		"""An implementation of the reduced cost functional
+		
+		Parameters
+		----------
+		form_handler : adpack.forms.FormHandler
+			the FormHandler object for the optimization problem
+		state_problem : adpack.pde_problems.state_problem.StateProblem
+			the StateProblem object corresponding to the state system
+		"""
+		
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 	
 	
 	def compute(self):
+		"""Evaluates the reduced cost functional by first solving the state system and then evaluating the cost functional
+		
+		Returns
+		-------
+		 : float
+			the value of the reduced cost functional at the current control
+
+		"""
+		
 		self.state_problem.solve()
 		
 		return fenics.assemble(self.form_handler.cost_functional_form)

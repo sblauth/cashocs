@@ -12,7 +12,16 @@ from _collections import deque
 
 
 class LBFGS(OptimizationAlgorithm):
+	
 	def __init__(self, optimization_problem):
+		"""Implements the L-BFGS method for solving the optimization problem
+		
+		Parameters
+		----------
+		optimization_problem : adpack.optimization.optimization_problem.OptimizationProblem
+			instance of the OptimizationProblem (user defined)
+		"""
+		
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 		
 		self.gradient_problem = self.optimization_problem.gradient_problem
@@ -22,7 +31,7 @@ class LBFGS(OptimizationAlgorithm):
 		
 		self.control_temp = fenics.Function(self.optimization_problem.control_space)
 		
-		self.cost_functional = self.optimization_problem.cost_functional
+		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
 		self.armijo_stepsize_initial = self.stepsize
@@ -50,6 +59,15 @@ class LBFGS(OptimizationAlgorithm):
 	
 	
 	def print_results(self):
+		"""Prints the current state of the optimization algorithm to the console.
+		
+		Returns
+		-------
+		None
+			see method description
+
+		"""
+		
 		if self.iteration == 0:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
 					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs)    Step size:  ' + format(self.stepsize, '.3e') + ' \n '
@@ -63,11 +81,41 @@ class LBFGS(OptimizationAlgorithm):
 	
 	
 	def bfgs_scalar_product(self, a, b):
+		"""A short cut for computing the scalar product in the BFGS double loop
+		
+		Parameters
+		----------
+		a : dolfin.function.function.Function
+			first input
+		b : dolfin.function.function.Function
+			second input
+			
+		Returns
+		-------
+		 : float
+			the value of the scalar product
+
+		"""
+		
 		return fenics.assemble(fenics.inner(a, b)*self.optimization_problem.control_measure)
 	
 	
 	
 	def compute_search_direction(self, grad):
+		"""Computes the search direction for the BFGS method with the so-called double loop
+		
+		Parameters
+		----------
+		grad : dolfin.function.function.Function
+			the current gradient
+
+		Returns
+		-------
+		self.q : dolfin.function.function.Function
+			a function corresponding to the current / next search direction
+
+		"""
+		
 		if self.memory_vectors > 0 and len(self.history_s) > 0:
 			history_alpha = deque()
 			self.q.vector()[:] = grad.vector()[:]
@@ -97,6 +145,15 @@ class LBFGS(OptimizationAlgorithm):
 	
 	
 	def run(self):
+		"""Performs the optimization via the limited memory BFGS method
+		
+		Returns
+		-------
+		None
+			the result can be found in the control (user defined)
+
+		"""
+		
 		self.iteration = 0
 		self.objective_value = self.cost_functional.compute()
 		

@@ -10,7 +10,19 @@ from ufl import replace
 
 
 class Lagrangian:
+	
 	def __init__(self, state_form, cost_functional_form):
+		"""
+		A class that implements a Lagrangian, i.e., the sum of (reduced) cost functional and state constraint
+		
+		Parameters
+		----------
+		state_form : ufl.form.Form
+			the weak form of the state equation, as implemented by the user
+		cost_functional_form : ufl.form.Form
+			the cost functional, as implemented by the user
+		"""
+		
 		self.state_form = state_form
 		self.cost_functional_form =  cost_functional_form
 
@@ -21,7 +33,28 @@ class Lagrangian:
 
 
 class FormHandler:
+
 	def __init__(self, lagrangian, bcs, control_measure, state, control, adjoint, config):
+		"""The form handler implements all form manipulations needed in order to compute adjoint equations, sensitvities, etc.
+		
+		Parameters
+		----------
+		lagrangian : Lagrangian
+			the lagrangian corresponding to the optimization problem
+		bcs : dolfin.fem.dirichletbc.DirichletBC
+			the list of DirichletBCs for the state equation
+		control_measure : ufl.measure.Measure
+			the measure corresponding to the domain of the control
+		state : dolfin.function.function.Function
+			the function that acts as the state variable
+		control : dolfin.function.function.Function
+			the function that acts as the control variable
+		adjoint : dolfin.function.function.Function
+			the function that acts as the adjoint variable
+		config : configparser.ConfigParser
+			the configparser object of the config file
+		"""
+		
 		self.lagrangian = lagrangian
 		self.bcs = bcs
 		self.control_measure = control_measure
@@ -66,6 +99,15 @@ class FormHandler:
 	
 	
 	def compute_state_equation(self):
+		"""Compute the weak form of the state equation for the use with fenics
+		
+		Returns
+		-------
+		None
+			But creates self.state_eq_form
+
+		"""
+		
 		self.state_eq_form = fenics.derivative(self.lagrangian.form, self.adjoint, self.test_function_state)
 		
 		if self.config.getboolean('StateEquation', 'is_linear'):
@@ -75,6 +117,15 @@ class FormHandler:
 	
 	
 	def compute_adjoint_equation(self):
+		"""Computes the weak form of the adjoint equation for use with fenics
+		
+		Returns
+		-------
+		None
+			But creates self.adjoint_eq_form and self.bcs_ad, corresponding to homogenized BCs
+
+		"""
+		
 		self.adjoint_eq_form = fenics.derivative(self.lagrangian.form, self.state, self.trial_function_state)
 		self.adjoint_eq_form = replace(self.adjoint_eq_form, {self.adjoint : self.test_function_state})
 		self.adjoint_eq_form = fenics.adjoint(self.adjoint_eq_form)
@@ -85,12 +136,29 @@ class FormHandler:
 	
 	
 	def compute_gradient_equation(self):
+		"""Computes the variational form of the gradient equation, for the Riesz projection
+		
+		Returns
+		-------
+		None
+			but creates self.gradient_form_lhs and self.gradient_form_rhs
+
+		"""
+		
 		self.gradient_form_lhs = fenics.inner(self.trial_function_control, self.test_function_control)*self.control_measure
 		self.gradient_form_rhs = fenics.derivative(self.lagrangian.form, self.control, self.test_function_control)
 	
 	
 	
 	def compute_newton_forms(self):
+		"""Computes the needed forms for a truncated Newton method
+		
+		Returns
+		-------
+		None
+
+		"""
+		
 		self.sensitivity_eq_lhs = fenics.derivative(self.state_form, self.state, self.trial_function_state)
 		self.sensitivity_eq_lhs = replace(self.sensitivity_eq_lhs, {self.adjoint : self.test_function_state})
 		

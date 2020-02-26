@@ -1,0 +1,113 @@
+#!/usr/bin/env python
+
+import getopt
+import sys
+import meshio
+
+
+
+def run(argv):
+	try:
+		opts, args = getopt.getopt(argv, "h", ["help"])
+	except getopt.GetoptError:
+		usage()
+		sys.exit(2)
+	
+	
+	for opt, arg in opts:
+		if opt in ('-h', '--help'):
+			usage()
+			sys.exit()
+	# Check that we have two files
+	if not len(args) == 2:
+		usage()
+		sys.exit(2)
+	
+	
+	inputfile = args[0]
+	outputfile = args[1]
+	# Check that the inputfile has .msh file format
+	if not inputfile[-4:] == '.msh':
+		print('Error: Cannot use the current file format as input')
+		print('')
+		usage()
+		sys.exit(2)
+	
+	# Check that the outputfile has .xdmf format
+	if outputfile[-5:] == '.xdmf':
+		oformat = '.xdmf'
+		ostring = outputfile[:-5]
+	else:
+		print('Error: Cannot use the current file format as output')
+		print('')
+		usage()
+		sys.exit(2)
+	
+	mesh_collection = meshio.read(inputfile)
+	
+	points = mesh_collection.points
+	point_data = mesh_collection.point_data
+	cells = mesh_collection.cells
+	cell_data = mesh_collection.cell_data
+	# field_data = mesh_collection.field_data
+	
+	# Check, whether we have a 2D or 3D mesh:
+	keyvals = cells.keys()
+	if 'line' in keyvals and 'triangle' in keyvals:
+		meshdim = 2
+	elif 'triangle' in keyvals and 'tetra' in keyvals:
+		meshdim = 3
+	else:
+		print('Error: This is not a valid input mesh.')
+		print('')
+		usage()
+		sys.exit(2)
+	
+	if meshdim == 2:
+		points = points[:, :2]
+		xdmf_mesh = meshio.Mesh(points=points, cells={'triangle' : cells['triangle']})
+		meshio.write(ostring + '.xdmf', xdmf_mesh)
+		
+		
+		subdomains = meshio.Mesh(points=points, cells={'triangle': cells['triangle']},
+								 cell_data={'triangle': {'subdomains': cell_data['triangle']['gmsh:physical']}})
+		meshio.write(ostring + '_subdomains.xdmf', subdomains)
+		
+		
+		xdmf_boundaries = meshio.Mesh(points=points, cells={'line' : cells['line']},
+									  cell_data={'line' : {'boundaries' : cell_data['line']['gmsh:physical']}})
+		meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
+	
+	elif meshdim == 3:
+		xdmf_mesh = meshio.Mesh(points=points, cells={'tetra' : cells['tetra']})
+		meshio.write(ostring + '.xdmf', xdmf_mesh)
+		
+		
+		subdomains = meshio.Mesh(points=points, cells={'tetra': cells['tetra']},
+								 cell_data={'tetra': {'subdomains': cell_data['tetra']['gmsh:physical']}})
+		meshio.write(ostring + '_subdomains.xdmf', subdomains)
+		
+		
+		xdmf_boundaries = meshio.Mesh(points=points, cells={'triangle' : cells['triangle']},
+									  cell_data={'triangle' : {'boundaries' : cell_data['triangle']['gmsh:physical']}})
+		meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
+
+
+
+def usage():
+	"Display usage"
+	print("""\
+Usage: hdf-convert input.msh output.y
+
+Supported formats
+		Input:
+		.msh	- Gmsh, version 2.0 or 4.0 file format
+
+		Output:
+		.xdmf 	- XDMF file format
+""")
+
+
+
+if __name__ == "__main__":
+	run(sys.argv[1:])

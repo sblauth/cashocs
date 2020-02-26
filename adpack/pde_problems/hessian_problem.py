@@ -8,8 +8,20 @@ import fenics
 import numpy as np
 
 
+
 class HessianProblem:
+	
 	def __init__(self, form_handler, gradient_problem):
+		"""The class that manages the computations for the Hessian in the truncated Newton method
+		
+		Parameters
+		----------
+		form_handler : adpack.forms.FormHandler
+			the FormHandler object for the optimization problem
+		gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
+			the GradientProblem object (we need the gradient for the computation of the Hessian)
+		"""
+		
 		self.form_handler = form_handler
 		self.gradient_problem = gradient_problem
 		
@@ -26,6 +38,19 @@ class HessianProblem:
 	
 	
 	def hessian_application(self):
+		"""Returns the application of J''(u)[h] where h = self.test_direction
+		
+		This is needed in the truncated Newton method where we solve the system
+			J''(u) du = - J'(u)
+		via iterative methods (cg, minres, cr)
+		
+		Returns
+		-------
+		self.form_handler.hessian_action : dolfin.function.function.Function
+			the generic function that saves the result of J''(u)[h]
+
+		"""
+		
 		self.state_prime = self.form_handler.state_prime
 		self.adjoint_prime = self.form_handler.adjoint_prime
 		self.bcs_ad = self.form_handler.bcs_ad
@@ -44,6 +69,22 @@ class HessianProblem:
 	
 	
 	def application_simplified(self, x):
+		"""A simplified version of the application of the Hessian.
+		
+		Computes J''(u)[x], where x is the input vector (see self.hessian_application for more details)
+		
+		Parameters
+		----------
+		x : dolfin.function.function.Function
+			a function to which we want to apply the Hessian to
+
+		Returns
+		-------
+		self.hessian_action : dolfin.function.function.Function
+			the generic function that saves the result of J''(u)[h]
+
+		"""
+		
 		self.test_direction.vector()[:] = x.vector()[:]
 		self.hessian_action = self.hessian_application()
 		
@@ -52,6 +93,15 @@ class HessianProblem:
 	
 	
 	def newton_solve(self):
+		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr)
+		
+		Returns
+		-------
+		self.delta_control : dolfin.function.function.Function
+			the Newton increment
+
+		"""
+		
 		self.delta_control.vector()[:] = 0.0
 		self.gradient_problem.solve()
 		

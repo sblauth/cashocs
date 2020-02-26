@@ -10,7 +10,18 @@ import numpy as np
 
 
 class AdjointProblem:
+	
 	def __init__(self, form_handler, state_problem):
+		"""A class that implements the adjoint system, used e.g. to determine the gradient of the cost functional
+		
+		Parameters
+		----------
+		form_handler : adpack.forms.FormHandler
+			the FormHandler object for the optimization problem
+		state_problem : adpack.pde_problems.state_problem.StateProblem
+			the StateProblem object used to get the point where we linearize the problem
+		"""
+		
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 		
@@ -24,6 +35,15 @@ class AdjointProblem:
 	
 	
 	def solve(self):
+		"""Solves the adjoint system
+		
+		Returns
+		-------
+		self.adjoint : dolfin.function.function.Function
+			the Function representing the solution of the adjoint system
+
+		"""
+		
 		self.state_problem.solve()
 
 		if not self.has_solution:

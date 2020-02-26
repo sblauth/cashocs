@@ -8,7 +8,7 @@ from ..forms import Lagrangian, FormHandler
 from ..pde_problems.state_problem import StateProblem
 from ..pde_problems.adjoint_problem import AdjointProblem
 from ..pde_problems.gradient_problem import GradientProblem
-from ..optimization.cost_functional import CostFunctional
+from ..optimization.cost_functional import ReducedCostFunctional
 from ..pde_problems.hessian_problem import HessianProblem
 from .methods.gradient_descent import GradientDescent
 from .methods.l_bfgs import LBFGS
@@ -18,7 +18,30 @@ from .methods.newton import Newton
 
 
 class OptimizationProblem:
+	
 	def __init__(self, state_form, bcs, control_measure, cost_functional_form, state, control, adjoint, config):
+		"""The implementation of the optimization problem, used to generate all other classes and functionality. Also used to solve the problem.
+		
+		Parameters
+		----------
+		state_form : ufl.form.Form
+			the weak form of the state equation (user implemented)
+		bcs : list
+			the list of DirichletBC objects describing essential boundary conditions
+		control_measure : ufl.measure.Measure
+			the measure corresponding to the domain of the control
+		cost_functional_form : ufl.form.Form
+			the cost functional (user implemented)
+		state : dolfin.function.function.Function
+			the state variable
+		control : dolfin.function.function.Function
+			the control variable
+		adjoint : dolfin.function.function.Function
+			the adjoint variable
+		config : configparser.ConfigParser
+			the config file for the problem
+		"""
+		
 		self.state_form = state_form
 		self.bcs = bcs
 		
@@ -45,12 +68,21 @@ class OptimizationProblem:
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 		self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
 		
-		self.cost_functional = CostFunctional(self.form_handler, self.state_problem)
+		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 		
 		self.gradient = self.gradient_problem.gradient
 		
 		
 	def solve(self):
+		"""Solves the optimization problem by the method specified in the config file. See adpack.optimization.methds for details on the implemented solution methods
+		
+		Returns
+		-------
+		None
+			Updates self.state, self.control and self.adjoint according to the optimization method. The user inputs for generating the OptimizationProblem class are actually manipulated there.
+
+		"""
+		
 		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
 		
 		if self.algorithm == 'gradient_descent':
