@@ -23,9 +23,9 @@ class StateProblem:
 		self.form_handler = form_handler
 		
 		self.config = self.form_handler.config
-		self.bcs = self.form_handler.bcs
-		self.state = self.form_handler.state
-		self.control = self.form_handler.control
+		self.bcs_list = self.form_handler.bcs_list
+		self.states = self.form_handler.states
+		self.controls = self.form_handler.controls
 		
 		self.number_of_solves = 0
 		self.has_solution = False
@@ -37,20 +37,22 @@ class StateProblem:
 		
 		Returns
 		-------
-		self.state : dolfin.function.function.Function
+		self.states : List[dolfin.function.function.Function]
 			the function that corresponds to the solution of the state system
 
 		"""
 		
 		if not self.has_solution:
 			if self.config.getboolean('StateEquation', 'is_linear'):
-				a, L = fenics.system(self.form_handler.state_eq_form)
-				fenics.solve(a==L, self.state, self.bcs)
+				for i in range(self.form_handler.state_dim):
+					a, L = fenics.system(self.form_handler.state_eq_forms[i])
+					fenics.solve(a==L, self.states[i], self.bcs_list[i])
 				
 			else:
-				fenics.solve(self.form_handler.state_eq_form==0, self.state, self.bcs)
+				for i in range(self.form_handler.state_dim):
+					fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i])
 			
 			self.has_solution = True
 			self.number_of_solves += 1
 
-		return self.state
+		return self.states

@@ -25,7 +25,8 @@ class ReducedCostFunctional:
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 	
-	
+
+
 	def compute(self):
 		"""Evaluates the reduced cost functional by first solving the state system and then evaluating the cost functional
 		

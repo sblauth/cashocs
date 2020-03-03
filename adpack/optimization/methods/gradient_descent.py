@@ -25,10 +25,10 @@ class GradientDescent(OptimizationAlgorithm):
 		
 		self.gradient_problem = self.optimization_problem.gradient_problem
 		
-		self.gradient = self.optimization_problem.gradient
-		self.control = self.optimization_problem.control
+		self.gradients = self.optimization_problem.gradients
+		self.controls = self.optimization_problem.controls
 		
-		self.control_temp = fenics.Function(self.optimization_problem.control_space)
+		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		
@@ -85,14 +85,15 @@ class GradientDescent(OptimizationAlgorithm):
 		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		
-		self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 		self.relative_norm = 1.0
 		
 		self.print_results()
 		
 		while self.relative_norm > self.tolerance:
 			
-			self.control_temp.vector()[:] = self.control.vector()[:]
+			for i in range(len(self.controls)):
+				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 			
 			# Armijo Line Search
 			while True:
@@ -103,7 +104,8 @@ class GradientDescent(OptimizationAlgorithm):
 					self.armijo_broken = True
 					break
 				
-				self.control.vector()[:] -= self.stepsize*self.gradient.vector()[:]
+				for i in range(len(self.controls)):
+					self.controls[i].vector()[:] -= self.stepsize*self.gradients[i].vector()[:]
 				
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
@@ -116,7 +118,8 @@ class GradientDescent(OptimizationAlgorithm):
 					
 				else:
 					self.stepsize /= self.beta_armijo
-					self.control.vector()[:] = self.control_temp.vector()[:]
+					for i in range(len(self.controls)):
+						self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
 				
 			
 			if self.armijo_broken:
@@ -131,7 +134,7 @@ class GradientDescent(OptimizationAlgorithm):
 			
 			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
 			self.iteration += 1
 			self.print_results()

@@ -7,6 +7,7 @@ Created on 24/02/2020, 13.11
 import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
+from ...helpers import summ
 from _collections import deque
 
 
@@ -26,17 +27,17 @@ class LBFGS(OptimizationAlgorithm):
 		
 		self.gradient_problem = self.optimization_problem.gradient_problem
 		
-		self.gradient = self.optimization_problem.gradient
-		self.control = self.optimization_problem.control
+		self.gradients = self.optimization_problem.gradients
+		self.controls = self.optimization_problem.controls
 		
-		self.control_temp = fenics.Function(self.optimization_problem.control_space)
+		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
 		self.armijo_stepsize_initial = self.stepsize
 		
-		self.q = fenics.Function(self.optimization_problem.control_space)
+		self.q = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
@@ -50,9 +51,9 @@ class LBFGS(OptimizationAlgorithm):
 			self.history_s = deque()
 			self.history_y = deque()
 			self.history_rho = deque()
-			self.gradient_prev = fenics.Function(self.optimization_problem.control_space)
-			self.y_k = fenics.Function(self.optimization_problem.control_space)
-			self.s_k = fenics.Function(self.optimization_problem.control_space)
+			self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+			self.y_k = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+			self.s_k = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.armijo_broken = False
 	
@@ -85,9 +86,9 @@ class LBFGS(OptimizationAlgorithm):
 		
 		Parameters
 		----------
-		a : dolfin.function.function.Function
+		a : List[dolfin.function.function.Function]
 			first input
-		b : dolfin.function.function.Function
+		b : List[dolfin.function.function.Function]
 			second input
 			
 		Returns
@@ -97,7 +98,7 @@ class LBFGS(OptimizationAlgorithm):
 
 		"""
 		
-		return fenics.assemble(fenics.inner(a, b)*self.optimization_problem.control_measure)
+		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
 	
 	
 	
@@ -106,7 +107,7 @@ class LBFGS(OptimizationAlgorithm):
 		
 		Parameters
 		----------
-		grad : dolfin.function.function.Function
+		grad : List[dolfin.function.function.Function]
 			the current gradient
 
 		Returns
@@ -118,27 +119,35 @@ class LBFGS(OptimizationAlgorithm):
 		
 		if self.memory_vectors > 0 and len(self.history_s) > 0:
 			history_alpha = deque()
-			self.q.vector()[:] = grad.vector()[:]
+			for j in range(len(self.controls)):
+				self.q[j].vector()[:] = grad[j].vector()[:]
+				
 			for i, _ in enumerate(self.history_s):
 				alpha = self.history_rho[i]*self.bfgs_scalar_product(self.history_s[i], self.q)
 				history_alpha.append(alpha)
-				self.q.vector()[:] -= alpha*self.history_y[i].vector()[:]
+				for j in range(len(self.controls)):
+					self.q[j].vector()[:] -= alpha*self.history_y[i][j].vector()[:]
 			
 			if self.use_bfgs_scaling and self.iteration > 0:
 				factor = self.bfgs_scalar_product(self.history_y[0], self.history_s[0])/self.bfgs_scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
 			
-			self.q.vector()[:] *= factor
+			for j in range(len(self.controls)):
+				self.q[j].vector()[:] *= factor
 			
 			for i, _ in enumerate(self.history_s):
 				beta = self.history_rho[-1 - i]*self.bfgs_scalar_product(self.history_y[-1 - i], self.q)
-				self.q.vector()[:] += self.history_s[-1 - i].vector()[:]*(history_alpha[-1 - i] - beta)
+				
+				for j in range(len(self.controls)):
+					self.q[j].vector()[:] += self.history_s[-1 - i][j].vector()[:]*(history_alpha[-1 - i] - beta)
 			
-			self.q.vector()[:] *= -1
+			for j in range(len(self.controls)):
+				self.q[j].vector()[:] *= -1
 		
 		else:
-			self.q.vector()[:] = - grad.vector()[:]
+			for j in range(len(self.controls)):
+				self.q[j].vector()[:] = - grad[j].vector()[:]
 		
 		return self.q
 	
@@ -161,18 +170,19 @@ class LBFGS(OptimizationAlgorithm):
 		self.gradient_problem.solve()
 		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
-		self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 		
 		self.relative_norm = 1.0
 		
 		self.print_results()
 		
 		while self.relative_norm > self.tolerance:
-			self.control_temp.vector()[:] = self.control.vector()[:]
-			self.search_direction = self.compute_search_direction(self.gradient)
-			self.search_direction_inf = np.max(np.abs(self.search_direction.vector()[:]))
+			for i in range(len(self.controls)):
+				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
+			self.search_directions = self.compute_search_direction(self.gradients)
+			self.search_direction_inf = np.max([np.max(np.abs(self.search_directions[i].vector()[:])) for i in range(len(self.gradients))])
 			
-			self.directional_derivative = self.bfgs_scalar_product(self.search_direction, self.gradient)
+			self.directional_derivative = self.bfgs_scalar_product(self.search_directions, self.gradients)
 
 			# Armijo Line Search
 			while True:
@@ -183,7 +193,8 @@ class LBFGS(OptimizationAlgorithm):
 					self.armijo_broken = True
 					break
 				
-				self.control.vector()[:] += self.stepsize*self.search_direction.vector()[:]
+				for i in range(len(self.controls)):
+					self.controls[i].vector()[:] += self.stepsize*self.search_directions[i].vector()[:]
 				
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
@@ -195,7 +206,8 @@ class LBFGS(OptimizationAlgorithm):
 					
 				else:
 					self.stepsize /= self.beta_armijo
-					self.control.vector()[:] = self.control_temp.vector()[:]
+					for i in range(len(self.controls)):
+						self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
 				
 			
 			if self.armijo_broken:
@@ -205,7 +217,8 @@ class LBFGS(OptimizationAlgorithm):
 			self.objective_value = self.objective_step
 			
 			if self.memory_vectors > 0:
-				self.gradient_prev.vector()[:] = self.gradient.vector()[:]
+				for i in range(len(self.gradients)):
+					self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
 			
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
@@ -213,13 +226,14 @@ class LBFGS(OptimizationAlgorithm):
 			
 			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
 			if self.memory_vectors > 0:
-				self.y_k.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
-				self.s_k.vector()[:] = self.stepsize*self.search_direction.vector()[:]
-				self.history_y.appendleft(self.y_k.copy(True))
-				self.history_s.appendleft(self.s_k.copy(True))
+				for i in range(len(self.gradients)):
+					self.y_k[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+					self.s_k[i].vector()[:] = self.stepsize*self.search_directions[i].vector()[:]
+				self.history_y.appendleft([x.copy(True) for x in self.y_k])
+				self.history_s.appendleft([x.copy(True) for x in self.s_k])
 				rho = 1/self.bfgs_scalar_product(self.y_k, self.s_k)
 				self.history_rho.appendleft(rho)
 				

@@ -5,6 +5,7 @@ Created on 24/02/2020, 16.48
 """
 
 import fenics
+from ..helpers import summ
 import numpy as np
 
 
@@ -26,14 +27,31 @@ class HessianProblem:
 		self.gradient_problem = gradient_problem
 		
 		self.config = self.form_handler.config
-		self.gradient = self.gradient_problem.gradient
+		self.gradients = self.gradient_problem.gradients
 		
 		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton')
+		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton')
+		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance')
 		
-		self.test_direction = self.form_handler.test_direction
-		self.res = fenics.Function(self.test_direction.function_space())
-		self.p_prev = fenics.Function(self.test_direction.function_space())
-		self.delta_control = fenics.Function(self.test_direction.function_space())
+		self.test_directions = self.form_handler.test_directions
+		self.residual = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.delta_control = [fenics.Function(V) for V in self.form_handler.control_spaces]
+
+		self.state_dim = self.form_handler.state_dim
+		self.control_dim = self.form_handler.control_dim
+
+		self.p = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.p_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.p_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.s = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.s_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.s_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.q = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.s_new = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.res_new = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		
+		self.no_sensitivity_solves = 0
 		
 	
 	
@@ -46,25 +64,30 @@ class HessianProblem:
 		
 		Returns
 		-------
-		self.form_handler.hessian_action : dolfin.function.function.Function
+		self.form_handler.hessian_action : List[dolfin.function.function.Function]
 			the generic function that saves the result of J''(u)[h]
 
 		"""
 		
-		self.state_prime = self.form_handler.state_prime
-		self.adjoint_prime = self.form_handler.adjoint_prime
-		self.bcs_ad = self.form_handler.bcs_ad
+		self.states_prime = self.form_handler.states_prime
+		self.adjoints_prime = self.form_handler.adjoints_prime
+		self.bcs_list_ad = self.form_handler.bcs_list_ad
 		
-		fenics.solve(self.form_handler.sensitivity_eq_lhs==self.form_handler.sensitivity_eq_rhs, self.state_prime, self.bcs_ad)
+		for i in range(self.state_dim):
+			fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])
 		
-		fenics.solve(self.form_handler.adjoint_sensitivity_lhs==self.form_handler.w_1, self.adjoint_prime, self.bcs_ad)
+		for i in range(self.state_dim):
+			fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-i]==self.form_handler.w_1[-1-i], self.adjoints_prime[-1-i], self.bcs_list_ad[-1-i])
 		
-		A = fenics.assemble(self.form_handler.hessian_lhs, keep_diagonal=True)
-		A.ident_zeros()
-		b = fenics.assemble(self.form_handler.hessian_rhs)
-		fenics.solve(A, self.form_handler.hessian_action.vector(), b)
+		for i in range(self.control_dim):
+			A = fenics.assemble(self.form_handler.hessian_lhs[i], keep_diagonal=True)
+			A.ident_zeros()
+			b = fenics.assemble(self.form_handler.hessian_rhs[i])
+			fenics.solve(A, self.form_handler.hessian_actions[i].vector(), b)
 		
-		return self.form_handler.hessian_action
+		self.no_sensitivity_solves += 2
+		
+		return self.form_handler.hessian_actions
 	
 	
 	
@@ -75,20 +98,28 @@ class HessianProblem:
 		
 		Parameters
 		----------
-		x : dolfin.function.function.Function
+		x : List[dolfin.function.function.Function]
 			a function to which we want to apply the Hessian to
 
 		Returns
 		-------
-		self.hessian_action : dolfin.function.function.Function
+		self.hessian_actions : List[dolfin.function.function.Function]
 			the generic function that saves the result of J''(u)[h]
 
 		"""
 		
-		self.test_direction.vector()[:] = x.vector()[:]
-		self.hessian_action = self.hessian_application()
+		for i in range(self.control_dim):
+			self.test_directions[i].vector()[:] = x[i].vector()[:]
 		
-		return self.hessian_action
+		self.hessian_actions = self.hessian_application()
+		
+		return self.hessian_actions
+	
+	
+	
+	def scalar_product(self, a, b):
+		
+		return summ([fenics.assemble(fenics.inner(a[j], b[j])*self.form_handler.control_measures[j]) for j in range(self.control_dim)])
 	
 	
 	
@@ -97,136 +128,144 @@ class HessianProblem:
 		
 		Returns
 		-------
-		self.delta_control : dolfin.function.function.Function
+		self.delta_control : List[dolfin.function.function.Function]
 			the Newton increment
 
 		"""
 		
-		self.delta_control.vector()[:] = 0.0
+		
+		for j in range(self.control_dim):
+			self.delta_control[j].vector()[:] = 0.0
 		self.gradient_problem.solve()
 		
+		### CG method
 		if self.inner_newton == 'cg':
-			self.res.vector()[:] = self.gradient.vector()[:]
-			self.res_norm_squared = fenics.assemble(fenics.inner(self.res, self.res)*self.form_handler.control_measure)
-			self.eps_0 = np.sqrt(self.res_norm_squared)
-			self.test_direction.vector()[:] = -self.res.vector()[:]
 			
-			for i in range(15):
-				self.hessian_action = self.hessian_application()
+			for j in range(self.control_dim):
+				self.residual[j].vector()[:] = -self.gradients[j].vector()[:]
+				self.p[j].vector()[:] = self.residual[j].vector()[:]
+			
+			self.res_norm_squared = self.scalar_product(self.residual, self.residual)
+			self.eps_0 = np.sqrt(self.res_norm_squared)
+			
+			for i in range(self.max_it_inner_newton):
+				self.v = self.application_simplified(self.p)
 				
 				self.eps = np.sqrt(self.res_norm_squared)
 				# print('Eps (CG): ' + str(self.eps))
-				if self.eps / self.eps_0 < 1e-5:
+				if self.eps / self.eps_0 < self.inner_newton_tolerance:
 					break
 				
-				self.alpha = self.res_norm_squared / fenics.assemble(fenics.inner(self.test_direction, self.hessian_action)*self.form_handler.control_measure)
-				self.delta_control.vector()[:] += self.alpha*self.test_direction.vector()[:]
-				self.res.vector()[:] += self.alpha*self.hessian_action.vector()[:]
+				self.alpha = self.res_norm_squared / self.scalar_product(self.p, self.v)
+				for j in range(self.control_dim):
+					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
+					self.residual[j].vector()[:] -= self.alpha*self.v[j].vector()[:]
 				
-				self.res_norm_squared = fenics.assemble(fenics.inner(self.res, self.res)*self.form_handler.control_measure)
+				self.res_norm_squared = self.scalar_product(self.residual, self.residual)
 				self.beta = self.res_norm_squared / pow(self.eps, 2)
 				
-				self.test_direction.vector()[:] = -self.res.vector()[:] + self.beta*self.test_direction.vector()[:]
+				for j in range(self.control_dim):
+					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
 		
 		
+		### minres method
 		elif self.inner_newton == 'minres':
-			self.delta_control.vector()[:] = 0.0
+			for j in range(self.control_dim):
+				self.p_pprev[j].vector()[:] = 0.0
+				self.s_pprev[j].vector()[:] = 0.0
+				self.delta_control[j].vector()[:] = 0.0
+				self.residual[j].vector()[:] = - self.gradients[j].vector()[:]
+				self.p_prev[j].vector()[:] = self.residual[j].vector()[:]
+			
+			self.eps_0 = np.sqrt(self.scalar_product(self.residual, self.residual))
+			
+			self.hessian_actions = self.application_simplified(self.p_prev)
+			for j in range(self.control_dim):
+				self.s_prev[j].vector()[:] = self.hessian_actions[j].vector()[:]
+			
+			
+			for i in range(self.max_it_inner_newton):
+				self.alpha = self.scalar_product(self.residual, self.s_prev) / self.scalar_product(self.s_prev, self.s_prev)
+				
+				for j in range(self.control_dim):
+					self.delta_control[j].vector()[:] += self.alpha*self.p_prev[j].vector()[:]
+					self.residual[j].vector()[:] -= self.alpha*self.s_prev[j].vector()[:]
+				
+				self.eps = np.sqrt(self.scalar_product(self.residual, self.residual))
+				print('Eps (minres): ' + str(self.eps))
 
-			self.p = fenics.Function(self.test_direction.function_space())
-			self.p_prev = fenics.Function(self.test_direction.function_space())
-			self.p_pprev = fenics.Function(self.test_direction.function_space())
-			self.s_prev = fenics.Function(self.test_direction.function_space())
-			self.s_pprev = fenics.Function(self.test_direction.function_space())
-
-			self.res.vector()[:] = - self.gradient.vector()[:]
-			self.eps_0 = np.sqrt(fenics.assemble(fenics.inner(self.res, self.res)*self.form_handler.control_measure))
-			self.p_prev.vector()[:] = self.res.vector()[:]
-			self.test_direction.vector()[:] = self.p_prev.vector()[:]
-			self.hessian_action = self.hessian_application()
-			self.s_prev.vector()[:] = self.hessian_action.vector()[:]
-
-			for i in range(15):
-				self.alpha = fenics.assemble(fenics.inner(self.res, self.s_prev)*self.form_handler.control_measure) / \
-							 fenics.assemble(fenics.inner(self.s_prev, self.s_prev)*self.form_handler.control_measure)
-
-				self.delta_control.vector()[:] += self.alpha*self.p_prev.vector()[:]
-				self.res.vector()[:] -= self.alpha*self.s_prev.vector()[:]
-
-				self.eps = np.sqrt(fenics.assemble(fenics.inner(self.res, self.res)*self.form_handler.control_measure))
-				# print('Eps (minres): ' + str(self.eps))
-				if self.eps / self.eps_0 < 1e-5:
+				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton-1:
 					break
-
-				self.p.vector()[:] = self.s_prev.vector()[:]
-
-				self.test_direction.vector()[:] = self.s_prev.vector()[:]
-				self.hessian_action = self.hessian_application()
-
-				self.beta = fenics.assemble(fenics.inner(self.hessian_action, self.s_prev)*self.form_handler.control_measure) / \
-							fenics.assemble(fenics.inner(self.s_prev, self.s_prev)*self.form_handler.control_measure)
-
+				
+				for j in range(self.control_dim):
+					self.p[j].vector()[:] = self.s_prev[j].vector()[:]
+				
+				self.hessian_actions = self.application_simplified(self.s_prev)
+				for j in range(self.control_dim):
+					self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
+				
+				self.beta = self.scalar_product(self.s, self.s_prev) / self.scalar_product(self.s_prev, self.s_prev)
+				
 				if i > 0:
-					self.beta_prev = fenics.assemble(fenics.inner(self.hessian_action, self.s_pprev)*self.form_handler.control_measure) / \
-								fenics.assemble(fenics.inner(self.s_pprev, self.s_pprev)*self.form_handler.control_measure)
+					self.beta_prev = self.scalar_product(self.s, self.s_pprev) / self.scalar_product(self.s_pprev, self.s_pprev)
 				else:
 					self.beta_prev = 0.0
+				
+				for j in range(self.control_dim):
+					self.p[j].vector()[:] -= self.beta*self.p_prev[j].vector()[:] + self.beta_prev*self.p_pprev[j].vector()[:]
+					self.s[j].vector()[:] -= self.beta*self.s_prev[j].vector()[:] + self.beta_prev*self.s_pprev[j].vector()[:]
 
-				self.p.vector()[:] -= self.beta*self.p_prev.vector()[:] + self.beta_prev*self.p_pprev.vector()[:]
-				self.hessian_action.vector()[:] -= self.beta*self.s_prev.vector()[:] + self.beta_prev*self.s_pprev.vector()[:]
-
-				self.p_pprev.vector()[:] = self.p_prev.vector()[:]
-				self.p_prev.vector()[:] = self.p.vector()[:]
-
-				self.s_pprev.vector()[:] = self.s_prev.vector()[:]
-				self.s_prev.vector()[:] = self.hessian_action.vector()[:]
+					self.p_pprev[j].vector()[:] = self.p_prev[j].vector()[:]
+					self.p_prev[j].vector()[:] = self.p[j].vector()[:]
+	
+					self.s_pprev[j].vector()[:] = self.s_prev[j].vector()[:]
+					self.s_prev[j].vector()[:] = self.s[j].vector()[:]
 
 				self.beta_prev = self.beta
 		
+		## CR method
 		elif self.inner_newton == 'cr':
-			self.res.vector()[:] = - self.gradient.vector()[:]
-			self.eps_0 = np.sqrt(fenics.assemble(fenics.inner(self.res, self.res)*self.form_handler.control_measure))
+			for j in range(self.control_dim):
+				self.residual[j].vector()[:] = - self.gradients[j].vector()[:]
+				self.delta_control[j].vector()[:] = 0.0
+				self.p_prev[j].vector()[:] = 0.0
+				self.q_prev[j].vector()[:] = 0.0
+			
+			self.eps_0 = np.sqrt(self.scalar_product(self.residual, self.residual))
 
 			self.beta = 0
-
-			self.p = fenics.Function(self.test_direction.function_space())
-			self.p_prev = fenics.Function(self.test_direction.function_space())
-
-			self.q = fenics.Function(self.test_direction.function_space())
-			self.q_prev = fenics.Function(self.test_direction.function_space())
 			
-			self.s = fenics.Function(self.test_direction.function_space())
-			self.s_new = fenics.Function(self.test_direction.function_space())
-			
-			self.s.vector()[:] = self.application_simplified(self.res).vector()[:]
+			self.hessian_actions = self.application_simplified(self.residual)
+			for j in range(self.control_dim):
+				self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
 
-			self.res_new = fenics.Function(self.test_direction.function_space())
+			for i in range(self.max_it_inner_newton):
+				for j in range(self.control_dim):
+					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p_prev[j].vector()[:]
+					self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta*self.q_prev[j].vector()[:]
+				
+				self.alpha = self.scalar_product(self.residual, self.s) / self.scalar_product(self.q, self.q)
+				
+				for j in range(self.control_dim):
+					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
+					self.res_new[j].vector()[:] = self.residual[j].vector()[:] - self.alpha*self.q[j].vector()[:]
 
-			for i in range(15):
-				self.p.vector()[:] = self.res.vector()[:] + self.beta*self.p_prev.vector()[:]
-				
-				self.q.vector()[:] = self.s.vector()[:] + self.beta*self.q_prev.vector()[:]
-				
-				self.alpha = fenics.assemble(fenics.inner(self.res, self.s)*self.form_handler.control_measure) / \
-							fenics.assemble(fenics.inner(self.q, self.q)*self.form_handler.control_measure)
-				
-				self.delta_control.vector()[:] += self.alpha*self.p.vector()[:]
-				self.res_new.vector()[:] = self.res.vector()[:] - self.alpha*self.q.vector()[:]
-
-				self.eps = np.sqrt(fenics.assemble(fenics.inner(self.res_new, self.res_new)*self.form_handler.control_measure))
+				self.eps = np.sqrt(self.scalar_product(self.res_new, self.res_new))
 				# print('Eps (cr): ' + str(self.eps))
-
-				if self.eps / self.eps_0 < 1e-5:
+				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
-
-				self.s_new.vector()[:] = self.application_simplified(self.res_new).vector()[:]
-
-				self.beta = fenics.assemble(fenics.inner(self.res_new, self.s_new)*self.form_handler.control_measure) / \
-							fenics.assemble(fenics.inner(self.res, self.q)*self.form_handler.control_measure)
 				
-				self.s.vector()[:] = self.s_new.vector()[:]
-				self.p_prev.vector()[:] = self.p.vector()[:]
-				self.q_prev.vector()[:] = self.q.vector()[:]
-				self.res.vector()[:] = self.res_new.vector()[:]
+				self.hessian_actions = self.application_simplified(self.res_new)
+				for j in range(self.control_dim):
+					self.s_new[j].vector()[:] = self.hessian_actions[j].vector()[:]
+				
+				self.beta = self.scalar_product(self.res_new, self.s_new) / self.scalar_product(self.residual, self.q)
+				
+				for j in range(self.control_dim):
+					self.s[j].vector()[:] = self.s_new[j].vector()[:]
+					self.p_prev[j].vector()[:] = self.p[j].vector()[:]
+					self.q_prev[j].vector()[:] = self.q[j].vector()[:]
+					self.residual[j].vector()[:] = self.res_new[j].vector()[:]
 
 		else:
 			raise SystemExit('OptimizationRoutine.inner_newton needs to be one of cg, minres or cr.')

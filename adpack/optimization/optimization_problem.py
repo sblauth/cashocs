@@ -19,58 +19,90 @@ from .methods.newton import Newton
 
 class OptimizationProblem:
 	
-	def __init__(self, state_form, bcs, control_measure, cost_functional_form, state, control, adjoint, config):
+	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config):
 		"""The implementation of the optimization problem, used to generate all other classes and functionality. Also used to solve the problem.
 		
 		Parameters
 		----------
-		state_form : ufl.form.Form
+		state_forms : ufl.form.Form or List[ufl.form.Form]
 			the weak form of the state equation (user implemented)
-		bcs : list
+		bcs_list : List[dolfin.fem.dirichletbc.DirichletBC] or List[List[dolfin.fem.dirichletbc.DirichletBC]]
 			the list of DirichletBC objects describing essential boundary conditions
-		control_measure : ufl.measure.Measure
+		control_measures : ufl.measure.Measure or List[ufl.measure.Measure]
 			the measure corresponding to the domain of the control
 		cost_functional_form : ufl.form.Form
 			the cost functional (user implemented)
-		state : dolfin.function.function.Function
+		states : dolfin.function.function.Function or List[dolfin.function.function.Function]
 			the state variable
-		control : dolfin.function.function.Function
+		controls : dolfin.function.function.Function or List[dolfin.function.function.Function]
 			the control variable
-		adjoint : dolfin.function.function.Function
+		adjoints : dolfin.function.function.Function or List[dolfin.function.function.Function]
 			the adjoint variable
 		config : configparser.ConfigParser
 			the config file for the problem
 		"""
 		
-		self.state_form = state_form
-		self.bcs = bcs
+		### Overloading, such that we do not have to use lists for single state single control
+		if type(state_forms) == list:
+			self.state_forms = state_forms
+		else:
+			self.state_forms = [state_forms]
 		
-		self.control_measure = control_measure
+		if type(bcs_list) == list and type(bcs_list[0]) == list:
+			self.bcs_list = bcs_list
+		else:
+			self.bcs_list = [bcs_list]
+
+		if type(control_measures) == list:
+			self.control_measures = control_measures
+		else:
+			self.control_measures = [control_measures]
 		
 		self.cost_functional_form = cost_functional_form
 		
-		self.state = state
-		self.control = control
-		self.adjoint = adjoint
+		if type(states) == list:
+			self.states = states
+		else:
+			self.states = [states]
+		
+		if type(controls) == list:
+			self.controls = controls
+		else:
+			self.controls = [controls]
+		
+		if type(adjoints) == list:
+			self.adjoints = adjoints
+		else:
+			self.adjoints = [adjoints]
 		
 		self.config = config
 		
+		self.state_dim = len(self.state_forms)
+		self.control_dim = len(self.controls)
 		
-		self.state_space = self.state.function_space()
-		self.control_space = self.control.function_space()
+		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
+		assert len(self.control_measures) == self.control_dim, 'Length of controls does not match'
+		assert len(self.states) == self.state_dim, 'Length of states does not match'
+		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
+		### end overloading
 		
-		self.lagrangian = Lagrangian(self.state_form, self.cost_functional_form)
+		self.state_spaces = [x.function_space() for x in self.states]
+		self.control_spaces = [x.function_space() for x in self.controls]
 		
-		self.form_handler = FormHandler(self.lagrangian, self.bcs, self.control_measure, self.state, self.control, self.adjoint, self.config)
+		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
+		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.control_measures, self.states, self.controls, self.adjoints, self.config)
 		
 		self.state_problem = StateProblem(self.form_handler)
 		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
-		self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
 		
+		if self.config.get('OptimizationRoutine', 'algorithm') == 'newton':
+			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+			
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
+
+		self.gradients = self.gradient_problem.gradients
 		
-		self.gradient = self.gradient_problem.gradient
 		
 		
 	def solve(self):
@@ -78,7 +110,7 @@ class OptimizationProblem:
 		
 		Returns
 		-------
-		None
+		
 			Updates self.state, self.control and self.adjoint according to the optimization method. The user inputs for generating the OptimizationProblem class are actually manipulated there.
 
 		"""

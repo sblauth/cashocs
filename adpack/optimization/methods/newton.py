@@ -7,6 +7,7 @@ Created on 24/02/2020, 14.31
 import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
+from ...helpers import summ
 
 
 
@@ -27,10 +28,10 @@ class Newton(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 		self.gradient_problem = self.optimization_problem.gradient_problem
 		
-		self.gradient = self.optimization_problem.gradient
-		self.control = self.optimization_problem.control
+		self.gradients = self.optimization_problem.gradients
+		self.controls = self.optimization_problem.controls
 		
-		self.control_temp = fenics.Function(self.optimization_problem.control_space)
+		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		
@@ -83,23 +84,26 @@ class Newton(OptimizationAlgorithm):
 		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		
-		self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.controls))])
 		self.relative_norm = 1.0
 		
 		self.print_results()
 		
 		while self.relative_norm > self.tolerance:
 			
-			self.control_temp.vector()[:] = self.control.vector()[:]
+			for i in range(len(self.controls)):
+				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 			
 			self.delta_control = self.optimization_problem.hessian_problem.newton_solve()
-			self.directional_derivative = fenics.assemble(fenics.inner(self.delta_control, self.gradient)*self.optimization_problem.control_measure)
+			self.directional_derivative = summ([fenics.assemble(fenics.inner(self.delta_control[i], self.gradients[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
 			
 			### TODO: Implement a damping based on either residual or increment (and also using the gradient direction if Newton-Direction does not give descent
 			if self.directional_derivative > 0:
-				self.delta_control.vector()[:] = -self.delta_control.vector()[:]
+				for i in range(len(self.gradients)):
+					self.delta_control[i].vector()[:] = -self.delta_control[i].vector()[:]
 			
-			self.control.vector()[:] += self.delta_control.vector()[:]
+			for i in range(len(self.controls)):
+				self.controls[i].vector()[:] += self.delta_control[i].vector()[:]
 
 			self.state_problem.has_solution = False
 			self.objective_value = self.cost_functional.compute()
@@ -110,7 +114,7 @@ class Newton(OptimizationAlgorithm):
 			
 			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
 			self.iteration += 1
 			self.print_results()
@@ -122,5 +126,6 @@ class Newton(OptimizationAlgorithm):
 		print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 			  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
 		print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) +
+			  ' --- Sensitivity equations solved: ' + str(self.optimization_problem.hessian_problem.no_sensitivity_solves))
 		print('')

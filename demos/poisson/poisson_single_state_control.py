@@ -1,5 +1,5 @@
 """
-Created on 24/02/2020, 08.39
+Created on 02/03/2020, 14.52
 
 @author: blauths
 """
@@ -21,10 +21,11 @@ V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
 u = Function(V)
-u.vector()[:] = 1.0
+u.vector()[:] = 0.0
+
 p = Function(V)
 
-e = inner(grad(y), grad(p))*dx + Constant(1e-2)*y*p*dx - u*p*dx
+e = inner(grad(y), grad(p))*dx + Constant(1.0)*y*p*dx - u*p*dx
 # e = inner(grad(y), grad(p))*dx + Constant(1.0)*y*p*dx - u*p*ds
 
 bc1 = DirichletBC(V, Constant(0), boundaries, 1)
@@ -38,7 +39,6 @@ bcs = [bc1, bc2, bc3, bc4]
 lambd = 1e-4
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 # y_d = Expression('sin(2*pi*x[0])', degree=1)
-
 
 ### Distributed control and observation
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx

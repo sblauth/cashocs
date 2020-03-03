@@ -7,6 +7,7 @@ Created on 24/02/2020, 15.40
 import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
+from ...helpers import summ
 
 
 
@@ -28,12 +29,12 @@ class CG(OptimizationAlgorithm):
 		
 		self.gradient_problem = self.optimization_problem.gradient_problem
 		
-		self.gradient = self.optimization_problem.gradient
-		self.control = self.optimization_problem.control
+		self.gradients = self.optimization_problem.gradients
+		self.controls = self.optimization_problem.controls
 		
-		self.control_temp = fenics.Function(self.optimization_problem.control_space)
-		self.search_direction = fenics.Function(self.optimization_problem.control_space)
-		self.gradient_prev = fenics.Function(self.optimization_problem.control_space)
+		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.search_directions = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		
@@ -46,6 +47,9 @@ class CG(OptimizationAlgorithm):
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
 		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method')
+		
+		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.armijo_broken = False
 	
@@ -73,6 +77,26 @@ class CG(OptimizationAlgorithm):
 	
 	
 	
+	def scalar_product(self, a, b):
+		"""Implements the scalar product needed for the algorithm
+
+		Parameters
+		----------
+		a : List[dolfin.function.function.Function]
+			The first input
+		b : List[dolfin.function.function.Function]
+			The second input
+
+		Returns
+		-------
+		 : float
+			The value of the scalar product
+
+		"""
+		
+		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.gradients))])
+	
+	
 	def run(self):
 		"""Performs the optimization via the nonlinear cg method
 		
@@ -89,23 +113,31 @@ class CG(OptimizationAlgorithm):
 		
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.search_direction.vector()[:] = -self.gradient.vector()[:]
+		
+		for i in range(len(self.gradients)):
+			self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
+			
 		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		
-		self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 		self.relative_norm = 1.0
 		
 		self.print_results()
 		
 		while self.relative_norm > self.tolerance:
-			self.gradient_prev.vector()[:] = self.gradient.vector()[:]
 			
-			self.directional_derivative = fenics.assemble(fenics.inner(self.gradient, self.search_direction)*self.optimization_problem.control_measure)
+			for i in range(len(self.gradients)):
+				self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
+			
+			self.directional_derivative = self.scalar_product(self.gradients, self.search_directions)
+			
 			if self.directional_derivative >= 0:
-				self.search_direction.vector()[:] = -self.gradient.vector()[:]
+				for i in range(len(self.gradients)):
+					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 			
-			self.control_temp.vector()[:] = self.control.vector()[:]
+			for i in range(len(self.controls)):
+				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 			
 			# Armijo Line Search
 			while True:
@@ -116,7 +148,8 @@ class CG(OptimizationAlgorithm):
 					self.armijo_broken = True
 					break
 				
-				self.control.vector()[:] += self.stepsize*self.search_direction.vector()[:]
+				for i in range(len(self.controls)):
+					self.controls[i].vector()[:] += self.stepsize*self.search_directions[i].vector()[:]
 				
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
@@ -128,7 +161,8 @@ class CG(OptimizationAlgorithm):
 					
 				else:
 					self.stepsize /= self.beta_armijo
-					self.control.vector()[:] = self.control_temp.vector()[:]
+					for i in range(len(self.controls)):
+						self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
 				
 			
 			if self.armijo_broken:
@@ -143,48 +177,65 @@ class CG(OptimizationAlgorithm):
 			
 			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			self.gradient_norm_inf = np.max(np.abs(self.gradient.vector()[:]))
+			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
 			if self.cg_method == 'FR':
-				self.beta_numerator = fenics.assemble(fenics.inner(self.gradient, self.gradient)*self.optimization_problem.control_measure)
-				self.beta_denominator = fenics.assemble(fenics.inner(self.gradient_prev, self.gradient_prev)*self.optimization_problem.control_measure)
+				self.beta_numerator = self.scalar_product(self.gradients, self.gradients)
+				self.beta_denominator = self.scalar_product(self.gradients_prev, self.gradients_prev)
 				self.beta = self.beta_numerator / self.beta_denominator
 				
 			elif self.cg_method == 'PR':
-				self.beta_numerator = fenics.assemble(fenics.inner(self.gradient, self.gradient - self.gradient_prev)*self.optimization_problem.control_measure)
-				self.beta_denominator = fenics.assemble(fenics.inner(self.gradient_prev, self.gradient_prev)*self.optimization_problem.control_measure)
+				for i in range(len(self.gradients)):
+					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				
+				self.beta_numerator = self.scalar_product(self.gradients, self.differences)
+				self.beta_denominator = self.scalar_product(self.gradients_prev, self.gradients_prev)
 				self.beta = self.beta_numerator / self.beta_denominator
-				self.beta = np.maximum(self.beta, 0)
+
 				
 			elif self.cg_method == 'HS':
-				self.beta_numerator = fenics.assemble(fenics.inner(self.gradient, self.gradient - self.gradient_prev)*self.optimization_problem.control_measure)
-				self.beta_denominator = fenics.assemble(fenics.inner(self.gradient - self.gradient_prev, self.search_direction)*self.optimization_problem.control_measure)
+				for i in range(len(self.gradients)):
+					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				
+				self.beta_numerator = self.scalar_product(self.gradients, self.differences)
+				self.beta_denominator = self.scalar_product(self.differences, self.search_directions)
 				self.beta = self.beta_numerator / self.beta_denominator
 				
 			elif self.cg_method == 'DY':
-				self.beta_numerator = fenics.assemble(fenics.inner(self.gradient, self.gradient)*self.optimization_problem.control_measure)
-				self.beta_denominator = fenics.assemble(fenics.inner(self.search_direction, self.gradient - self.gradient_prev)*self.optimization_problem.control_measure)
+				for i in range(len(self.gradients)):
+					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				
+				self.beta_numerator = self.scalar_product(self.gradients, self.gradients)
+				self.beta_denominator = self.scalar_product(self.search_directions, self.differences)
 				self.beta = self.beta_numerator / self.beta_denominator
 			
 			elif self.cg_method == 'CD':
-				self.beta_numerator = fenics.assemble(fenics.inner(self.gradient, self.gradient)*self.optimization_problem.control_measure)
-				self.beta_denominator = -fenics.assemble(fenics.inner(self.search_direction, self.gradient)*self.optimization_problem.control_measure)
+				self.beta_numerator = self.scalar_product(self.gradients, self.gradients)
+				self.beta_denominator = self.scalar_product(self.search_directions, self.gradients)
 				self.beta = self.beta_numerator / self.beta_denominator
 				
 			elif self.cg_method == 'HZ':
-				dy = fenics.assemble(fenics.inner(self.search_direction, self.gradient - self.gradient_prev)*self.optimization_problem.control_measure)
-				y2 = fenics.assemble(fenics.inner(self.gradient - self.gradient_prev, self.gradient - self.gradient_prev)*self.optimization_problem.control_measure)
-				self.beta = fenics.assemble(fenics.inner(self.gradient - self.gradient_prev - 2*self.search_direction*fenics.Constant(y2/dy),
-														 self.gradient/fenics.Constant(dy))*self.optimization_problem.control_measure)
+				for i in range(len(self.gradients)):
+					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				
+				dy = self.scalar_product(self.search_directions, self.differences)
+				y2 = self.scalar_product(self.differences, self.differences)
+				
+				for i in range(len(self.gradients)):
+					self.differences[i].vector()[:] = self.differences[i].vector()[:] - 2*y2/dy*self.search_directions[i].vector()[:]
+				
+				self.beta = self.scalar_product(self.differences, self.gradients)/dy
 			
 			else:
 				raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
 			
-			if self.restart < 2:
-				self.search_direction.vector()[:] = -self.gradient.vector()[:] + self.beta*self.search_direction.vector()[:]
+			if self.restart < 10:
+				for i in range(len(self.gradients)):
+					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:] + self.beta*self.search_directions[i].vector()[:]
 				# self.restart += 1
 			else:
-				self.search_direction.vector()[:] = -self.gradient.vector()[:]
+				for i in range(len(self.gradients)):
+					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 				self.restart = 0
 			
 			self.iteration += 1

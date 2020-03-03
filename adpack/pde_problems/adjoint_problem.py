@@ -26,8 +26,8 @@ class AdjointProblem:
 		self.state_problem = state_problem
 		
 		self.config = self.form_handler.config
-		self.adjoint = self.form_handler.adjoint
-		self.bcs_ad = self.form_handler.bcs_ad
+		self.adjoints = self.form_handler.adjoints
+		self.bcs_list_ad = self.form_handler.bcs_list_ad
 		
 		self.number_of_solves = 0
 		self.has_solution = False
@@ -47,10 +47,11 @@ class AdjointProblem:
 		self.state_problem.solve()
 
 		if not self.has_solution:
-			a, L = fenics.system(self.form_handler.adjoint_eq_form)
-			fenics.solve(a==L, self.adjoint, self.bcs_ad)
+			for i in range(self.form_handler.state_dim):
+				a, L = fenics.system(self.form_handler.adjoint_eq_forms[-1-i])
+				fenics.solve(a==L, self.adjoints[-1-i], self.bcs_list_ad[-1-i])
 		
 			self.has_solution = True
 			self.number_of_solves += 1
 		
-		return self.adjoint
+		return self.adjoints

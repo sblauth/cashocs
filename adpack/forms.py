@@ -6,148 +6,152 @@ Created on 24/02/2020, 08.45
 
 import fenics
 from ufl import replace
+from .helpers import summ
 
 
 
 class Lagrangian:
 	
-	def __init__(self, state_form, cost_functional_form):
+	def __init__(self, state_forms, cost_functional_form):
 		"""
 		A class that implements a Lagrangian, i.e., the sum of (reduced) cost functional and state constraint
 		
 		Parameters
 		----------
-		state_form : ufl.form.Form
-			the weak form of the state equation, as implemented by the user
+		state_forms : List[ufl.form.Form]
+			the weak forms of the state equation, as implemented by the user, either directly as one single form or a list of forms
 		cost_functional_form : ufl.form.Form
 			the cost functional, as implemented by the user
 		"""
 		
-		self.state_form = state_form
-		self.cost_functional_form =  cost_functional_form
+		self.state_forms = state_forms
+		self.cost_functional_form = cost_functional_form
 
-		self.form = self.cost_functional_form + self.state_form
-	
-
-
-
-
+		self.lagrangian_form = self.cost_functional_form + summ(self.state_forms)
+		
+		
+		
+		
+		
 class FormHandler:
 
-	def __init__(self, lagrangian, bcs, control_measure, state, control, adjoint, config):
+	def __init__(self, lagrangian, bcs_list, control_measures, states, controls, adjoints, config):
 		"""The form handler implements all form manipulations needed in order to compute adjoint equations, sensitvities, etc.
 		
 		Parameters
 		----------
 		lagrangian : Lagrangian
 			the lagrangian corresponding to the optimization problem
-		bcs : dolfin.fem.dirichletbc.DirichletBC
+		bcs_list : List[List]
 			the list of DirichletBCs for the state equation
-		control_measure : ufl.measure.Measure
+		control_measures : List[ufl.measure.Measure]
 			the measure corresponding to the domain of the control
-		state : dolfin.function.function.Function
+		states : List[dolfin.function.function.Function]
 			the function that acts as the state variable
-		control : dolfin.function.function.Function
+		controls : List[dolfin.function.function.Function]
 			the function that acts as the control variable
-		adjoint : dolfin.function.function.Function
+		adjoints : List[dolfin.function.function.Function]
 			the function that acts as the adjoint variable
 		config : configparser.ConfigParser
 			the configparser object of the config file
 		"""
 		
 		self.lagrangian = lagrangian
-		self.bcs = bcs
-		self.control_measure = control_measure
-		self.state = state
-		self.control = control
-		self.adjoint = adjoint
+		self.bcs_list = bcs_list
+		self.control_measures = control_measures
+		self.states = states
+		self.controls = controls
+		self.adjoints = adjoints
 		self.config = config
 		
-		
 		self.cost_functional_form = self.lagrangian.cost_functional_form
-		self.state_form = self.lagrangian.state_form
+		self.state_forms = self.lagrangian.state_forms
 		
-		self.state_space = self.state.function_space()
-		self.control_space = self.control.function_space()
-		self.mesh = self.state_space.mesh()
+		self.state_dim = len(self.states)
+		self.control_dim = len(self.controls)
+		
+		self.state_spaces = [x.function_space() for x in self.states]
+		self.control_spaces = [x.function_space() for x in self.controls]
+		self.mesh = self.state_spaces[0].mesh()
 		self.dx = fenics.Measure('dx', self.mesh)
 		
-		self.state_prime = fenics.Function(self.state_space)
-		self.adjoint_prime = fenics.Function(self.state_space)
+		self.states_prime = [fenics.Function(V) for V in self.state_spaces]
+		self.adjoints_prime = [fenics.Function(V) for V in self.state_spaces]
 		
-		self.hessian_action = fenics.Function(self.control_space)
+		self.hessian_actions = [fenics.Function(V) for V in self.control_spaces]
 		
-		self.arg_state1 = fenics.Function(self.state_space)
-		self.arg_state2 = fenics.Function(self.state_space)
+		self.arg_state1 = [fenics.Function(V) for V in self.state_spaces]
+		self.arg_state2 = [fenics.Function(V) for V in self.state_spaces]
 		
-		self.arg_control1 = fenics.Function(self.control_space)
-		self.arg_control2 = fenics.Function(self.control_space)
+		self.arg_control1 = [fenics.Function(V) for V in self.control_spaces]
+		self.arg_control2 = [fenics.Function(V) for V in self.control_spaces]
 		
-		self.test_direction = fenics.Function(self.control_space)
+		self.test_directions = [fenics.Function(V) for V in self.control_spaces]
 		
-		self.trial_function_state = fenics.TrialFunction(self.state_space)
-		self.test_function_state = fenics.TestFunction(self.state_space)
+		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
+		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
 		
-		self.trial_function_control = fenics.TrialFunction(self.control_space)
-		self.test_function_control = fenics.TestFunction(self.control_space)
+		self.trial_functions_control = [fenics.TrialFunction(V) for V in self.control_spaces]
+		self.test_functions_control = [fenics.TestFunction(V) for V in self.control_spaces]
 		
-		self.compute_state_equation()
-		self.compute_adjoint_equation()
-		self.compute_gradient_equation()
+		self.compute_state_equations()
+		self.compute_adjoint_equations()
+		self.compute_gradient_equations()
 		self.compute_newton_forms()
 		
 	
 	
-	def compute_state_equation(self):
+	def compute_state_equations(self):
 		"""Compute the weak form of the state equation for the use with fenics
 		
 		Returns
 		-------
-		None
-			But creates self.state_eq_form
+		
+			Creates self.state_eq_forms
 
 		"""
 		
-		self.state_eq_form = fenics.derivative(self.lagrangian.form, self.adjoint, self.test_function_state)
+		self.state_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		
 		if self.config.getboolean('StateEquation', 'is_linear'):
-			self.state_eq_form = replace(self.state_eq_form, {self.state : self.trial_function_state})
-			
+			for i in range(self.state_dim):
+				self.state_eq_forms[i] = replace(self.state_eq_forms[i], {self.states[i] : self.trial_functions_state[i]})
 	
 	
 	
-	def compute_adjoint_equation(self):
+	def compute_adjoint_equations(self):
 		"""Computes the weak form of the adjoint equation for use with fenics
 		
 		Returns
 		-------
-		None
-			But creates self.adjoint_eq_form and self.bcs_ad, corresponding to homogenized BCs
+		
+			Creates self.adjoint_eq_form and self.bcs_ad, corresponding to homogenized BCs
 
 		"""
 		
-		self.adjoint_eq_form = fenics.derivative(self.lagrangian.form, self.state, self.trial_function_state)
-		self.adjoint_eq_form = replace(self.adjoint_eq_form, {self.adjoint : self.test_function_state})
-		self.adjoint_eq_form = fenics.adjoint(self.adjoint_eq_form)
+		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		
-		self.bcs_ad = [fenics.DirichletBC(bc) for bc in self.bcs]
-		[bc.homogenize() for bc in self.bcs_ad]
+		for i in range(self.state_dim):
+			self.adjoint_eq_forms[i] = replace(self.adjoint_eq_forms[i], {self.adjoints[i] : self.trial_functions_state[i]})
+			
+		self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
+		[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
 	
 	
 	
-	def compute_gradient_equation(self):
+	def compute_gradient_equations(self):
 		"""Computes the variational form of the gradient equation, for the Riesz projection
 		
 		Returns
 		-------
-		None
-			but creates self.gradient_form_lhs and self.gradient_form_rhs
+		
+			Creates self.gradient_form_lhs and self.gradient_form_rhs
 
 		"""
 		
-		self.gradient_form_lhs = fenics.inner(self.trial_function_control, self.test_function_control)*self.control_measure
-		self.gradient_form_rhs = fenics.derivative(self.lagrangian.form, self.control, self.test_function_control)
-	
+		self.gradient_forms_lhs = [fenics.inner(self.trial_functions_control[i], self.test_functions_control[i])*self.control_measures[i] for i in range(self.control_dim)]
+		self.gradient_forms_rhs = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
+
 	
 	
 	def compute_newton_forms(self):
@@ -155,38 +159,61 @@ class FormHandler:
 		
 		Returns
 		-------
-		None
+		
 
 		"""
 		
-		self.sensitivity_eq_lhs = fenics.derivative(self.state_form, self.state, self.trial_function_state)
-		self.sensitivity_eq_lhs = replace(self.sensitivity_eq_lhs, {self.adjoint : self.test_function_state})
-		
-		self.sensitivity_eq_rhs = fenics.derivative(self.state_form, self.control, self.test_direction)
-		self.sensitivity_eq_rhs = replace(self.sensitivity_eq_rhs, {self.adjoint : self.test_function_state})
-		self.sensitivity_eq_rhs = -self.sensitivity_eq_rhs
-		
-		
-		self.L_y = fenics.derivative(self.lagrangian.form, self.state, self.arg_state1)
-		self.L_u = fenics.derivative(self.lagrangian.form, self.control, self.arg_control1)
-		
-		self.L_yy = fenics.derivative(self.L_y, self.state, self.arg_state2)
-		self.L_yu = fenics.derivative(self.L_u, self.state, self.arg_state2)
-		self.L_uy = fenics.derivative(self.L_y, self.control, self.arg_control2)
-		self.L_uu = fenics.derivative(self.L_u, self.control, self.arg_control2)
-		
-		self.w_1 = replace(self.L_yy, {self.arg_state2 : self.state_prime, self.arg_state1 : self.test_function_state}) \
-			  + replace(self.L_uy, {self.arg_control2 : self.test_direction, self.arg_state1 : self.test_function_state})
-		self.w_2 = replace(self.L_yu, {self.arg_state2 : self.state_prime, self.arg_control1 : self.test_function_control}) \
-				   + replace(self.L_uu, {self.arg_control2 : self.test_direction, self.arg_control1 : self.test_function_control})
-		
-		
-		self.adjoint_sensitivity_lhs = fenics.adjoint(self.sensitivity_eq_lhs)
-		
-		self.adjoint_sensitivity_rhs = fenics.derivative(self.state_form, self.control, self.arg_control1)
-		self.w_3 = replace(self.adjoint_sensitivity_rhs, {self.arg_control1 : self.test_function_control, self.adjoint : self.adjoint_prime})
-		self.w_3 = -self.w_3
+		self.sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.trial_functions_state[i]) for i in range(self.state_dim)]
+		for i in range(self.state_dim):
+			self.sensitivity_eqs_lhs[i] = replace(self.sensitivity_eqs_lhs[i], {self.adjoints[i] : self.test_functions_state[i]})
+		if self.state_dim > 1:
+			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.state_forms[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim) if j != i])
+										- summ([fenics.derivative(self.state_forms[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
+										for i in range(self.state_dim)]
+		else:
+			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.state_forms[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
+										for i in range(self.state_dim)]
+			
+		for i in range(self.state_dim):
+			self.sensitivity_eqs_rhs[i] = replace(self.sensitivity_eqs_rhs[i], {self.adjoints[i] : self.test_functions_state[i]})
+
+
+		self.L_y = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.L_u = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
+
+		self.L_yy = [[fenics.derivative(self.L_y[i], self.states[j], self.arg_state2[j]) for j in range(self.state_dim)] for i in range(self.state_dim)]
+		self.L_yu = [[fenics.derivative(self.L_u[i], self.states[j], self.arg_state2[j]) for j in range(self.state_dim)] for i in range(self.control_dim)]
+		self.L_uy = [[fenics.derivative(self.L_y[i], self.controls[j], self.arg_control2[j]) for j in range(self.control_dim)] for i in range(self.state_dim)]
+		self.L_uu = [[fenics.derivative(self.L_u[i], self.controls[j], self.arg_control2[j]) for j in range(self.control_dim)] for i in range(self.control_dim)]
 		
 		
-		self.hessian_lhs = fenics.inner(self.trial_function_control, self.test_function_control)*self.control_measure
-		self.hessian_rhs = self.w_2 + self.w_3
+		self.w_1 = [summ([replace(self.L_yy[i][j], {self.arg_state2[j] : self.states_prime[j]}) for j in range(self.state_dim)])
+					+ summ([replace(self.L_uy[i][j] , {self.arg_control2[j] : self.test_directions[j]}) for j in range(self.control_dim)])
+					for i in range(self.state_dim)]
+		self.w_2 = [summ([replace(self.L_yu[i][j], {self.arg_state2[j] : self.states_prime[j]}) for j in range(self.state_dim)])
+					+ summ([replace(self.L_uu[i][j], {self.arg_control2[j] : self.test_directions[j]}) for j in range(self.control_dim)])
+					for i in range(self.control_dim)]
+		
+		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		
+		if self.state_dim > 1:
+			for i in range(self.state_dim):
+				self.adjoint_sensitivity_eqs_lhs[i] = replace(self.adjoint_sensitivity_eqs_lhs[i], {self.adjoints[i] : self.trial_functions_state[i]})
+				
+				self.w_1[i] -= summ([replace(fenics.derivative(self.state_forms[j], self.states[i], self.test_functions_state[i]),
+											 {self.adjoints[j] : self.adjoints_prime[j]}) for j in range(self.state_dim) if j != i])
+		else:
+			self.adjoint_sensitivity_eqs_lhs[0] = replace(self.adjoint_sensitivity_eqs_lhs[0], {self.adjoints[0] : self.trial_functions_state[0]})
+		
+		
+		self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.state_forms[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
+											for i in range(self.control_dim)]
+		
+		for i in range(self.control_dim):
+			for j in range(self.state_dim):
+				self.adjoint_sensitivity_eqs_rhs[i] = replace(self.adjoint_sensitivity_eqs_rhs[i], {self.adjoints[j] : self.adjoints_prime[j]})
+		
+		self.w_3 = [- self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)]
+		
+		self.hessian_lhs = [fenics.inner(self.trial_functions_control[i], self.test_functions_control[i])*self.control_measures[i] for i in range(self.control_dim)]
+		self.hessian_rhs = [self.w_2[i] + self.w_3[i] for i in range(self.control_dim)]
