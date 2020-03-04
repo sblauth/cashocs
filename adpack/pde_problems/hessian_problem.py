@@ -12,7 +12,7 @@ import numpy as np
 
 class HessianProblem:
 	
-	def __init__(self, form_handler, gradient_problem):
+	def __init__(self, form_handler, gradient_problem, control_constraints):
 		"""The class that manages the computations for the Hessian in the truncated Newton method
 		
 		Parameters
@@ -25,6 +25,7 @@ class HessianProblem:
 		
 		self.form_handler = form_handler
 		self.gradient_problem = gradient_problem
+		self.control_constraints = control_constraints
 		
 		self.config = self.form_handler.config
 		self.gradients = self.gradient_problem.gradients
@@ -50,6 +51,14 @@ class HessianProblem:
 		self.q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.s_new = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.res_new = [fenics.Function(V) for V in self.form_handler.control_spaces]
+
+		self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.inactive_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.active_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.has_scales = False
+		self.precond = 1.0
+
+		self.controls = self.form_handler.controls
 		
 		self.no_sensitivity_solves = 0
 		
@@ -88,8 +97,32 @@ class HessianProblem:
 		self.no_sensitivity_solves += 2
 		
 		return self.form_handler.hessian_actions
-	
-	
+
+
+
+	def project_active(self, a, b):
+
+		for j in range(self.form_handler.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1])).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def project_inactive(self, a, b):
+
+		for j in range(self.form_handler.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
 	
 	def application_simplified(self, x):
 		"""A simplified version of the application of the Hessian.
@@ -149,10 +182,23 @@ class HessianProblem:
 			self.eps_0 = np.sqrt(self.res_norm_squared)
 			
 			for i in range(self.max_it_inner_newton):
-				self.v = self.application_simplified(self.p)
+				self.project_inactive(self.p, self.inactive_part)
+				self.v = self.application_simplified(self.inactive_part)
+				self.project_inactive(self.v, self.inactive_part)
+				self.project_active(self.p, self.active_part)
+
+				if not self.has_scales and i==0:
+					self.scale_active = np.sqrt(self.scalar_product(self.active_part, self.active_part))
+					self.scale_inactive = np.sqrt(self.scalar_product(self.inactive_part, self.inactive_part))
+					if self.scale_active*self.scale_inactive > 0:
+						self.precond = self.scale_inactive / self.scale_active
+						self.has_scales = True
+
+				for j in range(self.control_dim):
+					self.v[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 				
 				self.eps = np.sqrt(self.res_norm_squared)
-				# print('Eps (CG): ' + str(self.eps))
+				# print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance:
 					break
 				
@@ -178,11 +224,20 @@ class HessianProblem:
 				self.p_prev[j].vector()[:] = self.residual[j].vector()[:]
 			
 			self.eps_0 = np.sqrt(self.scalar_product(self.residual, self.residual))
-			
-			self.hessian_actions = self.application_simplified(self.p_prev)
+
+			self.project_inactive(self.p_prev, self.inactive_part)
+			self.hessian_actions = self.application_simplified(self.inactive_part)
+			self.project_inactive(self.hessian_actions, self.inactive_part)
+			self.project_active(self.p_prev, self.active_part)
+
+			if not self.has_scales:
+				self.scale_active = np.sqrt(self.scalar_product(self.active_part, self.active_part))
+				self.scale_inactive = np.sqrt(self.scalar_product(self.inactive_part, self.inactive_part))
+				if self.scale_active*self.scale_inactive > 0:
+					self.precond = self.scale_inactive / self.scale_active
+					self.has_scales = True
 			for j in range(self.control_dim):
-				self.s_prev[j].vector()[:] = self.hessian_actions[j].vector()[:]
-			
+				self.s_prev[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 			
 			for i in range(self.max_it_inner_newton):
 				self.alpha = self.scalar_product(self.residual, self.s_prev) / self.scalar_product(self.s_prev, self.s_prev)
@@ -192,18 +247,20 @@ class HessianProblem:
 					self.residual[j].vector()[:] -= self.alpha*self.s_prev[j].vector()[:]
 				
 				self.eps = np.sqrt(self.scalar_product(self.residual, self.residual))
-				print('Eps (minres): ' + str(self.eps))
-
+				print('Eps (minres): ' + str(self.eps / self.eps_0) + ' (rel)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton-1:
 					break
 				
 				for j in range(self.control_dim):
 					self.p[j].vector()[:] = self.s_prev[j].vector()[:]
-				
-				self.hessian_actions = self.application_simplified(self.s_prev)
+
+				self.project_inactive(self.s_prev, self.inactive_part)
+				self.hessian_actions = self.application_simplified(self.inactive_part)
+				self.project_inactive(self.hessian_actions, self.inactive_part)
+				self.project_active(self.s_prev, self.active_part)
 				for j in range(self.control_dim):
-					self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
-				
+					self.s[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+
 				self.beta = self.scalar_product(self.s, self.s_prev) / self.scalar_product(self.s_prev, self.s_prev)
 				
 				if i > 0:
@@ -234,10 +291,21 @@ class HessianProblem:
 			self.eps_0 = np.sqrt(self.scalar_product(self.residual, self.residual))
 
 			self.beta = 0
-			
-			self.hessian_actions = self.application_simplified(self.residual)
+
+			self.project_inactive(self.residual, self.inactive_part)
+			self.hessian_actions = self.application_simplified(self.inactive_part)
+			self.project_inactive(self.hessian_actions, self.inactive_part)
+			self.project_active(self.residual, self.active_part)
+
+			if not self.has_scales:
+				self.scale_active = np.sqrt(self.scalar_product(self.active_part, self.active_part))
+				self.scale_inactive = np.sqrt(self.scalar_product(self.inactive_part, self.inactive_part))
+				if self.scale_active*self.scale_inactive > 0:
+					self.precond = self.scale_inactive / self.scale_active
+					self.has_scales = True
+
 			for j in range(self.control_dim):
-				self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
+				self.s[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 
 			for i in range(self.max_it_inner_newton):
 				for j in range(self.control_dim):
@@ -251,13 +319,16 @@ class HessianProblem:
 					self.res_new[j].vector()[:] = self.residual[j].vector()[:] - self.alpha*self.q[j].vector()[:]
 
 				self.eps = np.sqrt(self.scalar_product(self.res_new, self.res_new))
-				# print('Eps (cr): ' + str(self.eps))
+				print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
-				
-				self.hessian_actions = self.application_simplified(self.res_new)
+
+				self.project_inactive(self.res_new, self.inactive_part)
+				self.hessian_actions = self.application_simplified(self.inactive_part)
+				self.project_inactive(self.hessian_actions, self.inactive_part)
+				self.project_active(self.res_new, self.active_part)
 				for j in range(self.control_dim):
-					self.s_new[j].vector()[:] = self.hessian_actions[j].vector()[:]
+					self.s_new[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 				
 				self.beta = self.scalar_product(self.res_new, self.s_new) / self.scalar_product(self.residual, self.q)
 				

@@ -38,6 +38,10 @@ class LBFGS(OptimizationAlgorithm):
 		self.armijo_stepsize_initial = self.stepsize
 		
 		self.q = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.storage_s = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.projected_difference = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
@@ -46,6 +50,8 @@ class LBFGS(OptimizationAlgorithm):
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
 		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors')
 		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling')
+
+		self.control_constraints = self.optimization_problem.control_constraints
 		
 		if self.memory_vectors > 0:
 			self.history_s = deque()
@@ -99,8 +105,43 @@ class LBFGS(OptimizationAlgorithm):
 		"""
 		
 		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
-	
-	
+
+
+
+	def project_active(self, a, b):
+
+		for j in range(self.form_handler.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1])).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def project_inactive(self, a, b):
+
+		for j in range(self.form_handler.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def project(self, a):
+
+		self.control_constraints = self.optimization_problem.control_constraints
+
+		for j in range(self.form_handler.control_dim):
+			a[j].vector()[:] = np.maximum(self.control_constraints[j][0], np.minimum(self.control_constraints[j][1], a[j].vector()[:]))
+
+		return a
+
+
 	
 	def compute_search_direction(self, grad):
 		"""Computes the search direction for the BFGS method with the so-called double loop
@@ -121,6 +162,8 @@ class LBFGS(OptimizationAlgorithm):
 			history_alpha = deque()
 			for j in range(len(self.controls)):
 				self.q[j].vector()[:] = grad[j].vector()[:]
+
+			self.project_inactive(self.q, self.q)
 				
 			for i, _ in enumerate(self.history_s):
 				alpha = self.history_rho[i]*self.bfgs_scalar_product(self.history_s[i], self.q)
@@ -135,14 +178,19 @@ class LBFGS(OptimizationAlgorithm):
 			
 			for j in range(len(self.controls)):
 				self.q[j].vector()[:] *= factor
+
+			self.project_inactive(self.q, self.q)
 			
 			for i, _ in enumerate(self.history_s):
 				beta = self.history_rho[-1 - i]*self.bfgs_scalar_product(self.history_y[-1 - i], self.q)
 				
 				for j in range(len(self.controls)):
 					self.q[j].vector()[:] += self.history_s[-1 - i][j].vector()[:]*(history_alpha[-1 - i] - beta)
-			
+
+			self.project_inactive(self.q, self.q)
+			self.project_active(self.gradients, self.temp)
 			for j in range(len(self.controls)):
+				self.q[j].vector()[:] += self.temp[j].vector()[:]
 				self.q[j].vector()[:] *= -1
 		
 		else:
@@ -150,8 +198,22 @@ class LBFGS(OptimizationAlgorithm):
 				self.q[j].vector()[:] = - grad[j].vector()[:]
 		
 		return self.q
-	
-	
+
+
+
+	def stationary_measure_squared(self):
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+		self.project(self.projected_difference)
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+		return self.bfgs_scalar_product(self.projected_difference, self.projected_difference)
+
+
 	
 	def run(self):
 		"""Performs the optimization via the limited memory BFGS method
@@ -168,7 +230,8 @@ class LBFGS(OptimizationAlgorithm):
 		
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+		self.gradient_norm_squared = self.stationary_measure_squared()
+		# self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 		
@@ -195,11 +258,16 @@ class LBFGS(OptimizationAlgorithm):
 				
 				for i in range(len(self.controls)):
 					self.controls[i].vector()[:] += self.stepsize*self.search_directions[i].vector()[:]
-				
+
+				self.project(self.controls)
+
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
-				
-				if self.objective_step < self.objective_value + self.epsilon_armijo*self.stepsize*self.directional_derivative:
+
+				for j in range(self.form_handler.control_dim):
+					self.projected_difference[j].vector()[:] = self.controls_temp[j].vector()[:] - self.controls[j].vector()[:]
+
+				if self.objective_step < self.objective_value - self.epsilon_armijo*self.bfgs_scalar_product(self.gradients, self.projected_difference):
 					if self.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
 					break
@@ -224,14 +292,19 @@ class LBFGS(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 			
-			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+			self.gradient_norm_squared = self.stationary_measure_squared()
+			# self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):
-					self.y_k[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
-					self.s_k[i].vector()[:] = self.stepsize*self.search_directions[i].vector()[:]
+					self.storage_y[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+					self.storage_s[i].vector()[:] = self.stepsize*self.search_directions[i].vector()[:]
+
+				self.project_inactive(self.storage_y, self.y_k)
+				self.project_inactive(self.storage_s, self.s_k)
+
 				self.history_y.appendleft([x.copy(True) for x in self.y_k])
 				self.history_s.appendleft([x.copy(True) for x in self.s_k])
 				rho = 1/self.bfgs_scalar_product(self.y_k, self.s_k)

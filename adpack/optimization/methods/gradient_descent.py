@@ -7,6 +7,7 @@ Created on 24/02/2020, 09.33
 import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
+from ...helpers import summ
 
 
 
@@ -40,6 +41,9 @@ class GradientDescent(OptimizationAlgorithm):
 		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
+
+		self.projected_difference = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+
 		
 		self.armijo_broken = False
 
@@ -66,6 +70,52 @@ class GradientDescent(OptimizationAlgorithm):
 			print(output)
 
 
+
+	def project(self, a):
+
+		self.control_constraints = self.optimization_problem.control_constraints
+
+		for j in range(self.form_handler.control_dim):
+			a[j].vector()[:] = np.maximum(self.control_constraints[j][0], np.minimum(self.control_constraints[j][1], a[j].vector()[:]))
+
+		return a
+
+
+
+	def stationary_measure_squared(self):
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+		self.project(self.projected_difference)
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+		return self.scalar_product(self.projected_difference, self.projected_difference)
+
+
+
+	def scalar_product(self, a, b):
+		"""Implements the scalar product needed for the algorithm
+
+		Parameters
+		----------
+		a : List[dolfin.function.function.Function]
+			The first input
+		b : List[dolfin.function.function.Function]
+			The second input
+
+		Returns
+		-------
+		 : float
+			The value of the scalar product
+
+		"""
+
+		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.gradients))])
+
+
 	
 	def run(self):
 		"""Performs the optimization via the gradient descent method
@@ -82,7 +132,7 @@ class GradientDescent(OptimizationAlgorithm):
 		
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+		self.gradient_norm_squared = self.stationary_measure_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		
 		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
@@ -106,11 +156,12 @@ class GradientDescent(OptimizationAlgorithm):
 				
 				for i in range(len(self.controls)):
 					self.controls[i].vector()[:] -= self.stepsize*self.gradients[i].vector()[:]
-				
+
+				self.project(self.controls)
+
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
-				
-				
+
 				if self.objective_step < self.objective_value - self.epsilon_armijo*self.stepsize*self.gradient_norm_squared:
 					if self.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
@@ -132,7 +183,7 @@ class GradientDescent(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 			
-			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+			self.gradient_norm_squared = self.stationary_measure_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			

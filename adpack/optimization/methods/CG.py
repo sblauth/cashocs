@@ -50,6 +50,7 @@ class CG(OptimizationAlgorithm):
 		
 		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.projected_difference = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		
 		self.armijo_broken = False
 	
@@ -74,8 +75,42 @@ class CG(OptimizationAlgorithm):
 		
 		if self.verbose:
 			print(output)
-	
-	
+
+
+
+	def project(self, a):
+
+		self.control_constraints = self.optimization_problem.control_constraints
+
+		for j in range(self.form_handler.control_dim):
+			a[j].vector()[:] = np.maximum(self.control_constraints[j][0], np.minimum(self.control_constraints[j][1], a[j].vector()[:]))
+
+		return a
+
+
+
+	def project_direction(self, a):
+		self.control_constraints = self.optimization_problem.control_constraints
+
+		for j in range(self.form_handler.control_dim):
+			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			a[j].vector()[idx] = -self.gradients[j].vector()[idx]
+
+
+
+	def stationary_measure_squared(self):
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+		self.project(self.projected_difference)
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+		return self.scalar_product(self.projected_difference, self.projected_difference)
+
+
 	
 	def scalar_product(self, a, b):
 		"""Implements the scalar product needed for the algorithm
@@ -116,8 +151,8 @@ class CG(OptimizationAlgorithm):
 		
 		for i in range(len(self.gradients)):
 			self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
-			
-		self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+
+		self.gradient_norm_squared = self.stationary_measure_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		
 		self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
@@ -129,7 +164,8 @@ class CG(OptimizationAlgorithm):
 			
 			for i in range(len(self.gradients)):
 				self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
-			
+
+			self.project_direction(self.search_directions)
 			self.directional_derivative = self.scalar_product(self.gradients, self.search_directions)
 			
 			if self.directional_derivative >= 0:
@@ -150,11 +186,16 @@ class CG(OptimizationAlgorithm):
 				
 				for i in range(len(self.controls)):
 					self.controls[i].vector()[:] += self.stepsize*self.search_directions[i].vector()[:]
+
+				self.project(self.controls)
 				
 				self.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.compute()
-				
-				if self.objective_step < self.objective_value + self.epsilon_armijo*self.stepsize*self.directional_derivative:
+
+				for j in range(self.form_handler.control_dim):
+					self.projected_difference[j].vector()[:] = self.controls_temp[j].vector()[:] - self.controls[j].vector()[:]
+
+				if self.objective_step < self.objective_value - self.epsilon_armijo*self.scalar_product(self.gradients, self.projected_difference):
 					if self.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
 					break
@@ -175,7 +216,8 @@ class CG(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 			
-			self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
+			self.gradient_norm_squared = self.stationary_measure_squared()
+			# self.gradient_norm_squared = self.gradient_problem.return_norm_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			self.gradient_norm_inf = np.max([np.max(np.abs(self.gradients[i].vector()[:])) for i in range(len(self.gradients))])
 			
@@ -228,7 +270,7 @@ class CG(OptimizationAlgorithm):
 			
 			else:
 				raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
-			
+
 			if self.restart < 10:
 				for i in range(len(self.gradients)):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:] + self.beta*self.search_directions[i].vector()[:]
@@ -245,7 +287,7 @@ class CG(OptimizationAlgorithm):
 				break
 			
 			self.stepsize *= self.beta_armijo
-			
+
 		print('')
 		print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 			  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')

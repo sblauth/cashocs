@@ -19,7 +19,7 @@ from .methods.newton import Newton
 
 class OptimizationProblem:
 	
-	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config):
+	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config, control_constraints=None):
 		"""The implementation of the optimization problem, used to generate all other classes and functionality. Also used to solve the problem.
 		
 		Parameters
@@ -40,6 +40,8 @@ class OptimizationProblem:
 			the adjoint variable
 		config : configparser.ConfigParser
 			the config file for the problem
+		control_constraints : List[dolfin.function.function.Function] or List[float] or List[List]
+			Box constraints posed on the control
 		"""
 		
 		### Overloading, such that we do not have to use lists for single state single control
@@ -76,6 +78,16 @@ class OptimizationProblem:
 			self.adjoints = [adjoints]
 		
 		self.config = config
+
+		if control_constraints is None:
+			self.control_constraints = []
+			for j in range(len(self.controls)):
+				self.control_constraints.append([float('-inf'), float('inf')])
+		else:
+			if type(control_constraints) == list and type(control_constraints[0]) == list:
+				self.control_constraints = control_constraints
+			else:
+				self.control_constraints = [control_constraints]
 		
 		self.state_dim = len(self.state_forms)
 		self.control_dim = len(self.controls)
@@ -84,6 +96,7 @@ class OptimizationProblem:
 		assert len(self.control_measures) == self.control_dim, 'Length of controls does not match'
 		assert len(self.states) == self.state_dim, 'Length of states does not match'
 		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
+		assert len(self.control_constraints) == self.control_dim, 'Length of controls does not match'
 		### end overloading
 		
 		self.state_spaces = [x.function_space() for x in self.states]
@@ -97,7 +110,7 @@ class OptimizationProblem:
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 		
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'newton':
-			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
 			
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
