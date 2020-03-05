@@ -4,6 +4,7 @@ Created on 26/02/2020, 11.13
 @author: blauths
 """
 
+import fenics
 from ..forms import Lagrangian, FormHandler
 from ..pde_problems.state_problem import StateProblem
 from ..pde_problems.adjoint_problem import AdjointProblem
@@ -103,8 +104,10 @@ class OptimizationProblem:
 		self.control_spaces = [x.function_space() for x in self.controls]
 		
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.control_measures, self.states, self.controls, self.adjoints, self.config)
-		
+		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.control_measures, self.states, self.controls, self.adjoints, self.config, self.control_constraints)
+
+		self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
+
 		self.state_problem = StateProblem(self.form_handler)
 		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
@@ -115,8 +118,23 @@ class OptimizationProblem:
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
 		self.gradients = self.gradient_problem.gradients
-		
-		
+		self.objective_value = 1.0
+
+
+
+	def stationary_measure_squared(self):
+
+		for j in range(self.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+		self.form_handler.project(self.projected_difference)
+
+		for j in range(self.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+		return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
+
+
 		
 	def solve(self):
 		"""Solves the optimization problem by the method specified in the config file. See adpack.optimization.methds for details on the implemented solution methods

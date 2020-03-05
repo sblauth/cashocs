@@ -7,6 +7,7 @@ Created on 24/02/2020, 08.45
 import fenics
 from ufl import replace
 from .helpers import summ
+import numpy as np
 
 
 
@@ -35,7 +36,7 @@ class Lagrangian:
 		
 class FormHandler:
 
-	def __init__(self, lagrangian, bcs_list, control_measures, states, controls, adjoints, config):
+	def __init__(self, lagrangian, bcs_list, control_measures, states, controls, adjoints, config, control_constraints):
 		"""The form handler implements all form manipulations needed in order to compute adjoint equations, sensitvities, etc.
 		
 		Parameters
@@ -63,6 +64,7 @@ class FormHandler:
 		self.controls = controls
 		self.adjoints = adjoints
 		self.config = config
+		self.control_constraints = control_constraints
 		
 		self.cost_functional_form = self.lagrangian.cost_functional_form
 		self.state_forms = self.lagrangian.state_forms
@@ -93,14 +95,70 @@ class FormHandler:
 		
 		self.trial_functions_control = [fenics.TrialFunction(V) for V in self.control_spaces]
 		self.test_functions_control = [fenics.TestFunction(V) for V in self.control_spaces]
-		
+
+		self.temp = [fenics.Function(V) for V in self.control_spaces]
+
 		self.compute_state_equations()
 		self.compute_adjoint_equations()
 		self.compute_gradient_equations()
 		self.compute_newton_forms()
-		
+
+
+
+	def scalar_product(self, a, b):
+		"""Implements the scalar product needed for the algorithms
+
+		Parameters
+		----------
+		a : List[dolfin.function.function.Function]
+			The first input
+		b : List[dolfin.function.function.Function]
+			The second input
+
+		Returns
+		-------
+		 : float
+			The value of the scalar product
+
+		"""
+
+		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.control_measures[i]) for i in range(self.control_dim)])
+
+
+
+	def project_active(self, a, b):
+
+		for j in range(self.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1])).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def project_inactive(self, a, b):
+
+		for j in range(self.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def project(self, a):
+
+		for j in range(self.control_dim):
+			a[j].vector()[:] = np.maximum(self.control_constraints[j][0], np.minimum(self.control_constraints[j][1], a[j].vector()[:]))
+
+		return a
 	
-	
+
+
 	def compute_state_equations(self):
 		"""Compute the weak form of the state equation for the use with fenics
 		
