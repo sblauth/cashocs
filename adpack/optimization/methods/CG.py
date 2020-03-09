@@ -50,7 +50,9 @@ class CG(OptimizationAlgorithm):
 		self.control_constraints = self.optimization_problem.control_constraints
 
 		for j in range(self.form_handler.control_dim):
-			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			# idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
+			idx = np.asarray(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1])).nonzero()[0]
+
 			a[j].vector()[idx] = -self.gradients[j].vector()[idx]
 
 	

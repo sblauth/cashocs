@@ -122,9 +122,9 @@ class LBFGS(OptimizationAlgorithm):
 		self.gradient_problem.solve()
 		self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+		self.form_handler.compute_active_sets()
 
 		while self.relative_norm > self.tolerance:
-
 			self.search_directions = self.compute_search_direction(self.gradients)
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
@@ -145,6 +145,7 @@ class LBFGS(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
+			self.form_handler.compute_active_sets()
 			
 			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial

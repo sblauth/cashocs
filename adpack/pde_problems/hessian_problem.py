@@ -47,11 +47,11 @@ class HessianProblem:
 		self.s_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.s_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.q = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.r_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 		self.inactive_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.active_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.has_scales = False
-		self.precond = 1.0
 
 		self.controls = self.form_handler.controls
 		
@@ -130,7 +130,8 @@ class HessianProblem:
 			the Newton increment
 
 		"""
-		
+
+		self.form_handler.compute_active_sets()
 		
 		for j in range(self.control_dim):
 			self.delta_control[j].vector()[:] = 0.0
@@ -148,115 +149,28 @@ class HessianProblem:
 			
 			for i in range(self.max_it_inner_newton):
 				self.form_handler.project_inactive(self.p, self.inactive_part)
-				self.v = self.application_simplified(self.inactive_part)
-				self.form_handler.project_inactive(self.v, self.inactive_part)
+				self.hessian_actions = self.application_simplified(self.inactive_part)
+				self.form_handler.project_inactive(self.hessian_actions, self.inactive_part)
 				self.form_handler.project_active(self.p, self.active_part)
 
-				if not self.has_scales and i==0:
-					self.scale_active = np.sqrt(self.form_handler.scalar_product(self.active_part, self.active_part))
-					self.scale_inactive = np.sqrt(self.form_handler.scalar_product(self.inactive_part, self.inactive_part))
-					if self.scale_active*self.scale_inactive > 0:
-						self.precond = self.scale_inactive / self.scale_active
-						self.has_scales = True
-
 				for j in range(self.control_dim):
-					self.v[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+					self.q[j].vector()[:] = self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 				
 				self.eps = np.sqrt(self.res_norm_squared)
 				# print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance:
 					break
 				
-				self.alpha = self.res_norm_squared / self.form_handler.scalar_product(self.p, self.v)
+				self.alpha = self.res_norm_squared / self.form_handler.scalar_product(self.p, self.q)
 				for j in range(self.control_dim):
 					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
-					self.residual[j].vector()[:] -= self.alpha*self.v[j].vector()[:]
+					self.residual[j].vector()[:] -= self.alpha*self.q[j].vector()[:]
 				
 				self.res_norm_squared = self.form_handler.scalar_product(self.residual, self.residual)
 				self.beta = self.res_norm_squared / pow(self.eps, 2)
 				
 				for j in range(self.control_dim):
 					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
-
-
-		# elif self.inner_newton == 'minres':
-		#
-		# 	self.v = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.v_hat = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.v_old = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.Av = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.w = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.w_old = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		# 	self.w_oold = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		#
-		#
-		# 	for j in range(self.control_dim):
-		# 		self.v_hat[j].vector()[:] = -self.gradients[j].vector()[:]
-		#
-		# 	self.beta = np.sqrt(self.form_handler.scalar_product(self.v_hat, self.v_hat))
-		#
-		# 	self.c = 1.0
-		# 	self.c_old = 1.0
-		# 	self.s_old = 0.0
-		# 	self.s = 0.0
-		# 	self.eta = self.beta
-		#
-		# 	self.eps_0 = self.beta
-		# 	self.eps = self.beta
-		#
-		# 	for i in range(self.max_it_inner_newton):
-		# 		for j in range(self.control_dim):
-		# 			self.v_old[j].vector()[:] = self.v[j].vector()[:]
-		# 			self.v[j].vector()[:] = self.v_hat[j].vector()[:] / self.beta
-		#
-		# 		self.form_handler.project_inactive(self.v, self.inactive_part)
-		# 		self.hessian_actions = self.application_simplified(self.inactive_part)
-		# 		self.form_handler.project_inactive(self.hessian_actions, self.inactive_part)
-		# 		self.form_handler.project_active(self.v, self.active_part)
-		#
-		# 		if not self.has_scales and i==0:
-		# 			self.scale_active = np.sqrt(self.form_handler.scalar_product(self.active_part, self.active_part))
-		# 			self.scale_inactive = np.sqrt(self.form_handler.scalar_product(self.inactive_part, self.inactive_part))
-		# 			if self.scale_active*self.scale_inactive > 0:
-		# 				self.precond = self.scale_inactive / self.scale_active
-		# 				self.has_scales = True
-		#
-		# 		for j in range(self.control_dim):
-		# 			self.Av[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
-		#
-		# 		self.alpha = self.form_handler.scalar_product(self.v, self.Av)
-		#
-		# 		for j in range(self.control_dim):
-		# 			self.v_hat[j].vector()[:] = self.Av[j].vector()[:] - self.alpha*self.v[j].vector()[:] - self.beta*self.v_old[j].vector()[:]
-		#
-		# 		self.beta_old = self.beta
-		# 		self.beta = np.sqrt(self.form_handler.scalar_product(self.v_hat, self.v_hat))
-		#
-		# 		self.c_oold = self.c_old
-		# 		self.c_old = self.c
-		# 		self.s_oold = self.s_old
-		# 		self.s_old = self.s
-		#
-		# 		self.r1_hat = self.c_old*self.alpha - self.c_oold*self.s_old*self.beta_old
-		# 		self.r1 = np.sqrt(pow(self.r1_hat, 2) + pow(self.beta, 2))
-		# 		self.r2 = self.s_old*self.alpha + self.c_oold*self.c_old*self.beta_old
-		# 		self.r3 = self.s_oold*self.beta_old
-		#
-		# 		self.c = self.r1_hat / self.r1
-		# 		self.s = self.beta / self.r1
-		#
-		# 		for j in range(self.control_dim):
-		# 			self.w_oold[j].vector()[:] = self.w_old[j].vector()[:]
-		# 			self.w_old[j].vector()[:] = self.w[j].vector()[:]
-		# 			self.w[j].vector()[:] = (self.v[j].vector()[:] - self.r3*self.w_oold[j].vector()[:] - self.r2*self.w_old[j].vector()[:]) / self.r1
-		# 			self.delta_control[j].vector()[:] += self.c*self.eta*self.w[j].vector()[:]
-		#
-		# 		self.eps *= np.abs(self.s)
-		# 		self.eta *= -self.s
-		# 		print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
-		# 		if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
-		# 			break
-
 
 
 		elif self.inner_newton == 'minres':
@@ -271,15 +185,8 @@ class HessianProblem:
 			self.form_handler.project_inactive(self.hessian_actions, self.inactive_part)
 			self.form_handler.project_active(self.p_prev, self.active_part)
 
-			if not self.has_scales:
-				self.scale_active = np.sqrt(self.form_handler.scalar_product(self.active_part, self.active_part))
-				self.scale_inactive = np.sqrt(self.form_handler.scalar_product(self.inactive_part, self.inactive_part))
-				if self.scale_active*self.scale_inactive > 0:
-					self.precond = self.scale_inactive / self.scale_active
-					self.has_scales = True
-
 			for j in range(self.control_dim):
-				self.s_prev[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+				self.s_prev[j].vector()[:] = self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 
 			for i in range(self.max_it_inner_newton):
 				self.alpha = self.form_handler.scalar_product(self.residual, self.s_prev) / self.form_handler.scalar_product(self.s_prev, self.s_prev)
@@ -289,7 +196,7 @@ class HessianProblem:
 					self.residual[j].vector()[:] -= self.alpha*self.s_prev[j].vector()[:]
 
 				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				# print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
+				print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 
@@ -302,7 +209,7 @@ class HessianProblem:
 				self.form_handler.project_active(self.s_prev, self.active_part)
 
 				for j in range(self.control_dim):
-					self.s[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+					self.s[j].vector()[:] = self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 
 				self.beta_prev = self.form_handler.scalar_product(self.s, self.s_prev) / self.form_handler.scalar_product(self.s_prev, self.s_prev)
 				if i==0:
@@ -333,15 +240,8 @@ class HessianProblem:
 			self.form_handler.project_inactive(self.hessian_actions, self.inactive_part)
 			self.form_handler.project_active(self.residual, self.active_part)
 
-			if not self.has_scales:
-				self.scale_active = np.sqrt(self.form_handler.scalar_product(self.active_part, self.active_part))
-				self.scale_inactive = np.sqrt(self.form_handler.scalar_product(self.inactive_part, self.inactive_part))
-				if self.scale_active*self.scale_inactive > 0:
-					self.precond = self.scale_inactive / self.scale_active
-					self.has_scales = True
-
 			for j in range(self.control_dim):
-				self.s[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+				self.s[j].vector()[:] = self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 				self.q[j].vector()[:] = self.s[j].vector()[:]
 
 			self.rAr = self.form_handler.scalar_product(self.residual, self.s)
@@ -351,10 +251,11 @@ class HessianProblem:
 
 				for j in range(self.control_dim):
 					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
+					self.r_prev[j].vector()[:] = self.residual[j].vector()[:]
 					self.residual[j].vector()[:] -= self.alpha*self.q[j].vector()[:]
 
 				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				# print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
+				print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 
@@ -363,15 +264,15 @@ class HessianProblem:
 				self.form_handler.project_inactive(self.hessian_actions, self.inactive_part)
 				self.form_handler.project_active(self.residual, self.active_part)
 				for j in range(self.control_dim):
-					self.s[j].vector()[:] = self.precond*self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+					self.s[j].vector()[:] = self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
 
 				self.rAr_new = self.form_handler.scalar_product(self.residual, self.s)
 				self.beta = self.rAr_new / self.rAr
 
 				for j in range(self.control_dim):
-					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
+					self.q_prev[j].vector()[:] = self.q[j].vector()[:]
 					self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta*self.q[j].vector()[:]
-
+					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
 
 
 				self.rAr = self.rAr_new

@@ -11,10 +11,12 @@ from ..pde_problems.adjoint_problem import AdjointProblem
 from ..pde_problems.gradient_problem import GradientProblem
 from ..optimization.cost_functional import ReducedCostFunctional
 from ..pde_problems.hessian_problem import HessianProblem
+from ..pde_problems.semi_smooth_hessian import SemiSmoothHessianProblem
 from .methods.gradient_descent import GradientDescent
 from .methods.l_bfgs import LBFGS
 from .methods.CG import CG
 from .methods.newton import Newton
+from .methods.semi_smooth_newton import SemiSmoothNewton
 
 
 
@@ -114,6 +116,8 @@ class OptimizationProblem:
 		
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'newton':
 			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+		if self.config.get('OptimizationRoutine', 'algorithm') == 'semi_smooth_newton':
+			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
 			
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -156,6 +160,8 @@ class OptimizationProblem:
 			solver = CG(self)
 		elif self.algorithm == 'newton':
 			solver = Newton(self)
+		elif self.algorithm == 'semi_smooth_newton':
+			solver = SemiSmoothNewton(self)
 		else:
 			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg or newton.')
 		

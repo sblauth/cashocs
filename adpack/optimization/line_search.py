@@ -41,7 +41,7 @@ class ArmijoLineSearch:
 		self.iteration = self.optimization_algorithm.iteration
 
 		self.is_newton_like = self.config.get('OptimizationRoutine', 'algorithm') in ['lbfgs']
-		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton']
+		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton', 'semi_smooth_newton']
 		self.is_steepest_descent = self.config.get('OptimizationRoutine', 'algorithm') in ['gradient_descent']
 		if self.is_newton:
 			self.stepsize = 1.0
@@ -54,7 +54,7 @@ class ArmijoLineSearch:
 
 		else:
 			for j in range(self.form_handler.control_dim):
-					self.projected_difference[j].vector()[:] = self.controls_temp[j].vector()[:] - self.controls[j].vector()[:]
+				self.projected_difference[j].vector()[:] = self.controls_temp[j].vector()[:] - self.controls[j].vector()[:]
 
 			return self.form_handler.scalar_product(self.gradients, self.projected_difference)
 
@@ -71,7 +71,7 @@ class ArmijoLineSearch:
 			self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
 
 		while True:
-			if self.stepsize*self.search_direction_inf <= 1e-10:
+			if self.stepsize*self.search_direction_inf <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:

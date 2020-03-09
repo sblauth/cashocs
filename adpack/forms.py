@@ -126,12 +126,25 @@ class FormHandler:
 
 
 
+	def compute_active_sets(self):
+
+		self.idx_active_lower = [(self.controls[j].vector()[:] <= self.control_constraints[j][0]).nonzero()[0] for j in range(self.control_dim)]
+		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1]).nonzero()[0] for j in range(self.control_dim)]
+
+		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
+		self.idx_active.sort()
+
+		self.idx_inactive = [np.setdiff1d(np.arange(self.control_spaces[j].dim()), self.idx_active[j] ) for j in range(self.control_dim)]
+
+		return None
+
+
+
 	def project_active(self, a, b):
 
 		for j in range(self.control_dim):
 			self.temp[j].vector()[:] = 0.0
-			idx = np.asarray(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1])).nonzero()[0]
-			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
 			b[j].vector()[:] = self.temp[j].vector()[:]
 
 		return b
@@ -142,8 +155,7 @@ class FormHandler:
 
 		for j in range(self.control_dim):
 			self.temp[j].vector()[:] = 0.0
-			idx = np.asarray(np.invert(np.logical_or(self.controls[j].vector()[:] <= self.control_constraints[j][0], self.controls[j].vector()[:] >= self.control_constraints[j][1]))).nonzero()[0]
-			self.temp[j].vector()[idx] = a[j].vector()[idx]
+			self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
 			b[j].vector()[:] = self.temp[j].vector()[:]
 
 		return b
