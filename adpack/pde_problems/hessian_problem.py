@@ -196,7 +196,7 @@ class HessianProblem:
 					self.residual[j].vector()[:] -= self.alpha*self.s_prev[j].vector()[:]
 
 				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
+				# print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 
@@ -255,7 +255,7 @@ class HessianProblem:
 					self.residual[j].vector()[:] -= self.alpha*self.q[j].vector()[:]
 
 				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
+				# print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 

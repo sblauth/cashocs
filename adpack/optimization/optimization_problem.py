@@ -22,7 +22,7 @@ from .methods.semi_smooth_newton import SemiSmoothNewton
 
 class OptimizationProblem:
 	
-	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config, control_constraints=None):
+	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config, control_constraints=None, ramping_parameters=None):
 		"""The implementation of the optimization problem, used to generate all other classes and functionality. Also used to solve the problem.
 		
 		Parameters
@@ -91,6 +91,8 @@ class OptimizationProblem:
 				self.control_constraints = control_constraints
 			else:
 				self.control_constraints = [control_constraints]
+
+		self.ramping_parameters = ramping_parameters
 		
 		self.state_dim = len(self.state_forms)
 		self.control_dim = len(self.controls)
@@ -110,7 +112,7 @@ class OptimizationProblem:
 
 		self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
 
-		self.state_problem = StateProblem(self.form_handler)
+		self.state_problem = StateProblem(self.form_handler, self.ramping_parameters)
 		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 		

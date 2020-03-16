@@ -38,6 +38,7 @@ lambd = 0.0
 y_d = Expression('sin(2*pi*x[0])', degree=1)
 
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
+# J = Constant(0.5)*pow(y - y_d, 2)*dx + Constant(0.5*lambd)*pow(u, 2)*dx
 
 # control_constraints = [0, 10]
 control_constraints = [0.0, float('inf')]

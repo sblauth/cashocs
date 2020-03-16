@@ -49,6 +49,5 @@ z_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 ### Distributed control and observation
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx + Constant(0.5*lambd)*u*u*dx
 
-
 optimization_problem = OptimizationProblem([e1, e2], bcs_list, [dx], J, [y, z], [u], [p, q], config)
 optimization_problem.solve()
