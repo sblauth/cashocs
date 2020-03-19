@@ -56,6 +56,8 @@ class OptimizationProblem:
 		try:
 			if type(bcs_list) == list and type(bcs_list[0]) == list:
 				self.bcs_list = bcs_list
+			else:
+				self.bcs_list = [bcs_list]
 		except IndexError:
 			self.bcs_list = [bcs_list]
 
