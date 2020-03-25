@@ -34,16 +34,16 @@ bc4 = DirichletBC(V, Constant(0), boundaries, 4)
 bcs = [bc1, bc2, bc3, bc4]
 
 lambd = 0.0
-# y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
-y_d = Expression('sin(2*pi*x[0])', degree=1)
+y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+# y_d = Expression('sin(2*pi*x[0])', degree=1)
 
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
 # J = Constant(0.5)*pow(y - y_d, 2)*dx + Constant(0.5*lambd)*pow(u, 2)*dx
 
 # control_constraints = [0, 10]
-control_constraints = [0.0, float('inf')]
+# control_constraints = [0.0, float('inf')]
 # control_constraints = [float('-inf'), 0]
-# control_constraints = [float('-inf'), float('inf')]
+control_constraints = [float('-inf'), float('inf')]
 
 optimization_problem = OptimizationProblem(e, bcs, dx, J, y, u, p, config, control_constraints)
 optimization_problem.solve()
