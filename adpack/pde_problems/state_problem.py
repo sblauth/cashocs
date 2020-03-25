@@ -12,7 +12,7 @@ from phdutils.nonlinear_solvers import NewtonSolver
 
 class StateProblem:
 	
-	def __init__(self, form_handler, ramping_parameters):
+	def __init__(self, form_handler):
 		"""An abstract representation of the state system, which is also used to solve it
 		
 		Parameters
@@ -22,8 +22,7 @@ class StateProblem:
 		"""
 		
 		self.form_handler = form_handler
-		self.ramping_parameters = ramping_parameters
-		
+
 		self.config = self.form_handler.config
 		self.bcs_list = self.form_handler.bcs_list
 		self.states = self.form_handler.states
@@ -52,16 +51,9 @@ class StateProblem:
 				
 			else:
 				for i in range(self.form_handler.state_dim):
-					fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i])
+					# fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i])
+					self.states[i] = NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i], rtol=1e-9, atol=1e-7, damped=True, verbose=False)
 
-					### Test chemical reactions
-					# ivls = 1
-					# for j in range(ivls+1):
-					# 	self.ramping_parameters[i].val = j/ivls
-					# 	NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i], rtol=1e-7, atol=1e-15, max_iter=25, damped=True, verbose=False)
-					# 	# fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i],
-					# 	# 			 solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' : {'linear_solver' : 'mumps', 'relative_tolerance' : 1e-7, 'absolute_tolerance' : 1e-8}})
-			
 			self.has_solution = True
 			self.number_of_solves += 1
 
