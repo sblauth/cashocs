@@ -54,6 +54,11 @@ class HessianProblem:
 		self.active_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 		self.controls = self.form_handler.controls
+
+		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol')
+		self.atol = self.config.getfloat('StateEquation', 'picard_atol')
+		self.maxiter = self.config.getint('StateEquation', 'picard_iter')
+		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose')
 		
 		self.no_sensitivity_solves = 0
 		
@@ -76,13 +81,80 @@ class HessianProblem:
 		self.states_prime = self.form_handler.states_prime
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
-		
-		for i in range(self.state_dim):
-			fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])
-		
-		for i in range(self.state_dim):
-			fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-i]==self.form_handler.w_1[-1-i], self.adjoints_prime[-1-i], self.bcs_list_ad[-1-i])
-		
+
+		if not self.config.getboolean('StateEquation', 'picard_iteration'):
+
+			for i in range(self.state_dim):
+				fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])
+
+			for i in range(self.state_dim):
+				fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-i]==self.form_handler.w_1[-1-i], self.adjoints_prime[-1-i], self.bcs_list_ad[-1-i])
+
+
+		else:
+			for i in range(self.maxiter + 1):
+				res = 0.0
+				for j in range(self.form_handler.state_dim):
+					res_j = fenics.assemble(self.form_handler.sensitivity_eqs_picard[j])
+					[bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
+					res += pow(res_j.norm('l2'), 2)
+
+				if res==0:
+					break
+
+				res = np.sqrt(res)
+
+				if i==0:
+					res_0 = res
+
+				if self.picard_verbose:
+					print('Picard Sensitivity 1 Iteration ' + str(i) + ': ||res|| (abs): ' + format(res, '.3e') + '   ||res|| (rel): ' + format(res/res_0, '.3e'))
+
+				if res/res_0 < self.rtol or res < self.atol:
+					break
+
+				if i==self.maxiter:
+					raise SystemExit('Failed to solve the Picard Iteration')
+
+				for j in range(self.form_handler.state_dim):
+					fenics.solve(self.form_handler.sensitivity_eqs_lhs[j]==self.form_handler.sensitivity_eqs_rhs[j], self.states_prime[j], self.bcs_list_ad[j])
+
+
+			if self.picard_verbose:
+				print('')
+
+			for i in range(self.maxiter + 1):
+				res = 0.0
+				for j in range(self.form_handler.state_dim):
+					res_j = fenics.assemble(self.form_handler.adjoint_sensitivity_eqs_picard[j])
+					[bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
+					res += pow(res_j.norm('l2'), 2)
+
+				if res==0:
+					break
+
+				res = np.sqrt(res)
+
+				if i==0:
+					res_0 = res
+
+				if self.picard_verbose:
+					print('Picard Sensitivity 2 Iteration ' + str(i) + ': ||res|| (abs): ' + format(res, '.3e') + '   ||res|| (rel): ' + format(res/res_0, '.3e'))
+
+				if res/res_0 < self.rtol or res < self.atol:
+					break
+
+				if i==self.maxiter:
+					raise SystemExit('Failed to solve the Picard Iteration')
+
+				for j in range(self.form_handler.state_dim):
+					fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-j]==self.form_handler.w_1[-1-j], self.adjoints_prime[-1 - j], self.bcs_list_ad[-1 - j])
+
+
+			if self.picard_verbose:
+				print('')
+
+
 		for i in range(self.control_dim):
 			A = fenics.assemble(self.form_handler.hessian_lhs[i], keep_diagonal=True)
 			A.ident_zeros()

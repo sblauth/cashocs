@@ -132,7 +132,7 @@ class FormHandler:
 		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1]).nonzero()[0] for j in range(self.control_dim)]
 
 		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
-		self.idx_active.sort()
+		[self.idx_active[j].sort() for j in range(self.control_dim)]
 
 		self.idx_inactive = [np.setdiff1d(np.arange(self.control_spaces[j].dim()), self.idx_active[j] ) for j in range(self.control_dim)]
 
@@ -199,14 +199,20 @@ class FormHandler:
 
 		"""
 		
+		self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.adjoint_eq_lhs = []
+		self.adjoint_eq_rhs = []
 		
 		for i in range(self.state_dim):
 			self.adjoint_eq_forms[i] = replace(self.adjoint_eq_forms[i], {self.adjoints[i] : self.trial_functions_state[i]})
+			a, L = fenics.system(self.adjoint_eq_forms[i])
+			self.adjoint_eq_lhs.append(a)
+			self.adjoint_eq_rhs.append(L)
 			
 		self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
 		[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
-	
+
 	
 	
 	def compute_gradient_equations(self):
@@ -234,8 +240,10 @@ class FormHandler:
 		"""
 		
 		self.sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.trial_functions_state[i]) for i in range(self.state_dim)]
+		self.sensitivity_eqs_picard = [fenics.derivative(self.state_forms[i], self.states[i], self.states_prime[i]) for i in range(self.state_dim)]
 		for i in range(self.state_dim):
 			self.sensitivity_eqs_lhs[i] = replace(self.sensitivity_eqs_lhs[i], {self.adjoints[i] : self.test_functions_state[i]})
+			self.sensitivity_eqs_picard[i] = replace(self.sensitivity_eqs_picard[i], {self.adjoints[i] : self.test_functions_state[i]})
 		if self.state_dim > 1:
 			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.state_forms[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim) if j != i])
 										- summ([fenics.derivative(self.state_forms[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
@@ -246,6 +254,7 @@ class FormHandler:
 			
 		for i in range(self.state_dim):
 			self.sensitivity_eqs_rhs[i] = replace(self.sensitivity_eqs_rhs[i], {self.adjoints[i] : self.test_functions_state[i]})
+			self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
 
 		self.L_y = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
@@ -265,15 +274,21 @@ class FormHandler:
 					for i in range(self.control_dim)]
 		
 		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
-		
+		self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.state_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
 		if self.state_dim > 1:
 			for i in range(self.state_dim):
 				self.adjoint_sensitivity_eqs_lhs[i] = replace(self.adjoint_sensitivity_eqs_lhs[i], {self.adjoints[i] : self.trial_functions_state[i]})
-				
+				self.adjoint_sensitivity_eqs_picard[i] = replace(self.adjoint_sensitivity_eqs_picard[i], {self.adjoints[i] : self.adjoints_prime[i]})
+
 				self.w_1[i] -= summ([replace(fenics.derivative(self.state_forms[j], self.states[i], self.test_functions_state[i]),
 											 {self.adjoints[j] : self.adjoints_prime[j]}) for j in range(self.state_dim) if j != i])
 		else:
 			self.adjoint_sensitivity_eqs_lhs[0] = replace(self.adjoint_sensitivity_eqs_lhs[0], {self.adjoints[0] : self.trial_functions_state[0]})
+			self.adjoint_sensitivity_eqs_picard[0] = replace(self.adjoint_sensitivity_eqs_picard[0], {self.adjoints[0] : self.adjoints_prime[0]})
+
+		for i in range(self.state_dim):
+			self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 		
 		
 		self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.state_forms[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
