@@ -12,11 +12,13 @@ from ..pde_problems.gradient_problem import GradientProblem
 from ..optimization.cost_functional import ReducedCostFunctional
 from ..pde_problems.hessian_problem import HessianProblem
 from ..pde_problems.semi_smooth_hessian import SemiSmoothHessianProblem
+from ..pde_problems.unconstrained_hessian_problem import UnconstrainedHessianProblem
 from .methods.gradient_descent import GradientDescent
 from .methods.l_bfgs import LBFGS
 from .methods.CG import CG
 from .methods.newton import Newton
 from .methods.semi_smooth_newton import SemiSmoothNewton
+from .methods.primal_dual_active_set_method import PDAS
 
 
 
@@ -121,6 +123,8 @@ class OptimizationProblem:
 			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'semi_smooth_newton':
 			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+		if self.config.get('OptimizationRoutine', 'algorithm') == 'pdas':
+			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 			
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -156,16 +160,18 @@ class OptimizationProblem:
 		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
 		
 		if self.algorithm == 'gradient_descent':
-			solver = GradientDescent(self)
+			self.solver = GradientDescent(self)
 		elif self.algorithm == 'lbfgs':
-			solver = LBFGS(self)
+			self.solver = LBFGS(self)
 		elif self.algorithm == 'cg':
-			solver = CG(self)
+			self.solver = CG(self)
 		elif self.algorithm == 'newton':
-			solver = Newton(self)
+			self.solver = Newton(self)
 		elif self.algorithm == 'semi_smooth_newton':
-			solver = SemiSmoothNewton(self)
+			self.solver = SemiSmoothNewton(self)
+		elif self.algorithm == 'pdas':
+			self.solver = PDAS(self)
 		else:
-			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg or newton.')
+			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg, newton or pdas.')
 		
-		solver.run()
+		self.solver.run()

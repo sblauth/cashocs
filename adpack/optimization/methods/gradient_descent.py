@@ -63,6 +63,8 @@ class GradientDescent(OptimizationAlgorithm):
 			self.line_search.search(self.search_directions)
 			if self.line_search_broken:
 				print('Armijo rule failed')
+				for j in range(len(self.controls)):
+					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 
 			self.iteration += 1

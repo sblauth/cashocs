@@ -101,7 +101,11 @@ class FormHandler:
 		self.compute_state_equations()
 		self.compute_adjoint_equations()
 		self.compute_gradient_equations()
-		self.compute_newton_forms()
+
+		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
+
+		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton':
+			self.compute_newton_forms()
 
 
 
