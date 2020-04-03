@@ -25,6 +25,7 @@ class PDAS(OptimizationAlgorithm):
 		self.converged = False
 		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
 		self.shift_mult = self.config.getfloat('OptimizationRoutine', 'pdas_shift_mult')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 
 		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
 		if self.inner_pdas == 'gradient_descent':
@@ -109,8 +110,9 @@ class PDAS(OptimizationAlgorithm):
 
 			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')
 
-		print('Statistics --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-		if self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton':
-			print('           --- Sensitivity equations solved: ' + str(self.optimization_problem.unconstrained_hessian.no_sensitivity_solves))
-		print('')
+		if self.verbose:
+			print('Statistics --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			if self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton':
+				print('           --- Sensitivity equations solved: ' + str(self.optimization_problem.unconstrained_hessian.no_sensitivity_solves))
+			print('')

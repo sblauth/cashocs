@@ -37,6 +37,7 @@ class CG(OptimizationAlgorithm):
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
 		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.armijo_stepsize_initial = self.stepsize
 		self.armijo_broken = False
 
@@ -170,14 +171,16 @@ class CG(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				break
+				raise SystemExit('CG did not converge')
+				# break
 
 		if self.converged:
 			self.print_results()
 
-		print('')
-		print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-			  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-		print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-		print('')
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			print('')

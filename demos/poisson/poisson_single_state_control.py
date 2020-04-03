@@ -36,7 +36,7 @@ bc3 = DirichletBC(V, Constant(0), boundaries, 3)
 bc4 = DirichletBC(V, Constant(0), boundaries, 4)
 bcs = [bc1, bc2, bc3, bc4]
 
-lambd = 1e-2
+lambd = 1e-4
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 # y_d = Expression('sin(2*pi*x[0])', degree=1)
 

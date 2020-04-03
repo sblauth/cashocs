@@ -342,9 +342,9 @@ class HessianProblem:
 				self.beta = self.rAr_new / self.rAr
 
 				for j in range(self.control_dim):
-					self.q_prev[j].vector()[:] = self.q[j].vector()[:]
-					self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta*self.q[j].vector()[:]
+					# self.q_prev[j].vector()[:] = self.q[j].vector()[:]
 					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
+					self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta*self.q[j].vector()[:]
 
 
 				self.rAr = self.rAr_new

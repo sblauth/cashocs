@@ -32,6 +32,7 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 
 		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
 
@@ -88,13 +89,12 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 			for j in range(len(self.controls)):
 				self.controls[j].vector()[:] += self.search_directions[j].vector()[:]
 				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[:] += self.delta_mu[j].vector()[:]
+				# self.mu[j].vector()[:] = -self.optimization_problem.gradients[j].vector()[:]
 				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[self.optimization_problem.semi_smooth_hessian.idx_inactive[j]] = 0
 
 			if self.armijo_broken:
 				print('Armijo rule failed')
 				break
-
-			val = self.optimization_problem.stationary_measure_squared()
 
 			self.iteration += 1
 
@@ -104,10 +104,11 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 		if self.converged:
 			self.print_results()
 
-		print('')
-		print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-			  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-		print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) +
-			  ' --- Sensitivity equations solved: ' + str(self.optimization_problem.semi_smooth_hessian.no_sensitivity_solves))
-		print('')
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) +
+				  ' --- Sensitivity equations solved: ' + str(self.optimization_problem.semi_smooth_hessian.no_sensitivity_solves))
+			print('')

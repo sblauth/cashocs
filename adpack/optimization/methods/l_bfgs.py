@@ -34,6 +34,7 @@ class LBFGS(OptimizationAlgorithm):
 
 		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors')
 		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 
 		if self.memory_vectors > 0:
 			self.history_s = deque()
@@ -175,14 +176,18 @@ class LBFGS(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				break
+				# print('LBFGS did not converge')
+				# break
+				raise SystemExit('LBFGS did not converge')
+
 
 		if not self.line_search_broken:
 			self.print_results()
 
-		print('')
-		print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-			  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-		print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-			  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-		print('')
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			print('')
