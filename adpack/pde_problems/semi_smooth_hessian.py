@@ -54,7 +54,7 @@ class SemiSmoothHessianProblem:
 
 		self.mu = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		for j in range(self.control_dim):
-			self.mu[j].vector()[:] = 0.0
+			self.mu[j].vector()[:] = -1.0
 		self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.temp_storage = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.cc = 1e-4
@@ -399,6 +399,7 @@ class SemiSmoothHessianProblem:
 			self.rAr = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
 
 			for i in range(self.max_it_inner_newton):
+				# self.alpha = self.double_scalar_product(self.residual1, self.residual2, self.Ap1, self.Ap2) / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
 				self.alpha = self.rAr / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
 
 				for j in range(self.control_dim):
@@ -423,6 +424,7 @@ class SemiSmoothHessianProblem:
 
 				self.rAr_new = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
 				self.beta = self.rAr_new / self.rAr
+				# self.beta = -self.double_scalar_product(self.Ar1, self.Ar2, self.Ap1, self.Ap2) / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
 
 				for j in range(self.control_dim):
 					self.p1[j].vector()[:] = self.residual1[j].vector()[:] + self.beta*self.p1[j].vector()[:]

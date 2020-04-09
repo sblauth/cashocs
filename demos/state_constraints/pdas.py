@@ -19,7 +19,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini')
 
 # mesh, subdomains, boundaries, dx, ds, dS = MeshGen(config.get('Mesh', 'mesh_file'))
-mesh, subdomains, boundaries, dx, ds, dS = regular_mesh(25)
+mesh, subdomains, boundaries, dx, ds, dS = regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -69,7 +69,7 @@ class Sets:
 		self.idx_inactive = np.setdiff1d(np.arange(V.dim()), self.idx_active)
 
 		if self.initialized:
-			if np.array_equal(self.idx_active, self.idx_active_prev):
+			if np.array_equal(self.idx_active, self.idx_active_prev) or np.array_equal(self.idx_active, self.idx_active_pprev):
 				self.converged = True
 
 		self.idx_active_pprev = self.idx_active_prev
@@ -81,7 +81,7 @@ class Sets:
 
 
 # gammas = [pow(10, i) for i in np.arange(0, 10, 3)]
-gammas = [pow(10, i) for i in np.arange(1, 4, 1)]
+gammas = [pow(10, i) for i in np.arange(1, 6, 1)]
 # gammas = [1e4 for i in range(10)]
 
 # gamma = 1e3
@@ -105,6 +105,7 @@ for gamma in gammas:
 
 	# if uncommented, gives augmented lagrangian approach
 	# shift.vector()[:] += np.maximum(0, shift.vector()[:] + gamma*(y.vector()[:] - y_b))
+	# shift.vector()[sets.idx_inactive] = 0.0
 
 	if not sets.converged:
 		print('PDAS did not converge')

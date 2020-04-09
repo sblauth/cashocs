@@ -45,6 +45,8 @@ class CG(OptimizationAlgorithm):
 		self.cg_use_restart = self.config.getboolean('OptimizationRoutine', 'cg_use_restart')
 		self.cg_restart_its = self.config.getint('OptimizationRoutine', 'cg_restart_its')
 
+		self.has_curvature_info = False
+
 
 
 	def project_direction(self, a):
@@ -138,6 +140,9 @@ class CG(OptimizationAlgorithm):
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				if self.gradient_norm_initial == 0:
+					self.converged = True
+					break
 				self.beta = 0.0
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
@@ -164,7 +169,7 @@ class CG(OptimizationAlgorithm):
 				for i in range(len(self.gradients)):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
-			self.line_search.search(self.search_directions)
+			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.armijo_broken:
 				print('Armijo rule failed')
 				break

@@ -25,6 +25,7 @@ class GradientDescent(OptimizationAlgorithm):
 
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.line_search = ArmijoLineSearch(self)
+		self.has_curvature_info = False
 
 
 	
@@ -51,6 +52,9 @@ class GradientDescent(OptimizationAlgorithm):
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				if self.gradient_norm_initial == 0:
+					self.converged = True
+					break
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance:
@@ -61,7 +65,7 @@ class GradientDescent(OptimizationAlgorithm):
 				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
-			self.line_search.search(self.search_directions)
+			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
 				print('Armijo rule failed')
 				for j in range(len(self.controls)):

@@ -60,7 +60,7 @@ class ArmijoLineSearch:
 
 
 
-	def search(self, search_directions):
+	def search(self, search_directions, has_curvature_info):
 
 		self.search_direction_inf = np.max([np.max(np.abs(search_directions[i].vector()[:])) for i in range(len(self.gradients))])
 		self.optimization_algorithm.objective_value = self.cost_functional.compute()
@@ -71,7 +71,7 @@ class ArmijoLineSearch:
 			self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
 
 		while True:
-			if self.stepsize*self.search_direction_inf <= 1e-8:
+			if self.stepsize*self.search_direction_inf <= 1e-5:
 				self.optimization_algorithm.line_search_broken = True
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
@@ -96,9 +96,16 @@ class ArmijoLineSearch:
 				for i in range(len(self.controls)):
 					self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
 
-		self.optimization_algorithm.stepsize = self.stepsize
-		self.optimization_algorithm.objective_value = self.objective_step
-		if not self.is_newton_like and not self.is_newton:
-			self.stepsize *= self.beta_armijo
-		else:
+		if not self.optimization_algorithm.line_search_broken:
+			self.optimization_algorithm.stepsize = self.stepsize
+			self.optimization_algorithm.objective_value = self.objective_step
+
+		if has_curvature_info:
 			self.stepsize = 1.0
+		else:
+			self.stepsize *= self.beta_armijo
+
+		# if not self.is_newton_like and not self.is_newton:
+		# 	self.stepsize *= self.beta_armijo
+		# else:
+		# 	self.stepsize = 1.0

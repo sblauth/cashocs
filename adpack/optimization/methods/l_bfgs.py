@@ -36,6 +36,8 @@ class LBFGS(OptimizationAlgorithm):
 		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling')
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 
+		self.has_curvature_info = False
+
 		if self.memory_vectors > 0:
 			self.history_s = deque()
 			self.history_y = deque()
@@ -123,9 +125,11 @@ class LBFGS(OptimizationAlgorithm):
 		self.gradient_problem.solve()
 		self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+		if self.gradient_norm_initial == 0:
+			self.converged = True
 		self.form_handler.compute_active_sets()
 
-		while self.relative_norm > self.tolerance:
+		while not self.converged:
 			self.search_directions = self.compute_search_direction(self.gradients)
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
@@ -134,7 +138,7 @@ class LBFGS(OptimizationAlgorithm):
 				for j in range(self.form_handler.control_dim):
 					self.search_directions[j].vector()[:] = -self.gradients[j].vector()[:]
 
-			self.line_search.search(self.search_directions)
+			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
 				print('Armijo rule failed')
 				break
@@ -151,6 +155,10 @@ class LBFGS(OptimizationAlgorithm):
 			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 
+			if self.relative_norm <= self.tolerance:
+				self.iteration += 1
+				break
+
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):
 					self.storage_y[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
@@ -161,13 +169,19 @@ class LBFGS(OptimizationAlgorithm):
 
 				self.history_y.appendleft([x.copy(True) for x in self.y_k])
 				self.history_s.appendleft([x.copy(True) for x in self.s_k])
-				rho = 1/self.form_handler.scalar_product(self.y_k, self.s_k)
-				self.history_rho.appendleft(rho)
+				self.curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
 				
-				if 1/rho <= 0:
+				if self.curvature_condition <= 0:
+					self.has_curvature_info = False
+
 					self.history_s = deque()
 					self.history_y = deque()
 					self.history_rho = deque()
+
+				else:
+					self.has_curvature_info = True
+					rho = 1/self.form_handler.scalar_product(self.y_k, self.s_k)
+					self.history_rho.appendleft(rho)
 				
 				if len(self.history_s) > self.memory_vectors:
 					self.history_s.pop()
@@ -175,7 +189,7 @@ class LBFGS(OptimizationAlgorithm):
 					self.history_rho.pop()
 
 			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
+			if self.iteration > self.maximum_iterations:
 				# print('LBFGS did not converge')
 				# break
 				raise SystemExit('LBFGS did not converge')

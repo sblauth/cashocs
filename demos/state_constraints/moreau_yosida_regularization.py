@@ -19,7 +19,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini')
 
 # mesh, subdomains, boundaries, dx, ds, dS = MeshGen(config.get('Mesh', 'mesh_file'))
-mesh, subdomains, boundaries, dx, ds, dS = regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -49,7 +49,8 @@ control_constraints = [float('-inf'), float('inf')]
 J_init = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
 optimization_problem = OptimizationProblem(e, bcs, dx, J_init, y, u, p, config, control_constraints)
 optimization_problem.solve()
-gammas = [pow(10, i) for i in np.arange(1, 4, 1)]
+# gammas = [pow(10, i) for i in np.arange(1, 4, 1)]
+gammas = [pow(10, i) for i in np.arange(1, 10, 3)]
 
 
 for gamma in gammas:

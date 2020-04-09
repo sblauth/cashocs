@@ -12,7 +12,7 @@ from phdutils.nonlinear_solvers import NewtonSolver
 
 class StateProblem:
 	
-	def __init__(self, form_handler):
+	def __init__(self, form_handler, initial_guess):
 		"""An abstract representation of the state system, which is also used to solve it
 		
 		Parameters
@@ -22,6 +22,7 @@ class StateProblem:
 		"""
 		
 		self.form_handler = form_handler
+		self.initial_guess = initial_guess
 
 		self.config = self.form_handler.config
 		self.bcs_list = self.form_handler.bcs_list
@@ -60,12 +61,17 @@ class StateProblem:
 
 				else:
 					for i in range(self.form_handler.state_dim):
+						### TODO: Implement this correctly
+						if self.initial_guess is not None:
+							fenics.assign(self.states[i], self.initial_guess)
+
 						# fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i],
 						# 			  solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' : {'linear_solver' : 'mumps',
 						# 																				   'relative_tolerance' : self.newton_rtol,
 						# 																				   'absolute_tolerance' : self.newton_atol}})
+
 						self.states[i] = NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i],
-													  rtol=self.newton_rtol, atol=self.newton_atol, damped=False, verbose=False)
+													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=False)
 
 			else:
 				for i in range(self.maxiter + 1):

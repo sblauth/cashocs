@@ -36,6 +36,8 @@ class Newton(OptimizationAlgorithm):
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
 
+		self.has_curvature_info = False
+
 		self.armijo_broken = False
 
 
@@ -61,6 +63,10 @@ class Newton(OptimizationAlgorithm):
 			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				if self.gradient_norm_initial == 0:
+					self.converged = True
+					self.objective_value = self.cost_functional.compute()
+					break
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance:
@@ -70,12 +76,27 @@ class Newton(OptimizationAlgorithm):
 			self.search_directions = self.optimization_problem.hessian_problem.newton_solve()
 			self.directional_derivative = summ([fenics.assemble(fenics.inner(self.search_directions[i], self.gradients[i]) * self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
 			if self.directional_derivative > 0:
-				print('No descent direction')
+				self.has_curvature_info = False
+				# print('No descent direction')
 				for i in range(len(self.gradients)):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
+			else:
+				self.has_curvature_info = True
 
-			self.line_search.search(self.search_directions)
-			if self.armijo_broken:
+			self.line_search.search(self.search_directions, self.has_curvature_info)
+
+			if self.armijo_broken and self.has_curvature_info:
+				for i in range(len(self.gradients)):
+					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
+				self.has_curvature_info = False
+				self.armijo_broken = False
+				self.line_search.search(self.search_directions, self.has_curvature_info)
+
+				if self.armijo_broken:
+					print('Armijo rule failed')
+					break
+
+			elif self.armijo_broken and not self.has_curvature_info:
 				print('Armijo rule failed')
 				break
 
