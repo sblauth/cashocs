@@ -53,6 +53,11 @@ class StateProblem:
 		"""
 		
 		if not self.has_solution:
+			if self.initial_guess is not None and self.number_of_solves <= 5:
+				for j in range(self.form_handler.state_dim):
+					fenics.assign(self.states[j], self.initial_guess[j])
+
+
 			if not self.config.getboolean('StateEquation', 'picard_iteration'):
 				if self.config.getboolean('StateEquation', 'is_linear'):
 					for i in range(self.form_handler.state_dim):
@@ -61,10 +66,6 @@ class StateProblem:
 
 				else:
 					for i in range(self.form_handler.state_dim):
-						### TODO: Implement this correctly
-						if self.initial_guess is not None:
-							fenics.assign(self.states[i], self.initial_guess)
-
 						# fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i],
 						# 			  solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' : {'linear_solver' : 'mumps',
 						# 																				   'relative_tolerance' : self.newton_rtol,
@@ -83,6 +84,8 @@ class StateProblem:
 
 						if self.number_of_solves==0 and i==0:
 							self.newton_atols[j] = res_j.norm('l2')*self.newton_atol
+							if res_j.norm('l2') == 0.0:
+								self.newton_atols[j] = self.newton_atol
 
 						res += pow(res_j.norm('l2'), 2)
 
@@ -107,7 +110,8 @@ class StateProblem:
 						# fenics.solve(self.form_handler.state_eq_forms[j]==0, self.states[j],
 						# 			 self.bcs_list[j], solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' :
 						# 													{'linear_solver' : 'mumps','relative_tolerance' : self.newton_rtol,'absolute_tolerance' : self.newton_atol}})
-						self.states[j] = NewtonSolver(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j], rtol=self.newton_rtol, atol=self.newton_atols[j], damped=False, verbose=False)
+						self.states[j] = NewtonSolver(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
+													  rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], damped=False, verbose=False)
 
 
 			if self.picard_verbose:
