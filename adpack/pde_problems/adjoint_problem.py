@@ -6,7 +6,6 @@ Created on 24/02/2020, 09.24
 
 import fenics
 import numpy as np
-from phdutils.nonlinear_solvers import NewtonSolver
 
 
 

@@ -4,19 +4,27 @@ Created on 01.04.20, 11:27
 @author: sebastian
 """
 
+import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
 from .pdas_inner_solvers.inner_gradient_descent import InnerGradientDescent
 from .pdas_inner_solvers.inner_cg import InnerCG
 from .pdas_inner_solvers.inner_lbfgs import InnerLBFGS
 from .pdas_inner_solvers.inner_newton import InnerNewton
-import fenics
 
 
 
 class PDAS(OptimizationAlgorithm):
 
 	def __init__(self, optimization_problem):
+		"""A primal dual active set method used to solve (control constrained) optimal control problems
+
+		Parameters
+		----------
+		optimization_problem : adpack.optimization_problem.OptimizationProblem
+			the OptimizationProblem object
+		"""
+
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.idx_active_upper_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]

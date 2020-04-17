@@ -5,7 +5,6 @@ Created on 24/02/2020, 09.32
 """
 
 import fenics
-import numpy as np
 
 
 

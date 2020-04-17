@@ -74,13 +74,6 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 
 			self.search_directions, self.delta_mu = self.optimization_problem.semi_smooth_hessian.newton_solve()
 			self.directional_derivative = summ([fenics.assemble(fenics.inner(self.search_directions[i], self.gradients[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
-			# if self.directional_derivative > 0:
-			# 	print('No descent direction')
-			# 	# raise SystemExit('Debug')
-			# 	for i in range(len(self.gradients)):
-			# 		# self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
-			# 		self.search_directions[i].vector()[:] *= -1
-			# 		self.delta_mu[i].vector()[:] *= -1
 
 			self.idx_inactive = self.optimization_problem.semi_smooth_hessian.idx_inactive
 			self.idx_active = self.optimization_problem.semi_smooth_hessian.idx_active
@@ -89,7 +82,6 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 			for j in range(len(self.controls)):
 				self.controls[j].vector()[:] += self.search_directions[j].vector()[:]
 				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[:] += self.delta_mu[j].vector()[:]
-				# self.mu[j].vector()[:] = -self.optimization_problem.gradients[j].vector()[:]
 				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[self.optimization_problem.semi_smooth_hessian.idx_inactive[j]] = 0
 
 			if self.armijo_broken:

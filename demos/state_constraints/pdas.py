@@ -6,8 +6,7 @@ Created on 03.04.20, 10:28
 
 import configparser
 from fenics import *
-from adpack import OptimizationProblem, MeshGen
-from phdutils import regular_mesh
+from adpack import OptimizationProblem, MeshGen, regular_mesh
 from ufl import Max
 import numpy as np
 
@@ -113,7 +112,7 @@ for gamma in gammas:
 
 	print('')
 
-y_file = File('y.pvd')
-u_file = File('u.pvd')
-y_file << y
-u_file << u
+# y_file = File('y.pvd')
+# u_file = File('u.pvd')
+# y_file << y
+# u_file << u

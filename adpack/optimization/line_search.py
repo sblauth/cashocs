@@ -49,6 +49,13 @@ class ArmijoLineSearch:
 
 
 	def decrease_measure(self):
+		"""Computes the measure of decrease needed for the Armijo test
+
+		Returns
+		-------
+		 : float
+		"""
+
 		if self.is_steepest_descent:
 			return self.stepsize*self.optimization_problem.stationary_measure_squared()
 
@@ -61,6 +68,19 @@ class ArmijoLineSearch:
 
 
 	def search(self, search_directions, has_curvature_info):
+		"""Performs the line search along the entered search direction and will adapt step if curvature information is contained in the search direction
+
+		Parameters
+		----------
+		search_directions : list[dolfin.function.function.Function]
+			The current search direction computed by the algorithms
+		has_curvature_info : bool
+			True if the step is (actually) computed via L-BFGS or Newton
+
+		Returns
+		-------
+
+		"""
 
 		self.search_direction_inf = np.max([np.max(np.abs(search_directions[i].vector()[:])) for i in range(len(self.gradients))])
 		self.optimization_algorithm.objective_value = self.cost_functional.compute()
@@ -104,8 +124,3 @@ class ArmijoLineSearch:
 			self.stepsize = 1.0
 		else:
 			self.stepsize *= self.beta_armijo
-
-		# if not self.is_newton_like and not self.is_newton:
-		# 	self.stepsize *= self.beta_armijo
-		# else:
-		# 	self.stepsize = 1.0

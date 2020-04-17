@@ -136,6 +136,14 @@ class OptimizationProblem:
 
 
 	def stationary_measure_squared(self):
+		"""Computes the stationary measure (squared) corresponding to box-constraints, in case they are present
+
+		Returns
+		-------
+		 : float
+			The square of the stationary measure
+
+		"""
 
 		for j in range(self.control_dim):
 			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
@@ -174,6 +182,6 @@ class OptimizationProblem:
 		elif self.algorithm == 'pdas':
 			self.solver = PDAS(self)
 		else:
-			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg, newton or pdas.')
+			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg, newton, semi_smooth_newton or pdas.')
 		
 		self.solver.run()

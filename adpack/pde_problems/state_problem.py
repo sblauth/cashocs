@@ -6,8 +6,7 @@ Created on 24/02/2020, 09.19
 
 import fenics
 import numpy as np
-from phdutils.nonlinear_solvers import NewtonSolver
-
+from ..nonlinear_solvers import NewtonSolver
 
 
 class StateProblem:
@@ -111,7 +110,7 @@ class StateProblem:
 						# 			 self.bcs_list[j], solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' :
 						# 													{'linear_solver' : 'mumps','relative_tolerance' : self.newton_rtol,'absolute_tolerance' : self.newton_atol}})
 						self.states[j] = NewtonSolver(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
-													  rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], damped=False, verbose=False)
+													  rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], damped=False, verbose=True)
 
 
 			if self.picard_verbose:

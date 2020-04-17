@@ -4,11 +4,11 @@ Created on 01.04.20, 11:43
 @author: sebastian
 """
 
+import fenics
 import numpy as np
 from ...optimization_algorithm import OptimizationAlgorithm
 from .unconstrained_line_search import UnconstrainedLineSearch
-import fenics
-import matplotlib.pyplot as plt
+
 
 
 class InnerGradientDescent(OptimizationAlgorithm):

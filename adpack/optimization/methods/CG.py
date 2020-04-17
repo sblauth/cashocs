@@ -8,7 +8,6 @@ import fenics
 import numpy as np
 from ..optimization_algorithm import OptimizationAlgorithm
 from ..line_search import ArmijoLineSearch
-from ...helpers import summ
 
 
 

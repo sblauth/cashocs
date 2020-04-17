@@ -6,8 +6,7 @@ Created on 02/03/2020, 14.52
 
 import configparser
 from fenics import *
-from adpack import OptimizationProblem, MeshGen
-from phdutils import regular_mesh
+from adpack import OptimizationProblem, MeshGen, regular_mesh
 import numpy as np
 
 

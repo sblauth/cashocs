@@ -8,7 +8,6 @@ import fenics
 import numpy as np
 from ...optimization_algorithm import OptimizationAlgorithm
 from .unconstrained_line_search import UnconstrainedLineSearch
-from ....helpers import summ
 from _collections import deque
 
 

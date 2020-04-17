@@ -10,6 +10,15 @@ import numpy as np
 
 
 class UnconstrainedHessianProblem:
+	"""The class that manages the computations for the Hessian in the truncated Newton method for the Primal Dual Active Set method
+
+	Parameters
+	----------
+	form_handler : adpack.forms.FormHandler
+		the FormHandler object for the optimization problem
+	gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
+		the GradientProblem object (we need the gradient for the computation of the Hessian)
+	"""
 
 	def __init__(self, form_handler, gradient_problem):
 
@@ -53,8 +62,20 @@ class UnconstrainedHessianProblem:
 
 		self.no_sensitivity_solves = 0
 
-	def hessian_application(self):
 
+	def hessian_application(self):
+		"""Returns the application of J''(u)[h] where h = self.test_direction
+
+		This is needed in the truncated Newton method where we solve the system
+			J''(u) du = - J'(u)
+		via iterative methods (cg, minres, cr)
+
+		Returns
+		-------
+		self.form_handler.hessian_action : List[dolfin.function.function.Function]
+			the generic function that saves the result of J''(u)[h]
+
+		"""
 		self.states_prime = self.form_handler.states_prime
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
@@ -139,8 +160,23 @@ class UnconstrainedHessianProblem:
 
 		return self.form_handler.hessian_actions
 
-	def application_simplified(self, x):
 
+	def application_simplified(self, x):
+		"""A simplified version of the application of the Hessian.
+
+		Computes J''(u)[x], where x is the input vector (see self.hessian_application for more details)
+
+		Parameters
+		----------
+		x : List[dolfin.function.function.Function]
+			a function to which we want to apply the Hessian to
+
+		Returns
+		-------
+		self.hessian_actions : List[dolfin.function.function.Function]
+			the generic function that saves the result of J''(u)[h]
+
+		"""
 		for i in range(self.control_dim):
 			self.test_directions[i].vector()[:] = x[i].vector()[:]
 
@@ -148,9 +184,16 @@ class UnconstrainedHessianProblem:
 
 		return self.hessian_actions
 
-	def newton_solve(self, idx_active):
 
-		# self.form_handler.compute_active_sets()
+	def newton_solve(self, idx_active):
+		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr)
+
+		Returns
+		-------
+		self.delta_control : List[dolfin.function.function.Function]
+			the Newton increment
+
+		"""
 
 		for j in range(self.control_dim):
 			self.delta_control[j].vector()[:] = 0.0
