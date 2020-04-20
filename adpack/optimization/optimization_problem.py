@@ -19,6 +19,7 @@ from .methods.CG import CG
 from .methods.newton import Newton
 from .methods.semi_smooth_newton import SemiSmoothNewton
 from .methods.primal_dual_active_set_method import PDAS
+import time
 
 
 
@@ -48,7 +49,8 @@ class OptimizationProblem:
 		control_constraints : List[dolfin.function.function.Function] or List[float] or List[List]
 			Box constraints posed on the control
 		"""
-		
+
+		start_time = time.time()
 		### Overloading, such that we do not have to use lists for single state single control
 		if type(state_forms) == list:
 			self.state_forms = state_forms
@@ -108,10 +110,10 @@ class OptimizationProblem:
 		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
 		assert len(self.control_constraints) == self.control_dim, 'Length of controls does not match'
 		### end overloading
-		
+
 		self.state_spaces = [x.function_space() for x in self.states]
 		self.control_spaces = [x.function_space() for x in self.controls]
-		
+
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.control_measures, self.states, self.controls, self.adjoints, self.config, self.control_constraints)
 

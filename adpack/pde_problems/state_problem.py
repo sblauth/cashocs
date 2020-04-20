@@ -71,13 +71,13 @@ class StateProblem:
 						# 																				   'absolute_tolerance' : self.newton_atol}})
 
 						self.states[i] = NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i],
-													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=True)
+													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=False)
 
 			else:
 				for i in range(self.maxiter + 1):
 					res = 0.0
 					for j in range(self.form_handler.state_dim):
-						res_j = fenics.assemble(self.form_handler.state_eq_forms[j])
+						res_j = fenics.assemble(self.form_handler.state_picard_forms[j])
 
 						[bc.apply(res_j) for bc  in self.form_handler.bcs_list_ad[j]]
 

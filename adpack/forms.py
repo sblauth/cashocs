@@ -8,6 +8,7 @@ import fenics
 from ufl import replace
 from .helpers import summ
 import numpy as np
+import time
 
 
 
@@ -56,7 +57,7 @@ class FormHandler:
 		config : configparser.ConfigParser
 			the configparser object of the config file
 		"""
-		
+
 		self.lagrangian = lagrangian
 		self.bcs_list = bcs_list
 		self.control_measures = control_measures
@@ -76,7 +77,7 @@ class FormHandler:
 		self.control_spaces = [x.function_space() for x in self.controls]
 		self.mesh = self.state_spaces[0].mesh()
 		self.dx = fenics.Measure('dx', self.mesh)
-		
+
 		self.states_prime = [fenics.Function(V) for V in self.state_spaces]
 		self.adjoints_prime = [fenics.Function(V) for V in self.state_spaces]
 		
@@ -102,10 +103,14 @@ class FormHandler:
 		self.compute_adjoint_equations()
 		self.compute_gradient_equations()
 
+
+
+
 		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
 
-		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton':
+		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or (self.opt_algo == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
 			self.compute_newton_forms()
+
 
 
 
@@ -184,15 +189,18 @@ class FormHandler:
 			Creates self.state_eq_forms
 
 		"""
-		
+
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.state_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
 		self.state_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
-		
+
 		if self.config.getboolean('StateEquation', 'is_linear'):
 			for i in range(self.state_dim):
-				self.state_eq_forms[i] = replace(self.state_eq_forms[i], {self.states[i] : self.trial_functions_state[i]})
+				self.state_eq_forms[i] = replace(self.state_picard_forms[i], {self.states[i] : self.trial_functions_state[i]})
 	
-	
-	
+
+
 	def compute_adjoint_equations(self):
 		"""Computes the weak form of the adjoint equation for use with fenics
 		
@@ -202,22 +210,24 @@ class FormHandler:
 			Creates self.adjoint_eq_form and self.bcs_ad, corresponding to homogenized BCs
 
 		"""
-		
-		self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
 		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		self.adjoint_eq_lhs = []
 		self.adjoint_eq_rhs = []
-		
+
 		for i in range(self.state_dim):
 			self.adjoint_eq_forms[i] = replace(self.adjoint_eq_forms[i], {self.adjoints[i] : self.trial_functions_state[i]})
 			a, L = fenics.system(self.adjoint_eq_forms[i])
 			self.adjoint_eq_lhs.append(a)
 			self.adjoint_eq_rhs.append(L)
-			
+
 		self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
 		[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
 
-	
+
 	
 	def compute_gradient_equations(self):
 		"""Computes the variational form of the gradient equation, for the Riesz projection
