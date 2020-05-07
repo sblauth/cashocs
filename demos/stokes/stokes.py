@@ -51,6 +51,7 @@ J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*lambd)*inner(control
 
 optimization_problem = OptimizationProblem(e, bcs, dx, J, up, control, vq, config)
 optimization_problem.solve()
+# optimization_problem.state_problem.solve()
 
 u, p = up.split()
 v, q = vq.split()

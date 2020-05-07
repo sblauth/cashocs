@@ -32,12 +32,11 @@ class UnconstrainedLineSearch:
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
 		self.armijo_stepsize_initial = self.stepsize
 
-		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.controls_temp = self.optimization_algorithm.controls_temp
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 
 		self.controls = self.optimization_algorithm.controls
 		self.gradients = self.optimization_algorithm.gradients
-		self.iteration = self.optimization_algorithm.iteration
 
 		self.is_newton_like = self.config.get('OptimizationRoutine', 'algorithm') in ['lbfgs']
 		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton', 'semi_smooth_newton']
@@ -65,9 +64,13 @@ class UnconstrainedLineSearch:
 		while True:
 			if self.stepsize*self.search_direction_inf <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
+				for j in range(self.form_handler.control_dim):
+					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
+				for j in range(self.form_handler.control_dim):
+					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 
 			for j in range(len(self.controls)):
@@ -78,7 +81,7 @@ class UnconstrainedLineSearch:
 			self.objective_step = self.cost_functional.compute()
 
 			if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_directions):
-				if self.iteration == 0:
+				if self.optimization_algorithm.iteration == 0:
 					self.armijo_stepsize_initial = self.stepsize
 				break
 

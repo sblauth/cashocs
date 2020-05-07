@@ -99,6 +99,11 @@ class FormHandler:
 
 		self.temp = [fenics.Function(V) for V in self.control_spaces]
 
+		# self.state_coupling = self.config.get('StateEquation', 'StateCoupling')
+		# self.control_coupling = self.config.get('StateEquation', 'ControlCoupling')
+		# assert self.state_coupling in ['full', 'one_way', 'stepping', 'decoupled'], 'StateCoupling has to be one of full, one_way, stepping, decoupled'
+		# assert self.control_coupling in ['full', 'decoupled'], 'ControlCoupling has to be either full or decoupled'
+
 		self.compute_state_equations()
 		self.compute_adjoint_equations()
 		self.compute_gradient_equations()
@@ -190,15 +195,23 @@ class FormHandler:
 
 		"""
 
-		if self.config.get('StateEquation', 'picard_iteration'):
-			self.state_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		if self.config.getboolean('StateEquation', 'is_linear'):
+			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
+																 self.adjoints[i] : self.test_functions_state[i]}) for i in range(self.state_dim)]
 
-		self.state_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		else:
+			self.state_eq_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.state_picard_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 
 		if self.config.getboolean('StateEquation', 'is_linear'):
+			self.state_eq_forms_lhs = []
+			self.state_eq_forms_rhs = []
 			for i in range(self.state_dim):
-				self.state_eq_forms[i] = replace(self.state_picard_forms[i], {self.states[i] : self.trial_functions_state[i]})
-	
+				a, L = fenics.system(self.state_eq_forms[i])
+				self.state_eq_forms_lhs.append(a)
+				self.state_eq_forms_rhs.append(L)
 
 
 	def compute_adjoint_equations(self):
@@ -211,15 +224,16 @@ class FormHandler:
 
 		"""
 
+		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form, {self.adjoints[i] : self.trial_functions_state[i]}) for i in range(self.state_dim)]
+
 		if self.config.get('StateEquation', 'picard_iteration'):
 			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 
-		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		self.adjoint_eq_lhs = []
 		self.adjoint_eq_rhs = []
 
 		for i in range(self.state_dim):
-			self.adjoint_eq_forms[i] = replace(self.adjoint_eq_forms[i], {self.adjoints[i] : self.trial_functions_state[i]})
 			a, L = fenics.system(self.adjoint_eq_forms[i])
 			self.adjoint_eq_lhs.append(a)
 			self.adjoint_eq_rhs.append(L)
@@ -246,73 +260,77 @@ class FormHandler:
 	
 	def compute_newton_forms(self):
 		"""Computes the needed forms for a truncated Newton method
-		
+
 		Returns
 		-------
-		
+
 
 		"""
-		
-		self.sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.trial_functions_state[i]) for i in range(self.state_dim)]
-		self.sensitivity_eqs_picard = [fenics.derivative(self.state_forms[i], self.states[i], self.states_prime[i]) for i in range(self.state_dim)]
-		for i in range(self.state_dim):
-			self.sensitivity_eqs_lhs[i] = replace(self.sensitivity_eqs_lhs[i], {self.adjoints[i] : self.test_functions_state[i]})
-			self.sensitivity_eqs_picard[i] = replace(self.sensitivity_eqs_picard[i], {self.adjoints[i] : self.test_functions_state[i]})
+
+		self.sensitivity_eqs_temp = [replace(self.state_forms[i], {self.adjoints[i] : self.test_functions_state[i]}) for i in range(self.state_dim)]
+
+		self.sensitivity_eqs_lhs = [fenics.derivative(self.sensitivity_eqs_temp[i], self.states[i], self.trial_functions_state[i]) for i in range(self.state_dim)]
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.sensitivity_eqs_picard = [fenics.derivative(self.sensitivity_eqs_temp[i], self.states[i], self.states_prime[i]) for i in range(self.state_dim)]
+
+		# need to distinguish due to empty sum in case state_dim = 1
 		if self.state_dim > 1:
-			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.state_forms[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim) if j != i])
-										- summ([fenics.derivative(self.state_forms[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
+			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.sensitivity_eqs_temp[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim) if j != i])
+										- summ([fenics.derivative(self.sensitivity_eqs_temp[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
 										for i in range(self.state_dim)]
 		else:
-			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.state_forms[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
+			self.sensitivity_eqs_rhs = [- summ([fenics.derivative(self.sensitivity_eqs_temp[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)])
 										for i in range(self.state_dim)]
-			
-		for i in range(self.state_dim):
-			self.sensitivity_eqs_rhs[i] = replace(self.sensitivity_eqs_rhs[i], {self.adjoints[i] : self.test_functions_state[i]})
-			self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
+
+		# Add a "rhs" for the nonlinear picard iteration
+		if self.config.get('StateEquation', 'picard_iteration'):
+			for i in range(self.state_dim):
+				self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
 
 		self.L_y = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 		self.L_u = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
 
-		self.L_yy = [[fenics.derivative(self.L_y[i], self.states[j], self.arg_state2[j]) for j in range(self.state_dim)] for i in range(self.state_dim)]
-		self.L_yu = [[fenics.derivative(self.L_u[i], self.states[j], self.arg_state2[j]) for j in range(self.state_dim)] for i in range(self.control_dim)]
-		self.L_uy = [[fenics.derivative(self.L_y[i], self.controls[j], self.arg_control2[j]) for j in range(self.control_dim)] for i in range(self.state_dim)]
-		self.L_uu = [[fenics.derivative(self.L_u[i], self.controls[j], self.arg_control2[j]) for j in range(self.control_dim)] for i in range(self.control_dim)]
-		
-		
-		self.w_1 = [summ([replace(self.L_yy[i][j], {self.arg_state2[j] : self.states_prime[j]}) for j in range(self.state_dim)])
-					+ summ([replace(self.L_uy[i][j] , {self.arg_control2[j] : self.test_directions[j]}) for j in range(self.control_dim)])
-					for i in range(self.state_dim)]
-		self.w_2 = [summ([replace(self.L_yu[i][j], {self.arg_state2[j] : self.states_prime[j]}) for j in range(self.state_dim)])
-					+ summ([replace(self.L_uu[i][j], {self.arg_control2[j] : self.test_directions[j]}) for j in range(self.control_dim)])
-					for i in range(self.control_dim)]
-		
-		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.state_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
-		self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.state_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.L_yy = [[fenics.derivative(self.L_y[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim)] for i in range(self.state_dim)]
+		self.L_yu = [[fenics.derivative(self.L_u[i], self.states[j], self.states_prime[j]) for j in range(self.state_dim)] for i in range(self.control_dim)]
+		self.L_uy = [[fenics.derivative(self.L_y[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)] for i in range(self.state_dim)]
+		self.L_uu = [[fenics.derivative(self.L_u[i], self.controls[j], self.test_directions[j]) for j in range(self.control_dim)] for i in range(self.control_dim)]
+
+
+		self.w_1 = [summ([self.L_yy[i][j] for j in range(self.state_dim)])
+					+ summ([self.L_uy[i][j] for j in range(self.control_dim)]) for i in range(self.state_dim)]
+		self.w_2 = [summ([self.L_yu[i][j] for j in range(self.state_dim)])
+					+ summ([self.L_uu[i][j] for j in range(self.control_dim)]) for i in range(self.control_dim)]
+
+		self.adjoint_sensitivity_eqs_diag_temp = [replace(self.state_forms[i], {self.adjoints[i] : self.trial_functions_state[i]}) for i in range(self.state_dim)]
+
+		mapping_dict = {self.adjoints[j]: self.adjoints_prime[j] for j in range(self.state_dim)}
+		self.adjoint_sensitivity_eqs_all_temp = [replace(self.state_forms[i], mapping_dict) for i in range(self.state_dim)]
+
+		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
 
 		if self.state_dim > 1:
 			for i in range(self.state_dim):
-				self.adjoint_sensitivity_eqs_lhs[i] = replace(self.adjoint_sensitivity_eqs_lhs[i], {self.adjoints[i] : self.trial_functions_state[i]})
-				self.adjoint_sensitivity_eqs_picard[i] = replace(self.adjoint_sensitivity_eqs_picard[i], {self.adjoints[i] : self.adjoints_prime[i]})
-
-				self.w_1[i] -= summ([replace(fenics.derivative(self.state_forms[j], self.states[i], self.test_functions_state[i]),
-											 {self.adjoints[j] : self.adjoints_prime[j]}) for j in range(self.state_dim) if j != i])
+				self.w_1[i] -= summ([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.states[i], self.test_functions_state[i]) for j in range(self.state_dim) if j != i])
 		else:
-			self.adjoint_sensitivity_eqs_lhs[0] = replace(self.adjoint_sensitivity_eqs_lhs[0], {self.adjoints[0] : self.trial_functions_state[0]})
-			self.adjoint_sensitivity_eqs_picard[0] = replace(self.adjoint_sensitivity_eqs_picard[0], {self.adjoints[0] : self.adjoints_prime[0]})
+			pass
 
+		# Add "rhs" for nonlinear picard iteration form
 		for i in range(self.state_dim):
 			self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
-		
-		
-		self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.state_forms[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
+
+		self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
 											for i in range(self.control_dim)]
-		
-		for i in range(self.control_dim):
-			for j in range(self.state_dim):
-				self.adjoint_sensitivity_eqs_rhs[i] = replace(self.adjoint_sensitivity_eqs_rhs[i], {self.adjoints[j] : self.adjoints_prime[j]})
-		
+		# self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.state_forms[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
+		# 									for i in range(self.control_dim)]
+
+		# for i in range(self.control_dim):
+		# 	for j in range(self.state_dim):
+		# 		self.adjoint_sensitivity_eqs_rhs[i] = replace(self.adjoint_sensitivity_eqs_rhs[i], {self.adjoints[j] : self.adjoints_prime[j]})
+
 		self.w_3 = [- self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)]
-		
+
 		self.hessian_lhs = [fenics.inner(self.trial_functions_control[i], self.test_functions_control[i])*self.control_measures[i] for i in range(self.control_dim)]
 		self.hessian_rhs = [self.w_2[i] + self.w_3[i] for i in range(self.control_dim)]

@@ -29,7 +29,6 @@ class InnerGradientDescent(OptimizationAlgorithm):
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False
 
-		self.converged = False
 		self.line_search.stepsize = 1.0
 
 		while True:
@@ -46,33 +45,35 @@ class InnerGradientDescent(OptimizationAlgorithm):
 
 			if self.iteration==0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				if self.gradient_norm_initial == 0.0:
+					self.print_results()
+					break
 				if self.first_iteration:
 					self.first_gradient_norm = self.gradient_norm_initial
 					self.first_iteration = False
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared)/self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2:
-				self.converged = True
-				# self.print_results()
+				self.print_results()
 				break
 
 			for i in range(len(self.controls)):
-				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 				self.search_directions[i].vector()[idx_active[i]] = 0
 
 			self.line_search.search(self.search_directions)
 			if self.line_search_broken:
-				# print('Armijo rule failed')
-				for j in range(len(self.controls)):
-					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
-				raise SystemExit('Armijo rule failed.')
-				# break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				print('Inner Solver exceeded maximum iterations')
-				break
-
-
-
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')

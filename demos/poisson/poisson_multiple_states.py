@@ -8,9 +8,11 @@ import configparser
 from fenics import *
 from adpack import OptimizationProblem, MeshGen
 import numpy as np
+import time
 
 
 
+start_time = time.time()
 set_log_level(LogLevel.CRITICAL)
 
 config = configparser.ConfigParser()
@@ -51,3 +53,5 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx 
 
 optimization_problem = OptimizationProblem([e1, e2], bcs_list, [dx], J, [y, z], [u], [p, q], config)
 optimization_problem.solve()
+end_time = time.time()
+print('Ellapsed time: ' + str(end_time - start_time) + ' s')

@@ -43,7 +43,7 @@ control_measure = [dx for i in range(len(t_array))]
 e = []
 J_summands = []
 
-lambd = 1e-4
+lambd = 1e-6
 y_d_expr = Expression('exp(-20*(pow(x[0] - 0.5 - 0.25*cos(2*pi*t), 2) + pow(x[1] - 0.5 - 0.25*sin(2*pi*t), 2)))', degree=1, t=0.0)
 
 
@@ -64,7 +64,7 @@ for i in range(len(t_array)):
 	e.append(state_eq)
 	y_d.append(interpolate(y_d_expr, V))
 
-	J_summands.append(Constant(0.5)*(y - y_d[i])*(y - y_d[i])*dx + Constant(0.5*lambd)*u*u*dx)
+	J_summands.append(Constant(0.5*dt)*(y - y_d[i])*(y - y_d[i])*dx + Constant(0.5*lambd)*u*u*dx)
 
 J = summ(J_summands)
 

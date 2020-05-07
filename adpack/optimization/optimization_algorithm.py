@@ -20,7 +20,6 @@ class OptimizationAlgorithm:
 		"""
 
 		self.line_search_broken = False
-		self.converged = False
 
 		self.optimization_problem = optimization_problem
 		self.form_handler = self.optimization_problem.form_handler
@@ -45,6 +44,7 @@ class OptimizationAlgorithm:
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
+		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit')
 
 
 
@@ -60,7 +60,7 @@ class OptimizationAlgorithm:
 
 		if self.iteration == 0:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs)    Step size:  ' + format(self.stepsize, '.3e') + ' \n '
+					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '
 		else:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
 					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')

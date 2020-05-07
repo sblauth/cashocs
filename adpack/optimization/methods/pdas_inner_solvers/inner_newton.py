@@ -55,7 +55,7 @@ class InnerNewton(OptimizationAlgorithm):
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared)/self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
-				self.converged = True
+				self.print_results()
 				break
 
 			self.search_directions = self.optimization_problem.unconstrained_hessian.newton_solve(idx_active)
@@ -67,14 +67,14 @@ class InnerNewton(OptimizationAlgorithm):
 
 			self.line_search.search(self.search_directions)
 			if self.armijo_broken:
-				raise SystemExit('Armijo rule failed.')
-				# print('Armijo rule failed')
-				# break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
+
 
 			self.iteration += 1
 
 			if self.iteration >= self.maximum_iterations:
 				raise SystemExit('Maximum number of iterations exceeded.')
-
-		# if self.converged:
-		# 	self.print_results()

@@ -104,9 +104,14 @@ class PDAS(OptimizationAlgorithm):
 			func_value = self.inner_solver.line_search.objective_step
 			norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
 
-			# self.print_results()
+
 			if self.iteration >= self.maximum_iterations:
-				break
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
 
 			self.compute_active_inactive_sets()
 
@@ -114,7 +119,6 @@ class PDAS(OptimizationAlgorithm):
 				print('')
 				print('Primal Dual Active Set Method Converged.')
 				break
-			# self.print_results()
 
 			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')
 

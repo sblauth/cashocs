@@ -52,7 +52,7 @@ class StateProblem:
 		"""
 		
 		if not self.has_solution:
-			if self.initial_guess is not None and self.number_of_solves <= 5:
+			if self.initial_guess is not None:
 				for j in range(self.form_handler.state_dim):
 					fenics.assign(self.states[j], self.initial_guess[j])
 
@@ -60,8 +60,7 @@ class StateProblem:
 			if not self.config.getboolean('StateEquation', 'picard_iteration'):
 				if self.config.getboolean('StateEquation', 'is_linear'):
 					for i in range(self.form_handler.state_dim):
-						a, L = fenics.system(self.form_handler.state_eq_forms[i])
-						fenics.solve(a==L, self.states[i], self.bcs_list[i])
+						fenics.solve(self.form_handler.state_eq_forms_lhs[i]==self.form_handler.state_eq_forms_rhs[i], self.states[i], self.bcs_list[i])
 
 				else:
 					for i in range(self.form_handler.state_dim):

@@ -26,6 +26,7 @@ class LBFGS(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
+		self.converged = False
 
 		self.temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
@@ -126,6 +127,7 @@ class LBFGS(OptimizationAlgorithm):
 		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 		if self.gradient_norm_initial == 0:
 			self.converged = True
+			self.print_results()
 		self.form_handler.compute_active_sets()
 
 		while not self.converged:
@@ -133,14 +135,17 @@ class LBFGS(OptimizationAlgorithm):
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
 			if self.directional_derivative > 0:
-				print('No descent direction found')
+				# print('No descent direction found')
 				for j in range(self.form_handler.control_dim):
 					self.search_directions[j].vector()[:] = -self.gradients[j].vector()[:]
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
-				print('Armijo rule failed')
-				break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):
@@ -156,6 +161,7 @@ class LBFGS(OptimizationAlgorithm):
 
 			if self.relative_norm <= self.tolerance:
 				self.iteration += 1
+				self.print_results()
 				break
 
 			if self.memory_vectors > 0:
@@ -188,14 +194,17 @@ class LBFGS(OptimizationAlgorithm):
 					self.history_rho.pop()
 
 			self.iteration += 1
-			if self.iteration > self.maximum_iterations:
-				# print('LBFGS did not converge')
-				# break
-				raise SystemExit('LBFGS did not converge')
+			if self.iteration >= self.maximum_iterations:
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
 
 
-		if not self.line_search_broken:
-			self.print_results()
+		# if not self.line_search_broken:
+		# 	self.print_results()
 
 		if self.verbose:
 			print('')

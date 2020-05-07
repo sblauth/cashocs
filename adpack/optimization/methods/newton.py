@@ -64,13 +64,13 @@ class Newton(OptimizationAlgorithm):
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 				if self.gradient_norm_initial == 0:
-					self.converged = True
 					self.objective_value = self.cost_functional.compute()
+					self.print_results()
 					break
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance:
-				self.converged = True
+				self.print_results()
 				break
 
 			self.search_directions = self.optimization_problem.hessian_problem.newton_solve()
@@ -93,21 +93,28 @@ class Newton(OptimizationAlgorithm):
 				self.line_search.search(self.search_directions, self.has_curvature_info)
 
 				if self.armijo_broken:
-					print('Armijo rule failed')
-					break
+					if self.soft_exit:
+						print('Armijo rule failed.')
+						break
+					else:
+						raise SystemExit('Armijo rule failed.')
 
 			elif self.armijo_broken and not self.has_curvature_info:
-				print('Armijo rule failed')
-				break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			self.iteration += 1
 
 			if self.iteration >= self.maximum_iterations:
-				raise SystemExit('Newton Iteration did not converge')
-				# break
-
-		if self.converged:
-			self.print_results()
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
 
 		if self.verbose:
 			print('')

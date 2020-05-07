@@ -32,13 +32,12 @@ class ArmijoLineSearch:
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
 		self.armijo_stepsize_initial = self.stepsize
 
-		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
 		self.projected_difference = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
 		self.controls = self.optimization_algorithm.controls
+		self.controls_temp = self.optimization_algorithm.controls_temp
 		self.gradients = self.optimization_algorithm.gradients
-		self.iteration = self.optimization_algorithm.iteration
 
 		self.is_newton_like = self.config.get('OptimizationRoutine', 'algorithm') in ['lbfgs']
 		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton', 'semi_smooth_newton']
@@ -85,6 +84,9 @@ class ArmijoLineSearch:
 		self.search_direction_inf = np.max([np.max(np.abs(search_directions[i].vector()[:])) for i in range(len(self.gradients))])
 		self.optimization_algorithm.objective_value = self.cost_functional.compute()
 
+		if has_curvature_info:
+			self.stepsize = 1.0
+
 		self.optimization_algorithm.print_results()
 
 		for j in range(self.form_handler.control_dim):
@@ -93,9 +95,13 @@ class ArmijoLineSearch:
 		while True:
 			if self.stepsize*self.search_direction_inf <= 1e-5:
 				self.optimization_algorithm.line_search_broken = True
+				for j in range(self.form_handler.control_dim):
+					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
+				for j in range(self.form_handler.control_dim):
+					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 
 			for j in range(len(self.controls)):
@@ -107,7 +113,7 @@ class ArmijoLineSearch:
 			self.objective_step = self.cost_functional.compute()
 
 			if self.objective_step < self.optimization_algorithm.objective_value - self.epsilon_armijo*self.decrease_measure():
-				if self.iteration == 0:
+				if self.optimization_algorithm.iteration == 0:
 					self.armijo_stepsize_initial = self.stepsize
 				break
 
@@ -120,7 +126,5 @@ class ArmijoLineSearch:
 			self.optimization_algorithm.stepsize = self.stepsize
 			self.optimization_algorithm.objective_value = self.objective_step
 
-		if has_curvature_info:
-			self.stepsize = 1.0
-		else:
+		if not has_curvature_info:
 			self.stepsize *= self.beta_armijo

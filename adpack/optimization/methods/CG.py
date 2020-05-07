@@ -86,67 +86,67 @@ class CG(OptimizationAlgorithm):
 			self.gradient_problem.solve()
 
 			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
+			if self.iteration > 0:
+				if self.cg_method == 'FR':
+					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
+					self.beta_denominator = self.form_handler.scalar_product(self.gradients_prev, self.gradients_prev)
+					self.beta = self.beta_numerator / self.beta_denominator
 
-			if self.cg_method == 'FR':
-				self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
-				self.beta_denominator = self.form_handler.scalar_product(self.gradients_prev, self.gradients_prev)
-				self.beta = self.beta_numerator / self.beta_denominator
+				elif self.cg_method == 'PR':
+					for i in range(len(self.gradients)):
+						self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
-			elif self.cg_method == 'PR':
-				for i in range(len(self.gradients)):
-					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
-
-				self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.differences)
-				self.beta_denominator = self.form_handler.scalar_product(self.gradients_prev, self.gradients_prev)
-				self.beta = self.beta_numerator / self.beta_denominator
+					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.differences)
+					self.beta_denominator = self.form_handler.scalar_product(self.gradients_prev, self.gradients_prev)
+					self.beta = self.beta_numerator / self.beta_denominator
 
 
-			elif self.cg_method == 'HS':
-				for i in range(len(self.gradients)):
-					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				elif self.cg_method == 'HS':
+					for i in range(len(self.gradients)):
+						self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
-				self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.differences)
-				self.beta_denominator = self.form_handler.scalar_product(self.differences, self.search_directions)
-				self.beta = self.beta_numerator / self.beta_denominator
+					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.differences)
+					self.beta_denominator = self.form_handler.scalar_product(self.differences, self.search_directions)
+					self.beta = self.beta_numerator / self.beta_denominator
 
-			elif self.cg_method == 'DY':
-				for i in range(len(self.gradients)):
-					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				elif self.cg_method == 'DY':
+					for i in range(len(self.gradients)):
+						self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
-				self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
-				self.beta_denominator = self.form_handler.scalar_product(self.search_directions, self.differences)
-				self.beta = self.beta_numerator / self.beta_denominator
+					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
+					self.beta_denominator = self.form_handler.scalar_product(self.search_directions, self.differences)
+					self.beta = self.beta_numerator / self.beta_denominator
 
-			elif self.cg_method == 'CD':
-				self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
-				self.beta_denominator = self.form_handler.scalar_product(self.search_directions, self.gradients)
-				self.beta = self.beta_numerator / self.beta_denominator
+				elif self.cg_method == 'CD':
+					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
+					self.beta_denominator = self.form_handler.scalar_product(self.search_directions, self.gradients)
+					self.beta = self.beta_numerator / self.beta_denominator
 
-			elif self.cg_method == 'HZ':
-				for i in range(len(self.gradients)):
-					self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
+				elif self.cg_method == 'HZ':
+					for i in range(len(self.gradients)):
+						self.differences[i].vector()[:] = self.gradients[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
-				dy = self.form_handler.scalar_product(self.search_directions, self.differences)
-				y2 = self.form_handler.scalar_product(self.differences, self.differences)
+					dy = self.form_handler.scalar_product(self.search_directions, self.differences)
+					y2 = self.form_handler.scalar_product(self.differences, self.differences)
 
-				for i in range(len(self.gradients)):
-					self.differences[i].vector()[:] = self.differences[i].vector()[:] - 2*y2/dy*self.search_directions[i].vector()[:]
+					for i in range(len(self.gradients)):
+						self.differences[i].vector()[:] = self.differences[i].vector()[:] - 2*y2/dy*self.search_directions[i].vector()[:]
 
-				self.beta = self.form_handler.scalar_product(self.differences, self.gradients)/dy
+					self.beta = self.form_handler.scalar_product(self.differences, self.gradients)/dy
 
-			else:
-				raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
+				else:
+					raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 				if self.gradient_norm_initial == 0:
-					self.converged = True
+					self.print_results()
 					break
 				self.beta = 0.0
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance:
-				self.converged = True
+				self.print_results()
 				break
 
 			if not self.cg_use_restart:
@@ -169,17 +169,21 @@ class CG(OptimizationAlgorithm):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
-			if self.armijo_broken:
-				print('Armijo rule failed')
-				break
+			if self.line_search_broken:
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				raise SystemExit('CG did not converge')
-				# break
-
-		if self.converged:
-			self.print_results()
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
 
 		if self.verbose:
 			print('')

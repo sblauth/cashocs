@@ -57,6 +57,8 @@ class OptimizationProblem:
 		else:
 			self.state_forms = [state_forms]
 
+		if not type(bcs_list) == list:
+			raise SystemExit('bcs_list must be of type list.')
 		try:
 			if type(bcs_list) == list and type(bcs_list[0]) == list:
 				self.bcs_list = bcs_list

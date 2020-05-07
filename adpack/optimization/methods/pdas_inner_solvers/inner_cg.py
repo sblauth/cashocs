@@ -123,7 +123,7 @@ class InnerCG(OptimizationAlgorithm):
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared)/self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2:
-				self.converged = True
+				self.print_results()
 				break
 
 			if not self.cg_use_restart:
@@ -146,20 +146,17 @@ class InnerCG(OptimizationAlgorithm):
 
 			self.line_search.search(self.search_directions)
 			if self.armijo_broken:
-				raise SystemExit('Armijo rule failed')
-				# print('Armijo rule failed')
-				# break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				break
-
-		# if self.converged:
-			# self.print_results()
-
-		# print('')
-		# print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-		# 	  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-		# print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-		# 	  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-		# print('')
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')

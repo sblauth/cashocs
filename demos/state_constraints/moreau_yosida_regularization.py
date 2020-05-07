@@ -60,7 +60,7 @@ for gamma in gammas:
 	optimization_problem.solve()
 
 
-# y_file = File('y.pvd')
-# u_file = File('u.pvd')
-# y_file << y
-# u_file << u
+y_file = File('y.pvd')
+u_file = File('u.pvd')
+y_file << y
+u_file << u

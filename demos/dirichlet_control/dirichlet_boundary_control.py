@@ -29,7 +29,7 @@ u.vector()[:] = 0.0
 
 p = Function(V)
 
-eta = Constant(1e1)
+eta = Constant(1e3)
 e = inner(grad(y), grad(p))*dx - inner(grad(y), n)*p*ds - inner(grad(p), n)*(y - u)*ds + eta/h*(y - u)*p*ds - Constant(1)*p*dx
 
 lambd = 0.0

@@ -53,32 +53,34 @@ class GradientDescent(OptimizationAlgorithm):
 			if self.iteration == 0:
 				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
 				if self.gradient_norm_initial == 0:
-					self.converged = True
+					self.print_results()
 					break
 
 			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
 			if self.relative_norm <= self.tolerance:
-				self.converged = True
+				self.print_results()
 				break
 			
 			for i in range(len(self.controls)):
-				self.controls_temp[i].vector()[:] = self.controls[i].vector()[:]
 				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
-				print('Armijo rule failed')
-				for j in range(len(self.controls)):
-					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
-				break
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				raise SystemExit('Gradient Descent did not converge')
-				# break
-
-		if self.converged:
-			self.print_results()
+				self.print_results()
+				if self.soft_exit:
+					print('')
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
 
 		if self.verbose:
 			print('')
