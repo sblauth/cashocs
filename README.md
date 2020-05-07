@@ -3,7 +3,22 @@ A collection of python packages for optimization with partial differential equat
 Overview / Contents
 -  adpack (optimization package for fenics which generates adjoints automatically)
 
-Installation / Setup
+Setup (from ITWM)
+
+- Load the module tv/fenics
+
+    `module load tv/fenics/2018.1.0`
+    
+    and run
+    
+    `activate`
+
+- The git repository with the demos can be found under /p/tv/local/adpack
+
+- If you want to have a custom installation, you can clone the git repository yourself, but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)
+    
+
+Installation / Setup (external)
 
 - Note, that for all commands shown below it is assumed that you run them from the location where you cloned this repository to, otherwise you will be missing the corresponding files or might even break things!
 
