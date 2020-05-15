@@ -5,6 +5,7 @@ Created on 24/02/2020, 09.32
 """
 
 import fenics
+import json
 
 
 
@@ -41,7 +42,13 @@ class OptimizationAlgorithm:
 		self.relative_norm = 1.0
 		self.stepsize = 1.0
 
+		self.output_dict = dict()
+		self.output_dict['cost_function_value'] = []
+		self.output_dict['gradient_norm'] = []
+		self.output_dict['stepsize'] = []
+
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results')
 		self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit')
@@ -65,8 +72,19 @@ class OptimizationAlgorithm:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
 					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')
 
+		self.output_dict['cost_function_value'].append(self.objective_value)
+		self.output_dict['gradient_norm'].append(self.relative_norm)
+		self.output_dict['stepsize'].append(self.stepsize)
+
 		if self.verbose:
 			print(output)
+
+
+
+	def finalize(self):
+		if self.save_results:
+			with open('./history.json', 'w') as file:
+				json.dump(self.output_dict, file)
 
 
 

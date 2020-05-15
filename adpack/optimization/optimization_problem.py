@@ -189,3 +189,4 @@ class OptimizationProblem:
 			raise SystemExit('OptimizationRoutine.algorithm needs to be one of gradient_descent, lbfgs, cg, newton, semi_smooth_newton or pdas.')
 		
 		self.solver.run()
+		self.solver.finalize()

@@ -175,8 +175,11 @@ class LBFGS(OptimizationAlgorithm):
 				self.history_y.appendleft([x.copy(True) for x in self.y_k])
 				self.history_s.appendleft([x.copy(True) for x in self.s_k])
 				self.curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
-				
-				if self.curvature_condition <= 0:
+
+
+				if self.curvature_condition <= 1e-14:
+				# if self.curvature_condition <= 0.0:
+				# if self.curvature_condition / self.form_handler.scalar_product(self.s_k, self.s_k) < 1e-7 * self.gradient_problem.return_norm_squared():
 					self.has_curvature_info = False
 
 					self.history_s = deque()
@@ -185,9 +188,9 @@ class LBFGS(OptimizationAlgorithm):
 
 				else:
 					self.has_curvature_info = True
-					rho = 1/self.form_handler.scalar_product(self.y_k, self.s_k)
+					rho = 1/self.curvature_condition
 					self.history_rho.appendleft(rho)
-				
+
 				if len(self.history_s) > self.memory_vectors:
 					self.history_s.pop()
 					self.history_y.pop()

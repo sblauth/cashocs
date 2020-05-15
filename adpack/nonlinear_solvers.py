@@ -96,7 +96,7 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 				fenics.solve(A, ddu.vector(), b, 'mumps')
 				# fenics.solve(A, ddu.vector(), b, 'umfpack')
 				
-				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) < 0.99:
+				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) < 1:
 					break
 				else:
 					u.vector()[:] = u_save.vector()[:]

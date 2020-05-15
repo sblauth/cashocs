@@ -93,7 +93,7 @@ class ArmijoLineSearch:
 			self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
 
 		while True:
-			if self.stepsize*self.search_direction_inf <= 1e-5:
+			if self.stepsize*self.search_direction_inf <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
 				for j in range(self.form_handler.control_dim):
 					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
