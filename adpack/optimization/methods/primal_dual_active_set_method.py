@@ -72,7 +72,6 @@ class PDAS(OptimizationAlgorithm):
 
 	def run(self):
 		self.iteration = 0
-		self.relative_norm = 1.0
 
 		### TODO: Check feasible initialization
 

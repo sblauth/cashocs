@@ -52,6 +52,7 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx + Constant
 ### L^1 sparse control
 # J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(lambd)*abs(u)*dx
 
+scalar_products = [TrialFunction(V)*TestFunction(V)*dx, TrialFunction(V)*TestFunction(V)*ds]
 
-optimization_problem = OptimizationProblem([e], [bcs], [dx, ds], J, [y], [u, v], [p], config)
+optimization_problem = OptimizationProblem([e], [bcs], J, [y], [u, v], [p], config, scalar_products)
 optimization_problem.solve()

@@ -61,22 +61,22 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
+			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
 			if self.iteration == 0:
-				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0.0:
 					self.print_results()
 					break
 
-			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			if self.relative_norm <= self.tolerance:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.print_results()
 				break
 
 			self.print_results()
 
 			self.search_directions, self.delta_mu = self.optimization_problem.semi_smooth_hessian.newton_solve()
-			self.directional_derivative = summ([fenics.assemble(fenics.inner(self.search_directions[i], self.gradients[i])*self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
+			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
 
 			self.idx_inactive = self.optimization_problem.semi_smooth_hessian.idx_inactive
 			self.idx_active = self.optimization_problem.semi_smooth_hessian.idx_active

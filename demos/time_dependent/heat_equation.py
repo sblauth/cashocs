@@ -68,7 +68,7 @@ for i in range(len(t_array)):
 
 J = summ(J_summands)
 
-optimization_problem = OptimizationProblem(e, bcs_list, control_measure, J, states, controls, adjoints, config)
+optimization_problem = OptimizationProblem(e, bcs_list, J, states, controls, adjoints, config)
 optimization_problem.solve()
 
 

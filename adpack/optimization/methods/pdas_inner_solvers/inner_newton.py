@@ -45,16 +45,16 @@ class InnerNewton(OptimizationAlgorithm):
 				self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
 				self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-			self.gradient_norm_squared = self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient)
+			self.gradient_norm = np.sqrt(self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient))
 
 			if self.iteration==0:
-				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				self.gradient_norm_initial = self.gradient_norm
 				if self.first_iteration:
 					self.first_gradient_norm = self.gradient_norm_initial
 					self.first_iteration = False
 
-			self.relative_norm = np.sqrt(self.gradient_norm_squared)/self.gradient_norm_initial
-			if self.relative_norm <= self.tolerance or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
 				self.print_results()
 				break
 

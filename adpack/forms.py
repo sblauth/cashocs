@@ -9,6 +9,7 @@ from ufl import replace
 from .helpers import summ
 import numpy as np
 import time
+from petsc4py import PETSc
 
 
 
@@ -37,7 +38,7 @@ class Lagrangian:
 		
 class FormHandler:
 
-	def __init__(self, lagrangian, bcs_list, control_measures, states, controls, adjoints, config, control_constraints):
+	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, control_scalar_products, control_constraints):
 		"""The form handler implements all form manipulations needed in order to compute adjoint equations, sensitvities, etc.
 		
 		Parameters
@@ -60,11 +61,11 @@ class FormHandler:
 
 		self.lagrangian = lagrangian
 		self.bcs_list = bcs_list
-		self.control_measures = control_measures
 		self.states = states
 		self.controls = controls
 		self.adjoints = adjoints
 		self.config = config
+		self.control_scalar_products = control_scalar_products
 		self.control_constraints = control_constraints
 		
 		self.cost_functional_form = self.lagrangian.cost_functional_form
@@ -75,47 +76,72 @@ class FormHandler:
 		
 		self.state_spaces = [x.function_space() for x in self.states]
 		self.control_spaces = [x.function_space() for x in self.controls]
+		self.adjoint_spaces = [x.function_space() for x in self.adjoints]
+		# test if state_spaces == adjoint_spaces
+		if self.state_spaces == self.adjoint_spaces:
+			self.state_adjoint_equal_spaces = True
+		else:
+			self.state_adjoint_equal_spaces = False
+
 		self.mesh = self.state_spaces[0].mesh()
 		self.dx = fenics.Measure('dx', self.mesh)
 
 		self.states_prime = [fenics.Function(V) for V in self.state_spaces]
-		self.adjoints_prime = [fenics.Function(V) for V in self.state_spaces]
+		self.adjoints_prime = [fenics.Function(V) for V in self.adjoint_spaces]
 		
 		self.hessian_actions = [fenics.Function(V) for V in self.control_spaces]
-		
-		self.arg_state1 = [fenics.Function(V) for V in self.state_spaces]
-		self.arg_state2 = [fenics.Function(V) for V in self.state_spaces]
-		
-		self.arg_control1 = [fenics.Function(V) for V in self.control_spaces]
-		self.arg_control2 = [fenics.Function(V) for V in self.control_spaces]
-		
+
 		self.test_directions = [fenics.Function(V) for V in self.control_spaces]
 		
 		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
 		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
-		
+
+		self.trial_functions_adjoint = [fenics.TrialFunction(V) for V in self.adjoint_spaces]
+		self.test_functions_adjoint = [fenics.TestFunction(V) for V in self.adjoint_spaces]
+
 		self.trial_functions_control = [fenics.TrialFunction(V) for V in self.control_spaces]
 		self.test_functions_control = [fenics.TestFunction(V) for V in self.control_spaces]
 
 		self.temp = [fenics.Function(V) for V in self.control_spaces]
 
-		# self.state_coupling = self.config.get('StateEquation', 'StateCoupling')
-		# self.control_coupling = self.config.get('StateEquation', 'ControlCoupling')
-		# assert self.state_coupling in ['full', 'one_way', 'stepping', 'decoupled'], 'StateCoupling has to be one of full, one_way, stepping, decoupled'
-		# assert self.control_coupling in ['full', 'decoupled'], 'ControlCoupling has to be either full or decoupled'
-
 		self.compute_state_equations()
 		self.compute_adjoint_equations()
 		self.compute_gradient_equations()
-
-
-
 
 		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
 
 		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or (self.opt_algo == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
 			self.compute_newton_forms()
 
+		# initialize the scalar products
+		fe_scalar_product_matrices = [fenics.assemble(self.control_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
+		self.scalar_product_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
+		[fe_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
+		self.riesz_projection_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
+
+		# test for symmetry
+		for i in range(self.control_dim):
+			if not self.scalar_product_matrices[i].isSymmetric():
+				if not self.scalar_product_matrices[i].isSymmetric(1e-12):
+					raise SystemExit('Error: Supplied scalar product form is not symmetric')
+
+		opts = fenics.PETScOptions
+		opts.clear()
+		opts.set('ksp_type', 'cg')
+		opts.set('pc_type', 'hypre')
+		opts.set('pc_hypre_type', 'boomeramg')
+		opts.set('pc_hypre_boomeramg_strong_threshold', 0.7)
+		opts.set('ksp_rtol', 1e-16)
+		opts.set('ksp_atol', 1e-50)
+		opts.set('ksp_max_it', 100)
+		# opts.set('ksp_monitor_true_residual')
+
+		self.ksps = []
+		for i in range(self.control_dim):
+			ksp = PETSc.KSP().create()
+			ksp.setFromOptions()
+			ksp.setOperators(self.riesz_projection_matrices[i])
+			self.ksps.append(ksp)
 
 
 
@@ -136,14 +162,24 @@ class FormHandler:
 
 		"""
 
-		return summ([fenics.assemble(fenics.inner(a[i], b[i])*self.control_measures[i]) for i in range(self.control_dim)])
+		result = 0.0
+
+		for i in range(self.control_dim):
+			x = fenics.as_backend_type(a[i].vector()).vec()
+			y = fenics.as_backend_type(b[i].vector()).vec()
+
+			temp, _ = self.scalar_product_matrices[i].getVecs()
+			self.scalar_product_matrices[i].mult(x, temp)
+			result += temp.dot(y)
+
+		return result
 
 
 
 	def compute_active_sets(self):
 
-		self.idx_active_lower = [(self.controls[j].vector()[:] <= self.control_constraints[j][0]).nonzero()[0] for j in range(self.control_dim)]
-		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1]).nonzero()[0] for j in range(self.control_dim)]
+		self.idx_active_lower = [(self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
+		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
 
 		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
 		[self.idx_active[j].sort() for j in range(self.control_dim)]
@@ -179,7 +215,7 @@ class FormHandler:
 	def project(self, a):
 
 		for j in range(self.control_dim):
-			a[j].vector()[:] = np.maximum(self.control_constraints[j][0], np.minimum(self.control_constraints[j][1], a[j].vector()[:]))
+			a[j].vector()[:] = np.maximum(self.control_constraints[j][0].vector()[:], np.minimum(self.control_constraints[j][1].vector()[:], a[j].vector()[:]))
 
 		return a
 	
@@ -224,12 +260,12 @@ class FormHandler:
 
 		"""
 
-		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form, {self.adjoints[i] : self.trial_functions_state[i]}) for i in range(self.state_dim)]
+		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form, {self.adjoints[i] : self.trial_functions_adjoint[i]}) for i in range(self.state_dim)]
 
 		if self.config.get('StateEquation', 'picard_iteration'):
-			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
 
-		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
 		self.adjoint_eq_lhs = []
 		self.adjoint_eq_rhs = []
 
@@ -238,8 +274,42 @@ class FormHandler:
 			self.adjoint_eq_lhs.append(a)
 			self.adjoint_eq_rhs.append(L)
 
-		self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
-		[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
+		if self.state_adjoint_equal_spaces:
+			self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
+			[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
+
+		else:
+			def get_subdx(V, idx, ls):
+				if V.id()==idx:
+					return ls
+				if V.num_sub_spaces() > 1:
+					for i in range(V.num_sub_spaces()):
+						ans = get_subdx(V.sub(i), idx, ls + [i])
+						if ans is not None:
+							return ans
+				else:
+					return None
+
+			self.bcs_list_ad = [[None for bc in range(len(self.bcs_list[i]))] for i in range(self.state_dim)]
+
+			for i in range(self.state_dim):
+				for j, bc in enumerate(self.bcs_list[i]):
+					idx = bc.function_space().id()
+					subdx = get_subdx(self.state_spaces[i], idx, ls=[])
+					W = self.adjoint_spaces[i]
+					for num in subdx:
+						W = W.sub(num)
+					shape = W.ufl_element().value_shape()
+					try:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.domain_args[0], bc.domain_args[1])
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.domain_args[0], bc.domain_args[1])
+					except AttributeError:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.sub_domain)
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.sub_domain)
 
 
 	
@@ -252,8 +322,7 @@ class FormHandler:
 			Creates self.gradient_form_lhs and self.gradient_form_rhs
 
 		"""
-		
-		self.gradient_forms_lhs = [fenics.inner(self.trial_functions_control[i], self.test_functions_control[i])*self.control_measures[i] for i in range(self.control_dim)]
+
 		self.gradient_forms_rhs = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
 
 	
@@ -302,18 +371,18 @@ class FormHandler:
 		self.w_2 = [summ([self.L_yu[i][j] for j in range(self.state_dim)])
 					+ summ([self.L_uu[i][j] for j in range(self.control_dim)]) for i in range(self.control_dim)]
 
-		self.adjoint_sensitivity_eqs_diag_temp = [replace(self.state_forms[i], {self.adjoints[i] : self.trial_functions_state[i]}) for i in range(self.state_dim)]
+		self.adjoint_sensitivity_eqs_diag_temp = [replace(self.state_forms[i], {self.adjoints[i] : self.trial_functions_adjoint[i]}) for i in range(self.state_dim)]
 
 		mapping_dict = {self.adjoints[j]: self.adjoints_prime[j] for j in range(self.state_dim)}
 		self.adjoint_sensitivity_eqs_all_temp = [replace(self.state_forms[i], mapping_dict) for i in range(self.state_dim)]
 
-		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
 		if self.config.get('StateEquation', 'picard_iteration'):
-			self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+			self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
 
 		if self.state_dim > 1:
 			for i in range(self.state_dim):
-				self.w_1[i] -= summ([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.states[i], self.test_functions_state[i]) for j in range(self.state_dim) if j != i])
+				self.w_1[i] -= summ([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.states[i], self.test_functions_adjoint[i]) for j in range(self.state_dim) if j != i])
 		else:
 			pass
 
@@ -323,14 +392,8 @@ class FormHandler:
 
 		self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
 											for i in range(self.control_dim)]
-		# self.adjoint_sensitivity_eqs_rhs = [summ([fenics.derivative(self.state_forms[j], self.controls[i], self.test_functions_control[i]) for j in range(self.state_dim)])
-		# 									for i in range(self.control_dim)]
-
-		# for i in range(self.control_dim):
-		# 	for j in range(self.state_dim):
-		# 		self.adjoint_sensitivity_eqs_rhs[i] = replace(self.adjoint_sensitivity_eqs_rhs[i], {self.adjoints[j] : self.adjoints_prime[j]})
 
 		self.w_3 = [- self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)]
 
-		self.hessian_lhs = [fenics.inner(self.trial_functions_control[i], self.test_functions_control[i])*self.control_measures[i] for i in range(self.control_dim)]
+		# self.hessian_lhs = self.control_scalar_products
 		self.hessian_rhs = [self.w_2[i] + self.w_3[i] for i in range(self.control_dim)]

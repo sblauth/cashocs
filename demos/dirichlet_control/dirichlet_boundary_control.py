@@ -29,7 +29,7 @@ u.vector()[:] = 0.0
 
 p = Function(V)
 
-eta = Constant(1e3)
+eta = Constant(1e4)
 e = inner(grad(y), grad(p))*dx - inner(grad(y), n)*p*ds - inner(grad(p), n)*(y - u)*ds + eta/h*(y - u)*p*ds - Constant(1)*p*dx
 
 lambd = 0.0
@@ -44,7 +44,9 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*ds
 # control_constraints = [float('-inf'), 0]
 control_constraints = [float('-inf'), float('inf')]
 
-optimization_problem = OptimizationProblem(e, bcs, ds, J, y, u, p, config, control_constraints)
+scalar_product = TrialFunction(V)*TestFunction(V)*ds
+
+optimization_problem = OptimizationProblem(e, bcs, J, y, u, p, config, control_scalar_products=scalar_product, control_constraints=control_constraints)
 optimization_problem.solve()
 
 

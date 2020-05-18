@@ -49,6 +49,7 @@ z_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 ### Distributed control and observation
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx + Constant(0.5*lambd)*u*u*dx
 
+scalar_products = [TrialFunction(V)*TestFunction(V)*dx, TrialFunction(V)*TestFunction(V)*ds]
 
-optimization_problem = OptimizationProblem([e1, e2], bcs_list, [dx, ds], J, [y, z], [u, v], [p, q], config)
+optimization_problem = OptimizationProblem([e1, e2], bcs_list, J, [y, z], [u, v], [p, q], config, scalar_products)
 optimization_problem.solve()

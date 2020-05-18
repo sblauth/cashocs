@@ -48,8 +48,9 @@ y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*ds + gamma*(u - c)*(u - c)*ds(1)
 # J = Constant(0.5)*pow(y - y_d, 2)*dx + Constant(0.5*lambd)*pow(u, 2)*dx
 
+scalar_products = [TrialFunction(V)*TestFunction(V)*ds, TrialFunction(R)*TestFunction(R)*dx]
 
-optimization_problem = OptimizationProblem(e, bcs, [ds, ds(1)], J, y, [u, c], p, config)
+optimization_problem = OptimizationProblem(e, bcs, J, y, [u, c], p, config, control_scalar_products=scalar_products)
 optimization_problem.solve()
 
 

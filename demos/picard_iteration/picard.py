@@ -52,6 +52,6 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - y_d)*(z - y_d)*dx 
 # control_constraints = [float('-inf'), 0]
 control_constraints = [float('-inf'), float('inf')]
 
-optimization_problem = OptimizationProblem([e1, e2], [bcs1, bcs2], [dx, dx], J, [y, z], [u, v], [p, q], config)
+optimization_problem = OptimizationProblem([e1, e2], [bcs1, bcs2], J, [y, z], [u, v], [p, q], config)
 
 optimization_problem.solve()

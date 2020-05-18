@@ -49,7 +49,9 @@ class OptimizationAlgorithm:
 
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results')
-		self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
+		# self.tolerance = self.config.getfloat('OptimizationRoutine', 'tolerance')
+		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol')
+		self.atol = self.config.getfloat('OptimizationRoutine', 'atol')
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit')
 

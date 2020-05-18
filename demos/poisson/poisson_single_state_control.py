@@ -44,8 +44,27 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
 
 # control_constraints = [0, 10]
 # control_constraints = [0.0, float('inf')]
-# control_constraints = [float('-inf'), 0]
-control_constraints = [float('-inf'), float('inf')]
 
-optimization_problem = OptimizationProblem(e, bcs, dx, J, y, u, p, config, control_constraints)
+u_a = Function(V)
+u_b = Function(V)
+u_a.vector()[:] = 0.0
+u_b.vector()[:] = float('inf')
+
+linear_a = Expression('50*(x[0]-1)', degree=1)
+linear_b = Expression('50*x[0]', degree=1)
+u_a = interpolate(linear_a, V)
+u_b = interpolate(linear_b, V)
+
+control_constraints = [u_a, u_b]
+# control_constraints = [float('-inf'), 0]
+# constraints = [float('-inf'), float('inf')]
+
+trial = TrialFunction(V)
+test = TestFunction(V)
+# scalar_product = Constant(1e-5)*inner(grad(trial), grad(test))*dx + trial*test*dx
+
+# bcs = bc1
+
+# optimization_problem = OptimizationProblem(e, bcs, J, y, u, p, config, control_constraints=control_constraints)
+optimization_problem = OptimizationProblem(e, bcs, J, y, u, p, config)
 optimization_problem.solve()

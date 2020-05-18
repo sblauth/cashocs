@@ -12,7 +12,6 @@ from ..line_search import ArmijoLineSearch
 
 
 class CG(OptimizationAlgorithm):
-	
 	def __init__(self, optimization_problem):
 		"""A nonlinear cg method to solve the optimization problem
 		
@@ -85,7 +84,7 @@ class CG(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 
-			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
+			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
 			if self.iteration > 0:
 				if self.cg_method == 'FR':
 					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
@@ -138,14 +137,14 @@ class CG(OptimizationAlgorithm):
 					raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
 
 			if self.iteration == 0:
-				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
 					self.print_results()
 					break
 				self.beta = 0.0
 
-			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			if self.relative_norm <= self.tolerance:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.print_results()
 				break
 

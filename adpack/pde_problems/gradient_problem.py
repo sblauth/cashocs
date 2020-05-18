@@ -5,6 +5,7 @@ Created on 24/02/2020, 09.26
 """
 
 import fenics
+from petsc4py import PETSc
 from ..helpers import summ
 
 
@@ -30,7 +31,7 @@ class GradientProblem:
 		
 		self.gradients = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.config = self.form_handler.config
-		
+
 		self.has_solution = False
 	
 	
@@ -49,15 +50,17 @@ class GradientProblem:
 		
 		if not self.has_solution:
 			for i in range(self.form_handler.control_dim):
-				A = fenics.assemble(self.form_handler.gradient_forms_lhs[i], keep_diagonal=True)
-				A.ident_zeros()
-				b = fenics.assemble(self.form_handler.gradient_forms_rhs[i])
-				fenics.solve(A, self.gradients[i].vector(), b)
-			
+				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()
+				x = self.gradients[i].vector().vec()
+				self.form_handler.ksps[i].solve(b, x)
+
+				if self.form_handler.ksps[i].getConvergedReason() < 0:
+					raise SystemExit('Krylov solver did not converge. Reason: ' + str(self.form_handler.ksps[i].getConvergedReason()))
+
 			self.has_solution = True
-			
-			self.gradient_norm_squared = summ([fenics.assemble(fenics.inner(self.gradients[i], self.gradients[i])*self.form_handler.control_measures[i]) for i in range(self.form_handler.control_dim)])
-		
+
+			self.gradient_norm_squared = self.form_handler.scalar_product(self.gradients, self.gradients)
+
 		return self.gradients
 	
 	

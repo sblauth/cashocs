@@ -49,7 +49,7 @@ lambd = 1e-5
 u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
 J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*lambd)*inner(control, control)*dx
 
-optimization_problem = OptimizationProblem(e, bcs, dx, J, up, control, vq, config)
+optimization_problem = OptimizationProblem(e, bcs, J, up, control, vq, config)
 optimization_problem.solve()
 # optimization_problem.state_problem.solve()
 

@@ -6,6 +6,7 @@ Created on 24/02/2020, 16.48
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 
 
 
@@ -156,11 +157,13 @@ class HessianProblem:
 
 
 		for i in range(self.control_dim):
-			A = fenics.assemble(self.form_handler.hessian_lhs[i], keep_diagonal=True)
-			A.ident_zeros()
-			b = fenics.assemble(self.form_handler.hessian_rhs[i])
-			fenics.solve(A, self.form_handler.hessian_actions[i].vector(), b)
-		
+			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
+			x = self.form_handler.hessian_actions[i].vector().vec()
+			self.form_handler.ksps[i].solve(b, x)
+
+			if self.form_handler.ksps[i].getConvergedReason() < 0:
+				raise SystemExit('Krylov solver did not converge. Reason: ' + str(self.form_handler.ksps[i].getConvergedReason()))
+
 		self.no_sensitivity_solves += 2
 		
 		return self.form_handler.hessian_actions

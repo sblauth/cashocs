@@ -123,8 +123,8 @@ class LBFGS(OptimizationAlgorithm):
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
-		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+		self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+		self.gradient_norm_initial = self.gradient_norm
 		if self.gradient_norm_initial == 0:
 			self.converged = True
 			self.print_results()
@@ -156,10 +156,10 @@ class LBFGS(OptimizationAlgorithm):
 			self.gradient_problem.solve()
 			self.form_handler.compute_active_sets()
 			
-			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
-			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
+			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-			if self.relative_norm <= self.tolerance:
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.iteration += 1
 				self.print_results()
 				break

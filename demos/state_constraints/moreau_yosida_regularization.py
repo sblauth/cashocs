@@ -46,7 +46,7 @@ y_d = Expression('sin(2*pi*x[0]*x[1])', degree=1)
 control_constraints = [float('-inf'), float('inf')]
 
 J_init = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
-optimization_problem = OptimizationProblem(e, bcs, dx, J_init, y, u, p, config, control_constraints)
+optimization_problem = OptimizationProblem(e, bcs, J_init, y, u, p, config, control_constraints=control_constraints)
 optimization_problem.solve()
 # gammas = [pow(10, i) for i in np.arange(1, 4, 1)]
 gammas = [pow(10, i) for i in np.arange(1, 10, 3)]
@@ -56,7 +56,7 @@ for gamma in gammas:
 
 	J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx + Constant(1/(2*gamma))*pow(Max(0, Constant(shift) + Constant(gamma)*(y - y_b)), 2)*dx
 
-	optimization_problem = OptimizationProblem(e, bcs, dx, J, y, u, p, config, control_constraints)
+	optimization_problem = OptimizationProblem(e, bcs, J, y, u, p, config, control_constraints=control_constraints)
 	optimization_problem.solve()
 
 

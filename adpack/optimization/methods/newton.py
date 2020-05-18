@@ -60,21 +60,21 @@ class Newton(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm_squared = self.optimization_problem.stationary_measure_squared()
+			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
 			if self.iteration == 0:
-				self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
 					self.objective_value = self.cost_functional.compute()
 					self.print_results()
 					break
 
-			self.relative_norm = np.sqrt(self.gradient_norm_squared) / self.gradient_norm_initial
-			if self.relative_norm <= self.tolerance:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.print_results()
 				break
 
 			self.search_directions = self.optimization_problem.hessian_problem.newton_solve()
-			self.directional_derivative = summ([fenics.assemble(fenics.inner(self.search_directions[i], self.gradients[i]) * self.optimization_problem.control_measures[i]) for i in range(len(self.controls))])
+			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
 			if self.directional_derivative > 0:
 				self.has_curvature_info = False
 				# print('No descent direction')

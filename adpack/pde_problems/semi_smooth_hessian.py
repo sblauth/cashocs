@@ -92,11 +92,14 @@ class SemiSmoothHessianProblem:
 		for i in range(self.state_dim):
 			fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-i]==self.form_handler.w_1[-1-i], self.adjoints_prime[-1-i], self.bcs_list_ad[-1-i])
 
+
 		for i in range(self.control_dim):
-			A = fenics.assemble(self.form_handler.hessian_lhs[i], keep_diagonal=True)
-			A.ident_zeros()
-			b = fenics.assemble(self.form_handler.hessian_rhs[i])
-			fenics.solve(A, self.form_handler.hessian_actions[i].vector(), b)
+			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
+			x = self.form_handler.hessian_actions[i].vector().vec()
+			self.form_handler.ksps[i].solve(b, x)
+
+			if self.form_handler.ksps[i].getConvergedReason() < 0:
+				raise SystemExit('Krylov solver did not converge. Reason: ' + str(self.form_handler.ksps[i].getConvergedReason()))
 
 		self.no_sensitivity_solves += 2
 
@@ -190,8 +193,8 @@ class SemiSmoothHessianProblem:
 
 	def double_scalar_product(self, a1, a2, b1, b2):
 
-		s1 = summ([fenics.assemble(fenics.inner(a1[j], b1[j])*self.form_handler.control_measures[j]) for j in range(self.control_dim)])
-		s2 = summ([fenics.assemble(fenics.inner(a2[j], b2[j])*self.form_handler.control_measures[j]) for j in range(self.control_dim)])
+		s1 = self.form_handler.scalar_product(a1, b1)
+		s2 = self.form_handler.scalar_product(a2, b2)
 
 		return s1 + s2
 

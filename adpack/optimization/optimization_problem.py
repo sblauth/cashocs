@@ -25,7 +25,8 @@ import time
 
 class OptimizationProblem:
 	
-	def __init__(self, state_forms, bcs_list, control_measures, cost_functional_form, states, controls, adjoints, config, control_constraints=None, initial_guess=None):
+	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
+				 control_scalar_products=None, control_constraints=None, initial_guess=None):
 		"""The implementation of the optimization problem, used to generate all other classes and functionality. Also used to solve the problem.
 		
 		Parameters
@@ -34,8 +35,6 @@ class OptimizationProblem:
 			the weak form of the state equation (user implemented)
 		bcs_list : List[dolfin.fem.dirichletbc.DirichletBC] or List[List[dolfin.fem.dirichletbc.DirichletBC]]
 			the list of DirichletBC objects describing essential boundary conditions
-		control_measures : ufl.measure.Measure or List[ufl.measure.Measure]
-			the measure corresponding to the domain of the control
 		cost_functional_form : ufl.form.Form
 			the cost functional (user implemented)
 		states : dolfin.function.function.Function or List[dolfin.function.function.Function]
@@ -46,78 +45,223 @@ class OptimizationProblem:
 			the adjoint variable
 		config : configparser.ConfigParser
 			the config file for the problem
+		control_scalar_products :
 		control_constraints : List[dolfin.function.function.Function] or List[float] or List[List]
 			Box constraints posed on the control
 		"""
 
-		start_time = time.time()
 		### Overloading, such that we do not have to use lists for single state single control
-		if type(state_forms) == list:
-			self.state_forms = state_forms
-		else:
-			self.state_forms = [state_forms]
-
-		if not type(bcs_list) == list:
-			raise SystemExit('bcs_list must be of type list.')
+		### state_forms
 		try:
-			if type(bcs_list) == list and type(bcs_list[0]) == list:
-				self.bcs_list = bcs_list
+			if type(state_forms) == list and len(state_forms) > 0:
+				for i in range(len(state_forms)):
+					if state_forms[i].__module__=='ufl.form' and type(state_forms[i]).__name__=='Form':
+						pass
+					else:
+						raise SystemExit('state_forms have to be ufl forms')
+				self.state_forms = state_forms
+			elif state_forms.__module__ == 'ufl.form' and type(state_forms).__name__ == 'Form':
+				self.state_forms = [state_forms]
 			else:
-				self.bcs_list = [bcs_list]
-		except IndexError:
-			self.bcs_list = [bcs_list]
-
-		if type(control_measures) == list:
-			self.control_measures = control_measures
-		else:
-			self.control_measures = [control_measures]
-		
-		self.cost_functional_form = cost_functional_form
-		
-		if type(states) == list:
-			self.states = states
-		else:
-			self.states = [states]
-		
-		if type(controls) == list:
-			self.controls = controls
-		else:
-			self.controls = [controls]
-		
-		if type(adjoints) == list:
-			self.adjoints = adjoints
-		else:
-			self.adjoints = [adjoints]
-		
-		self.config = config
-
-		if control_constraints is None:
-			self.control_constraints = []
-			for j in range(len(self.controls)):
-				self.control_constraints.append([float('-inf'), float('inf')])
-		else:
-			if type(control_constraints) == list and type(control_constraints[0]) == list:
-				self.control_constraints = control_constraints
-			else:
-				self.control_constraints = [control_constraints]
-
-		self.initial_guess = initial_guess
-
+				raise SystemExit('State forms have to be ufl forms')
+		except:
+			raise SystemExit('Type of state_forms is wrong.')
 		self.state_dim = len(self.state_forms)
+
+		### bcs_list
+		try:
+			if bcs_list == [] or bcs_list is None:
+				self.bcs_list = [[]*self.state_dim]
+			elif type(bcs_list) == list and len(bcs_list) > 0:
+				if type(bcs_list[0]) == list:
+					for i in range(len(bcs_list)):
+						if type(bcs_list[i]) == list:
+							pass
+						else:
+							raise SystemExit('bcs_list has inconsistent types.')
+					self.bcs_list = bcs_list
+
+				elif bcs_list[0].__module__ == 'dolfin.fem.dirichletbc' and type(bcs_list[0]).__name__ == 'DirichletBC':
+					for i in range(len(bcs_list)):
+						if bcs_list[i].__module__=='dolfin.fem.dirichletbc' and type(bcs_list[i]).__name__=='DirichletBC':
+							pass
+						else:
+							raise SystemExit('bcs_list has inconsistent types.')
+					self.bcs_list = [bcs_list]
+			elif bcs_list.__module__ == 'dolfin.fem.dirichletbc' and type(bcs_list).__name__ == 'DirichletBC':
+				self.bcs_list = [[bcs_list]]
+			else:
+				raise SystemExit('Type of bcs_list is wrong.')
+		except:
+			raise SystemExit('Type of bcs_list is wrong.')
+
+		### cost_functional_form
+		try:
+			if cost_functional_form.__module__ == 'ufl.form' and type(cost_functional_form).__name__ == 'Form':
+				self.cost_functional_form = cost_functional_form
+			else:
+				raise SystemExit('cost_functional_form has to be a ufl form')
+		except:
+			raise SystemExit('Type of cost_functional_form is wrong.')
+
+		### states
+		try:
+			if type(states) == list and len(states) > 0:
+				for i in range(len(states)):
+					if states[i].__module__ == 'dolfin.function.function' and type(states[i]).__name__ == 'Function':
+						pass
+					else:
+						raise SystemExit('states have to be fenics Functions.')
+
+				self.states = states
+
+			elif states.__module__ == 'dolfin.function.function' and type(states).__name__ == 'Function':
+				self.states = [states]
+			else:
+				raise SystemExit('Type of states is wrong.')
+		except:
+			raise SystemExit('Type of states is wrong.')
+
+		### controls
+		try:
+			if type(controls) == list and len(controls) > 0:
+				for i in range(len(controls)):
+					if controls[i].__module__ == 'dolfin.function.function' and type(controls[i]).__name__ == 'Function':
+						pass
+					else:
+						raise SystemExit('controls have to be fenics Functions.')
+
+				self.controls = controls
+
+			elif controls.__module__ == 'dolfin.function.function' and type(controls).__name__ == 'Function':
+				self.controls = [controls]
+			else:
+				raise SystemExit('Type of controls is wrong.')
+		except:
+			raise SystemExit('Type of controls is wrong.')
+
 		self.control_dim = len(self.controls)
 		
+		### adjoints
+		try:
+			if type(adjoints) == list and len(adjoints) > 0:
+				for i in range(len(adjoints)):
+					if adjoints[i].__module__ == 'dolfin.function.function' and type(adjoints[i]).__name__ == 'Function':
+						pass
+					else:
+						raise SystemExit('adjoints have to fenics Functions.')
+
+				self.adjoints = adjoints
+
+			elif adjoints.__module__ == 'dolfin.function.function' and type(adjoints).__name__ == 'Function':
+				self.adjoints = [adjoints]
+			else:
+				raise SystemExit('Type of adjoints is wrong.')
+		except:
+			raise SystemExit('Type of adjoints is wrong.')
+
+		### config
+		if config.__module__ == 'configparser' and type(config).__name__ == 'ConfigParser':
+			self.config = config
+		else:
+			raise SystemExit('config has to be of configparser.ConfigParser type')
+
+
+		### control_scalar_products
+		if control_scalar_products is None:
+			dx = fenics.Measure('dx', self.controls[0].function_space().mesh())
+			self.control_scalar_products = [fenics.inner(fenics.TrialFunction(self.controls[i].function_space()), fenics.TestFunction(self.controls[i].function_space()))*dx
+											for i in range(len(self.controls))]
+		else:
+			try:
+				if type(control_scalar_products)==list and len(control_scalar_products) > 0:
+					for i in range(len(control_scalar_products)):
+						if control_scalar_products[i].__module__=='ufl.form' and type(control_scalar_products[i]).__name__=='Form':
+							pass
+						else:
+							raise SystemExit('control_scalar_products have to be ufl forms')
+					self.control_scalar_products = control_scalar_products
+				elif control_scalar_products.__module__=='ufl.form' and type(control_scalar_products).__name__=='Form':
+					self.control_scalar_products = [control_scalar_products]
+				else:
+					raise SystemExit('State forms have to be ufl forms')
+			except:
+				raise SystemExit('Type of control_scalar_prodcuts is wrong..')
+
+		### control_constraints
+		if control_constraints is None:
+			self.control_constraints = []
+			for control in self.controls:
+				u_a = fenics.Function(control.function_space())
+				u_a.vector()[:] = float('-inf')
+				u_b = fenics.Function(control.function_space())
+				u_b.vector()[:] = float('inf')
+				self.control_constraints.append([u_a, u_b])
+		else:
+			try:
+				if type(control_constraints) == list and len(control_constraints) > 0:
+					if type(control_constraints[0]) == list:
+						for i in range(len(control_constraints)):
+							if type(control_constraints[i]) == list and len(control_constraints[i]) == 2:
+								for j in range(2):
+									if type(control_constraints[i][j]) in [float, int]:
+										pass
+									elif control_constraints[i][j].__module__ == 'dolfin.function.function' and type(control_constraints[i][j]).__name__ == 'Function':
+										pass
+									else:
+										raise SystemExit('control_constraints has to be a list containing upper and lower bounds')
+								pass
+							else:
+								raise SystemExit('control_constraints has to be a list containing upper and lower bounds')
+						self.control_constraints = control_constraints
+					elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == 'dolfin.function.function' and type(control_constraints[0]).__name__=='Function')) \
+						and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == 'dolfin.function.function' and type(control_constraints[1]).__name__=='Function')):
+
+						self.control_constraints = [control_constraints]
+					else:
+						raise SystemExit('control_constraints has to be a list containing upper and lower bounds')
+
+			except:
+				raise SystemExit('control_constraints has to be a list containing upper and lower bounds')
+
+		# recast floats into functions for compatibility
+		if type(self.control_constraints[0][0]) in [float, int]:
+			temp_constraints = self.control_constraints[:]
+			self.control_constraints = []
+			for i, control in enumerate(self.controls):
+				u_a = fenics.Function(control.function_space())
+				u_a.vector()[:] = temp_constraints[i][0]
+				u_b = fenics.Function(control.function_space())
+				u_b.vector()[:] = temp_constraints[i][1]
+				self.control_constraints.append([u_a, u_b])
+
+		### initial guess
+		if initial_guess is None:
+			self.initial_guess = initial_guess
+		else:
+			try:
+				if type(initial_guess) == list:
+					self.initial_guess = initial_guess
+				elif initial_guess.__module__ == 'dolfin.function.function' and type(initial_guess).__name__ == 'Function':
+					self.initial_guess = [initial_guess]
+			except:
+				raise SystemExit('Initial guess has to be a list of functions')
+
 		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
-		assert len(self.control_measures) == self.control_dim, 'Length of controls does not match'
+		assert len(self.control_scalar_products) == self.control_dim, 'Length of controls does not match'
 		assert len(self.states) == self.state_dim, 'Length of states does not match'
 		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
 		assert len(self.control_constraints) == self.control_dim, 'Length of controls does not match'
+		if self.initial_guess is not None:
+			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
 		### end overloading
 
-		self.state_spaces = [x.function_space() for x in self.states]
-		self.control_spaces = [x.function_space() for x in self.controls]
-
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.control_measures, self.states, self.controls, self.adjoints, self.config, self.control_constraints)
+		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.control_scalar_products, self.control_constraints)
+
+		self.state_spaces = self.form_handler.state_spaces
+		self.control_spaces = self.form_handler.control_spaces
+		self.adjoint_spaces = self.form_handler.adjoint_spaces
 
 		self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
 
@@ -131,7 +275,7 @@ class OptimizationProblem:
 			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'pdas':
 			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
-			
+
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
 		self.gradients = self.gradient_problem.gradients

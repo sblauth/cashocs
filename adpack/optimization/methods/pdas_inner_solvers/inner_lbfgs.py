@@ -95,14 +95,14 @@ class InnerLBFGS(OptimizationAlgorithm):
 			self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
 			self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-		self.gradient_norm_squared = self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient)
-		self.gradient_norm_initial = np.sqrt(self.gradient_norm_squared)
+		self.gradient_norm = np.sqrt(self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient))
+		self.gradient_norm_initial = self.gradient_norm
 
 		if self.first_iteration:
 			self.first_gradient_norm = self.gradient_norm_initial
 			self.first_iteration = False
 
-		while not (self.relative_norm <= self.tolerance or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2):
+		while not (self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2):
 			self.search_directions = self.compute_search_direction(self.reduced_gradient, idx_active)
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.reduced_gradient)
@@ -131,9 +131,9 @@ class InnerLBFGS(OptimizationAlgorithm):
 				self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
 				self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-			self.gradient_norm_squared = self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient)
+			self.gradient_norm = np.sqrt(self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient))
 
-			self.relative_norm = np.sqrt(self.gradient_norm_squared)/self.gradient_norm_initial
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.memory_vectors > 0:
 				for i in range(len(self.controls)):
