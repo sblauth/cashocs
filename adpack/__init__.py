@@ -10,4 +10,6 @@ from .geometry import MeshGen, regular_mesh, regular_box_mesh
 
 from .nonlinear_solvers import NewtonSolver
 
-from .optimization.optimization_problem import OptimizationProblem
+from .optimal_control.optimal_control_problem import OptimalControlProblem
+
+from .shape_optimization.shape_optimization_problem import ShapeOptimizationProblem

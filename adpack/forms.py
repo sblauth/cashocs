@@ -10,6 +10,8 @@ from .helpers import summ
 import numpy as np
 import time
 from petsc4py import PETSc
+from .shape_optimization.regularization import Regularization
+import json
 
 
 
@@ -38,7 +40,7 @@ class Lagrangian:
 		
 class FormHandler:
 
-	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, control_scalar_products, control_constraints):
+	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints):
 		"""The form handler implements all form manipulations needed in order to compute adjoint equations, sensitvities, etc.
 		
 		Parameters
@@ -65,7 +67,7 @@ class FormHandler:
 		self.controls = controls
 		self.adjoints = adjoints
 		self.config = config
-		self.control_scalar_products = control_scalar_products
+		self.riesz_scalar_products = riesz_scalar_products
 		self.control_constraints = control_constraints
 		
 		self.cost_functional_form = self.lagrangian.cost_functional_form
@@ -114,7 +116,7 @@ class FormHandler:
 			self.compute_newton_forms()
 
 		# initialize the scalar products
-		fe_scalar_product_matrices = [fenics.assemble(self.control_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
+		fe_scalar_product_matrices = [fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
 		self.scalar_product_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
 		[fe_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
 		self.riesz_projection_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
@@ -395,5 +397,304 @@ class FormHandler:
 
 		self.w_3 = [- self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)]
 
-		# self.hessian_lhs = self.control_scalar_products
+		# self.hessian_lhs = self.riesz_scalar_products
 		self.hessian_rhs = [self.w_2[i] + self.w_3[i] for i in range(self.control_dim)]
+
+
+
+
+class ShapeFormHandler:
+
+	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config):
+
+		self.lagrangian = lagrangian
+		self.bcs_list = bcs_list
+		self.states = states
+		self.adjoints = adjoints
+		self.boundaries = boundaries
+		self.config = config
+
+		self.cost_functional_form = self.lagrangian.cost_functional_form
+		self.state_forms = self.lagrangian.state_forms
+
+		self.state_dim = len(self.states)
+
+		self.state_spaces = [x.function_space() for x in self.states]
+		self.adjoint_spaces = [x.function_space() for x in self.adjoints]
+
+		# test if state_spaces are adjoint_spaces
+		if self.state_spaces == self.adjoint_spaces:
+			self.state_adjoint_equal_spaces = True
+		else:
+			self.state_adjoint_equal_spaces = False
+
+		self.mesh = self.state_spaces[0].mesh()
+		self.dx = fenics.Measure('dx', self.mesh)
+
+		self.deformation_space = fenics.VectorFunctionSpace(self.mesh, 'CG', 1)
+		self.test_vector_field = fenics.TestFunction(self.deformation_space)
+
+		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
+		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
+
+		self.trial_functions_adjoint = [fenics.TrialFunction(V) for V in self.adjoint_spaces]
+		self.test_functions_adjoint = [fenics.TestFunction(V) for V in self.adjoint_spaces]
+
+		self.regularization = Regularization(self)
+
+		self.compute_state_equations()
+		self.compute_adjoint_equations()
+		self.compute_shape_derivative()
+		self.compute_shape_gradient_forms()
+
+		self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape)
+		self.fe_scalar_product_matrix = fenics.PETScMatrix()
+		self.fe_shape_derivative_vector = fenics.PETScVector()
+
+		self.update_scalar_product()
+
+		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
+
+		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or (self.opt_algo == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
+			raise SystemExit('Second order methods are not implemented yet')
+
+		opts = fenics.PETScOptions
+		opts.clear()
+		# opts.set('ksp_type', 'preonly')
+		# opts.set('pc_type', 'lu')
+		# opts.set('pc_factor_mat_solver_type', 'mumps')
+		# opts.set('mat_mumps_icntl_24', 1)
+
+		opts.set('ksp_type', 'cg')
+		opts.set('pc_type', 'hypre')
+		opts.set('pc_hypre_type', 'boomeramg')
+		opts.set('pc_hypre_boomeramg_strong_threshold', 0.7)
+		opts.set('ksp_rtol', 1e-20)
+		opts.set('ksp_atol', 1e-50)
+		opts.set('ksp_max_it', 100)
+		# opts.set('ksp_monitor_true_residual')
+
+		self.ksp = PETSc.KSP().create()
+		self.ksp.setFromOptions()
+
+
+
+	def compute_state_equations(self):
+		"""Compute the weak form of the state equation for the use with fenics
+
+		Returns
+		-------
+
+			Creates self.state_eq_forms
+
+		"""
+
+		if self.config.getboolean('StateEquation', 'is_linear'):
+			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
+																 self.adjoints[i] : self.test_functions_state[i]}) for i in range(self.state_dim)]
+
+		else:
+			self.state_eq_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.state_picard_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
+
+		if self.config.getboolean('StateEquation', 'is_linear'):
+			self.state_eq_forms_lhs = []
+			self.state_eq_forms_rhs = []
+			for i in range(self.state_dim):
+				a, L = fenics.system(self.state_eq_forms[i])
+				self.state_eq_forms_lhs.append(a)
+				self.state_eq_forms_rhs.append(L)
+
+
+
+	def compute_adjoint_equations(self):
+		"""Computes the weak form of the adjoint equation for use with fenics
+
+		Returns
+		-------
+
+			Creates self.adjoint_eq_form and self.bcs_ad, corresponding to homogenized BCs
+
+		"""
+
+		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form, {self.adjoints[i] : self.trial_functions_adjoint[i]}) for i in range(self.state_dim)]
+
+		if self.config.get('StateEquation', 'picard_iteration'):
+			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
+
+		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
+		self.adjoint_eq_lhs = []
+		self.adjoint_eq_rhs = []
+
+		for i in range(self.state_dim):
+			a, L = fenics.system(self.adjoint_eq_forms[i])
+			self.adjoint_eq_lhs.append(a)
+			self.adjoint_eq_rhs.append(L)
+
+		if self.state_adjoint_equal_spaces:
+			self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
+			[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
+
+		else:
+			def get_subdx(V, idx, ls):
+				if V.id()==idx:
+					return ls
+				if V.num_sub_spaces() > 1:
+					for i in range(V.num_sub_spaces()):
+						ans = get_subdx(V.sub(i), idx, ls + [i])
+						if ans is not None:
+							return ans
+				else:
+					return None
+
+			self.bcs_list_ad = [[None for bc in range(len(self.bcs_list[i]))] for i in range(self.state_dim)]
+
+			for i in range(self.state_dim):
+				for j, bc in enumerate(self.bcs_list[i]):
+					idx = bc.function_space().id()
+					subdx = get_subdx(self.state_spaces[i], idx, ls=[])
+					W = self.adjoint_spaces[i]
+					for num in subdx:
+						W = W.sub(num)
+					shape = W.ufl_element().value_shape()
+					try:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.domain_args[0], bc.domain_args[1])
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.domain_args[0], bc.domain_args[1])
+					except AttributeError:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.sub_domain)
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.sub_domain)
+
+
+
+	def compute_shape_derivative(self):
+		self.shape_derivative = fenics.derivative(self.lagrangian.lagrangian_form, fenics.SpatialCoordinate(self.mesh), self.test_vector_field) + self.regularization.compute_shape_derivative()
+
+
+
+	def compute_shape_gradient_forms(self):
+
+		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
+		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
+
+
+		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
+		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
+
+		self.mu_lame = fenics.Function(self.CG1)
+		self.lambda_lame = self.config.getfloat('ShapeGradient', 'lambda_lame')
+		self.damping_factor = self.config.getfloat('ShapeGradient', 'damping_factor')
+
+		if self.config.getboolean('ShapeGradient', 'inhomogeneous'):
+			self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
+			vol_max = np.max(np.abs(self.volumes.vector()[:]))
+			self.volumes.vector()[:] /= vol_max
+
+		else:
+			self.volumes = fenics.Constant(1.0)
+
+		def eps(u):
+			return fenics.Constant(0.5)*(fenics.grad(u) + fenics.grad(u).T)
+
+		trial = fenics.TrialFunction(self.deformation_space)
+		test = fenics.TestFunction(self.deformation_space)
+
+		self.riesz_scalar_product = fenics.Constant(2)*self.mu_lame/self.volumes*fenics.inner(eps(trial), eps(test))*self.dx \
+									+ fenics.Constant(self.lambda_lame)/self.volumes*fenics.div(trial)*fenics.div(test)*self.dx \
+									+ fenics.Constant(self.damping_factor)/self.volumes*fenics.inner(trial, test)*self.dx
+
+		self.bcs_shape = [fenics.DirichletBC(self.deformation_space, fenics.Constant([0]*self.deformation_space.ufl_element().value_size()), self.boundaries, i) for i in self.shape_bdry_fix]
+
+
+
+	def compute_mu_elas(self):
+		mu_def = self.config.getfloat('ShapeGradient', 'mu_def')
+		mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix')
+
+		if np.abs(mu_def - mu_fix)/mu_fix > 1e-2:
+
+			dx = self.dx
+			opts = fenics.PETScOptions
+			opts.clear()
+
+			# opts.set('ksp_type', 'preonly')
+			# opts.set('pc_type', 'lu')
+			# opts.set('pc_factor_mat_solver_type', 'mumps')
+			# opts.set('mat_mumps_icntl_24', 1)
+
+			opts.set('ksp_type', 'cg')
+			opts.set('pc_type', 'hypre')
+			opts.set('pc_hypre_type', 'boomeramg')
+			opts.set('ksp_rtol', 1e-16)
+			opts.set('ksp_atol', 1e-50)
+			opts.set('ksp_max_it', 100)
+
+			phi = fenics.TrialFunction(self.CG1)
+			psi = fenics.TestFunction(self.CG1)
+
+			a = fenics.inner(fenics.grad(phi), fenics.grad(psi))*dx
+			L = fenics.Constant(0.0)*psi*dx
+
+			bcs = [fenics.DirichletBC(self.CG1, fenics.Constant(mu_fix), self.boundaries, i) for i in self.shape_bdry_fix]
+			bcs += [fenics.DirichletBC(self.CG1, fenics.Constant(mu_def), self.boundaries, i) for i in self.shape_bdry_def]
+
+			A, b = fenics.assemble_system(a, L, bcs)
+			A = fenics.as_backend_type(A).mat()
+			b = fenics.as_backend_type(b).vec()
+			x, _ = A.getVecs()
+
+			ksp = PETSc.KSP().create()
+			ksp.setFromOptions()
+			ksp.setOperators(A)
+			ksp.setUp()
+			ksp.solve(b, x)
+			if ksp.getConvergedReason() < 0:
+				raise SystemExit('Krylov solver did not converge. Reason: ' + str(ksp.getConvergedReason()))
+
+			self.mu_lame.vector()[:] = x[:]
+
+		else:
+			self.mu_lame.vector()[:] = mu_fix
+
+
+
+	def update_scalar_product(self):
+
+		self.compute_mu_elas()
+
+		self.assembler.assemble(self.fe_scalar_product_matrix)
+		self.fe_scalar_product_matrix.ident_zeros()
+		self.scalar_product_matrix = fenics.as_backend_type(self.fe_scalar_product_matrix).mat()
+
+
+
+	def scalar_product(self, a, b):
+		"""Implements the scalar product needed for the algorithms
+
+		Parameters
+		----------
+		a : List[dolfin.function.function.Function]
+			The first input
+		b : List[dolfin.function.function.Function]
+			The second input
+
+		Returns
+		-------
+		 : float
+			The value of the scalar product
+
+		"""
+
+		x = fenics.as_backend_type(a.vector()).vec()
+		y = fenics.as_backend_type(b.vector()).vec()
+
+		temp, _ = self.scalar_product_matrix.getVecs()
+		self.scalar_product_matrix.mult(x, temp)
+		result = temp.dot(y)
+
+		return result

@@ -7,6 +7,7 @@ Created on 1/30/19, 2:27 PM
 import fenics
 import numpy as np
 import time
+from petsc4py import PETSc
 
 
 
@@ -240,3 +241,246 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 	dS = fenics.Measure('dS', mesh)
 
 	return mesh, subdomains, boundaries, dx, ds, dS
+
+
+
+
+
+class MeshHandler:
+	def __init__(self, shape_form_handler):
+		"""
+
+		Parameters
+		----------
+		shape_form_handler : adpack.forms.ShapeFormHandler
+		"""
+
+		self.shape_form_handler = shape_form_handler
+		# Namespacing
+		self.mesh = self.shape_form_handler.mesh
+		self.dx = self.shape_form_handler.dx
+		self.bbtree = self.mesh.bounding_box_tree()
+		self.config = self.shape_form_handler.config
+
+		self.check_a_priori = self.config.getboolean('MeshQuality', 'check_a_priori')
+		self.check_a_posteriori = self.config.getboolean('MeshQuality', 'check_a_posteriori')
+
+		self.radius_ratios_initial_mf = fenics.MeshQuality.radius_ratios(self.mesh)
+		self.radius_ratios_initial = self.radius_ratios_initial_mf.array().copy()
+
+		self.mesh_quality_tol = self.config.getfloat('MeshQuality', 'qtol')
+		self.min_quality = 1.0
+
+
+
+	def move_mesh(self, transformation):
+		"""
+		Move the mesh according to the diffeomorphism id + transformation
+
+		Parameters
+		----------
+		transformation : dolfin.function.function.Function
+			The transformation for the mesh
+		"""
+
+		assert transformation.ufl_element().family() == 'Lagrange' and transformation.ufl_element().degree() == 1, 'Not a valid mesh transformation'
+
+		if not self.test_a_priori(transformation):
+			return False
+		else:
+			self.old_coordinates = self.mesh.coordinates().copy()
+			fenics.ALE.move(self.mesh, transformation)
+			self.bbtree.build(self.mesh)
+
+			return self.test_a_posteriori()
+
+
+
+	def revert_transformation(self):
+		"""
+		Reverts the previous transformation done in self.move_mesh
+		"""
+
+		self.mesh.coordinates()[:, :] = self.old_coordinates
+		self.bbtree.build(self.mesh)
+
+
+
+	def compute_decreases(self, search_direction, stepsize):
+		"""
+		Gives a better estimation of the stepsize. The output is the number of "Armijo halvings" we have to do in order to
+		get a transformation that satisfies norm(transformation)_fro <= 0.3, where transformation = stepsize*search_direction.
+		Due to the linearity of the norm this has to be done only once, all smaller stepsizes are feasible wrt. to this criterion as well
+
+		Parameters
+		----------
+		search_direction : dolfin.function.function.Function
+			The search direction in the optimization routine / descent algorithm
+		stepsize : float
+			The stepsize in the descent algorithm
+
+		Returns
+		 : float
+			A guess for the number of "Armijo halvings" to get a better stepsize
+		-------
+
+		"""
+
+		angle_change = float(self.config.get('MeshQuality', 'angle_change'))
+
+		assert angle_change > 0, 'Angle change has to be positive'
+		if angle_change == float('inf'):
+			return 0
+
+		else:
+			opts = fenics.PETScOptions
+			opts.clear()
+			opts.set('ksp_type', 'preonly')
+			opts.set('pc_type', 'jacobi')
+			opts.set('pc_jacobi_type', 'diagonal')
+			opts.set('ksp_rtol', 1e-16)
+			opts.set('ksp_atol', 1e-20)
+			opts.set('ksp_max_it', 1000)
+
+			DG0 = self.shape_form_handler.DG0
+			v = fenics.TrialFunction(DG0)
+			w = fenics.TestFunction(DG0)
+
+			a = v*w*self.dx
+			L_norm = fenics.sqrt(fenics.inner(fenics.grad(search_direction), fenics.grad(search_direction)))*w*self.dx
+
+			A = fenics.assemble(a)
+			b_norm = fenics.assemble(L_norm)
+			A = fenics.as_backend_type(A).mat()
+			b_norm = fenics.as_backend_type(b_norm).vec()
+			x_norm, _ = A.getVecs()
+
+			ksp = PETSc.KSP().create()
+			ksp.setFromOptions()
+			ksp.setOperators(A)
+			ksp.setUp()
+			ksp.solve(b_norm, x_norm)
+			if ksp.getConvergedReason() < 0:
+				raise SystemExit('Krylov solver did not converge. Reason: ' + str(ksp.getConvergedReason()))
+
+			frobenius_norm = np.max(x_norm[:])
+
+			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+
+			return np.maximum(np.ceil(np.log(angle_change/stepsize/frobenius_norm)/np.log(1/beta_armijo)), 0.0)
+
+
+
+	def test_a_priori(self, transformation):
+		"""
+		Checks the quality of the transformation. The criterion is that det(I + D transformation) should neither be too large nor too small
+		in order to achieve the best transformations
+
+		Parameters
+		----------
+		transformation : dolfin.function.function.Function
+			The transformation for the mesh
+
+		Returns
+		 : bool
+			A boolean that indicates whether the desired transformation is feasible
+		-------
+
+		"""
+
+		if self.check_a_priori:
+
+			opts = fenics.PETScOptions
+			opts.clear()
+			opts.set('ksp_type', 'preonly')
+			opts.set('pc_type', 'jacobi')
+			opts.set('pc_jacobi_type', 'diagonal')
+			opts.set('ksp_rtol', 1e-16)
+			opts.set('ksp_atol', 1e-20)
+			opts.set('ksp_max_it', 1000)
+
+			dim = self.mesh.geometric_dimension()
+			DG0 = self.shape_form_handler.DG0
+			v = fenics.TrialFunction(DG0)
+			w = fenics.TestFunction(DG0)
+			volume_change = float(self.config.get('MeshQuality', 'volume_change'))
+
+			assert volume_change > 1, 'Volume change has to be larger than 1'
+
+			a = v*w*self.dx
+			L = fenics.det(fenics.Identity(dim) + fenics.grad(transformation))*w*self.dx
+
+			A = fenics.assemble(a)
+			b = fenics.assemble(L)
+			A = fenics.as_backend_type(A).mat()
+			b = fenics.as_backend_type(b).vec()
+			x, _ = A.getVecs()
+
+			ksp = PETSc.KSP().create()
+			ksp.setFromOptions()
+			ksp.setOperators(A)
+			ksp.setUp()
+			ksp.solve(b, x)
+			if ksp.getConvergedReason() < 0:
+				raise SystemExit('Krylov solver did not converge. Reason: ' + str(ksp.getConvergedReason()))
+
+			min_det = np.min(x[:])
+			max_det = np.max(x[:])
+
+			return (min_det >= 1/volume_change) and (max_det <= volume_change)
+
+		else:
+			return True
+
+
+
+	def test_a_posteriori(self):
+		"""
+		Checks whether the mesh is a valid finite element mesh after it has been moved (fenics accepts overlapping elements by default)
+		"""
+
+		if self.check_a_posteriori:
+			mesh = self.mesh
+			cells = mesh.cells()
+			coordinates = mesh.coordinates()
+			self_intersections = False
+			for i in range(coordinates.shape[0]):
+				x = fenics.Point(coordinates[i])
+				cells_idx = self.bbtree.compute_entity_collisions(x)
+				intersections = len(cells_idx)
+				M = cells[cells_idx]
+				occurences = M.flatten().tolist().count(i)
+
+				if intersections > occurences:
+					self_intersections = True
+					break
+
+			if self_intersections:
+				self.revert_transformation()
+				return False
+			else:
+				return True
+
+		else:
+			return True
+
+
+
+	def compute_relative_quality(self):
+		radius_ratios_mf = fenics.MeshQuality.radius_ratios(self.mesh)
+		self.radius_ratios = radius_ratios_mf.array().copy()
+		relative_quality = self.radius_ratios / self.radius_ratios_initial
+		self.min_quality = np.min(relative_quality)
+
+
+	def remesh(self):
+		"""
+		A remeshing routine, that is called when the mesh quality is too bad.
+		THIS IS NOT IMPLEMENTED YET
+
+		Returns
+		-------
+
+		"""
+		# TODO: Implement Remeshing
+		raise NotImplementedError('The remeshing routine is not yet implemented')

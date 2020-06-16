@@ -16,7 +16,7 @@ class StateProblem:
 		
 		Parameters
 		----------
-		form_handler : adpack.forms.FormHandler
+		form_handler : adpack.forms.FormHandler or adpack.forms.ShapeFormHandler
 			the FormHandler of the optimization problem
 		"""
 		
@@ -26,7 +26,7 @@ class StateProblem:
 		self.config = self.form_handler.config
 		self.bcs_list = self.form_handler.bcs_list
 		self.states = self.form_handler.states
-		self.controls = self.form_handler.controls
+		# self.controls = self.form_handler.controls
 
 		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol')
 		self.atol = self.config.getfloat('StateEquation', 'picard_atol')
@@ -60,7 +60,7 @@ class StateProblem:
 			if not self.config.getboolean('StateEquation', 'picard_iteration'):
 				if self.config.getboolean('StateEquation', 'is_linear'):
 					for i in range(self.form_handler.state_dim):
-						fenics.solve(self.form_handler.state_eq_forms_lhs[i]==self.form_handler.state_eq_forms_rhs[i], self.states[i], self.bcs_list[i])
+						fenics.solve(self.form_handler.state_eq_forms_lhs[i]==self.form_handler.state_eq_forms_rhs[i], self.states[i], self.bcs_list[i], solver_parameters={'linear_solver': 'mumps'})
 
 				else:
 					for i in range(self.form_handler.state_dim):

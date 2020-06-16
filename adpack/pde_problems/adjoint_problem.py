@@ -16,7 +16,7 @@ class AdjointProblem:
 		
 		Parameters
 		----------
-		form_handler : adpack.forms.FormHandler
+		form_handler : adpack.forms.FormHandler or adpack.forms.ShapeFormHandler
 			the FormHandler object for the optimization problem
 		state_problem : adpack.pde_problems.state_problem.StateProblem
 			the StateProblem object used to get the point where we linearize the problem
@@ -56,7 +56,7 @@ class AdjointProblem:
 				for i in range(self.form_handler.state_dim):
 					# a, L = fenics.system(self.form_handler.adjoint_eq_forms[-1-i])
 					# fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - i]==self.form_handler.adjoint_eq_rhs[-1 - i], self.adjoints[-1-i], self.bcs_list_ad[-1-i])
-					fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - i]==self.form_handler.adjoint_eq_rhs[-1 - i], self.adjoints[-1-i], self.bcs_list_ad[-1-i])
+					fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - i]==self.form_handler.adjoint_eq_rhs[-1 - i], self.adjoints[-1-i], self.bcs_list_ad[-1-i], solver_parameters={'linear_solver': 'mumps'})
 
 			else:
 				for i in range(self.maxiter + 1):
