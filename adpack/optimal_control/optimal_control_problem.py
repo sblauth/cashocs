@@ -71,7 +71,9 @@ class OptimalControlProblem:
 		### bcs_list
 		try:
 			if bcs_list == [] or bcs_list is None:
-				self.bcs_list = [[]*self.state_dim]
+				self.bcs_list = []
+				for i in range(self.state_dim):
+					self.bcs_list.append([])
 			elif type(bcs_list) == list and len(bcs_list) > 0:
 				if type(bcs_list[0]) == list:
 					for i in range(len(bcs_list)):

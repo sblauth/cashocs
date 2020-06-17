@@ -100,8 +100,7 @@ class ArmijoLineSearch:
 			if self.mesh_handler.move_mesh(self.deformation):
 				self.mesh_handler.compute_relative_quality()
 
-				if self.mesh_handler.min_quality < self.mesh_handler.mesh_quality_tol:
-					# print('\nMesh Quality too low.')
+				if self.mesh_handler.min_quality < self.mesh_handler.mesh_quality_tol / 10:
 					self.stepsize /= self.beta_armijo
 					self.mesh_handler.revert_transformation()
 					continue
@@ -110,6 +109,14 @@ class ArmijoLineSearch:
 				self.objective_step = self.cost_functional.compute()
 
 				if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
+					if self.mesh_handler.min_quality < self.mesh_handler.mesh_quality_tol:
+						self.stepsize /= self.beta_armijo
+						self.mesh_handler.revert_transformation()
+						self.optimization_algorithm.line_search_broken = True
+						print('\nMesh Quality too low.')
+						#TODO: Implement remeshing here
+						break
+
 					if self.optimization_algorithm.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
 					self.shape_form_handler.update_scalar_product()

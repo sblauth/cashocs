@@ -60,7 +60,10 @@ class StateProblem:
 			if not self.config.getboolean('StateEquation', 'picard_iteration'):
 				if self.config.getboolean('StateEquation', 'is_linear'):
 					for i in range(self.form_handler.state_dim):
+						fenics.PETScOptions.clear()
+						fenics.PETScOptions.set('mat_mumps_icntl_24', 1)
 						fenics.solve(self.form_handler.state_eq_forms_lhs[i]==self.form_handler.state_eq_forms_rhs[i], self.states[i], self.bcs_list[i], solver_parameters={'linear_solver': 'mumps'})
+						# fenics.solve(self.form_handler.state_eq_forms_lhs[i]==self.form_handler.state_eq_forms_rhs[i], self.states[i], self.bcs_list[i], solver_parameters={'linear_solver': 'petsc'})
 
 				else:
 					for i in range(self.form_handler.state_dim):
