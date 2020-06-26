@@ -147,6 +147,15 @@ class LBFGS(OptimizationAlgorithm):
 				else:
 					raise SystemExit('Armijo rule failed.')
 
+			self.iteration += 1
+			if self.iteration >= self.maximum_iterations:
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
+
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):
 					self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
@@ -160,7 +169,6 @@ class LBFGS(OptimizationAlgorithm):
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.iteration += 1
 				self.print_results()
 				break
 
@@ -195,15 +203,6 @@ class LBFGS(OptimizationAlgorithm):
 					self.history_s.pop()
 					self.history_y.pop()
 					self.history_rho.pop()
-
-			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					break
-				else:
-					raise SystemExit('Maximum number of iterations exceeded.')
 
 
 		# if not self.line_search_broken:

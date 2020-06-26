@@ -471,7 +471,7 @@ class ShapeFormHandler:
 		opts.set('pc_hypre_boomeramg_strong_threshold', 0.7)
 		opts.set('ksp_rtol', 1e-20)
 		opts.set('ksp_atol', 1e-50)
-		opts.set('ksp_max_it', 100)
+		opts.set('ksp_max_it', 250)
 		# opts.set('ksp_monitor_true_residual')
 
 		self.ksp = PETSc.KSP().create()

@@ -3,13 +3,13 @@
     <Grid Name="Grid">
       <Information Name="Information" Value="0"><![CDATA[<main/>]]></Information>
       <Geometry GeometryType="XY">
-        <DataItem DataType="Float" Dimensions="2427 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data0</DataItem>
+        <DataItem DataType="Float" Dimensions="9309 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data0</DataItem>
       </Geometry>
-      <Topology NumberOfElements="366" TopologyType="Polyline">
-        <DataItem DataType="Int" Dimensions="366 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data1</DataItem>
+      <Topology NumberOfElements="730" TopologyType="Polyline">
+        <DataItem DataType="Int" Dimensions="730 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data1</DataItem>
       </Topology>
       <Attribute AttributeType="Scalar" Center="Cell" Name="boundaries">
-        <DataItem DataType="Int" Dimensions="366" Format="HDF" Precision="8">mesh_boundaries.h5:/data2</DataItem>
+        <DataItem DataType="Int" Dimensions="730" Format="HDF" Precision="8">mesh_boundaries.h5:/data2</DataItem>
       </Attribute>
     </Grid>
   </Domain>

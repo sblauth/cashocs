@@ -50,7 +50,7 @@ class StateProblem:
 			the function that corresponds to the solution of the state system
 
 		"""
-		
+
 		if not self.has_solution:
 			if self.initial_guess is not None:
 				for j in range(self.form_handler.state_dim):

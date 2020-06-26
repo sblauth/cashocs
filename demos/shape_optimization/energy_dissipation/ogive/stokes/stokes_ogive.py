@@ -28,6 +28,7 @@ v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
 p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 space = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
 
+# v_in = Expression(('cos(1.0/4.0*pi*x[1])', '0.0'), degree=2)
 v_in = Expression(('-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)', '0.0'), degree=2)
 bc_in = DirichletBC(space.sub(0), v_in, boundaries, 1)
 bc_wall = DirichletBC(space.sub(0), Constant((0, 0)), boundaries, 2)

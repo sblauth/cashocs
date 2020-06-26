@@ -121,6 +121,7 @@ class ArmijoLineSearch:
 						self.armijo_stepsize_initial = self.stepsize
 					self.shape_form_handler.update_scalar_product()
 					break
+
 				else:
 					self.stepsize /= self.beta_armijo
 					self.mesh_handler.revert_transformation()

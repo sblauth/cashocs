@@ -1,4 +1,4 @@
-lc = 4e-1;
+lc = 3.5e-1;
 
 Point(1) = {-3, -2, -2, lc};
 Point(2) = {6, -2, -2, lc};
@@ -101,9 +101,9 @@ Field[1].NNodesByEdge = 1000;
 Field[1].EdgesList = {13,14,15,16,17,18,19,20,21,22,23,24};
 Field[2] = Threshold;
 Field[2].IField = 1;
-Field[2].LcMin = lc/10;
+Field[2].LcMin = lc/5;
 Field[2].LcMax = lc;
-Field[2].DistMin = 0;
-Field[2].DistMax = 2.5e-2;
+Field[2].DistMin = 2.5e-2;
+Field[2].DistMax = 5e-2;
 
 Background Field = 2;

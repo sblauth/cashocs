@@ -1,5 +1,5 @@
 // Gmsh project created on Tue Jan 22 11:40:52 2019
-lc = 1.5e-1;
+lc = 1e-1;
 SetFactory("OpenCASCADE");
 Circle(1) = {0, 0, 0, 0.5, 0, 2*Pi};
 Line Loop(2) = {1};

@@ -86,7 +86,7 @@ class CG(OptimizationAlgorithm):
 					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.difference)
 					self.beta_denominator = self.shape_form_handler.scalar_product(self.gradient_prev, self.gradient_prev)
 					self.beta = self.beta_numerator / self.beta_denominator
-
+					# self.beta = np.maximum(self.beta, 0.0)
 
 				elif self.cg_method == 'HS':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
@@ -142,6 +142,7 @@ class CG(OptimizationAlgorithm):
 			if self.cg_relative_restart:
 				if abs(self.shape_form_handler.scalar_product(self.gradient, self.gradient_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
 					self.search_direction.vector()[:] = -self.gradient.vector()[:]
+					self.memory = 0
 
 			self.directional_derivative = self.shape_form_handler.scalar_product(self.gradient, self.search_direction)
 

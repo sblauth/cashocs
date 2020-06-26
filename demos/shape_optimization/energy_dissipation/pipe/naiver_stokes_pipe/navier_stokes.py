@@ -44,7 +44,10 @@ e = Constant(1/Re)*inner(grad(u), grad(v))*dx + inner(grad(u)*u, v)*dx - p*div(v
 
 J = Constant(1/Re)*inner(grad(u), grad(u))*dx
 
-optimization_problem = ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
+initial_guess = [[interpolate(Constant((0,0)), space.sub(0).collapse()),
+				 interpolate(Constant(0), space.sub(1).collapse())]]
+
+optimization_problem = ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config, initial_guess=initial_guess)
 optimization_problem.solve()
 # optimization_problem.state_problem.solve()
 

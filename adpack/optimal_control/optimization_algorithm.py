@@ -103,6 +103,9 @@ class OptimizationAlgorithm:
 
 
 	def finalize(self):
+		self.output_dict['state_solves'] = self.state_problem.number_of_solves
+		self.output_dict['adjoint_solves'] = self.adjoint_problem.number_of_solves
+		self.output_dict['iterations'] = self.iteration
 		if self.save_results:
 			with open('./history.json', 'w') as file:
 				json.dump(self.output_dict, file)

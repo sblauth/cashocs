@@ -17,7 +17,7 @@ set_log_level(LogLevel.CRITICAL)
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-Re = 1e1
+Re = 8e2
 
 mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/mesh.xdmf')
 
