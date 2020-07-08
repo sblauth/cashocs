@@ -61,3 +61,50 @@ def prodd(x):
 			y *= item
 			
 	return y
+
+
+
+class EmptyMeasure:
+	def __init__(self, measure):
+		"""
+		This implements an empty measure, needed for more flexibility in programming
+
+		Parameters
+		----------
+		measure : ufl.measure.Measure
+			The underlying measure, typically just the domain measure dx
+		"""
+		self.measure = measure
+
+
+
+	def __rmul__(self, other):
+		return fenics.Constant(0)*other*self.measure
+
+
+
+def generate_measure(idx, measure):
+	"""
+	Generates a MeasureSum or empty measure object corresponding to measure and the subdomains / boundaries specified in idx
+
+	Parameters
+	----------
+	idx : list
+	measure : ufl.measure.Measure
+
+	Returns
+	-------
+	out_measure : ufl.measure.MeasureSum
+		The outgoing measure, either a MeasureSum or an EmptyMeasure
+	"""
+
+	if len(idx) == 0:
+		out_measure = EmptyMeasure(measure)
+
+	else:
+		out_measure = measure(idx[0])
+
+		for i in idx[1:]:
+			out_measure += measure(i)
+
+	return out_measure

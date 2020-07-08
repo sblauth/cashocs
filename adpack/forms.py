@@ -582,7 +582,6 @@ class ShapeFormHandler:
 		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
 		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
 
-
 		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
 		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
 

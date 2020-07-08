@@ -6,6 +6,7 @@ Created on 15/06/2020, 14.37
 
 import fenics
 from fenics import Constant, inner, div
+from adpack.helpers import generate_measure
 import numpy as np
 import json
 
@@ -77,6 +78,11 @@ class Regularization:
 		self.lambda_volume = self.config.getfloat('Regularization', 'factor_volume_regularization')
 		self.lambda_surface = self.config.getfloat('Regularization', 'factor_surface_regularization')
 
+		self.lambda_interior_surface = self.config.getfloat('Regularization', 'factor_interior_surface_regularization')
+		self.idx_interior_surface = json.loads(self.config.get('Regularization', 'idx_interior_surface'))
+		self.dS = fenics.Measure('dS', domain=self.shape_form_handler.mesh, subdomain_data=self.shape_form_handler.boundaries)
+		self.measure_interior = generate_measure(self.idx_interior_surface, self.dS)
+
 		self.mu_volume = self.config.getfloat('Regularization', 'factor_target_volume')
 		self.target_volume = self.config.getfloat('Regularization', 'target_volume')
 		if self.config.getboolean('Regularization', 'use_initial_volume'):
@@ -112,10 +118,10 @@ class Regularization:
 				else:
 					self.target_barycenter_list[2] = 0.0
 
-		assert self.lambda_volume >= 0.0 and self.lambda_surface >= 0.0 and self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0, \
+		assert self.lambda_volume >= 0.0 and self.lambda_surface >= 0.0 and self.lambda_interior_surface >= 0 and self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0, \
 			'All regularization constants have to be nonnegative'
 
-		if self.lambda_volume > 0.0 or self.lambda_surface > 0.0 or self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
+		if self.lambda_volume > 0.0 or self.lambda_surface > 0.0 or self.lambda_interior_surface > 0.0 or self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
 			self.has_regularization = True
 		else:
 			self.has_regularization = False
@@ -171,7 +177,7 @@ class Regularization:
 
 		if self.has_regularization:
 
-			value = fenics.assemble(Constant(self.lambda_volume)*self.dx + Constant(self.lambda_surface)*self.ds)
+			value = fenics.assemble(Constant(self.lambda_volume)*self.dx + Constant(self.lambda_surface)*self.ds + Constant(self.lambda_interior_surface)*self.measure_interior)
 
 			if self.mu_volume > 0.0:
 				if not self.measure_hole:
@@ -236,6 +242,7 @@ class Regularization:
 
 			self.shape_form = Constant(self.lambda_volume)*div(V)*self.dx \
 								  + Constant(self.lambda_surface)*t_div(V, n)*self.ds \
+							  	  + Constant(self.lambda_interior_surface)*t_div(V('+'), n('+'))*self.measure_interior \
 								  + Constant(self.mu_surface)*(self.current_surface - self.target_surface)*t_div(V, n)*self.ds
 
 			if not self.measure_hole:
