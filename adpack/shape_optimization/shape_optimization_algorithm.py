@@ -6,6 +6,7 @@ Created on 15/06/2020, 08.00
 
 import fenics
 import json
+import os
 
 
 
@@ -107,6 +108,9 @@ class OptimizationAlgorithm:
 		if self.save_results:
 			with open('./history.json', 'w') as file:
 				json.dump(self.output_dict, file)
+
+		if self.config.getboolean('Mesh', 'remesh') and self.config.getint('Mesh', 'remesh_counter') > 0:
+			os.system('mv ' + self.shape_form_handler.config_save_file + ' ' + self.config.get('Mesh', 'config_path'))
 
 
 

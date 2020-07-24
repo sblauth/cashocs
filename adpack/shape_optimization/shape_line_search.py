@@ -6,7 +6,6 @@ Created on 15/06/2020, 08.00
 
 import fenics
 import numpy as np
-from ..geometry import MeshHandler
 
 
 
@@ -27,7 +26,8 @@ class ArmijoLineSearch:
 		self.config = self.optimization_algorithm.config
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
 		self.shape_form_handler = self.optimization_problem.shape_form_handler
-		self.mesh_handler = MeshHandler(self.shape_form_handler)
+		self.mesh_handler = self.optimization_problem.mesh_handler
+		# self.mesh_handler = MeshHandler(self.shape_form_handler)
 		self.deformation = fenics.Function(self.shape_form_handler.deformation_space)
 
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
@@ -114,8 +114,8 @@ class ArmijoLineSearch:
 						self.mesh_handler.revert_transformation()
 						self.optimization_algorithm.line_search_broken = True
 						print('\nMesh Quality too low.')
+						self.mesh_handler.remesh()
 						#TODO: Implement remeshing here
-						break
 
 					if self.optimization_algorithm.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize

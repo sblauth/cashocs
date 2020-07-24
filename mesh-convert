@@ -46,17 +46,15 @@ def run(argv):
 	mesh_collection = meshio.read(inputfile)
 	
 	points = mesh_collection.points
-	point_data = mesh_collection.point_data
-	cells = mesh_collection.cells
-	cell_data = mesh_collection.cell_data
-	# field_data = mesh_collection.field_data
-	
+	cells_dict = mesh_collection.cells_dict
+	cell_data_dict = mesh_collection.cell_data_dict
+
 	# Check, whether we have a 2D or 3D mesh:
-	keyvals = cells.keys()
-	if 'line' in keyvals and 'triangle' in keyvals:
-		meshdim = 2
-	elif 'triangle' in keyvals and 'tetra' in keyvals:
+	keyvals = cells_dict.keys()
+	if 'tetra' in keyvals:
 		meshdim = 3
+	elif 'triangle' in keyvals:
+		meshdim = 2
 	else:
 		print('Error: This is not a valid input mesh.')
 		print('')
@@ -65,32 +63,34 @@ def run(argv):
 	
 	if meshdim == 2:
 		points = points[:, :2]
-		xdmf_mesh = meshio.Mesh(points=points, cells={'triangle' : cells['triangle']})
+		xdmf_mesh = meshio.Mesh(points=points, cells={'triangle' : cells_dict['triangle']})
 		meshio.write(ostring + '.xdmf', xdmf_mesh)
-		
-		
-		subdomains = meshio.Mesh(points=points, cells={'triangle': cells['triangle']},
-								 cell_data={'triangle': {'subdomains': cell_data['triangle']['gmsh:physical']}})
-		meshio.write(ostring + '_subdomains.xdmf', subdomains)
-		
-		
-		xdmf_boundaries = meshio.Mesh(points=points, cells={'line' : cells['line']},
-									  cell_data={'line' : {'boundaries' : cell_data['line']['gmsh:physical']}})
-		meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
+
+		if 'gmsh:physical' in cell_data_dict.keys():
+			if 'triangle' in cell_data_dict['gmsh:physical'].keys():
+				subdomains = meshio.Mesh(points=points, cells={'triangle': cells_dict['triangle']},
+										 cell_data={'subdomains': [cell_data_dict['gmsh:physical']['triangle']]})
+				meshio.write(ostring + '_subdomains.xdmf', subdomains)
+
+			if 'line' in cell_data_dict['gmsh:physical'].keys():
+				xdmf_boundaries = meshio.Mesh(points=points, cells={'line' : cells_dict['line']},
+											  cell_data={'boundaries' : [cell_data_dict['gmsh:physical']['line']]})
+				meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
 	
 	elif meshdim == 3:
-		xdmf_mesh = meshio.Mesh(points=points, cells={'tetra' : cells['tetra']})
+		xdmf_mesh = meshio.Mesh(points=points, cells={'tetra' : cells_dict['tetra']})
 		meshio.write(ostring + '.xdmf', xdmf_mesh)
-		
-		
-		subdomains = meshio.Mesh(points=points, cells={'tetra': cells['tetra']},
-								 cell_data={'tetra': {'subdomains': cell_data['tetra']['gmsh:physical']}})
-		meshio.write(ostring + '_subdomains.xdmf', subdomains)
-		
-		
-		xdmf_boundaries = meshio.Mesh(points=points, cells={'triangle' : cells['triangle']},
-									  cell_data={'triangle' : {'boundaries' : cell_data['triangle']['gmsh:physical']}})
-		meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
+
+		if 'gmsh:physical' in cell_data_dict.keys():
+			if 'tetra' in cell_data_dict['gmsh:physical'].keys():
+				subdomains = meshio.Mesh(points=points, cells={'tetra': cells_dict['tetra']},
+										 cell_data={'subdomains': [cell_data_dict['gmsh:physical']['tetra']]})
+				meshio.write(ostring + '_subdomains.xdmf', subdomains)
+
+			if 'triangle' in cell_data_dict['gmsh:physical'].keys():
+				xdmf_boundaries = meshio.Mesh(points=points, cells={'triangle' : cells_dict['triangle']},
+											  cell_data={'boundaries' : [cell_data_dict['gmsh:physical']['triangle']]})
+				meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
 
 
 

@@ -59,7 +59,8 @@ class CG(OptimizationAlgorithm):
 
 		"""
 
-		self.iteration = 0
+		self.iteration = self.config.getint('OptimizationRoutine', 'iteration_counter', fallback=0)
+		self.gradient_norm_initial = self.config.getfloat('OptimizationRoutine', 'gradient_norm_initial', fallback=0.0)
 		self.memory = 0
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False

@@ -13,3 +13,5 @@ from .nonlinear_solvers import NewtonSolver
 from .optimal_control.optimal_control_problem import OptimalControlProblem
 
 from .shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
+
+from .helpers import create_config

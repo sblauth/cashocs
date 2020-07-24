@@ -8,6 +8,9 @@ import fenics
 import numpy as np
 import time
 from petsc4py import PETSc
+import os
+import sys
+import uuid
 
 
 
@@ -47,23 +50,24 @@ def MeshGen(mesh_file):
 	mesh = fenics.Mesh()
 	xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
 	xdmf_file.read(mesh)
+	xdmf_file.close()
 	
 	subdomains_mvc = fenics.MeshValueCollection('size_t', mesh, mesh.geometric_dimension())
 	boundaries_mvc = fenics.MeshValueCollection('size_t', mesh, mesh.geometric_dimension() - 1)
-	
-	xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_subdomains.xdmf')
-	xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_boundaries.xdmf')
-	
-	xdmf_boundaries.read(boundaries_mvc, 'boundaries')
-	xdmf_subdomains.read(subdomains_mvc, 'subdomains')
+
+	if os.path.exists(file_string + '_subdomains.xdmf'):
+		xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_subdomains.xdmf')
+		xdmf_subdomains.read(subdomains_mvc, 'subdomains')
+		xdmf_subdomains.close()
+	if os.path.exists(file_string + '_boundaries.xdmf'):
+		xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_boundaries.xdmf')
+		xdmf_boundaries.read(boundaries_mvc, 'boundaries')
+		xdmf_boundaries.close()
+
 	
 	subdomains = fenics.MeshFunction('size_t', mesh, subdomains_mvc)
 	boundaries = fenics.MeshFunction('size_t', mesh, boundaries_mvc)
-	
-	xdmf_file.close()
-	xdmf_subdomains.close()
-	xdmf_boundaries.close()
-	
+
 	dx = fenics.Measure('dx', domain=mesh, subdomain_data=subdomains)
 	ds = fenics.Measure('ds', domain=mesh, subdomain_data=boundaries)
 	dS = fenics.Measure('dS', domain=mesh, subdomain_data=boundaries)
@@ -247,15 +251,16 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 
 
 class MeshHandler:
-	def __init__(self, shape_form_handler):
+	def __init__(self, shape_optimization_problem):
 		"""
 
 		Parameters
 		----------
-		shape_form_handler : adpack.forms.ShapeFormHandler
+		shape_optimization_problem : adpack.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
 		"""
 
-		self.shape_form_handler = shape_form_handler
+		self.shape_optimization_problem = shape_optimization_problem
+		self.shape_form_handler = self.shape_optimization_problem.shape_form_handler
 		# Namespacing
 		self.mesh = self.shape_form_handler.mesh
 		self.dx = self.shape_form_handler.dx
@@ -473,6 +478,84 @@ class MeshHandler:
 		self.min_quality = np.min(relative_quality)
 
 
+
+	def write_out_mesh(self):
+		dim = self.mesh.geometric_dimension()
+
+		if self.shape_form_handler.remesh_counter == 0:
+			old_file = open(self.shape_form_handler.gmsh_file, 'r')
+		else:
+			old_file = open(self.shape_form_handler.gmsh_file[:-4] + '_' + self.shape_form_handler.remesh_counter + '.msh', 'r')
+		self.temp_file = self.shape_form_handler.remesh_directory + '/mesh_' + str(uuid.uuid4().hex) + '.msh'
+		new_file = open(self.temp_file, 'w')
+
+		points = self.mesh.coordinates()
+
+		node_section = False
+		info_section = False
+		subnode_counter = 0
+		subwrite_counter = 0
+		idcs = np.zeros(1, dtype=int)
+
+		for line in old_file:
+			if line == '$EndNodes\n':
+				node_section = False
+
+			if not node_section:
+				new_file.write(line)
+			else:
+				split_line = line.split(' ')
+				if info_section:
+					new_file.write(line)
+					info_section = False
+				else:
+					if len(split_line) == 4:
+						num_subnodes = int(split_line[-1][:-1])
+						subnode_counter = 0
+						subwrite_counter = 0
+						idcs = np.zeros(num_subnodes, dtype=int)
+						new_file.write(line)
+					elif len(split_line) == 1:
+						idcs[subnode_counter] = int(split_line[0][:-1]) - 1
+						subnode_counter += 1
+						new_file.write(line)
+					elif len(split_line) == 3:
+						if dim == 2:
+							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + '0\n'
+						elif dim == 3:
+							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + format(points[idcs[subwrite_counter]][2], '.16f') + '\n'
+						new_file.write(mod_line)
+						subwrite_counter += 1
+
+
+			if line == '$Nodes\n':
+				node_section = True
+				info_section = True
+
+		old_file.close()
+		new_file.close()
+
+
+
+	def generate_remesh_geo(self):
+		with open(self.shape_form_handler.remesh_geo_file, 'w') as file:
+			temp_name = os.path.split(self.temp_file)[1]
+			file.write('Merge \'' + temp_name + '\';\n')
+			file.write('CreateGeometry;\n')
+			file.write('\n')
+
+			geo_file = self.config.get('Mesh', 'geo_file')
+			with open(geo_file, 'r') as f:
+				for line in f:
+					if line[:2] == 'lc':
+						file.write(line)
+					if line[:5] == 'Field':
+						file.write(line)
+					if line[:16] == 'Background Field':
+						file.write(line)
+
+
+
 	def remesh(self):
 		"""
 		A remeshing routine, that is called when the mesh quality is too bad.
@@ -482,5 +565,37 @@ class MeshHandler:
 		-------
 
 		"""
-		# TODO: Implement Remeshing
-		raise NotImplementedError('The remeshing routine is not yet implemented')
+
+		if self.shape_form_handler.do_remesh:
+			self.write_out_mesh()
+			self.generate_remesh_geo()
+
+			dim = self.mesh.geometric_dimension()
+
+			gmsh_command = 'gmsh ' + self.shape_form_handler.remesh_geo_file + ' -' + str(int(dim)) + ' -o ' + self.temp_file
+			# os.system(gmsh_command + ' >/dev/null 2>&1')
+			os.system(gmsh_command)
+			self.shape_form_handler.remesh_counter += 1
+			self.config.set('Mesh', 'remesh_counter', str(self.shape_form_handler.remesh_counter))
+
+			self.new_gmsh_file = self.shape_form_handler.remesh_directory + '/mesh_' + str(self.shape_form_handler.remesh_counter) + '.msh'
+			rename_command = 'mv ' + self.temp_file + ' ' + self.new_gmsh_file
+			os.system(rename_command)
+
+			self.new_xdmf_file = self.shape_form_handler.remesh_directory + '/mesh_' + str(self.shape_form_handler.remesh_counter) + '.xdmf'
+			convert_command = 'mesh-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file
+			os.system(convert_command)
+
+			self.config.set('Mesh', 'xdmf_file', self.new_xdmf_file)
+			self.config.set('Mesh', 'gmsh_file', self.new_gmsh_file)
+			self.config.set('OptimizationRoutine', 'rtol', '0.0')
+			new_atol = self.shape_optimization_problem.solver.atol + self.shape_optimization_problem.solver.gradient_norm_initial*self.shape_optimization_problem.solver.rtol
+			self.config.set('OptimizationRoutine', 'atol', str(new_atol))
+			self.config.set('OptimizationRoutine', 'iteration_counter', str(self.shape_optimization_problem.solver.iteration))
+			self.config.set('OptimizationRoutine', 'gradient_norm_initial', str(self.shape_optimization_problem.solver.gradient_norm_initial))
+
+			config_path = self.config.get('Mesh', 'config_path')
+			with open(config_path, 'w') as file:
+				self.config.write(file)
+
+			os.execv(sys.executable, ['python'] + sys.argv)

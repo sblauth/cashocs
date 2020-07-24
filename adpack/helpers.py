@@ -5,6 +5,8 @@ Created on 02/03/2020, 13.58
 """
 
 import fenics
+import configparser
+import os
 
 
 
@@ -108,3 +110,12 @@ def generate_measure(idx, measure):
 			out_measure += measure(i)
 
 	return out_measure
+
+
+
+def create_config(path):
+	config = configparser.ConfigParser()
+	config.read(path)
+	config.set('Mesh', 'config_path', os.path.abspath(path))
+
+	return config

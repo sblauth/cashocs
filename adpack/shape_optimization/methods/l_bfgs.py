@@ -101,18 +101,24 @@ class LBFGS(OptimizationAlgorithm):
 
 		"""
 
-		self.iteration = 0
-		self.relative_norm = 1.0
+		self.iteration = self.config.getint('OptimizationRoutine', 'iteration_counter', fallback=0)
+		self.gradient_norm_initial = self.config.getfloat('OptimizationRoutine', 'gradient_norm_initial', fallback=0.0)
 		self.state_problem.has_solution = False
 
 		self.adjoint_problem.has_solution = False
 		self.shape_gradient_problem.has_solution = False
 		self.shape_gradient_problem.solve()
 		self.gradient_norm = np.sqrt(self.optimization_problem.norm_squared())
-		self.gradient_norm_initial = self.gradient_norm
-		if self.gradient_norm_initial == 0:
-			self.converged = True
-			self.print_results()
+
+		if self.gradient_norm_initial > 0.0:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+		else:
+			self.gradient_norm_initial = self.gradient_norm
+			self.relative_norm = 1.0
+
+		# if self.gradient_norm_initial == 0:
+		# 	self.converged = True
+		# 	self.print_results()
 
 		while not self.converged:
 			self.search_direction = self.compute_search_direction(self.gradient)

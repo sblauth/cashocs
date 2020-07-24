@@ -46,11 +46,14 @@ e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx
 J = inner(grad(u), grad(u))*dx
 
 optimization_problem = ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
-optimization_problem.solve()
-# optimization_problem.state_problem.solve()
+# optimization_problem.solve()
+optimization_problem.state_problem.solve()
+optimization_problem.adjoint_problem.solve()
 
 u, p = up.split(True)
 
 volume = 4*9 - assemble(1*dx)
 barycenter_x = (1/2*(6**2 - 3**2)*4 - assemble(x[0]*dx)) / volume
 barycenter_y = (1/2*(2**2 - 2**2)*9 - assemble(x[1]*dx)) / volume
+
+v,q = vq.split(True)

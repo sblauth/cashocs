@@ -13,6 +13,7 @@ from .shape_cost_functional import ReducedCostFunctional
 from .methods.gradient_descent import GradientDescent
 from .methods.l_bfgs import LBFGS
 from .methods.cg import CG
+from ..geometry import MeshHandler
 
 
 
@@ -141,6 +142,7 @@ class ShapeOptimizationProblem:
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.boundaries, self.config)
+		self.mesh_handler = MeshHandler(self)
 
 		self.state_spaces = self.shape_form_handler.state_spaces
 		self.adjoint_spaces = self.shape_form_handler.adjoint_spaces

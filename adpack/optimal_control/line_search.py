@@ -54,7 +54,7 @@ class ArmijoLineSearch:
 		-------
 		 : float
 		"""
-
+		### TODO: Check this
 		if self.is_steepest_descent:
 			return self.stepsize*self.optimization_problem.stationary_measure_squared()
 

@@ -48,6 +48,8 @@ class OptimalControlProblem:
 		riesz_scalar_products :
 		control_constraints : List[dolfin.function.function.Function] or List[float] or List[List]
 			Box constraints posed on the control
+		initial_guess : List
+			List of functions that act as initial guess, should be valid input for fenics.assign, defaults to None (which means zero initial guess)
 		"""
 
 		### Overloading, such that we do not have to use lists for single state single control

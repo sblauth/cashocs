@@ -67,13 +67,11 @@ class StateProblem:
 
 				else:
 					for i in range(self.form_handler.state_dim):
-						# fenics.solve(self.form_handler.state_eq_forms[i]==0, self.states[i], self.bcs_list[i],
-						# 			  solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' : {'linear_solver' : 'mumps',
-						# 																				   'relative_tolerance' : self.newton_rtol,
-						# 																				   'absolute_tolerance' : self.newton_atol}})
+						if self.initial_guess is not None:
+							fenics.assign(self.states[i], self.initial_guess[i])
 
 						self.states[i] = NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i],
-													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=False)
+													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=True)
 
 			else:
 				for i in range(self.maxiter + 1):
@@ -111,6 +109,8 @@ class StateProblem:
 						# fenics.solve(self.form_handler.state_eq_forms[j]==0, self.states[j],
 						# 			 self.bcs_list[j], solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' :
 						# 													{'linear_solver' : 'mumps','relative_tolerance' : self.newton_rtol,'absolute_tolerance' : self.newton_atol}})
+						if self.initial_guess is not None:
+							fenics.assign(self.states[i], self.initial_guess[i])
 						self.states[j] = NewtonSolver(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
 													  rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], damped=False, verbose=False)
 

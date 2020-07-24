@@ -6,12 +6,15 @@ Created on 24/02/2020, 08.45
 
 import fenics
 from ufl import replace
+from ufl.algorithms import expand_derivatives
+from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from .helpers import summ
 import numpy as np
 import time
 from petsc4py import PETSc
 from .shape_optimization.regularization import Regularization
 import json
+import os
 
 
 
@@ -144,6 +147,7 @@ class FormHandler:
 			ksp.setFromOptions()
 			ksp.setOperators(self.riesz_projection_matrices[i])
 			self.ksps.append(ksp)
+
 
 
 
@@ -414,6 +418,8 @@ class ShapeFormHandler:
 		self.boundaries = boundaries
 		self.config = config
 
+		self.degree_estimation = config.getboolean('ShapeGradient', 'degree_estimation', fallback=False)
+
 		self.cost_functional_form = self.lagrangian.cost_functional_form
 		self.state_forms = self.lagrangian.state_forms
 
@@ -447,7 +453,11 @@ class ShapeFormHandler:
 		self.compute_shape_derivative()
 		self.compute_shape_gradient_forms()
 
-		self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape)
+		if self.degree_estimation:
+			self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product), estimate_total_polynomial_degree(self.shape_derivative))
+			self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape, form_compiler_parameters={'quadrature_degree' : self.estimated_degree})
+		else:
+			self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape)
 		self.fe_scalar_product_matrix = fenics.PETScMatrix()
 		self.fe_shape_derivative_vector = fenics.PETScVector()
 
@@ -476,6 +486,32 @@ class ShapeFormHandler:
 
 		self.ksp = PETSc.KSP().create()
 		self.ksp.setFromOptions()
+
+		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
+		self.remesh_counter = self.config.getint('Mesh', 'remesh_counter', fallback=0)
+
+		if self.do_remesh:
+			self.gmsh_file = self.config.get('Mesh', 'gmsh_file')
+			if self.remesh_counter == 0:
+				self.config.set('Mesh', 'original_gmsh_file', self.gmsh_file)
+			assert self.gmsh_file[-4:] == '.msh', 'Not a valid gmsh file'
+
+			self.mesh_directory = os.path.split(self.config.get('Mesh', 'original_gmsh_file'))[0]
+			self.remesh_directory = self.mesh_directory + '/remesh'
+			if not os.path.exists(self.remesh_directory):
+				os.mkdir(self.remesh_directory)
+			self.config_save_file = self.remesh_directory + '/save_config.ini'
+			self.remesh_geo_file = self.remesh_directory + '/remesh.geo'
+
+		# create a copy of the initial config and mesh file
+		if self.do_remesh and self.remesh_counter == 0:
+			self.gmsh_file_init = self.remesh_directory + '/mesh_' + str(self.remesh_counter) + '.msh'
+			copy_mesh = 'cp ' + self.gmsh_file + ' ' + self.gmsh_file_init
+			os.system(copy_mesh)
+			self.gmsh_file = self.gmsh_file_init
+
+			with open(self.config_save_file, 'w') as file:
+				self.config.write(file)
 
 
 
@@ -573,8 +609,33 @@ class ShapeFormHandler:
 
 
 	def compute_shape_derivative(self):
-		self.shape_derivative = fenics.derivative(self.lagrangian.lagrangian_form, fenics.SpatialCoordinate(self.mesh), self.test_vector_field) + self.regularization.compute_shape_derivative()
+		### Shape derivative of Lagrangian w/o regularization and pull-backs
+		self.shape_derivative = fenics.derivative(self.lagrangian.lagrangian_form, fenics.SpatialCoordinate(self.mesh), self.test_vector_field)
 
+		### Add pull-backs
+		self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [coeff.id() for coeff in self.adjoints]
+
+		self.material_derivative_coeffs = []
+		for coeff in self.lagrangian.lagrangian_form.coefficients():
+			if coeff.id() in self.state_adjoint_ids:
+				pass
+			else:
+				if not coeff.ufl_element().family() == 'Real':
+					self.material_derivative_coeffs.append(coeff)
+
+		for coeff in self.material_derivative_coeffs:
+			# temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())
+			# placeholder = fenics.Function(temp_space)
+			# temp_form = fenics.derivative(self.lagrangian.lagrangian_form, coeff, placeholder)
+			# material_derivative = replace(temp_form, {placeholder : fenics.dot(fenics.grad(coeff), self.test_vector_field)})
+
+			material_derivative = fenics.derivative(self.lagrangian.lagrangian_form, coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field))
+			material_derivative = expand_derivatives(material_derivative)
+
+			self.shape_derivative += material_derivative
+
+		### Add regularization
+		self.shape_derivative += self.regularization.compute_shape_derivative()
 
 
 	def compute_shape_gradient_forms(self):
@@ -656,6 +717,7 @@ class ShapeFormHandler:
 				raise SystemExit('Krylov solver did not converge. Reason: ' + str(ksp.getConvergedReason()))
 
 			self.mu_lame.vector()[:] = x[:]
+			# self.mu_lame.vector()[:] = np.sqrt(x[:])
 
 		else:
 			self.mu_lame.vector()[:] = mu_fix
@@ -697,3 +759,8 @@ class ShapeFormHandler:
 		result = temp.dot(y)
 
 		return result
+
+
+
+	def reinitialize_after_remesh(self):
+		pass
