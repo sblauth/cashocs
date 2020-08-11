@@ -10,6 +10,7 @@ import fenics
 
 def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True):
 	"""A custom NewtonSolver class that includes damping (based on a monotonicity test) and fine tuning possibilities.
+
 	The solver will stop either after the maximum number of iterations have been performed or if the termination criterion is satisfied, i.e.,
 		if ||F_current|| <= rtol * ||F_initial|| 	if convergence_type is 'rel',
 		if ||F_current|| <= atol 					if convergence_type is 'abs',
@@ -20,22 +21,31 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 	----------
 	F : ufl.form.Form
 		The variational form of the nonlinear problem that shall be solved by Newton's method
+
 	u : dolfin.function.function.Function
 		The sought solution / initial guess (the method will also return this)
+
 	bcs : list[dolfin.fem.dirichletbc.DirichletBC]
 		A list of DirichletBCs for the nonlinear variational problem
+
 	rtol : float
 		Relative tolerance of the solver if convergence_type is either 'both' or 'rel'
+
 	atol : float
 		Absolute tolerance of the solver if convergence_type is either 'both' or 'abs'
+
 	max_iter : int
 		Maximum number of iterations carried out by the method
+
 	convergence_type : str
-		One of 'both', 'rel', or 'abs'.
+		One of 'both', 'rel', or 'abs'
+
 	norm_type : str
 		One of 'l2', 'linf'
+
 	damped : bool
 		Either true or false, if true then uses a damping strategy, if not, uses Newton-Raphson Iteration
+
 	verbose : bool
 		Either true or false, gives updates about the iteration, if true
 
@@ -111,11 +121,8 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 		
 		if breakdown:
 			raise SystemExit('Damped Newton Solver Breakdown')
-			# print('Damped Newton Solver Breakdown')
-			# break
-		
+
 		if iterations == max_iter:
-			# print('Newton Solver exceeded maximum number of iterations.')
 			raise SystemExit('Newton Solver exceeded maximum number of iterations.')
 		
 		A, residuum = fenics.assemble_system(dF, -F, bcs_hom)

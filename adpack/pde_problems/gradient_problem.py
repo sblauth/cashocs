@@ -5,22 +5,47 @@ Created on 24/02/2020, 09.26
 """
 
 import fenics
-from petsc4py import PETSc
-from ..helpers import summ
 
 
 
 class GradientProblem:
+	"""A class representing a gradient problem for optimal control problems
+
+	Attributes
+	----------
+	form_handler : adpack.forms.FormHandler
+		the FormHandler which contains the UFL forms of the gradient problem
+
+	state_problem : adpack.pde_problems.state_problem.StateProblem
+		the corresponding state problem
+
+	adjoint_problem : adpack.pde_problems.adjoint_problem.AdjointProblem
+		the corresponding adjoint problem
+
+	gradients : list[dolfin.function.function.Function]
+		list, containing the components of the gradient
+
+	config : configparser.ConfigParser
+		the config object for the problem
+
+	has_solution : bool
+		a boolean flag, indicating whether the current `gradients` are up-to-date
+
+	gradient_norm_squared : float
+		The current norm of the gradient, squared
+	"""
 	
 	def __init__(self, form_handler, state_problem, adjoint_problem):
-		"""The class that handles the computation of the gradient
+		"""Initializes the gradient problem
 		
 		Parameters
 		----------
 		form_handler : adpack.forms.FormHandler
 			the FormHandler object of the optimization problem
+
 		state_problem : adpack.pde_problems.state_problem.StateProblem
 			the StateProblem object used to solve the state equations
+
 		adjoint_problem : adpack.pde_problems.adjoint_problem.AdjointProblem
 			the AdjointProblem used to solve the adjoint equations
 		"""
@@ -33,15 +58,16 @@ class GradientProblem:
 		self.config = self.form_handler.config
 
 		self.has_solution = False
-	
+
+
 	
 	def solve(self):
-		"""Solves the Riesz projection problem in order to obtain the gradient of the cost functional
+		"""Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional
 		
 		Returns
 		-------
-		self.gradient : dolfin.function.function.Function
-			the function representing the gradient of the (reduced) cost functional
+		gradients : list[dolfin.function.function.Function]
+			the gradient of the cost functional
 
 		"""
 		
@@ -63,18 +89,19 @@ class GradientProblem:
 
 		return self.gradients
 	
-	
-	
-	def return_norm_squared(self):
-		"""Returns the norm of the gradient squared, used e.g. in the Armijo line search
-		
-		Returns
-		-------
-		self.gradient_norm_squared : float
-			|| `self.gradient` || in L^2 (corresponding to the domain given by control_measure)
 
-		"""
-		
-		self.solve()
-		
-		return self.gradient_norm_squared
+
+	# TODO: Check if we need this
+	# def return_norm_squared(self):
+	# 	"""Returns the norm of the gradient, squared, used e.g. in the Armijo line search
+	#
+	# 	Returns
+	# 	-------
+	# 	gradient_norm_squared : float
+	# 		the norm of the gradient, squared
+	#
+	# 	"""
+	#
+	# 	self.solve()
+	#
+	# 	return self.gradient_norm_squared

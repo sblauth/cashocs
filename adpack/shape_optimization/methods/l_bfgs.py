@@ -71,7 +71,7 @@ class LBFGS(OptimizationAlgorithm):
 				self.search_direction.vector()[:] -= alpha * self.history_y[i].vector()[:]
 
 			if self.use_bfgs_scaling and self.iteration > 0:
-				factor = self.shape_form_handler.scalar_product(self.history_y[0], self.history_s[0])/self.shape_form_handler.scalar_product(self.history_y[0], self.history_y[0])
+				factor = self.shape_form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.shape_form_handler.scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
 

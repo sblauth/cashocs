@@ -10,14 +10,52 @@ import numpy as np
 
 
 class AdjointProblem:
+	"""A class representing the adjoint problem
+
+	Attributes
+	----------
+	form_handler : adpack.forms.FormHandler or adpack.forms.ShapeFormHandler
+		the FormHandler object, containing the UFL forms of the adjoint equations
+
+	state_problem : adpack.pde_problems.state_problem.StateProblem
+		the state problem, which has to be solved beforehand
+
+	config : configparser.ConfigParser
+		the config object for the problem
+
+	adjoints : list[dolfin.function.function.Function]
+		list of the adjoint variables
+
+	bcs_list_ad : list[list[dolfin.fem.dirichletbc.DirichletBC]]
+		list of (homogeneous) Dirichlet boundary conditions for the adjoint variables
+
+	rtol : float
+		Relative tolerance for the Picard iteration (if used for solving the PDE systems)
+
+	atol : float
+		Absolute tolerance for the Picard iteration (if used for solving the PDE systems)
+
+	maxiter : int
+		Maximum number of iterations for the Picard iteration (if used for solving the PDE systems)
+
+	picard_verbose : bool
+		boolean flag, en- or disabling verbose output of the Picard solver, if used
+
+	number_of_solves : int
+		Counter for the number of times the adjoint system has been solved
+
+	has_solution : bool
+		boolean flag, indicating whether the current adjoint variables are up-to-date
+	"""
 	
 	def __init__(self, form_handler, state_problem):
-		"""A class that implements the adjoint system, used e.g. to determine the gradient of the cost functional
+		"""Initializes the AdjointProblem
 		
 		Parameters
 		----------
 		form_handler : adpack.forms.FormHandler or adpack.forms.ShapeFormHandler
 			the FormHandler object for the optimization problem
+
 		state_problem : adpack.pde_problems.state_problem.StateProblem
 			the StateProblem object used to get the point where we linearize the problem
 		"""
@@ -29,10 +67,10 @@ class AdjointProblem:
 		self.adjoints = self.form_handler.adjoints
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol')
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol')
-		self.maxiter = self.config.getint('StateEquation', 'picard_iter')
-		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose')
+		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
+		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-20)
+		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
+		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
 
 		self.number_of_solves = 0
 		self.has_solution = False
@@ -44,8 +82,8 @@ class AdjointProblem:
 		
 		Returns
 		-------
-		self.adjoint : dolfin.function.function.Function
-			the Function representing the solution of the adjoint system
+		adjoints : list[dolfin.function.function.Function]
+			list of adjoint variables
 
 		"""
 		
@@ -54,7 +92,6 @@ class AdjointProblem:
 		if not self.has_solution:
 			if not self.config.getboolean('StateEquation', 'picard_iteration'):
 				for i in range(self.form_handler.state_dim):
-					# a, L = fenics.system(self.form_handler.adjoint_eq_forms[-1-i])
 					# fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - i]==self.form_handler.adjoint_eq_rhs[-1 - i], self.adjoints[-1-i], self.bcs_list_ad[-1-i])
 					fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - i]==self.form_handler.adjoint_eq_rhs[-1 - i], self.adjoints[-1-i], self.bcs_list_ad[-1-i], solver_parameters={'linear_solver': 'mumps'})
 

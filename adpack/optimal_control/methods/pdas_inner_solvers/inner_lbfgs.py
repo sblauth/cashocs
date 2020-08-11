@@ -54,7 +54,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 					self.search_directions[j].vector()[:] -= alpha*self.history_y[i][j].vector()[:]
 
 			if self.use_bfgs_scaling and self.iteration > 0:
-				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0])/self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
+				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
 

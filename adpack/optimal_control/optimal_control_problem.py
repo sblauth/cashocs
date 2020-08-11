@@ -19,8 +19,7 @@ from .methods.cg import CG
 from .methods.newton import Newton
 from .methods.semi_smooth_newton import SemiSmoothNewton
 from .methods.primal_dual_active_set_method import PDAS
-import time
-
+import numpy as np
 
 
 class OptimalControlProblem:
@@ -31,25 +30,25 @@ class OptimalControlProblem:
 		
 		Parameters
 		----------
-		state_forms : ufl.form.Form or List[ufl.form.Form]
+		state_forms : ufl.form.Form or list[ufl.form.Form]
 			the weak form of the state equation (user implemented)
-		bcs_list : List[dolfin.fem.dirichletbc.DirichletBC] or List[List[dolfin.fem.dirichletbc.DirichletBC]]
+		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]]
 			the list of DirichletBC objects describing essential boundary conditions
 		cost_functional_form : ufl.form.Form
 			the cost functional (user implemented)
-		states : dolfin.function.function.Function or List[dolfin.function.function.Function]
+		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			the state variable
-		controls : dolfin.function.function.Function or List[dolfin.function.function.Function]
+		controls : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			the control variable
-		adjoints : dolfin.function.function.Function or List[dolfin.function.function.Function]
+		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			the adjoint variable
 		config : configparser.ConfigParser
 			the config file for the problem
 		riesz_scalar_products :
-		control_constraints : List[dolfin.function.function.Function] or List[float] or List[List]
+		control_constraints : list[dolfin.function.function.Function] or list[float] or list[list]
 			Box constraints posed on the control
-		initial_guess : List
-			List of functions that act as initial guess, should be valid input for fenics.assign, defaults to None (which means zero initial guess)
+		initial_guess : list
+			list of functions that act as initial guess, should be valid input for fenics.assign, defaults to None (which means zero initial guess)
 		"""
 
 		### Overloading, such that we do not have to use lists for single state single control
@@ -229,6 +228,28 @@ class OptimalControlProblem:
 				raise SystemExit('control_constraints has to be a list containing upper and lower bounds')
 
 		# recast floats into functions for compatibility
+		temp_constraints = self.control_constraints[:]
+		self.control_constraints = []
+		for idx, pair in enumerate(temp_constraints):
+			if type(pair[0]) in [float, int]:
+				lower_bound = fenics.Function(self.controls[idx].function_space())
+				lower_bound.vector()[:] = pair[0]
+			elif pair[0].__module__ == 'dolfin.function.function' and type(pair[0]).__name__ == 'Function':
+				lower_bound = pair[0]
+			else:
+				raise SystemExit('Wrong type for the control constraints')
+
+			if type(pair[1]) in [float, int]:
+				upper_bound = fenics.Function(self.controls[idx].function_space())
+				upper_bound.vector()[:] = pair[1]
+			elif pair[1].__module__ == 'dolfin.function.function' and type(pair[1]).__name__ == 'Function':
+				upper_bound = pair[1]
+			else:
+				raise SystemExit('Wrong type for the control constraints')
+
+			self.control_constraints.append([lower_bound, upper_bound])
+
+
 		if type(self.control_constraints[0][0]) in [float, int]:
 			temp_constraints = self.control_constraints[:]
 			self.control_constraints = []
@@ -238,6 +259,10 @@ class OptimalControlProblem:
 				u_b = fenics.Function(control.function_space())
 				u_b.vector()[:] = temp_constraints[i][1]
 				self.control_constraints.append([u_a, u_b])
+
+		### Check whether the control constraints are feasible
+		for pair in self.control_constraints:
+			assert np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]), 'the lower bound must always be smaller than the upper bound'
 
 		### initial guess
 		if initial_guess is None:
@@ -274,7 +299,7 @@ class OptimalControlProblem:
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 		
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'newton':
-			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'semi_smooth_newton':
 			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
 		if self.config.get('OptimizationRoutine', 'algorithm') == 'pdas':

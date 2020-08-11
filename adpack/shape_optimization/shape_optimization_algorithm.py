@@ -109,7 +109,7 @@ class OptimizationAlgorithm:
 			with open('./history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
-		if self.config.getboolean('Mesh', 'remesh') and self.config.getint('Mesh', 'remesh_counter') > 0:
+		if self.config.getboolean('Mesh', 'remesh', fallback=False) and self.config.getint('Mesh', 'remesh_counter', fallback=0) > 0:
 			os.system('mv ' + self.shape_form_handler.config_save_file + ' ' + self.config.get('Mesh', 'config_path'))
 
 

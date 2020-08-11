@@ -6,11 +6,93 @@ Created on 06/03/2020, 10.22
 
 import fenics
 import numpy as np
-from ..helpers import summ
 
 
 
 class SemiSmoothHessianProblem:
+	"""A class that represents the problem for determining a search direction for a semi-smooth Newton method
+
+	Attributes
+	----------
+	form_handler : adpack.forms.FormHandler
+		the FormHandler corresponding to the optimization problem
+
+	gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
+		the corresponding gradient problem
+
+	control_constraints : list[list[dolfin.function.function.Function]]
+		list of the (box) control constraints
+
+	config : configparser.ConfigParser
+		the config object of the problem
+
+	gradients : list[dolfin.function.function.Function]
+		the gradient of the reduced cost functional
+
+	inner_newton : str
+		string indicating the inner Krylov solver used for the truncated Newton method
+
+	max_it_inner_newton : int
+		maximum number of iterations of the inner (krylov) solver for the truncated Newton method
+
+	inner_newton_tolerance : float
+		relative tolerance for the inner solver of the truncated Newton method
+
+	test_directions : list[dolfin.function.function.Function]
+		the "vector" onto which the Hessian is applied
+
+	residual : list[dolfin.function.function.Function]
+		the function corresponding to the residual (needed for the inner Krylov solver)
+
+	delta_control : list[dolfin.function.function.Function]
+		the function corresponding to the Newton increment
+
+	state_dim : int
+		number of state variables
+
+	control_dim : int
+		number of control variables
+
+	inactive_part : list[dolfin.function.function.Function]
+		temporary functions, indicating the "inactive" part of a function, needed for box constraints
+
+	active_part : list[dolfin.function.function.Function]
+		temporary functions, indicating the "active" part of a function, needed for box constraints
+
+	controls : list[dolfin.function.function.Function]
+		the control variables
+
+	rtol : float
+		relative tolerance for the Picard iteration (if this is enabled)
+
+	atol : float
+		absolute tolerance for the Picard iteration (if this is enabled)
+
+	maxiter : int
+		maximum number of iterations for the Picard iteration (if this is enabled)
+
+	picard_verbose : bool
+		a boolean flag, en- or disabling verbose output of the Picard iteration
+
+	no_sensitivity_solves : int
+		number of sensitivity (i.e. PDE) solves performed by the method
+
+	states_prime : list[dolfin.function.function.Function]
+		state (forward) sensitivities
+
+	adjoints_prime : list[dolfin.function.function.Function]
+		adjoint (backward) sensitivities
+
+	bcs_list_ad : list[list[dolfin.fem.dirichletbc.DirichletBC]]
+		list of (homogeneous) boundary conditions for the adjoint variables
+
+	hessian_actions : list[dolfin.function.function.Function]
+		list of functions corresponding to the application of the Hessian to test_directions
+
+	res_norm_squared : float
+		norm of the residual, squared
+
+	"""
 
 	def __init__(self, form_handler, gradient_problem, control_constraints):
 		"""The class that manages the computations for the Hessian in the truncated Newton method
@@ -22,6 +104,9 @@ class SemiSmoothHessianProblem:
 		gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
 			the GradientProblem object (we need the gradient for the computation of the Hessian)
 		"""
+
+		# TODO: Bring the implementation up-to-date
+		raise SystemExit('The semi-smooth Newton method is currently not implemented correctly.')
 
 		self.form_handler = form_handler
 		self.gradient_problem = gradient_problem
@@ -110,7 +195,7 @@ class SemiSmoothHessianProblem:
 	def hessian_application_simplified(self, x):
 		"""A simplified version of the application of the Hessian.
 
-		Computes J''(u)[x], where x is the input vector (see self.hessian_application for more details)
+		Computes J''(u)[x], where x is the input vector (see self.__hessian_application for more details)
 
 		Parameters
 		----------

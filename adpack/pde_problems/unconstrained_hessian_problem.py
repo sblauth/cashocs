@@ -10,17 +10,99 @@ import numpy as np
 
 
 class UnconstrainedHessianProblem:
-	"""The class that manages the computations for the Hessian in the truncated Newton method for the Primal Dual Active Set method
+	"""A class the computes the action of the Hessian on some direction, used for the truncated Newton method.
 
-	Parameters
+	This is the unconstrained version used for the Primal-Dual-Active-Set method.
+
+	Attributes
 	----------
 	form_handler : adpack.forms.FormHandler
-		the FormHandler object for the optimization problem
+		the FormHandler object of the problem, which contains the necessary UFL forms
+
 	gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
-		the GradientProblem object (we need the gradient for the computation of the Hessian)
+		the corresponding gradient problem
+
+	config : configparser.ConfigParser
+		the config object for the problem
+
+	gradients : list[dolfin.function.function.Function]
+		the gradient of the cost functional
+
+	inner_newton : str
+		one of 'cg' (conjugate gradient), 'minres' (minimum residual), or 'cr' (conjugate residual), used as inner solver for the truncated Newton method
+
+	max_it_inner_newton : int
+		maximum number of iterations of the inner (krylov) solver for the truncated Newton method
+
+	inner_newton_tolerance : float
+		relative tolerance for the inner solver of the truncated Newton method
+
+	test_directions : list[dolfin.function.function.Function]
+		the "vector" onto which the Hessian is applied
+
+	residual : list[dolfin.function.function.Function]
+		the function corresponding to the residual (needed for the inner Krylov solver)
+
+	delta_control : list[dolfin.function.function.Function]
+		the function corresponding to the Newton increment
+
+	state_dim : int
+		number of state variables
+
+	control_dim : int
+		number of control variables
+
+	inactive_part : list[dolfin.function.function.Function]
+		temporary functions, indicating the "inactive" part of a function, needed for box constraints
+
+	active_part : list[dolfin.function.function.Function]
+		temporary functions, indicating the "active" part of a function, needed for box constraints
+
+	controls : list[dolfin.function.function.Function]
+		the control variables
+
+	rtol : float
+		relative tolerance for the Picard iteration (if this is enabled)
+
+	atol : float
+		absolute tolerance for the Picard iteration (if this is enabled)
+
+	maxiter : int
+		maximum number of iterations for the Picard iteration (if this is enabled)
+
+	picard_verbose : bool
+		a boolean flag, en- or disabling verbose output of the Picard iteration
+
+	no_sensitivity_solves : int
+		number of sensitivity (i.e. PDE) solves performed by the method
+
+	states_prime : list[dolfin.function.function.Function]
+		state (forward) sensitivities
+
+	adjoints_prime : list[dolfin.function.function.Function]
+		adjoint (backward) sensitivities
+
+	bcs_list_ad : list[list[dolfin.fem.dirichletbc.DirichletBC]]
+		list of (homogeneous) boundary conditions for the adjoint variables
+
+	hessian_actions : list[dolfin.function.function.Function]
+		list of functions corresponding to the application of the Hessian to test_directions
+
+	res_norm_squared : float
+		norm of the residual, squared
 	"""
 
 	def __init__(self, form_handler, gradient_problem):
+		"""Initializes the object
+
+		Parameters
+		----------
+		form_handler : adpack.forms.FormHandler
+			the FormHandler object for the optimization problem
+
+		gradient_problem : adpack.pde_problems.gradient_problem.GradientProblem
+			the corresponding GradientProblem object
+		"""
 
 		self.form_handler = form_handler
 		self.gradient_problem = gradient_problem
@@ -40,15 +122,15 @@ class UnconstrainedHessianProblem:
 		self.state_dim = self.form_handler.state_dim
 		self.control_dim = self.form_handler.control_dim
 
-		self.p = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.p_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.p_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.s = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.s_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.s_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.q = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.r_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__p = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__p_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__p_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__s = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__s_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__s_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__q = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+		self.__r_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 		self.inactive_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.active_part = [fenics.Function(V) for V in self.form_handler.control_spaces]
@@ -67,15 +149,18 @@ class UnconstrainedHessianProblem:
 		"""Returns the application of J''(u)[h] where h = self.test_direction
 
 		This is needed in the truncated Newton method where we solve the system
+
 			J''(u) du = - J'(u)
+
 		via iterative methods (cg, minres, cr)
 
 		Returns
 		-------
-		self.form_handler.hessian_action : List[dolfin.function.function.Function]
+		self.form_handler.hessian_action : list[dolfin.function.function.Function]
 			the generic function that saves the result of J''(u)[h]
 
 		"""
+
 		self.states_prime = self.form_handler.states_prime
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
@@ -170,7 +255,7 @@ class UnconstrainedHessianProblem:
 
 		Parameters
 		----------
-		x : List[dolfin.function.function.Function]
+		x : list[dolfin.function.function.Function]
 			a function to which we want to apply the Hessian to
 
 		Returns
@@ -179,6 +264,7 @@ class UnconstrainedHessianProblem:
 			the generic function that saves the result of J''(u)[h]
 
 		"""
+
 		for i in range(self.control_dim):
 			self.test_directions[i].vector()[:] = x[i].vector()[:]
 
@@ -192,11 +278,11 @@ class UnconstrainedHessianProblem:
 
 		Returns
 		-------
-		self.delta_control : List[dolfin.function.function.Function]
+		self.delta_control : list[dolfin.function.function.Function]
 			the Newton increment
-
 		"""
 
+		# TODO: Can we generalize this?
 		for j in range(self.control_dim):
 			self.delta_control[j].vector()[:] = 0.0
 		self.gradient_problem.solve()
@@ -210,134 +296,134 @@ class UnconstrainedHessianProblem:
 
 			for j in range(self.control_dim):
 				self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
-				self.p[j].vector()[:] = self.residual[j].vector()[:]
+				self.__p[j].vector()[:] = self.residual[j].vector()[:]
 
 			self.res_norm_squared = self.form_handler.scalar_product(self.residual, self.residual)
-			self.eps_0 = np.sqrt(self.res_norm_squared)
+			self.__eps_0 = np.sqrt(self.res_norm_squared)
 
 			for i in range(self.max_it_inner_newton):
 
 				for j in range(self.control_dim):
-					self.p[j].vector()[idx_active[j]] = 0.0
+					self.__p[j].vector()[idx_active[j]] = 0.0
 
-				self.hessian_actions = self.application_simplified(self.p)
+				self.hessian_actions = self.application_simplified(self.__p)
 
 				for j in range(self.control_dim):
-					self.q[j].vector()[:] = self.hessian_actions[j].vector()[:]
-					self.q[j].vector()[idx_active[j]] = 0.0
+					self.__q[j].vector()[:] = self.hessian_actions[j].vector()[:]
+					self.__q[j].vector()[idx_active[j]] = 0.0
 
-				self.eps = np.sqrt(self.res_norm_squared)
-				# print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
-				if self.eps/self.eps_0 < self.inner_newton_tolerance:
+				self.__eps = np.sqrt(self.res_norm_squared)
+				# print('Eps (CG): ' + str(self.__eps / self.__eps_0) + ' (rel)')
+				if self.__eps/self.__eps_0 < self.inner_newton_tolerance:
 					break
 
-				self.alpha = self.res_norm_squared/self.form_handler.scalar_product(self.p, self.q)
+				self.__alpha = self.res_norm_squared / self.form_handler.scalar_product(self.__p, self.__q)
 				for j in range(self.control_dim):
-					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
-					self.residual[j].vector()[:] -= self.alpha*self.q[j].vector()[:]
+					self.delta_control[j].vector()[:] += self.__alpha * self.__p[j].vector()[:]
+					self.residual[j].vector()[:] -= self.__alpha * self.__q[j].vector()[:]
 
 				self.res_norm_squared = self.form_handler.scalar_product(self.residual, self.residual)
-				self.beta = self.res_norm_squared/pow(self.eps, 2)
+				self.__beta = self.res_norm_squared / pow(self.__eps, 2)
 
 				for j in range(self.control_dim):
-					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
+					self.__p[j].vector()[:] = self.residual[j].vector()[:] + self.__beta * self.__p[j].vector()[:]
 
 
 		elif self.inner_newton == 'minres':
 			for j in range(self.control_dim):
 				self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
-				self.p_prev[j].vector()[:] = self.residual[j].vector()[:]
+				self.__p_prev[j].vector()[:] = self.residual[j].vector()[:]
 
-			self.eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
+			self.__eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
-			self.hessian_actions = self.application_simplified(self.p_prev)
+			self.hessian_actions = self.application_simplified(self.__p_prev)
 
 			for j in range(self.control_dim):
-				self.s_prev[j].vector()[:] = self.hessian_actions[j].vector()[:]
-				self.s_prev[j].vector()[idx_active[j]] = 0.0
+				self.__s_prev[j].vector()[:] = self.hessian_actions[j].vector()[:]
+				self.__s_prev[j].vector()[idx_active[j]] = 0.0
 
 			for i in range(self.max_it_inner_newton):
-				self.alpha = self.form_handler.scalar_product(self.residual, self.s_prev) / self.form_handler.scalar_product(self.s_prev, self.s_prev)
+				self.__alpha = self.form_handler.scalar_product(self.residual, self.__s_prev) / self.form_handler.scalar_product(self.__s_prev, self.__s_prev)
 
 				for j in range(self.control_dim):
-					self.delta_control[j].vector()[:] += self.alpha*self.p_prev[j].vector()[:]
-					self.residual[j].vector()[:] -= self.alpha*self.s_prev[j].vector()[:]
+					self.delta_control[j].vector()[:] += self.__alpha * self.__p_prev[j].vector()[:]
+					self.residual[j].vector()[:] -= self.__alpha * self.__s_prev[j].vector()[:]
 
-				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				# print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
-				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
+				self.__eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
+				# print('Eps (mr): ' + str(self.__eps / self.__eps_0) + ' (relative)')
+				if self.__eps / self.__eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 
 				for j in range(self.control_dim):
-					self.p[j].vector()[:] = self.s_prev[j].vector()[:]
+					self.__p[j].vector()[:] = self.__s_prev[j].vector()[:]
 
-				self.hessian_actions = self.application_simplified(self.s_prev)
+				self.hessian_actions = self.application_simplified(self.__s_prev)
 
 				for j in range(self.control_dim):
-					self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
-					self.s[j].vector()[idx_active[j]] = 0.0
+					self.__s[j].vector()[:] = self.hessian_actions[j].vector()[:]
+					self.__s[j].vector()[idx_active[j]] = 0.0
 
-				self.beta_prev = self.form_handler.scalar_product(self.s, self.s_prev) / self.form_handler.scalar_product(self.s_prev, self.s_prev)
+				self.__beta_prev = self.form_handler.scalar_product(self.__s, self.__s_prev) / self.form_handler.scalar_product(self.__s_prev, self.__s_prev)
 				if i==0:
-					self.beta_pprev = 0.0
+					self.__beta_pprev = 0.0
 				else:
-					self.beta_pprev = self.form_handler.scalar_product(self.s, self.s_pprev) / self.form_handler.scalar_product(self.s_pprev, self.s_pprev)
+					self.__beta_pprev = self.form_handler.scalar_product(self.__s, self.__s_pprev) / self.form_handler.scalar_product(self.__s_pprev, self.__s_pprev)
 
 				for j in range(self.control_dim):
-					self.p[j].vector()[:] -= self.beta_prev*self.p_prev[j].vector()[:] + self.beta_pprev*self.p_pprev[j].vector()[:]
-					self.s[j].vector()[:] -= self.beta_prev*self.s_prev[j].vector()[:] + self.beta_pprev*self.s_pprev[j].vector()[:]
+					self.__p[j].vector()[:] -= self.__beta_prev * self.__p_prev[j].vector()[:] + self.__beta_pprev * self.__p_pprev[j].vector()[:]
+					self.__s[j].vector()[:] -= self.__beta_prev * self.__s_prev[j].vector()[:] + self.__beta_pprev * self.__s_pprev[j].vector()[:]
 
-					self.p_pprev[j].vector()[:] = self.p_prev[j].vector()[:]
-					self.s_pprev[j].vector()[:] = self.s_prev[j].vector()[:]
+					self.__p_pprev[j].vector()[:] = self.__p_prev[j].vector()[:]
+					self.__s_pprev[j].vector()[:] = self.__s_prev[j].vector()[:]
 
-					self.p_prev[j].vector()[:] = self.p[j].vector()[:]
-					self.s_prev[j].vector()[:] = self.s[j].vector()[:]
+					self.__p_prev[j].vector()[:] = self.__p[j].vector()[:]
+					self.__s_prev[j].vector()[:] = self.__s[j].vector()[:]
 
 
 		elif self.inner_newton=='cr':
 			for j in range(self.control_dim):
 				self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
-				self.p[j].vector()[:] = self.residual[j].vector()[:]
+				self.__p[j].vector()[:] = self.residual[j].vector()[:]
 
-			self.eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
+			self.__eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
 			self.hessian_actions = self.application_simplified(self.residual)
 
 			for j in range(self.control_dim):
-				self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
-				self.s[j].vector()[idx_active[j]] = 0.0
-				self.q[j].vector()[:] = self.s[j].vector()[:]
+				self.__s[j].vector()[:] = self.hessian_actions[j].vector()[:]
+				self.__s[j].vector()[idx_active[j]] = 0.0
+				self.__q[j].vector()[:] = self.__s[j].vector()[:]
 
-			self.rAr = self.form_handler.scalar_product(self.residual, self.s)
+			self.__rAr = self.form_handler.scalar_product(self.residual, self.__s)
 
 			for i in range(self.max_it_inner_newton):
-				self.alpha = self.rAr/self.form_handler.scalar_product(self.q, self.q)
+				self.__alpha = self.__rAr / self.form_handler.scalar_product(self.__q, self.__q)
 
 				for j in range(self.control_dim):
-					self.delta_control[j].vector()[:] += self.alpha*self.p[j].vector()[:]
-					self.r_prev[j].vector()[:] = self.residual[j].vector()[:]
-					self.residual[j].vector()[:] -= self.alpha*self.q[j].vector()[:]
+					self.delta_control[j].vector()[:] += self.__alpha * self.__p[j].vector()[:]
+					self.__r_prev[j].vector()[:] = self.residual[j].vector()[:]
+					self.residual[j].vector()[:] -= self.__alpha * self.__q[j].vector()[:]
 
-				self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-				# print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
-				if self.eps/self.eps_0 < self.inner_newton_tolerance or i==self.max_it_inner_newton - 1:
+				self.__eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
+				# print('Eps (cr): ' + str(self.__eps / self.__eps_0) + ' (relative)')
+				if self.__eps/self.__eps_0 < self.inner_newton_tolerance or i==self.max_it_inner_newton - 1:
 					break
 
 				self.hessian_actions = self.application_simplified(self.residual)
 
 				for j in range(self.control_dim):
-					self.s[j].vector()[:] = self.hessian_actions[j].vector()[:]
-					self.s[j].vector()[idx_active[j]] = 0.0
+					self.__s[j].vector()[:] = self.hessian_actions[j].vector()[:]
+					self.__s[j].vector()[idx_active[j]] = 0.0
 
-				self.rAr_new = self.form_handler.scalar_product(self.residual, self.s)
-				self.beta = self.rAr_new/self.rAr
+				self.__rAr_new = self.form_handler.scalar_product(self.residual, self.__s)
+				self.__beta = self.__rAr_new / self.__rAr
 
 				for j in range(self.control_dim):
-					self.q_prev[j].vector()[:] = self.q[j].vector()[:]
-					self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta*self.q[j].vector()[:]
-					self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta*self.p[j].vector()[:]
+					self.__q_prev[j].vector()[:] = self.__q[j].vector()[:]
+					self.__q[j].vector()[:] = self.__s[j].vector()[:] + self.__beta * self.__q[j].vector()[:]
+					self.__p[j].vector()[:] = self.residual[j].vector()[:] + self.__beta * self.__p[j].vector()[:]
 
-				self.rAr = self.rAr_new
+				self.__rAr = self.__rAr_new
 
 		else:
 			raise SystemExit('OptimizationRoutine.inner_newton needs to be one of cg, minres or cr.')

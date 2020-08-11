@@ -116,7 +116,7 @@ class CG(OptimizationAlgorithm):
 
 					self.difference.vector()[:] = self.difference.vector()[:] - 2*y2/dy*self.search_direction.vector()[:]
 
-					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient)/dy
+					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
 
 				else:
 					raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')

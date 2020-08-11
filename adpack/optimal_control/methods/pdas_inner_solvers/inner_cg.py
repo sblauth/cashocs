@@ -109,7 +109,7 @@ class InnerCG(OptimizationAlgorithm):
 				for i in range(len(self.gradients)):
 					self.differences[i].vector()[:] = self.differences[i].vector()[:] - 2*y2/dy*self.search_directions[i].vector()[:]
 
-				self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient)/dy
+				self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient) / dy
 
 			else:
 				raise SystemExit('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')

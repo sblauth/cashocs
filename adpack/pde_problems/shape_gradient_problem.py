@@ -5,21 +5,49 @@ Created on 15/06/2020, 08.10
 """
 
 import fenics
-from petsc4py import PETSc
-from ..helpers import summ
 
 
 
 class ShapeGradientProblem:
+	"""A class that represents the shape gradient problem, used to compute the shape gradient
+
+	Attributes
+	----------
+	shape_form_handler : adpack.forms.ShapeFormHandler
+		the shape form handler, containing (amongst others) the UFL form of the shape derivative
+
+	state_problem : adpack.pde_problems.state_problem.StateProblem
+		the corresponding state problem
+
+	adjoint_problem : adpack.pde_problems.adjoint_problem.AdjointProblem
+		the corresponding adjoint problem
+
+	gradient : dolfin.function.function.Function
+		the shape gradient
+
+	config : configparser.ConfigParser
+		the config object of the problem
+
+	has_solution : bool
+		boolean flag, indicating whether the current shape gradient is up-to-date
+
+	gradient_norm_squared : float
+		norm of the shape gradient, squared
+	"""
 
 	def __init__(self, shape_form_handler, state_problem, adjoint_problem):
-		"""
+		"""Initialize the ShapeGradientProblem
 
 		Parameters
 		----------
 		shape_form_handler : adpack.forms.ShapeFormHandler
+			the ShapeFormHandler object corresponding to the shape optimization problem
+
 		state_problem : adpack.pde_problems.state_problem.StateProblem
+			the corresponding state problem
+
 		adjoint_problem : adpack.pde_problems.adjoint_problem.AdjointProblem
+			the corresponding adjoint problem
 		"""
 
 		self.shape_form_handler = shape_form_handler
@@ -27,6 +55,7 @@ class ShapeGradientProblem:
 		self.adjoint_problem = adjoint_problem
 
 		self.gradient = fenics.Function(self.shape_form_handler.deformation_space)
+		self.gradient_norm_squared = 1.0
 
 		self.config = self.shape_form_handler.config
 
@@ -35,11 +64,11 @@ class ShapeGradientProblem:
 
 
 	def solve(self):
-		"""Solves the Riesz projection problem in order to obtain the gradient of the cost functional
+		"""Solves the Riesz projection problem to obtain the gradient of the cost functional
 
 		Returns
 		-------
-		self.gradient : dolfin.function.function.Function
+		gradient : dolfin.function.function.Function
 			the function representing the gradient of the (reduced) cost functional
 
 		"""
@@ -70,13 +99,12 @@ class ShapeGradientProblem:
 
 
 	def return_norm_squared(self):
-		"""Returns the norm of the gradient squared, used e.g. in the Armijo line search
+		"""Returns the norm of the shape gradient, squared
 
 		Returns
 		-------
-		self.gradient_norm_squared : float
-			|| `self.gradient` || in L^2 (corresponding to the domain given by control_measure)
-
+		gradient_norm_squared : float
+			the norm of the shape gradient, squared
 		"""
 
 		self.solve()

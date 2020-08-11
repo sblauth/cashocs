@@ -50,9 +50,9 @@ class PDAS(OptimizationAlgorithm):
 
 
 	def compute_active_inactive_sets(self):
-		self.idx_active_lower = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][0]) < 0).nonzero()[0]
+		self.idx_active_lower = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][0].vector()[:]) < 0).nonzero()[0]
 								 for j in range(self.optimization_problem.control_dim)]
-		self.idx_active_upper = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][1]) > 0).nonzero()[0]
+		self.idx_active_upper = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][1].vector()[:]) > 0).nonzero()[0]
 								 for j in range(self.optimization_problem.state_dim)]
 
 		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.optimization_problem.control_dim)]
@@ -88,8 +88,8 @@ class PDAS(OptimizationAlgorithm):
 		while True:
 
 			for j in range(len(self.controls)):
-				self.controls[j].vector()[self.idx_active_lower[j]] = self.optimization_problem.control_constraints[j][0]
-				self.controls[j].vector()[self.idx_active_upper[j]] = self.optimization_problem.control_constraints[j][1]
+				self.controls[j].vector()[self.idx_active_lower[j]] = self.optimization_problem.control_constraints[j][0].vector()[self.idx_active_lower[j]]
+				self.controls[j].vector()[self.idx_active_upper[j]] = self.optimization_problem.control_constraints[j][1].vector()[self.idx_active_upper[j]]
 
 
 			self.inner_solver.run(self.idx_active)

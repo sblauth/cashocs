@@ -27,14 +27,19 @@ def MeshGen(mesh_file):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
+
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the subdomains, i.e., the physical regions of dimension d generated in gmsh
+
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the boundaries, i.e., the physical regions of dimension d-1 generated in gmsh
+
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
+
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
+
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -64,7 +69,6 @@ def MeshGen(mesh_file):
 		xdmf_boundaries.read(boundaries_mvc, 'boundaries')
 		xdmf_boundaries.close()
 
-	
 	subdomains = fenics.MeshFunction('size_t', mesh, subdomains_mvc)
 	boundaries = fenics.MeshFunction('size_t', mesh, boundaries_mvc)
 
@@ -87,10 +91,13 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 	----------
 	n : int
 		Number of subdivisions in the smallest coordinate direction
+
 	lx : float
 		length in x-direction
+
 	ly : float
 		length in y-direction
+
 	lz : float or None
 		length in z-direction (geometry will be 2D if lz==None)
 
@@ -98,14 +105,19 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
+
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the subdomains
+
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the boundaries. Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
+
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
+
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
+
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -132,20 +144,17 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 	
 	x_min = fenics.CompiledSubDomain('on_boundary && near(x[0], 0, tol)', tol=fenics.DOLFIN_EPS)
 	x_max = fenics.CompiledSubDomain('on_boundary && near(x[0], length, tol)', tol=fenics.DOLFIN_EPS, length=sizes[0])
-	
+	x_min.mark(boundaries, 1)
+	x_max.mark(boundaries, 2)
+
 	y_min = fenics.CompiledSubDomain('on_boundary && near(x[1], 0, tol)', tol=fenics.DOLFIN_EPS)
 	y_max = fenics.CompiledSubDomain('on_boundary && near(x[1], length, tol)', tol=fenics.DOLFIN_EPS, length=sizes[1])
-	
+	y_min.mark(boundaries, 3)
+	y_max.mark(boundaries, 4)
+
 	if lz is not None:
 		z_min = fenics.CompiledSubDomain('on_boundary && near(x[2], 0, tol)', tol=fenics.DOLFIN_EPS)
 		z_max = fenics.CompiledSubDomain('on_boundary && near(x[2], length, tol)', tol=fenics.DOLFIN_EPS, length=sizes[2])
-	
-	x_min.mark(boundaries, 1)
-	x_max.mark(boundaries, 2)
-	y_min.mark(boundaries, 3)
-	y_max.mark(boundaries, 4)
-	
-	if lz is not None:
 		z_min.mark(boundaries, 5)
 		z_max.mark(boundaries, 6)
 	
@@ -156,6 +165,7 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 	return mesh, subdomains, boundaries, dx, ds, dS
 
 
+
 def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 	"""Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey] or the cube [sx, ex] x [sy, ey] x [sz, ez]
 
@@ -163,16 +173,22 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 	----------
 	n : int
 		Number of subdivisions for the smallest direction
+
 	sx : float
 		Start of the x-interval
+
 	sy : float
 		Start of the y-interval
+
 	sz : float or None
 		Start of the z-interval
+
 	ex : float
 		End of the x-interval
+
 	ey : float
 		End of the y-interval
+
 	ez : float or None
 		End of the z-interval
 
@@ -180,14 +196,19 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
+
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the subdomains
+
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
+
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
+
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
+
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -223,20 +244,17 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 
 	x_min = fenics.CompiledSubDomain('on_boundary && near(x[0], sx, tol)', tol=fenics.DOLFIN_EPS, sx=sx)
 	x_max = fenics.CompiledSubDomain('on_boundary && near(x[0], ex, tol)', tol=fenics.DOLFIN_EPS, ex=ex)
+	x_min.mark(boundaries, 1)
+	x_max.mark(boundaries, 2)
 
 	y_min = fenics.CompiledSubDomain('on_boundary && near(x[1], sy, tol)', tol=fenics.DOLFIN_EPS, sy=sy)
 	y_max = fenics.CompiledSubDomain('on_boundary && near(x[1], ey, tol)', tol=fenics.DOLFIN_EPS, ey=ey)
-
-	if sz is not None:
-		z_min = fenics.CompiledSubDomain('on_boundary && near(x[2], sz, tol)', tol=fenics.DOLFIN_EPS, sz=sz)
-		z_max = fenics.CompiledSubDomain('on_boundary && near(x[2], ez, tol)', tol=fenics.DOLFIN_EPS, ez=ez)
-
-	x_min.mark(boundaries, 1)
-	x_max.mark(boundaries, 2)
 	y_min.mark(boundaries, 3)
 	y_max.mark(boundaries, 4)
 
 	if sz is not None:
+		z_min = fenics.CompiledSubDomain('on_boundary && near(x[2], sz, tol)', tol=fenics.DOLFIN_EPS, sz=sz)
+		z_max = fenics.CompiledSubDomain('on_boundary && near(x[2], ez, tol)', tol=fenics.DOLFIN_EPS, ez=ez)
 		z_min.mark(boundaries, 5)
 		z_max.mark(boundaries, 6)
 
@@ -251,8 +269,64 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 
 
 class MeshHandler:
+	"""This class implements all mesh related things for the shape optimization, such as transformations and remeshing
+
+	Attributes
+	----------
+	shape_optimization_problem : adpack.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+		The corresponding shape optimization problem
+
+	shape_form_handler : adpack.forms.ShapeFormHandler
+		The shape form handler of the problem
+
+	mesh : dolfin.cpp.mesh.Mesh
+		The finite element mesh
+
+	dx : ufl.measure.Measure
+		The volume measure corresponding to mesh
+
+	bbtree : dolfin.cpp.geometry.BoundingBoxTree
+		Bounding box tree for the mesh, needs to be updated after moving the mesh
+
+	config : configparser.ConfigParser
+		config object for the shape optimization problem
+
+	check_a_priori : bool
+		boolean flag, en- or disabling checking the quality of the shape deformation (before the actual mesh is moved)
+
+	check_a_posteriori : bool
+		boolean flag, en- or disabling checking the quality of the shape deformation (after the actual mesh is moved)
+
+	radius_ratios_initial_mf : dolfin.cpp.mesh.MeshFunctionDouble
+		MeshFunction representing the radius ratios for the initial geometry
+
+	radius_ratios_initial : numpy.ndarray
+		numpy array of the radius ratios for the initial geometry
+
+	mesh_quality_tol : float
+		relative threshold for remeshing
+
+	min_quality : float
+		measures the minimal (relative) mesh quality regarding the radius ratios
+
+	old_coordinates : numpy.ndarray
+		numpy array of coordinates of the mesh's vertices, used for reverting the deformation
+
+	radius_ratios : numpy.ndarray
+		numpy array of the radius ratios for the current geometry
+
+	temp_file : str
+		temporary path to a .msh file where the current mesh is written out to
+
+	new_gmsh_file : str
+		path to the new (remeshed) .msh file
+
+	new_xdmf_file : str
+		path to the remeshed mesh, in xdmf format
+	"""
+
 	def __init__(self, shape_optimization_problem):
-		"""
+		"""Initializes the MeshHandler object
 
 		Parameters
 		----------
@@ -267,13 +341,13 @@ class MeshHandler:
 		self.bbtree = self.mesh.bounding_box_tree()
 		self.config = self.shape_form_handler.config
 
-		self.check_a_priori = self.config.getboolean('MeshQuality', 'check_a_priori')
-		self.check_a_posteriori = self.config.getboolean('MeshQuality', 'check_a_posteriori')
+		self.check_a_priori = self.config.getboolean('MeshQuality', 'check_a_priori', fallback=True)
+		self.check_a_posteriori = self.config.getboolean('MeshQuality', 'check_a_posteriori', fallback=True)
 
 		self.radius_ratios_initial_mf = fenics.MeshQuality.radius_ratios(self.mesh)
 		self.radius_ratios_initial = self.radius_ratios_initial_mf.array().copy()
 
-		self.mesh_quality_tol = self.config.getfloat('MeshQuality', 'qtol')
+		self.mesh_quality_tol = self.config.getfloat('MeshQuality', 'qtol', fallback=0.25)
 		self.min_quality = 1.0
 
 
@@ -290,20 +364,23 @@ class MeshHandler:
 
 		assert transformation.ufl_element().family() == 'Lagrange' and transformation.ufl_element().degree() == 1, 'Not a valid mesh transformation'
 
-		if not self.test_a_priori(transformation):
+		if not self.__test_a_priori(transformation):
 			return False
 		else:
 			self.old_coordinates = self.mesh.coordinates().copy()
 			fenics.ALE.move(self.mesh, transformation)
 			self.bbtree.build(self.mesh)
 
-			return self.test_a_posteriori()
+			return self.__test_a_posteriori()
 
 
 
 	def revert_transformation(self):
-		"""
-		Reverts the previous transformation done in self.move_mesh
+		"""Reverts the previous transformation done in self.move_mesh, and restores the mesh.coordinates to old_coordinates
+
+		Returns
+		-------
+		None
 		"""
 
 		self.mesh.coordinates()[:, :] = self.old_coordinates
@@ -312,7 +389,8 @@ class MeshHandler:
 
 
 	def compute_decreases(self, search_direction, stepsize):
-		"""
+		"""Computes the number of decreases needed in the Armijo rule so that the Frobenius norm criterion is satisfied
+
 		Gives a better estimation of the stepsize. The output is the number of "Armijo halvings" we have to do in order to
 		get a transformation that satisfies norm(transformation)_fro <= 0.3, where transformation = stepsize*search_direction.
 		Due to the linearity of the norm this has to be done only once, all smaller stepsizes are feasible wrt. to this criterion as well
@@ -321,17 +399,17 @@ class MeshHandler:
 		----------
 		search_direction : dolfin.function.function.Function
 			The search direction in the optimization routine / descent algorithm
+
 		stepsize : float
 			The stepsize in the descent algorithm
 
 		Returns
-		 : float
-			A guess for the number of "Armijo halvings" to get a better stepsize
 		-------
-
+		int
+			A guess for the number of "Armijo halvings" to get a better stepsize
 		"""
 
-		angle_change = float(self.config.get('MeshQuality', 'angle_change'))
+		angle_change = float(self.config.get('MeshQuality', 'angle_change', fallback='inf'))
 
 		assert angle_change > 0, 'Angle change has to be positive'
 		if angle_change == float('inf'):
@@ -370,14 +448,15 @@ class MeshHandler:
 
 			frobenius_norm = np.max(x_norm[:])
 
-			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2)
 
 			return np.maximum(np.ceil(np.log(angle_change/stepsize/frobenius_norm)/np.log(1/beta_armijo)), 0.0)
 
 
 
-	def test_a_priori(self, transformation):
-		"""
+	def __test_a_priori(self, transformation):
+		"""Check the quality of the transformation before the actual mesh is moved
+
 		Checks the quality of the transformation. The criterion is that det(I + D transformation) should neither be too large nor too small
 		in order to achieve the best transformations
 
@@ -387,10 +466,9 @@ class MeshHandler:
 			The transformation for the mesh
 
 		Returns
-		 : bool
-			A boolean that indicates whether the desired transformation is feasible
 		-------
-
+		bool
+			A boolean that indicates whether the desired transformation is feasible
 		"""
 
 		if self.check_a_priori:
@@ -408,7 +486,7 @@ class MeshHandler:
 			DG0 = self.shape_form_handler.DG0
 			v = fenics.TrialFunction(DG0)
 			w = fenics.TestFunction(DG0)
-			volume_change = float(self.config.get('MeshQuality', 'volume_change'))
+			volume_change = float(self.config.get('MeshQuality', 'volume_change', fallback='inf'))
 
 			assert volume_change > 1, 'Volume change has to be larger than 1'
 
@@ -439,9 +517,13 @@ class MeshHandler:
 
 
 
-	def test_a_posteriori(self):
-		"""
-		Checks whether the mesh is a valid finite element mesh after it has been moved (fenics accepts overlapping elements by default)
+	def __test_a_posteriori(self):
+		"""Checks whether the mesh is a valid finite element mesh after it has been moved (fenics accepts overlapping elements by default)
+
+		Returns
+		-------
+		bool
+			True if the test is successful, False otherwise
 		"""
 
 		if self.check_a_posteriori:
@@ -472,6 +554,13 @@ class MeshHandler:
 
 
 	def compute_relative_quality(self):
+		"""Computes the relative quality (based on radius ratios) for the current mesh
+
+		Returns
+		-------
+		None
+		"""
+
 		radius_ratios_mf = fenics.MeshQuality.radius_ratios(self.mesh)
 		self.radius_ratios = radius_ratios_mf.array().copy()
 		relative_quality = self.radius_ratios / self.radius_ratios_initial
@@ -480,6 +569,15 @@ class MeshHandler:
 
 
 	def write_out_mesh(self):
+		"""Writes out the current mesh as .msh file
+
+		Returns
+		-------
+		None
+		"""
+
+		# TODO: Put this as a general, accessible routine
+
 		dim = self.mesh.geometric_dimension()
 
 		if self.shape_form_handler.remesh_counter == 0:
@@ -537,7 +635,14 @@ class MeshHandler:
 
 
 
-	def generate_remesh_geo(self):
+	def __generate_remesh_geo(self):
+		"""Generates a .geo file used for remeshing
+
+		Returns
+		-------
+		None
+		"""
+
 		with open(self.shape_form_handler.remesh_geo_file, 'w') as file:
 			temp_name = os.path.split(self.temp_file)[1]
 			file.write('Merge \'' + temp_name + '\';\n')
@@ -557,18 +662,16 @@ class MeshHandler:
 
 
 	def remesh(self):
-		"""
-		A remeshing routine, that is called when the mesh quality is too bad.
-		THIS IS NOT IMPLEMENTED YET
+		"""Performs a remeshing of the geometry, and then restarts the optimization problem with the new mesh
 
 		Returns
 		-------
-
+		None
 		"""
 
 		if self.shape_form_handler.do_remesh:
 			self.write_out_mesh()
-			self.generate_remesh_geo()
+			self.__generate_remesh_geo()
 
 			dim = self.mesh.geometric_dimension()
 

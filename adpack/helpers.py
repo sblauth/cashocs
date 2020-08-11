@@ -15,12 +15,12 @@ def summ(x):
 	
 	Parameters
 	----------
-	x : List
+	x : list[ufl.form.Form] or list[int] or list[float]
 		The list of entries that shall be summed up
 
 	Returns
 	-------
-	y
+	y : ufl.form.Form or int or float
 		Sum of input (same type as entries of input)
 
 	"""
@@ -43,12 +43,12 @@ def prodd(x):
 	
 	Parameters
 	----------
-	x : List
+	x : list[ufl.coefficient.Coefficient] or list[int] or list[float]
 		The list whose entries shall be multiplied
 
 	Returns
 	-------
-	y
+	y : ufl.coefficient.Coefficient or int or float
 		The result of the multiplication
 	
 	"""
@@ -69,7 +69,7 @@ def prodd(x):
 class EmptyMeasure:
 	def __init__(self, measure):
 		"""
-		This implements an empty measure, needed for more flexibility in programming
+		This implements an empty measure, needed for more flexibility for UFL forms
 
 		Parameters
 		----------
@@ -79,7 +79,6 @@ class EmptyMeasure:
 		self.measure = measure
 
 
-
 	def __rmul__(self, other):
 		return fenics.Constant(0)*other*self.measure
 
@@ -87,17 +86,20 @@ class EmptyMeasure:
 
 def generate_measure(idx, measure):
 	"""
-	Generates a MeasureSum or empty measure object corresponding to measure and the subdomains / boundaries specified in idx
+	Generates a MeasureSum or EmptyMeasure object corresponding to measure and the subdomains / boundaries specified in idx
 
 	Parameters
 	----------
-	idx : list
+	idx : list[int]
+		list of indices for the boundary / volume markers
+
 	measure : ufl.measure.Measure
+		the corresponding ufl measure
 
 	Returns
 	-------
-	out_measure : ufl.measure.MeasureSum
-		The outgoing measure, either a MeasureSum or an EmptyMeasure
+	out_measure : ufl.measure.MeasureSum or adpack.helpers.EmptyMeasure
+		The corresponding sum of the measures
 	"""
 
 	if len(idx) == 0:
@@ -114,6 +116,19 @@ def generate_measure(idx, measure):
 
 
 def create_config(path):
+	"""Generates a configparser object and adds the config's path to it
+
+	Parameters
+	----------
+	path : str
+		path to the config .ini file
+
+	Returns
+	-------
+	configparser.ConfigParser
+		the modified config file
+	"""
+
 	config = configparser.ConfigParser()
 	config.read(path)
 	config.set('Mesh', 'config_path', os.path.abspath(path))

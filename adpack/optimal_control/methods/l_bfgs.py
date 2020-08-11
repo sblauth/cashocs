@@ -53,12 +53,12 @@ class LBFGS(OptimizationAlgorithm):
 		
 		Parameters
 		----------
-		grad : List[dolfin.function.function.Function]
+		grad : list[dolfin.function.function.Function]
 			the current gradient
 
 		Returns
 		-------
-		self.search_directions : dolfin.function.function.Function
+		self.search_directions : list[dolfin.function.function.Function]
 			a function corresponding to the current / next search direction
 
 		"""
@@ -77,7 +77,7 @@ class LBFGS(OptimizationAlgorithm):
 					self.search_directions[j].vector()[:] -= alpha * self.history_y[i][j].vector()[:]
 			
 			if self.use_bfgs_scaling and self.iteration > 0:
-				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0])/self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
+				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
 			
