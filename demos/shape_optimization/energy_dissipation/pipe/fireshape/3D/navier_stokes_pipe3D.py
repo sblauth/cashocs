@@ -5,8 +5,7 @@ Created on 16/06/2020, 11.14
 """
 
 from fenics import *
-from adpack.geometry import MeshGen
-from adpack import ShapeOptimizationProblem
+from adpack import ShapeOptimizationProblem, MeshGen
 import numpy as np
 import configparser
 

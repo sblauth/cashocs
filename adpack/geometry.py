@@ -1,7 +1,9 @@
-"""
-Created on 1/30/19, 2:27 PM
+"""Geometry module for adpack
 
-@author: blauths
+Includes mesh generation / import utilities
+for easy use. Both 2D Squares and 3D Cubes
+are support via regular_(box_)mesh, and
+MeshGen can be used to import gmsh files.
 """
 
 import fenics
@@ -15,8 +17,10 @@ import uuid
 
 
 def MeshGen(mesh_file):
-	"""
-	Imports a mesh file in .xdmf format and generates all necessary geometrical information for fenics
+	"""Imports a mesh file to fenics
+
+	Imports a mesh file in .xdmf format generated via gmsh and generates all
+	necessary geometrical information for fenics
 
 	Parameters
 	----------
@@ -27,19 +31,16 @@ def MeshGen(mesh_file):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
-
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
-		A MeshFunction containing the subdomains, i.e., the physical regions of dimension d generated in gmsh
-
+		A MeshFunction containing the subdomains,
+		i.e., the physical regions of dimension d generated in gmsh
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-		A MeshFunction containing the boundaries, i.e., the physical regions of dimension d-1 generated in gmsh
-
+		A MeshFunction containing the boundaries,
+		i.e., the physical regions of dimension d-1 generated in gmsh
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
-
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
-
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -85,19 +86,19 @@ def MeshGen(mesh_file):
 
 
 def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
-	"""Creates a regular mesh in either 2D (rectangle) or 3D (cube), starting at the origin and having specified lengths
+	"""Creates a meshed rectangle or cube.
+
+	Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+	starting at the origin and having specified lengths
 
 	Parameters
 	----------
 	n : int
 		Number of subdivisions in the smallest coordinate direction
-
 	lx : float
 		length in x-direction
-
 	ly : float
 		length in y-direction
-
 	lz : float or None
 		length in z-direction (geometry will be 2D if lz==None)
 
@@ -105,19 +106,15 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
-
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the subdomains
-
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-		A MeshFunction containing the boundaries. Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
-
+		A MeshFunction containing the boundaries.
+		Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
-
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
-
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -167,28 +164,25 @@ def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
 
 
 def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
-	"""Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey] or the cube [sx, ex] x [sy, ey] x [sz, ez]
+	"""Creates a meshed rectangle or cube
+
+	Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+	or the cube [sx, ex] x [sy, ey] x [sz, ez]
 
 	Parameters
 	----------
 	n : int
 		Number of subdivisions for the smallest direction
-
 	sx : float
 		Start of the x-interval
-
 	sy : float
 		Start of the y-interval
-
 	sz : float or None
 		Start of the z-interval
-
 	ex : float
 		End of the x-interval
-
 	ey : float
 		End of the y-interval
-
 	ez : float or None
 		End of the z-interval
 
@@ -196,19 +190,14 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 	-------
 	mesh : dolfin.cpp.mesh.Mesh
 		The computational mesh
-
 	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the subdomains
-
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 		A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
-
 	dx : ufl.measure.Measure
 		The volume measure corresponding to the mesh and subdomains
-
 	ds : ufl.measure.Measure
 		The surface measure corresponding to the mesh and boundaries
-
 	dS : ufl.measure.Measure
 		The interior face measure corresponding to the mesh and boundaries
 	"""
@@ -268,61 +257,12 @@ def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
 
 
 
-class MeshHandler:
-	"""This class implements all mesh related things for the shape optimization, such as transformations and remeshing
+class _MeshHandler:
+	"""Handles the mesh for shape optimization problems.
 
-	Attributes
-	----------
-	shape_optimization_problem : adpack.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
-		The corresponding shape optimization problem
-
-	shape_form_handler : adpack.forms.ShapeFormHandler
-		The shape form handler of the problem
-
-	mesh : dolfin.cpp.mesh.Mesh
-		The finite element mesh
-
-	dx : ufl.measure.Measure
-		The volume measure corresponding to mesh
-
-	bbtree : dolfin.cpp.geometry.BoundingBoxTree
-		Bounding box tree for the mesh, needs to be updated after moving the mesh
-
-	config : configparser.ConfigParser
-		config object for the shape optimization problem
-
-	check_a_priori : bool
-		boolean flag, en- or disabling checking the quality of the shape deformation (before the actual mesh is moved)
-
-	check_a_posteriori : bool
-		boolean flag, en- or disabling checking the quality of the shape deformation (after the actual mesh is moved)
-
-	radius_ratios_initial_mf : dolfin.cpp.mesh.MeshFunctionDouble
-		MeshFunction representing the radius ratios for the initial geometry
-
-	radius_ratios_initial : numpy.ndarray
-		numpy array of the radius ratios for the initial geometry
-
-	mesh_quality_tol : float
-		relative threshold for remeshing
-
-	min_quality : float
-		measures the minimal (relative) mesh quality regarding the radius ratios
-
-	old_coordinates : numpy.ndarray
-		numpy array of coordinates of the mesh's vertices, used for reverting the deformation
-
-	radius_ratios : numpy.ndarray
-		numpy array of the radius ratios for the current geometry
-
-	temp_file : str
-		temporary path to a .msh file where the current mesh is written out to
-
-	new_gmsh_file : str
-		path to the new (remeshed) .msh file
-
-	new_xdmf_file : str
-		path to the remeshed mesh, in xdmf format
+	This class implements all mesh related things for the shape optimization,
+	 such as transformations and remeshing. Also includes mesh quality control
+	 checks.
 	"""
 
 	def __init__(self, shape_optimization_problem):
@@ -331,6 +271,7 @@ class MeshHandler:
 		Parameters
 		----------
 		shape_optimization_problem : adpack.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+			the corresponding shape optimization problem
 		"""
 
 		self.shape_optimization_problem = shape_optimization_problem
@@ -353,16 +294,22 @@ class MeshHandler:
 
 
 	def move_mesh(self, transformation):
-		"""
-		Move the mesh according to the diffeomorphism id + transformation
+		"""Transforms the mesh
+
+		Moves the mesh according to the deformation given by
+
+			id + transformation,
+
+		i.e., by the perturbation of identity.
 
 		Parameters
 		----------
 		transformation : dolfin.function.function.Function
-			The transformation for the mesh
+			The transformation for the mesh, a vector CG1 Function
 		"""
 
-		assert transformation.ufl_element().family() == 'Lagrange' and transformation.ufl_element().degree() == 1, 'Not a valid mesh transformation'
+		assert transformation.ufl_element().family() == 'Lagrange' and \
+			   transformation.ufl_element().degree() == 1, 'Not a valid mesh transformation'
 
 		if not self.__test_a_priori(transformation):
 			return False
@@ -376,7 +323,11 @@ class MeshHandler:
 
 
 	def revert_transformation(self):
-		"""Reverts the previous transformation done in self.move_mesh, and restores the mesh.coordinates to old_coordinates
+		"""Reverts a mesh transformation.
+
+		This is used when the mesh quality for the resulting deformed mesh
+		is not sufficient, or when the solution algorithm terminates due
+		to lack of decrease in the Armijo rule, e.g..
 
 		Returns
 		-------
@@ -389,17 +340,20 @@ class MeshHandler:
 
 
 	def compute_decreases(self, search_direction, stepsize):
-		"""Computes the number of decreases needed in the Armijo rule so that the Frobenius norm criterion is satisfied
+		"""Estimates the number of Armijo decreases for a certain mesh quality.
 
-		Gives a better estimation of the stepsize. The output is the number of "Armijo halvings" we have to do in order to
-		get a transformation that satisfies norm(transformation)_fro <= 0.3, where transformation = stepsize*search_direction.
-		Due to the linearity of the norm this has to be done only once, all smaller stepsizes are feasible wrt. to this criterion as well
+		Gives a better estimation of the stepsize. The output is
+		the number of Armijo decreases we have to do in order to
+		get a transformation that satisfies norm(transformation)_fro <= tol,
+		where transformation = stepsize*search_direction and tol is specified in
+		the config file under "angle_change". Due to the linearity
+		of the norm this has to be done only once, all smaller stepsizes are
+		feasible wrt. to this criterion as well
 
 		Parameters
 		----------
 		search_direction : dolfin.function.function.Function
 			The search direction in the optimization routine / descent algorithm
-
 		stepsize : float
 			The stepsize in the descent algorithm
 
@@ -455,10 +409,11 @@ class MeshHandler:
 
 
 	def __test_a_priori(self, transformation):
-		"""Check the quality of the transformation before the actual mesh is moved
+		"""Check the quality of the transformation before the actual mesh is moved.
 
-		Checks the quality of the transformation. The criterion is that det(I + D transformation) should neither be too large nor too small
-		in order to achieve the best transformations
+		Checks the quality of the transformation. The criterion is that
+		 det(I + D transformation) should neither be too large nor too small
+		in order to achieve the best transformations.
 
 		Parameters
 		----------
@@ -518,7 +473,11 @@ class MeshHandler:
 
 
 	def __test_a_posteriori(self):
-		"""Checks whether the mesh is a valid finite element mesh after it has been moved (fenics accepts overlapping elements by default)
+		"""Check the quality of the transformation after the actual mesh is moved.
+
+		Checks whether the mesh is a valid finite element mesh
+		after it has been moved, i.e., if there are no overlapping
+		or self intersecting elements.
 
 		Returns
 		-------
@@ -554,7 +513,7 @@ class MeshHandler:
 
 
 	def compute_relative_quality(self):
-		"""Computes the relative quality (based on radius ratios) for the current mesh
+		"""Computes the relative mesh quality for the current mesh
 
 		Returns
 		-------
@@ -638,6 +597,10 @@ class MeshHandler:
 	def __generate_remesh_geo(self):
 		"""Generates a .geo file used for remeshing
 
+		The .geo file is generated via the original .geo file for the
+		initial geometry, so that mesh size fields are correctly given
+		for the remeshing
+
 		Returns
 		-------
 		None
@@ -662,7 +625,10 @@ class MeshHandler:
 
 
 	def remesh(self):
-		"""Performs a remeshing of the geometry, and then restarts the optimization problem with the new mesh
+		"""Remeshes the current geometry with gmsh.
+
+		Performs a remeshing of the geometry, and then restarts
+		the optimization problem with the new mesh.
 
 		Returns
 		-------

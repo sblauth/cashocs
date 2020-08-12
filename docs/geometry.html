@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>adpack.geometry API documentation</title>
+<meta name="description" content="Geometry module for adpack …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>adpack.geometry</code></h1>
+</header>
+<section id="section-intro">
+<p>Geometry module for adpack</p>
+<p>Includes mesh generation / import utilities
+for easy use. Both 2D Squares and 3D Cubes
+are support via regular_(box_)mesh, and
+MeshGen can be used to import gmsh files.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Geometry module for adpack
+
+Includes mesh generation / import utilities
+for easy use. Both 2D Squares and 3D Cubes
+are support via regular_(box_)mesh, and
+MeshGen can be used to import gmsh files.
+&#34;&#34;&#34;
+
+import fenics
+import numpy as np
+import time
+from petsc4py import PETSc
+import os
+import sys
+import uuid
+
+
+
+def MeshGen(mesh_file):
+        &#34;&#34;&#34;Imports a mesh file to fenics
+
+        Imports a mesh file in .xdmf format generated via gmsh and generates all
+        necessary geometrical information for fenics
+
+        Parameters
+        ----------
+        mesh_file : str
+                location of the &#34;main&#34; mesh file in .xdmf file format
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains,
+                i.e., the physical regions of dimension d generated in gmsh
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries,
+                i.e., the physical regions of dimension d-1 generated in gmsh
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+        
+        start_time = time.time()
+        print(&#39;Importing mesh to FEniCS&#39;)
+        # Check for the file format
+        if mesh_file[-5:] == &#39;.xdmf&#39;:
+                file_string = mesh_file[:-5]
+        else:
+                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
+        
+        mesh = fenics.Mesh()
+        xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
+        xdmf_file.read(mesh)
+        xdmf_file.close()
+        
+        subdomains_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension())
+        boundaries_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension() - 1)
+
+        if os.path.exists(file_string + &#39;_subdomains.xdmf&#39;):
+                xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_subdomains.xdmf&#39;)
+                xdmf_subdomains.read(subdomains_mvc, &#39;subdomains&#39;)
+                xdmf_subdomains.close()
+        if os.path.exists(file_string + &#39;_boundaries.xdmf&#39;):
+                xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_boundaries.xdmf&#39;)
+                xdmf_boundaries.read(boundaries_mvc, &#39;boundaries&#39;)
+                xdmf_boundaries.close()
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, subdomains_mvc)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, boundaries_mvc)
+
+        dx = fenics.Measure(&#39;dx&#39;, domain=mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, domain=mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, domain=mesh, subdomain_data=boundaries)
+        
+        end_time = time.time()
+        print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
+        print(&#39;&#39;)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS
+
+
+
+def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube.
+
+        Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+        starting at the origin and having specified lengths
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions in the smallest coordinate direction
+        lx : float
+                length in x-direction
+        ly : float
+                length in y-direction
+        lz : float or None
+                length in z-direction (geometry will be 2D if lz==None)
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries.
+                Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+        
+        if lz is None:
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                sizes = [lx, ly, lz]
+                dim = 3
+        
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+        
+        if lz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(0, 0), fenics.Point(sizes), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(0, 0, 0), fenics.Point(sizes), num_points[0], num_points[1], num_points[2])
+        
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+        
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[0])
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[1])
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if lz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[2])
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+        
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS
+
+
+
+def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube
+
+        Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+        or the cube [sx, ex] x [sy, ey] x [sz, ez]
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions for the smallest direction
+        sx : float
+                Start of the x-interval
+        sy : float
+                Start of the y-interval
+        sz : float or None
+                Start of the z-interval
+        ex : float
+                End of the x-interval
+        ey : float
+                End of the y-interval
+        ez : float or None
+                End of the z-interval
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+
+        assert sx &lt; ex, &#39;Incorrect input for the x-coordinate&#39;
+        assert sy &lt; ey, &#39;Incorrect input for the y-coordinate&#39;
+        assert (sz is None and ez is None) or (sz &lt; ez), &#39;Incorrect input for the z-coordinate&#39;
+
+        if sz is None:
+                lx = ex - sx
+                ly = ey - sy
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                lx = ex - sx
+                ly = ey - sy
+                lz = ez - sz
+                sizes = [lx, ly, lz]
+                dim = 3
+
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+
+        if sz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(sx, sy), fenics.Point(ex, ey), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(sx, sy, sz), fenics.Point(ex, ey, ez), num_points[0], num_points[1], num_points[2])
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], sx, tol)&#39;, tol=fenics.DOLFIN_EPS, sx=sx)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], ex, tol)&#39;, tol=fenics.DOLFIN_EPS, ex=ex)
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], sy, tol)&#39;, tol=fenics.DOLFIN_EPS, sy=sy)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], ey, tol)&#39;, tol=fenics.DOLFIN_EPS, ey=ey)
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if sz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], sz, tol)&#39;, tol=fenics.DOLFIN_EPS, sz=sz)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], ez, tol)&#39;, tol=fenics.DOLFIN_EPS, ez=ez)
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+
+        return mesh, subdomains, boundaries, dx, ds, dS
+
+
+
+
+
+class _MeshHandler:
+        &#34;&#34;&#34;Handles the mesh for shape optimization problems.
+
+        This class implements all mesh related things for the shape optimization,
+         such as transformations and remeshing. Also includes mesh quality control
+         checks.
+        &#34;&#34;&#34;
+
+        def __init__(self, shape_optimization_problem):
+                &#34;&#34;&#34;Initializes the MeshHandler object
+
+                Parameters
+                ----------
+                shape_optimization_problem : adpack.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+                        the corresponding shape optimization problem
+                &#34;&#34;&#34;
+
+                self.shape_optimization_problem = shape_optimization_problem
+                self.shape_form_handler = self.shape_optimization_problem.shape_form_handler
+                # Namespacing
+                self.mesh = self.shape_form_handler.mesh
+                self.dx = self.shape_form_handler.dx
+                self.bbtree = self.mesh.bounding_box_tree()
+                self.config = self.shape_form_handler.config
+
+                self.check_a_priori = self.config.getboolean(&#39;MeshQuality&#39;, &#39;check_a_priori&#39;, fallback=True)
+                self.check_a_posteriori = self.config.getboolean(&#39;MeshQuality&#39;, &#39;check_a_posteriori&#39;, fallback=True)
+
+                self.radius_ratios_initial_mf = fenics.MeshQuality.radius_ratios(self.mesh)
+                self.radius_ratios_initial = self.radius_ratios_initial_mf.array().copy()
+
+                self.mesh_quality_tol = self.config.getfloat(&#39;MeshQuality&#39;, &#39;qtol&#39;, fallback=0.25)
+                self.min_quality = 1.0
+
+
+
+        def move_mesh(self, transformation):
+                &#34;&#34;&#34;Transforms the mesh
+
+                Moves the mesh according to the deformation given by
+
+                        id + transformation,
+
+                i.e., by the perturbation of identity.
+
+                Parameters
+                ----------
+                transformation : dolfin.function.function.Function
+                        The transformation for the mesh, a vector CG1 Function
+                &#34;&#34;&#34;
+
+                assert transformation.ufl_element().family() == &#39;Lagrange&#39; and \
+                           transformation.ufl_element().degree() == 1, &#39;Not a valid mesh transformation&#39;
+
+                if not self.__test_a_priori(transformation):
+                        return False
+                else:
+                        self.old_coordinates = self.mesh.coordinates().copy()
+                        fenics.ALE.move(self.mesh, transformation)
+                        self.bbtree.build(self.mesh)
+
+                        return self.__test_a_posteriori()
+
+
+
+        def revert_transformation(self):
+                &#34;&#34;&#34;Reverts a mesh transformation.
+
+                This is used when the mesh quality for the resulting deformed mesh
+                is not sufficient, or when the solution algorithm terminates due
+                to lack of decrease in the Armijo rule, e.g..
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                self.mesh.coordinates()[:, :] = self.old_coordinates
+                self.bbtree.build(self.mesh)
+
+
+
+        def compute_decreases(self, search_direction, stepsize):
+                &#34;&#34;&#34;Estimates the number of Armijo decreases for a certain mesh quality.
+
+                Gives a better estimation of the stepsize. The output is
+                the number of Armijo decreases we have to do in order to
+                get a transformation that satisfies norm(transformation)_fro &lt;= tol,
+                where transformation = stepsize*search_direction and tol is specified in
+                the config file under &#34;angle_change&#34;. Due to the linearity
+                of the norm this has to be done only once, all smaller stepsizes are
+                feasible wrt. to this criterion as well
+
+                Parameters
+                ----------
+                search_direction : dolfin.function.function.Function
+                        The search direction in the optimization routine / descent algorithm
+                stepsize : float
+                        The stepsize in the descent algorithm
+
+                Returns
+                -------
+                int
+                        A guess for the number of &#34;Armijo halvings&#34; to get a better stepsize
+                &#34;&#34;&#34;
+
+                angle_change = float(self.config.get(&#39;MeshQuality&#39;, &#39;angle_change&#39;, fallback=&#39;inf&#39;))
+
+                assert angle_change &gt; 0, &#39;Angle change has to be positive&#39;
+                if angle_change == float(&#39;inf&#39;):
+                        return 0
+
+                else:
+                        opts = fenics.PETScOptions
+                        opts.clear()
+                        opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
+                        opts.set(&#39;pc_type&#39;, &#39;jacobi&#39;)
+                        opts.set(&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;)
+                        opts.set(&#39;ksp_rtol&#39;, 1e-16)
+                        opts.set(&#39;ksp_atol&#39;, 1e-20)
+                        opts.set(&#39;ksp_max_it&#39;, 1000)
+
+                        DG0 = self.shape_form_handler.DG0
+                        v = fenics.TrialFunction(DG0)
+                        w = fenics.TestFunction(DG0)
+
+                        a = v*w*self.dx
+                        L_norm = fenics.sqrt(fenics.inner(fenics.grad(search_direction), fenics.grad(search_direction)))*w*self.dx
+
+                        A = fenics.assemble(a)
+                        b_norm = fenics.assemble(L_norm)
+                        A = fenics.as_backend_type(A).mat()
+                        b_norm = fenics.as_backend_type(b_norm).vec()
+                        x_norm, _ = A.getVecs()
+
+                        ksp = PETSc.KSP().create()
+                        ksp.setFromOptions()
+                        ksp.setOperators(A)
+                        ksp.setUp()
+                        ksp.solve(b_norm, x_norm)
+                        if ksp.getConvergedReason() &lt; 0:
+                                raise SystemExit(&#39;Krylov solver did not converge. Reason: &#39; + str(ksp.getConvergedReason()))
+
+                        frobenius_norm = np.max(x_norm[:])
+
+                        beta_armijo = self.config.getfloat(&#39;OptimizationRoutine&#39;, &#39;beta_armijo&#39;, fallback=2)
+
+                        return np.maximum(np.ceil(np.log(angle_change/stepsize/frobenius_norm)/np.log(1/beta_armijo)), 0.0)
+
+
+
+        def __test_a_priori(self, transformation):
+                &#34;&#34;&#34;Check the quality of the transformation before the actual mesh is moved.
+
+                Checks the quality of the transformation. The criterion is that
+                 det(I + D transformation) should neither be too large nor too small
+                in order to achieve the best transformations.
+
+                Parameters
+                ----------
+                transformation : dolfin.function.function.Function
+                        The transformation for the mesh
+
+                Returns
+                -------
+                bool
+                        A boolean that indicates whether the desired transformation is feasible
+                &#34;&#34;&#34;
+
+                if self.check_a_priori:
+
+                        opts = fenics.PETScOptions
+                        opts.clear()
+                        opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
+                        opts.set(&#39;pc_type&#39;, &#39;jacobi&#39;)
+                        opts.set(&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;)
+                        opts.set(&#39;ksp_rtol&#39;, 1e-16)
+                        opts.set(&#39;ksp_atol&#39;, 1e-20)
+                        opts.set(&#39;ksp_max_it&#39;, 1000)
+
+                        dim = self.mesh.geometric_dimension()
+                        DG0 = self.shape_form_handler.DG0
+                        v = fenics.TrialFunction(DG0)
+                        w = fenics.TestFunction(DG0)
+                        volume_change = float(self.config.get(&#39;MeshQuality&#39;, &#39;volume_change&#39;, fallback=&#39;inf&#39;))
+
+                        assert volume_change &gt; 1, &#39;Volume change has to be larger than 1&#39;
+
+                        a = v*w*self.dx
+                        L = fenics.det(fenics.Identity(dim) + fenics.grad(transformation))*w*self.dx
+
+                        A = fenics.assemble(a)
+                        b = fenics.assemble(L)
+                        A = fenics.as_backend_type(A).mat()
+                        b = fenics.as_backend_type(b).vec()
+                        x, _ = A.getVecs()
+
+                        ksp = PETSc.KSP().create()
+                        ksp.setFromOptions()
+                        ksp.setOperators(A)
+                        ksp.setUp()
+                        ksp.solve(b, x)
+                        if ksp.getConvergedReason() &lt; 0:
+                                raise SystemExit(&#39;Krylov solver did not converge. Reason: &#39; + str(ksp.getConvergedReason()))
+
+                        min_det = np.min(x[:])
+                        max_det = np.max(x[:])
+
+                        return (min_det &gt;= 1/volume_change) and (max_det &lt;= volume_change)
+
+                else:
+                        return True
+
+
+
+        def __test_a_posteriori(self):
+                &#34;&#34;&#34;Check the quality of the transformation after the actual mesh is moved.
+
+                Checks whether the mesh is a valid finite element mesh
+                after it has been moved, i.e., if there are no overlapping
+                or self intersecting elements.
+
+                Returns
+                -------
+                bool
+                        True if the test is successful, False otherwise
+                &#34;&#34;&#34;
+
+                if self.check_a_posteriori:
+                        mesh = self.mesh
+                        cells = mesh.cells()
+                        coordinates = mesh.coordinates()
+                        self_intersections = False
+                        for i in range(coordinates.shape[0]):
+                                x = fenics.Point(coordinates[i])
+                                cells_idx = self.bbtree.compute_entity_collisions(x)
+                                intersections = len(cells_idx)
+                                M = cells[cells_idx]
+                                occurences = M.flatten().tolist().count(i)
+
+                                if intersections &gt; occurences:
+                                        self_intersections = True
+                                        break
+
+                        if self_intersections:
+                                self.revert_transformation()
+                                return False
+                        else:
+                                return True
+
+                else:
+                        return True
+
+
+
+        def compute_relative_quality(self):
+                &#34;&#34;&#34;Computes the relative mesh quality for the current mesh
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                radius_ratios_mf = fenics.MeshQuality.radius_ratios(self.mesh)
+                self.radius_ratios = radius_ratios_mf.array().copy()
+                relative_quality = self.radius_ratios / self.radius_ratios_initial
+                self.min_quality = np.min(relative_quality)
+
+
+
+        def write_out_mesh(self):
+                &#34;&#34;&#34;Writes out the current mesh as .msh file
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                # TODO: Put this as a general, accessible routine
+
+                dim = self.mesh.geometric_dimension()
+
+                if self.shape_form_handler.remesh_counter == 0:
+                        old_file = open(self.shape_form_handler.gmsh_file, &#39;r&#39;)
+                else:
+                        old_file = open(self.shape_form_handler.gmsh_file[:-4] + &#39;_&#39; + self.shape_form_handler.remesh_counter + &#39;.msh&#39;, &#39;r&#39;)
+                self.temp_file = self.shape_form_handler.remesh_directory + &#39;/mesh_&#39; + str(uuid.uuid4().hex) + &#39;.msh&#39;
+                new_file = open(self.temp_file, &#39;w&#39;)
+
+                points = self.mesh.coordinates()
+
+                node_section = False
+                info_section = False
+                subnode_counter = 0
+                subwrite_counter = 0
+                idcs = np.zeros(1, dtype=int)
+
+                for line in old_file:
+                        if line == &#39;$EndNodes\n&#39;:
+                                node_section = False
+
+                        if not node_section:
+                                new_file.write(line)
+                        else:
+                                split_line = line.split(&#39; &#39;)
+                                if info_section:
+                                        new_file.write(line)
+                                        info_section = False
+                                else:
+                                        if len(split_line) == 4:
+                                                num_subnodes = int(split_line[-1][:-1])
+                                                subnode_counter = 0
+                                                subwrite_counter = 0
+                                                idcs = np.zeros(num_subnodes, dtype=int)
+                                                new_file.write(line)
+                                        elif len(split_line) == 1:
+                                                idcs[subnode_counter] = int(split_line[0][:-1]) - 1
+                                                subnode_counter += 1
+                                                new_file.write(line)
+                                        elif len(split_line) == 3:
+                                                if dim == 2:
+                                                        mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + &#39;0\n&#39;
+                                                elif dim == 3:
+                                                        mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][2], &#39;.16f&#39;) + &#39;\n&#39;
+                                                new_file.write(mod_line)
+                                                subwrite_counter += 1
+
+
+                        if line == &#39;$Nodes\n&#39;:
+                                node_section = True
+                                info_section = True
+
+                old_file.close()
+                new_file.close()
+
+
+
+        def __generate_remesh_geo(self):
+                &#34;&#34;&#34;Generates a .geo file used for remeshing
+
+                The .geo file is generated via the original .geo file for the
+                initial geometry, so that mesh size fields are correctly given
+                for the remeshing
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                with open(self.shape_form_handler.remesh_geo_file, &#39;w&#39;) as file:
+                        temp_name = os.path.split(self.temp_file)[1]
+                        file.write(&#39;Merge \&#39;&#39; + temp_name + &#39;\&#39;;\n&#39;)
+                        file.write(&#39;CreateGeometry;\n&#39;)
+                        file.write(&#39;\n&#39;)
+
+                        geo_file = self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;)
+                        with open(geo_file, &#39;r&#39;) as f:
+                                for line in f:
+                                        if line[:2] == &#39;lc&#39;:
+                                                file.write(line)
+                                        if line[:5] == &#39;Field&#39;:
+                                                file.write(line)
+                                        if line[:16] == &#39;Background Field&#39;:
+                                                file.write(line)
+
+
+
+        def remesh(self):
+                &#34;&#34;&#34;Remeshes the current geometry with gmsh.
+
+                Performs a remeshing of the geometry, and then restarts
+                the optimization problem with the new mesh.
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                if self.shape_form_handler.do_remesh:
+                        self.write_out_mesh()
+                        self.__generate_remesh_geo()
+
+                        dim = self.mesh.geometric_dimension()
+
+                        gmsh_command = &#39;gmsh &#39; + self.shape_form_handler.remesh_geo_file + &#39; -&#39; + str(int(dim)) + &#39; -o &#39; + self.temp_file
+                        # os.system(gmsh_command + &#39; &gt;/dev/null 2&gt;&amp;1&#39;)
+                        os.system(gmsh_command)
+                        self.shape_form_handler.remesh_counter += 1
+                        self.config.set(&#39;Mesh&#39;, &#39;remesh_counter&#39;, str(self.shape_form_handler.remesh_counter))
+
+                        self.new_gmsh_file = self.shape_form_handler.remesh_directory + &#39;/mesh_&#39; + str(self.shape_form_handler.remesh_counter) + &#39;.msh&#39;
+                        rename_command = &#39;mv &#39; + self.temp_file + &#39; &#39; + self.new_gmsh_file
+                        os.system(rename_command)
+
+                        self.new_xdmf_file = self.shape_form_handler.remesh_directory + &#39;/mesh_&#39; + str(self.shape_form_handler.remesh_counter) + &#39;.xdmf&#39;
+                        convert_command = &#39;mesh-convert &#39; + self.new_gmsh_file + &#39; &#39; + self.new_xdmf_file
+                        os.system(convert_command)
+
+                        self.config.set(&#39;Mesh&#39;, &#39;xdmf_file&#39;, self.new_xdmf_file)
+                        self.config.set(&#39;Mesh&#39;, &#39;gmsh_file&#39;, self.new_gmsh_file)
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, &#39;0.0&#39;)
+                        new_atol = self.shape_optimization_problem.solver.atol + self.shape_optimization_problem.solver.gradient_norm_initial*self.shape_optimization_problem.solver.rtol
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(new_atol))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;iteration_counter&#39;, str(self.shape_optimization_problem.solver.iteration))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;gradient_norm_initial&#39;, str(self.shape_optimization_problem.solver.gradient_norm_initial))
+
+                        config_path = self.config.get(&#39;Mesh&#39;, &#39;config_path&#39;)
+                        with open(config_path, &#39;w&#39;) as file:
+                                self.config.write(file)
+
+                        os.execv(sys.executable, [&#39;python&#39;] + sys.argv)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="adpack.geometry.MeshGen"><code class="name flex">
+<span>def <span class="ident">MeshGen</span></span>(<span>mesh_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Imports a mesh file to fenics</p>
+<p>Imports a mesh file in .xdmf format generated via gmsh and generates all
+necessary geometrical information for fenics</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>location of the "main" mesh file in .xdmf file format</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains,
+i.e., the physical regions of dimension d generated in gmsh</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries,
+i.e., the physical regions of dimension d-1 generated in gmsh</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def MeshGen(mesh_file):
+        &#34;&#34;&#34;Imports a mesh file to fenics
+
+        Imports a mesh file in .xdmf format generated via gmsh and generates all
+        necessary geometrical information for fenics
+
+        Parameters
+        ----------
+        mesh_file : str
+                location of the &#34;main&#34; mesh file in .xdmf file format
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains,
+                i.e., the physical regions of dimension d generated in gmsh
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries,
+                i.e., the physical regions of dimension d-1 generated in gmsh
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+        
+        start_time = time.time()
+        print(&#39;Importing mesh to FEniCS&#39;)
+        # Check for the file format
+        if mesh_file[-5:] == &#39;.xdmf&#39;:
+                file_string = mesh_file[:-5]
+        else:
+                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
+        
+        mesh = fenics.Mesh()
+        xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
+        xdmf_file.read(mesh)
+        xdmf_file.close()
+        
+        subdomains_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension())
+        boundaries_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension() - 1)
+
+        if os.path.exists(file_string + &#39;_subdomains.xdmf&#39;):
+                xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_subdomains.xdmf&#39;)
+                xdmf_subdomains.read(subdomains_mvc, &#39;subdomains&#39;)
+                xdmf_subdomains.close()
+        if os.path.exists(file_string + &#39;_boundaries.xdmf&#39;):
+                xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_boundaries.xdmf&#39;)
+                xdmf_boundaries.read(boundaries_mvc, &#39;boundaries&#39;)
+                xdmf_boundaries.close()
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, subdomains_mvc)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, boundaries_mvc)
+
+        dx = fenics.Measure(&#39;dx&#39;, domain=mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, domain=mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, domain=mesh, subdomain_data=boundaries)
+        
+        end_time = time.time()
+        print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
+        print(&#39;&#39;)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="adpack.geometry.regular_box_mesh"><code class="name flex">
+<span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a meshed rectangle or cube</p>
+<p>Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+or the cube [sx, ex] x [sy, ey] x [sz, ez]</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of subdivisions for the smallest direction</dd>
+<dt><strong><code>sx</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the x-interval</dd>
+<dt><strong><code>sy</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the y-interval</dd>
+<dt><strong><code>sz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>Start of the z-interval</dd>
+<dt><strong><code>ex</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the x-interval</dd>
+<dt><strong><code>ey</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the y-interval</dd>
+<dt><strong><code>ez</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>End of the z-interval</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube
+
+        Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+        or the cube [sx, ex] x [sy, ey] x [sz, ez]
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions for the smallest direction
+        sx : float
+                Start of the x-interval
+        sy : float
+                Start of the y-interval
+        sz : float or None
+                Start of the z-interval
+        ex : float
+                End of the x-interval
+        ey : float
+                End of the y-interval
+        ez : float or None
+                End of the z-interval
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+
+        assert sx &lt; ex, &#39;Incorrect input for the x-coordinate&#39;
+        assert sy &lt; ey, &#39;Incorrect input for the y-coordinate&#39;
+        assert (sz is None and ez is None) or (sz &lt; ez), &#39;Incorrect input for the z-coordinate&#39;
+
+        if sz is None:
+                lx = ex - sx
+                ly = ey - sy
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                lx = ex - sx
+                ly = ey - sy
+                lz = ez - sz
+                sizes = [lx, ly, lz]
+                dim = 3
+
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+
+        if sz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(sx, sy), fenics.Point(ex, ey), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(sx, sy, sz), fenics.Point(ex, ey, ez), num_points[0], num_points[1], num_points[2])
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], sx, tol)&#39;, tol=fenics.DOLFIN_EPS, sx=sx)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], ex, tol)&#39;, tol=fenics.DOLFIN_EPS, ex=ex)
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], sy, tol)&#39;, tol=fenics.DOLFIN_EPS, sy=sy)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], ey, tol)&#39;, tol=fenics.DOLFIN_EPS, ey=ey)
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if sz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], sz, tol)&#39;, tol=fenics.DOLFIN_EPS, sz=sz)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], ez, tol)&#39;, tol=fenics.DOLFIN_EPS, ez=ez)
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="adpack.geometry.regular_mesh"><code class="name flex">
+<span>def <span class="ident">regular_mesh</span></span>(<span>n=10, lx=1.0, ly=1.0, lz=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a meshed rectangle or cube.</p>
+<p>Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+starting at the origin and having specified lengths</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of subdivisions in the smallest coordinate direction</dd>
+<dt><strong><code>lx</code></strong> :&ensp;<code>float</code></dt>
+<dd>length in x-direction</dd>
+<dt><strong><code>ly</code></strong> :&ensp;<code>float</code></dt>
+<dd>length in y-direction</dd>
+<dt><strong><code>lz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>length in z-direction (geometry will be 2D if lz==None)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries.
+Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube.
+
+        Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+        starting at the origin and having specified lengths
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions in the smallest coordinate direction
+        lx : float
+                length in x-direction
+        ly : float
+                length in y-direction
+        lz : float or None
+                length in z-direction (geometry will be 2D if lz==None)
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries.
+                Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+        
+        if lz is None:
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                sizes = [lx, ly, lz]
+                dim = 3
+        
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+        
+        if lz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(0, 0), fenics.Point(sizes), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(0, 0, 0), fenics.Point(sizes), num_points[0], num_points[1], num_points[2])
+        
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+        
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[0])
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[1])
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if lz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[2])
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+        
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="adpack" href="index.html">adpack</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="adpack.geometry.MeshGen" href="#adpack.geometry.MeshGen">MeshGen</a></code></li>
+<li><code><a title="adpack.geometry.regular_box_mesh" href="#adpack.geometry.regular_box_mesh">regular_box_mesh</a></code></li>
+<li><code><a title="adpack.geometry.regular_mesh" href="#adpack.geometry.regular_mesh">regular_mesh</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

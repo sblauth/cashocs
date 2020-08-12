@@ -7,7 +7,7 @@ Created on 20.04.20, 08:49
 import configparser
 from fenics import *
 from adpack import OptimalControlProblem, regular_mesh
-from adpack.helpers import summ
+from adpack.utilities import summation
 import numpy as np
 import time
 
@@ -66,7 +66,7 @@ for i in range(len(t_array)):
 
 	J_summands.append(Constant(0.5*dt)*(y - y_d[i])*(y - y_d[i])*dx + Constant(0.5*lambd)*u*u*dx)
 
-J = summ(J_summands)
+J = summation(J_summands)
 
 optimization_problem = OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
 optimization_problem.solve()

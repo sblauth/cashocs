@@ -1,0 +1,109 @@
+"""
+Created on 06/03/2020, 10.21
+
+@author: blauths
+"""
+
+import numpy as np
+from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+
+
+
+class SemiSmoothNewton(OptimizationAlgorithm):
+	"""A semi-smooth Newton method.
+
+	"""
+
+	def __init__(self, optimization_problem):
+		"""Initializes the semi-smooth Newton method.
+
+		Parameters
+		----------
+		optimization_problem : adpack.OptimalControlProblem
+			the OptimalControlProblem object
+		"""
+
+		OptimizationAlgorithm.__init__(self, optimization_problem)
+
+		self.line_search = ArmijoLineSearch(self)
+
+		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
+		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.stepsize = 1.0
+		self.armijo_stepsize_initial = self.stepsize
+
+		self.armijo_broken = False
+
+
+
+	def run(self):
+		"""Performs the optimization via the semi-smooth Newton method
+
+		Returns
+		-------
+		None
+		"""
+
+		self.iteration = 0
+		self.relative_norm = 1.0
+
+
+		while True:
+			self.state_problem.has_solution = False
+			self.objective_value = self.cost_functional.evaluate()
+
+			self.adjoint_problem.has_solution = False
+			self.gradient_problem.has_solution = False
+			self.gradient_problem.solve()
+			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			if self.iteration == 0:
+				self.gradient_norm_initial = self.gradient_norm
+				if self.gradient_norm_initial == 0.0:
+					self.print_results()
+					break
+
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
+				self.print_results()
+				break
+
+			self.print_results()
+
+			self.search_directions, self.delta_mu = self.optimization_problem.semi_smooth_hessian.newton_solve()
+			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
+
+			self.idx_inactive = self.optimization_problem.semi_smooth_hessian.idx_inactive
+			self.idx_active = self.optimization_problem.semi_smooth_hessian.idx_active
+			self.mu = self.optimization_problem.semi_smooth_hessian.mu
+
+			for j in range(len(self.controls)):
+				self.controls[j].vector()[:] += self.search_directions[j].vector()[:]
+				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[:] += self.delta_mu[j].vector()[:]
+				self.optimization_problem.semi_smooth_hessian.mu[j].vector()[self.optimization_problem.semi_smooth_hessian.idx_inactive[j]] = 0
+
+			if self.armijo_broken:
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					break
+				else:
+					raise SystemExit('Armijo rule failed.')
+
+			self.iteration += 1
+
+			if self.iteration >= self.maximum_iterations:
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise SystemExit('Maximum number of iterations exceeded.')
+
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) +
+				  ' --- Sensitivity equations solved: ' + str(self.optimization_problem.semi_smooth_hessian.no_sensitivity_solves))
+			print('')
