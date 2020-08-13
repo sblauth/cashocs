@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>caospy API documentation</title>
+<meta name="description" content="package for the solution of PDE constrained optimization problems …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>caospy</code></h1>
+</header>
+<section id="section-intro">
+<p>package for the solution of PDE constrained optimization problems</p>
+<p>caospy is a package based on fenics for the automated
+treatment of PDE constrained optimization problems.
+Works for both optimal control and shape optimization.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;package for the solution of PDE constrained optimization problems
+
+caospy is a package based on fenics for the automated
+treatment of PDE constrained optimization problems.
+Works for both optimal control and shape optimization.
+&#34;&#34;&#34;
+
+from .geometry import MeshGen, regular_mesh, regular_box_mesh
+from .nonlinear_solvers import NewtonSolver
+from ._optimal_control.optimal_control_problem import OptimalControlProblem
+from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
+from .utilities import create_config, wrap_bcs
+
+
+
+__all__ = [&#39;MeshGen&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;NewtonSolver&#39;, &#39;OptimalControlProblem&#39;, &#39;ShapeOptimizationProblem&#39;, &#39;create_config&#39;, &#39;wrap_bcs&#39;]</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="caospy.geometry" href="geometry.html">caospy.geometry</a></code></dt>
+<dd>
+<div class="desc"><p>Geometry module for caospy …</p></div>
+</dd>
+<dt><code class="name"><a title="caospy.nonlinear_solvers" href="nonlinear_solvers.html">caospy.nonlinear_solvers</a></code></dt>
+<dd>
+<div class="desc"><p>Custom solvers for Nonlinear PDEs …</p></div>
+</dd>
+<dt><code class="name"><a title="caospy.utilities" href="utilities.html">caospy.utilities</a></code></dt>
+<dd>
+<div class="desc"><p>Ultility and "helper" functions …</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="caospy.MeshGen"><code class="name flex">
+<span>def <span class="ident">MeshGen</span></span>(<span>arg)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Imports a mesh file to fenics</p>
+<p>Imports a mesh file in .xdmf format generated via gmsh and generates all
+necessary geometrical information for fenics</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>arg</code></strong> :&ensp;<code>str</code> or <code>configparser.ConfigParser</code></dt>
+<dd>either a string, in which case it corresponds to the location
+of the mesh file in .xdmf file format,
+or a config file, which has this path stored in its settings.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains,
+i.e., the physical regions of dimension d generated in gmsh</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries,
+i.e., the physical regions of dimension d-1 generated in gmsh</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def MeshGen(arg):
+        &#34;&#34;&#34;Imports a mesh file to fenics
+
+        Imports a mesh file in .xdmf format generated via gmsh and generates all
+        necessary geometrical information for fenics
+
+        Parameters
+        ----------
+        arg : str or configparser.ConfigParser
+                either a string, in which case it corresponds to the location
+                of the mesh file in .xdmf file format,
+                or a config file, which has this path stored in its settings.
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains,
+                i.e., the physical regions of dimension d generated in gmsh
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries,
+                i.e., the physical regions of dimension d-1 generated in gmsh
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+        
+        start_time = time.time()
+        print(&#39;Importing mesh to FEniCS&#39;)
+        # Check for the file format
+
+        if type(arg) == str:
+                mesh_file = arg
+        elif type(arg) == configparser.ConfigParser:
+                mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
+        else:
+                raise SystemExit(&#39;Not a valid input for MeshGen&#39;)
+
+        if mesh_file[-5:] == &#39;.xdmf&#39;:
+                file_string = mesh_file[:-5]
+        else:
+                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
+        
+        mesh = fenics.Mesh()
+        xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
+        xdmf_file.read(mesh)
+        xdmf_file.close()
+        
+        subdomains_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension())
+        boundaries_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension() - 1)
+
+        if os.path.exists(file_string + &#39;_subdomains.xdmf&#39;):
+                xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_subdomains.xdmf&#39;)
+                xdmf_subdomains.read(subdomains_mvc, &#39;subdomains&#39;)
+                xdmf_subdomains.close()
+        if os.path.exists(file_string + &#39;_boundaries.xdmf&#39;):
+                xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_boundaries.xdmf&#39;)
+                xdmf_boundaries.read(boundaries_mvc, &#39;boundaries&#39;)
+                xdmf_boundaries.close()
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, subdomains_mvc)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, boundaries_mvc)
+
+        dx = fenics.Measure(&#39;dx&#39;, domain=mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, domain=mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, domain=mesh, subdomain_data=boundaries)
+        
+        end_time = time.time()
+        print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
+        print(&#39;&#39;)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="caospy.NewtonSolver"><code class="name flex">
+<span>def <span class="ident">NewtonSolver</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Damped Newton method for solving nonlinear PDEs.</p>
+<p>A custom NewtonSolver class that includes damping
+(based on a monotonicity test) and several fine tuning possibilities.</p>
+<p>The solver will stop either after the maximum number of iterations
+have been performed or if the termination criterion is satisfied, i.e.,</p>
+<pre><code>    if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is 'rel',
+    if ||F_current|| &lt;= atol                                        if convergence_type is 'abs',
+    or when either of the above is satisfied        if convergence_type is 'both'.
+</code></pre>
+<p>The corresponding norm is specified via 'norm_type'.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>F</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
+<dd>The variational form of the nonlinear problem that shall be
+solved by Newton's method</dd>
+<dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
+<dd>The sought solution / initial guess (the method will also return this)</dd>
+<dt><strong><code>bcs</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
+<dd>A list of DirichletBCs for the nonlinear variational problem</dd>
+<dt><strong><code>rtol</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Relative tolerance of the solver if convergence_type is either 'both' or 'rel'
+(default is rtol = 1e-10)</dd>
+<dt><strong><code>atol</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Absolute tolerance of the solver if convergence_type is either 'both' or 'abs'
+(default is atol = 1e-10)</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Maximum number of iterations carried out by the method
+(default is max_iter = 25)</dd>
+<dt><strong><code>convergence_type</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>One of 'both', 'rel', or 'abs' (default is 'both')</dd>
+<dt><strong><code>norm_type</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>One of 'l2', 'linf' (default is 'l2')</dd>
+<dt><strong><code>damped</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Either true or false, if true then uses a damping strategy, if not,
+uses Newton-Raphson iteration (default is True)</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Either true or false, gives updates about the iteration, if true
+(default is true)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
+<dd>The solution of the nonlinear variational problem, if converged</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True):
+        &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
+
+        A custom NewtonSolver class that includes damping
+        (based on a monotonicity test) and several fine tuning possibilities.
+
+        The solver will stop either after the maximum number of iterations
+        have been performed or if the termination criterion is satisfied, i.e.,
+
+                if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is &#39;rel&#39;,
+                if ||F_current|| &lt;= atol                                        if convergence_type is &#39;abs&#39;,
+                or when either of the above is satisfied        if convergence_type is &#39;both&#39;.
+
+        The corresponding norm is specified via &#39;norm_type&#39;.
+
+        Parameters
+        ----------
+        F : ufl.form.Form
+                The variational form of the nonlinear problem that shall be
+                solved by Newton&#39;s method
+        u : dolfin.function.function.Function
+                The sought solution / initial guess (the method will also return this)
+        bcs : list[dolfin.fem.dirichletbc.DirichletBC]
+                A list of DirichletBCs for the nonlinear variational problem
+        rtol : float, optional
+                Relative tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;rel&#39;
+                (default is rtol = 1e-10)
+        atol : float, optional
+                Absolute tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;abs&#39;
+                (default is atol = 1e-10)
+        max_iter : int, optional
+                Maximum number of iterations carried out by the method
+                (default is max_iter = 25)
+        convergence_type : str, optional
+                One of &#39;both&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;both&#39;)
+        norm_type : str, optional
+                One of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
+        damped : bool, optional
+                Either true or false, if true then uses a damping strategy, if not,
+                uses Newton-Raphson iteration (default is True)
+        verbose : bool, optional
+                Either true or false, gives updates about the iteration, if true
+                (default is true)
+
+        Returns
+        -------
+        u : dolfin.function.function.Function
+                The solution of the nonlinear variational problem, if converged
+        &#34;&#34;&#34;
+
+        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;both&#39;], \
+                &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
+        assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
+                &#39;Newton Solver norm_type is neither l2 nor linf&#39;
+        
+        fenics.PETScOptions.set(&#39;mat_mumps_icntl_24&#39;, 1)
+        
+        dF = fenics.derivative(F, u)
+        V = u.function_space()
+        
+        du = fenics.Function(V)
+        ddu = fenics.Function(V)
+        u_save = fenics.Function(V)
+        
+        iterations = 0
+        
+        [bc.apply(u.vector()) for bc in bcs]
+        # copy the boundary conditions and homogenize them
+        bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
+        [bc.homogenize() for bc in bcs_hom]
+        
+        A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+        
+        res_0 = residuum.norm(norm_type)
+        res = res_0
+        if verbose:
+                print(&#39;Newton Iteration &#39; + format(iterations, &#39;2d&#39;) + &#39; - residuum (abs):  &#39;
+                          + format(res, &#39;.3e&#39;) + &#39; (tol = &#39; + format(atol, &#39;.3e&#39;) + &#39;)    residuum (rel): &#39;
+                          + format(res/res_0, &#39;.3e&#39;) + &#39; (tol = &#39; + format(rtol, &#39;.3e&#39;) + &#39;)&#39;)
+        
+        if convergence_type == &#39;abs&#39;:
+                tol = atol
+        elif convergence_type == &#39;rel&#39;:
+                tol = rtol*res_0
+        else:
+                tol = rtol*res_0 + atol
+        
+        while res &gt; tol and iterations &lt; max_iter:
+                iterations += 1
+                lmbd = 1.0
+                breakdown = False
+                u_save.vector()[:] = u.vector()[:]
+                
+                fenics.solve(A, du.vector(), residuum, &#39;mumps&#39;)
+                # fenics.solve(A, du.vector(), residuum, &#39;umfpack&#39;)
+                
+                if damped:
+                        while True:
+                                u.vector()[:] += lmbd*du.vector()[:]
+                                _, b = fenics.assemble_system(dF, -F, bcs_hom)
+                                
+                                fenics.solve(A, ddu.vector(), b, &#39;mumps&#39;)
+                                # fenics.solve(A, ddu.vector(), b, &#39;umfpack&#39;)
+                                
+                                if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
+                                        break
+                                else:
+                                        u.vector()[:] = u_save.vector()[:]
+                                        lmbd /= 2
+                                
+                                if lmbd &lt; 1e-6:
+                                        breakdown = True
+                                        break
+                
+                else:
+                        u.vector()[:] += du.vector()[:]
+                
+                if breakdown:
+                        raise SystemExit(&#39;Damped Newton Solver Breakdown&#39;)
+
+                if iterations == max_iter:
+                        raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
+                
+                A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+                [bc.apply(residuum) for bc in bcs_hom]
+                
+                res = residuum.norm(norm_type)
+                if verbose:
+                        print(&#39;Newton Iteration &#39; + format(iterations, &#39;2d&#39;) + &#39; - residuum (abs):  &#39;
+                                  + format(res, &#39;.3e&#39;) + &#39; (tol = &#39; + format(atol, &#39;.3e&#39;) + &#39;)    residuum (rel): &#39;
+                                  + format(res/res_0, &#39;.3e&#39;) + &#39; (tol = &#39; + format(rtol, &#39;.3e&#39;) + &#39;)&#39;)
+                
+                if res &lt; tol:
+                        if verbose:
+                                print(&#39;&#39;)
+                                print(&#39;Newton Solver converged after &#39; + str(iterations) + &#39; iterations.&#39;)
+                        break
+        
+        return u</code></pre>
+</details>
+</dd>
+<dt id="caospy.create_config"><code class="name flex">
+<span>def <span class="ident">create_config</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates a config object from a config file</p>
+<p>Creates the config from a .ini file via the
+configparser package, and also adds the path of the
+config file to the config. This is helpful for remeshing.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to the config .ini file</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>configparser.ConfigParser</code></dt>
+<dd>the modified config file</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_config(path):
+        &#34;&#34;&#34;Generates a config object from a config file
+
+        Creates the config from a .ini file via the
+        configparser package, and also adds the path of the
+        config file to the config. This is helpful for remeshing.
+
+        Parameters
+        ----------
+        path : str
+                path to the config .ini file
+
+        Returns
+        -------
+        configparser.ConfigParser
+                the modified config file
+        &#34;&#34;&#34;
+
+        config = configparser.ConfigParser()
+        config.read(path)
+        config.set(&#39;Mesh&#39;, &#39;config_path&#39;, os.path.abspath(path))
+
+        return config</code></pre>
+</details>
+</dd>
+<dt id="caospy.regular_box_mesh"><code class="name flex">
+<span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a meshed rectangle or cube</p>
+<p>Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+or the cube [sx, ex] x [sy, ey] x [sz, ez]</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of subdivisions for the smallest direction</dd>
+<dt><strong><code>sx</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the x-interval</dd>
+<dt><strong><code>sy</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the y-interval</dd>
+<dt><strong><code>sz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>Start of the z-interval</dd>
+<dt><strong><code>ex</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the x-interval</dd>
+<dt><strong><code>ey</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the y-interval</dd>
+<dt><strong><code>ez</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>End of the z-interval</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube
+
+        Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
+        or the cube [sx, ex] x [sy, ey] x [sz, ez]
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions for the smallest direction
+        sx : float
+                Start of the x-interval
+        sy : float
+                Start of the y-interval
+        sz : float or None
+                Start of the z-interval
+        ex : float
+                End of the x-interval
+        ey : float
+                End of the y-interval
+        ez : float or None
+                End of the z-interval
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+
+        assert sx &lt; ex, &#39;Incorrect input for the x-coordinate&#39;
+        assert sy &lt; ey, &#39;Incorrect input for the y-coordinate&#39;
+        assert (sz is None and ez is None) or (sz &lt; ez), &#39;Incorrect input for the z-coordinate&#39;
+
+        if sz is None:
+                lx = ex - sx
+                ly = ey - sy
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                lx = ex - sx
+                ly = ey - sy
+                lz = ez - sz
+                sizes = [lx, ly, lz]
+                dim = 3
+
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+
+        if sz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(sx, sy), fenics.Point(ex, ey), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(sx, sy, sz), fenics.Point(ex, ey, ez), num_points[0], num_points[1], num_points[2])
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], sx, tol)&#39;, tol=fenics.DOLFIN_EPS, sx=sx)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], ex, tol)&#39;, tol=fenics.DOLFIN_EPS, ex=ex)
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], sy, tol)&#39;, tol=fenics.DOLFIN_EPS, sy=sy)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], ey, tol)&#39;, tol=fenics.DOLFIN_EPS, ey=ey)
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if sz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], sz, tol)&#39;, tol=fenics.DOLFIN_EPS, sz=sz)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], ez, tol)&#39;, tol=fenics.DOLFIN_EPS, ez=ez)
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="caospy.regular_mesh"><code class="name flex">
+<span>def <span class="ident">regular_mesh</span></span>(<span>n=10, lx=1.0, ly=1.0, lz=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a meshed rectangle or cube.</p>
+<p>Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+starting at the origin and having specified lengths</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of subdivisions in the smallest coordinate direction</dd>
+<dt><strong><code>lx</code></strong> :&ensp;<code>float</code></dt>
+<dd>length in x-direction</dd>
+<dt><strong><code>ly</code></strong> :&ensp;<code>float</code></dt>
+<dd>length in y-direction</dd>
+<dt><strong><code>lz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>length in z-direction (geometry will be 2D if lz==None)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the subdomains</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>A MeshFunction containing the boundaries.
+Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
+        &#34;&#34;&#34;Creates a meshed rectangle or cube.
+
+        Creates a regular mesh in either 2D (rectangle) or 3D (cube),
+        starting at the origin and having specified lengths
+
+        Parameters
+        ----------
+        n : int
+                Number of subdivisions in the smallest coordinate direction
+        lx : float
+                length in x-direction
+        ly : float
+                length in y-direction
+        lz : float or None
+                length in z-direction (geometry will be 2D if lz==None)
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                The computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                A MeshFunction containing the boundaries.
+                Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
+        dx : ufl.measure.Measure
+                The volume measure corresponding to the mesh and subdomains
+        ds : ufl.measure.Measure
+                The surface measure corresponding to the mesh and boundaries
+        dS : ufl.measure.Measure
+                The interior face measure corresponding to the mesh and boundaries
+        &#34;&#34;&#34;
+
+        n = int(n)
+        
+        if lz is None:
+                sizes = [lx, ly]
+                dim = 2
+        else:
+                sizes = [lx, ly, lz]
+                dim = 3
+        
+        size_min = np.min(sizes)
+        num_points = [int(np.round(length/size_min*n)) for length in sizes]
+        
+        if lz is None:
+                mesh = fenics.RectangleMesh(fenics.Point(0, 0), fenics.Point(sizes), num_points[0], num_points[1])
+        else:
+                mesh = fenics.BoxMesh(fenics.Point(0, 0, 0), fenics.Point(sizes), num_points[0], num_points[1], num_points[2])
+        
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
+        
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[0])
+        x_min.mark(boundaries, 1)
+        x_max.mark(boundaries, 2)
+
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[1])
+        y_min.mark(boundaries, 3)
+        y_max.mark(boundaries, 4)
+
+        if lz is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[2])
+                z_min.mark(boundaries, 5)
+                z_max.mark(boundaries, 6)
+        
+        dx = fenics.Measure(&#39;dx&#39;, mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, mesh)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="caospy.wrap_bcs"><code class="name flex">
+<span>def <span class="ident">wrap_bcs</span></span>(<span>function_space, value, boundaries, idcs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wrapper for Dirichlet boundary conditions</p>
+<p>Wraps multiple Dirichlet boundary conditions into a list, in case
+they have the same value but are to be defined for multiple boundaries
+with different markers. Particularly useful for defining homogeneous
+boundary conditions.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>function_space</code></strong> :&ensp;<code>dolfin.function.functionspace.FunctionSpace</code></dt>
+<dd>The function space onto which the BCs should be imposed on</dd>
+<dt><strong><code>value</code></strong> :&ensp;<code>dolfin.function.constant.Constant</code> or <code>dolfin.function.expression.Expression</code></dt>
+<dd>or dolfin.function.function.Function or float or tuple(float)
+The value of the boundary condition. Has to be compatible with the function_space,
+so that it could also be used as DirichletBC(function_space, value, &hellip;)</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>The MeshFunction object representing the boundaries</dd>
+<dt><strong><code>idcs</code></strong> :&ensp;<code>list[int]</code></dt>
+<dd>a list of indices / boundary markers that determine the boundaries
+onto which the Dirichlet boundary conditions should be applied to</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
+<dd>a list of DirichletBC objects that represent the boundary conditions</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrap_bcs(function_space, value, boundaries, idcs):
+        &#34;&#34;&#34;Wrapper for Dirichlet boundary conditions
+
+        Wraps multiple Dirichlet boundary conditions into a list, in case
+        they have the same value but are to be defined for multiple boundaries
+        with different markers. Particularly useful for defining homogeneous
+        boundary conditions.
+
+        Parameters
+        ----------
+        function_space : dolfin.function.functionspace.FunctionSpace
+                The function space onto which the BCs should be imposed on
+        value : dolfin.function.constant.Constant or dolfin.function.expression.Expression
+                        or dolfin.function.function.Function or float or tuple(float)
+                The value of the boundary condition. Has to be compatible with the function_space,
+                so that it could also be used as DirichletBC(function_space, value, ...)
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                The MeshFunction object representing the boundaries
+        idcs : list[int]
+                a list of indices / boundary markers that determine the boundaries
+                onto which the Dirichlet boundary conditions should be applied to
+
+        Returns
+        -------
+        list[dolfin.fem.dirichletbc.DirichletBC]
+                a list of DirichletBC objects that represent the boundary conditions
+        &#34;&#34;&#34;
+
+        bcs_list = []
+        for i in idcs:
+                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+
+        return bcs_list</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="caospy.OptimalControlProblem"><code class="flex name class">
+<span>class <span class="ident">OptimalControlProblem</span></span>
+<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config, riesz_scalar_products=None, control_constraints=None, initial_guess=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implements an optimal control problem</p>
+<p>This class is used to define an optimal control problem, and also to solve
+it subsequently. For a detailed documentation, see the examples in the "demos"
+folder. For easier input, when consider single (state or control) variables,
+these do not have to be wrapped into a list.
+Note, that in the case of multiple variables these have to be grouped into
+ordered lists, where state_forms, bcs_list, states, adjoints have to have
+the same order (i.e. [state1, state2, state3,&hellip;] and [adjoint1, adjoint2,
+adjoint3, &hellip;], where adjoint1 is the adjoint of state1 and so on.</p>
+<p>Initializes the optimal control problem.</p>
+<p>This is used to generate all classes and functionalities. First ensures
+consistent input as the <strong>init</strong> function is overloaded. Afterwards, the
+solution algorithm is initialized.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>state_forms</code></strong> :&ensp;<code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code></dt>
+<dd>the weak form of the state equation (user implemented). Can be either
+a single UFL form, or a (ordered) list of UFL forms</dd>
+<dt><strong><code>bcs_list</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code> or <code>list[list[dolfin.fem.dirichletbc.DirichletBC]]</code> or <code>dolfin.fem.dirichletbc.DirichletBC</code> or <code>None</code></dt>
+<dd>the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+If this is None, then no Dirichlet boundary conditions are imposed.</dd>
+<dt><strong><code>cost_functional_form</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
+<dd>UFL form of the cost functional</dd>
+<dt><strong><code>states</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
+<dd>the state variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
+<dt><strong><code>controls</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
+<dd>the control variable(s), can either be a single fenics Function, or a list of these</dd>
+<dt><strong><code>adjoints</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
+<dd>the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
+<dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
+<dd>the config file for the problem, generated via caospy.create_config(path_to_config)</dd>
+<dt><strong><code>riesz_scalar_products</code></strong> :&ensp;<code>None</code> or <code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code>, optional</dt>
+<dd>the scalar products of the control space. Can either be None, a single UFL form, or a
+(ordered) list of UFL forms. If None, the L^2(\Omega) product is used.
+(default is None)</dd>
+<dt><strong><code>control_constraints</code></strong> :&ensp;<code>None</code> or <code>list[dolfin.function.function.Function]</code> or <code>list[float]</code> or <code>list[list[dolfin.function.function.Function]]</code> or <code>list[list[float]]</code>, optional</dt>
+<dd>Box constraints posed on the control, None means that there are none (default is None).
+The (inner) lists should contain two elements of the form [u_a, u_b], where u_a is the lower,
+and u_b the upper bound.</dd>
+<dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
+<dd>list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+(defaults to None (which means a zero initial guess))</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>The corresponding examples detailing the use of this class can be found
+in the "demos" folder.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OptimalControlProblem:
+        &#34;&#34;&#34;Implements an optimal control problem
+
+        This class is used to define an optimal control problem, and also to solve
+        it subsequently. For a detailed documentation, see the examples in the &#34;demos&#34;
+        folder. For easier input, when consider single (state or control) variables,
+        these do not have to be wrapped into a list.
+        Note, that in the case of multiple variables these have to be grouped into
+        ordered lists, where state_forms, bcs_list, states, adjoints have to have
+        the same order (i.e. [state1, state2, state3,...] and [adjoint1, adjoint2,
+        adjoint3, ...], where adjoint1 is the adjoint of state1 and so on.
+        &#34;&#34;&#34;
+
+        def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
+                                 riesz_scalar_products=None, control_constraints=None, initial_guess=None):
+                &#34;&#34;&#34;Initializes the optimal control problem.
+
+                This is used to generate all classes and functionalities. First ensures
+                consistent input as the __init__ function is overloaded. Afterwards, the
+                solution algorithm is initialized.
+                
+                Parameters
+                ----------
+                state_forms : ufl.form.Form or list[ufl.form.Form]
+                        the weak form of the state equation (user implemented). Can be either
+                        a single UFL form, or a (ordered) list of UFL forms
+                bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
+                        the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+                        If this is None, then no Dirichlet boundary conditions are imposed.
+                cost_functional_form : ufl.form.Form
+                        UFL form of the cost functional
+                states : dolfin.function.function.Function or list[dolfin.function.function.Function]
+                        the state variable(s), can either be a single fenics Function, or a (ordered) list of these
+                controls : dolfin.function.function.Function or list[dolfin.function.function.Function]
+                        the control variable(s), can either be a single fenics Function, or a list of these
+                adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
+                        the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these
+                config : configparser.ConfigParser
+                        the config file for the problem, generated via caospy.create_config(path_to_config)
+                riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
+                        the scalar products of the control space. Can either be None, a single UFL form, or a
+                        (ordered) list of UFL forms. If None, the L^2(\Omega) product is used.
+                        (default is None)
+                control_constraints : None or list[dolfin.function.function.Function] or list[float] or list[list[dolfin.function.function.Function]] or list[list[float]], optional
+                        Box constraints posed on the control, None means that there are none (default is None).
+                        The (inner) lists should contain two elements of the form [u_a, u_b], where u_a is the lower,
+                        and u_b the upper bound.
+                initial_guess : list[dolfin.function.function.Function], optional
+                        list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+                        (defaults to None (which means a zero initial guess))
+
+
+                Examples
+                --------
+                The corresponding examples detailing the use of this class can be found
+                in the &#34;demos&#34; folder.
+                &#34;&#34;&#34;
+
+                ### Overloading, such that we do not have to use lists for a single state and a single control
+                ### state_forms
+                try:
+                        if type(state_forms) == list and len(state_forms) &gt; 0:
+                                for i in range(len(state_forms)):
+                                        if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;state_forms have to be ufl forms&#39;)
+                                self.state_forms = state_forms
+                        elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
+                                self.state_forms = [state_forms]
+                        else:
+                                raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                except:
+                        raise SystemExit(&#39;Type of state_forms is wrong.&#39;)
+                self.state_dim = len(self.state_forms)
+
+                ### bcs_list
+                try:
+                        if bcs_list == [] or bcs_list is None:
+                                self.bcs_list = []
+                                for i in range(self.state_dim):
+                                        self.bcs_list.append([])
+                        elif type(bcs_list) == list and len(bcs_list) &gt; 0:
+                                if type(bcs_list[0]) == list:
+                                        for i in range(len(bcs_list)):
+                                                if type(bcs_list[i]) == list:
+                                                        pass
+                                                else:
+                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                        self.bcs_list = bcs_list
+
+                                elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
+                                        for i in range(len(bcs_list)):
+                                                if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
+                                                        pass
+                                                else:
+                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                        self.bcs_list = [bcs_list]
+                        elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
+                                self.bcs_list = [[bcs_list]]
+                        else:
+                                raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+
+                ### cost_functional_form
+                try:
+                        if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
+                                self.cost_functional_form = cost_functional_form
+                        else:
+                                raise SystemExit(&#39;cost_functional_form has to be a ufl form&#39;)
+                except:
+                        raise SystemExit(&#39;Type of cost_functional_form is wrong.&#39;)
+
+                ### states
+                try:
+                        if type(states) == list and len(states) &gt; 0:
+                                for i in range(len(states)):
+                                        if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;states have to be fenics Functions.&#39;)
+
+                                self.states = states
+
+                        elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
+                                self.states = [states]
+                        else:
+                                raise SystemExit(&#39;Type of states is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of states is wrong.&#39;)
+
+                ### controls
+                try:
+                        if type(controls) == list and len(controls) &gt; 0:
+                                for i in range(len(controls)):
+                                        if controls[i].__module__ == &#39;dolfin.function.function&#39; and type(controls[i]).__name__ == &#39;Function&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;controls have to be fenics Functions.&#39;)
+
+                                self.controls = controls
+
+                        elif controls.__module__ == &#39;dolfin.function.function&#39; and type(controls).__name__ == &#39;Function&#39;:
+                                self.controls = [controls]
+                        else:
+                                raise SystemExit(&#39;Type of controls is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of controls is wrong.&#39;)
+
+                self.control_dim = len(self.controls)
+                
+                ### adjoints
+                try:
+                        if type(adjoints) == list and len(adjoints) &gt; 0:
+                                for i in range(len(adjoints)):
+                                        if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;adjoints have to fenics Functions.&#39;)
+
+                                self.adjoints = adjoints
+
+                        elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
+                                self.adjoints = [adjoints]
+                        else:
+                                raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+
+                ### config
+                if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
+                        self.config = config
+                else:
+                        raise SystemExit(&#39;config has to be of configparser.ConfigParser type&#39;)
+
+
+                ### riesz_scalar_products
+                if riesz_scalar_products is None:
+                        dx = fenics.Measure(&#39;dx&#39;, self.controls[0].function_space().mesh())
+                        self.riesz_scalar_products = [fenics.inner(fenics.TrialFunction(self.controls[i].function_space()), fenics.TestFunction(self.controls[i].function_space())) * dx
+                                                                                  for i in range(len(self.controls))]
+                else:
+                        try:
+                                if type(riesz_scalar_products)==list and len(riesz_scalar_products) &gt; 0:
+                                        for i in range(len(riesz_scalar_products)):
+                                                if riesz_scalar_products[i].__module__== &#39;ufl.form&#39; and type(riesz_scalar_products[i]).__name__== &#39;Form&#39;:
+                                                        pass
+                                                else:
+                                                        raise SystemExit(&#39;riesz_scalar_products have to be ufl forms&#39;)
+                                        self.riesz_scalar_products = riesz_scalar_products
+                                elif riesz_scalar_products.__module__== &#39;ufl.form&#39; and type(riesz_scalar_products).__name__== &#39;Form&#39;:
+                                        self.riesz_scalar_products = [riesz_scalar_products]
+                                else:
+                                        raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                        except:
+                                raise SystemExit(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
+
+                ### control_constraints
+                if control_constraints is None:
+                        self.control_constraints = []
+                        for control in self.controls:
+                                u_a = fenics.Function(control.function_space())
+                                u_a.vector()[:] = float(&#39;-inf&#39;)
+                                u_b = fenics.Function(control.function_space())
+                                u_b.vector()[:] = float(&#39;inf&#39;)
+                                self.control_constraints.append([u_a, u_b])
+                else:
+                        try:
+                                if type(control_constraints) == list and len(control_constraints) &gt; 0:
+                                        if type(control_constraints[0]) == list:
+                                                for i in range(len(control_constraints)):
+                                                        if type(control_constraints[i]) == list and len(control_constraints[i]) == 2:
+                                                                for j in range(2):
+                                                                        if type(control_constraints[i][j]) in [float, int]:
+                                                                                pass
+                                                                        elif control_constraints[i][j].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[i][j]).__name__ == &#39;Function&#39;:
+                                                                                pass
+                                                                        else:
+                                                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                pass
+                                                        else:
+                                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                self.control_constraints = control_constraints
+                                        elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[0]).__name__==&#39;Function&#39;)) \
+                                                and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[1]).__name__==&#39;Function&#39;)):
+
+                                                self.control_constraints = [control_constraints]
+                                        else:
+                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+
+                        except:
+                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+
+                # recast floats into functions for compatibility
+                temp_constraints = self.control_constraints[:]
+                self.control_constraints = []
+                for idx, pair in enumerate(temp_constraints):
+                        if type(pair[0]) in [float, int]:
+                                lower_bound = fenics.Function(self.controls[idx].function_space())
+                                lower_bound.vector()[:] = pair[0]
+                        elif pair[0].__module__ == &#39;dolfin.function.function&#39; and type(pair[0]).__name__ == &#39;Function&#39;:
+                                lower_bound = pair[0]
+                        else:
+                                raise SystemExit(&#39;Wrong type for the control constraints&#39;)
+
+                        if type(pair[1]) in [float, int]:
+                                upper_bound = fenics.Function(self.controls[idx].function_space())
+                                upper_bound.vector()[:] = pair[1]
+                        elif pair[1].__module__ == &#39;dolfin.function.function&#39; and type(pair[1]).__name__ == &#39;Function&#39;:
+                                upper_bound = pair[1]
+                        else:
+                                raise SystemExit(&#39;Wrong type for the control constraints&#39;)
+
+                        self.control_constraints.append([lower_bound, upper_bound])
+
+
+                if type(self.control_constraints[0][0]) in [float, int]:
+                        temp_constraints = self.control_constraints[:]
+                        self.control_constraints = []
+                        for i, control in enumerate(self.controls):
+                                u_a = fenics.Function(control.function_space())
+                                u_a.vector()[:] = temp_constraints[i][0]
+                                u_b = fenics.Function(control.function_space())
+                                u_b.vector()[:] = temp_constraints[i][1]
+                                self.control_constraints.append([u_a, u_b])
+
+                ### Check whether the control constraints are feasible
+                for pair in self.control_constraints:
+                        assert np.alltrue(pair[0].vector()[:] &lt; pair[1].vector()[:]), &#39;the lower bound must always be smaller than the upper bound&#39;
+
+                ### initial guess
+                if initial_guess is None:
+                        self.initial_guess = initial_guess
+                else:
+                        try:
+                                if type(initial_guess) == list:
+                                        self.initial_guess = initial_guess
+                                elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
+                                        self.initial_guess = [initial_guess]
+                        except:
+                                raise SystemExit(&#39;Initial guess has to be a list of functions&#39;)
+
+                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.riesz_scalar_products) == self.control_dim, &#39;Length of controls does not match&#39;
+                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.control_constraints) == self.control_dim, &#39;Length of controls does not match&#39;
+                if self.initial_guess is not None:
+                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                ### end overloading
+
+                self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
+                self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.riesz_scalar_products, self.control_constraints)
+
+                self.state_spaces = self.form_handler.state_spaces
+                self.control_spaces = self.form_handler.control_spaces
+                self.adjoint_spaces = self.form_handler.adjoint_spaces
+
+                self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
+
+                self.state_problem = StateProblem(self.form_handler, self.initial_guess)
+                self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
+                self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
+                
+                if self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;) == &#39;newton&#39;:
+                        self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+                if self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;) == &#39;semi_smooth_newton&#39;:
+                        self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+                if self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;) == &#39;pdas&#39;:
+                        self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+
+                self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
+
+                self.gradients = self.gradient_problem.gradients
+                self.objective_value = 1.0
+
+
+
+        def stationary_measure_squared(self):
+                &#34;&#34;&#34;Computes the stationary measure (squared) corresponding to box-constraints
+
+                In case there are no box constraints this reduces to the classical gradient
+                norm.
+
+                Returns
+                -------
+                 float
+                        The square of the stationary measure
+
+                &#34;&#34;&#34;
+
+                for j in range(self.control_dim):
+                        self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+                self.form_handler.project_to_admissible_set(self.projected_difference)
+
+                for j in range(self.control_dim):
+                        self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+                return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
+
+
+                
+        def solve(self):
+                &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+                Updates / overwrites states, controls, and adjoints according
+                to the optimization method, i.e., the user-input functions.
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+                
+                self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+                
+                if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
+                        self.solver = GradientDescent(self)
+                elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                        self.solver = LBFGS(self)
+                elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                        self.solver = CG(self)
+                elif self.algorithm == &#39;newton&#39;:
+                        self.solver = Newton(self)
+                elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
+                        self.solver = SemiSmoothNewton(self)
+                elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
+                        self.solver = PDAS(self)
+                else:
+                        raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                
+                self.solver.run()
+                self.solver.finalize()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="caospy.OptimalControlProblem.solve"><code class="name flex">
+<span>def <span class="ident">solve</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the optimization problem by the method specified in the config file.</p>
+<p>Updates / overwrites states, controls, and adjoints according
+to the optimization method, i.e., the user-input functions.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def solve(self):
+        &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+        Updates / overwrites states, controls, and adjoints according
+        to the optimization method, i.e., the user-input functions.
+
+        Returns
+        -------
+        None
+        &#34;&#34;&#34;
+        
+        self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+        
+        if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
+                self.solver = GradientDescent(self)
+        elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                self.solver = LBFGS(self)
+        elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                self.solver = CG(self)
+        elif self.algorithm == &#39;newton&#39;:
+                self.solver = Newton(self)
+        elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
+                self.solver = SemiSmoothNewton(self)
+        elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
+                self.solver = PDAS(self)
+        else:
+                raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+        
+        self.solver.run()
+        self.solver.finalize()</code></pre>
+</details>
+</dd>
+<dt id="caospy.OptimalControlProblem.stationary_measure_squared"><code class="name flex">
+<span>def <span class="ident">stationary_measure_squared</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the stationary measure (squared) corresponding to box-constraints</p>
+<p>In case there are no box constraints this reduces to the classical gradient
+norm.</p>
+<h2 id="returns">Returns</h2>
+<p>float
+The square of the stationary measure</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stationary_measure_squared(self):
+        &#34;&#34;&#34;Computes the stationary measure (squared) corresponding to box-constraints
+
+        In case there are no box constraints this reduces to the classical gradient
+        norm.
+
+        Returns
+        -------
+         float
+                The square of the stationary measure
+
+        &#34;&#34;&#34;
+
+        for j in range(self.control_dim):
+                self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+        self.form_handler.project_to_admissible_set(self.projected_difference)
+
+        for j in range(self.control_dim):
+                self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+        return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="caospy.ShapeOptimizationProblem"><code class="flex name class">
+<span>class <span class="ident">ShapeOptimizationProblem</span></span>
+<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, boundaries, config, initial_guess=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A shape optimization problem</p>
+<p>This class is used to define a shape optimization problem, and also to solve
+it subsequently. For a detailed documentation, see the examples in the "demos"
+folder. For easier input, when consider single (state or control) variables,
+these do not have to be wrapped into a list.
+Note, that in the case of multiple variables these have to be grouped into
+ordered lists, where state_forms, bcs_list, states, adjoints have to have
+the same order (i.e. [state1, state2, state3,&hellip;] and [adjoint1, adjoint2,
+adjoint3, &hellip;], where adjoint1 is the adjoint of state1 and so on.</p>
+<p>Initializes the shape optimization problem</p>
+<p>This is used to generate all classes and functionalities. First ensures
+consistent input as the <strong>init</strong> function is overloaded. Afterwards, the
+solution algorithm is initialized.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>state_forms</code></strong> :&ensp;<code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code></dt>
+<dd>the weak form of the state equation (user implemented). Can be either</dd>
+<dt><strong><code>bcs_list</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code> or <code>list[list[dolfin.fem.dirichletbc.DirichletBC]]</code></dt>
+<dd>or dolfin.fem.dirichletbc.DirichletBC or None
+the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+If this is None, then no Dirichlet boundary conditions are imposed.</dd>
+<dt><strong><code>cost_functional_form</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
+<dd>UFL form of the cost functional</dd>
+<dt><strong><code>states</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
+<dd>the state variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
+<dt><strong><code>adjoints</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
+<dd>the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>MeshFunction that indicates the boundary markers</dd>
+<dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
+<dd>the config file for the problem, generated via caospy.create_config(path_to_config)</dd>
+<dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
+<dd>list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+(defaults to None (which means a zero initial guess))</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShapeOptimizationProblem:
+        &#34;&#34;&#34;A shape optimization problem
+
+        This class is used to define a shape optimization problem, and also to solve
+        it subsequently. For a detailed documentation, see the examples in the &#34;demos&#34;
+        folder. For easier input, when consider single (state or control) variables,
+        these do not have to be wrapped into a list.
+        Note, that in the case of multiple variables these have to be grouped into
+        ordered lists, where state_forms, bcs_list, states, adjoints have to have
+        the same order (i.e. [state1, state2, state3,...] and [adjoint1, adjoint2,
+        adjoint3, ...], where adjoint1 is the adjoint of state1 and so on.
+        &#34;&#34;&#34;
+
+        def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, boundaries, config, initial_guess=None):
+                &#34;&#34;&#34;Initializes the shape optimization problem
+
+                This is used to generate all classes and functionalities. First ensures
+                consistent input as the __init__ function is overloaded. Afterwards, the
+                solution algorithm is initialized.
+
+                Parameters
+                ----------
+                state_forms : ufl.form.Form or list[ufl.form.Form]
+                        the weak form of the state equation (user implemented). Can be either
+                bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]]
+                                   or dolfin.fem.dirichletbc.DirichletBC or None
+                        the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+                        If this is None, then no Dirichlet boundary conditions are imposed.
+                cost_functional_form : ufl.form.Form
+                        UFL form of the cost functional
+                states : dolfin.function.function.Function or list[dolfin.function.function.Function]
+                        the state variable(s), can either be a single fenics Function, or a (ordered) list of these
+                adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
+                        the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these
+                boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                        MeshFunction that indicates the boundary markers
+                config : configparser.ConfigParser
+                        the config file for the problem, generated via caospy.create_config(path_to_config)
+                initial_guess : list[dolfin.function.function.Function], optional
+                        list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+                        (defaults to None (which means a zero initial guess))
+                &#34;&#34;&#34;
+
+                ### Overloading, so that we do not have to use lists for single state single control
+                ### state_forms
+                try:
+                        if type(state_forms) == list and len(state_forms) &gt; 0:
+                                for i in range(len(state_forms)):
+                                        if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;state_forms have to be ufl forms&#39;)
+                                self.state_forms = state_forms
+                        elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
+                                self.state_forms = [state_forms]
+                        else:
+                                raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                except:
+                        raise SystemExit(&#39;Type of state_forms is wrong.&#39;)
+                self.state_dim = len(self.state_forms)
+
+                ### bcs_list
+                try:
+                        if bcs_list == [] or bcs_list is None:
+                                self.bcs_list = []
+                                for i in range(self.state_dim):
+                                        self.bcs_list.append([])
+                        elif type(bcs_list) == list and len(bcs_list) &gt; 0:
+                                if type(bcs_list[0]) == list:
+                                        for i in range(len(bcs_list)):
+                                                if type(bcs_list[i]) == list:
+                                                        pass
+                                                else:
+                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                        self.bcs_list = bcs_list
+
+                                elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
+                                        for i in range(len(bcs_list)):
+                                                if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
+                                                        pass
+                                                else:
+                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                        self.bcs_list = [bcs_list]
+                        elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
+                                self.bcs_list = [[bcs_list]]
+                        else:
+                                raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+
+                ### cost_functional_form
+                try:
+                        if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
+                                self.cost_functional_form = cost_functional_form
+                        else:
+                                raise SystemExit(&#39;cost_functional_form has to be a ufl form&#39;)
+                except:
+                        raise SystemExit(&#39;Type of cost_functional_form is wrong.&#39;)
+
+                ### states
+                try:
+                        if type(states) == list and len(states) &gt; 0:
+                                for i in range(len(states)):
+                                        if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;states have to be fenics Functions.&#39;)
+
+                                self.states = states
+
+                        elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
+                                self.states = [states]
+                        else:
+                                raise SystemExit(&#39;Type of states is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of states is wrong.&#39;)
+
+                ### adjoints
+                try:
+                        if type(adjoints) == list and len(adjoints) &gt; 0:
+                                for i in range(len(adjoints)):
+                                        if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
+                                                pass
+                                        else:
+                                                raise SystemExit(&#39;adjoints have to fenics Functions.&#39;)
+
+                                self.adjoints = adjoints
+
+                        elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
+                                self.adjoints = [adjoints]
+                        else:
+                                raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                except:
+                        raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+
+                ### config
+                if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
+                        self.config = config
+                else:
+                        raise SystemExit(&#39;config has to be of configparser.ConfigParser type&#39;)
+
+                self.boundaries = boundaries
+
+                ### initial guess
+                if initial_guess is None:
+                        self.initial_guess = initial_guess
+                else:
+                        try:
+                                if type(initial_guess) == list:
+                                        self.initial_guess = initial_guess
+                                elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
+                                        self.initial_guess = [initial_guess]
+                        except:
+                                raise SystemExit(&#39;Initial guess has to be a list of functions&#39;)
+
+                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
+                if self.initial_guess is not None:
+                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                ### end overloading
+
+                self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
+                self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.boundaries, self.config)
+                self.mesh_handler = _MeshHandler(self)
+
+                self.state_spaces = self.shape_form_handler.state_spaces
+                self.adjoint_spaces = self.shape_form_handler.adjoint_spaces
+
+                self.state_problem = StateProblem(self.shape_form_handler, self.initial_guess)
+                self.adjoint_problem = AdjointProblem(self.shape_form_handler, self.state_problem)
+                self.shape_gradient_problem = ShapeGradientProblem(self.shape_form_handler, self.state_problem, self.adjoint_problem)
+
+                self.reduced_cost_functional = ReducedShapeCostFunctional(self.shape_form_handler, self.state_problem)
+
+                self.gradient = self.shape_gradient_problem.gradient
+                self.objective_value = 1.0
+
+
+
+        def solve(self):
+                &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+
+                if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
+                        self.solver = GradientDescent(self)
+                elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                        self.solver = LBFGS(self)
+                elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                        self.solver = CG(self)
+                else:
+                        raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+
+                self.solver.run()
+                self.solver.finalize()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="caospy.ShapeOptimizationProblem.solve"><code class="name flex">
+<span>def <span class="ident">solve</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Solves the optimization problem by the method specified in the config file.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def solve(self):
+        &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+        Returns
+        -------
+        None
+        &#34;&#34;&#34;
+
+        self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+
+        if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
+                self.solver = GradientDescent(self)
+        elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                self.solver = LBFGS(self)
+        elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                self.solver = CG(self)
+        else:
+                raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+
+        self.solver.run()
+        self.solver.finalize()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="caospy.geometry" href="geometry.html">caospy.geometry</a></code></li>
+<li><code><a title="caospy.nonlinear_solvers" href="nonlinear_solvers.html">caospy.nonlinear_solvers</a></code></li>
+<li><code><a title="caospy.utilities" href="utilities.html">caospy.utilities</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="caospy.MeshGen" href="#caospy.MeshGen">MeshGen</a></code></li>
+<li><code><a title="caospy.NewtonSolver" href="#caospy.NewtonSolver">NewtonSolver</a></code></li>
+<li><code><a title="caospy.create_config" href="#caospy.create_config">create_config</a></code></li>
+<li><code><a title="caospy.regular_box_mesh" href="#caospy.regular_box_mesh">regular_box_mesh</a></code></li>
+<li><code><a title="caospy.regular_mesh" href="#caospy.regular_mesh">regular_mesh</a></code></li>
+<li><code><a title="caospy.wrap_bcs" href="#caospy.wrap_bcs">wrap_bcs</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="caospy.OptimalControlProblem" href="#caospy.OptimalControlProblem">OptimalControlProblem</a></code></h4>
+<ul class="">
+<li><code><a title="caospy.OptimalControlProblem.solve" href="#caospy.OptimalControlProblem.solve">solve</a></code></li>
+<li><code><a title="caospy.OptimalControlProblem.stationary_measure_squared" href="#caospy.OptimalControlProblem.stationary_measure_squared">stationary_measure_squared</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="caospy.ShapeOptimizationProblem" href="#caospy.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></h4>
+<ul class="">
+<li><code><a title="caospy.ShapeOptimizationProblem.solve" href="#caospy.ShapeOptimizationProblem.solve">solve</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

@@ -160,3 +160,39 @@ def create_config(path):
 	config.set('Mesh', 'config_path', os.path.abspath(path))
 
 	return config
+
+
+
+def wrap_bcs(function_space, value, boundaries, idcs):
+	"""Wrapper for Dirichlet boundary conditions
+
+	Wraps multiple Dirichlet boundary conditions into a list, in case
+	they have the same value but are to be defined for multiple boundaries
+	with different markers. Particularly useful for defining homogeneous
+	boundary conditions.
+
+	Parameters
+	----------
+	function_space : dolfin.function.functionspace.FunctionSpace
+		The function space onto which the BCs should be imposed on
+	value : dolfin.function.constant.Constant or dolfin.function.expression.Expression
+			or dolfin.function.function.Function or float or tuple(float)
+		The value of the boundary condition. Has to be compatible with the function_space,
+		so that it could also be used as DirichletBC(function_space, value, ...)
+	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+		The MeshFunction object representing the boundaries
+	idcs : list[int]
+		a list of indices / boundary markers that determine the boundaries
+		onto which the Dirichlet boundary conditions should be applied to
+
+	Returns
+	-------
+	list[dolfin.fem.dirichletbc.DirichletBC]
+		a list of DirichletBC objects that represent the boundary conditions
+	"""
+
+	bcs_list = []
+	for i in idcs:
+		bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+
+	return bcs_list

@@ -36,11 +36,11 @@ class PDAS(OptimizationAlgorithm):
 		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 
 		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
-		if self.inner_pdas == 'gradient_descent':
+		if self.inner_pdas in ['gradient_descent', 'gd']:
 			self.inner_solver = InnerGradientDescent(optimization_problem)
-		elif self.inner_pdas == 'cg':
+		elif self.inner_pdas in ['cg', 'conjugate_gradient']:
 			self.inner_solver = InnerCG(optimization_problem)
-		elif self.inner_pdas == 'lbfgs':
+		elif self.inner_pdas in ['lbfgs', 'bfgs']:
 			self.inner_solver = InnerLBFGS(optimization_problem)
 		elif self.inner_pdas == 'newton':
 			self.inner_solver = InnerNewton(optimization_problem)

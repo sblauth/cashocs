@@ -13,10 +13,11 @@ from petsc4py import PETSc
 import os
 import sys
 import uuid
+import configparser
 
 
 
-def MeshGen(mesh_file):
+def MeshGen(arg):
 	"""Imports a mesh file to fenics
 
 	Imports a mesh file in .xdmf format generated via gmsh and generates all
@@ -24,8 +25,10 @@ def MeshGen(mesh_file):
 
 	Parameters
 	----------
-	mesh_file : str
-		location of the "main" mesh file in .xdmf file format
+	arg : str or configparser.ConfigParser
+		either a string, in which case it corresponds to the location
+		of the mesh file in .xdmf file format,
+		or a config file, which has this path stored in its settings.
 
 	Returns
 	-------
@@ -48,6 +51,14 @@ def MeshGen(mesh_file):
 	start_time = time.time()
 	print('Importing mesh to FEniCS')
 	# Check for the file format
+
+	if type(arg) == str:
+		mesh_file = arg
+	elif type(arg) == configparser.ConfigParser:
+		mesh_file = arg.get('Mesh', 'mesh_file')
+	else:
+		raise SystemExit('Not a valid input for MeshGen')
+
 	if mesh_file[-5:] == '.xdmf':
 		file_string = mesh_file[:-5]
 	else:

@@ -40,8 +40,7 @@ class OptimalControlProblem:
 		state_forms : ufl.form.Form or list[ufl.form.Form]
 			the weak form of the state equation (user implemented). Can be either
 			a single UFL form, or a (ordered) list of UFL forms
-		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]]
-				   or dolfin.fem.dirichletbc.DirichletBC or None
+		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
 			If this is None, then no Dirichlet boundary conditions are imposed.
 		cost_functional_form : ufl.form.Form
@@ -58,8 +57,7 @@ class OptimalControlProblem:
 			the scalar products of the control space. Can either be None, a single UFL form, or a
 			(ordered) list of UFL forms. If None, the L^2(\Omega) product is used.
 			(default is None)
-		control_constraints : None or list[dolfin.function.function.Function] or list[float]
-							  or list[list[dolfin.function.function.Function]] or list[list[float]], optional
+		control_constraints : None or list[dolfin.function.function.Function] or list[float] or list[list[dolfin.function.function.Function]] or list[list[float]], optional
 			Box constraints posed on the control, None means that there are none (default is None).
 			The (inner) lists should contain two elements of the form [u_a, u_b], where u_a is the lower,
 			and u_b the upper bound.

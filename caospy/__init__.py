@@ -9,8 +9,8 @@ from .geometry import MeshGen, regular_mesh, regular_box_mesh
 from .nonlinear_solvers import NewtonSolver
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-from .utilities import create_config
+from .utilities import create_config, wrap_bcs
 
 
 
-__all__ = ['MeshGen', 'regular_mesh', 'regular_box_mesh', 'NewtonSolver', 'OptimalControlProblem', 'ShapeOptimizationProblem', 'create_config']
+__all__ = ['MeshGen', 'regular_mesh', 'regular_box_mesh', 'NewtonSolver', 'OptimalControlProblem', 'ShapeOptimizationProblem', 'create_config', 'wrap_bcs']

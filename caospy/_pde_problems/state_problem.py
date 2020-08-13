@@ -39,6 +39,7 @@ class StateProblem:
 		self.newton_rtol = self.config.getfloat('StateEquation', 'inner_newton_rtol')
 		self.newton_atol = self.config.getfloat('StateEquation', 'inner_newton_atol')
 
+		self.newton_atols = [1 for i in range(self.form_handler.state_dim)]
 
 		self.number_of_solves = 0
 		self.has_solution = False
@@ -75,10 +76,9 @@ class StateProblem:
 							fenics.assign(self.states[i], self.initial_guess[i])
 
 						self.states[i] = NewtonSolver(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i],
-													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=True)
+													  rtol=self.newton_rtol, atol=self.newton_atol, damped=True, verbose=False)
 
 			else:
-				newton_atols = [1 for i in range(self.form_handler.state_dim)]
 				for i in range(self.maxiter + 1):
 					res = 0.0
 					for j in range(self.form_handler.state_dim):
@@ -87,9 +87,9 @@ class StateProblem:
 						[bc.apply(res_j) for bc  in self.form_handler.bcs_list_ad[j]]
 
 						if self.number_of_solves==0 and i==0:
-							newton_atols[j] = res_j.norm('l2') * self.newton_atol
+							self.newton_atols[j] = res_j.norm('l2') * self.newton_atol
 							if res_j.norm('l2') == 0.0:
-								newton_atols[j] = self.newton_atol
+								self.newton_atols[j] = self.newton_atol
 
 						res += pow(res_j.norm('l2'), 2)
 
@@ -115,9 +115,9 @@ class StateProblem:
 						# 			 self.bcs_list[j], solver_parameters={'nonlinear_solver' : 'newton', 'newton_solver' :
 						# 													{'linear_solver' : 'mumps','relative_tolerance' : self.newton_rtol,'absolute_tolerance' : self.newton_atol}})
 						if self.initial_guess is not None:
-							fenics.assign(self.states[i], self.initial_guess[i])
+							fenics.assign(self.states[j], self.initial_guess[j])
 						self.states[j] = NewtonSolver(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
-													  rtol=np.minimum(0.9*res, 0.9), atol=newton_atols[j], damped=False, verbose=False)
+													  rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], damped=False, verbose=False)
 
 
 			if self.picard_verbose:
