@@ -6,8 +6,8 @@ Created on 20.04.20, 08:49
 
 import configparser
 from fenics import *
-from adpack import OptimalControlProblem, regular_mesh
-from adpack.utilities import summation
+from caospy import OptimalControlProblem, regular_mesh
+from caospy.utilities import summation
 import numpy as np
 import time
 

@@ -5,7 +5,7 @@ Created on 15/06/2020, 08.09
 """
 
 from fenics import *
-from adpack import ShapeOptimizationProblem
+from caospy import ShapeOptimizationProblem
 import numpy as np
 import configparser
 

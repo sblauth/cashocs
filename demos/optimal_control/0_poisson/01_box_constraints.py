@@ -5,7 +5,7 @@ Created on 11/08/2020, 15.13
 """
 
 from fenics import *
-import adpack
+import caospy
 import numpy as np
 
 
@@ -20,14 +20,14 @@ In this demo we investigate the "mother" optimal control problem
 	
 		and            u_a <= u <= u_b	in \Omega
 
-using adpack. The parameters for this problem are specified and commented in the parameter file at './config.ini'. 
+using caospy. The parameters for this problem are specified and commented in the parameter file at './config.ini'. 
 The difference to the previous problem is in the fact, that we now also consider L^\infty box constraints.
 """
 
 ### The initial setup is completely identical to our previous problem
 set_log_level(LogLevel.CRITICAL)
-config = adpack.create_config('./config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = adpack.regular_mesh(50)
+config = caospy.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -56,7 +56,7 @@ u_b = interpolate(Expression('50*x[0]', degree=1), V)
 
 ### We put them into a list, and into an optional argument of OptimalControlProblem, which is then solved.
 control_constraints = [u_a, u_b]
-optimization_problem = adpack.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=control_constraints)
+optimization_problem = caospy.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=control_constraints)
 optimization_problem.solve()
 
 ### Afterwards, we verify that the control constraints are indeed satisfied.

@@ -1,7 +1,7 @@
-A collection of python packages for optimization with partial differential equations.
+A **C**ontinuous **A**djoint-based **O**ptimal control and **S**hape optimization package for **P**ython (caospy)
 
 Overview / Contents
--  adpack (optimization package for fenics which generates adjoints automatically)
+-  caospy (optimization package for fenics which generates adjoints automatically)
 
 Setup (from ITWM)
 
@@ -13,7 +13,7 @@ Setup (from ITWM)
     
     `activate`
 
-- The git repository with the demos can be found under /p/tv/local/adpack
+- The git repository with the demos can be found under /p/tv/local/caospy
 
 - If you want to have a custom installation, you can clone the git repository yourself, but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)
     

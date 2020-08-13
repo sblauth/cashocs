@@ -5,7 +5,7 @@ Created on 11/08/2020, 15.44
 """
 
 from fenics import *
-import adpack
+import caospy
 import numpy as np
 
 
@@ -31,8 +31,8 @@ The parameters for this problem are specified and commented in the parameter fil
 
 ### The initial setup is completely identical to our previous problem
 set_log_level(LogLevel.CRITICAL)
-config = adpack.create_config('./config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = adpack.regular_mesh(50)
+config = caospy.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 ### Now, we define two state, adjoint, and control variables, where p and q are the adjoint states corresponding to y and z
@@ -80,6 +80,6 @@ v_b = float('inf')
 
 ### We put them into a list, and into an optional argument of OptimalControlProblem, which is then solved.
 control_constraints = [[u_a, u_b], [v_a, v_b]]
-optimization_problem = adpack.OptimalControlProblem(e, bcs, J, state_variables, control_variables, adjoint_variables, config, control_constraints=control_constraints)
+optimization_problem = caospy.OptimalControlProblem(e, bcs, J, state_variables, control_variables, adjoint_variables, config, control_constraints=control_constraints)
 optimization_problem.solve()
 

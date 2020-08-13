@@ -5,7 +5,7 @@ Created on 11/08/2020, 14.35
 """
 
 from fenics import *
-import adpack
+import caospy
 
 
 
@@ -17,19 +17,19 @@ In this demo we investigate the "mother" optimal control problem
 	s.t. - div ( grad ( y ) ) = u	in \Omega
 		 					y = 0	on \partial\Omega
 
-using adpack. The parameters for this problem are specified and commented in the parameter file at './config.ini'. 
+using caospy. The parameters for this problem are specified and commented in the parameter file at './config.ini'. 
 """
 
 ### Supress FEniCS default verbose output
 set_log_level(LogLevel.CRITICAL)
 
 ### load the config file
-config = adpack.create_config('./config.ini')
+config = caospy.create_config('./config.ini')
 
 ### Generate the mesh (via gmsh)
-# mesh, subdomains, boundaries, dx, ds, dS = adpack.MeshGen('../mesh/mesh.xdmf')
+# mesh, subdomains, boundaries, dx, ds, dS = caospy.MeshGen('../mesh/mesh.xdmf')
 ### Alternatively: Generate the mesh (via built-ins)
-mesh, subdomains, boundaries, dx, ds, dS = adpack.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
 
 ### Set up a function space with piecewise linear Lagrangian elements
 V = FunctionSpace(mesh, 'CG', 1)
@@ -59,5 +59,5 @@ alpha = 1e-6
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 
 ### Set up the optimization problem and solve it
-optimization_problem = adpack.OptimalControlProblem(e, bcs, J, y, u, p, config)
+optimization_problem = caospy.OptimalControlProblem(e, bcs, J, y, u, p, config)
 optimization_problem.solve()
