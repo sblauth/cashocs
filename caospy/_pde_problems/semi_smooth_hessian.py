@@ -19,7 +19,7 @@ class SemiSmoothHessianProblem:
 
 		Parameters
 		----------
-		form_handler : caospy._forms.FormHandler
+		form_handler : caospy._forms.ControlFormHandler
 			the FormHandler object for the optimization problem
 		gradient_problem : caospy._pde_problems.GradientProblem
 			the GradientProblem object (we need the gradient for the computation of the Hessian)
@@ -36,8 +36,8 @@ class SemiSmoothHessianProblem:
 		self.gradients = self.gradient_problem.gradients
 
 		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton')
-		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton')
-		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance')
+		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton', fallback=50)
+		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance', fallback=1e-10)
 
 		self.test_directions = self.form_handler.test_directions
 		self.residual1 = [fenics.Function(V) for V in self.form_handler.control_spaces]

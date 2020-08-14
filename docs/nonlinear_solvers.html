@@ -36,13 +36,14 @@ method, others might follow in the future.
 &#34;&#34;&#34;
 
 import fenics
+from petsc4py import PETSc
 
 
 
-def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True):
+def newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True, ksp=None):
         &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
 
-        A custom NewtonSolver class that includes damping
+        A custom newton_solve class that includes damping
         (based on a monotonicity test) and several fine tuning possibilities.
 
         The solver will stop either after the maximum number of iterations
@@ -82,6 +83,9 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
         verbose : bool, optional
                 Either true or false, gives updates about the iteration, if true
                 (default is true)
+        ksp : petsc4py.PETSc.KSP, optional
+                the PETSc ksp object used to solve the inner (linear) problem
+                if this is None (the default) it uses the direct solver MUMPS
 
         Returns
         -------
@@ -93,8 +97,17 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
                 &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
                 &#39;Newton Solver norm_type is neither l2 nor linf&#39;
-        
-        fenics.PETScOptions.set(&#39;mat_mumps_icntl_24&#39;, 1)
+
+        if ksp is None:
+                opts = fenics.PETScOptions
+                opts.clear()
+                opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
+                opts.set(&#39;pc_type&#39;, &#39;lu&#39;)
+                opts.set(&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;)
+                opts.set(&#39;mat_mumps_icntl_24&#39;, 1)
+
+                ksp = PETSc.KSP().create()
+                ksp.setFromOptions()
         
         dF = fenics.derivative(F, u)
         V = u.function_space()
@@ -110,7 +123,10 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
         bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
         [bc.homogenize() for bc in bcs_hom]
         
-        A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+        A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+        A.ident_zeros()
+        A = fenics.as_backend_type(A).mat()
+        b = fenics.as_backend_type(residuum).vec()
         
         res_0 = residuum.norm(norm_type)
         res = res_0
@@ -131,17 +147,16 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
                 lmbd = 1.0
                 breakdown = False
                 u_save.vector()[:] = u.vector()[:]
-                
-                fenics.solve(A, du.vector(), residuum, &#39;mumps&#39;)
-                # fenics.solve(A, du.vector(), residuum, &#39;umfpack&#39;)
-                
+
+                ksp.setOperators(A)
+                ksp.solve(b, du.vector().vec())
+
                 if damped:
                         while True:
                                 u.vector()[:] += lmbd*du.vector()[:]
                                 _, b = fenics.assemble_system(dF, -F, bcs_hom)
-                                
-                                fenics.solve(A, ddu.vector(), b, &#39;mumps&#39;)
-                                # fenics.solve(A, ddu.vector(), b, &#39;umfpack&#39;)
+                                b = fenics.as_backend_type(b).vec()
+                                ksp.solve(b, ddu.vector().vec())
                                 
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
@@ -162,7 +177,11 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
                 if iterations == max_iter:
                         raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
                 
-                A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+                A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+                A.ident_zeros()
+                A = fenics.as_backend_type(A).mat()
+                b = fenics.as_backend_type(residuum).vec()
+
                 [bc.apply(residuum) for bc in bcs_hom]
                 
                 res = residuum.norm(norm_type)
@@ -187,12 +206,12 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="caospy.nonlinear_solvers.NewtonSolver"><code class="name flex">
-<span>def <span class="ident">NewtonSolver</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True)</span>
+<dt id="caospy.nonlinear_solvers.newton_solve"><code class="name flex">
+<span>def <span class="ident">newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Damped Newton method for solving nonlinear PDEs.</p>
-<p>A custom NewtonSolver class that includes damping
+<p>A custom newton_solve class that includes damping
 (based on a monotonicity test) and several fine tuning possibilities.</p>
 <p>The solver will stop either after the maximum number of iterations
 have been performed or if the termination criterion is satisfied, i.e.,</p>
@@ -229,6 +248,9 @@ uses Newton-Raphson iteration (default is True)</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>Either true or false, gives updates about the iteration, if true
 (default is true)</dd>
+<dt><strong><code>ksp</code></strong> :&ensp;<code>petsc4py.PETSc.KSP</code>, optional</dt>
+<dd>the PETSc ksp object used to solve the inner (linear) problem
+if this is None (the default) it uses the direct solver MUMPS</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -239,10 +261,10 @@ uses Newton-Raphson iteration (default is True)</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True):
+<pre><code class="python">def newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True, ksp=None):
         &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
 
-        A custom NewtonSolver class that includes damping
+        A custom newton_solve class that includes damping
         (based on a monotonicity test) and several fine tuning possibilities.
 
         The solver will stop either after the maximum number of iterations
@@ -282,6 +304,9 @@ uses Newton-Raphson iteration (default is True)</dd>
         verbose : bool, optional
                 Either true or false, gives updates about the iteration, if true
                 (default is true)
+        ksp : petsc4py.PETSc.KSP, optional
+                the PETSc ksp object used to solve the inner (linear) problem
+                if this is None (the default) it uses the direct solver MUMPS
 
         Returns
         -------
@@ -293,8 +318,17 @@ uses Newton-Raphson iteration (default is True)</dd>
                 &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
                 &#39;Newton Solver norm_type is neither l2 nor linf&#39;
-        
-        fenics.PETScOptions.set(&#39;mat_mumps_icntl_24&#39;, 1)
+
+        if ksp is None:
+                opts = fenics.PETScOptions
+                opts.clear()
+                opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
+                opts.set(&#39;pc_type&#39;, &#39;lu&#39;)
+                opts.set(&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;)
+                opts.set(&#39;mat_mumps_icntl_24&#39;, 1)
+
+                ksp = PETSc.KSP().create()
+                ksp.setFromOptions()
         
         dF = fenics.derivative(F, u)
         V = u.function_space()
@@ -310,7 +344,10 @@ uses Newton-Raphson iteration (default is True)</dd>
         bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
         [bc.homogenize() for bc in bcs_hom]
         
-        A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+        A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+        A.ident_zeros()
+        A = fenics.as_backend_type(A).mat()
+        b = fenics.as_backend_type(residuum).vec()
         
         res_0 = residuum.norm(norm_type)
         res = res_0
@@ -331,17 +368,16 @@ uses Newton-Raphson iteration (default is True)</dd>
                 lmbd = 1.0
                 breakdown = False
                 u_save.vector()[:] = u.vector()[:]
-                
-                fenics.solve(A, du.vector(), residuum, &#39;mumps&#39;)
-                # fenics.solve(A, du.vector(), residuum, &#39;umfpack&#39;)
-                
+
+                ksp.setOperators(A)
+                ksp.solve(b, du.vector().vec())
+
                 if damped:
                         while True:
                                 u.vector()[:] += lmbd*du.vector()[:]
                                 _, b = fenics.assemble_system(dF, -F, bcs_hom)
-                                
-                                fenics.solve(A, ddu.vector(), b, &#39;mumps&#39;)
-                                # fenics.solve(A, ddu.vector(), b, &#39;umfpack&#39;)
+                                b = fenics.as_backend_type(b).vec()
+                                ksp.solve(b, ddu.vector().vec())
                                 
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
@@ -362,7 +398,11 @@ uses Newton-Raphson iteration (default is True)</dd>
                 if iterations == max_iter:
                         raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
                 
-                A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+                A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+                A.ident_zeros()
+                A = fenics.as_backend_type(A).mat()
+                b = fenics.as_backend_type(residuum).vec()
+
                 [bc.apply(residuum) for bc in bcs_hom]
                 
                 res = residuum.norm(norm_type)
@@ -398,7 +438,7 @@ uses Newton-Raphson iteration (default is True)</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="caospy.nonlinear_solvers.NewtonSolver" href="#caospy.nonlinear_solvers.NewtonSolver">NewtonSolver</a></code></li>
+<li><code><a title="caospy.nonlinear_solvers.newton_solve" href="#caospy.nonlinear_solvers.newton_solve">newton_solve</a></code></li>
 </ul>
 </li>
 </ul>

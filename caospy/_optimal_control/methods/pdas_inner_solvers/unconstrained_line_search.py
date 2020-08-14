@@ -29,9 +29,9 @@ class UnconstrainedLineSearch:
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
 		self.form_handler = self.optimization_problem.form_handler
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial', fallback=1.0)
+		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
+		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2.0)
 		self.armijo_stepsize_initial = self.stepsize
 
 		self.controls_temp = self.optimization_algorithm.controls_temp
@@ -40,9 +40,10 @@ class UnconstrainedLineSearch:
 		self.controls = self.optimization_algorithm.controls
 		self.gradients = self.optimization_algorithm.gradients
 
-		self.is_newton_like = self.config.get('OptimizationRoutine', 'algorithm') in ['lbfgs']
-		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton', 'semi_smooth_newton']
-		self.is_steepest_descent = self.config.get('OptimizationRoutine', 'algorithm') in ['gradient_descent']
+		algorithm = self.config.get('OptimizationRoutine', 'algorithm')
+		self.is_newton_like = algorithm in ['lbfgs']
+		self.is_newton = algorithm in ['newton', 'semi_smooth_newton']
+		self.is_steepest_descent = algorithm in ['gradient_descent']
 		if self.is_newton:
 			self.stepsize = 1.0
 

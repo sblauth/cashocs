@@ -11,6 +11,7 @@ import configparser
 import os
 
 
+
 def summation(x):
 	"""Sums up elements of a list.
 
@@ -196,3 +197,50 @@ def wrap_bcs(function_space, value, boundaries, idcs):
 		bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
 
 	return bcs_list
+
+
+
+class Interpolator:
+	"""Creates an interpolator class between two function spaces
+
+	This is very useful, if multiple interpolations have to be
+	carried out between the same spaces, which is made significantly
+	faster by computing the corresponding matrix.
+	The function spaces can even be defined on different meshes.
+	"""
+
+	def __init__(self, V, W):
+		"""Initializes the object
+
+		Parameters
+		----------
+		V : dolfin.function.functionspace.FunctionSpace
+			the function space whose objects shall be interpolated
+		W : dolfin.function.functionspace.FunctionSpace
+			the space into which they shall be interpolated
+		"""
+
+		self.V = V
+		self.W = W
+		self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
+
+	def interpolate(self, u):
+		"""Interpolates function to target space
+
+		Parameters
+		----------
+		u : dolfin.function.function.Function
+			The function that shall be interpolated
+
+		Returns
+		-------
+		dolfin.function.function.Function
+			The result of the interpolation
+		"""
+
+		assert u.function_space() == self.V, 'input does not belong to the correct function space'
+		v = fenics.Function(self.W)
+		v.vector()[:] = (self.transfer_matrix*u.vector())[:]
+
+		return v

@@ -20,7 +20,7 @@ class UnconstrainedHessianProblem:
 
 		Parameters
 		----------
-		form_handler : caospy._forms.FormHandler
+		form_handler : caospy._forms.ControlFormHandler
 			the FormHandler object for the optimization problem
 		gradient_problem : caospy._pde_problems.GradientProblem
 			the corresponding GradientProblem object
@@ -33,9 +33,9 @@ class UnconstrainedHessianProblem:
 		self.gradients = self.gradient_problem.gradients
 		self.reduced_gradient = [fenics.Function(self.form_handler.control_spaces[j]) for j in range(len(self.gradients))]
 
-		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton')
-		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton')
-		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance')
+		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton', fallback='cr')
+		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton', fallback=50)
+		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance', fallback=1e-10)
 
 		self.test_directions = self.form_handler.test_directions
 		self.residual = [fenics.Function(V) for V in self.form_handler.control_spaces]
@@ -59,10 +59,10 @@ class UnconstrainedHessianProblem:
 
 		self.controls = self.form_handler.controls
 
-		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol')
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol')
-		self.maxiter = self.config.getint('StateEquation', 'picard_iter')
-		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose')
+		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
+		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-12)
+		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
+		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
 
 		self.no_sensitivity_solves = 0
 
@@ -87,7 +87,7 @@ class UnconstrainedHessianProblem:
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-		if not self.config.getboolean('StateEquation', 'picard_iteration'):
+		if not self.form_handler.state_is_picard:
 
 			for i in range(self.state_dim):
 				fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])

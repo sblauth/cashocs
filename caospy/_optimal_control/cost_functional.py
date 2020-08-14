@@ -20,7 +20,7 @@ class ReducedCostFunctional:
 		
 		Parameters
 		----------
-		form_handler : caospy._forms.FormHandler
+		form_handler : caospy._forms.ControlFormHandler
 			the FormHandler object for the optimization problem
 		state_problem : caospy._pde_problems.StateProblem
 			the StateProblem object corresponding to the state system

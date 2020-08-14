@@ -14,7 +14,7 @@ class HessianProblem:
 
 	Attributes
 	----------
-	form_handler : caospy._forms.FormHandler
+	form_handler : caospy._forms.ControlFormHandler
 		the FormHandler object of the problem, which contains the necessary UFL forms
 
 	gradient_problem : caospy._pde_problems.GradientProblem
@@ -95,7 +95,7 @@ class HessianProblem:
 		
 		Parameters
 		----------
-		form_handler : caospy._forms.FormHandler
+		form_handler : caospy._forms.ControlFormHandler
 			the FormHandler object for the optimization problem
 
 		gradient_problem : caospy._pde_problems.GradientProblem
@@ -163,7 +163,7 @@ class HessianProblem:
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-		if not self.config.getboolean('StateEquation', 'picard_iteration'):
+		if not self.config.getboolean('StateEquation', 'picard_iteration', fallback=False):
 
 			for i in range(self.state_dim):
 				fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])

@@ -36,11 +36,13 @@ class OptimizationAlgorithm:
 		"""
 
 		self.line_search_broken = False
+		self.has_curvature_info = False
 
 		self.optimization_problem = optimization_problem
 		self.form_handler = self.optimization_problem.form_handler
 		self.state_problem = self.optimization_problem.state_problem
-		self.config = self.state_problem.config
+		self.config = self.optimization_problem.config
+
 		self.adjoint_problem = self.optimization_problem.adjoint_problem
 
 		self.gradient_problem = self.optimization_problem.gradient_problem
@@ -62,13 +64,15 @@ class OptimizationAlgorithm:
 		self.output_dict['gradient_norm'] = []
 		self.output_dict['stepsize'] = []
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
-		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results')
-		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol')
-		self.atol = self.config.getfloat('OptimizationRoutine', 'atol')
-		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations')
-		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit')
-		self.save_pvd = self.config.getboolean('OptimizationRoutine', 'save_pvd')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
+		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results', fallback=True)
+		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-2)
+		self.atol = self.config.getfloat('OptimizationRoutine', 'atol', fallback=0.0)
+		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
+		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
+		self.save_pvd = self.config.getboolean('OptimizationRoutine', 'save_pvd', fallback=False)
+
+
 
 		if self.save_pvd:
 			self.state_pvd_list = []
@@ -124,6 +128,14 @@ class OptimizationAlgorithm:
 		-------
 		None
 		"""
+
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			print('')
 
 		self.output_dict['state_solves'] = self.state_problem.number_of_solves
 		self.output_dict['adjoint_solves'] = self.adjoint_problem.number_of_solves

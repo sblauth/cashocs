@@ -26,9 +26,7 @@ class GradientDescent(OptimizationAlgorithm):
 		
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
 		self.line_search = ArmijoLineSearch(self)
-		self.has_curvature_info = False
 
 
 	
@@ -49,7 +47,7 @@ class GradientDescent(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
@@ -82,11 +80,3 @@ class GradientDescent(OptimizationAlgorithm):
 					break
 				else:
 					raise SystemExit('Maximum number of iterations exceeded.')
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')

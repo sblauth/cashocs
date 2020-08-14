@@ -43,6 +43,7 @@ import configparser
 import os
 
 
+
 def summation(x):
         &#34;&#34;&#34;Sums up elements of a list.
 
@@ -227,7 +228,54 @@ def wrap_bcs(function_space, value, boundaries, idcs):
         for i in idcs:
                 bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
 
-        return bcs_list</code></pre>
+        return bcs_list
+
+
+
+class Interpolator:
+        &#34;&#34;&#34;Creates an interpolator class between two function spaces
+
+        This is very useful, if multiple interpolations have to be
+        carried out between the same spaces, which is made significantly
+        faster by computing the corresponding matrix.
+        The function spaces can even be defined on different meshes.
+        &#34;&#34;&#34;
+
+        def __init__(self, V, W):
+                &#34;&#34;&#34;Initializes the object
+
+                Parameters
+                ----------
+                V : dolfin.function.functionspace.FunctionSpace
+                        the function space whose objects shall be interpolated
+                W : dolfin.function.functionspace.FunctionSpace
+                        the space into which they shall be interpolated
+                &#34;&#34;&#34;
+
+                self.V = V
+                self.W = W
+                self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
+
+        def interpolate(self, u):
+                &#34;&#34;&#34;Interpolates function to target space
+
+                Parameters
+                ----------
+                u : dolfin.function.function.Function
+                        The function that shall be interpolated
+
+                Returns
+                -------
+                dolfin.function.function.Function
+                        The result of the interpolation
+                &#34;&#34;&#34;
+
+                assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+                v = fenics.Function(self.W)
+                v.vector()[:] = (self.transfer_matrix*u.vector())[:]
+
+                return v</code></pre>
 </details>
 </section>
 <section>
@@ -506,6 +554,120 @@ onto which the Dirichlet boundary conditions should be applied to</dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="caospy.utilities.Interpolator"><code class="flex name class">
+<span>class <span class="ident">Interpolator</span></span>
+<span>(</span><span>V, W)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates an interpolator class between two function spaces</p>
+<p>This is very useful, if multiple interpolations have to be
+carried out between the same spaces, which is made significantly
+faster by computing the corresponding matrix.
+The function spaces can even be defined on different meshes.</p>
+<p>Initializes the object</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>V</code></strong> :&ensp;<code>dolfin.function.functionspace.FunctionSpace</code></dt>
+<dd>the function space whose objects shall be interpolated</dd>
+<dt><strong><code>W</code></strong> :&ensp;<code>dolfin.function.functionspace.FunctionSpace</code></dt>
+<dd>the space into which they shall be interpolated</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Interpolator:
+        &#34;&#34;&#34;Creates an interpolator class between two function spaces
+
+        This is very useful, if multiple interpolations have to be
+        carried out between the same spaces, which is made significantly
+        faster by computing the corresponding matrix.
+        The function spaces can even be defined on different meshes.
+        &#34;&#34;&#34;
+
+        def __init__(self, V, W):
+                &#34;&#34;&#34;Initializes the object
+
+                Parameters
+                ----------
+                V : dolfin.function.functionspace.FunctionSpace
+                        the function space whose objects shall be interpolated
+                W : dolfin.function.functionspace.FunctionSpace
+                        the space into which they shall be interpolated
+                &#34;&#34;&#34;
+
+                self.V = V
+                self.W = W
+                self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
+
+        def interpolate(self, u):
+                &#34;&#34;&#34;Interpolates function to target space
+
+                Parameters
+                ----------
+                u : dolfin.function.function.Function
+                        The function that shall be interpolated
+
+                Returns
+                -------
+                dolfin.function.function.Function
+                        The result of the interpolation
+                &#34;&#34;&#34;
+
+                assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+                v = fenics.Function(self.W)
+                v.vector()[:] = (self.transfer_matrix*u.vector())[:]
+
+                return v</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="caospy.utilities.Interpolator.interpolate"><code class="name flex">
+<span>def <span class="ident">interpolate</span></span>(<span>self, u)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Interpolates function to target space</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
+<dd>The function that shall be interpolated</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dolfin.function.function.Function</code></dt>
+<dd>The result of the interpolation</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def interpolate(self, u):
+        &#34;&#34;&#34;Interpolates function to target space
+
+        Parameters
+        ----------
+        u : dolfin.function.function.Function
+                The function that shall be interpolated
+
+        Returns
+        -------
+        dolfin.function.function.Function
+                The result of the interpolation
+        &#34;&#34;&#34;
+
+        assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+        v = fenics.Function(self.W)
+        v.vector()[:] = (self.transfer_matrix*u.vector())[:]
+
+        return v</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -526,6 +688,16 @@ onto which the Dirichlet boundary conditions should be applied to</dd>
 <li><code><a title="caospy.utilities.multiplication" href="#caospy.utilities.multiplication">multiplication</a></code></li>
 <li><code><a title="caospy.utilities.summation" href="#caospy.utilities.summation">summation</a></code></li>
 <li><code><a title="caospy.utilities.wrap_bcs" href="#caospy.utilities.wrap_bcs">wrap_bcs</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="caospy.utilities.Interpolator" href="#caospy.utilities.Interpolator">Interpolator</a></code></h4>
+<ul class="">
+<li><code><a title="caospy.utilities.Interpolator.interpolate" href="#caospy.utilities.Interpolator.interpolate">interpolate</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

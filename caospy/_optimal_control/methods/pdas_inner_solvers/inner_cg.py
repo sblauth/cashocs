@@ -29,8 +29,8 @@ class InnerCG(OptimizationAlgorithm):
 
 		self.line_search = UnconstrainedLineSearch(self)
 
-		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas')
-		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance')
+		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas', fallback=50)
+		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance', fallback=1e-2)
 		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
@@ -39,15 +39,13 @@ class InnerCG(OptimizationAlgorithm):
 		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
-		self.armijo_stepsize_initial = self.stepsize
 		self.armijo_broken = False
 
-		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method')
-		self.cg_use_restart = self.config.getboolean('OptimizationRoutine', 'cg_use_restart')
-		self.cg_restart_its = self.config.getint('OptimizationRoutine', 'cg_restart_its')
+		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method', fallback='FR')
+		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart', fallback=False)
+		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', fallback=10)
+		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart', fallback=False)
+		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol', fallback=0.25)
 
 
 

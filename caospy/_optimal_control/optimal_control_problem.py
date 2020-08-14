@@ -5,7 +5,8 @@ Created on 26/02/2020, 11.13
 """
 
 import fenics
-from .._forms import Lagrangian, FormHandler
+from ..optimization_problem import OptimizationProblem
+from .._forms import Lagrangian, ControlFormHandler
 from .._pde_problems import (StateProblem, AdjointProblem, GradientProblem,
 							 HessianProblem, SemiSmoothHessianProblem, UnconstrainedHessianProblem)
 from .._optimal_control import ReducedCostFunctional
@@ -14,7 +15,7 @@ import numpy as np
 
 
 
-class OptimalControlProblem:
+class OptimalControlProblem(OptimizationProblem):
 	"""Implements an optimal control problem
 
 	This class is used to define an optimal control problem, and also to solve
@@ -72,80 +73,8 @@ class OptimalControlProblem:
 		in the "demos" folder.
 		"""
 
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess)
 		### Overloading, such that we do not have to use lists for a single state and a single control
-		### state_forms
-		try:
-			if type(state_forms) == list and len(state_forms) > 0:
-				for i in range(len(state_forms)):
-					if state_forms[i].__module__=='ufl.form' and type(state_forms[i]).__name__=='Form':
-						pass
-					else:
-						raise SystemExit('state_forms have to be ufl forms')
-				self.state_forms = state_forms
-			elif state_forms.__module__ == 'ufl.form' and type(state_forms).__name__ == 'Form':
-				self.state_forms = [state_forms]
-			else:
-				raise SystemExit('State forms have to be ufl forms')
-		except:
-			raise SystemExit('Type of state_forms is wrong.')
-		self.state_dim = len(self.state_forms)
-
-		### bcs_list
-		try:
-			if bcs_list == [] or bcs_list is None:
-				self.bcs_list = []
-				for i in range(self.state_dim):
-					self.bcs_list.append([])
-			elif type(bcs_list) == list and len(bcs_list) > 0:
-				if type(bcs_list[0]) == list:
-					for i in range(len(bcs_list)):
-						if type(bcs_list[i]) == list:
-							pass
-						else:
-							raise SystemExit('bcs_list has inconsistent types.')
-					self.bcs_list = bcs_list
-
-				elif bcs_list[0].__module__ == 'dolfin.fem.dirichletbc' and type(bcs_list[0]).__name__ == 'DirichletBC':
-					for i in range(len(bcs_list)):
-						if bcs_list[i].__module__=='dolfin.fem.dirichletbc' and type(bcs_list[i]).__name__=='DirichletBC':
-							pass
-						else:
-							raise SystemExit('bcs_list has inconsistent types.')
-					self.bcs_list = [bcs_list]
-			elif bcs_list.__module__ == 'dolfin.fem.dirichletbc' and type(bcs_list).__name__ == 'DirichletBC':
-				self.bcs_list = [[bcs_list]]
-			else:
-				raise SystemExit('Type of bcs_list is wrong.')
-		except:
-			raise SystemExit('Type of bcs_list is wrong.')
-
-		### cost_functional_form
-		try:
-			if cost_functional_form.__module__ == 'ufl.form' and type(cost_functional_form).__name__ == 'Form':
-				self.cost_functional_form = cost_functional_form
-			else:
-				raise SystemExit('cost_functional_form has to be a ufl form')
-		except:
-			raise SystemExit('Type of cost_functional_form is wrong.')
-
-		### states
-		try:
-			if type(states) == list and len(states) > 0:
-				for i in range(len(states)):
-					if states[i].__module__ == 'dolfin.function.function' and type(states[i]).__name__ == 'Function':
-						pass
-					else:
-						raise SystemExit('states have to be fenics Functions.')
-
-				self.states = states
-
-			elif states.__module__ == 'dolfin.function.function' and type(states).__name__ == 'Function':
-				self.states = [states]
-			else:
-				raise SystemExit('Type of states is wrong.')
-		except:
-			raise SystemExit('Type of states is wrong.')
-
 		### controls
 		try:
 			if type(controls) == list and len(controls) > 0:
@@ -165,31 +94,6 @@ class OptimalControlProblem:
 			raise SystemExit('Type of controls is wrong.')
 
 		self.control_dim = len(self.controls)
-		
-		### adjoints
-		try:
-			if type(adjoints) == list and len(adjoints) > 0:
-				for i in range(len(adjoints)):
-					if adjoints[i].__module__ == 'dolfin.function.function' and type(adjoints[i]).__name__ == 'Function':
-						pass
-					else:
-						raise SystemExit('adjoints have to fenics Functions.')
-
-				self.adjoints = adjoints
-
-			elif adjoints.__module__ == 'dolfin.function.function' and type(adjoints).__name__ == 'Function':
-				self.adjoints = [adjoints]
-			else:
-				raise SystemExit('Type of adjoints is wrong.')
-		except:
-			raise SystemExit('Type of adjoints is wrong.')
-
-		### config
-		if config.__module__ == 'configparser' and type(config).__name__ == 'ConfigParser':
-			self.config = config
-		else:
-			raise SystemExit('config has to be of configparser.ConfigParser type')
-
 
 		### riesz_scalar_products
 		if riesz_scalar_products is None:
@@ -270,32 +174,16 @@ class OptimalControlProblem:
 
 			self.control_constraints.append([lower_bound, upper_bound])
 
-
-		if type(self.control_constraints[0][0]) in [float, int]:
-			temp_constraints = self.control_constraints[:]
-			self.control_constraints = []
-			for i, control in enumerate(self.controls):
-				u_a = fenics.Function(control.function_space())
-				u_a.vector()[:] = temp_constraints[i][0]
-				u_b = fenics.Function(control.function_space())
-				u_b.vector()[:] = temp_constraints[i][1]
-				self.control_constraints.append([u_a, u_b])
-
 		### Check whether the control constraints are feasible
-		for pair in self.control_constraints:
+		for idx, pair in enumerate(self.control_constraints):
 			assert np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]), 'the lower bound must always be smaller than the upper bound'
 
-		### initial guess
-		if initial_guess is None:
-			self.initial_guess = initial_guess
-		else:
-			try:
-				if type(initial_guess) == list:
-					self.initial_guess = initial_guess
-				elif initial_guess.__module__ == 'dolfin.function.function' and type(initial_guess).__name__ == 'Function':
-					self.initial_guess = [initial_guess]
-			except:
-				raise SystemExit('Initial guess has to be a list of functions')
+			if np.max(pair[0].vector()[:]) == float('-inf') and np.min(pair[1].vector()[:]) == float('inf'):
+				# no control constraint for this component
+				pass
+			else:
+				assert self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1, \
+					'Control constraints are only implemented for linear Lagrange elements'
 
 		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
 		assert len(self.riesz_scalar_products) == self.control_dim, 'Length of controls does not match'
@@ -307,7 +195,7 @@ class OptimalControlProblem:
 		### end overloading
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.riesz_scalar_products, self.control_constraints)
+		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.riesz_scalar_products, self.control_constraints)
 
 		self.state_spaces = self.form_handler.state_spaces
 		self.control_spaces = self.form_handler.control_spaces
@@ -318,12 +206,14 @@ class OptimalControlProblem:
 		self.state_problem = StateProblem(self.form_handler, self.initial_guess)
 		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
-		
-		if self.config.get('OptimizationRoutine', 'algorithm') == 'newton':
+
+		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
+
+		if self.algorithm == 'newton':
 			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-		if self.config.get('OptimizationRoutine', 'algorithm') == 'semi_smooth_newton':
+		if self.algorithm == 'semi_smooth_newton':
 			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
-		if self.config.get('OptimizationRoutine', 'algorithm') == 'pdas':
+		if self.algorithm == 'pdas':
 			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
@@ -333,7 +223,7 @@ class OptimalControlProblem:
 
 
 
-	def stationary_measure_squared(self):
+	def _stationary_measure_squared(self):
 		"""Computes the stationary measure (squared) corresponding to box-constraints
 
 		In case there are no box constraints this reduces to the classical gradient
@@ -369,8 +259,6 @@ class OptimalControlProblem:
 		None
 		"""
 		
-		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
-		
 		if self.algorithm in ['gd', 'gradient_descent']:
 			self.solver = GradientDescent(self)
 		elif self.algorithm in ['lbfgs', 'bfgs']:
@@ -388,3 +276,22 @@ class OptimalControlProblem:
 		
 		self.solver.run()
 		self.solver.finalize()
+
+
+
+	def compute_gradient(self):
+		"""Solves the Riesz problem to determine the gradient(s)
+
+		This can be used for debugging, or code validation.
+		The necessary solutions of the state and adjoint systems
+		are carried out automatically.
+
+		Returns
+		-------
+		list[dolfin.function.function.Function]
+			a list consisting of the (components) of the gradient
+		"""
+
+		self.gradient_problem.solve()
+
+		return self.gradients

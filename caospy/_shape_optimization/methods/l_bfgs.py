@@ -29,9 +29,8 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		self.temp = fenics.Function(self.shape_form_handler.deformation_space)
 
-		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors')
-		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors', fallback=5)
+		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling', fallback=True)
 
 		self.has_curvature_info = False
 
@@ -185,17 +184,3 @@ class LBFGS(ShapeOptimizationAlgorithm):
 					self.history_s.pop()
 					self.history_y.pop()
 					self.history_rho.pop()
-
-
-
-
-		# if not self.line_search_broken:
-		# 	self.print_results()
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')

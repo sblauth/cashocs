@@ -11,6 +11,9 @@ from ..._shape_optimization import ShapeOptimizationAlgorithm, ArmijoLineSearch
 
 
 class GradientDescent(ShapeOptimizationAlgorithm):
+	"""A gradient descent method for shape optimization
+
+	"""
 
 	def __init__(self, optimization_problem):
 		"""A gradient descent method to solve the optimization problem
@@ -23,7 +26,7 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 
 		ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
 		self.line_search = ArmijoLineSearch(self)
 		self.has_curvature_info = False
 
@@ -81,11 +84,3 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 					break
 				else:
 					raise SystemExit('Maximum number of iterations exceeded.')
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')

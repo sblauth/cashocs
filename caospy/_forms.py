@@ -34,7 +34,7 @@ class Lagrangian:
 
 	See Also
 	--------
-	FormHandler : Derives the adjoint and gradient equations for optimal control problems
+	ControlFormHandler : Derives the adjoint and gradient equations for optimal control problems
 	ShapeFormHandler : Derives the adjoint equations and shape derivatives for
 		shape optimization problems
 	"""
@@ -61,6 +61,171 @@ class Lagrangian:
 
 
 class FormHandler:
+	"""Super class for UFL form manipulation
+
+	This is subclassed by specific form handlers for either
+	optimal control or shape optimization. The base class is
+	used to determine common objects and to derive the UFL forms
+	for the state and adjoint systems.
+
+	"""
+
+	def __init__(self, lagrangian, bcs_list, states, adjoints, config):
+		"""Initializes the form handler
+
+		Parameters
+		----------
+		lagrangian : caospy._forms.Lagrangian
+			the lagrangian of the optimization problem
+		bcs_list : list[list[dolfin.fem.dirichletbc.DirichletBC]]
+			the list of DirichletBCs for the state equation
+		states : list[dolfin.function.function.Function]
+			the function that acts as the state variable
+		adjoints : list[dolfin.function.function.Function]
+			the function that acts as the adjoint variable
+		config : configparser.ConfigParser
+			the configparser object of the config file
+		"""
+
+		# Initialize the attributes from the arguments
+		self.lagrangian = lagrangian
+		self.bcs_list = bcs_list
+		self.states = states
+		self.adjoints = adjoints
+		self.config = config
+
+		# Further initializations
+		self.cost_functional_form = self.lagrangian.cost_functional_form
+		self.state_forms = self.lagrangian.state_forms
+
+		self.state_dim = len(self.states)
+
+		self.state_spaces = [x.function_space() for x in self.states]
+		self.adjoint_spaces = [x.function_space() for x in self.adjoints]
+
+		# Test if state_spaces coincide with adjoint_spaces
+		if self.state_spaces == self.adjoint_spaces:
+			self.state_adjoint_equal_spaces = True
+		else:
+			self.state_adjoint_equal_spaces = False
+
+		self.mesh = self.state_spaces[0].mesh()
+		self.dx = fenics.Measure('dx', self.mesh)
+
+		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
+		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
+
+		self.trial_functions_adjoint = [fenics.TrialFunction(V) for V in self.adjoint_spaces]
+		self.test_functions_adjoint = [fenics.TestFunction(V) for V in self.adjoint_spaces]
+
+		self.state_is_linear = self.config.getboolean('StateEquation', 'is_linear', fallback = False)
+		self.state_is_picard = self.config.getboolean('StateEquation', 'picard_iteration', fallback=False)
+		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
+		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+
+		self.__compute_state_equations()
+		self.__compute_adjoint_equations()
+
+
+
+	def __compute_state_equations(self):
+		"""Calculates the weak form of the state equation for the use with fenics
+
+		Returns
+		-------
+		None
+		"""
+
+		if self.state_is_linear and not self.state_is_picard:
+			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
+																 self.adjoints[i] : self.test_functions_state[i]})
+								   for i in range(self.state_dim)]
+
+		else:
+			self.state_eq_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i])
+								   for i in range(self.state_dim)]
+
+		if self.state_is_picard:
+			self.state_picard_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i])
+									   for i in range(self.state_dim)]
+
+		if self.state_is_linear:
+			self.state_eq_forms_lhs = []
+			self.state_eq_forms_rhs = []
+			for i in range(self.state_dim):
+				a, L = fenics.system(self.state_eq_forms[i])
+				self.state_eq_forms_lhs.append(a)
+				self.state_eq_forms_rhs.append(L)
+
+
+
+	def __compute_adjoint_equations(self):
+		"""Calculates the weak form of the adjoint equation for use with fenics
+
+		Returns
+		-------
+		None
+		"""
+
+		# Use replace -> derivative to speed up computations
+		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form,
+											  {self.adjoints[i] : self.trial_functions_adjoint[i]})
+									  for i in range(self.state_dim)]
+
+		if self.state_is_picard:
+			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
+
+		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
+		self.adjoint_eq_lhs = []
+		self.adjoint_eq_rhs = []
+
+		for i in range(self.state_dim):
+			a, L = fenics.system(self.adjoint_eq_forms[i])
+			self.adjoint_eq_lhs.append(a)
+			self.adjoint_eq_rhs.append(L)
+
+		# Compute the  adjoint boundary conditions
+		if self.state_adjoint_equal_spaces:
+			self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
+			[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
+		else:
+			def get_subdx(V, idx, ls):
+				if V.id()==idx:
+					return ls
+				if V.num_sub_spaces() > 1:
+					for i in range(V.num_sub_spaces()):
+						ans = get_subdx(V.sub(i), idx, ls + [i])
+						if ans is not None:
+							return ans
+				else:
+					return None
+
+			self.bcs_list_ad = [[1 for bc in range(len(self.bcs_list[i]))] for i in range(self.state_dim)]
+
+			for i in range(self.state_dim):
+				for j, bc in enumerate(self.bcs_list[i]):
+					idx = bc.function_space().id()
+					subdx = get_subdx(self.state_spaces[i], idx, ls=[])
+					W = self.adjoint_spaces[i]
+					for num in subdx:
+						W = W.sub(num)
+					shape = W.ufl_element().value_shape()
+					try:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.domain_args[0], bc.domain_args[1])
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.domain_args[0], bc.domain_args[1])
+					except AttributeError:
+						if shape == ():
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.sub_domain)
+						else:
+							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.sub_domain)
+
+
+
+
+
+class ControlFormHandler(FormHandler):
 	"""Class for UFL form manipulation
 
 	This is used to symbolically (via UFL) derive the corresponding
@@ -75,7 +240,7 @@ class FormHandler:
 	"""
 
 	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints):
-		"""Initializes the FormHandler class
+		"""Initializes the ControlFormHandler class
 
 		Parameters
 		----------
@@ -97,49 +262,22 @@ class FormHandler:
 			the control constraints of the problem
 		"""
 
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config)
+
 		# Initialize the attributes from the arguments
-		self.lagrangian = lagrangian
-		self.bcs_list = bcs_list
-		self.states = states
 		self.controls = controls
-		self.adjoints = adjoints
-		self.config = config
 		self.riesz_scalar_products = riesz_scalar_products
 		self.control_constraints = control_constraints
-
-		# Further initializations
-		self.cost_functional_form = self.lagrangian.cost_functional_form
-		self.state_forms = self.lagrangian.state_forms
 		
-		self.state_dim = len(self.states)
 		self.control_dim = len(self.controls)
-		
-		self.state_spaces = [x.function_space() for x in self.states]
 		self.control_spaces = [x.function_space() for x in self.controls]
-		self.adjoint_spaces = [x.function_space() for x in self.adjoints]
-
-		# Test if state_spaces coincide with adjoint_spaces
-		if self.state_spaces == self.adjoint_spaces:
-			self.state_adjoint_equal_spaces = True
-		else:
-			self.state_adjoint_equal_spaces = False
-
-		self.mesh = self.state_spaces[0].mesh()
-		self.dx = fenics.Measure('dx', self.mesh)
 
 		# Define the necessary functions
 		self.states_prime = [fenics.Function(V) for V in self.state_spaces]
 		self.adjoints_prime = [fenics.Function(V) for V in self.adjoint_spaces]
 		
 		self.hessian_actions = [fenics.Function(V) for V in self.control_spaces]
-
 		self.test_directions = [fenics.Function(V) for V in self.control_spaces]
-		
-		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
-		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
-
-		self.trial_functions_adjoint = [fenics.TrialFunction(V) for V in self.adjoint_spaces]
-		self.test_functions_adjoint = [fenics.TestFunction(V) for V in self.adjoint_spaces]
 
 		self.trial_functions_control = [fenics.TrialFunction(V) for V in self.control_spaces]
 		self.test_functions_control = [fenics.TestFunction(V) for V in self.control_spaces]
@@ -147,26 +285,21 @@ class FormHandler:
 		self.temp = [fenics.Function(V) for V in self.control_spaces]
 
 		# Compute the necessary equations
-		self.__compute_state_equations()
-		self.__compute_adjoint_equations()
 		self.__compute_gradient_equations()
 
-		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
-
 		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or \
-				(self.opt_algo == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
+				(self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
 			self.__compute_newton_forms()
 
 		# Initialize the scalar products
 		fe_scalar_product_matrices = [fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
-		self.scalar_product_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
 		[fe_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
 		self.riesz_projection_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
 
 		# Test for symmetry of the scalar products
 		for i in range(self.control_dim):
-			if not self.scalar_product_matrices[i].isSymmetric():
-				if not self.scalar_product_matrices[i].isSymmetric(1e-12):
+			if not self.riesz_projection_matrices[i].isSymmetric():
+				if not self.riesz_projection_matrices[i].isSymmetric(1e-12):
 					raise SystemExit('Error: Supplied scalar product form is not symmetric')
 
 		# Initialize the PETSc Krylov solver for the Riesz projection problems
@@ -212,8 +345,8 @@ class FormHandler:
 			x = fenics.as_backend_type(a[i].vector()).vec()
 			y = fenics.as_backend_type(b[i].vector()).vec()
 
-			temp, _ = self.scalar_product_matrices[i].getVecs()
-			self.scalar_product_matrices[i].mult(x, temp)
+			temp, _ = self.riesz_projection_matrices[i].getVecs()
+			self.riesz_projection_matrices[i].mult(x, temp)
 			result += temp.dot(y)
 
 		return result
@@ -318,99 +451,6 @@ class FormHandler:
 			a[j].vector()[:] = np.maximum(self.control_constraints[j][0].vector()[:], np.minimum(self.control_constraints[j][1].vector()[:], a[j].vector()[:]))
 
 		return a
-	
-
-
-	def __compute_state_equations(self):
-		"""Calculates the weak form of the state equation for the use with fenics
-		
-		Returns
-		-------
-		None
-		"""
-
-		if self.config.getboolean('StateEquation', 'is_linear', fallback=False):
-			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
-																 self.adjoints[i] : self.test_functions_state[i]})
-								   for i in range(self.state_dim)]
-
-		else:
-			self.state_eq_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
-
-		if self.config.get('StateEquation', 'picard_iteration', fallback=False):
-			self.state_picard_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i]) for i in range(self.state_dim)]
-
-		if self.config.getboolean('StateEquation', 'is_linear', fallback=False):
-			self.state_eq_forms_lhs = []
-			self.state_eq_forms_rhs = []
-			for i in range(self.state_dim):
-				a, L = fenics.system(self.state_eq_forms[i])
-				self.state_eq_forms_lhs.append(a)
-				self.state_eq_forms_rhs.append(L)
-
-
-
-	def __compute_adjoint_equations(self):
-		"""Calculates the weak form of the adjoint equation for use with fenics
-		
-		Returns
-		-------
-		None
-		"""
-
-		# Use replace -> derivative to speed up computations
-		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form,
-											  {self.adjoints[i] : self.trial_functions_adjoint[i]})
-									  for i in range(self.state_dim)]
-
-		if self.config.get('StateEquation', 'picard_iteration', fallback=False):
-			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
-
-		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
-		self.adjoint_eq_lhs = []
-		self.adjoint_eq_rhs = []
-
-		for i in range(self.state_dim):
-			a, L = fenics.system(self.adjoint_eq_forms[i])
-			self.adjoint_eq_lhs.append(a)
-			self.adjoint_eq_rhs.append(L)
-
-		# Compute the  adjoint boundary conditions
-		if self.state_adjoint_equal_spaces:
-			self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
-			[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
-		else:
-			def get_subdx(V, idx, ls):
-				if V.id()==idx:
-					return ls
-				if V.num_sub_spaces() > 1:
-					for i in range(V.num_sub_spaces()):
-						ans = get_subdx(V.sub(i), idx, ls + [i])
-						if ans is not None:
-							return ans
-				else:
-					return None
-
-			self.bcs_list_ad = [[None for bc in range(len(self.bcs_list[i]))] for i in range(self.state_dim)]
-
-			for i in range(self.state_dim):
-				for j, bc in enumerate(self.bcs_list[i]):
-					idx = bc.function_space().id()
-					subdx = get_subdx(self.state_spaces[i], idx, ls=[])
-					W = self.adjoint_spaces[i]
-					for num in subdx:
-						W = W.sub(num)
-					shape = W.ufl_element().value_shape()
-					try:
-						if shape == ():
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.domain_args[0], bc.domain_args[1])
-						else:
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.domain_args[0], bc.domain_args[1])
-					except AttributeError:
-						if shape == ():
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.sub_domain)
-						else:
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.sub_domain)
 
 
 	
@@ -440,7 +480,7 @@ class FormHandler:
 									 for i in range(self.state_dim)]
 
 		self.sensitivity_eqs_lhs = [fenics.derivative(self.sensitivity_eqs_temp[i], self.states[i], self.trial_functions_state[i]) for i in range(self.state_dim)]
-		if self.config.get('StateEquation', 'picard_iteration', fallback=False):
+		if self.state_is_picard:
 			self.sensitivity_eqs_picard = [fenics.derivative(self.sensitivity_eqs_temp[i], self.states[i], self.states_prime[i]) for i in range(self.state_dim)]
 
 		# Need to distinguish cases due to empty sum in case state_dim = 1
@@ -456,7 +496,7 @@ class FormHandler:
 										for i in range(self.state_dim)]
 
 		# Add the right-hand-side for the picard iteration
-		if self.config.get('StateEquation', 'picard_iteration', fallback=False):
+		if self.state_is_picard:
 			for i in range(self.state_dim):
 				self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
@@ -487,7 +527,7 @@ class FormHandler:
 
 		self.adjoint_sensitivity_eqs_lhs = [fenics.derivative(self.adjoint_sensitivity_eqs_diag_temp[i], self.states[i], self.test_functions_adjoint[i])
 											for i in range(self.state_dim)]
-		if self.config.get('StateEquation', 'picard_iteration', fallback=False):
+		if self.state_is_picard:
 			self.adjoint_sensitivity_eqs_picard = [fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[i], self.states[i], self.test_functions_adjoint[i])
 												   for i in range(self.state_dim)]
 
@@ -514,16 +554,16 @@ class FormHandler:
 
 
 
-class ShapeFormHandler:
+class ShapeFormHandler(FormHandler):
 	"""Derives adjoint equations and shape derivatives
 
-	This class is used analogously to the FormHandler class, but for
+	This class is used analogously to the ControlFormHandler class, but for
 	shape optimization problems, where it is used to derive the adjoint equations
 	and the shape derivatives.
 
 	See Also
 	--------
-	FormHandler : Derives adjoint and gradient equations for optimal control problems
+	ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
 	"""
 
 	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config):
@@ -545,46 +585,21 @@ class ShapeFormHandler:
 			the configparser object storing the problems config
 		"""
 
-		self.lagrangian = lagrangian
-		self.bcs_list = bcs_list
-		self.states = states
-		self.adjoints = adjoints
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config)
+
 		self.boundaries = boundaries
-		self.config = config
 
-		self.degree_estimation = config.getboolean('ShapeGradient', 'degree_estimation', fallback=False)
-
-		self.cost_functional_form = self.lagrangian.cost_functional_form
-		self.state_forms = self.lagrangian.state_forms
-
-		self.state_dim = len(self.states)
-
-		self.state_spaces = [x.function_space() for x in self.states]
-		self.adjoint_spaces = [x.function_space() for x in self.adjoints]
-
-		# Test if state_spaces are identical to adjoint_spaces
-		if self.state_spaces == self.adjoint_spaces:
-			self.state_adjoint_equal_spaces = True
-		else:
-			self.state_adjoint_equal_spaces = False
-
-		self.mesh = self.state_spaces[0].mesh()
-		self.dx = fenics.Measure('dx', self.mesh)
+		self.degree_estimation = self.config.getboolean('ShapeGradient', 'degree_estimation', fallback=False)
 
 		self.deformation_space = fenics.VectorFunctionSpace(self.mesh, 'CG', 1)
 		self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
-		self.trial_functions_state = [fenics.TrialFunction(V) for V in self.state_spaces]
-		self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
-
-		self.trial_functions_adjoint = [fenics.TrialFunction(V) for V in self.adjoint_spaces]
-		self.test_functions_adjoint = [fenics.TestFunction(V) for V in self.adjoint_spaces]
 
 		self.regularization = Regularization(self)
 
 		# Calculate the necessary UFL forms
-		self.__compute_state_equations()
-		self.__compute_adjoint_equations()
+		# self.__compute_state_equations()
+		# self.__compute_adjoint_equations()
 		self.__compute_shape_derivative()
 		self.__compute_shape_gradient_forms()
 
@@ -600,10 +615,8 @@ class ShapeFormHandler:
 
 		self.update_scalar_product()
 
-		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
-
 		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' \
-				or (self.opt_algo == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
+				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
 			raise SystemExit('Second order methods are not implemented for shape optimization yet')
 
 		# Generate the Krylov solver for the shape gradient problem
@@ -653,102 +666,6 @@ class ShapeFormHandler:
 
 			with open(self.config_save_file, 'w') as file:
 				self.config.write(file)
-
-
-
-	def __compute_state_equations(self):
-		"""Compute the weak form of the state equation for the use with fenics
-
-		Returns
-		-------
-		None
-		"""
-
-		if self.config.getboolean('StateEquation', 'is_linear', fallback = False):
-			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
-																 self.adjoints[i] : self.test_functions_state[i]})
-								   for i in range(self.state_dim)]
-
-		else:
-			self.state_eq_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i])
-								   for i in range(self.state_dim)]
-
-		if self.config.get('StateEquation', 'picard_iteration', fallback = False):
-			self.state_picard_forms = [fenics.derivative(self.state_forms[i], self.adjoints[i], self.test_functions_state[i])
-									   for i in range(self.state_dim)]
-
-		if self.config.getboolean('StateEquation', 'is_linear', fallback = False):
-			self.state_eq_forms_lhs = []
-			self.state_eq_forms_rhs = []
-			for i in range(self.state_dim):
-				a, L = fenics.system(self.state_eq_forms[i])
-				self.state_eq_forms_lhs.append(a)
-				self.state_eq_forms_rhs.append(L)
-
-
-
-	def __compute_adjoint_equations(self):
-		"""Computes the weak form of the adjoint equation for use with fenics
-
-		Returns
-		-------
-		None
-		"""
-
-		self.lagrangian_temp_forms = [replace(self.lagrangian.lagrangian_form,
-											  {self.adjoints[i] : self.trial_functions_adjoint[i]})
-									  for i in range(self.state_dim)]
-
-		if self.config.get('StateEquation', 'picard_iteration', fallback = False):
-			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i])
-										 for i in range(self.state_dim)]
-
-		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i])
-								 for i in range(self.state_dim)]
-		self.adjoint_eq_lhs = []
-		self.adjoint_eq_rhs = []
-
-		for i in range(self.state_dim):
-			a, L = fenics.system(self.adjoint_eq_forms[i])
-			self.adjoint_eq_lhs.append(a)
-			self.adjoint_eq_rhs.append(L)
-
-		if self.state_adjoint_equal_spaces:
-			self.bcs_list_ad = [[fenics.DirichletBC(bc) for bc in self.bcs_list[i]] for i in range(self.state_dim)]
-			[[bc.homogenize() for bc in self.bcs_list_ad[i]] for i in range(self.state_dim)]
-
-		else:
-			def get_subdx(V, idx, ls):
-				if V.id()==idx:
-					return ls
-				if V.num_sub_spaces() > 1:
-					for i in range(V.num_sub_spaces()):
-						ans = get_subdx(V.sub(i), idx, ls + [i])
-						if ans is not None:
-							return ans
-				else:
-					return None
-
-			self.bcs_list_ad = [[None for bc in range(len(self.bcs_list[i]))] for i in range(self.state_dim)]
-
-			for i in range(self.state_dim):
-				for j, bc in enumerate(self.bcs_list[i]):
-					idx = bc.function_space().id()
-					subdx = get_subdx(self.state_spaces[i], idx, ls=[])
-					W = self.adjoint_spaces[i]
-					for num in subdx:
-						W = W.sub(num)
-					shape = W.ufl_element().value_shape()
-					try:
-						if shape == ():
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.domain_args[0], bc.domain_args[1])
-						else:
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.domain_args[0], bc.domain_args[1])
-					except AttributeError:
-						if shape == ():
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant(0), bc.sub_domain)
-						else:
-							self.bcs_list_ad[i][j] = fenics.DirichletBC(W, fenics.Constant([0]*W.ufl_element().value_size()), bc.sub_domain)
 
 
 

@@ -34,9 +34,8 @@ class LBFGS(OptimizationAlgorithm):
 		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.storage_s = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
-		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors')
-		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors', fallback=5)
+		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling', fallback=True)
 
 		self.has_curvature_info = False
 
@@ -122,7 +121,7 @@ class LBFGS(OptimizationAlgorithm):
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+		self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 		self.gradient_norm_initial = self.gradient_norm
 		if self.gradient_norm_initial == 0:
 			self.converged = True
@@ -164,7 +163,7 @@ class LBFGS(OptimizationAlgorithm):
 			self.gradient_problem.solve()
 			self.form_handler.compute_active_sets()
 			
-			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
@@ -202,15 +201,3 @@ class LBFGS(OptimizationAlgorithm):
 					self.history_s.pop()
 					self.history_y.pop()
 					self.history_rho.pop()
-
-
-		# if not self.line_search_broken:
-		# 	self.print_results()
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')

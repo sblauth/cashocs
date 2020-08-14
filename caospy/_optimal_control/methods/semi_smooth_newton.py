@@ -27,9 +27,9 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 
 		self.line_search = ArmijoLineSearch(self)
 
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
+		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2)
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
 
@@ -56,7 +56,7 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0.0:
@@ -98,12 +98,3 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 					break
 				else:
 					raise SystemExit('Maximum number of iterations exceeded.')
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) +
-				  ' --- Sensitivity equations solved: ' + str(self.optimization_problem.semi_smooth_hessian.no_sensitivity_solves))
-			print('')

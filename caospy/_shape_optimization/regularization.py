@@ -90,49 +90,41 @@ class Regularization:
 
 		self.spatial_coordinate = fenics.SpatialCoordinate(self.shape_form_handler.mesh)
 
-		self.measure_hole = self.config.getboolean('Regularization', 'measure_hole')
+		self.measure_hole = self.config.getboolean('Regularization', 'measure_hole', fallback=False)
 		if self.measure_hole:
-			self.x_start = self.config.getfloat('Regularization', 'x_start')
-			self.x_end = self.config.getfloat('Regularization', 'x_end')
+			self.x_start = self.config.getfloat('Regularization', 'x_start', fallback=0.0)
+			self.x_end = self.config.getfloat('Regularization', 'x_end', fallback=1.0)
 			assert self.x_end >= self.x_start, 'x_end must not be smaller than x_start'
 			self.delta_x = self.x_end - self.x_start
 
-			self.y_start = self.config.getfloat('Regularization', 'y_start')
-			self.y_end = self.config.getfloat('Regularization', 'y_end')
+			self.y_start = self.config.getfloat('Regularization', 'y_start', fallback=0.0)
+			self.y_end = self.config.getfloat('Regularization', 'y_end', fallback=1.0)
 			assert self.y_end >= self.y_start, 'y_end must not be smaller than y_start'
 			self.delta_y = self.y_end - self.y_start
 
-			self.z_start = self.config.getfloat('Regularization', 'z_start')
-			self.z_end = self.config.getfloat('Regularization', 'z_end')
+			self.z_start = self.config.getfloat('Regularization', 'z_start', fallback=0.0)
+			self.z_end = self.config.getfloat('Regularization', 'z_end', fallback=1.0)
 			assert self.z_end >= self.z_start, 'z_end must not be smaller than z_start'
 			self.delta_z = self.z_end - self.z_start
 			if self.shape_form_handler.mesh.geometric_dimension() == 2:
 				self.delta_z = 1.0
 
-		self.lambda_volume = self.config.getfloat('Regularization', 'factor_volume_regularization')
-		self.lambda_surface = self.config.getfloat('Regularization', 'factor_surface_regularization')
-
-		self.lambda_interior_surface = self.config.getfloat('Regularization', 'factor_interior_surface_regularization')
-		self.idx_interior_surface = json.loads(self.config.get('Regularization', 'idx_interior_surface'))
-		self.dS = fenics.Measure('dS', domain=self.shape_form_handler.mesh, subdomain_data=self.shape_form_handler.boundaries)
-		self.measure_interior = generate_measure(self.idx_interior_surface, self.dS)
-
-		self.mu_volume = self.config.getfloat('Regularization', 'factor_target_volume')
-		self.target_volume = self.config.getfloat('Regularization', 'target_volume')
-		if self.config.getboolean('Regularization', 'use_initial_volume'):
+		self.mu_volume = self.config.getfloat('Regularization', 'factor_target_volume', fallback=0.0)
+		self.target_volume = self.config.getfloat('Regularization', 'target_volume', fallback=0.0)
+		if self.config.getboolean('Regularization', 'use_initial_volume', fallback=False):
 			if not self.measure_hole:
 				self.target_volume = fenics.assemble(Constant(1)*self.dx)
 			else:
 				self.target_volume = self.delta_x*self.delta_y*self.delta_z - fenics.assemble(Constant(1.0)*self.dx)
 
-		self.mu_surface = self.config.getfloat('Regularization', 'factor_target_surface')
-		self.target_surface = self.config.getfloat('Regularization', 'target_surface')
-		if self.config.getboolean('Regularization', 'use_initial_surface'):
+		self.mu_surface = self.config.getfloat('Regularization', 'factor_target_surface', fallback=0.0)
+		self.target_surface = self.config.getfloat('Regularization', 'target_surface', fallback=0.0)
+		if self.config.getboolean('Regularization', 'use_initial_surface', fallback=False):
 			self.target_surface = fenics.assemble(Constant(1)*self.ds)
 
-		self.mu_barycenter = self.config.getfloat('Regularization', 'factor_barycenter')
-		self.target_barycenter_list = json.loads(self.config.get('Regularization', 'target_barycenter'))
-		if self.config.getboolean('Regularization', 'use_initial_barycenter'):
+		self.mu_barycenter = self.config.getfloat('Regularization', 'factor_barycenter', fallback=0.0)
+		self.target_barycenter_list = json.loads(self.config.get('Regularization', 'target_barycenter', fallback='[0,0,0]'))
+		if self.config.getboolean('Regularization', 'use_initial_barycenter', fallback=False):
 			self.target_barycenter_list = [0.0, 0.0, 0.0]
 			if not self.measure_hole:
 				volume = fenics.assemble(Constant(1)*self.dx)
@@ -152,10 +144,10 @@ class Regularization:
 				else:
 					self.target_barycenter_list[2] = 0.0
 
-		assert self.lambda_volume >= 0.0 and self.lambda_surface >= 0.0 and self.lambda_interior_surface >= 0 and self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0, \
+		assert self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0, \
 			'All regularization constants have to be nonnegative'
 
-		if self.lambda_volume > 0.0 or self.lambda_surface > 0.0 or self.lambda_interior_surface > 0.0 or self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
+		if self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
 			self.has_regularization = True
 		else:
 			self.has_regularization = False
@@ -223,7 +215,7 @@ class Regularization:
 
 		if self.has_regularization:
 
-			value = fenics.assemble(Constant(self.lambda_volume)*self.dx + Constant(self.lambda_surface)*self.ds + Constant(self.lambda_interior_surface)*self.measure_interior)
+			value = 0.0
 
 			if self.mu_volume > 0.0:
 				if not self.measure_hole:
@@ -285,10 +277,7 @@ class Regularization:
 			n = fenics.FacetNormal(self.shape_form_handler.mesh)
 			I = fenics.Identity(self.shape_form_handler.mesh.geometric_dimension())
 
-			self.shape_form = Constant(self.lambda_volume)*div(V)*self.dx \
-								  + Constant(self.lambda_surface)*t_div(V, n)*self.ds \
-							  	  + Constant(self.lambda_interior_surface)*t_div(V('+'), n('+'))*self.measure_interior \
-								  + Constant(self.mu_surface)*(self.current_surface - self.target_surface)*t_div(V, n)*self.ds
+			self.shape_form = Constant(self.mu_surface)*(self.current_surface - self.target_surface)*t_div(V, n)*self.ds
 
 			if not self.measure_hole:
 				self.shape_form += Constant(self.mu_volume)*(self.current_volume - self.target_volume)*div(V)*self.dx
@@ -327,13 +316,7 @@ class Regularization:
 	# 	Scales the coefficients of the regularization, such that a factor of 1 corresponds to the term having the same weight as the initial cost function
 	# 	"""
 	#
-	# 	if self.lambda_volume > 0.0:
-	# 		val = fenics.assemble(Constant(1.0)*self.dx)
-	# 		self.lambda_volume /= np.abs(val)
 	#
-	# 	if self.lambda_surface > 0.0:
-	# 		val = fenics.assemble(Constant(1.0)*self.ds)
-	# 		self.lambda_surface /= np.abs(val)
 	#
 	# 	if self.mu_volume > 0.0:
 	# 		val = 0.5*pow(fenics.assemble(Constant(1.0)*self.dx) - self.target_volume, 2)

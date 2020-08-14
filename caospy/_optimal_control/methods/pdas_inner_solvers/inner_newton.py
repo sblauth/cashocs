@@ -28,14 +28,12 @@ class InnerNewton(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = UnconstrainedLineSearch(self)
-		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas')
-		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance')
+		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas', fallback=50)
+		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance', fallback=1e-2)
 		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
 
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
 

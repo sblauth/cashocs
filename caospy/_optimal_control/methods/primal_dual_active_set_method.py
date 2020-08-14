@@ -33,7 +33,7 @@ class PDAS(OptimizationAlgorithm):
 		self.converged = False
 		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
 		self.shift_mult = self.config.getfloat('OptimizationRoutine', 'pdas_shift_mult')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
 
 		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
 		if self.inner_pdas in ['gradient_descent', 'gd']:
@@ -53,7 +53,7 @@ class PDAS(OptimizationAlgorithm):
 		"""Computes the active and inactive sets.
 
 		This implementation differs slightly from the one in
-		caospy._forms.FormHandler as it is needed for the PDAS.
+		caospy._forms.ControlFormHandler as it is needed for the PDAS.
 
 		Returns
 		-------
@@ -96,7 +96,7 @@ class PDAS(OptimizationAlgorithm):
 		func_value = self.optimization_problem.reduced_cost_functional.evaluate()
 		self.optimization_problem.state_problem.has_solution = True
 		self.optimization_problem.gradient_problem.solve()
-		norm_init = np.sqrt(self.optimization_problem.stationary_measure_squared())
+		norm_init = np.sqrt(self.optimization_problem._stationary_measure_squared())
 		self.optimization_problem.adjoint_problem.has_solution = True
 
 		print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value,'.3e') + ' - Gradient norm: ' + format(norm_init, '.3e'))
@@ -117,7 +117,7 @@ class PDAS(OptimizationAlgorithm):
 			self.iteration += 1
 
 			func_value = self.inner_solver.line_search.objective_step
-			norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 
 
 			if self.iteration >= self.maximum_iterations:
@@ -136,10 +136,3 @@ class PDAS(OptimizationAlgorithm):
 				break
 
 			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')
-
-		if self.verbose:
-			print('Statistics --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			if self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton':
-				print('           --- Sensitivity equations solved: ' + str(self.optimization_problem.unconstrained_hessian.no_sensitivity_solves))
-			print('')

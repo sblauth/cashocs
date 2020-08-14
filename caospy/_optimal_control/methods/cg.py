@@ -32,20 +32,11 @@ class CG(OptimizationAlgorithm):
 		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose')
-		self.armijo_stepsize_initial = self.stepsize
-		self.armijo_broken = False
-
-		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method')
-		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart')
-		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its')
-		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart')
-		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol')
-
-		self.has_curvature_info = False
+		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method', fallback='FR')
+		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart', fallback=False)
+		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', fallback=10)
+		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart', fallback=False)
+		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol', fallback=0.25)
 
 
 
@@ -95,7 +86,7 @@ class CG(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 
-			self.gradient_norm = np.sqrt(self.optimization_problem.stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 			if self.iteration > 0:
 				if self.cg_method == 'FR':
 					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)
@@ -196,11 +187,3 @@ class CG(OptimizationAlgorithm):
 					break
 				else:
 					raise SystemExit('Maximum number of iterations exceeded.')
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')

@@ -19,7 +19,7 @@ class ReducedShapeCostFunctional:
 		Parameters
 		----------
 		shape_form_handler : caospy._forms.ShapeFormHandler
-			the FormHandler object for the optimization problem
+			the ControlFormHandler object for the optimization problem
 		state_problem : caospy._pde_problems.StateProblem
 			the StateProblem object corresponding to the state system
 		"""

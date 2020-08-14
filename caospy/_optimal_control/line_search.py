@@ -30,9 +30,9 @@ class ArmijoLineSearch:
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
 		self.form_handler = self.optimization_problem.form_handler
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial')
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo')
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo')
+		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial', fallback=1.0)
+		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
+		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2.0)
 		self.armijo_stepsize_initial = self.stepsize
 
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
@@ -61,7 +61,7 @@ class ArmijoLineSearch:
 
 		### TODO: Correct this
 		if self.is_steepest_descent:
-			return self.stepsize*self.optimization_problem.stationary_measure_squared()
+			return self.stepsize*self.optimization_problem._stationary_measure_squared()
 
 		else:
 			for j in range(self.form_handler.control_dim):

@@ -5,13 +5,14 @@ method, others might follow in the future.
 """
 
 import fenics
+from petsc4py import PETSc
 
 
 
-def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True):
+def newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True, ksp=None):
 	"""Damped Newton method for solving nonlinear PDEs.
 
-	A custom NewtonSolver class that includes damping
+	A custom newton_solve class that includes damping
 	(based on a monotonicity test) and several fine tuning possibilities.
 
 	The solver will stop either after the maximum number of iterations
@@ -51,6 +52,9 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 	verbose : bool, optional
 		Either true or false, gives updates about the iteration, if true
 		(default is true)
+	ksp : petsc4py.PETSc.KSP, optional
+		the PETSc ksp object used to solve the inner (linear) problem
+		if this is None (the default) it uses the direct solver MUMPS
 
 	Returns
 	-------
@@ -62,8 +66,17 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 		'Newton Solver convergence_type is neither rel nor abs nor both'
 	assert norm_type in ['l2', 'linf'], \
 		'Newton Solver norm_type is neither l2 nor linf'
-	
-	fenics.PETScOptions.set('mat_mumps_icntl_24', 1)
+
+	if ksp is None:
+		opts = fenics.PETScOptions
+		opts.clear()
+		opts.set('ksp_type', 'preonly')
+		opts.set('pc_type', 'lu')
+		opts.set('pc_factor_mat_solver_type', 'mumps')
+		opts.set('mat_mumps_icntl_24', 1)
+
+		ksp = PETSc.KSP().create()
+		ksp.setFromOptions()
 	
 	dF = fenics.derivative(F, u)
 	V = u.function_space()
@@ -79,7 +92,10 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 	bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
 	[bc.homogenize() for bc in bcs_hom]
 	
-	A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+	A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+	A.ident_zeros()
+	A = fenics.as_backend_type(A).mat()
+	b = fenics.as_backend_type(residuum).vec()
 	
 	res_0 = residuum.norm(norm_type)
 	res = res_0
@@ -100,17 +116,16 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 		lmbd = 1.0
 		breakdown = False
 		u_save.vector()[:] = u.vector()[:]
-		
-		fenics.solve(A, du.vector(), residuum, 'mumps')
-		# fenics.solve(A, du.vector(), residuum, 'umfpack')
-		
+
+		ksp.setOperators(A)
+		ksp.solve(b, du.vector().vec())
+
 		if damped:
 			while True:
 				u.vector()[:] += lmbd*du.vector()[:]
 				_, b = fenics.assemble_system(dF, -F, bcs_hom)
-				
-				fenics.solve(A, ddu.vector(), b, 'mumps')
-				# fenics.solve(A, ddu.vector(), b, 'umfpack')
+				b = fenics.as_backend_type(b).vec()
+				ksp.solve(b, ddu.vector().vec())
 				
 				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) <= 1:
 					break
@@ -131,7 +146,11 @@ def NewtonSolver(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_typ
 		if iterations == max_iter:
 			raise SystemExit('Newton Solver exceeded maximum number of iterations.')
 		
-		A, residuum = fenics.assemble_system(dF, -F, bcs_hom)
+		A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
+		A.ident_zeros()
+		A = fenics.as_backend_type(A).mat()
+		b = fenics.as_backend_type(residuum).vec()
+
 		[bc.apply(residuum) for bc in bcs_hom]
 		
 		res = residuum.norm(norm_type)

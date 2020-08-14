@@ -18,7 +18,7 @@ class GradientProblem:
 		
 		Parameters
 		----------
-		form_handler : caospy._forms.FormHandler
+		form_handler : caospy._forms.ControlFormHandler
 			the FormHandler object of the optimization problem
 		state_problem : caospy._pde_problems.StateProblem
 			the StateProblem object used to solve the state equations
