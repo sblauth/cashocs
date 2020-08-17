@@ -10,6 +10,4 @@ pages:
   only:
   - master
   tags:
-  - build
-  - pages
   - docker
