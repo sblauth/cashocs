@@ -16,7 +16,7 @@ set_log_level(LogLevel.CRITICAL)
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-# mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/mesh.xdmf')
+# mesh, subdomains, boundaries, dx, ds, dS = import_mesh('./mesh/mesh.xdmf')
 meshlevel = 25
 degree = 1
 dim = 2

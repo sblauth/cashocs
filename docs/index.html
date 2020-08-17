@@ -26,7 +26,7 @@
 <p>adoptpy is an ADjoint-based OPTimization package for PYthon.</p>
 <p>It can be used to treat PDE constrained optimal control and shape optimization problems
 numerically in an automated fashion and is based on the finite element software fenics.</p>
-<h2 id="how-can-adoptpy-be-used">How can adoptpy be used?</h2>
+<h2 id="how-can-i-use-adoptpy">How can I use adoptpy?</h2>
 <p>Since adoptpy is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
 has a functioning code for the forward problem and the evaluation of the cost
@@ -71,14 +71,24 @@ use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with fenics.</p>
 <p>For a detailed discussion of the features of adoptpy and its usage we refer to the deomos.</p>
-<h2 id="command-line-interface-for-meshes">Command Line Interface For Meshes</h2>
+<h2 id="command-line-interface-for-mesh-conversion">Command Line Interface For Mesh Conversion</h2>
 <p>adoptpy includes a command line interface for converting gmsh mesh files to
-xdmf ones, which can be read very easily into fenics. </p>
+xdmf ones, which can be read very easily into fenics. The corresponding command
+for the conversion (after having generated a mesh file 'in.msh' with gmsh)
+is given by</p>
+<pre><code>mesh-convert in.msh out.xdmf
+</code></pre>
+<p>This also create .xdmf files for subdomains and boundaries in case they are tagged
+in gmsh as Physical quantities.</p>
 <h2 id="a-word-of-caution">A Word Of Caution</h2>
-<p>I develope adoptpy as part of my PhD. I will try my best to document everything
+<p>I develop adoptpy as part of my PhD. I will try my best to document everything
 the package is capable of and to maintain the project in a sensible fashion.
 However, I cannot guarantee this. It is still undergoing many developments and,
 unfortunately, the API still may undergo large changes. So use it with care.</p>
+<h2 id="contributing">Contributing</h2>
+<p>adoptpy is available on gitlab. As this project is part of my PhD, I am currently
+the sole developer. Bug reports, feedback, and further suggestions are always
+welcome.</p>
 <h2 id="license">License</h2>
 <p>adoptpy is licensed under the &hellip; license.</p>
 <details class="source">
@@ -93,7 +103,7 @@ numerically in an automated fashion and is based on the finite element software 
 .. include:: ./documentation.md
 &#34;&#34;&#34;
 
-from .geometry import MeshGen, regular_mesh, regular_box_mesh
+from .geometry import import_mesh, regular_mesh, regular_box_mesh
 from .nonlinear_solvers import damped_newton_solve
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
@@ -101,7 +111,7 @@ from .utils import create_config, create_bcs_list
 
 
 
-__all__ = [&#39;MeshGen&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;,
+__all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;,
                    &#39;ShapeOptimizationProblem&#39;, &#39;create_config&#39;, &#39;create_bcs_list&#39;]</code></pre>
 </details>
 </section>
@@ -110,15 +120,15 @@ __all__ = [&#39;MeshGen&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;
 <dl>
 <dt><code class="name"><a title="adoptpy.geometry" href="geometry.html">adoptpy.geometry</a></code></dt>
 <dd>
-<div class="desc"><p>Geometry module for adoptpy …</p></div>
+<div class="desc"><p>Mesh generation and import tools …</p></div>
 </dd>
 <dt><code class="name"><a title="adoptpy.nonlinear_solvers" href="nonlinear_solvers.html">adoptpy.nonlinear_solvers</a></code></dt>
 <dd>
-<div class="desc"><p>Custom solvers for Nonlinear PDEs …</p></div>
+<div class="desc"><p>Custom solvers for nonlinear equations …</p></div>
 </dd>
 <dt><code class="name"><a title="adoptpy.optimization_problem" href="optimization_problem.html">adoptpy.optimization_problem</a></code></dt>
 <dd>
-<div class="desc"><p>Created on 14/08/2020, 08.57 …</p></div>
+<div class="desc"><p>Contains the blueprint for optimal control and shape optimization problems …</p></div>
 </dd>
 <dt><code class="name"><a title="adoptpy.utils" href="utils.html">adoptpy.utils</a></code></dt>
 <dd>
@@ -131,119 +141,6 @@ __all__ = [&#39;MeshGen&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="adoptpy.MeshGen"><code class="name flex">
-<span>def <span class="ident">MeshGen</span></span>(<span>arg)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Imports a mesh file to fenics</p>
-<p>Imports a mesh file in .xdmf format generated via gmsh and generates all
-necessary geometrical information for fenics</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>arg</code></strong> :&ensp;<code>str</code> or <code>configparser.ConfigParser</code></dt>
-<dd>either a string, in which case it corresponds to the location
-of the mesh file in .xdmf file format,
-or a config file, which has this path stored in its settings.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
-<dd>The computational mesh</dd>
-<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the subdomains,
-i.e., the physical regions of dimension d generated in gmsh</dd>
-<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the boundaries,
-i.e., the physical regions of dimension d-1 generated in gmsh</dd>
-<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The volume measure corresponding to the mesh and subdomains</dd>
-<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The surface measure corresponding to the mesh and boundaries</dd>
-<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The interior face measure corresponding to the mesh and boundaries</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def MeshGen(arg):
-        &#34;&#34;&#34;Imports a mesh file to fenics
-
-        Imports a mesh file in .xdmf format generated via gmsh and generates all
-        necessary geometrical information for fenics
-
-        Parameters
-        ----------
-        arg : str or configparser.ConfigParser
-                either a string, in which case it corresponds to the location
-                of the mesh file in .xdmf file format,
-                or a config file, which has this path stored in its settings.
-
-        Returns
-        -------
-        mesh : dolfin.cpp.mesh.Mesh
-                The computational mesh
-        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the subdomains,
-                i.e., the physical regions of dimension d generated in gmsh
-        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the boundaries,
-                i.e., the physical regions of dimension d-1 generated in gmsh
-        dx : ufl.measure.Measure
-                The volume measure corresponding to the mesh and subdomains
-        ds : ufl.measure.Measure
-                The surface measure corresponding to the mesh and boundaries
-        dS : ufl.measure.Measure
-                The interior face measure corresponding to the mesh and boundaries
-        &#34;&#34;&#34;
-        
-        start_time = time.time()
-        print(&#39;Importing mesh to FEniCS&#39;)
-        # Check for the file format
-
-        if type(arg) == str:
-                mesh_file = arg
-        elif type(arg) == configparser.ConfigParser:
-                mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
-        else:
-                raise SystemExit(&#39;Not a valid input for MeshGen&#39;)
-
-        if mesh_file[-5:] == &#39;.xdmf&#39;:
-                file_string = mesh_file[:-5]
-        else:
-                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
-        
-        mesh = fenics.Mesh()
-        xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
-        xdmf_file.read(mesh)
-        xdmf_file.close()
-        
-        subdomains_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension())
-        boundaries_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension() - 1)
-
-        if os.path.exists(file_string + &#39;_subdomains.xdmf&#39;):
-                xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_subdomains.xdmf&#39;)
-                xdmf_subdomains.read(subdomains_mvc, &#39;subdomains&#39;)
-                xdmf_subdomains.close()
-        if os.path.exists(file_string + &#39;_boundaries.xdmf&#39;):
-                xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_boundaries.xdmf&#39;)
-                xdmf_boundaries.read(boundaries_mvc, &#39;boundaries&#39;)
-                xdmf_boundaries.close()
-
-        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, subdomains_mvc)
-        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, boundaries_mvc)
-
-        dx = fenics.Measure(&#39;dx&#39;, domain=mesh, subdomain_data=subdomains)
-        ds = fenics.Measure(&#39;ds&#39;, domain=mesh, subdomain_data=boundaries)
-        dS = fenics.Measure(&#39;dS&#39;, domain=mesh, subdomain_data=boundaries)
-        
-        end_time = time.time()
-        print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
-        print(&#39;&#39;)
-        
-        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
-</details>
-</dd>
 <dt id="adoptpy.create_bcs_list"><code class="name flex">
 <span>def <span class="ident">create_bcs_list</span></span>(<span>function_space, value, boundaries, idcs)</span>
 </code></dt>
@@ -359,46 +256,52 @@ config file to the config. This is helpful for remeshing.</p>
 </details>
 </dd>
 <dt id="adoptpy.damped_newton_solve"><code class="name flex">
-<span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
+<span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Damped Newton method for solving nonlinear PDEs.</p>
-<p>A custom Newton method that includes damping
-(based on a monotonicity test) and several fine tuning possibilities.</p>
-<p>The solver will stop either after the maximum number of iterations
-have been performed or if the termination criterion is satisfied, i.e.,</p>
-<pre><code>    if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is 'rel',
-    if ||F_current|| &lt;= atol                                        if convergence_type is 'abs',
-    or when either of the above is satisfied        if convergence_type is 'both'.
-</code></pre>
-<p>The corresponding norm is specified via 'norm_type'.</p>
+<div class="desc"><p>A damped Newton method for solving nonlinear equations</p>
+<p>The Newton method is based on the natural monotonicity test from Deuflhard.
+It also allows fine tuning via a direct interface, and absolute, relative,
+and combined stopping criteria. Can also be used to specify the solver for
+the inner (linear) subproblems via petsc ksps.</p>
+<p>The method terminates after max_iter iterations, or if a termination criterion is
+satisfied. These criteria are given by
+<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</script></span></p>
+<p>The norm chosen for this termination criterion is specified via norm_type.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>F</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
-<dd>The variational form of the nonlinear problem that shall be
-solved by Newton's method</dd>
+<dd>the variational form of the nonlinear problem to be solved by Newton's method</dd>
 <dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
-<dd>The sought solution / initial guess (the method will also return this)</dd>
+<dd>the sought solution / initial guess (the method will also return this). It is
+not assumed that the initial guess satisfies the Dirichlet boundary conditions,
+these are applied automatically</dd>
 <dt><strong><code>bcs</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
-<dd>A list of DirichletBCs for the nonlinear variational problem</dd>
+<dd>a list of DirichletBCs for the nonlinear variational problem</dd>
 <dt><strong><code>rtol</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>Relative tolerance of the solver if convergence_type is either 'both' or 'rel'
+<dd>relative tolerance of the solver if convergence_type is either 'combined' or 'rel'
 (default is rtol = 1e-10)</dd>
 <dt><strong><code>atol</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>Absolute tolerance of the solver if convergence_type is either 'both' or 'abs'
+<dd>absolute tolerance of the solver if convergence_type is either 'combined' or 'abs'
 (default is atol = 1e-10)</dd>
 <dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Maximum number of iterations carried out by the method
-(default is max_iter = 25)</dd>
+<dd>maximum number of iterations carried out by the method
+(default is max_iter = 50)</dd>
 <dt><strong><code>convergence_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>One of 'both', 'rel', or 'abs' (default is 'both')</dd>
+<dd>one of 'combined', 'rel', or 'abs' (default is 'combined')</dd>
 <dt><strong><code>norm_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>One of 'l2', 'linf' (default is 'l2')</dd>
+<dd>one of 'l2', 'linf' (default is 'l2')</dd>
 <dt><strong><code>damped</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Either true or false, if true then uses a damping strategy, if not,
-uses Newton-Raphson iteration (default is True)</dd>
+<dd>either true or false, if true then uses a damping strategy, if not,
+uses the classical Newton-Raphson iteration (default is True)</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Either true or false, gives updates about the iteration, if true
+<dd>either true or false, prints status of the iteration, if true
 (default is true)</dd>
 <dt><strong><code>ksp</code></strong> :&ensp;<code>petsc4py.PETSc.KSP</code>, optional</dt>
 <dd>the PETSc ksp object used to solve the inner (linear) problem
@@ -406,55 +309,60 @@ if this is None (the default) it uses the direct solver MUMPS</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
-<dd>The solution of the nonlinear variational problem, if converged</dd>
+<dt><code>dolfin.function.function.Function</code></dt>
+<dd>The solution of the nonlinear variational problem, if converged.
+This overrides the input function u.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True, ksp=None):
-        &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
+<pre><code class="python">def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type=&#39;combined&#39;, norm_type=&#39;l2&#39;,
+                                                damped=True, verbose=True, ksp=None):
+        r&#34;&#34;&#34;A damped Newton method for solving nonlinear equations
 
-        A custom Newton method that includes damping
-        (based on a monotonicity test) and several fine tuning possibilities.
+        The Newton method is based on the natural monotonicity test from Deuflhard.
+        It also allows fine tuning via a direct interface, and absolute, relative,
+        and combined stopping criteria. Can also be used to specify the solver for
+        the inner (linear) subproblems via petsc ksps.
 
-        The solver will stop either after the maximum number of iterations
-        have been performed or if the termination criterion is satisfied, i.e.,
+        The method terminates after max_iter iterations, or if a termination criterion is
+        satisfied. These criteria are given by
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
+        $$
 
-                if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is &#39;rel&#39;,
-                if ||F_current|| &lt;= atol                                        if convergence_type is &#39;abs&#39;,
-                or when either of the above is satisfied        if convergence_type is &#39;both&#39;.
-
-        The corresponding norm is specified via &#39;norm_type&#39;.
+        The norm chosen for this termination criterion is specified via norm_type.
 
         Parameters
         ----------
         F : ufl.form.Form
-                The variational form of the nonlinear problem that shall be
-                solved by Newton&#39;s method
+                the variational form of the nonlinear problem to be solved by Newton&#39;s method
         u : dolfin.function.function.Function
-                The sought solution / initial guess (the method will also return this)
+                the sought solution / initial guess (the method will also return this). It is
+                not assumed that the initial guess satisfies the Dirichlet boundary conditions,
+                these are applied automatically
         bcs : list[dolfin.fem.dirichletbc.DirichletBC]
-                A list of DirichletBCs for the nonlinear variational problem
+                a list of DirichletBCs for the nonlinear variational problem
         rtol : float, optional
-                Relative tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;rel&#39;
+                relative tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;rel&#39;
                 (default is rtol = 1e-10)
         atol : float, optional
-                Absolute tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;abs&#39;
+                absolute tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;abs&#39;
                 (default is atol = 1e-10)
         max_iter : int, optional
-                Maximum number of iterations carried out by the method
-                (default is max_iter = 25)
+                maximum number of iterations carried out by the method
+                (default is max_iter = 50)
         convergence_type : str, optional
-                One of &#39;both&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;both&#39;)
+                one of &#39;combined&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;combined&#39;)
         norm_type : str, optional
-                One of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
+                one of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
         damped : bool, optional
-                Either true or false, if true then uses a damping strategy, if not,
-                uses Newton-Raphson iteration (default is True)
+                either true or false, if true then uses a damping strategy, if not,
+                uses the classical Newton-Raphson iteration (default is True)
         verbose : bool, optional
-                Either true or false, gives updates about the iteration, if true
+                either true or false, prints status of the iteration, if true
                 (default is true)
         ksp : petsc4py.PETSc.KSP, optional
                 the PETSc ksp object used to solve the inner (linear) problem
@@ -462,14 +370,15 @@ if this is None (the default) it uses the direct solver MUMPS</dd>
 
         Returns
         -------
-        u : dolfin.function.function.Function
-                The solution of the nonlinear variational problem, if converged
+        dolfin.function.function.Function
+                The solution of the nonlinear variational problem, if converged.
+                This overrides the input function u.
         &#34;&#34;&#34;
 
-        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;both&#39;], \
-                &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
+        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
+                &#39;Input convergence_type has to be one of \&#39;rel\&#39;, \&#39;abs\&#39;, or \&#39;combined\&#39;&#39;
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
-                &#39;Newton Solver norm_type is neither l2 nor linf&#39;
+                &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
                 opts = fenics.PETScOptions
@@ -572,130 +481,316 @@ if this is None (the default) it uses the direct solver MUMPS</dd>
         return u</code></pre>
 </details>
 </dd>
-<dt id="adoptpy.regular_box_mesh"><code class="name flex">
-<span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None)</span>
+<dt id="adoptpy.import_mesh"><code class="name flex">
+<span>def <span class="ident">import_mesh</span></span>(<span>arg)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a meshed rectangle or cube</p>
-<p>Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
-or the cube [sx, ex] x [sy, ey] x [sz, ez]</p>
+<div class="desc"><p>Imports a mesh file for use with fenics / adoptpy</p>
+<p>This function imports a mesh file that was generated by GMSH and converted to
+.xdmf with the command line function mesh-convert (see adoptpy main documentation).
+The syntax for the conversion is
+mesh-convert in.msh out.xdmf
+If there are Physical quantities specified in the gmsh file, these are imported
+to the subdomains and boundaries output of this function and can also be directly
+accessed via the measures, e.g., with dx(1), ds(1), etc.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of subdivisions for the smallest direction</dd>
-<dt><strong><code>sx</code></strong> :&ensp;<code>float</code></dt>
-<dd>Start of the x-interval</dd>
-<dt><strong><code>sy</code></strong> :&ensp;<code>float</code></dt>
-<dd>Start of the y-interval</dd>
-<dt><strong><code>sz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
-<dd>Start of the z-interval</dd>
-<dt><strong><code>ex</code></strong> :&ensp;<code>float</code></dt>
-<dd>End of the x-interval</dd>
-<dt><strong><code>ey</code></strong> :&ensp;<code>float</code></dt>
-<dd>End of the y-interval</dd>
-<dt><strong><code>ez</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
-<dd>End of the z-interval</dd>
+<dt><strong><code>arg</code></strong> :&ensp;<code>str</code> or <code>configparser.ConfigParser</code></dt>
+<dd>either a string, in which case it corresponds to the location
+of the mesh file in .xdmf file format, or a config file that
+has this path stored in its settings.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
-<dd>The computational mesh</dd>
+<dd>the imported (computational) mesh</dd>
 <dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the subdomains</dd>
+<dd>a MeshFunction object containing the subdomains,
+i.e., the Physical regions marked in the gmsh
+file</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on</dd>
+<dd>a MeshFunction object containing the boundaries,
+i.e., the Physical regions marked in the gmsh
+file. Can be, e.g., used to set up boundary
+conditions</dd>
 <dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dd>the volume measure of the mesh corresponding to
+the subdomains (i.e. gmsh Physical region indices)</dd>
 <dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dd>the surface measure of the mesh corresponding to
+the boundaries (i.e. gmsh Physical region indices)</dd>
 <dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+<dd>the interior facet measure of the mesh corresponding
+to boundaries (i.e. gmsh Physical region indices)</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def regular_box_mesh(n=10, sx=0.0, sy=0.0, sz=None, ex=1.0, ey=1.0, ez=None):
-        &#34;&#34;&#34;Creates a meshed rectangle or cube
+<pre><code class="python">def import_mesh(arg):
+        &#34;&#34;&#34;Imports a mesh file for use with fenics / adoptpy
 
-        Creates a regular box mesh of the rectangle [sx, ex] x [sy, ey]
-        or the cube [sx, ex] x [sy, ey] x [sz, ez]
+        This function imports a mesh file that was generated by GMSH and converted to
+        .xdmf with the command line function mesh-convert (see adoptpy main documentation).
+        The syntax for the conversion is
+                mesh-convert in.msh out.xdmf
+        If there are Physical quantities specified in the gmsh file, these are imported
+        to the subdomains and boundaries output of this function and can also be directly
+        accessed via the measures, e.g., with dx(1), ds(1), etc.
 
         Parameters
         ----------
-        n : int
-                Number of subdivisions for the smallest direction
-        sx : float
-                Start of the x-interval
-        sy : float
-                Start of the y-interval
-        sz : float or None
-                Start of the z-interval
-        ex : float
-                End of the x-interval
-        ey : float
-                End of the y-interval
-        ez : float or None
-                End of the z-interval
+        arg : str or configparser.ConfigParser
+                either a string, in which case it corresponds to the location
+                of the mesh file in .xdmf file format, or a config file that
+                has this path stored in its settings.
 
         Returns
         -------
         mesh : dolfin.cpp.mesh.Mesh
-                The computational mesh
+                the imported (computational) mesh
         subdomains : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the subdomains
+                a MeshFunction object containing the subdomains,
+                i.e., the Physical regions marked in the gmsh
+                file
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the boundaries. Marker 1 corresponds to x=sx, marker 2 to x=ex, marker 3 to y=sy and so on
+                a MeshFunction object containing the boundaries,
+                i.e., the Physical regions marked in the gmsh
+                file. Can be, e.g., used to set up boundary
+                conditions
         dx : ufl.measure.Measure
-                The volume measure corresponding to the mesh and subdomains
+                the volume measure of the mesh corresponding to
+                the subdomains (i.e. gmsh Physical region indices)
         ds : ufl.measure.Measure
-                The surface measure corresponding to the mesh and boundaries
+                the surface measure of the mesh corresponding to
+                the boundaries (i.e. gmsh Physical region indices)
         dS : ufl.measure.Measure
-                The interior face measure corresponding to the mesh and boundaries
+                the interior facet measure of the mesh corresponding
+                to boundaries (i.e. gmsh Physical region indices)
+        &#34;&#34;&#34;
+        
+        start_time = time.time()
+        print(&#39;Importing mesh to FEniCS&#39;)
+        # Check for the file format
+
+        if type(arg) == str:
+                mesh_file = arg
+        elif type(arg) == configparser.ConfigParser:
+                mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
+        else:
+                raise SystemExit(&#39;Not a valid input for import_mesh&#39;)
+
+        if mesh_file[-5:] == &#39;.xdmf&#39;:
+                file_string = mesh_file[:-5]
+        else:
+                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
+        
+        mesh = fenics.Mesh()
+        xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
+        xdmf_file.read(mesh)
+        xdmf_file.close()
+        
+        subdomains_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension())
+        boundaries_mvc = fenics.MeshValueCollection(&#39;size_t&#39;, mesh, mesh.geometric_dimension() - 1)
+
+        if os.path.exists(file_string + &#39;_subdomains.xdmf&#39;):
+                xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_subdomains.xdmf&#39;)
+                xdmf_subdomains.read(subdomains_mvc, &#39;subdomains&#39;)
+                xdmf_subdomains.close()
+        if os.path.exists(file_string + &#39;_boundaries.xdmf&#39;):
+                xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + &#39;_boundaries.xdmf&#39;)
+                xdmf_boundaries.read(boundaries_mvc, &#39;boundaries&#39;)
+                xdmf_boundaries.close()
+
+        subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, subdomains_mvc)
+        boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, boundaries_mvc)
+
+        dx = fenics.Measure(&#39;dx&#39;, domain=mesh, subdomain_data=subdomains)
+        ds = fenics.Measure(&#39;ds&#39;, domain=mesh, subdomain_data=boundaries)
+        dS = fenics.Measure(&#39;dS&#39;, domain=mesh, subdomain_data=boundaries)
+        
+        end_time = time.time()
+        print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
+        print(&#39;&#39;)
+        
+        return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
+</details>
+</dd>
+<dt id="adoptpy.regular_box_mesh"><code class="name flex">
+<span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a mesh corresponding to a rectangle or cube.</p>
+<p>This function creates a uniform mesh of either a rectangle
+or a cube, with specified start (S_) and end points (E_).
+The resulting mesh uses n elements along the shortest direction
+and accordingly many along the longer ones. The resulting domain is
+<span><span class="MathJax_Preview">[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
+[S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
+</span><script type="math/tex; mode=display">[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
+[S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
+</script></span></p>
+<p>The boundary markers are ordered as follows:</p>
+<ul>
+<li>
+<p>1 corresponds to <span><span class="MathJax_Preview">\{x=S_x\}</span><script type="math/tex">\{x=S_x\}</script></span></p>
+</li>
+<li>
+<p>2 corresponds to <span><span class="MathJax_Preview">\{x=E_x\}</span><script type="math/tex">\{x=E_x\}</script></span></p>
+</li>
+<li>
+<p>3 corresponds to <span><span class="MathJax_Preview">\{y=S_y\}</span><script type="math/tex">\{y=S_y\}</script></span></p>
+</li>
+<li>
+<p>4 corresponds to <span><span class="MathJax_Preview">\{y=E_y\}</span><script type="math/tex">\{y=E_y\}</script></span></p>
+</li>
+<li>
+<p>5 corresponds to <span><span class="MathJax_Preview">\{z=S_z\}</span><script type="math/tex">\{z=S_z\}</script></span> (only in 3D)</p>
+</li>
+<li>
+<p>6 corresponds to <span><span class="MathJax_Preview">\{z=E_z\}</span><script type="math/tex">\{z=E_z\}</script></span> (only in 3D)</p>
+</li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of elements in the shortest coordinate direction</dd>
+<dt><strong><code>S_x</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the x-interval</dd>
+<dt><strong><code>S_y</code></strong> :&ensp;<code>float</code></dt>
+<dd>Start of the y-interval</dd>
+<dt><strong><code>S_z</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>Start of the z-interval, mesh is 2D if this is None
+(default is None)</dd>
+<dt><strong><code>E_x</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the x-interval</dd>
+<dt><strong><code>E_y</code></strong> :&ensp;<code>float</code></dt>
+<dd>End of the y-interval</dd>
+<dt><strong><code>E_z</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>End of the z-interval, mesh is 2D if this is None
+(default is None)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>the computational mesh</dd>
+<dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>a MeshFunction object containing the subdomains</dd>
+<dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
+<dd>a MeshFunction object containing the boundaries</dd>
+<dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>the volume measure of the mesh corresponding to subdomains</dd>
+<dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>the surface measure of the mesh corresponding to boundaries</dd>
+<dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>the interior facet measure of the mesh corresponding to boundaries</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None):
+        r&#34;&#34;&#34;Creates a mesh corresponding to a rectangle or cube.
+
+        This function creates a uniform mesh of either a rectangle
+        or a cube, with specified start (S_) and end points (E_).
+        The resulting mesh uses n elements along the shortest direction
+        and accordingly many along the longer ones. The resulting domain is
+                $$[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
+                [S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
+                $$
+
+        The boundary markers are ordered as follows:
+
+          - 1 corresponds to \(\{x=S_x\}\)
+
+          - 2 corresponds to \(\{x=E_x\}\)
+
+          - 3 corresponds to \(\{y=S_y\}\)
+
+          - 4 corresponds to \(\{y=E_y\}\)
+
+          - 5 corresponds to \(\{z=S_z\}\) (only in 3D)
+
+          - 6 corresponds to \(\{z=E_z\}\) (only in 3D)
+
+        Parameters
+        ----------
+        n : int
+                Number of elements in the shortest coordinate direction
+        S_x : float
+                Start of the x-interval
+        S_y : float
+                Start of the y-interval
+        S_z : float or None, optional
+                Start of the z-interval, mesh is 2D if this is None
+                (default is None)
+        E_x : float
+                End of the x-interval
+        E_y : float
+                End of the y-interval
+        E_z : float or None, optional
+                End of the z-interval, mesh is 2D if this is None
+                (default is None)
+
+        Returns
+        -------
+        mesh : dolfin.cpp.mesh.Mesh
+                the computational mesh
+        subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+                a MeshFunction object containing the subdomains
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+                a MeshFunction object containing the boundaries
+        dx : ufl.measure.Measure
+                the volume measure of the mesh corresponding to subdomains
+        ds : ufl.measure.Measure
+                the surface measure of the mesh corresponding to boundaries
+        dS : ufl.measure.Measure
+                the interior facet measure of the mesh corresponding to boundaries
         &#34;&#34;&#34;
 
         n = int(n)
 
-        assert sx &lt; ex, &#39;Incorrect input for the x-coordinate&#39;
-        assert sy &lt; ey, &#39;Incorrect input for the y-coordinate&#39;
-        assert (sz is None and ez is None) or (sz &lt; ez), &#39;Incorrect input for the z-coordinate&#39;
+        assert S_x &lt; E_x, &#39;Incorrect input for the x-coordinate&#39;
+        assert S_y &lt; E_y, &#39;Incorrect input for the y-coordinate&#39;
+        assert (S_z is None and E_z is None) or (S_z &lt; E_z), &#39;Incorrect input for the z-coordinate&#39;
 
-        if sz is None:
-                lx = ex - sx
-                ly = ey - sy
+        if S_z is None:
+                lx = E_x - S_x
+                ly = E_y - S_y
                 sizes = [lx, ly]
                 dim = 2
         else:
-                lx = ex - sx
-                ly = ey - sy
-                lz = ez - sz
+                lx = E_x - S_x
+                ly = E_y - S_y
+                lz = E_z - S_z
                 sizes = [lx, ly, lz]
                 dim = 3
 
         size_min = np.min(sizes)
         num_points = [int(np.round(length/size_min*n)) for length in sizes]
 
-        if sz is None:
-                mesh = fenics.RectangleMesh(fenics.Point(sx, sy), fenics.Point(ex, ey), num_points[0], num_points[1])
+        if S_z is None:
+                mesh = fenics.RectangleMesh(fenics.Point(S_x, S_y), fenics.Point(E_x, E_y), num_points[0], num_points[1])
         else:
-                mesh = fenics.BoxMesh(fenics.Point(sx, sy, sz), fenics.Point(ex, ey, ez), num_points[0], num_points[1], num_points[2])
+                mesh = fenics.BoxMesh(fenics.Point(S_x, S_y, S_z), fenics.Point(E_x, E_y, E_z), num_points[0], num_points[1], num_points[2])
 
         subdomains = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim)
         boundaries = fenics.MeshFunction(&#39;size_t&#39;, mesh, dim=dim - 1)
 
-        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], sx, tol)&#39;, tol=fenics.DOLFIN_EPS, sx=sx)
-        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], ex, tol)&#39;, tol=fenics.DOLFIN_EPS, ex=ex)
+        x_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], sx, tol)&#39;, tol=fenics.DOLFIN_EPS, sx=S_x)
+        x_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[0], ex, tol)&#39;, tol=fenics.DOLFIN_EPS, ex=E_x)
         x_min.mark(boundaries, 1)
         x_max.mark(boundaries, 2)
 
-        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], sy, tol)&#39;, tol=fenics.DOLFIN_EPS, sy=sy)
-        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], ey, tol)&#39;, tol=fenics.DOLFIN_EPS, ey=ey)
+        y_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], sy, tol)&#39;, tol=fenics.DOLFIN_EPS, sy=S_y)
+        y_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[1], ey, tol)&#39;, tol=fenics.DOLFIN_EPS, ey=E_y)
         y_min.mark(boundaries, 3)
         y_max.mark(boundaries, 4)
 
-        if sz is not None:
-                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], sz, tol)&#39;, tol=fenics.DOLFIN_EPS, sz=sz)
-                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], ez, tol)&#39;, tol=fenics.DOLFIN_EPS, ez=ez)
+        if S_z is not None:
+                z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], sz, tol)&#39;, tol=fenics.DOLFIN_EPS, sz=S_z)
+                z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], ez, tol)&#39;, tol=fenics.DOLFIN_EPS, ez=E_z)
                 z_min.mark(boundaries, 5)
                 z_max.mark(boundaries, 6)
 
@@ -707,90 +802,139 @@ or the cube [sx, ex] x [sy, ey] x [sz, ez]</p>
 </details>
 </dd>
 <dt id="adoptpy.regular_mesh"><code class="name flex">
-<span>def <span class="ident">regular_mesh</span></span>(<span>n=10, lx=1.0, ly=1.0, lz=None)</span>
+<span>def <span class="ident">regular_mesh</span></span>(<span>n=10, L_x=1.0, L_y=1.0, L_z=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a meshed rectangle or cube.</p>
-<p>Creates a regular mesh in either 2D (rectangle) or 3D (cube),
-starting at the origin and having specified lengths</p>
+<div class="desc"><p>Creates a mesh corresponding to a rectangle or cube</p>
+<p>This function creates a uniform mesh of either a rectangle
+or a cube, starting at the origin and having length specified
+in lx, lx, lz. The resulting mesh uses n elements along the
+shortest direction and accordingly many along the longer ones.
+The resulting domain is
+<span><span class="MathJax_Preview">[0, L_x] \times [0, L_y] \phantom{ \times [0, L_z] a} \quad \text{ in } 2D, \\
+[0, L_x] \times [0, L_y] \times [0, L_z] \quad \text{ in } 3D.
+</span><script type="math/tex; mode=display">[0, L_x] \times [0, L_y] \phantom{ \times [0, L_z] a} \quad \text{ in } 2D, \\
+[0, L_x] \times [0, L_y] \times [0, L_z] \quad \text{ in } 3D.
+</script></span></p>
+<p>The boundary markers are ordered as follows:</p>
+<ul>
+<li>
+<p>1 corresponds to <span><span class="MathJax_Preview">\{x=0\}</span><script type="math/tex">\{x=0\}</script></span></p>
+</li>
+<li>
+<p>2 corresponds to <span><span class="MathJax_Preview">\{x=L_x\}</span><script type="math/tex">\{x=L_x\}</script></span></p>
+</li>
+<li>
+<p>3 corresponds to <span><span class="MathJax_Preview">\{y=0\}</span><script type="math/tex">\{y=0\}</script></span></p>
+</li>
+<li>
+<p>4 corresponds to <span><span class="MathJax_Preview">\{y=L_y\}</span><script type="math/tex">\{y=L_y\}</script></span></p>
+</li>
+<li>
+<p>5 corresponds to <span><span class="MathJax_Preview">\{z=0\}</span><script type="math/tex">\{z=0\}</script></span> (only in 3D)</p>
+</li>
+<li>
+<p>6 corresponds to <span><span class="MathJax_Preview">\{z=L_z\}</span><script type="math/tex">\{z=L_z\}</script></span> (only in 3D)</p>
+</li>
+</ul>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of subdivisions in the smallest coordinate direction</dd>
-<dt><strong><code>lx</code></strong> :&ensp;<code>float</code></dt>
+<dd>Number of elements in the shortest coordinate direction</dd>
+<dt><strong><code>L_x</code></strong> :&ensp;<code>float</code></dt>
 <dd>length in x-direction</dd>
-<dt><strong><code>ly</code></strong> :&ensp;<code>float</code></dt>
+<dt><strong><code>L_y</code></strong> :&ensp;<code>float</code></dt>
 <dd>length in y-direction</dd>
-<dt><strong><code>lz</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
-<dd>length in z-direction (geometry will be 2D if lz==None)</dd>
+<dt><strong><code>L_z</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>length in z-direction, if this is None, then the geometry
+will be two-dimensional (default is None)</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
-<dd>The computational mesh</dd>
+<dd>the computational mesh</dd>
 <dt><strong><code>subdomains</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the subdomains</dd>
+<dd>a MeshFunction object containing the subdomains</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
-<dd>A MeshFunction containing the boundaries.
-Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on</dd>
+<dd>a MeshFunction object containing the boundaries</dd>
 <dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The volume measure corresponding to the mesh and subdomains</dd>
+<dd>the volume measure of the mesh corresponding to subdomains</dd>
 <dt><strong><code>ds</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The surface measure corresponding to the mesh and boundaries</dd>
+<dd>the surface measure of the mesh corresponding to boundaries</dd>
 <dt><strong><code>dS</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
-<dd>The interior face measure corresponding to the mesh and boundaries</dd>
+<dd>the interior facet measure of the mesh corresponding to boundaries</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def regular_mesh(n=10, lx=1.0, ly=1.0, lz=None):
-        &#34;&#34;&#34;Creates a meshed rectangle or cube.
+<pre><code class="python">def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
+        r&#34;&#34;&#34;Creates a mesh corresponding to a rectangle or cube
 
-        Creates a regular mesh in either 2D (rectangle) or 3D (cube),
-        starting at the origin and having specified lengths
+        This function creates a uniform mesh of either a rectangle
+        or a cube, starting at the origin and having length specified
+        in lx, lx, lz. The resulting mesh uses n elements along the
+        shortest direction and accordingly many along the longer ones.
+        The resulting domain is
+                $$[0, L_x] \times [0, L_y] \phantom{ \times [0, L_z] a} \quad \text{ in } 2D, \\
+                [0, L_x] \times [0, L_y] \times [0, L_z] \quad \text{ in } 3D.
+                $$
+
+        The boundary markers are ordered as follows:
+
+          - 1 corresponds to \(\{x=0\}\)
+
+          - 2 corresponds to \(\{x=L_x\}\)
+
+          - 3 corresponds to \(\{y=0\}\)
+
+          - 4 corresponds to \(\{y=L_y\}\)
+
+          - 5 corresponds to \(\{z=0\}\) (only in 3D)
+
+          - 6 corresponds to \(\{z=L_z\}\) (only in 3D)
 
         Parameters
         ----------
         n : int
-                Number of subdivisions in the smallest coordinate direction
-        lx : float
+                Number of elements in the shortest coordinate direction
+        L_x : float
                 length in x-direction
-        ly : float
+        L_y : float
                 length in y-direction
-        lz : float or None
-                length in z-direction (geometry will be 2D if lz==None)
+        L_z : float or None, optional
+                length in z-direction, if this is None, then the geometry
+                will be two-dimensional (default is None)
 
         Returns
         -------
         mesh : dolfin.cpp.mesh.Mesh
-                The computational mesh
+                the computational mesh
         subdomains : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the subdomains
+                a MeshFunction object containing the subdomains
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-                A MeshFunction containing the boundaries.
-                Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on
+                a MeshFunction object containing the boundaries
         dx : ufl.measure.Measure
-                The volume measure corresponding to the mesh and subdomains
+                the volume measure of the mesh corresponding to subdomains
         ds : ufl.measure.Measure
-                The surface measure corresponding to the mesh and boundaries
+                the surface measure of the mesh corresponding to boundaries
         dS : ufl.measure.Measure
-                The interior face measure corresponding to the mesh and boundaries
+                the interior facet measure of the mesh corresponding to boundaries
         &#34;&#34;&#34;
 
         n = int(n)
         
-        if lz is None:
-                sizes = [lx, ly]
+        if L_z is None:
+                sizes = [L_x, L_y]
                 dim = 2
         else:
-                sizes = [lx, ly, lz]
+                sizes = [L_x, L_y, L_z]
                 dim = 3
         
         size_min = np.min(sizes)
         num_points = [int(np.round(length/size_min*n)) for length in sizes]
         
-        if lz is None:
+        if L_z is None:
                 mesh = fenics.RectangleMesh(fenics.Point(0, 0), fenics.Point(sizes), num_points[0], num_points[1])
         else:
                 mesh = fenics.BoxMesh(fenics.Point(0, 0, 0), fenics.Point(sizes), num_points[0], num_points[1], num_points[2])
@@ -808,7 +952,7 @@ Marker 1 corresponds to x=0, marker 2 to x=lx, marker 3 to y=0 and so on</dd>
         y_min.mark(boundaries, 3)
         y_max.mark(boundaries, 4)
 
-        if lz is not None:
+        if L_z is not None:
                 z_min = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], 0, tol)&#39;, tol=fenics.DOLFIN_EPS)
                 z_max = fenics.CompiledSubDomain(&#39;on_boundary &amp;&amp; near(x[2], length, tol)&#39;, tol=fenics.DOLFIN_EPS, length=sizes[2])
                 z_min.mark(boundaries, 5)
@@ -1539,9 +1683,10 @@ are carried out automatically.</p>
 <h1>Index</h1>
 <div class="toc">
 <ul>
-<li><a href="#how-can-adoptpy-be-used">How can adoptpy be used?</a></li>
-<li><a href="#command-line-interface-for-meshes">Command line interface for meshes</a></li>
+<li><a href="#how-can-i-use-adoptpy">How can I use adoptpy?</a></li>
+<li><a href="#command-line-interface-for-mesh-conversion">Command line interface for mesh conversion</a></li>
 <li><a href="#a-word-of-caution">A word of caution</a></li>
+<li><a href="#contributing">Contributing</a></li>
 <li><a href="#license">License</a></li>
 </ul>
 </div>
@@ -1556,10 +1701,10 @@ are carried out automatically.</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="adoptpy.MeshGen" href="#adoptpy.MeshGen">MeshGen</a></code></li>
 <li><code><a title="adoptpy.create_bcs_list" href="#adoptpy.create_bcs_list">create_bcs_list</a></code></li>
 <li><code><a title="adoptpy.create_config" href="#adoptpy.create_config">create_config</a></code></li>
 <li><code><a title="adoptpy.damped_newton_solve" href="#adoptpy.damped_newton_solve">damped_newton_solve</a></code></li>
+<li><code><a title="adoptpy.import_mesh" href="#adoptpy.import_mesh">import_mesh</a></code></li>
 <li><code><a title="adoptpy.regular_box_mesh" href="#adoptpy.regular_box_mesh">regular_box_mesh</a></code></li>
 <li><code><a title="adoptpy.regular_mesh" href="#adoptpy.regular_mesh">regular_mesh</a></code></li>
 </ul>

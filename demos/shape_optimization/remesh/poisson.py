@@ -12,7 +12,7 @@ import numpy as np
 
 set_log_level(LogLevel.CRITICAL)
 config = adoptpy.create_config('./config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = adoptpy.MeshGen(config.get('Mesh', 'xdmf_file'))
+mesh, subdomains, boundaries, dx, ds, dS = adoptpy.import_mesh(config.get('Mesh', 'xdmf_file'))
 V = FunctionSpace(mesh, 'CG', 1)
 
 bcs = DirichletBC(V, Constant(0), boundaries, 1)

@@ -6,7 +6,7 @@ Created on 30.03.20, 09:49
 
 import configparser
 from fenics import *
-from adoptpy import OptimalControlProblem, MeshGen
+from adoptpy import OptimalControlProblem, import_mesh
 import adoptpy
 import numpy as np
 
@@ -17,8 +17,8 @@ set_log_level(LogLevel.CRITICAL)
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-# mesh, subdomains, boundaries, dx, ds, dS = MeshGen('../mesh/mesh.xdmf')
-mesh, subdomains, boundaries, dx, ds, dS = MeshGen(config)
+# mesh, subdomains, boundaries, dx, ds, dS = import_mesh('../mesh/mesh.xdmf')
+mesh, subdomains, boundaries, dx, ds, dS = import_mesh(config)
 # mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 

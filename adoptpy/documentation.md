@@ -1,4 +1,4 @@
-How can adoptpy be used?
+How can I use adoptpy?
 ------------------------
 
 Since adoptpy is based on FEniCS, most of the user input consists of definining
@@ -52,21 +52,35 @@ also be valid with fenics.
 For a detailed discussion of the features of adoptpy and its usage we refer to the deomos.
 
 
-Command line interface for meshes
----------------------------------
+Command line interface for mesh conversion
+------------------------------------------
 
 adoptpy includes a command line interface for converting gmsh mesh files to
-xdmf ones, which can be read very easily into fenics. 
+xdmf ones, which can be read very easily into fenics. The corresponding command
+for the conversion (after having generated a mesh file 'in.msh' with gmsh)
+is given by
 
+    mesh-convert in.msh out.xdmf
+
+This also create .xdmf files for subdomains and boundaries in case they are tagged
+in gmsh as Physical quantities.
 
 
 A word of caution
 -----------------
 
-I develope adoptpy as part of my PhD. I will try my best to document everything
+I develop adoptpy as part of my PhD. I will try my best to document everything
 the package is capable of and to maintain the project in a sensible fashion.
 However, I cannot guarantee this. It is still undergoing many developments and,
 unfortunately, the API still may undergo large changes. So use it with care.
+
+
+Contributing
+------------
+
+adoptpy is available on gitlab. As this project is part of my PhD, I am currently
+the sole developer. Bug reports, feedback, and further suggestions are always
+welcome.
 
 
 License

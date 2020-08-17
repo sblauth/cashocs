@@ -1,10 +1,9 @@
-"""
-Created on 14/08/2020, 08.57
+"""Contains the blueprint for optimal control and shape optimization problems
 
-@author: blauths
+This module is used to define the base class of optimization problems, which
+has many shared parameters between optimal control and shape optimization
+problems. Can be subclassed to generate custom optimization problems.
 """
-
-from ._forms import Lagrangian
 
 
 

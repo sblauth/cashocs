@@ -6,7 +6,7 @@ Created on 24/02/2020, 11.47
 
 import configparser
 from fenics import *
-from adoptpy import OptimalControlProblem, MeshGen
+from adoptpy import OptimalControlProblem, import_mesh
 import numpy as np
 
 
@@ -16,7 +16,7 @@ set_log_level(LogLevel.CRITICAL)
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = MeshGen(config.get('Mesh', 'mesh_file'))
+mesh, subdomains, boundaries, dx, ds, dS = import_mesh(config.get('Mesh', 'mesh_file'))
 v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
 p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))

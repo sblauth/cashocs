@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>adoptpy.nonlinear_solvers API documentation</title>
-<meta name="description" content="Custom solvers for Nonlinear PDEs …" />
+<meta name="description" content="Custom solvers for nonlinear equations …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,17 +23,17 @@
 <h1 class="title">Module <code>adoptpy.nonlinear_solvers</code></h1>
 </header>
 <section id="section-intro">
-<p>Custom solvers for Nonlinear PDEs</p>
-<p>At the moment only includes a damped Newton
-method, others might follow in the future.</p>
+<p>Custom solvers for nonlinear equations</p>
+<p>This module has custom solvers for nonlinear PDEs, including
+a damped Newton method. Other methods might follow in the future.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Custom solvers for Nonlinear PDEs
+<pre><code class="python">&#34;&#34;&#34;Custom solvers for nonlinear equations
 
-At the moment only includes a damped Newton
-method, others might follow in the future.
+This module has custom solvers for nonlinear PDEs, including
+a damped Newton method. Other methods might follow in the future.
 &#34;&#34;&#34;
 
 import fenics
@@ -41,48 +41,52 @@ from petsc4py import PETSc
 
 
 
-def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True, ksp=None):
-        &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
+def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type=&#39;combined&#39;, norm_type=&#39;l2&#39;,
+                                                damped=True, verbose=True, ksp=None):
+        r&#34;&#34;&#34;A damped Newton method for solving nonlinear equations
 
-        A custom Newton method that includes damping
-        (based on a monotonicity test) and several fine tuning possibilities.
+        The Newton method is based on the natural monotonicity test from Deuflhard.
+        It also allows fine tuning via a direct interface, and absolute, relative,
+        and combined stopping criteria. Can also be used to specify the solver for
+        the inner (linear) subproblems via petsc ksps.
 
-        The solver will stop either after the maximum number of iterations
-        have been performed or if the termination criterion is satisfied, i.e.,
+        The method terminates after max_iter iterations, or if a termination criterion is
+        satisfied. These criteria are given by
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
+        $$
 
-                if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is &#39;rel&#39;,
-                if ||F_current|| &lt;= atol                                        if convergence_type is &#39;abs&#39;,
-                or when either of the above is satisfied        if convergence_type is &#39;both&#39;.
-
-        The corresponding norm is specified via &#39;norm_type&#39;.
+        The norm chosen for this termination criterion is specified via norm_type.
 
         Parameters
         ----------
         F : ufl.form.Form
-                The variational form of the nonlinear problem that shall be
-                solved by Newton&#39;s method
+                the variational form of the nonlinear problem to be solved by Newton&#39;s method
         u : dolfin.function.function.Function
-                The sought solution / initial guess (the method will also return this)
+                the sought solution / initial guess (the method will also return this). It is
+                not assumed that the initial guess satisfies the Dirichlet boundary conditions,
+                these are applied automatically
         bcs : list[dolfin.fem.dirichletbc.DirichletBC]
-                A list of DirichletBCs for the nonlinear variational problem
+                a list of DirichletBCs for the nonlinear variational problem
         rtol : float, optional
-                Relative tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;rel&#39;
+                relative tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;rel&#39;
                 (default is rtol = 1e-10)
         atol : float, optional
-                Absolute tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;abs&#39;
+                absolute tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;abs&#39;
                 (default is atol = 1e-10)
         max_iter : int, optional
-                Maximum number of iterations carried out by the method
-                (default is max_iter = 25)
+                maximum number of iterations carried out by the method
+                (default is max_iter = 50)
         convergence_type : str, optional
-                One of &#39;both&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;both&#39;)
+                one of &#39;combined&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;combined&#39;)
         norm_type : str, optional
-                One of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
+                one of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
         damped : bool, optional
-                Either true or false, if true then uses a damping strategy, if not,
-                uses Newton-Raphson iteration (default is True)
+                either true or false, if true then uses a damping strategy, if not,
+                uses the classical Newton-Raphson iteration (default is True)
         verbose : bool, optional
-                Either true or false, gives updates about the iteration, if true
+                either true or false, prints status of the iteration, if true
                 (default is true)
         ksp : petsc4py.PETSc.KSP, optional
                 the PETSc ksp object used to solve the inner (linear) problem
@@ -90,14 +94,15 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, converge
 
         Returns
         -------
-        u : dolfin.function.function.Function
-                The solution of the nonlinear variational problem, if converged
+        dolfin.function.function.Function
+                The solution of the nonlinear variational problem, if converged.
+                This overrides the input function u.
         &#34;&#34;&#34;
 
-        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;both&#39;], \
-                &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
+        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
+                &#39;Input convergence_type has to be one of \&#39;rel\&#39;, \&#39;abs\&#39;, or \&#39;combined\&#39;&#39;
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
-                &#39;Newton Solver norm_type is neither l2 nor linf&#39;
+                &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
                 opts = fenics.PETScOptions
@@ -208,46 +213,52 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, converge
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="adoptpy.nonlinear_solvers.damped_newton_solve"><code class="name flex">
-<span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type='both', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
+<span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Damped Newton method for solving nonlinear PDEs.</p>
-<p>A custom Newton method that includes damping
-(based on a monotonicity test) and several fine tuning possibilities.</p>
-<p>The solver will stop either after the maximum number of iterations
-have been performed or if the termination criterion is satisfied, i.e.,</p>
-<pre><code>    if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is 'rel',
-    if ||F_current|| &lt;= atol                                        if convergence_type is 'abs',
-    or when either of the above is satisfied        if convergence_type is 'both'.
-</code></pre>
-<p>The corresponding norm is specified via 'norm_type'.</p>
+<div class="desc"><p>A damped Newton method for solving nonlinear equations</p>
+<p>The Newton method is based on the natural monotonicity test from Deuflhard.
+It also allows fine tuning via a direct interface, and absolute, relative,
+and combined stopping criteria. Can also be used to specify the solver for
+the inner (linear) subproblems via petsc ksps.</p>
+<p>The method terminates after max_iter iterations, or if a termination criterion is
+satisfied. These criteria are given by
+<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</script></span></p>
+<p>The norm chosen for this termination criterion is specified via norm_type.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>F</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
-<dd>The variational form of the nonlinear problem that shall be
-solved by Newton's method</dd>
+<dd>the variational form of the nonlinear problem to be solved by Newton's method</dd>
 <dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
-<dd>The sought solution / initial guess (the method will also return this)</dd>
+<dd>the sought solution / initial guess (the method will also return this). It is
+not assumed that the initial guess satisfies the Dirichlet boundary conditions,
+these are applied automatically</dd>
 <dt><strong><code>bcs</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
-<dd>A list of DirichletBCs for the nonlinear variational problem</dd>
+<dd>a list of DirichletBCs for the nonlinear variational problem</dd>
 <dt><strong><code>rtol</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>Relative tolerance of the solver if convergence_type is either 'both' or 'rel'
+<dd>relative tolerance of the solver if convergence_type is either 'combined' or 'rel'
 (default is rtol = 1e-10)</dd>
 <dt><strong><code>atol</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>Absolute tolerance of the solver if convergence_type is either 'both' or 'abs'
+<dd>absolute tolerance of the solver if convergence_type is either 'combined' or 'abs'
 (default is atol = 1e-10)</dd>
 <dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Maximum number of iterations carried out by the method
-(default is max_iter = 25)</dd>
+<dd>maximum number of iterations carried out by the method
+(default is max_iter = 50)</dd>
 <dt><strong><code>convergence_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>One of 'both', 'rel', or 'abs' (default is 'both')</dd>
+<dd>one of 'combined', 'rel', or 'abs' (default is 'combined')</dd>
 <dt><strong><code>norm_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>One of 'l2', 'linf' (default is 'l2')</dd>
+<dd>one of 'l2', 'linf' (default is 'l2')</dd>
 <dt><strong><code>damped</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Either true or false, if true then uses a damping strategy, if not,
-uses Newton-Raphson iteration (default is True)</dd>
+<dd>either true or false, if true then uses a damping strategy, if not,
+uses the classical Newton-Raphson iteration (default is True)</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Either true or false, gives updates about the iteration, if true
+<dd>either true or false, prints status of the iteration, if true
 (default is true)</dd>
 <dt><strong><code>ksp</code></strong> :&ensp;<code>petsc4py.PETSc.KSP</code>, optional</dt>
 <dd>the PETSc ksp object used to solve the inner (linear) problem
@@ -255,55 +266,60 @@ if this is None (the default) it uses the direct solver MUMPS</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
-<dd>The solution of the nonlinear variational problem, if converged</dd>
+<dt><code>dolfin.function.function.Function</code></dt>
+<dd>The solution of the nonlinear variational problem, if converged.
+This overrides the input function u.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=25, convergence_type=&#39;both&#39;, norm_type=&#39;l2&#39;, damped=True, verbose=True, ksp=None):
-        &#34;&#34;&#34;Damped Newton method for solving nonlinear PDEs.
+<pre><code class="python">def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type=&#39;combined&#39;, norm_type=&#39;l2&#39;,
+                                                damped=True, verbose=True, ksp=None):
+        r&#34;&#34;&#34;A damped Newton method for solving nonlinear equations
 
-        A custom Newton method that includes damping
-        (based on a monotonicity test) and several fine tuning possibilities.
+        The Newton method is based on the natural monotonicity test from Deuflhard.
+        It also allows fine tuning via a direct interface, and absolute, relative,
+        and combined stopping criteria. Can also be used to specify the solver for
+        the inner (linear) subproblems via petsc ksps.
 
-        The solver will stop either after the maximum number of iterations
-        have been performed or if the termination criterion is satisfied, i.e.,
+        The method terminates after max_iter iterations, or if a termination criterion is
+        satisfied. These criteria are given by
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
+        $$
 
-                if ||F_current|| &lt;= rtol * ||F_initial||        if convergence_type is &#39;rel&#39;,
-                if ||F_current|| &lt;= atol                                        if convergence_type is &#39;abs&#39;,
-                or when either of the above is satisfied        if convergence_type is &#39;both&#39;.
-
-        The corresponding norm is specified via &#39;norm_type&#39;.
+        The norm chosen for this termination criterion is specified via norm_type.
 
         Parameters
         ----------
         F : ufl.form.Form
-                The variational form of the nonlinear problem that shall be
-                solved by Newton&#39;s method
+                the variational form of the nonlinear problem to be solved by Newton&#39;s method
         u : dolfin.function.function.Function
-                The sought solution / initial guess (the method will also return this)
+                the sought solution / initial guess (the method will also return this). It is
+                not assumed that the initial guess satisfies the Dirichlet boundary conditions,
+                these are applied automatically
         bcs : list[dolfin.fem.dirichletbc.DirichletBC]
-                A list of DirichletBCs for the nonlinear variational problem
+                a list of DirichletBCs for the nonlinear variational problem
         rtol : float, optional
-                Relative tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;rel&#39;
+                relative tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;rel&#39;
                 (default is rtol = 1e-10)
         atol : float, optional
-                Absolute tolerance of the solver if convergence_type is either &#39;both&#39; or &#39;abs&#39;
+                absolute tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;abs&#39;
                 (default is atol = 1e-10)
         max_iter : int, optional
-                Maximum number of iterations carried out by the method
-                (default is max_iter = 25)
+                maximum number of iterations carried out by the method
+                (default is max_iter = 50)
         convergence_type : str, optional
-                One of &#39;both&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;both&#39;)
+                one of &#39;combined&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;combined&#39;)
         norm_type : str, optional
-                One of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
+                one of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;)
         damped : bool, optional
-                Either true or false, if true then uses a damping strategy, if not,
-                uses Newton-Raphson iteration (default is True)
+                either true or false, if true then uses a damping strategy, if not,
+                uses the classical Newton-Raphson iteration (default is True)
         verbose : bool, optional
-                Either true or false, gives updates about the iteration, if true
+                either true or false, prints status of the iteration, if true
                 (default is true)
         ksp : petsc4py.PETSc.KSP, optional
                 the PETSc ksp object used to solve the inner (linear) problem
@@ -311,14 +327,15 @@ if this is None (the default) it uses the direct solver MUMPS</dd>
 
         Returns
         -------
-        u : dolfin.function.function.Function
-                The solution of the nonlinear variational problem, if converged
+        dolfin.function.function.Function
+                The solution of the nonlinear variational problem, if converged.
+                This overrides the input function u.
         &#34;&#34;&#34;
 
-        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;both&#39;], \
-                &#39;Newton Solver convergence_type is neither rel nor abs nor both&#39;
+        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
+                &#39;Input convergence_type has to be one of \&#39;rel\&#39;, \&#39;abs\&#39;, or \&#39;combined\&#39;&#39;
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
-                &#39;Newton Solver norm_type is neither l2 nor linf&#39;
+                &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
                 opts = fenics.PETScOptions

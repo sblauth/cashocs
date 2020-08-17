@@ -6,11 +6,11 @@ Created on 16/06/2020, 15.52
 
 from fenics import *
 import numpy as np
-from adoptpy import MeshGen
+from adoptpy import import_mesh
 
 
 
-mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/reference.xdmf')
+mesh, subdomains, boundaries, dx, ds, dS = import_mesh('./mesh/reference.xdmf')
 
 sigma_out = 1.0
 sigma_in = 10.0
@@ -29,7 +29,7 @@ reference = Function(V)
 solve(a==L, reference, bcs)
 
 
-mesh2, subdomains2, boundaries2, dx2, ds2, dS2 = MeshGen('./mesh/mesh.xdmf')
+mesh2, subdomains2, boundaries2, dx2, ds2, dS2 = import_mesh('./mesh/mesh.xdmf')
 V2 = FunctionSpace(mesh2, 'CG', 1)
 
 reference = interpolate(reference, V2)

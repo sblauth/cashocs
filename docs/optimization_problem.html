@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>adoptpy.optimization_problem API documentation</title>
-<meta name="description" content="Created on 14/08/2020, 08.57 …" />
+<meta name="description" content="Contains the blueprint for optimal control and shape optimization problems …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,19 +23,20 @@
 <h1 class="title">Module <code>adoptpy.optimization_problem</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on 14/08/2020, 08.57</p>
-<p>@author: blauths</p>
+<p>Contains the blueprint for optimal control and shape optimization problems</p>
+<p>This module is used to define the base class of optimization problems, which
+has many shared parameters between optimal control and shape optimization
+problems. Can be subclassed to generate custom optimization problems.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;
-Created on 14/08/2020, 08.57
+<pre><code class="python">&#34;&#34;&#34;Contains the blueprint for optimal control and shape optimization problems
 
-@author: blauths
+This module is used to define the base class of optimization problems, which
+has many shared parameters between optimal control and shape optimization
+problems. Can be subclassed to generate custom optimization problems.
 &#34;&#34;&#34;
-
-from ._forms import Lagrangian
 
 
 

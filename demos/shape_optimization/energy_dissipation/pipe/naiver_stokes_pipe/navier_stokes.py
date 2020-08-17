@@ -5,7 +5,7 @@ Created on 15/06/2020, 16.11
 """
 
 from fenics import *
-from adoptpy import ShapeOptimizationProblem, MeshGen
+from adoptpy import ShapeOptimizationProblem, import_mesh
 import numpy as np
 import configparser
 
@@ -18,7 +18,7 @@ config.read('./config.ini')
 
 Re = 4e2
 
-mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/mesh.xdmf')
+mesh, subdomains, boundaries, dx, ds, dS = import_mesh('./mesh/mesh.xdmf')
 
 x = SpatialCoordinate(mesh)
 volume_initial = assemble(1*dx)

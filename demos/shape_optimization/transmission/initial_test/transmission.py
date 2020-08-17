@@ -5,7 +5,7 @@ Created on 16/06/2020, 15.52
 """
 
 from fenics import *
-from adoptpy import ShapeOptimizationProblem, MeshGen
+from adoptpy import ShapeOptimizationProblem, import_mesh
 import numpy as np
 import configparser
 
@@ -18,7 +18,7 @@ sigma_in = 10.0
 rhs_g = 1.0
 
 def generate_reference():
-	mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/reference.xdmf')
+	mesh, subdomains, boundaries, dx, ds, dS = import_mesh('./mesh/reference.xdmf')
 
 	V = FunctionSpace(mesh, 'CG', 1)
 
@@ -38,7 +38,7 @@ def generate_reference():
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = MeshGen('./mesh/mesh.xdmf')
+mesh, subdomains, boundaries, dx, ds, dS = import_mesh('./mesh/mesh.xdmf')
 
 V = FunctionSpace(mesh, 'CG', 1)
 
