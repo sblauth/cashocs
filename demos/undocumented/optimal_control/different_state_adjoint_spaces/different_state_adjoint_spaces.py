@@ -5,14 +5,14 @@ Created on 13/08/2020, 14.27
 """
 
 from fenics import *
-import caospy
+import adoptpy
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = caospy.create_config('config.ini')
+config = adoptpy.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
 
 # Create different spaces for state and adjoint variables
 V = FunctionSpace(mesh, 'CG', 1)
@@ -38,12 +38,12 @@ e = dot(grad(p), grad(y))*dx \
 	- dot(p*n, grad(y))*ds \
 	+ (Constant(gamma)/h)*p*y*ds - u*p*dx
 
-bcs = caospy.wrap_bcs(V, Constant(0), boundaries, [1,2,3,4])
+bcs = adoptpy.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 lambd = 1e-6
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*lambd)*u*u*dx
 
-optimization_problem = caospy.OptimalControlProblem(e, bcs, J, y, u, p, config)
+optimization_problem = adoptpy.OptimalControlProblem(e, bcs, J, y, u, p, config)
 optimization_problem.solve()

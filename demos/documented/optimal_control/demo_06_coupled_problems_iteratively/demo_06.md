@@ -1,7 +1,7 @@
 Demo 06 : Coupled Problems Part II - Picard Approach
 ====================================================
 
-In this demo we show how caospy can be used with a coupled PDE constraint. 
+In this demo we show how adoptpy can be used with a coupled PDE constraint. 
 For this demo, we consider a iterative approach, whereas we investigated
 a monolithic approach in the previous demo.
 
@@ -36,14 +36,14 @@ Initialization
 The setup is as usual 
 
     from fenics import *
-    import caospy
+    import adoptpy
     
     
     
     set_log_level(LogLevel.CRITICAL)
-    config = caospy.create_config('config.ini')
+    config = adoptpy.create_config('config.ini')
     
-    mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
 
 However, compared to the previous examples, there is a major change in the config file. As we want to use
@@ -87,8 +87,8 @@ into a joint list, since we solve them in a decoupled fashion
     
 The boundary conditions are treated analogously
 
-    bcs1 = caospy.wrap_bcs(V, Constant(0), boundaries, [1,2,3,4])
-    bcs2 = caospy.wrap_bcs(V, Constant(0), boundaries, [1,2,3,4])
+    bcs1 = adoptpy.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs2 = adoptpy.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
     bcs = [bcs1, bcs2]
 
 Definition of the optimization problem
@@ -105,7 +105,7 @@ The same is true for the cost functional
 
 Finally, we set up the optimization problem and solve it
 
-    optimization_problem = caospy.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
+    optimization_problem = adoptpy.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
     optimization_problem.solve()
  
 > Comparing the output (especially in the early iterations) between the monlithic and Picard apporach

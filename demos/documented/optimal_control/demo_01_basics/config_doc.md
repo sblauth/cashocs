@@ -1,7 +1,7 @@
 Documentation of the config files for optimal control problems
 ==============================================================
 
-Let us take a look at how the config files are structured for optimal control problems. 
+Let us take a look at how the config files are structured for optimal control problems.
 The corresponding config file is located at './config.ini'.
 
 First of all, the config is divided into three sections: Mesh, StateEquation, and OptimizationRoutine.
@@ -15,12 +15,12 @@ The mesh section consists, for optimal control problems, only of a path to the .
 
     [Mesh]
     mesh_file = ../mesh/mesh.xdmf
-    
-This section is completely optional and can be used when importing GMSH generated meshes. 
+
+This section is completely optional and can be used when importing GMSH generated meshes.
 To convert a .msh file to the .xdmf format, you can use the built-in converter as
 
     mesh-convert gmsh_file.msh xdmf_file.xdmf
-   
+
 from the command line.
 
 
@@ -28,7 +28,7 @@ StateEquation
 -------------
 
 The state equation section is used to detail how the state systems and, hence, also the
-adjoint systems are solved. This includes settings for a Picard iteration. The section 
+adjoint systems are solved. This includes settings for a Picard iteration. The section
 starts as usual with the following command
 
     [StateEquation]
@@ -38,7 +38,7 @@ In the following, we go over each parameter in detail. First, we have
     is_linear = true
 
 This is a boolean parameter which indicates, whether the state equation / system
-is linear. This is used to speed up some computations. Note, that the program will 
+is linear. This is used to speed up some computations. Note, that the program will
 always work when this is set to false, as it treats the linear problem in a nonlinear
 fashion and converges in one iteration. However, using is_linear = true on a nonlinear
 state system throws a fenics error.
@@ -51,15 +51,28 @@ to solve a nonlinear state system.
     inner_newton_rtol = 1e-11
 
 This parameter determines the relative tolerance for the Newton solver used to
-solve a nonlinear state system.
+solve a nonlinear state system. Moreover, we have the following parameters for the Newton method
+
+    newton_damped = True
+
+which determines if a damping should be used (in case this is true) or not (otherwise). This defaults to True if nothing is given. The parameter
+
+    newton_verbose = False
+
+is used to make the Newton solver's output verbose. This is disabled by default. Finally, the parameter
+
+    newton_iter = 50
+
+controls how many iterations the Newton method is allowed to make before it terminates. This defaults to 50.
+
 
 Next, we have
 
     picard_iteration = false
-   
+
 This is another boolean flag. This is used to determine, whether the state system
-shall be solved using a Picard iteration (true) or not (false). For a single 
-state equation (i.e. one single state variable) both options are equivalent. 
+shall be solved using a Picard iteration (true) or not (false). For a single
+state equation (i.e. one single state variable) both options are equivalent.
 Moreover, for an uncoupled system picard_iteration = true converges in a single
 Picard iteration so that it is also equivalent to picard_iteration = false. The difference
 is only active when considering a coupled system with multiple state variables
@@ -68,7 +81,7 @@ that is coupled.
     picard_rtol = 1e-10
 
 This parameter determines the relative tolerance used for the Picard iteration, in case
-this is enabled. 
+this is enabled.
 
     picard_atol = 1e-12
 
@@ -84,7 +97,7 @@ solve the state system before the iteration is terminated.
 
 This enables verbose output of the convergence of the Picard iteration
 
-Note, that it is currently not possible to determine custom krylov solvers 
+Note, that it is currently not possible to determine custom krylov solvers
 for the state system, but this is planned in a future release, and will be
 available via the config files.
 
@@ -101,7 +114,7 @@ The first parameter determines the choice of the particular algorithm, via
 
     algorithm = lbfgs
 
-The possible choices are given by 
+The possible choices are given by
 - 'gd' or 'gradient_descent' : A gradient descent method
 
 - 'cg' or 'conjugate_gradient' : Nonlinear CG methods
@@ -118,15 +131,15 @@ The possible choices are given by
 
     maximum_iterations = 250
 
-This parameter determines the maximum number of iterations carried out by the 
+This parameter determines the maximum number of iterations carried out by the
 solution algorithm before it is terminated.
 
     rtol = 1e-4
 
 This parameter determines the relative tolerance for the solution algorithm.
 In the case where no control constraints are present, this uses the "classical"
-norm of the gradient of the cost functional as measure. In case there are box 
-constraints present, it uses the stationarity measure (see Kelley, Iterative Methods 
+norm of the gradient of the cost functional as measure. In case there are box
+constraints present, it uses the stationarity measure (see Kelley, Iterative Methods
 for Optimization, Chapter 4) as measure.
 
     atol = 0.0
@@ -146,12 +159,12 @@ sufficient decrease, via
 _J(u + td) <= J(u) + eps * t * <g, d>,_
 where u is the current optimization variable, d is the search direction, t is the
 step size, and g is the current gradient. eps is the parameter determined above.
-A value of 1e-4 is recommended and commonly used (see Nocedal and Wright, 
+A value of 1e-4 is recommended and commonly used (see Nocedal and Wright,
 Numerical Optimization).
 
     beta_armijo = 2
 
-This parameter determines the factor by the which the step size is decreased 
+This parameter determines the factor by the which the step size is decreased
 if the Armijo condition is not satisfied, i.e., we get _t = t / beta_ as new
 step size.
 
@@ -161,7 +174,7 @@ This parameter determines, whether we get a hard (false) or soft (true) exit
 of the optimization routine in case it does not converge. In case of a hard exit
 a SystemExit is raised and the script does not complete. However, it can be beneficial
 to still have the subsequent code be processed, which happens in case soft_exit = true.
-Note, however, that in this case the returned results are **NOT** optimal, 
+Note, however, that in this case the returned results are **NOT** optimal,
 as defined by the user input parameters.
 
     verbose = true
@@ -191,11 +204,11 @@ For the L-BFGS method we have the following parameters.
 
     memory_vectors = 2
 
-Determines the size of the memory of the L-BFGS method. E.g., the command 
+Determines the size of the memory of the L-BFGS method. E.g., the command
 above specifies that information of the previous two iterations shall be used.
 The case memory_vectors = 0 yields the classical gradient descent method,
 whereas memory_vectors > maximum_iterations gives rise to the classical
-BFGS method with unlimited memory. 
+BFGS method with unlimited memory.
 
     use_bfgs_scaling = true
 
@@ -225,7 +238,7 @@ Determines which of the nonlinear cg methods shall be used. Available are
 
 This parameter determines, whether the CG method should be restarted with a gradient
 step periodically, which can lead to faster convergence. The amount of iterations
-between restarts is then determined by 
+between restarts is then determined by
 
     cg_periodic_its = 5
 
@@ -240,7 +253,7 @@ and the corresponding relative tolerance (which should lie in (0,1)) is determin
 
     cg_restart_tol = 0.5
 
-Note, that this relative restart reinitializes the iteration with a gradient 
+Note, that this relative restart reinitializes the iteration with a gradient
 step in case subsequent gradients are not "sufficiently" orthogonal anymore.
 
 
@@ -253,7 +266,7 @@ Newton method are determined in the following.
     inner_newton = cg
 
 Determines the Krylov method for the solution of the Newton problem. Should be one
-of 
+of
 
 - 'cg' : A linear conjugate gradient method
 
@@ -285,7 +298,7 @@ Finally, we take a look at the parameters for the primal dual active set method.
 
     inner_pdas = newton
 
-This parameter determines which solution algorithm is used for the inner 
+This parameter determines which solution algorithm is used for the inner
 (unconstrained) optimization problem in the primal dual active set method.
 Can be one of
 
@@ -304,14 +317,14 @@ interfaces used for the solution algorithms, i.e, setting
     inner_pdas = bfgs
     memory_vectors = 2
 
-uses the limited memory BFGS method with memory size 2 as inner solver for the 
+uses the limited memory BFGS method with memory size 2 as inner solver for the
 primal dual active set method.
 
     maximum_iterations_inner_pdas = 100
 
 This parameter detemines the maximum amount of iterations performed by the
 inner solution algorithm for the sub-problems encountered in the primal
-dual active set method. 
+dual active set method.
 
     pdas_shift_mult = 1e-4
 
@@ -323,4 +336,4 @@ of the constraints.
     pdas_inner_tolerance = 1e-2
 
 This parameter determines the relative tolerance used for the inner
-solution algorithms. 
+solution algorithms.

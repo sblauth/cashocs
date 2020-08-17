@@ -5,7 +5,7 @@ Created on 17/06/2020, 11.11
 """
 
 from fenics import *
-from caospy import ShapeOptimizationProblem, MeshGen
+from adoptpy import ShapeOptimizationProblem, MeshGen
 import numpy as np
 import configparser
 

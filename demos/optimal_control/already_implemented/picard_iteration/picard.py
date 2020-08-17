@@ -6,8 +6,8 @@ Created on 30.03.20, 09:49
 
 import configparser
 from fenics import *
-from caospy import OptimalControlProblem, MeshGen
-import caospy
+from adoptpy import OptimalControlProblem, MeshGen
+import adoptpy
 import numpy as np
 
 
@@ -19,7 +19,7 @@ config.read('./config.ini')
 
 # mesh, subdomains, boundaries, dx, ds, dS = MeshGen('../mesh/mesh.xdmf')
 mesh, subdomains, boundaries, dx, ds, dS = MeshGen(config)
-# mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(25)
+# mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)

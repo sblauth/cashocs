@@ -6,7 +6,7 @@ Created on 16/06/2020, 15.52
 
 from fenics import *
 import numpy as np
-from caospy import MeshGen
+from adoptpy import MeshGen
 
 
 

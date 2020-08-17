@@ -6,7 +6,7 @@ Created on 26.03.20, 07:21
 
 import configparser
 from fenics import *
-from caospy import OptimalControlProblem, MeshGen
+from adoptpy import OptimalControlProblem, MeshGen
 import numpy as np
 
 

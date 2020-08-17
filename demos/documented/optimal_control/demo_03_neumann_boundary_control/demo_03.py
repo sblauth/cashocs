@@ -5,14 +5,14 @@ Created on 13/08/2020, 13.15
 """
 
 from fenics import *
-import caospy
+import adoptpy
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = caospy.create_config('config.ini')
+config = adoptpy.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -29,5 +29,5 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
 
 scalar_product = TrialFunction(V)*TestFunction(V)*ds
 
-ocp = caospy.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+ocp = adoptpy.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
 ocp.solve()

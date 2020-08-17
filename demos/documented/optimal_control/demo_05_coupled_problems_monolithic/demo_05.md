@@ -1,7 +1,7 @@
 Demo 05 : Coupled Problems Part I - Monolithic Approach
 =======================================================
 
-In this demo we show how caospy can be used with a coupled PDE constraint. 
+In this demo we show how adoptpy can be used with a coupled PDE constraint. 
 For this demo, we consider a monolithic approach, whereas we investigate 
 an approach based on a Picard iteration in the following demo.
 
@@ -33,14 +33,14 @@ Initialization and variable definitions
 The initialization for this example works as before, i.e., we use
 
     from fenics import *
-    import caospy
+    import adoptpy
     
     
     
     set_log_level(LogLevel.CRITICAL)
-    config = caospy.create_config('config.ini')
+    config = adoptpy.create_config('config.ini')
     
-    mesh, subdomains, boundaries, dx, ds, dS = caospy.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
    
 For the mixed finite element method we have to define a "mixed" function space, via
 
@@ -93,8 +93,8 @@ and the number of state variables and state equations has to coincide.
 
 Moreover, we define the boundary conditions for the components as
 
-    bcs1 = caospy.wrap_bcs(V.sub(0), Constant(0), boundaries, [1,2,3,4])
-    bcs2 = caospy.wrap_bcs(V.sub(1), Constant(0), boundaries, [1,2,3,4])
+    bcs1 = adoptpy.create_bcs_list(V.sub(0), Constant(0), boundaries, [1,2,3,4])
+    bcs2 = adoptpy.create_bcs_list(V.sub(1), Constant(0), boundaries, [1,2,3,4])
     bcs = bcs1 + bcs2
 
 Again, note that we now return a single list of DirichletBC objects, since both lists specify the boundary
@@ -114,6 +114,6 @@ The cost functional can be specified in analogy to the previous one
 
 Finally, we can set up the optimization problem and solve it
 
-    optimization_problem = caospy.OptimalControlProblem(e, bcs, J, state, controls, adjoint, config)
+    optimization_problem = adoptpy.OptimalControlProblem(e, bcs, J, state, controls, adjoint, config)
     optimization_problem.solve()
     
