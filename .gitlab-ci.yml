@@ -6,7 +6,7 @@ pages:
   - echo 'Nothing to do...'
   artifacts:
     paths:
-    - docs/
+    - public/
   only:
   - master
   tags:
