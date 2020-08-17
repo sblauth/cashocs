@@ -1,11 +1,11 @@
+image: alpine:latest
+
 pages:
   stage: deploy
   script:
-    script:
-    - echo 'Nothing to do...'
-
+  - echo 'Nothing to do...'
   artifacts:
     paths:
-      - docs
+    - docs
   only:
-    - master
+  - master
