@@ -9,3 +9,7 @@ pages:
     - docs
   only:
   - master
+  tags:
+  - build
+  - pages
+  - docker
