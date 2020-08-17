@@ -3,7 +3,9 @@ image: alpine:latest
 pages:
   stage: deploy
   script:
-  - echo 'Nothing to do...'
+  - echo 'Creating public folder'
+  - mkdir public
+  - cp -r docs/* public
   artifacts:
     paths:
     - public/
