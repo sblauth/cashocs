@@ -1,0 +1,11 @@
+pages:
+  stage: deploy
+  script:
+    script:
+    - echo 'Nothing to do...'
+
+  artifacts:
+    paths:
+      - docs
+  only:
+    - master
