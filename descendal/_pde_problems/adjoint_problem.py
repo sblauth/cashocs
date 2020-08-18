@@ -7,7 +7,7 @@ Created on 24/02/2020, 09.24
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system
+from ..utils import _assemble_petsc_system, _setup_petsc_options
 
 
 
@@ -40,18 +40,8 @@ class AdjointProblem:
 		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
 		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
 
-		opts = fenics.PETScOptions
-		opts.clear()
-		opts.set('ksp_type', 'preonly')
-		opts.set('pc_type', 'lu')
-		opts.set('pc_factor_mat_solver_type', 'mumps')
-		opts.set('mat_mumps_icntl_24', 1)
-
-		self.ksps = []
-		for i in range(self.form_handler.state_dim):
-			ksp = PETSc.KSP().create()
-			ksp.setFromOptions()
-			self.ksps.append(ksp)
+		self.ksps = [PETSc.KSP().create()]
+		_setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
 		self.number_of_solves = 0
 		self.has_solution = False

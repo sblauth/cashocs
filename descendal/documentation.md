@@ -21,7 +21,7 @@ suitable function space is chosen. This can, e.g., be achieved via
     import descendal
 
     config = descendal.create_config('path_to_config')
-    mesh, _, boundaries, dx, ds, _ = descendal.regular_mesh(25)
+    mesh, subdomains, boundaries, dx, ds, dS = descendal.regular_mesh(25)
     V = FunctionSpace(mesh, 'CG', 1)
 
 The config object which is created from a .ini file is used to determine the
@@ -38,9 +38,9 @@ p and a control variable u, and write the PDE as a weak form
 
 Finally, we have to define the cost functional and the optimization problem
 
-    y_d = Expression('sin(2*pi*x[0]*sin(2*pi*x[1]))', degree=1)
+    y_d = Expression('sin(2*pi * x[0] * sin(2*pi*x[1]))', degree=1)
     alpha = 1e-6
-    J = 1/2*(y - y_d)*(y - y_d)*dx + alpha/2*u*u*dx
+    J = 1/2*(y - y_d) * (y - y_d) * dx + alpha/2*u*u*dx
     opt_problem = descendal.OptimalControlProblem(e, bcs, J, y, u, p, config)
     opt_problem.solve()
 

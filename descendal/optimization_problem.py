@@ -5,6 +5,8 @@ has many shared parameters between optimal control and shape optimization
 problems. Can be subclassed to generate custom optimization problems.
 """
 
+import copy
+
 
 
 class OptimizationProblem:
@@ -16,7 +18,8 @@ class OptimizationProblem:
 	optimization problems.
 	"""
 
-	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None):
+	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
+				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
 		"""Initializes the optimization problem.
 
 		If one uses a single PDE constraint, the inputs can be the objects
@@ -47,6 +50,14 @@ class OptimizationProblem:
 			A list of functions that act as initial guess for the state variables, should be valid
 			input for fenics.assign. If this is None, then a zero initial guess is used
 			(default is None).
+		ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the state systems. If this is None, then the direct solver
+			mumps is used (default is None).
+		adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the adjoint systems. If this is None, then the same options
+			as for the state systems are used (default is None).
 		"""
 
 		### Overloading, so that we do not have to use lists for a single state and a single control
@@ -160,11 +171,49 @@ class OptimizationProblem:
 				raise SystemExit('Initial guess has to be a list of functions')
 
 
+		### ksp_options
+		if ksp_options is None:
+			self.ksp_options = []
+			option = [['ksp_type', 'preonly'],
+					  ['pc_type', 'lu'],
+					  ['pc_factor_mat_solver_type', 'mumps'],
+					  ['mat_mumps_icntl_24', 1]]
+
+			for i in range(self.state_dim):
+				self.ksp_options.append(option)
+
+		elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == str:
+			self.ksp_options = [ksp_options[:]]
+
+		elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == list:
+			self.ksp_options = ksp_options[:]
+
+		else:
+			raise SystemExit('Wrong input format for ksp_options.')
+
+
+
+		### adjoint_ksp_options
+		if adjoint_ksp_options is None:
+			self.adjoint_ksp_options = self.ksp_options[:]
+
+		elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == str:
+			self.adjoint_ksp_options = [adjoint_ksp_options[:]]
+
+		elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == list:
+			self.adjoint_ksp_options = adjoint_ksp_options[:]
+
+		else:
+			raise SystemExit('Wrong input format for adjoint_ksp_options.')
+
+
 		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
 		assert len(self.states) == self.state_dim, 'Length of states does not match'
 		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
 		if self.initial_guess is not None:
 			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
+		assert len(self.ksp_options) == self.state_dim, 'Length of states does not match'
+		assert len(self.adjoint_ksp_options) == self.state_dim, 'Length of states does not match'
 
 		self.state_problem = None
 		self.adjoint_problem = None

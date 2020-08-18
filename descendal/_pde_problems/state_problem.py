@@ -8,7 +8,7 @@ import fenics
 import numpy as np
 from ..nonlinear_solvers import damped_newton_solve
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system
+from ..utils import _assemble_petsc_system, _setup_petsc_options
 
 
 
@@ -47,19 +47,13 @@ class StateProblem:
 
 		self.newton_atols = [1 for i in range(self.form_handler.state_dim)]
 
-		opts = fenics.PETScOptions
-		opts.clear()
-		opts.set('ksp_type', 'preonly')
-		opts.set('pc_type', 'lu')
-		opts.set('pc_factor_mat_solver_type', 'mumps')
-		opts.set('mat_mumps_icntl_24', 1)
+		self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
+		_setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
-		self.ksps = []
-
-		for i in range(self.form_handler.state_dim):
-			ksp = PETSc.KSP().create()
-			ksp.setFromOptions()
-			self.ksps.append(ksp)
+		# adapt the tolerances so that the Newton system can be solved sucessfully
+		if not self.form_handler.state_is_linear:
+			for ksp in self.ksps:
+				ksp.setTolerances(rtol=self.newton_rtol/100, atol=self.newton_atol/100)
 
 		self.number_of_solves = 0
 		self.has_solution = False
@@ -128,6 +122,10 @@ class StateProblem:
 					for j in range(self.form_handler.state_dim):
 						if self.initial_guess is not None:
 							fenics.assign(self.states[j], self.initial_guess[j])
+
+						# adapt tolerances so that a solution is possible
+						self.ksps[j].setTolerances(rtol=np.minimum(0.9*res, 0.9)/100, atol=self.newton_atols[j]/100)
+
 						self.states[j] = damped_newton_solve(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
 															 rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], max_iter=self.newton_iter,
 															 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[j])

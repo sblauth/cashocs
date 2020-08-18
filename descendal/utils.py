@@ -9,6 +9,7 @@ manipulation may also be of interest.
 import fenics
 import configparser
 import os
+from petsc4py import PETSc
 
 
 
@@ -293,3 +294,38 @@ def _assemble_petsc_system(A_form, b_form, bcs=None):
 	b = fenics.as_backend_type(b).vec()
 
 	return A, b
+
+
+
+def _setup_petsc_options(ksps, ksp_options):
+	"""Sets up an (iterative) linear solver.
+
+	This is used to pass user defined command line options for PETSc
+	to the PETSc KSP objects.
+	Here, options[i] is applied to ksps[i]
+
+	Parameters
+	----------
+	ksps : list[petsc4py.PETSc.KSP]
+		A list of PETSc KSP objects (linear solvers) to which the (command line)
+		options are applied to.
+	ksp_options : list[list[list[str]]]
+		A list of command line options that specify the iterative solver
+		from PETSc.
+
+	Returns
+	-------
+	None
+	"""
+
+	assert len(ksps) == len(ksp_options), 'Length of options and ksps does not match'
+
+	opts = fenics.PETScOptions
+
+	for i in range(len(ksps)):
+		opts.clear()
+
+		for option in ksp_options[i]:
+			opts.set(*option)
+
+		ksps[i].setFromOptions()

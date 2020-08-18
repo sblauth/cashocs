@@ -115,7 +115,7 @@ def multiplication(x):
 
 
 
-class _EmptyMeasure:
+class EmptyMeasure:
         &#34;&#34;&#34;Implements an empty measure (e.g. of a null set).
 
         This is used for automatic measure generation, e.g., if
@@ -172,12 +172,12 @@ def generate_measure(idx, measure):
 
         Returns
         -------
-        ufl.measure.Measure or descendal.utils._EmptyMeasure
+        ufl.measure.Measure or descendal.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
         &#34;&#34;&#34;
 
         if len(idx) == 0:
-                out_measure = _EmptyMeasure(measure)
+                out_measure = EmptyMeasure(measure)
 
         else:
                 out_measure = measure(idx[0])
@@ -469,7 +469,7 @@ shall define the new measure.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>ufl.measure.Measure</code> or <code>descendal.utils._EmptyMeasure</code></dt>
+<dt><code>ufl.measure.Measure</code> or <code><a title="descendal.utils.EmptyMeasure" href="#descendal.utils.EmptyMeasure">EmptyMeasure</a></code></dt>
 <dd>The corresponding sum of the measures or an empty measure.</dd>
 </dl></div>
 <details class="source">
@@ -494,12 +494,12 @@ shall define the new measure.</dd>
 
         Returns
         -------
-        ufl.measure.Measure or descendal.utils._EmptyMeasure
+        ufl.measure.Measure or descendal.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
         &#34;&#34;&#34;
 
         if len(idx) == 0:
-                out_measure = _EmptyMeasure(measure)
+                out_measure = EmptyMeasure(measure)
 
         else:
                 out_measure = measure(idx[0])
@@ -635,6 +635,63 @@ the built-in sum function.</p>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="descendal.utils.EmptyMeasure"><code class="flex name class">
+<span>class <span class="ident">EmptyMeasure</span></span>
+<span>(</span><span>measure)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Implements an empty measure (e.g. of a null set).</p>
+<p>This is used for automatic measure generation, e.g., if
+the fixed boundary is empty for a shape optimization problem,
+and is used to avoid case distinctions.</p>
+<p>Initializes self.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>measure</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
+<dd>The underlying UFL measure.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmptyMeasure:
+        &#34;&#34;&#34;Implements an empty measure (e.g. of a null set).
+
+        This is used for automatic measure generation, e.g., if
+        the fixed boundary is empty for a shape optimization problem,
+        and is used to avoid case distinctions.
+        &#34;&#34;&#34;
+
+        def __init__(self, measure):
+                &#34;&#34;&#34;Initializes self.
+
+                Parameters
+                ----------
+                measure : ufl.measure.Measure
+                        The underlying UFL measure.
+                &#34;&#34;&#34;
+
+                self.measure = measure
+
+
+
+        def __rmul__(self, other):
+                &#34;&#34;&#34;Generates a UFL form of the empty measure when multiplied from the right.
+
+                Parameters
+                ----------
+                other : ufl.core.expr.Expr
+                        A UFL expression to be integrated over an empty measure.
+
+                Returns
+                -------
+                ufl.form.Form
+                        The resulting UFL form.
+                &#34;&#34;&#34;
+
+                return fenics.Constant(0)*other*self.measure</code></pre>
+</details>
+</dd>
 <dt id="descendal.utils.Interpolator"><code class="flex name class">
 <span>class <span class="ident">Interpolator</span></span>
 <span>(</span><span>V, W)</span>
@@ -771,6 +828,9 @@ The function spaces can even be defined on different meshes.</p>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="descendal.utils.EmptyMeasure" href="#descendal.utils.EmptyMeasure">EmptyMeasure</a></code></h4>
+</li>
 <li>
 <h4><code><a title="descendal.utils.Interpolator" href="#descendal.utils.Interpolator">Interpolator</a></code></h4>
 <ul class="">

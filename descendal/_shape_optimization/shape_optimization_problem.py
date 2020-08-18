@@ -27,7 +27,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
-				 adjoints, boundaries, config, initial_guess=None):
+				 adjoints, boundaries, config, initial_guess=None,
+				 ksp_options=None, adjoint_ksp_options=None):
 		"""Initializes the shape optimization problem
 
 		This is used to generate all classes and functionalities. First ensures
@@ -53,11 +54,19 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		config : configparser.ConfigParser
 			the config file for the problem, generated via descendal.create_config(path_to_config)
 		initial_guess : list[dolfin.function.function.Function], optional
-			list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+			A list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
 			(defaults to None (which means a zero initial guess))
+		ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the state systems. If this is None, then the direct solver
+			mumps is used (default is None).
+		adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the adjoint systems. If this is None, then the same options
+			as for the state systems are used (default is None).
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
 
 		### boundaries
 		if boundaries.__module__ == 'dolfin.cpp.mesh' and type(boundaries).__name__ == 'MeshFunctionSizet':
@@ -72,7 +81,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.boundaries, self.config)
+		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
+												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
 		self.mesh_handler = _MeshHandler(self)
 
 		self.state_spaces = self.shape_form_handler.state_spaces

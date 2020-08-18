@@ -29,7 +29,8 @@ class OptimalControlProblem(OptimizationProblem):
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
-				 riesz_scalar_products=None, control_constraints=None, initial_guess=None):
+				 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
+				 adjoint_ksp_options=None):
 		r"""Initializes the optimal control problem.
 
 		This is used to generate all classes and functionalities. First ensures
@@ -65,7 +66,14 @@ class OptimalControlProblem(OptimizationProblem):
 		initial_guess : list[dolfin.function.function.Function], optional
 			list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
 			(defaults to None (which means a zero initial guess))
-
+		ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the state systems. If this is None, then the direct solver
+			mumps is used (default is None).
+		adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+			A list of strings corresponding to command line options for PETSc,
+			used to solve the adjoint systems. If this is None, then the same options
+			as for the state systems are used (default is None).
 
 		Examples
 		--------
@@ -73,7 +81,7 @@ class OptimalControlProblem(OptimizationProblem):
 		in the "demos" folder.
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
 		### Overloading, such that we do not have to use lists for a single state and a single control
 		### controls
 		try:
@@ -195,7 +203,8 @@ class OptimalControlProblem(OptimizationProblem):
 		### end overloading
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.riesz_scalar_products, self.control_constraints)
+		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
+											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options)
 
 		self.state_spaces = self.form_handler.state_spaces
 		self.control_spaces = self.form_handler.control_spaces

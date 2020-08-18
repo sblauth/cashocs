@@ -10,7 +10,7 @@ Installation
 
 Setup (from ITWM)
 
-- Load the module tv/fenics
+- Load the module tv/descendal
 
     `module load tv/descendal`
 

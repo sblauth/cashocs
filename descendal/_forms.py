@@ -69,7 +69,7 @@ class FormHandler:
 
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, adjoints, config):
+	def __init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options):
 		"""Initializes the form handler
 
 		Parameters
@@ -84,6 +84,12 @@ class FormHandler:
 			The function that acts as the adjoint variable.
 		config : configparser.ConfigParser
 			The configparser object of the config file.
+		ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			state systems.
+		adjoint_ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			adjoint systems.
 		"""
 
 		# Initialize the attributes from the arguments
@@ -92,6 +98,8 @@ class FormHandler:
 		self.states = states
 		self.adjoints = adjoints
 		self.config = config
+		self.state_ksp_options = ksp_options
+		self.adjoint_ksp_options = adjoint_ksp_options
 
 		# Further initializations
 		self.cost_functional_form = self.lagrangian.cost_functional_form
@@ -237,7 +245,7 @@ class ControlFormHandler(FormHandler):
 	ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints):
+	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints, ksp_options, adjoint_ksp_options):
 		"""Initializes the ControlFormHandler class.
 
 		Parameters
@@ -258,9 +266,15 @@ class ControlFormHandler(FormHandler):
 			The UFL forms of the scalar products for the control variables.
 		control_constraints : list[list[dolfin.function.function.Function]]
 			The control constraints of the problem.
+		ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			state systems.
+		adjoint_ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			adjoint systems.
 		"""
 
-		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config)
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
 
 		# Initialize the attributes from the arguments
 		self.controls = controls
@@ -565,7 +579,7 @@ class ShapeFormHandler(FormHandler):
 	ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config):
+	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options):
 		"""Initializes the ShapeFormHandler object
 
 		Parameters
@@ -582,9 +596,15 @@ class ShapeFormHandler(FormHandler):
 			a MeshFunction for the boundary markers
 		config : configparser.ConfigParser
 			the configparser object storing the problems config
+		ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			state systems.
+		adjoint_ksp_options : list[list[list[str]]]
+			The list of command line options for the KSP for the
+			adjoint systems.
 		"""
 
-		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config)
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
 
 		self.boundaries = boundaries
 

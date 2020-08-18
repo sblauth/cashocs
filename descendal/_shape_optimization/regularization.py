@@ -6,7 +6,6 @@ Created on 15/06/2020, 14.37
 
 import fenics
 from fenics import Constant, inner, div
-from descendal.utils import generate_measure
 import json
 
 
