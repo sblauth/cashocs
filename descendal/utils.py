@@ -81,7 +81,7 @@ def multiplication(x):
 
 
 
-class _EmptyMeasure:
+class EmptyMeasure:
 	"""Implements an empty measure (e.g. of a null set).
 
 	This is used for automatic measure generation, e.g., if
@@ -138,12 +138,12 @@ def generate_measure(idx, measure):
 
 	Returns
 	-------
-	ufl.measure.Measure or descendal.utils._EmptyMeasure
+	ufl.measure.Measure or descendal.utils.EmptyMeasure
 		The corresponding sum of the measures or an empty measure.
 	"""
 
 	if len(idx) == 0:
-		out_measure = _EmptyMeasure(measure)
+		out_measure = EmptyMeasure(measure)
 
 	else:
 		out_measure = measure(idx[0])

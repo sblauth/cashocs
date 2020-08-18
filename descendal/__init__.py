@@ -1,4 +1,4 @@
-r"""descendal is an ADjoint-based OPTimization package for PYthon.
+r"""descendal is an adjoint-based optimization package for python.
 
 It can be used to treat PDE constrained optimal control and shape optimization problems
 numerically in an automated fashion and is based on the finite element software fenics.

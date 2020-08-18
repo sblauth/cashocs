@@ -1,5 +1,5 @@
-How can I use descendal?
-------------------------
+How to use?
+-----------
 
 Since descendal is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one

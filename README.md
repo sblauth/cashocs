@@ -1,8 +1,8 @@
-CAOSPY
-======
+DESCENDAL
+=========
 
-descendal is a **C**ontinuous **A**djoint-based **O**ptimal control and **S**hape
-optimization package for **P**ython
+descendal is a continuous adjoint-based optimal control and shape
+optimization package for python
 
 
 Installation
@@ -12,7 +12,7 @@ Setup (from ITWM)
 
 - Load the module tv/fenics
 
-    `module load tv/fenics/2019.1.0`
+    `module load tv/descendal`
 
     and run
 
@@ -40,7 +40,7 @@ Setup (external)
 
     `conda env create -f conda_env.yml -n your_environment_name`
 
-    where you replace 'your_environment_name' by an appropriate name such as 'fenics'
+    where you replace 'your_environment_name' by an appropriate name such as 'descendal'
 
   - Alternatively, use the environment file conda_env.yml to install the packages
     (or maybe even newer versions of them) via conda-forge and pip
