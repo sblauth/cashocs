@@ -5,7 +5,7 @@ Created on 15/06/2020, 08.09
 """
 
 from fenics import *
-from adoptpy import ShapeOptimizationProblem
+from descendal import ShapeOptimizationProblem
 import numpy as np
 import configparser
 

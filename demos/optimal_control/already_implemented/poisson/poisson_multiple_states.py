@@ -6,7 +6,7 @@ Created on 03/03/2020, 11.10
 
 import configparser
 from fenics import *
-from adoptpy import OptimalControlProblem, import_mesh
+from descendal import OptimalControlProblem, import_mesh
 import numpy as np
 import time
 

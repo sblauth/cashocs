@@ -26,14 +26,14 @@ Initially, the code is again identical to the one demo_01 and demo_02,
 i.e., we have 
 
     from fenics import *
-    import adoptpy
+    import descendal
     
     
     
     set_log_level(LogLevel.CRITICAL)
-    config = adoptpy.create_config('./config.ini')
+    config = descendal.create_config('./config.ini')
     
-    mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = descendal.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
     
     y = Function(V)
@@ -88,7 +88,7 @@ Setup of the optimization problem and its solution
 With this, we can now define the optimal control problem with the 
 additional keyword argument riesz_scalar_products as follows
 
-    ocp = adoptpy.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+    ocp = descendal.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
     ocp.solve()
     
 which also directly solves the problem.

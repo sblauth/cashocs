@@ -1,7 +1,7 @@
 CAOSPY
 ======
 
-adoptpy is a **C**ontinuous **A**djoint-based **O**ptimal control and **S**hape
+descendal is a **C**ontinuous **A**djoint-based **O**ptimal control and **S**hape
 optimization package for **P**ython
 
 
@@ -18,7 +18,7 @@ Setup (from ITWM)
 
     `activate`
 
-- The git repository with the demos can be found under /p/tv/local/adoptpy
+- The git repository with the demos can be found under /p/tv/local/descendal
 
 - If you want to have a custom installation, you can clone the git repository yourself,
   but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)

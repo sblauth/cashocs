@@ -1,7 +1,7 @@
 Demo 02 : Control Constraints
 =============================
 
-In this demo we investigate the basics of adoptpy for
+In this demo we investigate the basics of descendal for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
@@ -34,14 +34,14 @@ code in the following. A detailed description can be found
 in the documentation of "demo_01.py".
 
     from fenics import *
-    import adoptpy
+    import descendal
 
 
 
     set_log_level(LogLevel.CRITICAL)
-    config = adoptpy.create_config('./config.ini')
+    config = descendal.create_config('./config.ini')
 
-    mesh, subdomains, boundaries, dx, ds, dS = adoptpy.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = descendal.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
 
     y = Function(V)
@@ -50,7 +50,7 @@ in the documentation of "demo_01.py".
 
     e = inner(grad(y), grad(p))*dx - u*p*dx
 
-    bcs = adoptpy.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = descendal.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 
     y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
     alpha = 1e-6
@@ -85,7 +85,7 @@ Now, we can set up the optimal control problem as we did before,
 using the additional keyword argument control_constraints into which
 we place the list cc, and then solve it via ocp.solve()
 
-    ocp = adoptpy.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
+    ocp = descendal.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
     ocp.solve()
 
 To check that the box constraints are actually satisfied by our
