@@ -172,7 +172,7 @@ step size.
 
 This parameter determines, whether we get a hard (false) or soft (true) exit
 of the optimization routine in case it does not converge. In case of a hard exit
-a SystemExit is raised and the script does not complete. However, it can be beneficial
+an Exception is raised and the script does not complete. However, it can be beneficial
 to still have the subsequent code be processed, which happens in case soft_exit = true.
 Note, however, that in this case the returned results are **NOT** optimal,
 as defined by the user input parameters.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>descendal.nonlinear_solvers API documentation</title>
+<title>cestrel.nonlinear_solvers API documentation</title>
 <meta name="description" content="Custom solvers for nonlinear equations …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -20,7 +20,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>descendal.nonlinear_solvers</code></h1>
+<h1 class="title">Module <code>cestrel.nonlinear_solvers</code></h1>
 </header>
 <section id="section-intro">
 <p>Custom solvers for nonlinear equations</p>
@@ -38,6 +38,7 @@ a damped Newton method. Other methods might follow in the future.
 
 import fenics
 from petsc4py import PETSc
+from .utils import _setup_petsc_options
 
 
 
@@ -108,14 +109,15 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
                 &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
-                opts = fenics.PETScOptions
-                opts.clear()
-                opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
-                opts.set(&#39;pc_type&#39;, &#39;lu&#39;)
-                opts.set(&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;)
-                opts.set(&#39;mat_mumps_icntl_24&#39;, 1)
+                options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;lu&#39;],
+                        [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                        [&#39;mat_mumps_icntl_24&#39;, 1]
+                ]]
 
                 ksp = PETSc.KSP().create()
+                _setup_petsc_options([ksp, options])
                 ksp.setFromOptions()
         
         dF = fenics.derivative(F, u)
@@ -166,7 +168,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
                                 _, b = fenics.assemble_system(dF, -F, bcs_hom)
                                 b = fenics.as_backend_type(b).vec()
                                 ksp.solve(b, ddu.vector().vec())
-                                
+
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
                                 else:
@@ -181,10 +183,10 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
                         u.vector()[:] += du.vector()[:]
                 
                 if breakdown:
-                        raise SystemExit(&#39;Damped Newton Solver Breakdown&#39;)
+                        raise Exception(&#39;Damped Newton Solver Breakdown&#39;)
 
                 if iterations == max_iter:
-                        raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
+                        raise Exception(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
                 
                 A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
                 A.ident_zeros()
@@ -215,7 +217,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="descendal.nonlinear_solvers.damped_newton_solve"><code class="name flex">
+<dt id="cestrel.nonlinear_solvers.damped_newton_solve"><code class="name flex">
 <span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
@@ -347,14 +349,15 @@ This overrides the input function u.</dd>
                 &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
-                opts = fenics.PETScOptions
-                opts.clear()
-                opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
-                opts.set(&#39;pc_type&#39;, &#39;lu&#39;)
-                opts.set(&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;)
-                opts.set(&#39;mat_mumps_icntl_24&#39;, 1)
+                options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;lu&#39;],
+                        [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                        [&#39;mat_mumps_icntl_24&#39;, 1]
+                ]]
 
                 ksp = PETSc.KSP().create()
+                _setup_petsc_options([ksp, options])
                 ksp.setFromOptions()
         
         dF = fenics.derivative(F, u)
@@ -405,7 +408,7 @@ This overrides the input function u.</dd>
                                 _, b = fenics.assemble_system(dF, -F, bcs_hom)
                                 b = fenics.as_backend_type(b).vec()
                                 ksp.solve(b, ddu.vector().vec())
-                                
+
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
                                 else:
@@ -420,10 +423,10 @@ This overrides the input function u.</dd>
                         u.vector()[:] += du.vector()[:]
                 
                 if breakdown:
-                        raise SystemExit(&#39;Damped Newton Solver Breakdown&#39;)
+                        raise Exception(&#39;Damped Newton Solver Breakdown&#39;)
 
                 if iterations == max_iter:
-                        raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
+                        raise Exception(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
                 
                 A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
                 A.ident_zeros()
@@ -460,12 +463,12 @@ This overrides the input function u.</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="descendal" href="index.html">descendal</a></code></li>
+<li><code><a title="cestrel" href="index.html">cestrel</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="descendal.nonlinear_solvers.damped_newton_solve" href="#descendal.nonlinear_solvers.damped_newton_solve">damped_newton_solve</a></code></li>
+<li><code><a title="cestrel.nonlinear_solvers.damped_newton_solve" href="#cestrel.nonlinear_solvers.damped_newton_solve">damped_newton_solve</a></code></li>
 </ul>
 </li>
 </ul>

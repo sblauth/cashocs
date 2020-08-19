@@ -6,8 +6,8 @@ Created on 30.03.20, 09:49
 
 import configparser
 from fenics import *
-from descendal import OptimalControlProblem, import_mesh
-import descendal
+from cestrel import OptimalControlProblem, import_mesh
+import cestrel
 import numpy as np
 
 
@@ -19,7 +19,7 @@ config.read('./config.ini')
 
 # mesh, subdomains, boundaries, dx, ds, dS = import_mesh('../mesh/mesh.xdmf')
 mesh, subdomains, boundaries, dx, ds, dS = import_mesh(config)
-# mesh, subdomains, boundaries, dx, ds, dS = descendal.regular_mesh(25)
+# mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)

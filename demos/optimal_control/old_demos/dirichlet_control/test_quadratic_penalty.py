@@ -6,7 +6,7 @@ Created on 23.03.20, 15:15
 
 import configparser
 from fenics import *
-from descendal import OptimalControlProblem, import_mesh
+from cestrel import OptimalControlProblem, import_mesh
 import numpy as np
 
 

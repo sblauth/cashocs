@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>descendal API documentation</title>
-<meta name="description" content="descendal is an adjoint-based optimization package for python …" />
+<title>cestrel API documentation</title>
+<meta name="description" content="cestrel is an adjoint-based optimization package for python …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -20,17 +20,17 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>descendal</code></h1>
+<h1 class="title">Package <code>cestrel</code></h1>
 </header>
 <section id="section-intro">
-<p>descendal is an adjoint-based optimization package for python.</p>
+<p>cestrel is an adjoint-based optimization package for python.</p>
 <p>It can be used to treat PDE constrained optimal control and shape optimization problems
 numerically in an automated fashion and is based on the finite element software fenics.</p>
 <h2 id="how-to-use">How to use?</h2>
-<p>Since descendal is based on FEniCS, most of the user input consists of definining
+<p>Since cestrel is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
 has a functioning code for the forward problem and the evaluation of the cost
-functional, the necessary modifications to optimize the problem in descendal
+functional, the necessary modifications to optimize the problem in cestrel
 are minimal. Consider, e.g., the following optimization problem</p>
 <p><span><span class="MathJax_Preview"> \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 \text{d}x + \frac{\alpha}{2} u^2 \text{d}x \\
 \text{ subject to } - \Delta y = u \quad \text{ in } \Omega, \\
@@ -43,10 +43,10 @@ are minimal. Consider, e.g., the following optimization problem</p>
 <p>For our purposes, we assume that a mesh for this problem is defined and that a
 suitable function space is chosen. This can, e.g., be achieved via</p>
 <pre><code>from fenics import *
-import descendal
+import cestrel
 
-config = descendal.create_config('path_to_config')
-mesh, _, boundaries, dx, ds, _ = descendal.regular_mesh(25)
+config = cestrel.create_config('path_to_config')
+mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 </code></pre>
 <p>The config object which is created from a .ini file is used to determine the
@@ -57,22 +57,22 @@ p and a control variable u, and write the PDE as a weak form</p>
 p = Function(V)
 u = Function(V)
 e = inner(grad(y), grad(p)) - u*p*dx
-bcs = descendal.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 </code></pre>
 <p>Finally, we have to define the cost functional and the optimization problem</p>
-<pre><code>y_d = Expression('sin(2*pi*x[0]*sin(2*pi*x[1]))', degree=1)
+<pre><code>y_d = Expression('sin(2*pi * x[0] * sin(2*pi*x[1]))', degree=1)
 alpha = 1e-6
-J = 1/2*(y - y_d)*(y - y_d)*dx + alpha/2*u*u*dx
-opt_problem = descendal.OptimalControlProblem(e, bcs, J, y, u, p, config)
+J = 1/2*(y - y_d) * (y - y_d) * dx + alpha/2*u*u*dx
+opt_problem = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config)
 opt_problem.solve()
 </code></pre>
-<p>The only major difference between descendal and fenics code is that one has to
+<p>The only major difference between cestrel and fenics code is that one has to
 use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with fenics.</p>
-<p>For a detailed discussion of the features of descendal and its usage we refer to the deomos.</p>
+<p>For a detailed discussion of the features of cestrel and its usage we refer to the deomos.</p>
 <h2 id="command-line-interface-for-mesh-conversion">Command Line Interface For Mesh Conversion</h2>
-<p>descendal includes a command line interface for converting gmsh mesh files to
+<p>cestrel includes a command line interface for converting gmsh mesh files to
 xdmf ones, which can be read very easily into fenics. The corresponding command
 for the conversion (after having generated a mesh file 'in.msh' with gmsh)
 is given by</p>
@@ -81,21 +81,21 @@ is given by</p>
 <p>This also create .xdmf files for subdomains and boundaries in case they are tagged
 in gmsh as Physical quantities.</p>
 <h2 id="a-word-of-caution">A Word Of Caution</h2>
-<p>I develop descendal as part of my PhD. I will try my best to document everything
+<p>I develop cestrel as part of my PhD. I will try my best to document everything
 the package is capable of and to maintain the project in a sensible fashion.
 However, I cannot guarantee this. It is still undergoing many developments and,
 unfortunately, the API still may undergo large changes. So use it with care.</p>
 <h2 id="contributing">Contributing</h2>
-<p>descendal is available on gitlab. As this project is part of my PhD, I am currently
+<p>cestrel is available on gitlab. As this project is part of my PhD, I am currently
 the sole developer. Bug reports, feedback, and further suggestions are always
 welcome.</p>
 <h2 id="license">License</h2>
-<p>descendal is licensed under the &hellip; license.</p>
+<p>cestrel is licensed under the &hellip; license.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">r&#34;&#34;&#34;descendal is an adjoint-based optimization package for python.
+<pre><code class="python">r&#34;&#34;&#34;cestrel is an adjoint-based optimization package for python.
 
 It can be used to treat PDE constrained optimal control and shape optimization problems
 numerically in an automated fashion and is based on the finite element software fenics.
@@ -118,19 +118,19 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="descendal.geometry" href="geometry.html">descendal.geometry</a></code></dt>
+<dt><code class="name"><a title="cestrel.geometry" href="geometry.html">cestrel.geometry</a></code></dt>
 <dd>
 <div class="desc"><p>Mesh generation and import tools …</p></div>
 </dd>
-<dt><code class="name"><a title="descendal.nonlinear_solvers" href="nonlinear_solvers.html">descendal.nonlinear_solvers</a></code></dt>
+<dt><code class="name"><a title="cestrel.nonlinear_solvers" href="nonlinear_solvers.html">cestrel.nonlinear_solvers</a></code></dt>
 <dd>
 <div class="desc"><p>Custom solvers for nonlinear equations …</p></div>
 </dd>
-<dt><code class="name"><a title="descendal.optimization_problem" href="optimization_problem.html">descendal.optimization_problem</a></code></dt>
+<dt><code class="name"><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></dt>
 <dd>
 <div class="desc"><p>Contains the blueprint for optimal control and shape optimization problems …</p></div>
 </dd>
-<dt><code class="name"><a title="descendal.utils" href="utils.html">descendal.utils</a></code></dt>
+<dt><code class="name"><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></dt>
 <dd>
 <div class="desc"><p>Module for utility and helper functions …</p></div>
 </dd>
@@ -141,7 +141,7 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="descendal.create_bcs_list"><code class="name flex">
+<dt id="cestrel.create_bcs_list"><code class="name flex">
 <span>def <span class="ident">create_bcs_list</span></span>(<span>function_space, value, boundaries, idcs)</span>
 </code></dt>
 <dd>
@@ -206,14 +206,13 @@ onto which the Dirichlet boundary conditions should be applied to.</dd>
         return bcs_list</code></pre>
 </details>
 </dd>
-<dt id="descendal.create_config"><code class="name flex">
+<dt id="cestrel.create_config"><code class="name flex">
 <span>def <span class="ident">create_config</span></span>(<span>path)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Generates a config object from a config file.</p>
 <p>Creates the config from a .ini file via the
-configparser package, and also adds the path of the
-config file to the config. This is helpful for remeshing.</p>
+configparser package.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
@@ -233,8 +232,7 @@ to the .ini file.</dd>
         &#34;&#34;&#34;Generates a config object from a config file.
 
         Creates the config from a .ini file via the
-        configparser package, and also adds the path of the
-        config file to the config. This is helpful for remeshing.
+        configparser package.
 
         Parameters
         ----------
@@ -250,12 +248,11 @@ to the .ini file.</dd>
 
         config = configparser.ConfigParser()
         config.read(path)
-        config.set(&#39;Mesh&#39;, &#39;config_path&#39;, os.path.abspath(path))
 
         return config</code></pre>
 </details>
 </dd>
-<dt id="descendal.damped_newton_solve"><code class="name flex">
+<dt id="cestrel.damped_newton_solve"><code class="name flex">
 <span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
@@ -387,14 +384,15 @@ This overrides the input function u.</dd>
                 &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
         if ksp is None:
-                opts = fenics.PETScOptions
-                opts.clear()
-                opts.set(&#39;ksp_type&#39;, &#39;preonly&#39;)
-                opts.set(&#39;pc_type&#39;, &#39;lu&#39;)
-                opts.set(&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;)
-                opts.set(&#39;mat_mumps_icntl_24&#39;, 1)
+                options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;lu&#39;],
+                        [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                        [&#39;mat_mumps_icntl_24&#39;, 1]
+                ]]
 
                 ksp = PETSc.KSP().create()
+                _setup_petsc_options([ksp, options])
                 ksp.setFromOptions()
         
         dF = fenics.derivative(F, u)
@@ -445,7 +443,7 @@ This overrides the input function u.</dd>
                                 _, b = fenics.assemble_system(dF, -F, bcs_hom)
                                 b = fenics.as_backend_type(b).vec()
                                 ksp.solve(b, ddu.vector().vec())
-                                
+
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
                                 else:
@@ -460,10 +458,10 @@ This overrides the input function u.</dd>
                         u.vector()[:] += du.vector()[:]
                 
                 if breakdown:
-                        raise SystemExit(&#39;Damped Newton Solver Breakdown&#39;)
+                        raise Exception(&#39;Damped Newton Solver Breakdown&#39;)
 
                 if iterations == max_iter:
-                        raise SystemExit(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
+                        raise Exception(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
                 
                 A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
                 A.ident_zeros()
@@ -487,13 +485,13 @@ This overrides the input function u.</dd>
         return u</code></pre>
 </details>
 </dd>
-<dt id="descendal.import_mesh"><code class="name flex">
+<dt id="cestrel.import_mesh"><code class="name flex">
 <span>def <span class="ident">import_mesh</span></span>(<span>arg)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Imports a mesh file for use with descendal / fenics.</p>
+<div class="desc"><p>Imports a mesh file for use with cestrel / fenics.</p>
 <p>This function imports a mesh file that was generated by GMSH and converted to
-.xdmf with the command line function mesh-convert (see descendal main documentation).
+.xdmf with the command line function mesh-convert (see cestrel main documentation).
 The syntax for the conversion is
 mesh-convert in.msh out.xdmf
 If there are Physical quantities specified in the gmsh file, these are imported
@@ -534,10 +532,10 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def import_mesh(arg):
-        &#34;&#34;&#34;Imports a mesh file for use with descendal / fenics.
+        &#34;&#34;&#34;Imports a mesh file for use with cestrel / fenics.
 
         This function imports a mesh file that was generated by GMSH and converted to
-        .xdmf with the command line function mesh-convert (see descendal main documentation).
+        .xdmf with the command line function mesh-convert (see cestrel main documentation).
         The syntax for the conversion is
                 mesh-convert in.msh out.xdmf
         If there are Physical quantities specified in the gmsh file, these are imported
@@ -581,15 +579,29 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
 
         if type(arg) == str:
                 mesh_file = arg
+                mesh_attribute = &#39;str&#39;
         elif type(arg) == configparser.ConfigParser:
-                mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
+                mesh_attribute = &#39;config&#39;
+                ### overloading for remeshing
+                if not arg.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False):
+                        mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
+                else:
+                        assert len(sys.argv) in [1, 2], &#39;Do not use additional command line options.&#39;
+                        if len(sys.argv) == 1:
+                                mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
+                        elif len(sys.argv) == 2:
+                                temp_dir = sys.argv[1]
+                                with open(temp_dir + &#39;/temp_dict.json&#39;, &#39;r&#39;) as file:
+                                        temp_dict = json.load(file)
+                                mesh_file = temp_dict[&#39;mesh_file&#39;]
+
         else:
-                raise SystemExit(&#39;Not a valid input for import_mesh&#39;)
+                raise Exception(&#39;Not a valid input for import_mesh&#39;)
 
         if mesh_file[-5:] == &#39;.xdmf&#39;:
                 file_string = mesh_file[:-5]
         else:
-                raise SystemExit(&#39;Not a suitable mesh file format&#39;)
+                raise Exception(&#39;Not a suitable mesh file format&#39;)
         
         mesh = fenics.Mesh()
         xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -618,11 +630,14 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
         end_time = time.time()
         print(&#39;Done Importing Mesh. Elapsed Time: &#39; + format(end_time - start_time, &#39;.3e&#39;) + &#39; s&#39;)
         print(&#39;&#39;)
-        
+
+        # Add an attribute to the mesh to show with what procedure it was generated
+        mesh._cestrel_generator = mesh_attribute
+
         return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
 </details>
 </dd>
-<dt id="descendal.regular_box_mesh"><code class="name flex">
+<dt id="cestrel.regular_box_mesh"><code class="name flex">
 <span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None)</span>
 </code></dt>
 <dd>
@@ -807,7 +822,7 @@ and accordingly many along the longer ones. The resulting domain is
         return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
 </details>
 </dd>
-<dt id="descendal.regular_mesh"><code class="name flex">
+<dt id="cestrel.regular_mesh"><code class="name flex">
 <span>def <span class="ident">regular_mesh</span></span>(<span>n=10, L_x=1.0, L_y=1.0, L_z=None)</span>
 </code></dt>
 <dd>
@@ -976,9 +991,9 @@ will be two-dimensional (default is None).</dd>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="descendal.OptimalControlProblem"><code class="flex name class">
+<dt id="cestrel.OptimalControlProblem"><code class="flex name class">
 <span>class <span class="ident">OptimalControlProblem</span></span>
-<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config, riesz_scalar_products=None, control_constraints=None, initial_guess=None)</span>
+<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config, riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implements an optimal control problem.</p>
@@ -1011,7 +1026,7 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 <dt><strong><code>adjoints</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
 <dd>the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
 <dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
-<dd>the config file for the problem, generated via descendal.create_config(path_to_config)</dd>
+<dd>the config file for the problem, generated via cestrel.create_config(path_to_config)</dd>
 <dt><strong><code>riesz_scalar_products</code></strong> :&ensp;<code>None</code> or <code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code>, optional</dt>
 <dd>the scalar products of the control space. Can either be None, a single UFL form, or a
 (ordered) list of UFL forms. If None, the <span><span class="MathJax_Preview">L^2(\Omega)</span><script type="math/tex">L^2(\Omega)</script></span> product is used.
@@ -1023,6 +1038,14 @@ and u_b the upper bound.</dd>
 <dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
 <dd>list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
 (defaults to None (which means a zero initial guess))</dd>
+<dt><strong><code>ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code>, optional</dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the state systems. If this is None, then the direct solver
+mumps is used (default is None).</dd>
+<dt><strong><code>adjoint_ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code></dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the adjoint systems. If this is None, then the same options
+as for the state systems are used (default is None).</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <p>The corresponding examples detailing the use of this class can be found
@@ -1045,7 +1068,8 @@ in the "demos" folder.</p></div>
         &#34;&#34;&#34;
 
         def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
-                                 riesz_scalar_products=None, control_constraints=None, initial_guess=None):
+                                 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
+                                 adjoint_ksp_options=None):
                 r&#34;&#34;&#34;Initializes the optimal control problem.
 
                 This is used to generate all classes and functionalities. First ensures
@@ -1069,7 +1093,7 @@ in the "demos" folder.</p></div>
                 adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
                         the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these
                 config : configparser.ConfigParser
-                        the config file for the problem, generated via descendal.create_config(path_to_config)
+                        the config file for the problem, generated via cestrel.create_config(path_to_config)
                 riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
                         the scalar products of the control space. Can either be None, a single UFL form, or a
                         (ordered) list of UFL forms. If None, the \(L^2(\Omega)\) product is used.
@@ -1081,7 +1105,14 @@ in the "demos" folder.</p></div>
                 initial_guess : list[dolfin.function.function.Function], optional
                         list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
                         (defaults to None (which means a zero initial guess))
-
+                ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the state systems. If this is None, then the direct solver
+                        mumps is used (default is None).
+                adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the adjoint systems. If this is None, then the same options
+                        as for the state systems are used (default is None).
 
                 Examples
                 --------
@@ -1089,7 +1120,7 @@ in the "demos" folder.</p></div>
                 in the &#34;demos&#34; folder.
                 &#34;&#34;&#34;
 
-                OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess)
+                OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
                 ### Overloading, such that we do not have to use lists for a single state and a single control
                 ### controls
                 try:
@@ -1098,16 +1129,16 @@ in the "demos" folder.</p></div>
                                         if controls[i].__module__ == &#39;dolfin.function.function&#39; and type(controls[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;controls have to be fenics Functions.&#39;)
+                                                raise Exception(&#39;controls have to be fenics Functions.&#39;)
 
                                 self.controls = controls
 
                         elif controls.__module__ == &#39;dolfin.function.function&#39; and type(controls).__name__ == &#39;Function&#39;:
                                 self.controls = [controls]
                         else:
-                                raise SystemExit(&#39;Type of controls is wrong.&#39;)
+                                raise Exception(&#39;Type of controls is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of controls is wrong.&#39;)
+                        raise Exception(&#39;Type of controls is wrong.&#39;)
 
                 self.control_dim = len(self.controls)
 
@@ -1123,14 +1154,14 @@ in the "demos" folder.</p></div>
                                                 if riesz_scalar_products[i].__module__== &#39;ufl.form&#39; and type(riesz_scalar_products[i]).__name__== &#39;Form&#39;:
                                                         pass
                                                 else:
-                                                        raise SystemExit(&#39;riesz_scalar_products have to be ufl forms&#39;)
+                                                        raise Exception(&#39;riesz_scalar_products have to be ufl forms&#39;)
                                         self.riesz_scalar_products = riesz_scalar_products
                                 elif riesz_scalar_products.__module__== &#39;ufl.form&#39; and type(riesz_scalar_products).__name__== &#39;Form&#39;:
                                         self.riesz_scalar_products = [riesz_scalar_products]
                                 else:
-                                        raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                                        raise Exception(&#39;State forms have to be ufl forms&#39;)
                         except:
-                                raise SystemExit(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
+                                raise Exception(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
 
                 ### control_constraints
                 if control_constraints is None:
@@ -1153,20 +1184,20 @@ in the "demos" folder.</p></div>
                                                                         elif control_constraints[i][j].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[i][j]).__name__ == &#39;Function&#39;:
                                                                                 pass
                                                                         else:
-                                                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                                 pass
                                                         else:
-                                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                 self.control_constraints = control_constraints
                                         elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[0]).__name__==&#39;Function&#39;)) \
                                                 and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[1]).__name__==&#39;Function&#39;)):
 
                                                 self.control_constraints = [control_constraints]
                                         else:
-                                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                         except:
-                                raise SystemExit(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                 # recast floats into functions for compatibility
                 temp_constraints = self.control_constraints[:]
@@ -1178,7 +1209,7 @@ in the "demos" folder.</p></div>
                         elif pair[0].__module__ == &#39;dolfin.function.function&#39; and type(pair[0]).__name__ == &#39;Function&#39;:
                                 lower_bound = pair[0]
                         else:
-                                raise SystemExit(&#39;Wrong type for the control constraints&#39;)
+                                raise Exception(&#39;Wrong type for the control constraints&#39;)
 
                         if type(pair[1]) in [float, int]:
                                 upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -1186,7 +1217,7 @@ in the "demos" folder.</p></div>
                         elif pair[1].__module__ == &#39;dolfin.function.function&#39; and type(pair[1]).__name__ == &#39;Function&#39;:
                                 upper_bound = pair[1]
                         else:
-                                raise SystemExit(&#39;Wrong type for the control constraints&#39;)
+                                raise Exception(&#39;Wrong type for the control constraints&#39;)
 
                         self.control_constraints.append([lower_bound, upper_bound])
 
@@ -1211,7 +1242,8 @@ in the "demos" folder.</p></div>
                 ### end overloading
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-                self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config, self.riesz_scalar_products, self.control_constraints)
+                self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
+                                                                                           self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options)
 
                 self.state_spaces = self.form_handler.state_spaces
                 self.control_spaces = self.form_handler.control_spaces
@@ -1288,7 +1320,7 @@ in the "demos" folder.</p></div>
                 elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                         self.solver = PDAS(self)
                 else:
-                        raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                        raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
                 
                 self.solver.run()
                 self.solver.finalize()
@@ -1314,21 +1346,21 @@ in the "demos" folder.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
+<li><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="descendal.OptimalControlProblem.compute_adjoint_variables"><code class="name flex">
+<dt id="cestrel.OptimalControlProblem.compute_adjoint_variables"><code class="name flex">
 <span>def <span class="ident">compute_adjoint_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
+<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the adjoint system …</p></div>
 </dd>
-<dt id="descendal.OptimalControlProblem.compute_gradient"><code class="name flex">
+<dt id="cestrel.OptimalControlProblem.compute_gradient"><code class="name flex">
 <span>def <span class="ident">compute_gradient</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1363,17 +1395,17 @@ are carried out automatically.</p>
         return self.gradients</code></pre>
 </details>
 </dd>
-<dt id="descendal.OptimalControlProblem.compute_state_variables"><code class="name flex">
+<dt id="cestrel.OptimalControlProblem.compute_state_variables"><code class="name flex">
 <span>def <span class="ident">compute_state_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="descendal.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
+<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
-<dt id="descendal.OptimalControlProblem.solve"><code class="name flex">
+<dt id="cestrel.OptimalControlProblem.solve"><code class="name flex">
 <span>def <span class="ident">solve</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1413,7 +1445,7 @@ to the optimization method, i.e., the user-input functions.</p>
         elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                 self.solver = PDAS(self)
         else:
-                raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
         
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -1421,9 +1453,9 @@ to the optimization method, i.e., the user-input functions.</p>
 </dd>
 </dl>
 </dd>
-<dt id="descendal.ShapeOptimizationProblem"><code class="flex name class">
+<dt id="cestrel.ShapeOptimizationProblem"><code class="flex name class">
 <span>class <span class="ident">ShapeOptimizationProblem</span></span>
-<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, boundaries, config, initial_guess=None)</span>
+<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, boundaries, config, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A shape optimization problem</p>
@@ -1456,10 +1488,18 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
 <dd>MeshFunction that indicates the boundary markers</dd>
 <dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
-<dd>the config file for the problem, generated via descendal.create_config(path_to_config)</dd>
+<dd>the config file for the problem, generated via cestrel.create_config(path_to_config)</dd>
 <dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
-<dd>list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+<dd>A list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
 (defaults to None (which means a zero initial guess))</dd>
+<dt><strong><code>ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code>, optional</dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the state systems. If this is None, then the direct solver
+mumps is used (default is None).</dd>
+<dt><strong><code>adjoint_ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code></dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the adjoint systems. If this is None, then the same options
+as for the state systems are used (default is None).</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1479,7 +1519,8 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
         &#34;&#34;&#34;
 
         def __init__(self, state_forms, bcs_list, cost_functional_form, states,
-                                 adjoints, boundaries, config, initial_guess=None):
+                                 adjoints, boundaries, config, initial_guess=None,
+                                 ksp_options=None, adjoint_ksp_options=None):
                 &#34;&#34;&#34;Initializes the shape optimization problem
 
                 This is used to generate all classes and functionalities. First ensures
@@ -1503,19 +1544,55 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
                 boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                         MeshFunction that indicates the boundary markers
                 config : configparser.ConfigParser
-                        the config file for the problem, generated via descendal.create_config(path_to_config)
+                        the config file for the problem, generated via cestrel.create_config(path_to_config)
                 initial_guess : list[dolfin.function.function.Function], optional
-                        list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
+                        A list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
                         (defaults to None (which means a zero initial guess))
+                ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the state systems. If this is None, then the direct solver
+                        mumps is used (default is None).
+                adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the adjoint systems. If this is None, then the same options
+                        as for the state systems are used (default is None).
                 &#34;&#34;&#34;
 
-                OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess)
+                OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
+
+                ### Initialize the remeshing behavior, and a temp file
+                self.do_remesh = config.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False)
+                if self.do_remesh:
+                        assert len(sys.argv) in [1,2], &#39;Do not use any additional command line arguments.&#39;
+                        try:
+                                assert self.states[0].function_space().mesh()._cestrel_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
+                        except:
+                                raise Exception(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
+
+                        if len(sys.argv) == 1:
+                                directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+                                self.temp_dir = tempfile.mkdtemp(dir=directory)
+                                self.temp_dict = {&#39;temp_dir&#39; : self.temp_dir, &#39;gmsh_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;),
+                                                                  &#39;geo_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;)}
+
+                        elif len(sys.argv) == 2:
+                                self.temp_dir = sys.argv[1]
+                                with open(self.temp_dir + &#39;/temp_dict.json&#39;, &#39;r&#39;) as file:
+                                        self.temp_dict = json.load(file)
+
+                        ### change the except_hook so that the temp files are deleted whenever an exception occurs, to get reproducable results
+                        def custom_except_hook(exctype, value, traceback):
+                                print(&#39;DEBUG: Caught the exception, deleting temp files&#39;)
+                                os.system(&#39;rm -r &#39; + self.temp_dir)
+                                sys.__excepthook__(exctype, value, traceback)
+
+                        sys.excepthook = custom_except_hook
 
                 ### boundaries
                 if boundaries.__module__ == &#39;dolfin.cpp.mesh&#39; and type(boundaries).__name__ == &#39;MeshFunctionSizet&#39;:
                         self.boundaries = boundaries
                 else:
-                        raise SystemExit(&#39;Not a valid format for boundaries.&#39;)
+                        raise Exception(&#39;Not a valid format for boundaries.&#39;)
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
@@ -1524,7 +1601,9 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
                         assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-                self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.boundaries, self.config)
+                self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
+                                                                                                   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
+                                                                                                   temp_dict=self.temp_dict)
                 self.mesh_handler = _MeshHandler(self)
 
                 self.state_spaces = self.shape_form_handler.state_spaces
@@ -1558,7 +1637,7 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
                 elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                         self.solver = CG(self)
                 else:
-                        raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+                        raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
 
                 self.solver.run()
                 self.solver.finalize()
@@ -1584,21 +1663,21 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
+<li><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="descendal.ShapeOptimizationProblem.compute_adjoint_variables"><code class="name flex">
+<dt id="cestrel.ShapeOptimizationProblem.compute_adjoint_variables"><code class="name flex">
 <span>def <span class="ident">compute_adjoint_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
+<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the adjoint system …</p></div>
 </dd>
-<dt id="descendal.ShapeOptimizationProblem.compute_shape_gradient"><code class="name flex">
+<dt id="cestrel.ShapeOptimizationProblem.compute_shape_gradient"><code class="name flex">
 <span>def <span class="ident">compute_shape_gradient</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1633,17 +1712,17 @@ are carried out automatically.</p>
         return self.gradient</code></pre>
 </details>
 </dd>
-<dt id="descendal.ShapeOptimizationProblem.compute_state_variables"><code class="name flex">
+<dt id="cestrel.ShapeOptimizationProblem.compute_state_variables"><code class="name flex">
 <span>def <span class="ident">compute_state_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="descendal.optimization_problem.OptimizationProblem" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="descendal.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#descendal.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
+<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
-<dt id="descendal.ShapeOptimizationProblem.solve"><code class="name flex">
+<dt id="cestrel.ShapeOptimizationProblem.solve"><code class="name flex">
 <span>def <span class="ident">solve</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1674,7 +1753,7 @@ are carried out automatically.</p>
         elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                 self.solver = CG(self)
         else:
-                raise SystemExit(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+                raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
 
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -1699,40 +1778,40 @@ are carried out automatically.</p>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="descendal.geometry" href="geometry.html">descendal.geometry</a></code></li>
-<li><code><a title="descendal.nonlinear_solvers" href="nonlinear_solvers.html">descendal.nonlinear_solvers</a></code></li>
-<li><code><a title="descendal.optimization_problem" href="optimization_problem.html">descendal.optimization_problem</a></code></li>
-<li><code><a title="descendal.utils" href="utils.html">descendal.utils</a></code></li>
+<li><code><a title="cestrel.geometry" href="geometry.html">cestrel.geometry</a></code></li>
+<li><code><a title="cestrel.nonlinear_solvers" href="nonlinear_solvers.html">cestrel.nonlinear_solvers</a></code></li>
+<li><code><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></li>
+<li><code><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="descendal.create_bcs_list" href="#descendal.create_bcs_list">create_bcs_list</a></code></li>
-<li><code><a title="descendal.create_config" href="#descendal.create_config">create_config</a></code></li>
-<li><code><a title="descendal.damped_newton_solve" href="#descendal.damped_newton_solve">damped_newton_solve</a></code></li>
-<li><code><a title="descendal.import_mesh" href="#descendal.import_mesh">import_mesh</a></code></li>
-<li><code><a title="descendal.regular_box_mesh" href="#descendal.regular_box_mesh">regular_box_mesh</a></code></li>
-<li><code><a title="descendal.regular_mesh" href="#descendal.regular_mesh">regular_mesh</a></code></li>
+<li><code><a title="cestrel.create_bcs_list" href="#cestrel.create_bcs_list">create_bcs_list</a></code></li>
+<li><code><a title="cestrel.create_config" href="#cestrel.create_config">create_config</a></code></li>
+<li><code><a title="cestrel.damped_newton_solve" href="#cestrel.damped_newton_solve">damped_newton_solve</a></code></li>
+<li><code><a title="cestrel.import_mesh" href="#cestrel.import_mesh">import_mesh</a></code></li>
+<li><code><a title="cestrel.regular_box_mesh" href="#cestrel.regular_box_mesh">regular_box_mesh</a></code></li>
+<li><code><a title="cestrel.regular_mesh" href="#cestrel.regular_mesh">regular_mesh</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="descendal.OptimalControlProblem" href="#descendal.OptimalControlProblem">OptimalControlProblem</a></code></h4>
+<h4><code><a title="cestrel.OptimalControlProblem" href="#cestrel.OptimalControlProblem">OptimalControlProblem</a></code></h4>
 <ul class="">
-<li><code><a title="descendal.OptimalControlProblem.compute_adjoint_variables" href="optimization_problem.html#descendal.OptimalControlProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
-<li><code><a title="descendal.OptimalControlProblem.compute_gradient" href="#descendal.OptimalControlProblem.compute_gradient">compute_gradient</a></code></li>
-<li><code><a title="descendal.OptimalControlProblem.compute_state_variables" href="optimization_problem.html#descendal.OptimalControlProblem.compute_state_variables">compute_state_variables</a></code></li>
-<li><code><a title="descendal.OptimalControlProblem.solve" href="#descendal.OptimalControlProblem.solve">solve</a></code></li>
+<li><code><a title="cestrel.OptimalControlProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.OptimalControlProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
+<li><code><a title="cestrel.OptimalControlProblem.compute_gradient" href="#cestrel.OptimalControlProblem.compute_gradient">compute_gradient</a></code></li>
+<li><code><a title="cestrel.OptimalControlProblem.compute_state_variables" href="optimization_problem.html#cestrel.OptimalControlProblem.compute_state_variables">compute_state_variables</a></code></li>
+<li><code><a title="cestrel.OptimalControlProblem.solve" href="#cestrel.OptimalControlProblem.solve">solve</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="descendal.ShapeOptimizationProblem" href="#descendal.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></h4>
+<h4><code><a title="cestrel.ShapeOptimizationProblem" href="#cestrel.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></h4>
 <ul class="">
-<li><code><a title="descendal.ShapeOptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#descendal.ShapeOptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
-<li><code><a title="descendal.ShapeOptimizationProblem.compute_shape_gradient" href="#descendal.ShapeOptimizationProblem.compute_shape_gradient">compute_shape_gradient</a></code></li>
-<li><code><a title="descendal.ShapeOptimizationProblem.compute_state_variables" href="optimization_problem.html#descendal.ShapeOptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
-<li><code><a title="descendal.ShapeOptimizationProblem.solve" href="#descendal.ShapeOptimizationProblem.solve">solve</a></code></li>
+<li><code><a title="cestrel.ShapeOptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.ShapeOptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
+<li><code><a title="cestrel.ShapeOptimizationProblem.compute_shape_gradient" href="#cestrel.ShapeOptimizationProblem.compute_shape_gradient">compute_shape_gradient</a></code></li>
+<li><code><a title="cestrel.ShapeOptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.ShapeOptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
+<li><code><a title="cestrel.ShapeOptimizationProblem.solve" href="#cestrel.ShapeOptimizationProblem.solve">solve</a></code></li>
 </ul>
 </li>
 </ul>

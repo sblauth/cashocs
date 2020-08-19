@@ -6,8 +6,8 @@ Created on 20.04.20, 08:49
 
 import configparser
 from fenics import *
-from descendal import OptimalControlProblem, regular_mesh
-from descendal.utils import summation
+from cestrel import OptimalControlProblem, regular_mesh
+from cestrel.utils import summation
 import numpy as np
 import time
 

@@ -5,14 +5,14 @@ Created on 13/08/2020, 13.15
 """
 
 from fenics import *
-import descendal
+import cestrel
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = descendal.create_config('config.ini')
+config = cestrel.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = descendal.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -29,5 +29,5 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
 
 scalar_product = TrialFunction(V)*TestFunction(V)*ds
 
-ocp = descendal.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+ocp = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
 ocp.solve()

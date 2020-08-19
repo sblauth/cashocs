@@ -5,7 +5,7 @@ Created on 18.05.20, 16:10
 """
 
 from fenics import *
-from descendal import OptimalControlProblem, regular_mesh
+from cestrel import OptimalControlProblem, regular_mesh
 import numpy as np
 import configparser
 

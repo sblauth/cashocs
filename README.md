@@ -1,7 +1,7 @@
 DESCENDAL
 =========
 
-descendal is a continuous adjoint-based optimal control and shape
+cestrel is a continuous adjoint-based optimal control and shape
 optimization package for python
 
 
@@ -10,15 +10,15 @@ Installation
 
 Setup (from ITWM)
 
-- Load the module tv/descendal
+- Load the module tv/cestrel
 
-    `module load tv/descendal`
+    `module load tv/cestrel`
 
     and run
 
     `activate`
 
-- The git repository with the demos can be found under /p/tv/local/descendal
+- The git repository with the demos can be found under /p/tv/local/cestrel
 
 - If you want to have a custom installation, you can clone the git repository yourself,
   but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)
@@ -40,7 +40,7 @@ Setup (external)
 
     `conda env create -f conda_env.yml -n your_environment_name`
 
-    where you replace 'your_environment_name' by an appropriate name such as 'descendal'
+    where you replace 'your_environment_name' by an appropriate name such as 'cestrel'
 
   - Alternatively, use the environment file conda_env.yml to install the packages
     (or maybe even newer versions of them) via conda-forge and pip

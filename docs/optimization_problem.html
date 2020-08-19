@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>descendal.optimization_problem API documentation</title>
+<title>cestrel.optimization_problem API documentation</title>
 <meta name="description" content="Contains the blueprint for optimal control and shape optimization problems …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -20,7 +20,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>descendal.optimization_problem</code></h1>
+<h1 class="title">Module <code>cestrel.optimization_problem</code></h1>
 </header>
 <section id="section-intro">
 <p>Contains the blueprint for optimal control and shape optimization problems.</p>
@@ -38,6 +38,8 @@ has many shared parameters between optimal control and shape optimization
 problems. Can be subclassed to generate custom optimization problems.
 &#34;&#34;&#34;
 
+import copy
+
 
 
 class OptimizationProblem:
@@ -49,7 +51,8 @@ class OptimizationProblem:
         optimization problems.
         &#34;&#34;&#34;
 
-        def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None):
+        def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
+                                 initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
                 &#34;&#34;&#34;Initializes the optimization problem.
 
                 If one uses a single PDE constraint, the inputs can be the objects
@@ -75,11 +78,19 @@ class OptimizationProblem:
                 adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
                         The adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these.
                 config : configparser.ConfigParser
-                        The config file for the problem, generated via descendal.create_config(path_to_config).
+                        The config file for the problem, generated via cestrel.create_config(path_to_config).
                 initial_guess : list[dolfin.function.function.Function], optional
                         A list of functions that act as initial guess for the state variables, should be valid
                         input for fenics.assign. If this is None, then a zero initial guess is used
                         (default is None).
+                ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the state systems. If this is None, then the direct solver
+                        mumps is used (default is None).
+                adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the adjoint systems. If this is None, then the same options
+                        as for the state systems are used (default is None).
                 &#34;&#34;&#34;
 
                 ### Overloading, so that we do not have to use lists for a single state and a single control
@@ -90,14 +101,14 @@ class OptimizationProblem:
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;state_forms have to be ufl forms&#39;)
+                                                raise Exception(&#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                                raise Exception(&#39;State forms have to be ufl forms&#39;)
                 except:
-                        raise SystemExit(&#39;Type of state_forms is wrong.&#39;)
+                        raise Exception(&#39;Type of state_forms is wrong.&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -112,7 +123,7 @@ class OptimizationProblem:
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -120,23 +131,23 @@ class OptimizationProblem:
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                                raise Exception(&#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                        raise Exception(&#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise SystemExit(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise Exception(&#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise SystemExit(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise Exception(&#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -145,16 +156,16 @@ class OptimizationProblem:
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;states have to be fenics Functions.&#39;)
+                                                raise Exception(&#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise SystemExit(&#39;Type of states is wrong.&#39;)
+                                raise Exception(&#39;Type of states is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of states is wrong.&#39;)
+                        raise Exception(&#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -163,22 +174,22 @@ class OptimizationProblem:
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise Exception(&#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                                raise Exception(&#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                        raise Exception(&#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise SystemExit(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise Exception(&#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -190,7 +201,45 @@ class OptimizationProblem:
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise SystemExit(&#39;Initial guess has to be a list of functions&#39;)
+                                raise Exception(&#39;Initial guess has to be a list of functions&#39;)
+
+
+                ### ksp_options
+                if ksp_options is None:
+                        self.ksp_options = []
+                        option = [
+                                [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                                [&#39;pc_type&#39;, &#39;lu&#39;],
+                                [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                                [&#39;mat_mumps_icntl_24&#39;, 1]
+                        ]
+
+                        for i in range(self.state_dim):
+                                self.ksp_options.append(option)
+
+                elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == str:
+                        self.ksp_options = [ksp_options[:]]
+
+                elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == list:
+                        self.ksp_options = ksp_options[:]
+
+                else:
+                        raise Exception(&#39;Wrong input format for ksp_options.&#39;)
+
+
+
+                ### adjoint_ksp_options
+                if adjoint_ksp_options is None:
+                        self.adjoint_ksp_options = self.ksp_options[:]
+
+                elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == str:
+                        self.adjoint_ksp_options = [adjoint_ksp_options[:]]
+
+                elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == list:
+                        self.adjoint_ksp_options = adjoint_ksp_options[:]
+
+                else:
+                        raise Exception(&#39;Wrong input format for adjoint_ksp_options.&#39;)
 
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
@@ -198,6 +247,8 @@ class OptimizationProblem:
                 assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
                 if self.initial_guess is not None:
                         assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
 
                 self.state_problem = None
                 self.adjoint_problem = None
@@ -245,9 +296,9 @@ class OptimizationProblem:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="descendal.optimization_problem.OptimizationProblem"><code class="flex name class">
+<dt id="cestrel.optimization_problem.OptimizationProblem"><code class="flex name class">
 <span>class <span class="ident">OptimizationProblem</span></span>
-<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None)</span>
+<span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class representing abstract optimization problems.</p>
@@ -278,11 +329,19 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 <dt><strong><code>adjoints</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
 <dd>The adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these.</dd>
 <dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
-<dd>The config file for the problem, generated via descendal.create_config(path_to_config).</dd>
+<dd>The config file for the problem, generated via cestrel.create_config(path_to_config).</dd>
 <dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
 <dd>A list of functions that act as initial guess for the state variables, should be valid
 input for fenics.assign. If this is None, then a zero initial guess is used
 (default is None).</dd>
+<dt><strong><code>ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code>, optional</dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the state systems. If this is None, then the direct solver
+mumps is used (default is None).</dd>
+<dt><strong><code>adjoint_ksp_options</code></strong> :&ensp;<code>list[list[str]]</code> or <code>list[list[list[str]]]</code> or <code>None</code></dt>
+<dd>A list of strings corresponding to command line options for PETSc,
+used to solve the adjoint systems. If this is None, then the same options
+as for the state systems are used (default is None).</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -297,7 +356,8 @@ input for fenics.assign. If this is None, then a zero initial guess is used
         optimization problems.
         &#34;&#34;&#34;
 
-        def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None):
+        def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
+                                 initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
                 &#34;&#34;&#34;Initializes the optimization problem.
 
                 If one uses a single PDE constraint, the inputs can be the objects
@@ -323,11 +383,19 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                 adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
                         The adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these.
                 config : configparser.ConfigParser
-                        The config file for the problem, generated via descendal.create_config(path_to_config).
+                        The config file for the problem, generated via cestrel.create_config(path_to_config).
                 initial_guess : list[dolfin.function.function.Function], optional
                         A list of functions that act as initial guess for the state variables, should be valid
                         input for fenics.assign. If this is None, then a zero initial guess is used
                         (default is None).
+                ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the state systems. If this is None, then the direct solver
+                        mumps is used (default is None).
+                adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+                        A list of strings corresponding to command line options for PETSc,
+                        used to solve the adjoint systems. If this is None, then the same options
+                        as for the state systems are used (default is None).
                 &#34;&#34;&#34;
 
                 ### Overloading, so that we do not have to use lists for a single state and a single control
@@ -338,14 +406,14 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;state_forms have to be ufl forms&#39;)
+                                                raise Exception(&#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise SystemExit(&#39;State forms have to be ufl forms&#39;)
+                                raise Exception(&#39;State forms have to be ufl forms&#39;)
                 except:
-                        raise SystemExit(&#39;Type of state_forms is wrong.&#39;)
+                        raise Exception(&#39;Type of state_forms is wrong.&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -360,7 +428,7 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -368,23 +436,23 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise SystemExit(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                                raise Exception(&#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of bcs_list is wrong.&#39;)
+                        raise Exception(&#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise SystemExit(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise Exception(&#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise SystemExit(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise Exception(&#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -393,16 +461,16 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;states have to be fenics Functions.&#39;)
+                                                raise Exception(&#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise SystemExit(&#39;Type of states is wrong.&#39;)
+                                raise Exception(&#39;Type of states is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of states is wrong.&#39;)
+                        raise Exception(&#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -411,22 +479,22 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise SystemExit(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise Exception(&#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                                raise Exception(&#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise SystemExit(&#39;Type of adjoints is wrong.&#39;)
+                        raise Exception(&#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise SystemExit(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise Exception(&#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -438,7 +506,45 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise SystemExit(&#39;Initial guess has to be a list of functions&#39;)
+                                raise Exception(&#39;Initial guess has to be a list of functions&#39;)
+
+
+                ### ksp_options
+                if ksp_options is None:
+                        self.ksp_options = []
+                        option = [
+                                [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                                [&#39;pc_type&#39;, &#39;lu&#39;],
+                                [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                                [&#39;mat_mumps_icntl_24&#39;, 1]
+                        ]
+
+                        for i in range(self.state_dim):
+                                self.ksp_options.append(option)
+
+                elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == str:
+                        self.ksp_options = [ksp_options[:]]
+
+                elif type(ksp_options) == list and type(ksp_options[0]) == list and type(ksp_options[0][0]) == list:
+                        self.ksp_options = ksp_options[:]
+
+                else:
+                        raise Exception(&#39;Wrong input format for ksp_options.&#39;)
+
+
+
+                ### adjoint_ksp_options
+                if adjoint_ksp_options is None:
+                        self.adjoint_ksp_options = self.ksp_options[:]
+
+                elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == str:
+                        self.adjoint_ksp_options = [adjoint_ksp_options[:]]
+
+                elif type(adjoint_ksp_options) == list and type(adjoint_ksp_options[0]) == list and type(adjoint_ksp_options[0][0]) == list:
+                        self.adjoint_ksp_options = adjoint_ksp_options[:]
+
+                else:
+                        raise Exception(&#39;Wrong input format for adjoint_ksp_options.&#39;)
 
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
@@ -446,6 +552,8 @@ input for fenics.assign. If this is None, then a zero initial guess is used
                 assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
                 if self.initial_guess is not None:
                         assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+                assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
 
                 self.state_problem = None
                 self.adjoint_problem = None
@@ -485,12 +593,12 @@ input for fenics.assign. If this is None, then a zero initial guess is used
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>descendal._optimal_control.optimal_control_problem.OptimalControlProblem</li>
-<li>descendal._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem</li>
+<li>cestrel._optimal_control.optimal_control_problem.OptimalControlProblem</li>
+<li>cestrel._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem</li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables"><code class="name flex">
+<dt id="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables"><code class="name flex">
 <span>def <span class="ident">compute_adjoint_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -524,7 +632,7 @@ the adjoints is carried out automatically.</p>
         self.adjoint_problem.solve()</code></pre>
 </details>
 </dd>
-<dt id="descendal.optimization_problem.OptimizationProblem.compute_state_variables"><code class="name flex">
+<dt id="cestrel.optimization_problem.OptimizationProblem.compute_state_variables"><code class="name flex">
 <span>def <span class="ident">compute_state_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -569,16 +677,16 @@ the state variables.</p>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="descendal" href="index.html">descendal</a></code></li>
+<li><code><a title="cestrel" href="index.html">cestrel</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="descendal.optimization_problem.OptimizationProblem" href="#descendal.optimization_problem.OptimizationProblem">OptimizationProblem</a></code></h4>
+<h4><code><a title="cestrel.optimization_problem.OptimizationProblem" href="#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code></h4>
 <ul class="">
-<li><code><a title="descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="#descendal.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
-<li><code><a title="descendal.optimization_problem.OptimizationProblem.compute_state_variables" href="#descendal.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
+<li><code><a title="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="#cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
+<li><code><a title="cestrel.optimization_problem.OptimizationProblem.compute_state_variables" href="#cestrel.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
 </ul>
 </li>
 </ul>
