@@ -1,7 +1,7 @@
-Merge 'mesh_ef8aab4efbdd491caeaaf0d425beebf9.msh';
+Merge 'mesh_1_pre_remesh.msh';
 CreateGeometry;
 
-lc = 3.5e-2;
+lc = 5e-2;
 Field[1] = Distance;
 Field[1].NNodesByEdge = 1000;
 Field[1].NodesList = {2};

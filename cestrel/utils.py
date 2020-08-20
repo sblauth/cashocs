@@ -353,53 +353,49 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 
 	dim = mesh.geometric_dimension()
 
-	old_file = open(original_msh_file, 'r')
-	new_file = open(out_msh_file, 'w')
+	with open(original_msh_file, 'r') as old_file, open(out_msh_file, 'w') as new_file:
 
-	points = mesh.coordinates()
+		points = mesh.coordinates()
 
-	node_section = False
-	info_section = False
-	subnode_counter = 0
-	subwrite_counter = 0
-	idcs = np.zeros(1, dtype=int)
+		node_section = False
+		info_section = False
+		subnode_counter = 0
+		subwrite_counter = 0
+		idcs = np.zeros(1, dtype=int)
 
-	for line in old_file:
-		if line == '$EndNodes\n':
-			node_section = False
+		for line in old_file:
+			if line == '$EndNodes\n':
+				node_section = False
 
-		if not node_section:
-			new_file.write(line)
-		else:
-			split_line = line.split(' ')
-			if info_section:
+			if not node_section:
 				new_file.write(line)
-				info_section = False
 			else:
-				if len(split_line) == 4:
-					num_subnodes = int(split_line[-1][:-1])
-					subnode_counter = 0
-					subwrite_counter = 0
-					idcs = np.zeros(num_subnodes, dtype=int)
+				split_line = line.split(' ')
+				if info_section:
 					new_file.write(line)
-				elif len(split_line) == 1:
-					idcs[subnode_counter] = int(split_line[0][:-1]) - 1
-					subnode_counter += 1
-					new_file.write(line)
-				elif len(split_line) == 3:
-					if dim == 2:
-						mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + '0\n'
-					elif dim == 3:
-						mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + format(points[idcs[subwrite_counter]][2], '.16f') + '\n'
-					else:
-						raise Exception('Not a valid dimension for the mesh.')
-					new_file.write(mod_line)
-					subwrite_counter += 1
+					info_section = False
+				else:
+					if len(split_line) == 4:
+						num_subnodes = int(split_line[-1][:-1])
+						subnode_counter = 0
+						subwrite_counter = 0
+						idcs = np.zeros(num_subnodes, dtype=int)
+						new_file.write(line)
+					elif len(split_line) == 1:
+						idcs[subnode_counter] = int(split_line[0][:-1]) - 1
+						subnode_counter += 1
+						new_file.write(line)
+					elif len(split_line) == 3:
+						if dim == 2:
+							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + '0\n'
+						elif dim == 3:
+							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + format(points[idcs[subwrite_counter]][2], '.16f') + '\n'
+						else:
+							raise Exception('Not a valid dimension for the mesh.')
+						new_file.write(mod_line)
+						subwrite_counter += 1
 
 
-		if line == '$Nodes\n':
-			node_section = True
-			info_section = True
-
-	old_file.close()
-	new_file.close()
+			if line == '$Nodes\n':
+				node_section = True
+				info_section = True

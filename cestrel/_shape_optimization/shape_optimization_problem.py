@@ -77,7 +77,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.do_remesh = config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
 		if self.do_remesh:
-			assert len(sys.argv) in [1,2], 'Do not use any additional command line arguments.'
+
+			assert os.path.isfile(os.path.realpath(sys.argv[0])), 'Not a valid configuration. The script has to be the first "command line argument".'
 
 			try:
 				if __IPYTHON__:
@@ -90,10 +91,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			except:
 				raise Exception('For remeshing, the mesh has to be created via import mesh, with a config as input.')
 
-			if len(sys.argv) == 1:
+			if not '_cestrel_remesh_flag' in sys.argv:
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 				self.__clean_previous_temp_files()
-				self.temp_dir = tempfile.mkdtemp(prefix='cestrel_remesh_temp', dir=self.directory)
+				self.temp_dir = tempfile.mkdtemp(prefix='._cestrel_remesh_temp', dir=self.directory)
 				self.__change_except_hook()
 				self.temp_dict = {'temp_dir' : self.temp_dir, 'gmsh_file' : self.config.get('Mesh', 'gmsh_file'),
 								  'geo_file' : self.config.get('Mesh', 'geo_file'),
@@ -101,8 +102,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 								  'output_dict' : {}}
 
 
-			elif len(sys.argv) == 2:
-				self.temp_dir = sys.argv[1]
+			else:
+				self.temp_dir = sys.argv[-1]
 				self.__change_except_hook()
 				with open(self.temp_dir + '/temp_dict.json', 'r') as file:
 					self.temp_dict = json.load(file)

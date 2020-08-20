@@ -1,16 +1,1 @@
-<Xdmf Version="3.0">
-  <Domain>
-    <Grid Name="Grid">
-      <Information Name="Information" Value="0"><![CDATA[<main/>]]></Information>
-      <Geometry GeometryType="XY">
-        <DataItem DataType="Float" Dimensions="568 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data0</DataItem>
-      </Geometry>
-      <Topology NumberOfElements="80" TopologyType="Polyline">
-        <DataItem DataType="Int" Dimensions="80 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data1</DataItem>
-      </Topology>
-      <Attribute AttributeType="Scalar" Center="Cell" Name="boundaries">
-        <DataItem DataType="Int" Dimensions="80" Format="HDF" Precision="8">mesh_boundaries.h5:/data2</DataItem>
-      </Attribute>
-    </Grid>
-  </Domain>
-</Xdmf>
+<Xdmf Version="3.0"><Domain><Grid Name="Grid"><Geometry GeometryType="XY"><DataItem DataType="Float" Dimensions="1941 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data0</DataItem></Geometry><Topology TopologyType="Polyline" NumberOfElements="160" NodesPerElement="2"><DataItem DataType="Int" Dimensions="160 2" Format="HDF" Precision="8">mesh_boundaries.h5:/data1</DataItem></Topology><Attribute Name="boundaries" AttributeType="Scalar" Center="Cell"><DataItem DataType="Int" Dimensions="160" Format="HDF" Precision="8">mesh_boundaries.h5:/data2</DataItem></Attribute></Grid></Domain></Xdmf>

@@ -75,13 +75,13 @@ class ShapeOptimizationAlgorithm:
 					self.state_pvd_list.append([])
 					for j in range(self.shape_form_handler.state_spaces[i].num_sub_spaces()):
 						if self.config.getboolean('Mesh', 'remesh', fallback=False):
-							self.state_pvd_list[i].append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), '02d')
+							self.state_pvd_list[i].append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 																	  + '_state_' + str(i) + '_' + str(j) + '.pvd'))
 						else:
 							self.state_pvd_list[i].append(fenics.File('./pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
 				else:
 					if self.config.getboolean('Mesh', 'remesh', fallback=False):
-						self.state_pvd_list.append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), '02d')
+						self.state_pvd_list.append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 															   + '_state_' + str(i) + '.pvd'))
 					else:
 						self.state_pvd_list.append(fenics.File('./pvd/state_' + str(i) + '.pvd'))

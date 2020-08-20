@@ -13,7 +13,6 @@ import time
 from petsc4py import PETSc
 import os
 import sys
-import uuid
 import configparser
 from .utils import _setup_petsc_options, write_out_mesh
 import json
@@ -75,11 +74,10 @@ def import_mesh(arg):
 		if not arg.getboolean('Mesh', 'remesh', fallback=False):
 			mesh_file = arg.get('Mesh', 'mesh_file')
 		else:
-			assert len(sys.argv) in [1, 2], 'Do not use additional command line options.'
-			if len(sys.argv) == 1:
+			if not '_cestrel_remesh_flag' in sys.argv:
 				mesh_file = arg.get('Mesh', 'mesh_file')
-			elif len(sys.argv) == 2:
-				temp_dir = sys.argv[1]
+			else:
+				temp_dir = sys.argv[-1]
 				with open(temp_dir + '/temp_dict.json', 'r') as file:
 					temp_dict = json.load(file)
 				mesh_file = temp_dict['mesh_file']
@@ -391,13 +389,13 @@ class _MeshHandler:
 			self.remesh_directory = self.mesh_directory + '/cestrel_remesh'
 			if not os.path.exists(self.remesh_directory):
 				os.mkdir(self.remesh_directory)
-			if len(sys.argv) == 1:
+			if not '_cestrel_remesh_flag' in sys.argv:
 				os.system('rm -r ' + self.remesh_directory + '/*')
 			self.remesh_geo_file = self.remesh_directory + '/remesh.geo'
 
 		# create a copy of the initial mesh file
 		if self.do_remesh and self.remesh_counter == 0:
-			self.gmsh_file_init = self.remesh_directory + '/mesh_' + format(self.remesh_counter, '02d') + '.msh'
+			self.gmsh_file_init = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.msh'
 			copy_mesh = 'cp ' + self.gmsh_file + ' ' + self.gmsh_file_init
 			os.system(copy_mesh)
 			self.gmsh_file = self.gmsh_file_init
@@ -559,8 +557,6 @@ class _MeshHandler:
 
 
 
-
-
 	def __test_a_priori(self, transformation):
 		"""Check the quality of the transformation before the actual mesh is moved.
 
@@ -655,70 +651,6 @@ class _MeshHandler:
 
 
 
-	def write_out_mesh(self):
-		"""Writes out the current mesh as .msh file
-
-		Returns
-		-------
-		None
-		"""
-
-		# TODO: Put this as a general, accessible routine
-
-		dim = self.mesh.geometric_dimension()
-
-		old_file = open(self.gmsh_file, 'r')
-		self.temp_file = self.remesh_directory + '/mesh_' + str(uuid.uuid4().hex) + '.msh'
-		new_file = open(self.temp_file, 'w')
-
-		points = self.mesh.coordinates()
-
-		node_section = False
-		info_section = False
-		subnode_counter = 0
-		subwrite_counter = 0
-		idcs = np.zeros(1, dtype=int)
-
-		for line in old_file:
-			if line == '$EndNodes\n':
-				node_section = False
-
-			if not node_section:
-				new_file.write(line)
-			else:
-				split_line = line.split(' ')
-				if info_section:
-					new_file.write(line)
-					info_section = False
-				else:
-					if len(split_line) == 4:
-						num_subnodes = int(split_line[-1][:-1])
-						subnode_counter = 0
-						subwrite_counter = 0
-						idcs = np.zeros(num_subnodes, dtype=int)
-						new_file.write(line)
-					elif len(split_line) == 1:
-						idcs[subnode_counter] = int(split_line[0][:-1]) - 1
-						subnode_counter += 1
-						new_file.write(line)
-					elif len(split_line) == 3:
-						if dim == 2:
-							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + '0\n'
-						elif dim == 3:
-							mod_line = format(points[idcs[subwrite_counter]][0], '.16f') + ' ' + format(points[idcs[subwrite_counter]][1], '.16f') + ' ' + format(points[idcs[subwrite_counter]][2], '.16f') + '\n'
-						new_file.write(mod_line)
-						subwrite_counter += 1
-
-
-			if line == '$Nodes\n':
-				node_section = True
-				info_section = True
-
-		old_file.close()
-		new_file.close()
-
-
-
 	def __generate_remesh_geo(self, input_mesh_file):
 		"""Generates a .geo file used for remeshing
 
@@ -767,7 +699,8 @@ class _MeshHandler:
 		"""
 
 		if self.do_remesh:
-			self.temp_file = self.remesh_directory + '/mesh_' + str(uuid.uuid4().hex) + '.msh'
+			self.remesh_counter += 1
+			self.temp_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '_pre_remesh' + '.msh'
 			write_out_mesh(self.mesh, self.gmsh_file, self.temp_file)
 			self.__generate_remesh_geo(self.temp_file)
 
@@ -784,18 +717,19 @@ class _MeshHandler:
 
 			dim = self.mesh.geometric_dimension()
 
-			gmsh_command = 'gmsh ' + self.remesh_geo_file + ' -' + str(int(dim)) + ' -o ' + self.temp_file
-			# os.system(gmsh_command + ' >/dev/null 2>&1')
-			os.system(gmsh_command)
-			self.remesh_counter += 1
+			self.new_gmsh_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.msh'
+			gmsh_command = 'gmsh ' + self.remesh_geo_file + ' -' + str(int(dim)) + ' -o ' + self.new_gmsh_file
+			if not self.config.getboolean('Mesh', 'show_gmsh_output', fallback=False):
+				os.system(gmsh_command + ' >/dev/null 2>&1')
+			else:
+				os.system(gmsh_command)
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
 
-			self.new_gmsh_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, '02d') + '.msh'
-			rename_command = 'mv ' + self.temp_file + ' ' + self.new_gmsh_file
-			os.system(rename_command)
+			# rename_command = 'mv ' + self.temp_file + ' ' + self.new_gmsh_file
+			# os.system(rename_command)
 
-			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, '02d') + '.xdmf'
+			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.xdmf'
 			convert_command = 'mesh-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file
 			os.system(convert_command)
 
@@ -814,4 +748,7 @@ class _MeshHandler:
 			with open(self.temp_dir + '/temp_dict.json', 'w') as file:
 				json.dump(self.temp_dict, file)
 
-			os.execv(sys.executable, [sys.executable] + [sys.argv[0]] + [self.temp_dir])
+			if not '_cestrel_remesh_flag' in sys.argv:
+				os.execv(sys.executable, [sys.executable] + sys.argv + ['_cestrel_remesh_flag'] + [self.temp_dir])
+			else:
+				os.execv(sys.executable, [sys.executable] + sys.argv[:-2] + ['_cestrel_remesh_flag'] + [self.temp_dir])
