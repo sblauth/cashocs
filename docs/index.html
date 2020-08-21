@@ -103,7 +103,7 @@ numerically in an automated fashion and is based on the finite element software 
 .. include:: ./documentation.md
 &#34;&#34;&#34;
 
-from .geometry import import_mesh, regular_mesh, regular_box_mesh
+from .geometry import import_mesh, regular_mesh, regular_box_mesh, MeshQuality
 from .nonlinear_solvers import damped_newton_solve
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
@@ -111,7 +111,7 @@ from .utils import create_config, create_bcs_list
 
 
 
-__all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;,
+__all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;MeshQuality&#39;, &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;,
                    &#39;ShapeOptimizationProblem&#39;, &#39;create_config&#39;, &#39;create_bcs_list&#39;]</code></pre>
 </details>
 </section>
@@ -586,11 +586,10 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                 if not arg.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False):
                         mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
                 else:
-                        assert len(sys.argv) in [1, 2], &#39;Do not use additional command line options.&#39;
-                        if len(sys.argv) == 1:
+                        if not &#39;_cestrel_remesh_flag&#39; in sys.argv:
                                 mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
-                        elif len(sys.argv) == 2:
-                                temp_dir = sys.argv[1]
+                        else:
+                                temp_dir = sys.argv[-1]
                                 with open(temp_dir + &#39;/temp_dict.json&#39;, &#39;r&#39;) as file:
                                         temp_dict = json.load(file)
                                 mesh_file = temp_dict[&#39;mesh_file&#39;]
@@ -991,6 +990,983 @@ will be two-dimensional (default is None).</dd>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="cestrel.MeshQuality"><code class="flex name class">
+<span>class <span class="ident">MeshQuality</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class used to compute the quality of a mesh.</p>
+<p>This class implements either a skewness quality measure, one based
+on the maximum angle of the elements, or one based on the radius ratios.
+All quality measures have values in <span><span class="MathJax_Preview"> [0, 1] </span><script type="math/tex"> [0, 1] </script></span>, where 1 corresponds
+to the best / perfect element, and 0 corresponds to degenerate elements.</p>
+<h2 id="examples">Examples</h2>
+<p>This class can be directly used, without any instantiation. E.g., with
+cestrel one can write</p>
+<pre><code>    import cestrel
+
+    mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+
+    min_skew = cestrel.MeshQuality.min_skewness(mesh)
+    avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+
+    min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
+    avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+
+    min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
+    avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+
+    min_cond = cestrel.MeshQuality.min_condition_number(mesh)
+    avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+</code></pre>
+<p>This works analogously for any mesh used in fenics.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code><a title="cestrel.MeshQuality.min_skewness" href="#cestrel.MeshQuality.min_skewness">MeshQuality.min_skewness()</a></code></dt>
+<dd>Computes the quality measure based on the skewness of the mesh.</dd>
+<dt><code><a title="cestrel.MeshQuality.min_maximum_angle" href="#cestrel.MeshQuality.min_maximum_angle">MeshQuality.min_maximum_angle()</a></code></dt>
+<dd>Computes the quality measure based on the maximum angle of the elements.</dd>
+<dt><code><a title="cestrel.MeshQuality.min_radius_ratios" href="#cestrel.MeshQuality.min_radius_ratios">MeshQuality.min_radius_ratios()</a></code></dt>
+<dd>Computes the quality measure based on the radius ratios.</dd>
+<dt><code><a title="cestrel.MeshQuality.min_condition_number" href="#cestrel.MeshQuality.min_condition_number">MeshQuality.min_condition_number()</a></code></dt>
+<dd>Computes the quality based on the condition number of the mapping from element to reference element.</dd>
+</dl>
+<p><code>Initializes self.</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MeshQuality:
+        r&#34;&#34;&#34;A class used to compute the quality of a mesh.
+
+        This class implements either a skewness quality measure, one based
+        on the maximum angle of the elements, or one based on the radius ratios.
+        All quality measures have values in \( [0, 1] \), where 1 corresponds
+        to the best / perfect element, and 0 corresponds to degenerate elements.
+
+        Examples
+        --------
+        This class can be directly used, without any instantiation. E.g., with
+        cestrel one can write
+
+                import cestrel
+
+                mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+
+                min_skew = cestrel.MeshQuality.min_skewness(mesh)
+                avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+
+                min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
+                avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+
+                min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
+                avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+
+                min_cond = cestrel.MeshQuality.min_condition_number(mesh)
+                avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+
+        This works analogously for any mesh used in fenics.
+
+        See Also
+        --------
+        MeshQuality.min_skewness : Computes the quality measure based on the skewness of the mesh.
+        MeshQuality.min_maximum_angle : Computes the quality measure based on the maximum angle of the elements.
+        MeshQuality.min_radius_ratios : Computes the quality measure based on the radius ratios.
+        MeshQuality.min_condition_number : Computes the quality based on the condition number of the mapping from element to reference element.
+        &#34;&#34;&#34;
+
+        _cpp_code_mesh_quality = &#34;&#34;&#34;
+                        #include &lt;pybind11/pybind11.h&gt;
+                        #include &lt;pybind11/eigen.h&gt;
+                        namespace py = pybind11;
+                        
+                        #include &lt;dolfin/mesh/Mesh.h&gt;
+                        #include &lt;dolfin/mesh/Vertex.h&gt;
+                        #include &lt;dolfin/mesh/MeshFunction.h&gt;
+                        #include &lt;dolfin/mesh/Cell.h&gt;
+                        #include &lt;dolfin/mesh/Vertex.h&gt;
+                        
+                        using namespace dolfin;
+                        
+                        
+                        void angles_triangle(const Cell&amp; cell, std::vector&lt;double&gt;&amp; angs)
+                        {
+                          const Mesh&amp; mesh = cell.mesh();
+                          angs.resize(3);
+                          const std::size_t i0 = cell.entities(0)[0];
+                          const std::size_t i1 = cell.entities(0)[1];
+                          const std::size_t i2 = cell.entities(0)[2];
+                          
+                          const Point p0 = Vertex(mesh, i0).point();
+                          const Point p1 = Vertex(mesh, i1).point();
+                          const Point p2 = Vertex(mesh, i2).point();
+                          Point e0 = p1 - p0;
+                          Point e1 = p2 - p0;
+                          Point e2 = p2 - p1;
+                          
+                          e0 /= e0.norm();
+                          e1 /= e1.norm();
+                          e2 /= e2.norm();
+                        
+                          angs[0] = acos(e0.dot(e1));
+                          angs[1] = acos(e0.dot(e2));
+                          angs[2] = acos(e1.dot(e2));
+                        }
+                        
+                        
+                        
+                        void dihedral_angles(const Cell&amp; cell, std::vector&lt;double&gt;&amp; angs)
+                        {
+                          const Mesh&amp; mesh = cell.mesh();
+                          angs.resize(6);
+                          
+                          const std::size_t i0 = cell.entities(0)[0];
+                          const std::size_t i1 = cell.entities(0)[1];
+                          const std::size_t i2 = cell.entities(0)[2];
+                          const std::size_t i3 = cell.entities(0)[3];
+                          
+                          const Point p0 = Vertex(mesh, i0).point();
+                          const Point p1 = Vertex(mesh, i1).point();
+                          const Point p2 = Vertex(mesh, i2).point();
+                          const Point p3 = Vertex(mesh, i3).point();
+                          
+                          const Point e0 = p1 - p0;
+                          const Point e1 = p2 - p0;
+                          const Point e2 = p3 - p0;
+                          const Point e3 = p2 - p1;
+                          const Point e4 = p3 - p1;
+                          
+                          Point n0 = e0.cross(e1);
+                          Point n1 = e0.cross(e2);
+                          Point n2 = e1.cross(e2);
+                          Point n3 = e3.cross(e4);
+                          
+                          n0 /= n0.norm();
+                          n1 /= n1.norm();
+                          n2 /= n2.norm();
+                          n3 /= n3.norm();
+                          
+                          angs[0] = acos(n0.dot(n1));
+                          angs[1] = acos(-n0.dot(n2));
+                          angs[2] = acos(n1.dot(n2));
+                          angs[3] = acos(n0.dot(n3));
+                          angs[4] = acos(n1.dot(-n3));
+                          angs[5] = acos(n2.dot(n3));
+                        }
+                        
+                        
+                        
+                        dolfin::MeshFunction&lt;double&gt;
+                        skewness(std::shared_ptr&lt;const Mesh&gt; mesh)
+                        {
+                          MeshFunction&lt;double&gt; cf(mesh, mesh-&gt;topology().dim(), 0.0);
+                          
+                          double opt_angle;
+                          std::vector&lt;double&gt; angs;
+                          std::vector&lt;double&gt; quals;
+                          
+                          for (CellIterator cell(*mesh); !cell.end(); ++cell)
+                          {
+                                if (cell-&gt;dim() == 2)
+                                {
+                                  quals.resize(3);
+                                  angles_triangle(*cell, angs);
+                                  opt_angle = DOLFIN_PI / 3.0;
+                                }
+                                else if (cell-&gt;dim() == 3)
+                                {
+                                  quals.resize(6);
+                                  dihedral_angles(*cell, angs);
+                                  opt_angle = acos(1.0/3.0);
+                                }
+                                else
+                                {
+                                  dolfin_error(&#34;cestrel_quality.cpp&#34;, &#34;skewness&#34;, &#34;Not a valid dimension for the mesh.&#34;);
+                                }
+                                
+                                for (unsigned int i = 0; i &lt; angs.size(); ++i)
+                                {
+                                  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), (opt_angle - angs[i]) / opt_angle);
+                                }
+                                cf[*cell] = *std::min_element(quals.begin(), quals.end());
+                          }
+                          return cf;
+                        }
+                        
+                        
+                        
+                        dolfin::MeshFunction&lt;double&gt;
+                        maximum_angle(std::shared_ptr&lt;const Mesh&gt; mesh)
+                        {
+                          MeshFunction&lt;double&gt; cf(mesh, mesh-&gt;topology().dim(), 0.0);
+                          
+                          double opt_angle;
+                          std::vector&lt;double&gt; angs;
+                          std::vector&lt;double&gt; quals;
+                          
+                          for (CellIterator cell(*mesh); !cell.end(); ++cell)
+                          {
+                                if (cell-&gt;dim() == 2)
+                                {
+                                  quals.resize(3);
+                                  angles_triangle(*cell, angs);
+                                  opt_angle = DOLFIN_PI / 3.0;
+                                }
+                                else if (cell-&gt;dim() == 3)
+                                {
+                                  quals.resize(6);
+                                  dihedral_angles(*cell, angs);
+                                  opt_angle = acos(1.0/3.0);
+                                }
+                                else
+                                {
+                                  dolfin_error(&#34;cestrel_quality.cpp&#34;, &#34;maximum_angle&#34;, &#34;Not a valid dimension for the mesh.&#34;);
+                                }
+                                
+                                for (unsigned int i = 0; i &lt; angs.size(); ++i)
+                                {
+                                  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
+                                }
+                                cf[*cell] = *std::min_element(quals.begin(), quals.end());
+                          }
+                          return cf;
+                        }
+                        
+                        PYBIND11_MODULE(SIGNATURE, m)
+                        {
+                          m.def(&#34;skewness&#34;, &amp;skewness);
+                          m.def(&#34;maximum_angle&#34;, &amp;maximum_angle);
+                        }
+                
+                &#34;&#34;&#34;
+        _quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
+
+
+
+        def __init__(self):
+                &#34;&#34;&#34;Initializes self.
+
+                &#34;&#34;&#34;
+                pass
+
+
+
+        @classmethod
+        def min_skewness(cls, mesh):
+                r&#34;&#34;&#34;Computes the minimal skewness of the mesh.
+
+                This measure the relative distance of a triangle&#39;s angles or
+                a tetrahedrons dihedral angles to the corresponding optimal
+                angle. The optimal angle is defined as the angle an equilateral,
+                and thus equiangular, element has. The skewness lies in
+                \( [0,1] \), where 1 corresponds to the case of an optimal
+                (equilateral) element, and 0 corresponds to a degenerate
+                element. The skewness corresponding to some (dihedral) angle
+                \( \alpha \) is defined as
+
+                $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+                $$
+
+                To compute the (global) quality measure, the minimum of this expression
+                over all elements and all of their (dihedral) angles is computed.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The skewness of the mesh.
+                &#34;&#34;&#34;
+
+                return np.min(cls._quality_object.skewness(mesh).array())
+
+
+
+        @classmethod
+        def avg_skewness(cls, mesh):
+                r&#34;&#34;&#34;Computes the average skewness of the mesh.
+
+                See Also
+                --------
+                min_skewness : Computes the minimal skewness of the mesh.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                flat
+                        The average skewness of the mesh.
+                &#34;&#34;&#34;
+
+                return np.average(cls._quality_object.maximum_angle(mesh).array())
+
+
+
+        @classmethod
+        def min_maximum_angle(cls, mesh):
+                r&#34;&#34;&#34;Computes the minimal quality measure based on the largest angle.
+
+                This measures the relative distance of a triangle&#39;s angles or a
+                tetrahedron&#39;s dihedral angles to the corresponding optimal
+                angle. The optimal angle is defined as the angle an equilateral
+                (and thus equiangular) element has. This is defined as
+
+                $$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+                $$
+
+                where \( \alpha \) is the corresponding (dihedral) angle of the element.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The minimum value of the maximum angle quality measure.
+                &#34;&#34;&#34;
+
+                return np.min(cls._quality_object.maximum_angle(mesh).array())
+
+
+
+        @classmethod
+        def avg_maximum_angle(cls, mesh):
+                r&#34;&#34;&#34;Computes the average quality of the mesh based on the maximum angle.
+
+                See Also
+                --------
+                min_maximum_angle : Computes the minimal quality measure based on the maximum angle.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The average quality, based on the maximum angle measure.
+                &#34;&#34;&#34;
+
+                return np.average(cls._quality_object.maximum_angle(mesh).array())
+
+
+        @staticmethod
+        def min_radius_ratios(mesh):
+                r&#34;&#34;&#34;Computes the minimal radius ratio of the mesh.
+
+                This measures the ratio of the element&#39;s inradius to it&#39;s circumradius,
+                normalized by the geometric dimension. It is an element of \( [0,1] \),
+                where 1 indicates best element quality and 0 is obtained for degenerate
+                elements. This is computed via
+
+                $$d \frac{r}{R},
+                $$
+
+                where \(d\) is the spatial dimension, \(r\) is the inradius, and \(R\) is
+                the circumradius. To compute the (global) quality measure, the minimum
+                of this expression over all elements is returned.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose radius ratios shall be computed.
+
+                Returns
+                -------
+                float
+                        The minimal radius ratio of the mesh.
+                &#34;&#34;&#34;
+
+                return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+
+
+
+        @staticmethod
+        def avg_radius_ratios(mesh):
+                r&#34;&#34;&#34;Computes the average radius ratio of the mesh.
+
+                See Also
+                --------
+                min_radius_ratios : Computes the minimal radius ratio of the mesh.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The average radius ratio of the mesh.
+                &#34;&#34;&#34;
+
+                return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+
+
+
+        @staticmethod
+        def min_condition_number(mesh):
+                r&#34;&#34;&#34;Computes minimal mesh quality based on the condition number of the reference mapping.
+
+                This quality criterion uses the condition number (in the Frobenius norm) of the
+                (linear) mapping from the elements of the mesh to the reference element. Computes
+                the minimum of the condition number over all elements.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The minimal condition number quality measure.
+                &#34;&#34;&#34;
+
+                DG0 = fenics.FunctionSpace(mesh, &#39;DG&#39;, 0)
+                jac = Jacobian(mesh)
+                inv = JacobianInverse(mesh)
+
+                options = [[
+                                [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                                [&#39;pc_type&#39;, &#39;jacobi&#39;],
+                                [&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;],
+                                [&#39;ksp_rtol&#39;, 1e-16],
+                                [&#39;ksp_atol&#39;, 1e-20],
+                                [&#39;ksp_max_it&#39;, 1000]
+                        ]]
+                ksp = PETSc.KSP().create()
+                _setup_petsc_options([ksp], options)
+
+                dx = fenics.Measure(&#39;dx&#39;, mesh)
+                a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+                L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+                cond = fenics.Function(DG0)
+
+                A, b = _assemble_petsc_system(a, L)
+                ksp.setOperators(A)
+                ksp.solve(b, cond.vector().vec())
+
+                return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
+
+
+
+        @staticmethod
+        def avg_condition_number(mesh):
+                &#34;&#34;&#34;Computes the average mesh quality based on the condition number of the reference mapping.
+
+                See Also
+                --------
+                min_condition_number : Computes the minimum condition number quality measure.
+
+                Parameters
+                ----------
+                mesh : dolfin.cpp.mesh.Mesh
+                        The mesh, whose quality shall be computed.
+
+                Returns
+                -------
+                float
+                        The average mesh quality based on the condition number.
+                &#34;&#34;&#34;
+
+                DG0 = fenics.FunctionSpace(mesh, &#39;DG&#39;, 0)
+                jac = Jacobian(mesh)
+                inv = JacobianInverse(mesh)
+
+                options = [[
+                                [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                                [&#39;pc_type&#39;, &#39;jacobi&#39;],
+                                [&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;],
+                                [&#39;ksp_rtol&#39;, 1e-16],
+                                [&#39;ksp_atol&#39;, 1e-20],
+                                [&#39;ksp_max_it&#39;, 1000]
+                        ]]
+                ksp = PETSc.KSP().create()
+                _setup_petsc_options([ksp], options)
+
+                dx = fenics.Measure(&#39;dx&#39;, mesh)
+                a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+                L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+                cond = fenics.Function(DG0)
+
+                A, b = _assemble_petsc_system(a, L)
+                ksp.setOperators(A)
+                ksp.solve(b, cond.vector().vec())
+
+                return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="cestrel.MeshQuality.avg_condition_number"><code class="name flex">
+<span>def <span class="ident">avg_condition_number</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the average mesh quality based on the condition number of the reference mapping.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code>min_condition_number</code></dt>
+<dd>Computes the minimum condition number quality measure.</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The average mesh quality based on the condition number.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def avg_condition_number(mesh):
+        &#34;&#34;&#34;Computes the average mesh quality based on the condition number of the reference mapping.
+
+        See Also
+        --------
+        min_condition_number : Computes the minimum condition number quality measure.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The average mesh quality based on the condition number.
+        &#34;&#34;&#34;
+
+        DG0 = fenics.FunctionSpace(mesh, &#39;DG&#39;, 0)
+        jac = Jacobian(mesh)
+        inv = JacobianInverse(mesh)
+
+        options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;jacobi&#39;],
+                        [&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;],
+                        [&#39;ksp_rtol&#39;, 1e-16],
+                        [&#39;ksp_atol&#39;, 1e-20],
+                        [&#39;ksp_max_it&#39;, 1000]
+                ]]
+        ksp = PETSc.KSP().create()
+        _setup_petsc_options([ksp], options)
+
+        dx = fenics.Measure(&#39;dx&#39;, mesh)
+        a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+        L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+        cond = fenics.Function(DG0)
+
+        A, b = _assemble_petsc_system(a, L)
+        ksp.setOperators(A)
+        ksp.solve(b, cond.vector().vec())
+
+        return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.avg_maximum_angle"><code class="name flex">
+<span>def <span class="ident">avg_maximum_angle</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the average quality of the mesh based on the maximum angle.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code>min_maximum_angle</code></dt>
+<dd>Computes the minimal quality measure based on the maximum angle.</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The average quality, based on the maximum angle measure.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def avg_maximum_angle(cls, mesh):
+        r&#34;&#34;&#34;Computes the average quality of the mesh based on the maximum angle.
+
+        See Also
+        --------
+        min_maximum_angle : Computes the minimal quality measure based on the maximum angle.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The average quality, based on the maximum angle measure.
+        &#34;&#34;&#34;
+
+        return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.avg_radius_ratios"><code class="name flex">
+<span>def <span class="ident">avg_radius_ratios</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the average radius ratio of the mesh.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code>min_radius_ratios</code></dt>
+<dd>Computes the minimal radius ratio of the mesh.</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The average radius ratio of the mesh.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def avg_radius_ratios(mesh):
+        r&#34;&#34;&#34;Computes the average radius ratio of the mesh.
+
+        See Also
+        --------
+        min_radius_ratios : Computes the minimal radius ratio of the mesh.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The average radius ratio of the mesh.
+        &#34;&#34;&#34;
+
+        return np.average(fenics.MeshQuality.radius_ratios(mesh).array())</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.avg_skewness"><code class="name flex">
+<span>def <span class="ident">avg_skewness</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the average skewness of the mesh.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code>min_skewness</code></dt>
+<dd>Computes the minimal skewness of the mesh.</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>flat</code></dt>
+<dd>The average skewness of the mesh.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def avg_skewness(cls, mesh):
+        r&#34;&#34;&#34;Computes the average skewness of the mesh.
+
+        See Also
+        --------
+        min_skewness : Computes the minimal skewness of the mesh.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        flat
+                The average skewness of the mesh.
+        &#34;&#34;&#34;
+
+        return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.min_condition_number"><code class="name flex">
+<span>def <span class="ident">min_condition_number</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes minimal mesh quality based on the condition number of the reference mapping.</p>
+<p>This quality criterion uses the condition number (in the Frobenius norm) of the
+(linear) mapping from the elements of the mesh to the reference element. Computes
+the minimum of the condition number over all elements.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The minimal condition number quality measure.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def min_condition_number(mesh):
+        r&#34;&#34;&#34;Computes minimal mesh quality based on the condition number of the reference mapping.
+
+        This quality criterion uses the condition number (in the Frobenius norm) of the
+        (linear) mapping from the elements of the mesh to the reference element. Computes
+        the minimum of the condition number over all elements.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The minimal condition number quality measure.
+        &#34;&#34;&#34;
+
+        DG0 = fenics.FunctionSpace(mesh, &#39;DG&#39;, 0)
+        jac = Jacobian(mesh)
+        inv = JacobianInverse(mesh)
+
+        options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;jacobi&#39;],
+                        [&#39;pc_jacobi_type&#39;, &#39;diagonal&#39;],
+                        [&#39;ksp_rtol&#39;, 1e-16],
+                        [&#39;ksp_atol&#39;, 1e-20],
+                        [&#39;ksp_max_it&#39;, 1000]
+                ]]
+        ksp = PETSc.KSP().create()
+        _setup_petsc_options([ksp], options)
+
+        dx = fenics.Measure(&#39;dx&#39;, mesh)
+        a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+        L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+        cond = fenics.Function(DG0)
+
+        A, b = _assemble_petsc_system(a, L)
+        ksp.setOperators(A)
+        ksp.solve(b, cond.vector().vec())
+
+        return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.min_maximum_angle"><code class="name flex">
+<span>def <span class="ident">min_maximum_angle</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the minimal quality measure based on the largest angle.</p>
+<p>This measures the relative distance of a triangle's angles or a
+tetrahedron's dihedral angles to the corresponding optimal
+angle. The optimal angle is defined as the angle an equilateral
+(and thus equiangular) element has. This is defined as</p>
+<p><span><span class="MathJax_Preview"> 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+</span><script type="math/tex; mode=display"> 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+</script></span></p>
+<p>where <span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is the corresponding (dihedral) angle of the element.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The minimum value of the maximum angle quality measure.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def min_maximum_angle(cls, mesh):
+        r&#34;&#34;&#34;Computes the minimal quality measure based on the largest angle.
+
+        This measures the relative distance of a triangle&#39;s angles or a
+        tetrahedron&#39;s dihedral angles to the corresponding optimal
+        angle. The optimal angle is defined as the angle an equilateral
+        (and thus equiangular) element has. This is defined as
+
+        $$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+        $$
+
+        where \( \alpha \) is the corresponding (dihedral) angle of the element.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The minimum value of the maximum angle quality measure.
+        &#34;&#34;&#34;
+
+        return np.min(cls._quality_object.maximum_angle(mesh).array())</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.min_radius_ratios"><code class="name flex">
+<span>def <span class="ident">min_radius_ratios</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the minimal radius ratio of the mesh.</p>
+<p>This measures the ratio of the element's inradius to it's circumradius,
+normalized by the geometric dimension. It is an element of <span><span class="MathJax_Preview"> [0,1] </span><script type="math/tex"> [0,1] </script></span>,
+where 1 indicates best element quality and 0 is obtained for degenerate
+elements. This is computed via</p>
+<p><span><span class="MathJax_Preview">d \frac{r}{R},
+</span><script type="math/tex; mode=display">d \frac{r}{R},
+</script></span></p>
+<p>where <span><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span> is the spatial dimension, <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is the inradius, and <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is
+the circumradius. To compute the (global) quality measure, the minimum
+of this expression over all elements is returned.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh, whose radius ratios shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The minimal radius ratio of the mesh.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def min_radius_ratios(mesh):
+        r&#34;&#34;&#34;Computes the minimal radius ratio of the mesh.
+
+        This measures the ratio of the element&#39;s inradius to it&#39;s circumradius,
+        normalized by the geometric dimension. It is an element of \( [0,1] \),
+        where 1 indicates best element quality and 0 is obtained for degenerate
+        elements. This is computed via
+
+        $$d \frac{r}{R},
+        $$
+
+        where \(d\) is the spatial dimension, \(r\) is the inradius, and \(R\) is
+        the circumradius. To compute the (global) quality measure, the minimum
+        of this expression over all elements is returned.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh, whose radius ratios shall be computed.
+
+        Returns
+        -------
+        float
+                The minimal radius ratio of the mesh.
+        &#34;&#34;&#34;
+
+        return np.min(fenics.MeshQuality.radius_ratios(mesh).array())</code></pre>
+</details>
+</dd>
+<dt id="cestrel.MeshQuality.min_skewness"><code class="name flex">
+<span>def <span class="ident">min_skewness</span></span>(<span>mesh)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the minimal skewness of the mesh.</p>
+<p>This measure the relative distance of a triangle's angles or
+a tetrahedrons dihedral angles to the corresponding optimal
+angle. The optimal angle is defined as the angle an equilateral,
+and thus equiangular, element has. The skewness lies in
+<span><span class="MathJax_Preview"> [0,1] </span><script type="math/tex"> [0,1] </script></span>, where 1 corresponds to the case of an optimal
+(equilateral) element, and 0 corresponds to a degenerate
+element. The skewness corresponding to some (dihedral) angle
+<span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is defined as</p>
+<p><span><span class="MathJax_Preview"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+</span><script type="math/tex; mode=display"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+</script></span></p>
+<p>To compute the (global) quality measure, the minimum of this expression
+over all elements and all of their (dihedral) angles is computed.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
+<dd>The mesh whose quality shall be computed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The skewness of the mesh.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def min_skewness(cls, mesh):
+        r&#34;&#34;&#34;Computes the minimal skewness of the mesh.
+
+        This measure the relative distance of a triangle&#39;s angles or
+        a tetrahedrons dihedral angles to the corresponding optimal
+        angle. The optimal angle is defined as the angle an equilateral,
+        and thus equiangular, element has. The skewness lies in
+        \( [0,1] \), where 1 corresponds to the case of an optimal
+        (equilateral) element, and 0 corresponds to a degenerate
+        element. The skewness corresponding to some (dihedral) angle
+        \( \alpha \) is defined as
+
+        $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+        $$
+
+        To compute the (global) quality measure, the minimum of this expression
+        over all elements and all of their (dihedral) angles is computed.
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+                The mesh whose quality shall be computed.
+
+        Returns
+        -------
+        float
+                The skewness of the mesh.
+        &#34;&#34;&#34;
+
+        return np.min(cls._quality_object.skewness(mesh).array())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="cestrel.OptimalControlProblem"><code class="flex name class">
 <span>class <span class="ident">OptimalControlProblem</span></span>
 <span>(</span><span>state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config, riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
@@ -1562,31 +2538,38 @@ as for the state systems are used (default is None).</dd>
 
                 ### Initialize the remeshing behavior, and a temp file
                 self.do_remesh = config.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False)
+                self.temp_dict = None
                 if self.do_remesh:
-                        assert len(sys.argv) in [1,2], &#39;Do not use any additional command line arguments.&#39;
+
+                        assert os.path.isfile(os.path.realpath(sys.argv[0])), &#39;Not a valid configuration. The script has to be the first &#34;command line argument&#34;.&#39;
+
+                        try:
+                                if __IPYTHON__:
+                                        warnings.warn(&#39;You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command&#39;)
+                        except NameError:
+                                pass
+
                         try:
                                 assert self.states[0].function_space().mesh()._cestrel_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
                         except:
                                 raise Exception(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
 
-                        if len(sys.argv) == 1:
-                                directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-                                self.temp_dir = tempfile.mkdtemp(dir=directory)
+                        if not &#39;_cestrel_remesh_flag&#39; in sys.argv:
+                                self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+                                self.__clean_previous_temp_files()
+                                self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cestrel_remesh_temp&#39;, dir=self.directory)
+                                self.__change_except_hook()
                                 self.temp_dict = {&#39;temp_dir&#39; : self.temp_dir, &#39;gmsh_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;),
-                                                                  &#39;geo_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;)}
+                                                                  &#39;geo_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;),
+                                                                  &#39;OptimizationRoutine&#39; : {&#39;iteration_counter&#39; : 0, &#39;gradient_norm_initial&#39; : 0.0},
+                                                                  &#39;output_dict&#39; : {}}
 
-                        elif len(sys.argv) == 2:
-                                self.temp_dir = sys.argv[1]
+
+                        else:
+                                self.temp_dir = sys.argv[-1]
+                                self.__change_except_hook()
                                 with open(self.temp_dir + &#39;/temp_dict.json&#39;, &#39;r&#39;) as file:
                                         self.temp_dict = json.load(file)
-
-                        ### change the except_hook so that the temp files are deleted whenever an exception occurs, to get reproducable results
-                        def custom_except_hook(exctype, value, traceback):
-                                print(&#39;DEBUG: Caught the exception, deleting temp files&#39;)
-                                os.system(&#39;rm -r &#39; + self.temp_dir)
-                                sys.__excepthook__(exctype, value, traceback)
-
-                        sys.excepthook = custom_except_hook
 
                 ### boundaries
                 if boundaries.__module__ == &#39;dolfin.cpp.mesh&#39; and type(boundaries).__name__ == &#39;MeshFunctionSizet&#39;:
@@ -1602,15 +2585,14 @@ as for the state systems are used (default is None).</dd>
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
                 self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
-                                                                                                   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
-                                                                                                   temp_dict=self.temp_dict)
+                                                                                                   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
                 self.mesh_handler = _MeshHandler(self)
 
                 self.state_spaces = self.shape_form_handler.state_spaces
                 self.adjoint_spaces = self.shape_form_handler.adjoint_spaces
 
-                self.state_problem = StateProblem(self.shape_form_handler, self.initial_guess)
-                self.adjoint_problem = AdjointProblem(self.shape_form_handler, self.state_problem)
+                self.state_problem = StateProblem(self.shape_form_handler, self.initial_guess, self.temp_dict)
+                self.adjoint_problem = AdjointProblem(self.shape_form_handler, self.state_problem, self.temp_dict)
                 self.shape_gradient_problem = ShapeGradientProblem(self.shape_form_handler, self.state_problem, self.adjoint_problem)
 
                 self.reduced_cost_functional = ReducedShapeCostFunctional(self.shape_form_handler, self.state_problem)
@@ -1641,6 +2623,34 @@ as for the state systems are used (default is None).</dd>
 
                 self.solver.run()
                 self.solver.finalize()
+
+
+
+        def __change_except_hook(self):
+                &#34;&#34;&#34;Ensures that temp files are deleted when an exception occurs.
+
+                This modifies the sys.excepthook command so that it also deletes temp files
+                (only needed for remeshing)
+
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+
+                def custom_except_hook(exctype, value, traceback):
+                        print(&#39;DEBUG: Caught the exception, deleting temp files&#39;)
+                        os.system(&#39;rm -r &#39; + self.temp_dir)
+                        sys.__excepthook__(exctype, value, traceback)
+
+                sys.excepthook = custom_except_hook
+
+
+
+        def __clean_previous_temp_files(self):
+
+                for file in os.listdir(self.directory):
+                        if file.startswith(&#39;._cestrel_remesh_temp&#39;):
+                                os.system(&#39;rm -r &#39; + file)
 
 
 
@@ -1796,6 +2806,19 @@ are carried out automatically.</p>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="cestrel.MeshQuality" href="#cestrel.MeshQuality">MeshQuality</a></code></h4>
+<ul class="">
+<li><code><a title="cestrel.MeshQuality.avg_condition_number" href="#cestrel.MeshQuality.avg_condition_number">avg_condition_number</a></code></li>
+<li><code><a title="cestrel.MeshQuality.avg_maximum_angle" href="#cestrel.MeshQuality.avg_maximum_angle">avg_maximum_angle</a></code></li>
+<li><code><a title="cestrel.MeshQuality.avg_radius_ratios" href="#cestrel.MeshQuality.avg_radius_ratios">avg_radius_ratios</a></code></li>
+<li><code><a title="cestrel.MeshQuality.avg_skewness" href="#cestrel.MeshQuality.avg_skewness">avg_skewness</a></code></li>
+<li><code><a title="cestrel.MeshQuality.min_condition_number" href="#cestrel.MeshQuality.min_condition_number">min_condition_number</a></code></li>
+<li><code><a title="cestrel.MeshQuality.min_maximum_angle" href="#cestrel.MeshQuality.min_maximum_angle">min_maximum_angle</a></code></li>
+<li><code><a title="cestrel.MeshQuality.min_radius_ratios" href="#cestrel.MeshQuality.min_radius_ratios">min_radius_ratios</a></code></li>
+<li><code><a title="cestrel.MeshQuality.min_skewness" href="#cestrel.MeshQuality.min_skewness">min_skewness</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="cestrel.OptimalControlProblem" href="#cestrel.OptimalControlProblem">OptimalControlProblem</a></code></h4>
 <ul class="">

@@ -98,15 +98,15 @@ class ShapeOptimizationAlgorithm:
 
 		if self.iteration == 0:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '
+					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs)    Mesh Quality: ' + format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + ' \n '
 		else:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Mesh Quality: ' + format(self.line_search.mesh_handler.min_quality, '.2f') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')
+					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Mesh Quality: ' + format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + '    Step size:  ' + format(self.stepsize, '.3e')
 
 		self.output_dict['cost_function_value'].append(self.objective_value)
 		self.output_dict['gradient_norm'].append(self.relative_norm)
 		self.output_dict['stepsize'].append(self.stepsize)
-		self.output_dict['MeshQuality'].append(self.line_search.mesh_handler.min_quality)
+		self.output_dict['MeshQuality'].append(self.optimization_problem.mesh_handler.current_mesh_quality)
 
 		if self.save_pvd:
 			for i in range(self.shape_form_handler.state_dim):

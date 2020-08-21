@@ -7,7 +7,6 @@ Created on 15/06/2020, 08.09
 from fenics import *
 import cestrel
 import numpy as np
-import sys
 
 
 

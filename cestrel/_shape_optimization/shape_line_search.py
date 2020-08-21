@@ -16,7 +16,7 @@ class ArmijoLineSearch:
 
 		Parameters
 		----------
-		optimization_algorithm : cestrel.shape_optimization.shape_optimization_algorithm.ShapeOptimizationAlgorithm
+		optimization_algorithm : cestrel._shape_optimization.shape_optimization_algorithm.ShapeOptimizationAlgorithm
 			the optimization problem of interest
 		"""
 
@@ -103,9 +103,7 @@ class ArmijoLineSearch:
 			self.deformation.vector()[:] = self.stepsize*search_direction.vector()[:]
 
 			if self.mesh_handler.move_mesh(self.deformation):
-				self.mesh_handler.compute_relative_quality()
-
-				if self.mesh_handler.min_quality < self.mesh_handler.mesh_quality_tol / 10:
+				if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_lower:
 					self.stepsize /= self.beta_armijo
 					self.mesh_handler.revert_transformation()
 					continue
@@ -114,7 +112,8 @@ class ArmijoLineSearch:
 				self.objective_step = self.cost_functional.evaluate()
 
 				if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
-					if self.mesh_handler.min_quality < self.mesh_handler.mesh_quality_tol:
+
+					if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_upper:
 						self.stepsize /= self.beta_armijo
 						self.mesh_handler.revert_transformation()
 						print('\nMesh Quality too low. Perform a remeshing operation.')

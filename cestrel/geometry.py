@@ -8,13 +8,15 @@ which are great for testing.
 """
 
 import fenics
+from ufl import Jacobian, JacobianInverse
 import numpy as np
 import time
 from petsc4py import PETSc
 import os
 import sys
 import configparser
-from .utils import _setup_petsc_options, write_out_mesh
+from .utils import _setup_petsc_options, write_out_mesh, _assemble_petsc_system
+import warnings
 import json
 
 
@@ -363,15 +365,29 @@ class _MeshHandler:
 		self.bbtree = self.mesh.bounding_box_tree()
 		self.config = self.shape_form_handler.config
 
-		self.check_a_posteriori = self.config.getboolean('MeshQuality', 'check_a_posteriori', fallback=True)
 		self.volume_change = float(self.config.get('MeshQuality', 'volume_change', fallback='inf'))
 		self.angle_change = float(self.config.get('MeshQuality', 'angle_change', fallback='inf'))
 
 		self.radius_ratios_initial_mf = fenics.MeshQuality.radius_ratios(self.mesh)
 		self.radius_ratios_initial = self.radius_ratios_initial_mf.array().copy()
 
-		self.mesh_quality_tol = self.config.getfloat('MeshQuality', 'qtol', fallback=0.25)
-		self.min_quality = 1.0
+		self.mesh_quality_tol_lower = self.config.getfloat('MeshQuality', 'tol_lower', fallback=0.05)
+		self.mesh_quality_tol_upper =  self.config.getfloat('MeshQuality', 'tol_upper', fallback=0.1)
+		assert self.mesh_quality_tol_lower < self.mesh_quality_tol_upper, \
+			'The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance'
+		if self.mesh_quality_tol_lower > 0.9*self.mesh_quality_tol_upper:
+			warnings.warn('You are using a lower remesh tolerance close to the upper one. This may slow down the optimization considerably.')
+
+		self.mesh_quality_measure = self.config.get('MeshQuality', 'measure', fallback='skewness')
+		assert self.mesh_quality_measure in ['skewness', 'maximum_angle', 'radius_ratios', 'condition_number'], \
+			'MeshQuality measure has to be one of `skewness`, `maximum_angle`, `condition_number`, or `radius_ratios`.'
+
+		self.mesh_quality_type = self.config.get('MeshQuality', 'type', fallback='min')
+		assert self.mesh_quality_type in ['min', 'minimum', 'avg', 'average'], \
+			'MeshQuality type has to be one of `min`, `minimum`, `avg`, or `average`.'
+
+		self.current_mesh_quality = 1.0
+		self.compute_mesh_quality()
 
 		self.__setup_decrease_computation()
 		self.__setup_a_priori()
@@ -399,6 +415,11 @@ class _MeshHandler:
 			copy_mesh = 'cp ' + self.gmsh_file + ' ' + self.gmsh_file_init
 			os.system(copy_mesh)
 			self.gmsh_file = self.gmsh_file_init
+
+
+
+	def __setup_quality_measurement(self):
+		pass
 
 
 
@@ -475,9 +496,7 @@ class _MeshHandler:
 		if not self.angle_change == float('inf'):
 			self.search_direction_container = fenics.Function(self.shape_form_handler.deformation_space)
 
-			a_frobenius = self.trial_dg0*self.test_dg0*self.dx
-			self.A_frobenius = fenics.as_backend_type(fenics.assemble(a_frobenius)).mat()
-			self.ksp_frobenius.setOperators(self.A_frobenius)
+			self.a_frobenius = self.trial_dg0*self.test_dg0*self.dx
 			self.L_frobenius = fenics.sqrt(fenics.inner(fenics.grad(self.search_direction_container), fenics.grad(self.search_direction_container)))*self.test_dg0*self.dx
 
 
@@ -513,9 +532,11 @@ class _MeshHandler:
 
 		else:
 			self.search_direction_container.vector()[:] = search_direction.vector()[:]
+			A, b = _assemble_petsc_system(self.a_frobenius, self.L_frobenius)
 			b = fenics.as_backend_type(fenics.assemble(self.L_frobenius)).vec()
-			x, _ = self.A_frobenius.getVecs()
+			x, _ = A.getVecs()
 
+			self.ksp_frobenius.setOperators(A)
 			self.ksp_frobenius.solve(b, x)
 			if self.ksp_frobenius.getConvergedReason() < 0:
 				raise Exception('Krylov solver did not converge. Reason: ' + str(self.ksp_frobenius.getConvergedReason()))
@@ -550,9 +571,7 @@ class _MeshHandler:
 			self.transformation_container = fenics.Function(self.shape_form_handler.deformation_space)
 			dim = self.mesh.geometric_dimension()
 			assert self.volume_change > 1, 'Volume change has to be larger than 1'
-			a_prior = self.trial_dg0*self.test_dg0*self.dx
-			self.A_prior = fenics.as_backend_type(fenics.assemble(a_prior)).mat()
-			self.ksp_prior.setOperators(self.A_prior)
+			self.a_prior = self.trial_dg0*self.test_dg0*self.dx
 			self.L_prior = fenics.det(fenics.Identity(dim) + fenics.grad(self.transformation_container))*self.test_dg0*self.dx
 
 
@@ -578,10 +597,11 @@ class _MeshHandler:
 		if self.volume_change < float('inf'):
 
 			self.transformation_container.vector()[:] = transformation.vector()[:]
-
+			A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
 			b = fenics.as_backend_type(fenics.assemble(self.L_prior)).vec()
-			x, _ = self.A_prior.getVecs()
+			x, _ = A.getVecs()
 
+			self.ksp_prior.setOperators(A)
 			self.ksp_prior.solve(b, x)
 			if self.ksp_prior.getConvergedReason() < 0:
 				raise Exception('Krylov solver did not converge. Reason: ' + str(self.ksp_prior.getConvergedReason()))
@@ -609,45 +629,60 @@ class _MeshHandler:
 			True if the test is successful, False otherwise
 		"""
 
-		if self.check_a_posteriori:
-			mesh = self.mesh
-			cells = mesh.cells()
-			coordinates = mesh.coordinates()
-			self_intersections = False
-			for i in range(coordinates.shape[0]):
-				x = fenics.Point(coordinates[i])
-				cells_idx = self.bbtree.compute_entity_collisions(x)
-				intersections = len(cells_idx)
-				M = cells[cells_idx]
-				occurences = M.flatten().tolist().count(i)
 
-				if intersections > occurences:
-					self_intersections = True
-					break
+		mesh = self.mesh
+		cells = mesh.cells()
+		coordinates = mesh.coordinates()
+		self_intersections = False
+		for i in range(coordinates.shape[0]):
+			x = fenics.Point(coordinates[i])
+			cells_idx = self.bbtree.compute_entity_collisions(x)
+			intersections = len(cells_idx)
+			M = cells[cells_idx]
+			occurences = M.flatten().tolist().count(i)
 
-			if self_intersections:
-				self.revert_transformation()
-				return False
-			else:
-				return True
+			if intersections > occurences:
+				self_intersections = True
+				break
 
+		if self_intersections:
+			self.revert_transformation()
+			return False
 		else:
+			self.compute_mesh_quality()
 			return True
 
 
 
-	def compute_relative_quality(self):
-		"""Computes the relative mesh quality for the current mesh
+	def compute_mesh_quality(self):
+		"""This computes the current mesh quality.
+
+		Updates the attribute current_mesh_quality.
 
 		Returns
 		-------
 		None
 		"""
 
-		radius_ratios_mf = fenics.MeshQuality.radius_ratios(self.mesh)
-		self.radius_ratios = radius_ratios_mf.array().copy()
-		relative_quality = self.radius_ratios / self.radius_ratios_initial
-		self.min_quality = np.min(relative_quality)
+		if self.mesh_quality_type in ['min', 'minimum']:
+			if self.mesh_quality_measure == 'skewness':
+				self.current_mesh_quality = MeshQuality.min_skewness(self.mesh)
+			elif self.mesh_quality_measure == 'maximum_angle':
+				self.current_mesh_quality = MeshQuality.min_maximum_angle(self.mesh)
+			elif self.mesh_quality_measure == 'radius_ratios':
+				self.current_mesh_quality = MeshQuality.min_radius_ratios(self.mesh)
+			elif self.mesh_quality_measure == 'condition_number':
+				self.current_mesh_quality = MeshQuality.min_condition_number(self.mesh)
+
+		else:
+			if self.mesh_quality_measure == 'skewness':
+				self.current_mesh_quality = MeshQuality.avg_skewness(self.mesh)
+			elif self.mesh_quality_measure == 'maximum_angle':
+				self.current_mesh_quality = MeshQuality.avg_maximum_angle(self.mesh)
+			elif self.mesh_quality_measure == 'radius_ratios':
+				self.current_mesh_quality = MeshQuality.avg_radius_ratios(self.mesh)
+			elif self.mesh_quality_measure == 'condition_number':
+				self.current_mesh_quality = MeshQuality.avg_condition_number(self.mesh)
 
 
 
@@ -752,3 +787,478 @@ class _MeshHandler:
 				os.execv(sys.executable, [sys.executable] + sys.argv + ['_cestrel_remesh_flag'] + [self.temp_dir])
 			else:
 				os.execv(sys.executable, [sys.executable] + sys.argv[:-2] + ['_cestrel_remesh_flag'] + [self.temp_dir])
+
+
+
+
+
+class MeshQuality:
+	r"""A class used to compute the quality of a mesh.
+
+	This class implements either a skewness quality measure, one based
+	on the maximum angle of the elements, or one based on the radius ratios.
+	All quality measures have values in \( [0, 1] \), where 1 corresponds
+	to the best / perfect element, and 0 corresponds to degenerate elements.
+
+	Examples
+	--------
+	This class can be directly used, without any instantiation. E.g., with
+	cestrel one can write
+
+		import cestrel
+
+		mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+
+		min_skew = cestrel.MeshQuality.min_skewness(mesh)
+		avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+
+		min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
+		avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+
+		min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
+		avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+
+		min_cond = cestrel.MeshQuality.min_condition_number(mesh)
+		avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+
+	This works analogously for any mesh used in fenics.
+
+	See Also
+	--------
+	MeshQuality.min_skewness : Computes the quality measure based on the skewness of the mesh.
+	MeshQuality.min_maximum_angle : Computes the quality measure based on the maximum angle of the elements.
+	MeshQuality.min_radius_ratios : Computes the quality measure based on the radius ratios.
+	MeshQuality.min_condition_number : Computes the quality based on the condition number of the mapping from element to reference element.
+	"""
+
+	_cpp_code_mesh_quality = """
+			#include <pybind11/pybind11.h>
+			#include <pybind11/eigen.h>
+			namespace py = pybind11;
+			
+			#include <dolfin/mesh/Mesh.h>
+			#include <dolfin/mesh/Vertex.h>
+			#include <dolfin/mesh/MeshFunction.h>
+			#include <dolfin/mesh/Cell.h>
+			#include <dolfin/mesh/Vertex.h>
+			
+			using namespace dolfin;
+			
+			
+			void angles_triangle(const Cell& cell, std::vector<double>& angs)
+			{
+			  const Mesh& mesh = cell.mesh();
+			  angs.resize(3);
+			  const std::size_t i0 = cell.entities(0)[0];
+			  const std::size_t i1 = cell.entities(0)[1];
+			  const std::size_t i2 = cell.entities(0)[2];
+			  
+			  const Point p0 = Vertex(mesh, i0).point();
+			  const Point p1 = Vertex(mesh, i1).point();
+			  const Point p2 = Vertex(mesh, i2).point();
+			  Point e0 = p1 - p0;
+			  Point e1 = p2 - p0;
+			  Point e2 = p2 - p1;
+			  
+			  e0 /= e0.norm();
+			  e1 /= e1.norm();
+			  e2 /= e2.norm();
+			
+			  angs[0] = acos(e0.dot(e1));
+			  angs[1] = acos(e0.dot(e2));
+			  angs[2] = acos(e1.dot(e2));
+			}
+			
+			
+			
+			void dihedral_angles(const Cell& cell, std::vector<double>& angs)
+			{
+			  const Mesh& mesh = cell.mesh();
+			  angs.resize(6);
+			  
+			  const std::size_t i0 = cell.entities(0)[0];
+			  const std::size_t i1 = cell.entities(0)[1];
+			  const std::size_t i2 = cell.entities(0)[2];
+			  const std::size_t i3 = cell.entities(0)[3];
+			  
+			  const Point p0 = Vertex(mesh, i0).point();
+			  const Point p1 = Vertex(mesh, i1).point();
+			  const Point p2 = Vertex(mesh, i2).point();
+			  const Point p3 = Vertex(mesh, i3).point();
+			  
+			  const Point e0 = p1 - p0;
+			  const Point e1 = p2 - p0;
+			  const Point e2 = p3 - p0;
+			  const Point e3 = p2 - p1;
+			  const Point e4 = p3 - p1;
+			  
+			  Point n0 = e0.cross(e1);
+			  Point n1 = e0.cross(e2);
+			  Point n2 = e1.cross(e2);
+			  Point n3 = e3.cross(e4);
+			  
+			  n0 /= n0.norm();
+			  n1 /= n1.norm();
+			  n2 /= n2.norm();
+			  n3 /= n3.norm();
+			  
+			  angs[0] = acos(n0.dot(n1));
+			  angs[1] = acos(-n0.dot(n2));
+			  angs[2] = acos(n1.dot(n2));
+			  angs[3] = acos(n0.dot(n3));
+			  angs[4] = acos(n1.dot(-n3));
+			  angs[5] = acos(n2.dot(n3));
+			}
+			
+			
+			
+			dolfin::MeshFunction<double>
+			skewness(std::shared_ptr<const Mesh> mesh)
+			{
+			  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+			  
+			  double opt_angle;
+			  std::vector<double> angs;
+			  std::vector<double> quals;
+			  
+			  for (CellIterator cell(*mesh); !cell.end(); ++cell)
+			  {
+				if (cell->dim() == 2)
+				{
+				  quals.resize(3);
+				  angles_triangle(*cell, angs);
+				  opt_angle = DOLFIN_PI / 3.0;
+				}
+				else if (cell->dim() == 3)
+				{
+				  quals.resize(6);
+				  dihedral_angles(*cell, angs);
+				  opt_angle = acos(1.0/3.0);
+				}
+				else
+				{
+				  dolfin_error("cestrel_quality.cpp", "skewness", "Not a valid dimension for the mesh.");
+				}
+				
+				for (unsigned int i = 0; i < angs.size(); ++i)
+				{
+				  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), (opt_angle - angs[i]) / opt_angle);
+				}
+				cf[*cell] = *std::min_element(quals.begin(), quals.end());
+			  }
+			  return cf;
+			}
+			
+			
+			
+			dolfin::MeshFunction<double>
+			maximum_angle(std::shared_ptr<const Mesh> mesh)
+			{
+			  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+			  
+			  double opt_angle;
+			  std::vector<double> angs;
+			  std::vector<double> quals;
+			  
+			  for (CellIterator cell(*mesh); !cell.end(); ++cell)
+			  {
+				if (cell->dim() == 2)
+				{
+				  quals.resize(3);
+				  angles_triangle(*cell, angs);
+				  opt_angle = DOLFIN_PI / 3.0;
+				}
+				else if (cell->dim() == 3)
+				{
+				  quals.resize(6);
+				  dihedral_angles(*cell, angs);
+				  opt_angle = acos(1.0/3.0);
+				}
+				else
+				{
+				  dolfin_error("cestrel_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh.");
+				}
+				
+				for (unsigned int i = 0; i < angs.size(); ++i)
+				{
+				  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
+				}
+				cf[*cell] = *std::min_element(quals.begin(), quals.end());
+			  }
+			  return cf;
+			}
+			
+			PYBIND11_MODULE(SIGNATURE, m)
+			{
+			  m.def("skewness", &skewness);
+			  m.def("maximum_angle", &maximum_angle);
+			}
+		
+		"""
+	_quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
+
+
+
+	def __init__(self):
+		"""Initializes self.
+
+		"""
+		pass
+
+
+
+	@classmethod
+	def min_skewness(cls, mesh):
+		r"""Computes the minimal skewness of the mesh.
+
+		This measure the relative distance of a triangle's angles or
+		a tetrahedrons dihedral angles to the corresponding optimal
+		angle. The optimal angle is defined as the angle an equilateral,
+		and thus equiangular, element has. The skewness lies in
+		\( [0,1] \), where 1 corresponds to the case of an optimal
+		(equilateral) element, and 0 corresponds to a degenerate
+		element. The skewness corresponding to some (dihedral) angle
+		\( \alpha \) is defined as
+
+		$$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+		$$
+
+		To compute the (global) quality measure, the minimum of this expression
+		over all elements and all of their (dihedral) angles is computed.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The skewness of the mesh.
+		"""
+
+		return np.min(cls._quality_object.skewness(mesh).array())
+
+
+
+	@classmethod
+	def avg_skewness(cls, mesh):
+		r"""Computes the average skewness of the mesh.
+
+		See Also
+		--------
+		min_skewness : Computes the minimal skewness of the mesh.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		flat
+			The average skewness of the mesh.
+		"""
+
+		return np.average(cls._quality_object.maximum_angle(mesh).array())
+
+
+
+	@classmethod
+	def min_maximum_angle(cls, mesh):
+		r"""Computes the minimal quality measure based on the largest angle.
+
+		This measures the relative distance of a triangle's angles or a
+		tetrahedron's dihedral angles to the corresponding optimal
+		angle. The optimal angle is defined as the angle an equilateral
+		(and thus equiangular) element has. This is defined as
+
+		$$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+		$$
+
+		where \( \alpha \) is the corresponding (dihedral) angle of the element.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The minimum value of the maximum angle quality measure.
+		"""
+
+		return np.min(cls._quality_object.maximum_angle(mesh).array())
+
+
+
+	@classmethod
+	def avg_maximum_angle(cls, mesh):
+		r"""Computes the average quality of the mesh based on the maximum angle.
+
+		See Also
+		--------
+		min_maximum_angle : Computes the minimal quality measure based on the maximum angle.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The average quality, based on the maximum angle measure.
+		"""
+
+		return np.average(cls._quality_object.maximum_angle(mesh).array())
+
+
+	@staticmethod
+	def min_radius_ratios(mesh):
+		r"""Computes the minimal radius ratio of the mesh.
+
+		This measures the ratio of the element's inradius to it's circumradius,
+		normalized by the geometric dimension. It is an element of \( [0,1] \),
+		where 1 indicates best element quality and 0 is obtained for degenerate
+		elements. This is computed via
+
+		$$d \frac{r}{R},
+		$$
+
+		where \(d\) is the spatial dimension, \(r\) is the inradius, and \(R\) is
+		the circumradius. To compute the (global) quality measure, the minimum
+		of this expression over all elements is returned.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose radius ratios shall be computed.
+
+		Returns
+		-------
+		float
+			The minimal radius ratio of the mesh.
+		"""
+
+		return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+
+
+
+	@staticmethod
+	def avg_radius_ratios(mesh):
+		r"""Computes the average radius ratio of the mesh.
+
+		See Also
+		--------
+		min_radius_ratios : Computes the minimal radius ratio of the mesh.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The average radius ratio of the mesh.
+		"""
+
+		return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+
+
+
+	@staticmethod
+	def min_condition_number(mesh):
+		r"""Computes minimal mesh quality based on the condition number of the reference mapping.
+
+		This quality criterion uses the condition number (in the Frobenius norm) of the
+		(linear) mapping from the elements of the mesh to the reference element. Computes
+		the minimum of the condition number over all elements.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The minimal condition number quality measure.
+		"""
+
+		DG0 = fenics.FunctionSpace(mesh, 'DG', 0)
+		jac = Jacobian(mesh)
+		inv = JacobianInverse(mesh)
+
+		options = [[
+				['ksp_type', 'preonly'],
+				['pc_type', 'jacobi'],
+				['pc_jacobi_type', 'diagonal'],
+				['ksp_rtol', 1e-16],
+				['ksp_atol', 1e-20],
+				['ksp_max_it', 1000]
+			]]
+		ksp = PETSc.KSP().create()
+		_setup_petsc_options([ksp], options)
+
+		dx = fenics.Measure('dx', mesh)
+		a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+		L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+		cond = fenics.Function(DG0)
+
+		A, b = _assemble_petsc_system(a, L)
+		ksp.setOperators(A)
+		ksp.solve(b, cond.vector().vec())
+
+		return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
+
+
+
+	@staticmethod
+	def avg_condition_number(mesh):
+		"""Computes the average mesh quality based on the condition number of the reference mapping.
+
+		See Also
+		--------
+		min_condition_number : Computes the minimum condition number quality measure.
+
+		Parameters
+		----------
+		mesh : dolfin.cpp.mesh.Mesh
+			The mesh, whose quality shall be computed.
+
+		Returns
+		-------
+		float
+			The average mesh quality based on the condition number.
+		"""
+
+		DG0 = fenics.FunctionSpace(mesh, 'DG', 0)
+		jac = Jacobian(mesh)
+		inv = JacobianInverse(mesh)
+
+		options = [[
+				['ksp_type', 'preonly'],
+				['pc_type', 'jacobi'],
+				['pc_jacobi_type', 'diagonal'],
+				['ksp_rtol', 1e-16],
+				['ksp_atol', 1e-20],
+				['ksp_max_it', 1000]
+			]]
+		ksp = PETSc.KSP().create()
+		_setup_petsc_options([ksp], options)
+
+		dx = fenics.Measure('dx', mesh)
+		a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
+		L = fenics.sqrt(fenics.inner(jac, jac))*fenics.sqrt(fenics.inner(inv, inv))*fenics.TestFunction(DG0)*dx
+
+		cond = fenics.Function(DG0)
+
+		A, b = _assemble_petsc_system(a, L)
+		ksp.setOperators(A)
+		ksp.solve(b, cond.vector().vec())
+
+		return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])

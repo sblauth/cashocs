@@ -186,7 +186,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	def __clean_previous_temp_files(self):
 
 		for file in os.listdir(self.directory):
-			if file.startswith('cestrel_remesh_temp'):
+			if file.startswith('._cestrel_remesh_temp'):
 				os.system('rm -r ' + file)
 
 
