@@ -6,6 +6,7 @@ Created on 24/02/2020, 14.31
 
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import NotConvergedError
 
 
 
@@ -90,14 +91,14 @@ class Newton(OptimizationAlgorithm):
 						print('Armijo rule failed.')
 						break
 					else:
-						raise Exception('Armijo rule failed.')
+						raise NotConvergedError('Armijo rule failed.')
 
 			elif self.armijo_broken and not self.has_curvature_info:
 				if self.soft_exit:
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 
@@ -107,4 +108,4 @@ class Newton(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

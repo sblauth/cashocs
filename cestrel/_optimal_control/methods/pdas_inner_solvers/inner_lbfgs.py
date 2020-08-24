@@ -9,6 +9,7 @@ import numpy as np
 from ...optimization_algorithm import OptimizationAlgorithm
 from .unconstrained_line_search import UnconstrainedLineSearch
 from _collections import deque
+from ...._exceptions import NotConvergedError
 
 
 
@@ -152,7 +153,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			if self.memory_vectors > 0:
 				for i in range(len(self.controls)):
@@ -197,4 +198,4 @@ class InnerLBFGS(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

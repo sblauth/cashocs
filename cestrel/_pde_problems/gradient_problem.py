@@ -5,25 +5,26 @@ Created on 24/02/2020, 09.26
 """
 
 import fenics
+from ..utils import _solve_linear_problem
 
 
 
 class GradientProblem:
-	"""A class representing a gradient problem for optimal control problems
+	"""A class representing the Riesz problem to determine the gradient.
 
 	"""
 	
 	def __init__(self, form_handler, state_problem, adjoint_problem):
-		"""Initializes the gradient problem
+		"""Initializes the gradient problem.
 		
 		Parameters
 		----------
 		form_handler : cestrel._forms.ControlFormHandler
-			the FormHandler object of the optimization problem
+			The FormHandler object of the optimization problem.
 		state_problem : cestrel._pde_problems.StateProblem
-			the StateProblem object used to solve the state equations
+			The StateProblem object used to solve the state equations.
 		adjoint_problem : cestrel._pde_problems.AdjointProblem
-			the AdjointProblem used to solve the adjoint equations
+			The AdjointProblem used to solve the adjoint equations.
 		"""
 		
 		self.form_handler = form_handler
@@ -38,12 +39,12 @@ class GradientProblem:
 
 	
 	def solve(self):
-		"""Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional
+		"""Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.
 		
 		Returns
 		-------
 		gradients : list[dolfin.function.function.Function]
-			the gradient of the cost functional
+			The list of gradient of the cost functional.
 		"""
 		
 		self.state_problem.solve()
@@ -52,11 +53,7 @@ class GradientProblem:
 		if not self.has_solution:
 			for i in range(self.form_handler.control_dim):
 				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()
-				x = self.gradients[i].vector().vec()
-				self.form_handler.ksps[i].solve(b, x)
-
-				if self.form_handler.ksps[i].getConvergedReason() < 0:
-					raise Exception('Krylov solver did not converge. Reason: ' + str(self.form_handler.ksps[i].getConvergedReason()))
+				_solve_linear_problem(ksp=self.form_handler.ksps[i], b=b, x=self.gradients[i].vector().vec())
 
 			self.has_solution = True
 

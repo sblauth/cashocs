@@ -5,25 +5,26 @@ Created on 15/06/2020, 08.10
 """
 
 import fenics
+from ..utils import _solve_linear_problem
 
 
 
 class ShapeGradientProblem:
-	"""Riesz problem for the computation of the shape gradient
+	"""Riesz problem for the computation of the shape gradient.
 
 	"""
 
 	def __init__(self, shape_form_handler, state_problem, adjoint_problem):
-		"""Initialize the ShapeGradientProblem
+		"""Initialize the ShapeGradientProblem.
 
 		Parameters
 		----------
 		shape_form_handler : cestrel._forms.ShapeFormHandler
-			the ShapeFormHandler object corresponding to the shape optimization problem
+			The ShapeFormHandler object corresponding to the shape optimization problem.
 		state_problem : cestrel._pde_problems.StateProblem
-			the corresponding state problem
+			The corresponding state problem.
 		adjoint_problem : cestrel._pde_problems.AdjointProblem
-			the corresponding adjoint problem
+			The corresponding adjoint problem.
 		"""
 
 		self.shape_form_handler = shape_form_handler
@@ -40,12 +41,12 @@ class ShapeGradientProblem:
 
 
 	def solve(self):
-		"""Solves the Riesz projection problem to obtain the gradient of the cost functional
+		"""Solves the Riesz projection problem to obtain the shape gradient of the cost functional.
 
 		Returns
 		-------
 		gradient : dolfin.function.function.Function
-			the function representing the gradient of the (reduced) cost functional
+			The function representing the shape gradient of the (reduced) cost functional.
 		"""
 
 		self.state_problem.solve()
@@ -54,16 +55,9 @@ class ShapeGradientProblem:
 		if not self.has_solution:
 
 			self.shape_form_handler.regularization.update_geometric_quantities()
-
-			self.shape_form_handler.ksp.setOperators(self.shape_form_handler.scalar_product_matrix)
 			self.shape_form_handler.assembler.assemble(self.shape_form_handler.fe_shape_derivative_vector)
 			b = fenics.as_backend_type(self.shape_form_handler.fe_shape_derivative_vector).vec()
-
-			x = self.gradient.vector().vec()
-			self.shape_form_handler.ksp.solve(b, x)
-
-			if self.shape_form_handler.ksp.getConvergedReason() < 0:
-				raise Exception('Krylov solver did not converge. Reason: ' + str(self.shape_form_handler.ksp.getConvergedReason()))
+			_solve_linear_problem(self.shape_form_handler.ksp, self.shape_form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
 
 			self.has_solution = True
 

@@ -6,100 +6,25 @@ Created on 24/02/2020, 16.48
 
 import fenics
 import numpy as np
+from .._exceptions import NotConvergedError, ConfigError
 
 
 
 class HessianProblem:
-	"""A class the computes the action of the Hessian on some direction, used for the truncated Newton method
+	"""Computes the action of the Hessian on some direction for truncated Newton methods.
 
-	Attributes
-	----------
-	form_handler : cestrel._forms.ControlFormHandler
-		the FormHandler object of the problem, which contains the necessary UFL forms
-
-	gradient_problem : cestrel._pde_problems.GradientProblem
-		the corresponding gradient problem
-
-	config : configparser.ConfigParser
-		the config object for the problem
-
-	gradients : list[dolfin.function.function.Function]
-		the gradient of the cost functional
-
-	inner_newton : str
-		one of 'cg' (conjugate gradient), 'minres' (minimum residual), or 'cr' (conjugate residual), used as inner solver for the truncated Newton method
-
-	max_it_inner_newton : int
-		maximum number of iterations of the inner (krylov) solver for the truncated Newton method
-
-	inner_newton_tolerance : float
-		relative tolerance for the inner solver of the truncated Newton method
-
-	test_directions : list[dolfin.function.function.Function]
-		the "vector" onto which the Hessian is applied
-
-	residual : list[dolfin.function.function.Function]
-		the function corresponding to the residual (needed for the inner Krylov solver)
-
-	delta_control : list[dolfin.function.function.Function]
-		the function corresponding to the Newton increment
-
-	state_dim : int
-		number of state variables
-
-	control_dim : int
-		number of control variables
-
-	inactive_part : list[dolfin.function.function.Function]
-		temporary functions, indicating the "inactive" part of a function, needed for box constraints
-
-	active_part : list[dolfin.function.function.Function]
-		temporary functions, indicating the "active" part of a function, needed for box constraints
-
-	controls : list[dolfin.function.function.Function]
-		the control variables
-
-	rtol : float
-		relative tolerance for the Picard iteration (if this is enabled)
-
-	atol : float
-		absolute tolerance for the Picard iteration (if this is enabled)
-
-	maxiter : int
-		maximum number of iterations for the Picard iteration (if this is enabled)
-
-	picard_verbose : bool
-		a boolean flag, en- or disabling verbose output of the Picard iteration
-
-	no_sensitivity_solves : int
-		number of sensitivity (i.e. PDE) solves performed by the method
-
-	states_prime : list[dolfin.function.function.Function]
-		state (forward) sensitivities
-
-	adjoints_prime : list[dolfin.function.function.Function]
-		adjoint (backward) sensitivities
-
-	bcs_list_ad : list[list[dolfin.fem.dirichletbc.DirichletBC]]
-		list of (homogeneous) boundary conditions for the adjoint variables
-
-	hessian_actions : list[dolfin.function.function.Function]
-		list of functions corresponding to the application of the Hessian to test_directions
-
-	res_norm_squared : float
-		norm of the residual, squared
 	"""
 
 	def __init__(self, form_handler, gradient_problem):
-		"""Initialize the HessianProblem
+		"""Initializes the HessianProblem.
 		
 		Parameters
 		----------
 		form_handler : cestrel._forms.ControlFormHandler
-			the FormHandler object for the optimization problem
-
+			The FormHandler object for the optimization problem.
 		gradient_problem : cestrel._pde_problems.GradientProblem
-			the GradientProblem object (we need the gradient for the computation of the Hessian)
+			The GradientProblem object (this is needed for the computation
+			of the Hessian).
 		"""
 		
 		self.form_handler = form_handler
@@ -145,18 +70,20 @@ class HessianProblem:
 	
 	
 	def __hessian_application(self):
-		"""Computes the application of the Hessian to some element
+		r"""Computes the application of the Hessian to some element
 
 		This is needed in the truncated Newton method where we solve the system
 
-			J''(u) du = - J'(u)
+		$$ J''(u) [\delta u] = - J'(u)
+		$$
 
 		via iterative methods (cg, minres, cr)
 		
 		Returns
 		-------
 		list[dolfin.function.function.Function]
-			the generic function that saves the result of J''(u)[h]
+			The generic function that saves the result of the
+			 application J''(u)[h].
 		"""
 		
 		self.states_prime = self.form_handler.states_prime
@@ -166,6 +93,7 @@ class HessianProblem:
 		if not self.config.getboolean('StateEquation', 'picard_iteration', fallback=False):
 
 			for i in range(self.state_dim):
+				# TODO: Update this
 				fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])
 
 			for i in range(self.state_dim):
@@ -195,7 +123,7 @@ class HessianProblem:
 					break
 
 				if i==self.maxiter:
-					raise Exception('Failed to solve the Picard Iteration')
+					raise NotConvergedError('Failed to solve the Picard iteration.')
 
 				for j in range(self.form_handler.state_dim):
 					fenics.solve(self.form_handler.sensitivity_eqs_lhs[j]==self.form_handler.sensitivity_eqs_rhs[j], self.states_prime[j], self.bcs_list_ad[j])
@@ -226,7 +154,7 @@ class HessianProblem:
 					break
 
 				if i==self.maxiter:
-					raise Exception('Failed to solve the Picard Iteration')
+					raise NotConvergedError('Failed to solve the Picard iteration.')
 
 				for j in range(self.form_handler.state_dim):
 					fenics.solve(self.form_handler.adjoint_sensitivity_eqs_lhs[-1-j]==self.form_handler.w_1[-1-j], self.adjoints_prime[-1 - j], self.bcs_list_ad[-1 - j])
@@ -237,6 +165,7 @@ class HessianProblem:
 
 
 		for i in range(self.control_dim):
+			# TODO: Update this
 			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
 			x = self.form_handler.hessian_actions[i].vector().vec()
 			self.form_handler.ksps[i].solve(b, x)
@@ -250,7 +179,7 @@ class HessianProblem:
 
 
 	
-	def __application_simplified(self, x):
+	def __hessian_application_simplified(self, x):
 		"""A simplified version of the application of the Hessian.
 		
 		Computes J''(u)[x], where x is the input vector (see self.__hessian_application for more details)
@@ -258,12 +187,12 @@ class HessianProblem:
 		Parameters
 		----------
 		x : list[dolfin.function.function.Function]
-			a function to which we want to apply the Hessian to
+			A function to which we want to apply the Hessian to.
 
 		Returns
 		-------
 		list[dolfin.function.function.Function]
-			a generic function that saves the result of J''(u)[h]
+			A generic function that saves the result of J''(u)[h].
 		"""
 		
 		for i in range(self.control_dim):
@@ -276,12 +205,12 @@ class HessianProblem:
 	
 	
 	def newton_solve(self):
-		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr)
+		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr).
 		
 		Returns
 		-------
 		delta_control : list[dolfin.function.function.Function]
-			the Newton increment
+			The Newton increment.
 		"""
 
 		self.form_handler.compute_active_sets()
@@ -302,7 +231,7 @@ class HessianProblem:
 			
 			for i in range(self.max_it_inner_newton):
 				self.form_handler.restrict_to_inactive_set(self.__p, self.inactive_part)
-				self.hessian_actions = self.__application_simplified(self.inactive_part)
+				self.hessian_actions = self.__hessian_application_simplified(self.inactive_part)
 				self.form_handler.restrict_to_inactive_set(self.hessian_actions, self.inactive_part)
 				self.form_handler.restrict_to_active_set(self.__p, self.active_part)
 
@@ -334,7 +263,7 @@ class HessianProblem:
 			self.__eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
 			self.form_handler.restrict_to_inactive_set(self.__p_prev, self.inactive_part)
-			self.hessian_actions = self.__application_simplified(self.inactive_part)
+			self.hessian_actions = self.__hessian_application_simplified(self.inactive_part)
 			self.form_handler.restrict_to_inactive_set(self.hessian_actions, self.inactive_part)
 			self.form_handler.restrict_to_active_set(self.__p_prev, self.active_part)
 
@@ -357,7 +286,7 @@ class HessianProblem:
 					self.__p[j].vector()[:] = self.__s_prev[j].vector()[:]
 
 				self.form_handler.restrict_to_inactive_set(self.__s_prev, self.inactive_part)
-				self.hessian_actions = self.__application_simplified(self.inactive_part)
+				self.hessian_actions = self.__hessian_application_simplified(self.inactive_part)
 				self.form_handler.restrict_to_inactive_set(self.hessian_actions, self.inactive_part)
 				self.form_handler.restrict_to_active_set(self.__s_prev, self.active_part)
 
@@ -389,7 +318,7 @@ class HessianProblem:
 			self.__eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
 			self.form_handler.restrict_to_inactive_set(self.residual, self.inactive_part)
-			self.hessian_actions = self.__application_simplified(self.inactive_part)
+			self.hessian_actions = self.__hessian_application_simplified(self.inactive_part)
 			self.form_handler.restrict_to_inactive_set(self.hessian_actions, self.inactive_part)
 			self.form_handler.restrict_to_active_set(self.residual, self.active_part)
 
@@ -413,7 +342,7 @@ class HessianProblem:
 					break
 
 				self.form_handler.restrict_to_inactive_set(self.residual, self.inactive_part)
-				self.hessian_actions = self.__application_simplified(self.inactive_part)
+				self.hessian_actions = self.__hessian_application_simplified(self.inactive_part)
 				self.form_handler.restrict_to_inactive_set(self.hessian_actions, self.inactive_part)
 				self.form_handler.restrict_to_active_set(self.residual, self.active_part)
 				for j in range(self.control_dim):
@@ -431,6 +360,6 @@ class HessianProblem:
 				self.__rAr = self.__rAr_new
 
 		else:
-			raise Exception('OptimizationRoutine.inner_newton needs to be one of cg, minres or cr.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_newton. Needs to be one of cg, minres or cr.')
 		
 		return self.delta_control

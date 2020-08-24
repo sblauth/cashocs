@@ -6,6 +6,7 @@ Created on 24/02/2020, 09.33
 
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import NotConvergedError
 
 
 
@@ -69,7 +70,7 @@ class GradientDescent(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -79,4 +80,4 @@ class GradientDescent(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

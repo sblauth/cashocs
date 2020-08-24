@@ -11,6 +11,7 @@ from .._pde_problems import (StateProblem, AdjointProblem, GradientProblem,
 							 HessianProblem, SemiSmoothHessianProblem, UnconstrainedHessianProblem)
 from .._optimal_control import ReducedCostFunctional
 from .methods import GradientDescent, LBFGS, CG, Newton, PDAS, SemiSmoothNewton
+from .._exceptions import InputError, ConfigError
 import numpy as np
 
 
@@ -90,16 +91,16 @@ class OptimalControlProblem(OptimizationProblem):
 					if controls[i].__module__ == 'dolfin.function.function' and type(controls[i]).__name__ == 'Function':
 						pass
 					else:
-						raise Exception('controls have to be fenics Functions.')
+						raise InputError('controls have to be fenics Functions.')
 
 				self.controls = controls
 
 			elif controls.__module__ == 'dolfin.function.function' and type(controls).__name__ == 'Function':
 				self.controls = [controls]
 			else:
-				raise Exception('Type of controls is wrong.')
+				raise InputError('Type of controls is wrong.')
 		except:
-			raise Exception('Type of controls is wrong.')
+			raise InputError('Type of controls is wrong.')
 
 		self.control_dim = len(self.controls)
 
@@ -115,14 +116,14 @@ class OptimalControlProblem(OptimizationProblem):
 						if riesz_scalar_products[i].__module__== 'ufl.form' and type(riesz_scalar_products[i]).__name__== 'Form':
 							pass
 						else:
-							raise Exception('riesz_scalar_products have to be ufl forms')
+							raise InputError('riesz_scalar_products have to be ufl forms')
 					self.riesz_scalar_products = riesz_scalar_products
 				elif riesz_scalar_products.__module__== 'ufl.form' and type(riesz_scalar_products).__name__== 'Form':
 					self.riesz_scalar_products = [riesz_scalar_products]
 				else:
-					raise Exception('State forms have to be ufl forms')
+					raise InputError('State forms have to be ufl forms')
 			except:
-				raise Exception('Type of riesz_scalar_prodcuts is wrong..')
+				raise InputError('Type of riesz_scalar_prodcuts is wrong..')
 
 		### control_constraints
 		if control_constraints is None:
@@ -145,20 +146,20 @@ class OptimalControlProblem(OptimizationProblem):
 									elif control_constraints[i][j].__module__ == 'dolfin.function.function' and type(control_constraints[i][j]).__name__ == 'Function':
 										pass
 									else:
-										raise Exception('control_constraints has to be a list containing upper and lower bounds')
+										raise InputError('control_constraints has to be a list containing upper and lower bounds')
 								pass
 							else:
-								raise Exception('control_constraints has to be a list containing upper and lower bounds')
+								raise InputError('control_constraints has to be a list containing upper and lower bounds')
 						self.control_constraints = control_constraints
 					elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == 'dolfin.function.function' and type(control_constraints[0]).__name__=='Function')) \
 						and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == 'dolfin.function.function' and type(control_constraints[1]).__name__=='Function')):
 
 						self.control_constraints = [control_constraints]
 					else:
-						raise Exception('control_constraints has to be a list containing upper and lower bounds')
+						raise InputError('control_constraints has to be a list containing upper and lower bounds')
 
 			except:
-				raise Exception('control_constraints has to be a list containing upper and lower bounds')
+				raise InputError('control_constraints has to be a list containing upper and lower bounds')
 
 		# recast floats into functions for compatibility
 		temp_constraints = self.control_constraints[:]
@@ -170,7 +171,7 @@ class OptimalControlProblem(OptimizationProblem):
 			elif pair[0].__module__ == 'dolfin.function.function' and type(pair[0]).__name__ == 'Function':
 				lower_bound = pair[0]
 			else:
-				raise Exception('Wrong type for the control constraints')
+				raise InputError('Wrong type for the control constraints')
 
 			if type(pair[1]) in [float, int]:
 				upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -178,7 +179,7 @@ class OptimalControlProblem(OptimizationProblem):
 			elif pair[1].__module__ == 'dolfin.function.function' and type(pair[1]).__name__ == 'Function':
 				upper_bound = pair[1]
 			else:
-				raise Exception('Wrong type for the control constraints')
+				raise InputError('Wrong type for the control constraints')
 
 			self.control_constraints.append([lower_bound, upper_bound])
 
@@ -281,7 +282,7 @@ class OptimalControlProblem(OptimizationProblem):
 		elif self.algorithm in ['pdas', 'primal_dual_active_set']:
 			self.solver = PDAS(self)
 		else:
-			raise Exception('OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.')
 		
 		self.solver.run()
 		self.solver.finalize()

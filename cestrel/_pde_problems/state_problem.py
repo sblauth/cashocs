@@ -8,24 +8,25 @@ import fenics
 import numpy as np
 from ..nonlinear_solvers import damped_newton_solve
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system, _setup_petsc_options
+from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+from .._exceptions import NotConvergedError
 
 
 
 class StateProblem:
-	"""The state system
+	"""The state system.
 
 	"""
 
 	def __init__(self, form_handler, initial_guess, temp_dict=None):
-		"""Initialize the state system
+		"""Initializes the state system.
 		
 		Parameters
 		----------
 		form_handler : cestrel._forms.ControlFormHandler or cestrel._forms.ShapeFormHandler
-			the FormHandler of the optimization problem
+			The FormHandler of the optimization problem.
 		initial_guess : list[dolfin.function.function.Function]
-			an initial guess for the state variables, used to initialize them in each iteration
+			An initial guess for the state variables, used to initialize them in each iteration.
 		temp_dict : dict
 			A dict used for reinitialization when remeshing is performed.
 		"""
@@ -67,12 +68,12 @@ class StateProblem:
 	
 	
 	def solve(self):
-		"""Solves the state system
+		"""Solves the state system.
 		
 		Returns
 		-------
 		states : list[dolfin.function.function.Function]
-			the solution of the state system
+			The solution of the state system.
 		"""
 
 		if not self.has_solution:
@@ -84,9 +85,7 @@ class StateProblem:
 				if self.form_handler.state_is_linear:
 					for i in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[i], self.form_handler.state_eq_forms_rhs[i], self.bcs_list[i])
-
-						self.ksps[i].setOperators(A)
-						self.ksps[i].solve(b, self.states[i].vector().vec())
+						_solve_linear_problem(self.ksps[i], A, b, self.states[i].vector().vec())
 
 				else:
 					for i in range(self.form_handler.state_dim):
@@ -123,7 +122,7 @@ class StateProblem:
 						break
 
 					if i==self.maxiter:
-						raise Exception('Failed to solve the Picard Iteration')
+						raise NotConvergedError('Failed to solve the Picard Iteration')
 
 					for j in range(self.form_handler.state_dim):
 						if self.initial_guess is not None:

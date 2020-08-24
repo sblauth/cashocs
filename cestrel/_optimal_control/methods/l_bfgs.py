@@ -7,6 +7,7 @@ Created on 24/02/2020, 13.11
 import fenics
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import NotConvergedError
 from _collections import deque
 
 
@@ -143,7 +144,7 @@ class LBFGS(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -152,7 +153,7 @@ class LBFGS(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')
 
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):

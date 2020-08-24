@@ -1,9 +1,14 @@
-r"""cestrel is an adjoint-based optimization package for python.
+r"""Cestrel is an adjoint-based optimization package for python.
 
-It can be used to treat PDE constrained optimal control and shape optimization problems
-numerically in an automated fashion and is based on the finite element software fenics.
+Cestrel can be used to treat optimal control and shape optimization
+problems constrained by PDEs. It derives the necessary adjoint
+equations automatically and implements various solvers for the
+problems. Cestrel is based in the finite element fenics and
+allows the user to define the optimization problems in the
+high-level unified form language (UFL) of fenics.
 
 .. include:: ./documentation.md
+
 """
 
 from .geometry import import_mesh, regular_mesh, regular_box_mesh, MeshQuality
@@ -14,5 +19,6 @@ from .utils import create_config, create_bcs_list
 
 
 
-__all__ = ['import_mesh', 'regular_mesh', 'regular_box_mesh', 'MeshQuality', 'damped_newton_solve', 'OptimalControlProblem',
-		   'ShapeOptimizationProblem', 'create_config', 'create_bcs_list']
+__all__ = ['import_mesh', 'regular_mesh', 'regular_box_mesh', 'MeshQuality',
+		   'damped_newton_solve', 'OptimalControlProblem', 'ShapeOptimizationProblem',
+		   'create_config', 'create_bcs_list']

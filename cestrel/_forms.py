@@ -1,22 +1,20 @@
 """Private module forms of cestrel.
 
-This is used to carry out form manipulations
-such as generating the UFL forms for the adjoint
-system and for the Riesz gradient identificiation
-problem.
+This is used to carry out form manipulations such as generating the UFL
+ forms for the adjoint system and for the Riesz gradient identificiation
+problems.
 """
 
 import fenics
 from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
-from .utils import summation
 import numpy as np
 from petsc4py import PETSc
 from ._shape_optimization import Regularization
-from .utils import _assemble_petsc_system, _setup_petsc_options
+from .utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem, summation
+from ._exceptions import InputError
 import json
-import os
 import warnings
 
 
@@ -26,16 +24,17 @@ class Lagrangian:
 
 	This corresponds to the classical Lagrangian of a PDE constrained
 	optimization problem, of the form
+
 	$$L = J + e,
 	$$
+
 	where J is the cost functional and e the (weak) PDE constrained, tested by
 	the adjoint variables. This is used to derive the adjoint and gradient
 	equations needed for the optimization.
 
 	See Also
 	--------
-	ControlFormHandler : Derives the adjoint and gradient equations for optimal control problems.
-	ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems.
+	FormHandler : Derives necessary adjoint and gradient / shape derivative equations.
 	"""
 	
 	def __init__(self, state_forms, cost_functional_form):
@@ -66,6 +65,10 @@ class FormHandler:
 	used to determine common objects and to derive the UFL forms
 	for the state and adjoint systems.
 
+	See Also
+	--------
+	ControlFormHandler : FormHandler for optimal control problems
+	ShapeFormHandler : FormHandler for shape optimization problems
 	"""
 
 	def __init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options):
@@ -232,12 +235,12 @@ class FormHandler:
 
 
 class ControlFormHandler(FormHandler):
-	"""Class for UFL form manipulation.
+	"""Class for UFL form manipulation for optimal control problems.
 
-	This is used to symbolically derive the corresponding
-	weak forms of the adjoint and gradient equations (via UFL) , that are later
-	used in the solvers for the equations later on. These are needed
-	as subroutines for the optimization (solution) algorithms.
+	This is used to symbolically derive the corresponding weak forms of the
+	adjoint and gradient equations (via UFL) , that are later used in the
+	solvers for the equations later on. These are needed as subroutines for
+	 the optimization (solution) algorithms.
 
 	See Also
 	--------
@@ -312,7 +315,7 @@ class ControlFormHandler(FormHandler):
 		for i in range(self.control_dim):
 			if not self.riesz_projection_matrices[i].isSymmetric():
 				if not self.riesz_projection_matrices[i].isSymmetric(1e-12):
-					raise AssertionError('Error: Supplied scalar product form is not symmetric')
+					raise InputError('Supplied scalar product form is not symmetric.')
 
 
 		# Initialize the PETSc Krylov solver for the Riesz projection problems
@@ -391,7 +394,7 @@ class ControlFormHandler(FormHandler):
 		"""Restricts a function to the active set.
 
 		Restricts a control type function a onto the active set,
-		which is returned via the function b,  i.e., b is zero on the inactive set
+		which is returned via the function b,  i.e., b is zero on the inactive set.
 
 		Parameters
 		----------
@@ -415,11 +418,33 @@ class ControlFormHandler(FormHandler):
 
 
 
+	def restrict_to_lower_active_set(self, a, b):
+
+		for j in range(self.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
+	def restrict_to_upper_active_set(self, a, b):
+
+		for j in range(self.control_dim):
+			self.temp[j].vector()[:] = 0.0
+			self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
+			b[j].vector()[:] = self.temp[j].vector()[:]
+
+		return b
+
+
+
 	def restrict_to_inactive_set(self, a, b):
 		"""Restricts a function to the inactive set.
 
 		Restricts a control type function a onto the inactive set,
-		which is returned via the function b, i.e., b is zero on the active set
+		which is returned via the function b, i.e., b is zero on the active set.
 
 		Parameters
 		----------
@@ -444,16 +469,16 @@ class ControlFormHandler(FormHandler):
 
 
 	def project_to_admissible_set(self, a):
-		"""Project a function to the set of admissible controls
+		"""Project a function to the set of admissible controls.
 
 		Projects a control type function a onto the set of admissible controls
-		(given by the box constraints)
+		(given by the box constraints).
 
 		Parameters
 		----------
 		a : list[dolfin.function.function.Function]
-			The function which is to be projected onto the set of
-			admissible controls (is overwritten)
+			The function which is to be projected onto the set of admissible
+			controls (is overwritten)
 
 		Returns
 		-------
@@ -469,7 +494,7 @@ class ControlFormHandler(FormHandler):
 
 	
 	def __compute_gradient_equations(self):
-		"""Calculates the variational form of the gradient equation, for the Riesz projection
+		"""Calculates the variational form of the gradient equation, for the Riesz projection.
 		
 		Returns
 		-------
@@ -481,7 +506,7 @@ class ControlFormHandler(FormHandler):
 	
 	
 	def __compute_newton_forms(self):
-		"""Calculates the needed forms for the truncated Newton method
+		"""Calculates the needed forms for the truncated Newton method.
 
 		Returns
 		-------
@@ -569,7 +594,7 @@ class ControlFormHandler(FormHandler):
 
 
 class ShapeFormHandler(FormHandler):
-	"""Derives adjoint equations and shape derivatives
+	"""Derives adjoint equations and shape derivatives.
 
 	This class is used analogously to the ControlFormHandler class, but for
 	shape optimization problems, where it is used to derive the adjoint equations
@@ -581,7 +606,7 @@ class ShapeFormHandler(FormHandler):
 	"""
 
 	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options):
-		"""Initializes the ShapeFormHandler object
+		"""Initializes the ShapeFormHandler object.
 
 		Parameters
 		----------
@@ -636,7 +661,7 @@ class ShapeFormHandler(FormHandler):
 
 		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' \
 				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
-			raise Exception('Second order methods are not implemented for shape optimization yet')
+			raise NotImplementedError('Second order methods are not implemented for shape optimization yet')
 
 		# Generate the Krylov solver for the shape gradient problem
 		self.ksp = PETSc.KSP().create()
@@ -656,12 +681,15 @@ class ShapeFormHandler(FormHandler):
 	def __compute_shape_derivative(self):
 		"""Computes the shape derivative.
 
-		Note: this only works properly if differential operators only
-		act on state and adjoint variables, else the results are incorrect
-
 		Returns
 		-------
 		None
+
+		Notes
+		-----
+		This only works properly if differential operators only
+		act on state and adjoint variables, else the results are incorrect.
+		A corresponding warning whenever this could be the case is issued.
 		"""
 
 		# Shape derivative of Lagrangian w/o regularization and pull-backs
@@ -699,7 +727,7 @@ class ShapeFormHandler(FormHandler):
 
 
 	def __compute_shape_gradient_forms(self):
-		"""Calculates the necessary left-hand-sides for the shape gradient problem
+		"""Calculates the necessary left-hand-sides for the shape gradient problem.
 
 		Returns
 		-------
@@ -751,8 +779,8 @@ class ShapeFormHandler(FormHandler):
 
 		References
 		----------
-		[1] Schulz, V., Siebenborn, M. : Computational Comparison of Surface Metrics for
-			PDE Constrained Shape Optimization, Computational Methods in Applied Mathematics,
+		[1] Schulz, V., Siebenborn, M., "Computational Comparison of Surface Metrics for
+			PDE Constrained Shape Optimization, Computational Methods in Applied Mathematics",
 			2016, Vol. 16, Iss. 3, https://doi.org/10.1515/cmam-2016-0009
 		"""
 
@@ -772,7 +800,7 @@ class ShapeFormHandler(FormHandler):
 				['ksp_max_it', 100]
 			]]
 			ksp = PETSc.KSP().create()
-			_setup_petsc_options(ksp, options)
+			_setup_petsc_options([ksp], options)
 
 			phi = fenics.TrialFunction(self.CG1)
 			psi = fenics.TestFunction(self.CG1)
@@ -786,13 +814,7 @@ class ShapeFormHandler(FormHandler):
 					for i in self.shape_bdry_def]
 
 			A, b = _assemble_petsc_system(a, L, bcs)
-			x, _ = A.getVecs()
-
-			ksp.setOperators(A)
-			ksp.setUp()
-			ksp.solve(b, x)
-			if ksp.getConvergedReason() < 0:
-				raise Exception('Krylov solver did not converge. Reason: ' + str(ksp.getConvergedReason()))
+			x = _solve_linear_problem(ksp, A, b)
 
 			if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
 				self.mu_lame.vector()[:] = np.sqrt(x[:])
@@ -805,10 +827,10 @@ class ShapeFormHandler(FormHandler):
 
 
 	def update_scalar_product(self):
-		"""Updates the linear elasticity equations to the current geometry
+		"""Updates the linear elasticity equations to the current geometry.
 
 		Updates the left-hand-side of the linear elasticity equations
-		(needed when the geometry changes)
+		(needed when the geometry changes).
 
 		Returns
 		-------
@@ -824,19 +846,19 @@ class ShapeFormHandler(FormHandler):
 
 
 	def scalar_product(self, a, b):
-		"""Computes the scalar product between deformation functions
+		"""Computes the scalar product between two deformation functions.
 
 		Parameters
 		----------
 		a : dolfin.function.function.Function
-			The first argument
+			The first argument.
 		b : dolfin.function.function.Function
-			The second argument
+			The second argument.
 
 		Returns
 		-------
 		float
-			The value of the scalar product
+			The value of the scalar product.
 		"""
 
 		x = fenics.as_backend_type(a.vector()).vec()

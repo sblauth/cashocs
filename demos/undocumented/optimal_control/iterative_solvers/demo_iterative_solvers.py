@@ -26,8 +26,9 @@ ksp_options = [
 	['ksp_type', 'cg'],
 	['pc_type', 'hypre'],
 	['pc_hypre_type', 'boomeramg'],
-	['ksp_rtol', '1e-2'],
+	['ksp_rtol', '1e-10'],
 	['ksp_atol', '1e-13'],
+	['ksp_max_it', 100],
 	# ['ksp_monitor_true_residual'],
 	# ['ksp_view']
 ]

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cestrel.optimization_problem API documentation</title>
-<meta name="description" content="Contains the blueprint for optimal control and shape optimization problems …" />
+<meta name="description" content="Blueprint for the PDE constrained optimization problems …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,44 +23,37 @@
 <h1 class="title">Module <code>cestrel.optimization_problem</code></h1>
 </header>
 <section id="section-intro">
-<p>Contains the blueprint for optimal control and shape optimization problems.</p>
-<p>This module is used to define the base class of optimization problems, which
-has many shared parameters between optimal control and shape optimization
-problems. Can be subclassed to generate custom optimization problems.</p>
+<p>Blueprint for the PDE constrained optimization problems.</p>
+<p>This module is used to define the parent class for the optimization problems,
+as many parameters and variables are common for optimal control and shape
+optimization problems.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Contains the blueprint for optimal control and shape optimization problems.
+<pre><code class="python">&#34;&#34;&#34;Blueprint for the PDE constrained optimization problems.
 
-This module is used to define the base class of optimization problems, which
-has many shared parameters between optimal control and shape optimization
-problems. Can be subclassed to generate custom optimization problems.
+This module is used to define the parent class for the optimization problems,
+as many parameters and variables are common for optimal control and shape
+optimization problems.
 &#34;&#34;&#34;
 
-import copy
-
+from ._exceptions import InputError
 
 
 class OptimizationProblem:
-        &#34;&#34;&#34;A class representing abstract optimization problems.
+        &#34;&#34;&#34;Blueprint for an abstract PDE constrained optimization problem.
 
-        This is subclassed to create both optimal control and
-        shape optimization problems, which share a lot of common
-        parameters. Can be subclassed to generate custom
+        This class performs the initialization of the shared input so that the rest
+        of the package can use it directly. Additionally, it includes methods that
+        can be used to compute the state and adjoint variables by solving the
+        corresponding equations. This could be subclassed to generate custom
         optimization problems.
         &#34;&#34;&#34;
 
         def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
                                  initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
-                &#34;&#34;&#34;Initializes the optimization problem.
-
-                If one uses a single PDE constraint, the inputs can be the objects
-                (UFL forms, functions, etc.) directly. In case multiple PDE constraints
-                are present the inputs have to be put into (ordered) lists. The order of
-                the objects depends on the order of the state variables, so that
-                state_forms[i] is the weak form of the PDE for state[i] with boundary
-                conditions bcs_list[i] and corresponding adjoint state adjoints[i].
+                r&#34;&#34;&#34;Initializes the optimization problem.
 
                 Parameters
                 ----------
@@ -91,6 +84,20 @@ class OptimizationProblem:
                         A list of strings corresponding to command line options for PETSc,
                         used to solve the adjoint systems. If this is None, then the same options
                         as for the state systems are used (default is None).
+
+                Notes
+                -----
+                If one uses a single PDE constraint, the inputs can be the objects
+                (UFL forms, functions, etc.) directly. In case multiple PDE constraints
+                are present the inputs have to be put into (ordered) lists. The order of
+                the objects depends on the order of the state variables, so that
+                `state_forms[i]` is the weak form of the PDE for state[i] with boundary
+                conditions `bcs_list[i]` and corresponding adjoint state `adjoints[i]`.
+
+                See Also
+                --------
+                cestrel.OptimalControlProblem : Represents an optimal control problem.
+                cestrel.ShapeOptimizationProblem : Represents a shape optimization problem.
                 &#34;&#34;&#34;
 
                 ### Overloading, so that we do not have to use lists for a single state and a single control
@@ -101,14 +108,14 @@ class OptimizationProblem:
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;state_forms have to be ufl forms&#39;)
+                                                raise InputError(&#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise Exception(&#39;State forms have to be ufl forms&#39;)
+                                raise InputError(&#39;State forms have to be ufl forms&#39;)
                 except:
-                        raise Exception(&#39;Type of state_forms is wrong.&#39;)
+                        raise InputError(&#39;Type of state_forms is wrong.&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -123,7 +130,7 @@ class OptimizationProblem:
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -131,23 +138,23 @@ class OptimizationProblem:
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise Exception(&#39;Type of bcs_list is wrong.&#39;)
+                                raise InputError(&#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of bcs_list is wrong.&#39;)
+                        raise InputError(&#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise Exception(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise InputError(&#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise Exception(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise InputError(&#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -156,16 +163,16 @@ class OptimizationProblem:
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;states have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise Exception(&#39;Type of states is wrong.&#39;)
+                                raise InputError(&#39;Type of states is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of states is wrong.&#39;)
+                        raise InputError(&#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -174,22 +181,22 @@ class OptimizationProblem:
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise InputError(&#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise Exception(&#39;Type of adjoints is wrong.&#39;)
+                                raise InputError(&#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of adjoints is wrong.&#39;)
+                        raise InputError(&#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise Exception(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise InputError(&#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -201,7 +208,7 @@ class OptimizationProblem:
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise Exception(&#39;Initial guess has to be a list of functions&#39;)
+                                raise InputError(&#39;Initial guess has to be a list of functions&#39;)
 
 
                 ### ksp_options
@@ -224,7 +231,7 @@ class OptimizationProblem:
                         self.ksp_options = ksp_options[:]
 
                 else:
-                        raise Exception(&#39;Wrong input format for ksp_options.&#39;)
+                        raise InputError(&#39;Wrong input format for ksp_options.&#39;)
 
 
 
@@ -239,7 +246,7 @@ class OptimizationProblem:
                         self.adjoint_ksp_options = adjoint_ksp_options[:]
 
                 else:
-                        raise Exception(&#39;Wrong input format for adjoint_ksp_options.&#39;)
+                        raise InputError(&#39;Wrong input format for adjoint_ksp_options.&#39;)
 
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
@@ -274,9 +281,9 @@ class OptimizationProblem:
         def compute_adjoint_variables(self):
                 &#34;&#34;&#34;Solves the adjoint system.
 
-                This can be used for debugging purposes, solver validation.
+                This can be used for debugging purposes and solver validation.
                 Updates / overwrites the user input for the adjoint variables.
-                The solve to the corresponding state system needed to determine
+                The solve of the corresponding state system needed to determine
                 the adjoints is carried out automatically.
 
                 Returns
@@ -284,6 +291,7 @@ class OptimizationProblem:
                 None
                 &#34;&#34;&#34;
 
+                self.state_problem.solve()
                 self.adjoint_problem.solve()</code></pre>
 </details>
 </section>
@@ -301,18 +309,13 @@ class OptimizationProblem:
 <span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A class representing abstract optimization problems.</p>
-<p>This is subclassed to create both optimal control and
-shape optimization problems, which share a lot of common
-parameters. Can be subclassed to generate custom
+<div class="desc"><p>Blueprint for an abstract PDE constrained optimization problem.</p>
+<p>This class performs the initialization of the shared input so that the rest
+of the package can use it directly. Additionally, it includes methods that
+can be used to compute the state and adjoint variables by solving the
+corresponding equations. This could be subclassed to generate custom
 optimization problems.</p>
 <p>Initializes the optimization problem.</p>
-<p>If one uses a single PDE constraint, the inputs can be the objects
-(UFL forms, functions, etc.) directly. In case multiple PDE constraints
-are present the inputs have to be put into (ordered) lists. The order of
-the objects depends on the order of the state variables, so that
-state_forms[i] is the weak form of the PDE for state[i] with boundary
-conditions bcs_list[i] and corresponding adjoint state adjoints[i].</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>state_forms</code></strong> :&ensp;<code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code></dt>
@@ -342,30 +345,38 @@ mumps is used (default is None).</dd>
 <dd>A list of strings corresponding to command line options for PETSc,
 used to solve the adjoint systems. If this is None, then the same options
 as for the state systems are used (default is None).</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If one uses a single PDE constraint, the inputs can be the objects
+(UFL forms, functions, etc.) directly. In case multiple PDE constraints
+are present the inputs have to be put into (ordered) lists. The order of
+the objects depends on the order of the state variables, so that
+<code>state_forms[i]</code> is the weak form of the PDE for state[i] with boundary
+conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoints[i]</code>.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code><a title="cestrel.OptimalControlProblem" href="index.html#cestrel.OptimalControlProblem">OptimalControlProblem</a></code></dt>
+<dd>Represents an optimal control problem.</dd>
+<dt><code><a title="cestrel.ShapeOptimizationProblem" href="index.html#cestrel.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></dt>
+<dd>Represents a shape optimization problem.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OptimizationProblem:
-        &#34;&#34;&#34;A class representing abstract optimization problems.
+        &#34;&#34;&#34;Blueprint for an abstract PDE constrained optimization problem.
 
-        This is subclassed to create both optimal control and
-        shape optimization problems, which share a lot of common
-        parameters. Can be subclassed to generate custom
+        This class performs the initialization of the shared input so that the rest
+        of the package can use it directly. Additionally, it includes methods that
+        can be used to compute the state and adjoint variables by solving the
+        corresponding equations. This could be subclassed to generate custom
         optimization problems.
         &#34;&#34;&#34;
 
         def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
                                  initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
-                &#34;&#34;&#34;Initializes the optimization problem.
-
-                If one uses a single PDE constraint, the inputs can be the objects
-                (UFL forms, functions, etc.) directly. In case multiple PDE constraints
-                are present the inputs have to be put into (ordered) lists. The order of
-                the objects depends on the order of the state variables, so that
-                state_forms[i] is the weak form of the PDE for state[i] with boundary
-                conditions bcs_list[i] and corresponding adjoint state adjoints[i].
+                r&#34;&#34;&#34;Initializes the optimization problem.
 
                 Parameters
                 ----------
@@ -396,6 +407,20 @@ as for the state systems are used (default is None).</dd>
                         A list of strings corresponding to command line options for PETSc,
                         used to solve the adjoint systems. If this is None, then the same options
                         as for the state systems are used (default is None).
+
+                Notes
+                -----
+                If one uses a single PDE constraint, the inputs can be the objects
+                (UFL forms, functions, etc.) directly. In case multiple PDE constraints
+                are present the inputs have to be put into (ordered) lists. The order of
+                the objects depends on the order of the state variables, so that
+                `state_forms[i]` is the weak form of the PDE for state[i] with boundary
+                conditions `bcs_list[i]` and corresponding adjoint state `adjoints[i]`.
+
+                See Also
+                --------
+                cestrel.OptimalControlProblem : Represents an optimal control problem.
+                cestrel.ShapeOptimizationProblem : Represents a shape optimization problem.
                 &#34;&#34;&#34;
 
                 ### Overloading, so that we do not have to use lists for a single state and a single control
@@ -406,14 +431,14 @@ as for the state systems are used (default is None).</dd>
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;state_forms have to be ufl forms&#39;)
+                                                raise InputError(&#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise Exception(&#39;State forms have to be ufl forms&#39;)
+                                raise InputError(&#39;State forms have to be ufl forms&#39;)
                 except:
-                        raise Exception(&#39;Type of state_forms is wrong.&#39;)
+                        raise InputError(&#39;Type of state_forms is wrong.&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -428,7 +453,7 @@ as for the state systems are used (default is None).</dd>
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -436,23 +461,23 @@ as for the state systems are used (default is None).</dd>
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise Exception(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise Exception(&#39;Type of bcs_list is wrong.&#39;)
+                                raise InputError(&#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of bcs_list is wrong.&#39;)
+                        raise InputError(&#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise Exception(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise InputError(&#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise Exception(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise InputError(&#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -461,16 +486,16 @@ as for the state systems are used (default is None).</dd>
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;states have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise Exception(&#39;Type of states is wrong.&#39;)
+                                raise InputError(&#39;Type of states is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of states is wrong.&#39;)
+                        raise InputError(&#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -479,22 +504,22 @@ as for the state systems are used (default is None).</dd>
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise InputError(&#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise Exception(&#39;Type of adjoints is wrong.&#39;)
+                                raise InputError(&#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of adjoints is wrong.&#39;)
+                        raise InputError(&#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise Exception(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise InputError(&#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -506,7 +531,7 @@ as for the state systems are used (default is None).</dd>
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise Exception(&#39;Initial guess has to be a list of functions&#39;)
+                                raise InputError(&#39;Initial guess has to be a list of functions&#39;)
 
 
                 ### ksp_options
@@ -529,7 +554,7 @@ as for the state systems are used (default is None).</dd>
                         self.ksp_options = ksp_options[:]
 
                 else:
-                        raise Exception(&#39;Wrong input format for ksp_options.&#39;)
+                        raise InputError(&#39;Wrong input format for ksp_options.&#39;)
 
 
 
@@ -544,7 +569,7 @@ as for the state systems are used (default is None).</dd>
                         self.adjoint_ksp_options = adjoint_ksp_options[:]
 
                 else:
-                        raise Exception(&#39;Wrong input format for adjoint_ksp_options.&#39;)
+                        raise InputError(&#39;Wrong input format for adjoint_ksp_options.&#39;)
 
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
@@ -579,9 +604,9 @@ as for the state systems are used (default is None).</dd>
         def compute_adjoint_variables(self):
                 &#34;&#34;&#34;Solves the adjoint system.
 
-                This can be used for debugging purposes, solver validation.
+                This can be used for debugging purposes and solver validation.
                 Updates / overwrites the user input for the adjoint variables.
-                The solve to the corresponding state system needed to determine
+                The solve of the corresponding state system needed to determine
                 the adjoints is carried out automatically.
 
                 Returns
@@ -589,6 +614,7 @@ as for the state systems are used (default is None).</dd>
                 None
                 &#34;&#34;&#34;
 
+                self.state_problem.solve()
                 self.adjoint_problem.solve()</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -603,9 +629,9 @@ as for the state systems are used (default is None).</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Solves the adjoint system.</p>
-<p>This can be used for debugging purposes, solver validation.
+<p>This can be used for debugging purposes and solver validation.
 Updates / overwrites the user input for the adjoint variables.
-The solve to the corresponding state system needed to determine
+The solve of the corresponding state system needed to determine
 the adjoints is carried out automatically.</p>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -619,9 +645,9 @@ the adjoints is carried out automatically.</p>
 <pre><code class="python">def compute_adjoint_variables(self):
         &#34;&#34;&#34;Solves the adjoint system.
 
-        This can be used for debugging purposes, solver validation.
+        This can be used for debugging purposes and solver validation.
         Updates / overwrites the user input for the adjoint variables.
-        The solve to the corresponding state system needed to determine
+        The solve of the corresponding state system needed to determine
         the adjoints is carried out automatically.
 
         Returns
@@ -629,6 +655,7 @@ the adjoints is carried out automatically.</p>
         None
         &#34;&#34;&#34;
 
+        self.state_problem.solve()
         self.adjoint_problem.solve()</code></pre>
 </details>
 </dd>

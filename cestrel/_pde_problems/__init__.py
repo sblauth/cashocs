@@ -1,4 +1,4 @@
-"""Several PDE problems for optimization (shape and optimal control)
+"""Several PDE problems for optimization (shape and optimal control).
 
 """
 

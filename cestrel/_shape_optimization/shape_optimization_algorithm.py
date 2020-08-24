@@ -98,10 +98,14 @@ class ShapeOptimizationAlgorithm:
 
 		if self.iteration == 0:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs)    Mesh Quality: ' + format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + ' \n '
+					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs)    Mesh Quality: ' + \
+					 format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + ' (' + \
+					 str(self.optimization_problem.mesh_handler.mesh_quality_measure) + ')' + ' \n '
 		else:
 			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Mesh Quality: ' + format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + '    Step size:  ' + format(self.stepsize, '.3e')
+					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Mesh Quality: ' + \
+					 format(self.optimization_problem.mesh_handler.current_mesh_quality, '.2f') + ' (' + \
+					 str(self.optimization_problem.mesh_handler.mesh_quality_measure) + ')' + '    Step size:  ' + format(self.stepsize, '.3e')
 
 		self.output_dict['cost_function_value'].append(self.objective_value)
 		self.output_dict['gradient_norm'].append(self.relative_norm)

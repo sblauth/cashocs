@@ -7,6 +7,7 @@ Created on 24/02/2020, 15.40
 import fenics
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import ConfigError, NotConvergedError
 
 
 
@@ -138,7 +139,7 @@ class CG(OptimizationAlgorithm):
 					self.beta = self.form_handler.scalar_product(self.differences, self.gradients) / dy
 
 				else:
-					raise Exception('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
+					raise ConfigError('Not a valid choice for OptimizationRoutine.cg_method. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
@@ -179,7 +180,7 @@ class CG(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -188,4 +189,4 @@ class CG(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

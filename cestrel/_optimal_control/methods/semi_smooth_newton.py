@@ -6,6 +6,7 @@ Created on 06/03/2020, 10.21
 
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import NotConvergedError
 
 
 
@@ -87,7 +88,7 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 
@@ -97,4 +98,4 @@ class SemiSmoothNewton(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

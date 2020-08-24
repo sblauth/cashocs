@@ -10,6 +10,7 @@ from .._pde_problems import StateProblem, AdjointProblem, ShapeGradientProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from .methods import LBFGS, CG, GradientDescent
 from ..geometry import _MeshHandler
+from .._exceptions import InputError, ConfigError
 import sys
 import tempfile
 import os
@@ -89,7 +90,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			try:
 				assert self.states[0].function_space().mesh()._cestrel_generator == 'config', 'Can only handle the config file mesh import for remeshing'
 			except:
-				raise Exception('For remeshing, the mesh has to be created via import mesh, with a config as input.')
+				raise InputError('For remeshing, the mesh has to be created via import mesh, with a config as input.')
 
 			if not '_cestrel_remesh_flag' in sys.argv:
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -112,7 +113,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		if boundaries.__module__ == 'dolfin.cpp.mesh' and type(boundaries).__name__ == 'MeshFunctionSizet':
 			self.boundaries = boundaries
 		else:
-			raise Exception('Not a valid format for boundaries.')
+			raise InputError('Not a valid format for boundaries.')
 
 		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
 		assert len(self.states) == self.state_dim, 'Length of states does not match'
@@ -156,7 +157,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		elif self.algorithm in ['cg', 'conjugate_gradient']:
 			self.solver = CG(self)
 		else:
-			raise Exception('OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.')
 
 		self.solver.run()
 		self.solver.finalize()

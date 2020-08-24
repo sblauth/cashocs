@@ -6,6 +6,7 @@ Created on 15/06/2020, 08.01
 
 import numpy as np
 from ..._shape_optimization import ShapeOptimizationAlgorithm, ArmijoLineSearch
+from ..._exceptions import NotConvergedError
 
 
 
@@ -77,7 +78,7 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -87,4 +88,4 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

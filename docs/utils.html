@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cestrel.utils API documentation</title>
-<meta name="description" content="Module for utility and helper functions …" />
+<meta name="description" content="Module including utility and helper functions …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,40 +23,36 @@
 <h1 class="title">Module <code>cestrel.utils</code></h1>
 </header>
 <section id="section-intro">
-<p>Module for utility and helper functions.</p>
-<p>The functions that may be interesting for the end user, too,
-are directly imported in cestrel, i.e., create_bcs_list and
-create_config. However, summation, multiplication, and measure
-manipulation may also be of interest.</p>
+<p>Module including utility and helper functions.</p>
+<p>These module includes utility and helper functions used in cestrel. They
+might also be interesting for users, so they are part of the public API.
+They include wrappers that allow to shorten the coding for often recurring
+actions.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Module for utility and helper functions.
+<pre><code class="python">&#34;&#34;&#34;Module including utility and helper functions.
 
-The functions that may be interesting for the end user, too,
-are directly imported in cestrel, i.e., create_bcs_list and
-create_config. However, summation, multiplication, and measure
-manipulation may also be of interest.
+These module includes utility and helper functions used in cestrel. They
+might also be interesting for users, so they are part of the public API.
+They include wrappers that allow to shorten the coding for often recurring
+actions.
 &#34;&#34;&#34;
 
 import fenics
 import configparser
-import os
 import numpy as np
+from ._exceptions import PETScKSPError, InputError
+from petsc4py import PETSc
 
 
 
 def summation(x):
-        &#34;&#34;&#34;Sums elements of a list.
+        &#34;&#34;&#34;Sums elements of a list in a UFL friendly fashion.
 
         This can be used to sum, e.g., UFL forms, or UFL expressions
-        that should be used in UFL forms. This is not possible with
-        the built-in sum function.
-
-        See Also
-        --------
-        multiplication : Multiplies the elements of a list.
+        that can be used in UFL forms.
 
         Parameters
         ----------
@@ -67,6 +63,27 @@ def summation(x):
         -------
         y : ufl.form.Form or int or float
                 Sum of input (same type as entries of input).
+
+        See Also
+        --------
+        multiplication : Multiplies the elements of a list.
+
+        Notes
+        -----
+        For &#34;usual&#34; summation of integers or floats, the built-in sum function
+        of python or the numpy variant are recommended. Still, they are
+        incompatible with fenics objects, so this function should be used for
+        the latter.
+
+        Examples
+        --------
+            a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+
+        is equivalent to
+
+            a = u.dx(0)*v.dx(0)*dx + u.dx(1)*v.dx(1)*dx
+
+        (for a 2D mesh).
         &#34;&#34;&#34;
         
         if len(x) == 0:
@@ -83,14 +100,10 @@ def summation(x):
 
 
 def multiplication(x):
-        &#34;&#34;&#34;Multiplies the elements of a list with each other.
+        &#34;&#34;&#34;Multiplies the elements of a list in a UFL friendly fashion.
 
         Used to build the product of certain UFL expressions to construct
         a UFL form.
-
-        See Also
-        --------
-        summation : Sums elements of a list.
 
         Parameters
         ----------
@@ -101,6 +114,20 @@ def multiplication(x):
         -------
         y : ufl.core.expr.Expr or int or float
                 The result of the multiplication.
+
+        See Also
+        --------
+        summation : Sums elements of a list.
+
+        Examples
+        --------
+            a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+
+        is equivalent to
+
+            a = u.dx(0) * u.dx(1)
+
+        (for a 2D mesh).
         &#34;&#34;&#34;
         
         if len(x) == 0:
@@ -116,12 +143,25 @@ def multiplication(x):
 
 
 
+
+
 class EmptyMeasure:
         &#34;&#34;&#34;Implements an empty measure (e.g. of a null set).
 
         This is used for automatic measure generation, e.g., if
         the fixed boundary is empty for a shape optimization problem,
         and is used to avoid case distinctions.
+
+        Examples
+        --------
+            dm = EmptyMeasure(dx)
+            u*dm
+
+        is equivalent to
+
+            Constant(0)*u*dm
+
+        so that this generates zeros when assembled over.
         &#34;&#34;&#34;
 
         def __init__(self, measure):
@@ -138,7 +178,7 @@ class EmptyMeasure:
 
 
         def __rmul__(self, other):
-                &#34;&#34;&#34;Generates a UFL form of the empty measure when multiplied from the right.
+                &#34;&#34;&#34;Multiplies the empty measure to the right.
 
                 Parameters
                 ----------
@@ -152,6 +192,8 @@ class EmptyMeasure:
                 &#34;&#34;&#34;
 
                 return fenics.Constant(0)*other*self.measure
+
+
 
 
 
@@ -175,6 +217,14 @@ def generate_measure(idx, measure):
         -------
         ufl.measure.Measure or cestrel.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
+
+        Examples
+        --------
+            from fenics import *
+            import cestrel
+            mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
+            top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+            assemble(1*top_bottom_measure)
         &#34;&#34;&#34;
 
         if len(idx) == 0:
@@ -232,21 +282,39 @@ def create_bcs_list(function_space, value, boundaries, idcs):
                 so that it could also be used as DirichletBC(function_space, value, ...).
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                 The MeshFunction object representing the boundaries.
-        idcs : list[int]
+        idcs : list[int] or int
                 A list of indices / boundary markers that determine the boundaries
                 onto which the Dirichlet boundary conditions should be applied to.
+                Can also be a single integer for a single boundary.
 
         Returns
         -------
         list[dolfin.fem.dirichletbc.DirichletBC]
                 A list of DirichletBC objects that represent the boundary conditions.
+
+        Examples
+        --------
+        Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
+
+            from fenics import *
+            import cestrel
+
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            V = FunctionSpace(mesh, &#39;CG&#39;, 1)
+            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
-        for i in idcs:
-                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+        if type(idcs) == list:
+                for i in idcs:
+                        bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+
+        elif type(idcs) == int:
+                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, idcs))
 
         return bcs_list
+
+
 
 
 
@@ -257,6 +325,21 @@ class Interpolator:
         carried out between the same spaces, which is made significantly
         faster by computing the corresponding matrix.
         The function spaces can even be defined on different meshes.
+
+        Examples
+        --------
+            from fenics import *
+            import cestrel
+
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            V1 = FunctionSpace(mesh, &#39;CG&#39;, 1)
+            V2 = FunctionSpace(mesh, &#39;CG&#39;, 2)
+
+            expr = Expression(&#39;sin(2*pi*x[0])&#39;, degree=1)
+            u = interpolate(expr, V1)
+
+            interp = cestrel.utils.Interpolator(V1, V2)
+            interp.interpolate(u)
         &#34;&#34;&#34;
 
         def __init__(self, V, W):
@@ -278,6 +361,11 @@ class Interpolator:
         def interpolate(self, u):
                 &#34;&#34;&#34;Interpolates function to target space.
 
+                The function has to belong to the origin space, i.e., the first argument
+                of __init__, and it is interpolated to the destination space, i.e., the
+                second argument of __init__. There is no need to call set_allow_extrapolation
+                on the function (this is done automatically due to the method).
+
                 Parameters
                 ----------
                 u : dolfin.function.function.Function
@@ -297,26 +385,32 @@ class Interpolator:
 
 
 
-def _assemble_petsc_system(A_form, b_form, bcs=None):
-        &#34;&#34;&#34;Assembles a system symmetrically and converts to PETSc
 
-        Also uses ident_zeros() to get well-posed problems
+
+def _assemble_petsc_system(A_form, b_form, bcs=None):
+        &#34;&#34;&#34;Assembles a system symmetrically and converts objects to PETSc format.
 
         Parameters
         ----------
         A_form : ufl.form.Form
-                the UFL form for the LHS
+                The UFL form for the left-hand side of the linear equation.
         b_form : ufl.form.Form
-                the UFL form for the RHS
+                The UFL form for the right-hand side of the linear equation.
         bcs : None or dolfin.fem.dirichletbc.DirichletBC or list[dolfin.fem.dirichletbc.DirichletBC]
-                list of Dirichlet boundary conditions
+                A list of Dirichlet boundary conditions.
 
         Returns
         -------
         petsc4py.PETSc.Mat
-                the petsc matrix for the LHS
+                The petsc matrix for the left-hand side of the linear equation.
         petsc4py.PETSc.Vec
-                the petsc matrix for the RHS
+                The petsc vector for the right-hand side of the linear equation.
+
+        Notes
+        -----
+        This function always uses the ident_zeros method of the matrix in order to add a one to the diagonal
+        in case the corresponding row only consists of zeros. This allows for well-posed problems on the
+        boundary etc.
         &#34;&#34;&#34;
 
         A, b = fenics.assemble_system(A_form, b_form, bcs, keep_diagonal=True)
@@ -332,9 +426,8 @@ def _assemble_petsc_system(A_form, b_form, bcs=None):
 def _setup_petsc_options(ksps, ksp_options):
         &#34;&#34;&#34;Sets up an (iterative) linear solver.
 
-        This is used to pass user defined command line options for PETSc
-        to the PETSc KSP objects.
-        Here, options[i] is applied to ksps[i]
+        This is used to pass user defined command line type options for PETSc
+        to the PETSc KSP objects. Here, options[i] is applied to ksps[i]
 
         Parameters
         ----------
@@ -364,8 +457,72 @@ def _setup_petsc_options(ksps, ksp_options):
 
 
 
+def _solve_linear_problem(ksp=None, A=None, b=None, x=None):
+        &#34;&#34;&#34;Solves a finite dimensional linear problem.
+
+        Parameters
+        ----------
+        ksp : petsc4py.PETSc.KSP or None, optional
+                The PETSc KSP object used to solve the problem. None means that the solver
+                mumps is used (default is None).
+        A : petsc4py.PETSc.Mat or None, optional
+                The PETSc matrix corresponding to the left-hand side of the problem. If
+                this is None, then the matrix stored in the ksp object is used. Raises
+                an error if no matrix is stored. Default is None.
+        b : petsc4py.PETSc.Vec or None, optional
+                The PETSc vector corresponding to the right-hand side of the problem.
+                If this is None, then a zero right-hand side is assumed, and a zero
+                vector is returned. Default is None.
+        x : petsc4py.PETSc.Vec or None, optional
+                The PETSc vector that stores the solution of the problem. If this is
+                None, then a new vector will be created (and returned)
+
+        Returns
+        -------
+        petsc4py.PETSc.Vec
+                The solution vector.
+        &#34;&#34;&#34;
+
+        if ksp is None:
+                ksp = PETSc.KSP().create()
+                options = [[
+                        [&#39;ksp_type&#39;, &#39;preonly&#39;],
+                        [&#39;pc_type&#39;, &#39;lu&#39;],
+                        [&#39;pc_factor_mat_solver_type&#39;, &#39;mumps&#39;],
+                        [&#39;mat_mumps_icntl_24&#39;, 1]
+                ]]
+
+                _setup_petsc_options([ksp], options)
+
+
+        if A is not None:
+                ksp.setOperators(A)
+        else:
+                A = ksp.getOperators()[0]
+                if A.size[0] == -1 and A.size[1] == -1:
+                        raise InputError(&#39;The KSP object has to be initialized with some Matrix in case A is None.&#39;)
+
+        if b is None:
+                return A.getVecs()[0]
+
+        if x is None:
+                x, _ = A.getVecs()
+
+        ksp.solve(b, x)
+
+        if ksp.getConvergedReason() &lt; 0:
+                raise PETScKSPError(ksp.getConvergedReason())
+
+        return x
+
+
+
 def write_out_mesh(mesh, original_msh_file, out_msh_file):
-        &#34;&#34;&#34;Writes out the current mesh as .msh file
+        &#34;&#34;&#34;Writes out the current mesh as .msh file.
+
+        This method updates the vertex positions in the `original_gmsh_file`, the
+        topology of the mesh and its connections are the same. The original gmsh
+        file is kept, and a new one is generated under `out_mesh_file`.
 
         Parameters
         ----------
@@ -373,13 +530,18 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
                 The mesh object in fenics that should be saved as gmsh file.
         original_msh_file : str
                 Path to the original gmsh mesh file of the mesh object, has to
-                end with &#39;.msh&#39;
+                end with &#39;.msh&#39;.
         out_msh_file : str
-                Path (and name) of the output mesh file, has to end with &#39;.msh&#39;
+                Path (and name) of the output mesh file, has to end with &#39;.msh&#39;.
 
         Returns
         -------
         None
+
+        Notes
+        -----
+        The method only works with gmsh mesh 4.1 file format. Others might also work,
+        but this is not tested or ensured in any way.
         &#34;&#34;&#34;
 
         assert original_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for original_mesh_file is wrong&#39;
@@ -425,7 +587,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
                                                 elif dim == 3:
                                                         mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][2], &#39;.16f&#39;) + &#39;\n&#39;
                                                 else:
-                                                        raise Exception(&#39;Not a valid dimension for the mesh.&#39;)
+                                                        raise InputError(&#39;Not a valid dimension for the mesh.&#39;)
                                                 new_file.write(mod_line)
                                                 subwrite_counter += 1
 
@@ -460,15 +622,25 @@ boundary conditions.</p>
 so that it could also be used as DirichletBC(function_space, value, &hellip;).</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
 <dd>The MeshFunction object representing the boundaries.</dd>
-<dt><strong><code>idcs</code></strong> :&ensp;<code>list[int]</code></dt>
+<dt><strong><code>idcs</code></strong> :&ensp;<code>list[int]</code> or <code>int</code></dt>
 <dd>A list of indices / boundary markers that determine the boundaries
-onto which the Dirichlet boundary conditions should be applied to.</dd>
+onto which the Dirichlet boundary conditions should be applied to.
+Can also be a single integer for a single boundary.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
 <dd>A list of DirichletBC objects that represent the boundary conditions.</dd>
-</dl></div>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.</p>
+<pre><code>from fenics import *
+import cestrel
+
+mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+V = FunctionSpace(mesh, 'CG', 1)
+bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -490,19 +662,35 @@ onto which the Dirichlet boundary conditions should be applied to.</dd>
                 so that it could also be used as DirichletBC(function_space, value, ...).
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                 The MeshFunction object representing the boundaries.
-        idcs : list[int]
+        idcs : list[int] or int
                 A list of indices / boundary markers that determine the boundaries
                 onto which the Dirichlet boundary conditions should be applied to.
+                Can also be a single integer for a single boundary.
 
         Returns
         -------
         list[dolfin.fem.dirichletbc.DirichletBC]
                 A list of DirichletBC objects that represent the boundary conditions.
+
+        Examples
+        --------
+        Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
+
+            from fenics import *
+            import cestrel
+
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            V = FunctionSpace(mesh, &#39;CG&#39;, 1)
+            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
-        for i in idcs:
-                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+        if type(idcs) == list:
+                for i in idcs:
+                        bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+
+        elif type(idcs) == int:
+                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, idcs))
 
         return bcs_list</code></pre>
 </details>
@@ -574,7 +762,14 @@ shall define the new measure.</dd>
 <dl>
 <dt><code>ufl.measure.Measure</code> or <code><a title="cestrel.utils.EmptyMeasure" href="#cestrel.utils.EmptyMeasure">EmptyMeasure</a></code></dt>
 <dd>The corresponding sum of the measures or an empty measure.</dd>
-</dl></div>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code>from fenics import *
+import cestrel
+mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
+top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+assemble(1*top_bottom_measure)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -599,6 +794,14 @@ shall define the new measure.</dd>
         -------
         ufl.measure.Measure or cestrel.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
+
+        Examples
+        --------
+            from fenics import *
+            import cestrel
+            mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
+            top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+            assemble(1*top_bottom_measure)
         &#34;&#34;&#34;
 
         if len(idx) == 0:
@@ -617,14 +820,9 @@ shall define the new measure.</dd>
 <span>def <span class="ident">multiplication</span></span>(<span>x)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Multiplies the elements of a list with each other.</p>
+<div class="desc"><p>Multiplies the elements of a list in a UFL friendly fashion.</p>
 <p>Used to build the product of certain UFL expressions to construct
 a UFL form.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code><a title="cestrel.utils.summation" href="#cestrel.utils.summation">summation()</a></code></dt>
-<dd>Sums elements of a list.</dd>
-</dl>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>list[ufl.core.expr.Expr]</code> or <code>list[int]</code> or <code>list[float]</code></dt>
@@ -634,20 +832,28 @@ a UFL form.</p>
 <dl>
 <dt><strong><code>y</code></strong> :&ensp;<code>ufl.core.expr.Expr</code> or <code>int</code> or <code>float</code></dt>
 <dd>The result of the multiplication.</dd>
-</dl></div>
+</dl>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code><a title="cestrel.utils.summation" href="#cestrel.utils.summation">summation()</a></code></dt>
+<dd>Sums elements of a list.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code>a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+</code></pre>
+<p>is equivalent to</p>
+<pre><code>a = u.dx(0) * u.dx(1)
+</code></pre>
+<p>(for a 2D mesh).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def multiplication(x):
-        &#34;&#34;&#34;Multiplies the elements of a list with each other.
+        &#34;&#34;&#34;Multiplies the elements of a list in a UFL friendly fashion.
 
         Used to build the product of certain UFL expressions to construct
         a UFL form.
-
-        See Also
-        --------
-        summation : Sums elements of a list.
 
         Parameters
         ----------
@@ -658,6 +864,20 @@ a UFL form.</p>
         -------
         y : ufl.core.expr.Expr or int or float
                 The result of the multiplication.
+
+        See Also
+        --------
+        summation : Sums elements of a list.
+
+        Examples
+        --------
+            a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+
+        is equivalent to
+
+            a = u.dx(0) * u.dx(1)
+
+        (for a 2D mesh).
         &#34;&#34;&#34;
         
         if len(x) == 0:
@@ -676,15 +896,9 @@ a UFL form.</p>
 <span>def <span class="ident">summation</span></span>(<span>x)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Sums elements of a list.</p>
+<div class="desc"><p>Sums elements of a list in a UFL friendly fashion.</p>
 <p>This can be used to sum, e.g., UFL forms, or UFL expressions
-that should be used in UFL forms. This is not possible with
-the built-in sum function.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code><a title="cestrel.utils.multiplication" href="#cestrel.utils.multiplication">multiplication()</a></code></dt>
-<dd>Multiplies the elements of a list.</dd>
-</dl>
+that can be used in UFL forms.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>list[ufl.form.Form]</code> or <code>list[int]</code> or <code>list[float]</code></dt>
@@ -694,21 +908,33 @@ the built-in sum function.</p>
 <dl>
 <dt><strong><code>y</code></strong> :&ensp;<code>ufl.form.Form</code> or <code>int</code> or <code>float</code></dt>
 <dd>Sum of input (same type as entries of input).</dd>
-</dl></div>
+</dl>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code><a title="cestrel.utils.multiplication" href="#cestrel.utils.multiplication">multiplication()</a></code></dt>
+<dd>Multiplies the elements of a list.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>For "usual" summation of integers or floats, the built-in sum function
+of python or the numpy variant are recommended. Still, they are
+incompatible with fenics objects, so this function should be used for
+the latter.</p>
+<h2 id="examples">Examples</h2>
+<pre><code>a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+</code></pre>
+<p>is equivalent to</p>
+<pre><code>a = u.dx(0)*v.dx(0)*dx + u.dx(1)*v.dx(1)*dx
+</code></pre>
+<p>(for a 2D mesh).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def summation(x):
-        &#34;&#34;&#34;Sums elements of a list.
+        &#34;&#34;&#34;Sums elements of a list in a UFL friendly fashion.
 
         This can be used to sum, e.g., UFL forms, or UFL expressions
-        that should be used in UFL forms. This is not possible with
-        the built-in sum function.
-
-        See Also
-        --------
-        multiplication : Multiplies the elements of a list.
+        that can be used in UFL forms.
 
         Parameters
         ----------
@@ -719,6 +945,27 @@ the built-in sum function.</p>
         -------
         y : ufl.form.Form or int or float
                 Sum of input (same type as entries of input).
+
+        See Also
+        --------
+        multiplication : Multiplies the elements of a list.
+
+        Notes
+        -----
+        For &#34;usual&#34; summation of integers or floats, the built-in sum function
+        of python or the numpy variant are recommended. Still, they are
+        incompatible with fenics objects, so this function should be used for
+        the latter.
+
+        Examples
+        --------
+            a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+
+        is equivalent to
+
+            a = u.dx(0)*v.dx(0)*dx + u.dx(1)*v.dx(1)*dx
+
+        (for a 2D mesh).
         &#34;&#34;&#34;
         
         if len(x) == 0:
@@ -737,28 +984,38 @@ the built-in sum function.</p>
 <span>def <span class="ident">write_out_mesh</span></span>(<span>mesh, original_msh_file, out_msh_file)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Writes out the current mesh as .msh file</p>
+<div class="desc"><p>Writes out the current mesh as .msh file.</p>
+<p>This method updates the vertex positions in the <code>original_gmsh_file</code>, the
+topology of the mesh and its connections are the same. The original gmsh
+file is kept, and a new one is generated under <code>out_mesh_file</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
 <dd>The mesh object in fenics that should be saved as gmsh file.</dd>
 <dt><strong><code>original_msh_file</code></strong> :&ensp;<code>str</code></dt>
 <dd>Path to the original gmsh mesh file of the mesh object, has to
-end with '.msh'</dd>
+end with '.msh'.</dd>
 <dt><strong><code>out_msh_file</code></strong> :&ensp;<code>str</code></dt>
-<dd>Path (and name) of the output mesh file, has to end with '.msh'</dd>
+<dd>Path (and name) of the output mesh file, has to end with '.msh'.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>None</code></dt>
 <dd>&nbsp;</dd>
-</dl></div>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The method only works with gmsh mesh 4.1 file format. Others might also work,
+but this is not tested or ensured in any way.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write_out_mesh(mesh, original_msh_file, out_msh_file):
-        &#34;&#34;&#34;Writes out the current mesh as .msh file
+        &#34;&#34;&#34;Writes out the current mesh as .msh file.
+
+        This method updates the vertex positions in the `original_gmsh_file`, the
+        topology of the mesh and its connections are the same. The original gmsh
+        file is kept, and a new one is generated under `out_mesh_file`.
 
         Parameters
         ----------
@@ -766,13 +1023,18 @@ end with '.msh'</dd>
                 The mesh object in fenics that should be saved as gmsh file.
         original_msh_file : str
                 Path to the original gmsh mesh file of the mesh object, has to
-                end with &#39;.msh&#39;
+                end with &#39;.msh&#39;.
         out_msh_file : str
-                Path (and name) of the output mesh file, has to end with &#39;.msh&#39;
+                Path (and name) of the output mesh file, has to end with &#39;.msh&#39;.
 
         Returns
         -------
         None
+
+        Notes
+        -----
+        The method only works with gmsh mesh 4.1 file format. Others might also work,
+        but this is not tested or ensured in any way.
         &#34;&#34;&#34;
 
         assert original_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for original_mesh_file is wrong&#39;
@@ -818,7 +1080,7 @@ end with '.msh'</dd>
                                                 elif dim == 3:
                                                         mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][2], &#39;.16f&#39;) + &#39;\n&#39;
                                                 else:
-                                                        raise Exception(&#39;Not a valid dimension for the mesh.&#39;)
+                                                        raise InputError(&#39;Not a valid dimension for the mesh.&#39;)
                                                 new_file.write(mod_line)
                                                 subwrite_counter += 1
 
@@ -842,6 +1104,14 @@ end with '.msh'</dd>
 <p>This is used for automatic measure generation, e.g., if
 the fixed boundary is empty for a shape optimization problem,
 and is used to avoid case distinctions.</p>
+<h2 id="examples">Examples</h2>
+<pre><code>dm = EmptyMeasure(dx)
+u*dm
+</code></pre>
+<p>is equivalent to</p>
+<pre><code>Constant(0)*u*dm
+</code></pre>
+<p>so that this generates zeros when assembled over.</p>
 <p>Initializes self.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -858,6 +1128,17 @@ and is used to avoid case distinctions.</p>
         This is used for automatic measure generation, e.g., if
         the fixed boundary is empty for a shape optimization problem,
         and is used to avoid case distinctions.
+
+        Examples
+        --------
+            dm = EmptyMeasure(dx)
+            u*dm
+
+        is equivalent to
+
+            Constant(0)*u*dm
+
+        so that this generates zeros when assembled over.
         &#34;&#34;&#34;
 
         def __init__(self, measure):
@@ -874,7 +1155,7 @@ and is used to avoid case distinctions.</p>
 
 
         def __rmul__(self, other):
-                &#34;&#34;&#34;Generates a UFL form of the empty measure when multiplied from the right.
+                &#34;&#34;&#34;Multiplies the empty measure to the right.
 
                 Parameters
                 ----------
@@ -900,6 +1181,20 @@ and is used to avoid case distinctions.</p>
 carried out between the same spaces, which is made significantly
 faster by computing the corresponding matrix.
 The function spaces can even be defined on different meshes.</p>
+<h2 id="examples">Examples</h2>
+<pre><code>from fenics import *
+import cestrel
+
+mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+V1 = FunctionSpace(mesh, 'CG', 1)
+V2 = FunctionSpace(mesh, 'CG', 2)
+
+expr = Expression('sin(2*pi*x[0])', degree=1)
+u = interpolate(expr, V1)
+
+interp = cestrel.utils.Interpolator(V1, V2)
+interp.interpolate(u)
+</code></pre>
 <p>Initializes the object.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -919,6 +1214,21 @@ The function spaces can even be defined on different meshes.</p>
         carried out between the same spaces, which is made significantly
         faster by computing the corresponding matrix.
         The function spaces can even be defined on different meshes.
+
+        Examples
+        --------
+            from fenics import *
+            import cestrel
+
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            V1 = FunctionSpace(mesh, &#39;CG&#39;, 1)
+            V2 = FunctionSpace(mesh, &#39;CG&#39;, 2)
+
+            expr = Expression(&#39;sin(2*pi*x[0])&#39;, degree=1)
+            u = interpolate(expr, V1)
+
+            interp = cestrel.utils.Interpolator(V1, V2)
+            interp.interpolate(u)
         &#34;&#34;&#34;
 
         def __init__(self, V, W):
@@ -939,6 +1249,11 @@ The function spaces can even be defined on different meshes.</p>
 
         def interpolate(self, u):
                 &#34;&#34;&#34;Interpolates function to target space.
+
+                The function has to belong to the origin space, i.e., the first argument
+                of __init__, and it is interpolated to the destination space, i.e., the
+                second argument of __init__. There is no need to call set_allow_extrapolation
+                on the function (this is done automatically due to the method).
 
                 Parameters
                 ----------
@@ -964,6 +1279,10 @@ The function spaces can even be defined on different meshes.</p>
 </code></dt>
 <dd>
 <div class="desc"><p>Interpolates function to target space.</p>
+<p>The function has to belong to the origin space, i.e., the first argument
+of <strong>init</strong>, and it is interpolated to the destination space, i.e., the
+second argument of <strong>init</strong>. There is no need to call set_allow_extrapolation
+on the function (this is done automatically due to the method).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
@@ -980,6 +1299,11 @@ The function spaces can even be defined on different meshes.</p>
 </summary>
 <pre><code class="python">def interpolate(self, u):
         &#34;&#34;&#34;Interpolates function to target space.
+
+        The function has to belong to the origin space, i.e., the first argument
+        of __init__, and it is interpolated to the destination space, i.e., the
+        second argument of __init__. There is no need to call set_allow_extrapolation
+        on the function (this is done automatically due to the method).
 
         Parameters
         ----------

@@ -7,12 +7,13 @@ Created on 24/02/2020, 09.24
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system, _setup_petsc_options
+from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+from .._exceptions import NotConvergedError
 
 
 
 class AdjointProblem:
-	"""The adjoint problem
+	"""The adjoint problem.
 
 	This class implements the adjoint problem as well as its solver.
 	"""
@@ -23,9 +24,9 @@ class AdjointProblem:
 		Parameters
 		----------
 		form_handler : cestrel._forms.ControlFormHandler or cestrel._forms.ShapeFormHandler
-			the FormHandler object for the optimization problem
+			The FormHandler object for the optimization problem.
 		state_problem : cestrel._pde_problems.StateProblem
-			the StateProblem object used to get the point where we linearize the problem
+			The StateProblem object used to get the point where we linearize the problem.
 		temp_dict : dict
 			A dictionary used for reinitializations when remeshing is performed.
 		"""
@@ -55,12 +56,12 @@ class AdjointProblem:
 	
 	
 	def solve(self):
-		"""Solves the adjoint system
+		"""Solves the adjoint system.
 		
 		Returns
 		-------
 		adjoints : list[dolfin.function.function.Function]
-			list of adjoint variables
+			The list of adjoint variables.
 		"""
 		
 		self.state_problem.solve()
@@ -69,9 +70,7 @@ class AdjointProblem:
 			if not self.form_handler.state_is_picard:
 				for i in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - i], self.form_handler.adjoint_eq_rhs[-1 - i], self.bcs_list_ad[-1 - i])
-
-					self.ksps[-1 - i].setOperators(A)
-					self.ksps[-1 - i].solve(b, self.adjoints[-1 - i].vector().vec())
+					_solve_linear_problem(self.ksps[-1 - i], A, b, self.adjoints[-1 - i].vector().vec())
 
 			else:
 				for i in range(self.maxiter + 1):
@@ -96,15 +95,11 @@ class AdjointProblem:
 						break
 
 					if i==self.maxiter:
-						raise Exception('Failed to solve the Picard Iteration')
+						raise NotConvergedError('Failed to solve the Picard iteration.')
 
 					for j in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - j], self.form_handler.adjoint_eq_rhs[-1 - j], self.bcs_list_ad[-1 - j])
-						self.ksps[-1 - j].setOperators(A)
-						self.ksps[-1 - j].solve(b, self.adjoints[-1 - j].vector().vec())
-						# fenics.PETScOptions.set('mat_mumps_icntl_24', 1)
-						# fenics.solve(self.form_handler.adjoint_eq_lhs[-1 - j]==self.form_handler.adjoint_eq_rhs[-1 - j], self.adjoints[-1 - j], self.bcs_list_ad[-1 - j], solver_parameters={'linear_solver' : 'mumps'})
-
+						_solve_linear_problem(self.ksps[-1 - j], A, b, self.adjoints[-1 - j].vector().vec())
 
 			if self.picard_verbose:
 				print('')

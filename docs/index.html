@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cestrel API documentation</title>
-<meta name="description" content="cestrel is an adjoint-based optimization package for python …" />
+<meta name="description" content="Cestrel is an adjoint-based optimization package for python …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,9 +23,13 @@
 <h1 class="title">Package <code>cestrel</code></h1>
 </header>
 <section id="section-intro">
-<p>cestrel is an adjoint-based optimization package for python.</p>
-<p>It can be used to treat PDE constrained optimal control and shape optimization problems
-numerically in an automated fashion and is based on the finite element software fenics.</p>
+<p>Cestrel is an adjoint-based optimization package for python.</p>
+<p>Cestrel can be used to treat optimal control and shape optimization
+problems constrained by PDEs. It derives the necessary adjoint
+equations automatically and implements various solvers for the
+problems. Cestrel is based in the finite element fenics and
+allows the user to define the optimization problems in the
+high-level unified form language (UFL) of fenics.</p>
 <h2 id="how-to-use">How to use?</h2>
 <p>Since cestrel is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
@@ -95,12 +99,17 @@ welcome.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">r&#34;&#34;&#34;cestrel is an adjoint-based optimization package for python.
+<pre><code class="python">r&#34;&#34;&#34;Cestrel is an adjoint-based optimization package for python.
 
-It can be used to treat PDE constrained optimal control and shape optimization problems
-numerically in an automated fashion and is based on the finite element software fenics.
+Cestrel can be used to treat optimal control and shape optimization
+problems constrained by PDEs. It derives the necessary adjoint
+equations automatically and implements various solvers for the
+problems. Cestrel is based in the finite element fenics and
+allows the user to define the optimization problems in the
+high-level unified form language (UFL) of fenics.
 
 .. include:: ./documentation.md
+
 &#34;&#34;&#34;
 
 from .geometry import import_mesh, regular_mesh, regular_box_mesh, MeshQuality
@@ -111,8 +120,9 @@ from .utils import create_config, create_bcs_list
 
 
 
-__all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;MeshQuality&#39;, &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;,
-                   &#39;ShapeOptimizationProblem&#39;, &#39;create_config&#39;, &#39;create_bcs_list&#39;]</code></pre>
+__all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;MeshQuality&#39;,
+                   &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;, &#39;ShapeOptimizationProblem&#39;,
+                   &#39;create_config&#39;, &#39;create_bcs_list&#39;]</code></pre>
 </details>
 </section>
 <section>
@@ -128,11 +138,11 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 </dd>
 <dt><code class="name"><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></dt>
 <dd>
-<div class="desc"><p>Contains the blueprint for optimal control and shape optimization problems …</p></div>
+<div class="desc"><p>Blueprint for the PDE constrained optimization problems …</p></div>
 </dd>
 <dt><code class="name"><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></dt>
 <dd>
-<div class="desc"><p>Module for utility and helper functions …</p></div>
+<div class="desc"><p>Module including utility and helper functions …</p></div>
 </dd>
 </dl>
 </section>
@@ -159,15 +169,25 @@ boundary conditions.</p>
 so that it could also be used as DirichletBC(function_space, value, &hellip;).</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
 <dd>The MeshFunction object representing the boundaries.</dd>
-<dt><strong><code>idcs</code></strong> :&ensp;<code>list[int]</code></dt>
+<dt><strong><code>idcs</code></strong> :&ensp;<code>list[int]</code> or <code>int</code></dt>
 <dd>A list of indices / boundary markers that determine the boundaries
-onto which the Dirichlet boundary conditions should be applied to.</dd>
+onto which the Dirichlet boundary conditions should be applied to.
+Can also be a single integer for a single boundary.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
 <dd>A list of DirichletBC objects that represent the boundary conditions.</dd>
-</dl></div>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.</p>
+<pre><code>from fenics import *
+import cestrel
+
+mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+V = FunctionSpace(mesh, 'CG', 1)
+bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -189,19 +209,35 @@ onto which the Dirichlet boundary conditions should be applied to.</dd>
                 so that it could also be used as DirichletBC(function_space, value, ...).
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                 The MeshFunction object representing the boundaries.
-        idcs : list[int]
+        idcs : list[int] or int
                 A list of indices / boundary markers that determine the boundaries
                 onto which the Dirichlet boundary conditions should be applied to.
+                Can also be a single integer for a single boundary.
 
         Returns
         -------
         list[dolfin.fem.dirichletbc.DirichletBC]
                 A list of DirichletBC objects that represent the boundary conditions.
+
+        Examples
+        --------
+        Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
+
+            from fenics import *
+            import cestrel
+
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            V = FunctionSpace(mesh, &#39;CG&#39;, 1)
+            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
-        for i in idcs:
-                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+        if type(idcs) == list:
+                for i in idcs:
+                        bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+
+        elif type(idcs) == int:
+                bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, idcs))
 
         return bcs_list</code></pre>
 </details>
@@ -257,45 +293,43 @@ to the .ini file.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>A damped Newton method for solving nonlinear equations.</p>
-<p>The Newton method is based on the natural monotonicity test from Deuflhard.
+<p>The Newton method is based on the natural monotonicity test from Deuflhard [1].
 It also allows fine tuning via a direct interface, and absolute, relative,
 and combined stopping criteria. Can also be used to specify the solver for
 the inner (linear) subproblems via petsc ksps.</p>
-<p>The method terminates after max_iter iterations, or if a termination criterion is
+<p>The method terminates after <code>max_iter</code> iterations, or if a termination criterion is
 satisfied. These criteria are given by
-<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
-</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
-</script></span></p>
-<p>The norm chosen for this termination criterion is specified via norm_type.</p>
+<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'combined'}
+</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if <code>convergence\_type</code> is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'combined'}
+</script></span>
+The norm chosen for the termination criterion is specified via <code>norm_type</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>F</code></strong> :&ensp;<code>ufl.form.Form</code></dt>
 <dd>The variational form of the nonlinear problem to be solved by Newton's method.</dd>
 <dt><strong><code>u</code></strong> :&ensp;<code>dolfin.function.function.Function</code></dt>
-<dd>The sought solution / initial guess (the method will also return this). It is
-not assumed that the initial guess satisfies the Dirichlet boundary conditions,
-these are applied automatically.</dd>
+<dd>The sought solution / initial guess. It is not assumed that the initial guess
+satisfies the Dirichlet boundary conditions, they are applied automatically.
+The method overwrites / updates this Function.</dd>
 <dt><strong><code>bcs</code></strong> :&ensp;<code>list[dolfin.fem.dirichletbc.DirichletBC]</code></dt>
 <dd>A list of DirichletBCs for the nonlinear variational problem.</dd>
 <dt><strong><code>rtol</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>Relative tolerance of the solver if convergence_type is either 'combined' or 'rel'
-(default is rtol = 1e-10).</dd>
+(default is <code>rtol</code> = 1e-10).</dd>
 <dt><strong><code>atol</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>Absolute tolerance of the solver if convergence_type is either 'combined' or 'abs'
 (default is atol = 1e-10).</dd>
 <dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Maximum number of iterations carried out by the method
 (default is max_iter = 50).</dd>
-<dt><strong><code>convergence_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Determines the type of stopping criterion that is used.
-One of 'combined', 'rel', or 'abs' (default is 'combined').</dd>
-<dt><strong><code>norm_type</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Determines which norm is used in the stopping criterion.
-One of 'l2', 'linf' (default is 'l2').</dd>
+<dt><strong><code>convergence_type</code></strong> :&ensp;<code>{'combined', 'rel', 'abs'}</code></dt>
+<dd>Determines the type of stopping criterion that is used.</dd>
+<dt><strong><code>norm_type</code></strong> :&ensp;<code>{'l2', 'linf'}</code></dt>
+<dd>Determines which norm is used in the stopping criterion.</dd>
 <dt><strong><code>damped</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>If true, then a damping strategy is used. If false, the classical
 Newton-Raphson iteration (without damping) is used (default is True).</dd>
@@ -305,14 +339,36 @@ is true).</dd>
 <dt><strong><code>ksp</code></strong> :&ensp;<code>petsc4py.PETSc.KSP</code>, optional</dt>
 <dd>The PETSc ksp object used to solve the inner (linear) problem
 if this is None it uses the direct solver MUMPS (default is
-None)</dd>
+None).</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>dolfin.function.function.Function</code></dt>
 <dd>The solution of the nonlinear variational problem, if converged.
 This overrides the input function u.</dd>
-</dl></div>
+</dl>
+<h2 id="references">References</h2>
+<p>[1] P. Deuflhard, "Newton methods for nonlinear problems", Springer,
+Heidelberg, 2011, <a href="https://doi.org/10.1007/978-3-642-23899-4">https://doi.org/10.1007/978-3-642-23899-4</a></p>
+<h2 id="examples">Examples</h2>
+<p>This example solves the problem</p>
+<p><span><span class="MathJax_Preview"> - \Delta u + u^3 = 1 \quad \text{ in } \Omega=(0,1)^2 \\
+u = 0 \quad \text{ on } \Gamma.
+</span><script type="math/tex; mode=display"> - \Delta u + u^3 = 1 \quad \text{ in } \Omega=(0,1)^2 \\
+u = 0 \quad \text{ on } \Gamma.
+</script></span></p>
+<pre><code>from fenics import *
+import cestrel
+
+mesh, _, boundaries, dx, _, _ = cestrel.regular_mesh(25)
+V = FunctionSpace(mesh, 'CG', 1)
+
+u = Function(V)
+v = TestFunction(V)
+F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
+bcs = cestrel.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+cestrel.damped_newton_solve(F, u, bcs)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -321,45 +377,42 @@ This overrides the input function u.</dd>
                                                 damped=True, verbose=True, ksp=None):
         r&#34;&#34;&#34;A damped Newton method for solving nonlinear equations.
 
-        The Newton method is based on the natural monotonicity test from Deuflhard.
+        The Newton method is based on the natural monotonicity test from Deuflhard [1].
         It also allows fine tuning via a direct interface, and absolute, relative,
         and combined stopping criteria. Can also be used to specify the solver for
         the inner (linear) subproblems via petsc ksps.
 
-        The method terminates after max_iter iterations, or if a termination criterion is
+        The method terminates after `max_iter` iterations, or if a termination criterion is
         satisfied. These criteria are given by
-        $$ \lvert\lvert F_{k} \rvert\rvert \leq \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \text{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if `convergence_type` is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;combined&#39;}
         $$
-
-        The norm chosen for this termination criterion is specified via norm_type.
+        The norm chosen for the termination criterion is specified via `norm_type`.
 
         Parameters
         ----------
         F : ufl.form.Form
                 The variational form of the nonlinear problem to be solved by Newton&#39;s method.
         u : dolfin.function.function.Function
-                The sought solution / initial guess (the method will also return this). It is
-                not assumed that the initial guess satisfies the Dirichlet boundary conditions,
-                these are applied automatically.
+                The sought solution / initial guess. It is not assumed that the initial guess
+                satisfies the Dirichlet boundary conditions, they are applied automatically.
+                The method overwrites / updates this Function.
         bcs : list[dolfin.fem.dirichletbc.DirichletBC]
                 A list of DirichletBCs for the nonlinear variational problem.
         rtol : float, optional
                 Relative tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;rel&#39;
-                (default is rtol = 1e-10).
+                (default is `rtol` = 1e-10).
         atol : float, optional
                 Absolute tolerance of the solver if convergence_type is either &#39;combined&#39; or &#39;abs&#39;
                 (default is atol = 1e-10).
         max_iter : int, optional
                 Maximum number of iterations carried out by the method
                 (default is max_iter = 50).
-        convergence_type : str, optional
+        convergence_type : {&#39;combined&#39;, &#39;rel&#39;, &#39;abs&#39;}
                 Determines the type of stopping criterion that is used.
-                One of &#39;combined&#39;, &#39;rel&#39;, or &#39;abs&#39; (default is &#39;combined&#39;).
-        norm_type : str, optional
+        norm_type : {&#39;l2&#39;, &#39;linf&#39;}
                 Determines which norm is used in the stopping criterion.
-                One of &#39;l2&#39;, &#39;linf&#39; (default is &#39;l2&#39;).
         damped : bool, optional
                 If true, then a damping strategy is used. If false, the classical
                 Newton-Raphson iteration (without damping) is used (default is True).
@@ -369,13 +422,38 @@ This overrides the input function u.</dd>
         ksp : petsc4py.PETSc.KSP, optional
                 The PETSc ksp object used to solve the inner (linear) problem
                 if this is None it uses the direct solver MUMPS (default is
-                None)
+                None).
 
         Returns
         -------
         dolfin.function.function.Function
                 The solution of the nonlinear variational problem, if converged.
                 This overrides the input function u.
+
+        References
+        ----------
+        [1] P. Deuflhard, &#34;Newton methods for nonlinear problems&#34;, Springer,
+        Heidelberg, 2011, https://doi.org/10.1007/978-3-642-23899-4
+
+        Examples
+        --------
+        This example solves the problem
+
+        $$ - \Delta u + u^3 = 1 \quad \text{ in } \Omega=(0,1)^2 \\
+        u = 0 \quad \text{ on } \Gamma.
+        $$
+
+            from fenics import *
+            import cestrel
+
+            mesh, _, boundaries, dx, _, _ = cestrel.regular_mesh(25)
+            V = FunctionSpace(mesh, &#39;CG&#39;, 1)
+
+            u = Function(V)
+            v = TestFunction(V)
+            F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
+            bcs = cestrel.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+            cestrel.damped_newton_solve(F, u, bcs)
         &#34;&#34;&#34;
 
         assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
@@ -383,6 +461,7 @@ This overrides the input function u.</dd>
         assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
                 &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
 
+        # create the PETSc ksp
         if ksp is None:
                 options = [[
                         [&#39;ksp_type&#39;, &#39;preonly&#39;],
@@ -392,12 +471,14 @@ This overrides the input function u.</dd>
                 ]]
 
                 ksp = PETSc.KSP().create()
-                _setup_petsc_options([ksp, options])
+                _setup_petsc_options([ksp], options)
                 ksp.setFromOptions()
-        
+
+        # Calculate the Jacobian.
         dF = fenics.derivative(F, u)
+
+        # Setup increment and function for monotonicity test
         V = u.function_space()
-        
         du = fenics.Function(V)
         ddu = fenics.Function(V)
         u_save = fenics.Function(V)
@@ -405,13 +486,19 @@ This overrides the input function u.</dd>
         iterations = 0
         
         [bc.apply(u.vector()) for bc in bcs]
-        # copy the boundary conditions and homogenize them
+        # copy the boundary conditions and homogenize them for the increment
         bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
         [bc.homogenize() for bc in bcs_hom]
-        
-        A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
-        A.ident_zeros()
-        A = fenics.as_backend_type(A).mat()
+
+        assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
+        assembler.keep_diagonal = True
+        A_fenics = fenics.PETScMatrix()
+        residuum = fenics.PETScVector()
+
+        # Compute the initial residual
+        assembler.assemble(A_fenics, residuum)
+        A_fenics.ident_zeros()
+        A = fenics.as_backend_type(A_fenics).mat()
         b = fenics.as_backend_type(residuum).vec()
         
         res_0 = residuum.norm(norm_type)
@@ -427,22 +514,24 @@ This overrides the input function u.</dd>
                 tol = rtol*res_0
         else:
                 tol = rtol*res_0 + atol
-        
+
+        # While loop until termination
         while res &gt; tol and iterations &lt; max_iter:
                 iterations += 1
                 lmbd = 1.0
                 breakdown = False
                 u_save.vector()[:] = u.vector()[:]
 
-                ksp.setOperators(A)
-                ksp.solve(b, du.vector().vec())
+                # Solve the inner problem
+                _solve_linear_problem(ksp, A, b, du.vector().vec())
 
+                # perform backtracking in case damping is used
                 if damped:
                         while True:
                                 u.vector()[:] += lmbd*du.vector()[:]
-                                _, b = fenics.assemble_system(dF, -F, bcs_hom)
-                                b = fenics.as_backend_type(b).vec()
-                                ksp.solve(b, ddu.vector().vec())
+                                assembler.assemble(residuum)
+                                b = fenics.as_backend_type(residuum).vec()
+                                _solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec())
 
                                 if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) &lt;= 1:
                                         break
@@ -458,14 +547,15 @@ This overrides the input function u.</dd>
                         u.vector()[:] += du.vector()[:]
                 
                 if breakdown:
-                        raise Exception(&#39;Damped Newton Solver Breakdown&#39;)
+                        raise NotConvergedError(&#39;Damped Newton Solver Breakdown, stepsize for increment too low.&#39;)
 
                 if iterations == max_iter:
-                        raise Exception(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
-                
-                A, residuum = fenics.assemble_system(dF, -F, bcs_hom, keep_diagonal=True)
-                A.ident_zeros()
-                A = fenics.as_backend_type(A).mat()
+                        raise NotConvergedError(&#39;Newton Solver exceeded maximum number of iterations.&#39;)
+
+                # compute the new residual
+                assembler.assemble(A_fenics, residuum)
+                A_fenics.ident_zeros()
+                A = fenics.as_backend_type(A_fenics).mat()
                 b = fenics.as_backend_type(residuum).vec()
 
                 [bc.apply(residuum) for bc in bcs_hom]
@@ -492,9 +582,10 @@ This overrides the input function u.</dd>
 <div class="desc"><p>Imports a mesh file for use with cestrel / fenics.</p>
 <p>This function imports a mesh file that was generated by GMSH and converted to
 .xdmf with the command line function mesh-convert (see cestrel main documentation).
-The syntax for the conversion is
-mesh-convert in.msh out.xdmf
-If there are Physical quantities specified in the gmsh file, these are imported
+The syntax for the conversion is</p>
+<pre><code>mesh-convert in.msh out.xdmf
+</code></pre>
+<p>If there are Physical quantities specified in the gmsh file, these are imported
 to the subdomains and boundaries output of this function and can also be directly
 accessed via the measures, e.g., with dx(1), ds(1), etc.</p>
 <h2 id="parameters">Parameters</h2>
@@ -515,7 +606,7 @@ file.</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
 <dd>A MeshFunction object containing the boundaries,
 i.e., the Physical regions marked in the gmsh
-file. Can be, e.g., used to set up boundary
+file. Can, e.g., be used to set up boundary
 conditions.</dd>
 <dt><strong><code>dx</code></strong> :&ensp;<code>ufl.measure.Measure</code></dt>
 <dd>The volume measure of the mesh corresponding to
@@ -537,7 +628,9 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
         This function imports a mesh file that was generated by GMSH and converted to
         .xdmf with the command line function mesh-convert (see cestrel main documentation).
         The syntax for the conversion is
-                mesh-convert in.msh out.xdmf
+
+            mesh-convert in.msh out.xdmf
+
         If there are Physical quantities specified in the gmsh file, these are imported
         to the subdomains and boundaries output of this function and can also be directly
         accessed via the measures, e.g., with dx(1), ds(1), etc.
@@ -560,7 +653,7 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                 A MeshFunction object containing the boundaries,
                 i.e., the Physical regions marked in the gmsh
-                file. Can be, e.g., used to set up boundary
+                file. Can, e.g., be used to set up boundary
                 conditions.
         dx : ufl.measure.Measure
                 The volume measure of the mesh corresponding to
@@ -595,12 +688,12 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                                 mesh_file = temp_dict[&#39;mesh_file&#39;]
 
         else:
-                raise Exception(&#39;Not a valid input for import_mesh&#39;)
+                raise InputError(&#39;Not a valid argument for import_mesh.&#39;)
 
         if mesh_file[-5:] == &#39;.xdmf&#39;:
                 file_string = mesh_file[:-5]
         else:
-                raise Exception(&#39;Not a suitable mesh file format&#39;)
+                raise InputError(&#39;Not a suitable mesh file format.&#39;)
         
         mesh = fenics.Mesh()
         xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -644,8 +737,8 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
 <p>This function creates a uniform mesh of either a rectangle
 or a cube, with specified start (S_) and end points (E_).
 The resulting mesh uses n elements along the shortest direction
-and accordingly many along the longer ones. The resulting domain is
-<span><span class="MathJax_Preview">[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
+and accordingly many along the longer ones. The resulting domain is</p>
+<p><span><span class="MathJax_Preview">[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
 [S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
 </span><script type="math/tex; mode=display">[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
 [S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
@@ -653,22 +746,22 @@ and accordingly many along the longer ones. The resulting domain is
 <p>The boundary markers are ordered as follows:</p>
 <ul>
 <li>
-<p>1 corresponds to <span><span class="MathJax_Preview">\{x=S_x\}</span><script type="math/tex">\{x=S_x\}</script></span></p>
+<p>1 corresponds to <span><span class="MathJax_Preview">\{x=S_x\}</span><script type="math/tex">\{x=S_x\}</script></span>.</p>
 </li>
 <li>
-<p>2 corresponds to <span><span class="MathJax_Preview">\{x=E_x\}</span><script type="math/tex">\{x=E_x\}</script></span></p>
+<p>2 corresponds to <span><span class="MathJax_Preview">\{x=E_x\}</span><script type="math/tex">\{x=E_x\}</script></span>.</p>
 </li>
 <li>
-<p>3 corresponds to <span><span class="MathJax_Preview">\{y=S_y\}</span><script type="math/tex">\{y=S_y\}</script></span></p>
+<p>3 corresponds to <span><span class="MathJax_Preview">\{y=S_y\}</span><script type="math/tex">\{y=S_y\}</script></span>.</p>
 </li>
 <li>
-<p>4 corresponds to <span><span class="MathJax_Preview">\{y=E_y\}</span><script type="math/tex">\{y=E_y\}</script></span></p>
+<p>4 corresponds to <span><span class="MathJax_Preview">\{y=E_y\}</span><script type="math/tex">\{y=E_y\}</script></span>.</p>
 </li>
 <li>
-<p>5 corresponds to <span><span class="MathJax_Preview">\{z=S_z\}</span><script type="math/tex">\{z=S_z\}</script></span> (only in 3D)</p>
+<p>5 corresponds to <span><span class="MathJax_Preview">\{z=S_z\}</span><script type="math/tex">\{z=S_z\}</script></span> (only in 3D).</p>
 </li>
 <li>
-<p>6 corresponds to <span><span class="MathJax_Preview">\{z=E_z\}</span><script type="math/tex">\{z=E_z\}</script></span> (only in 3D)</p>
+<p>6 corresponds to <span><span class="MathJax_Preview">\{z=E_z\}</span><script type="math/tex">\{z=E_z\}</script></span> (only in 3D).</p>
 </li>
 </ul>
 <h2 id="parameters">Parameters</h2>
@@ -716,23 +809,24 @@ and accordingly many along the longer ones. The resulting domain is
         or a cube, with specified start (S_) and end points (E_).
         The resulting mesh uses n elements along the shortest direction
         and accordingly many along the longer ones. The resulting domain is
-                $$[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
-                [S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
-                $$
+
+        $$[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
+        [S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
+        $$
 
         The boundary markers are ordered as follows:
 
-          - 1 corresponds to \(\{x=S_x\}\)
+          - 1 corresponds to \(\{x=S_x\}\).
 
-          - 2 corresponds to \(\{x=E_x\}\)
+          - 2 corresponds to \(\{x=E_x\}\).
 
-          - 3 corresponds to \(\{y=S_y\}\)
+          - 3 corresponds to \(\{y=S_y\}\).
 
-          - 4 corresponds to \(\{y=E_y\}\)
+          - 4 corresponds to \(\{y=E_y\}\).
 
-          - 5 corresponds to \(\{z=S_z\}\) (only in 3D)
+          - 5 corresponds to \(\{z=S_z\}\) (only in 3D).
 
-          - 6 corresponds to \(\{z=E_z\}\) (only in 3D)
+          - 6 corresponds to \(\{z=E_z\}\) (only in 3D).
 
         Parameters
         ----------
@@ -839,22 +933,22 @@ The resulting domain is
 <p>The boundary markers are ordered as follows:</p>
 <ul>
 <li>
-<p>1 corresponds to <span><span class="MathJax_Preview">\{x=0\}</span><script type="math/tex">\{x=0\}</script></span></p>
+<p>1 corresponds to <span><span class="MathJax_Preview">\{x=0\}</span><script type="math/tex">\{x=0\}</script></span>.</p>
 </li>
 <li>
-<p>2 corresponds to <span><span class="MathJax_Preview">\{x=L_x\}</span><script type="math/tex">\{x=L_x\}</script></span></p>
+<p>2 corresponds to <span><span class="MathJax_Preview">\{x=L_x\}</span><script type="math/tex">\{x=L_x\}</script></span>.</p>
 </li>
 <li>
-<p>3 corresponds to <span><span class="MathJax_Preview">\{y=0\}</span><script type="math/tex">\{y=0\}</script></span></p>
+<p>3 corresponds to <span><span class="MathJax_Preview">\{y=0\}</span><script type="math/tex">\{y=0\}</script></span>.</p>
 </li>
 <li>
-<p>4 corresponds to <span><span class="MathJax_Preview">\{y=L_y\}</span><script type="math/tex">\{y=L_y\}</script></span></p>
+<p>4 corresponds to <span><span class="MathJax_Preview">\{y=L_y\}</span><script type="math/tex">\{y=L_y\}</script></span>.</p>
 </li>
 <li>
-<p>5 corresponds to <span><span class="MathJax_Preview">\{z=0\}</span><script type="math/tex">\{z=0\}</script></span> (only in 3D)</p>
+<p>5 corresponds to <span><span class="MathJax_Preview">\{z=0\}</span><script type="math/tex">\{z=0\}</script></span> (only in 3D).</p>
 </li>
 <li>
-<p>6 corresponds to <span><span class="MathJax_Preview">\{z=L_z\}</span><script type="math/tex">\{z=L_z\}</script></span> (only in 3D)</p>
+<p>6 corresponds to <span><span class="MathJax_Preview">\{z=L_z\}</span><script type="math/tex">\{z=L_z\}</script></span> (only in 3D).</p>
 </li>
 </ul>
 <h2 id="parameters">Parameters</h2>
@@ -902,17 +996,17 @@ will be two-dimensional (default is None).</dd>
 
         The boundary markers are ordered as follows:
 
-          - 1 corresponds to \(\{x=0\}\)
+          - 1 corresponds to \(\{x=0\}\).
 
-          - 2 corresponds to \(\{x=L_x\}\)
+          - 2 corresponds to \(\{x=L_x\}\).
 
-          - 3 corresponds to \(\{y=0\}\)
+          - 3 corresponds to \(\{y=0\}\).
 
-          - 4 corresponds to \(\{y=L_y\}\)
+          - 4 corresponds to \(\{y=L_y\}\).
 
-          - 5 corresponds to \(\{z=0\}\) (only in 3D)
+          - 5 corresponds to \(\{z=0\}\) (only in 3D).
 
-          - 6 corresponds to \(\{z=L_z\}\) (only in 3D)
+          - 6 corresponds to \(\{z=L_z\}\) (only in 3D).
 
         Parameters
         ----------
@@ -1000,37 +1094,25 @@ on the maximum angle of the elements, or one based on the radius ratios.
 All quality measures have values in <span><span class="MathJax_Preview"> [0, 1] </span><script type="math/tex"> [0, 1] </script></span>, where 1 corresponds
 to the best / perfect element, and 0 corresponds to degenerate elements.</p>
 <h2 id="examples">Examples</h2>
-<p>This class can be directly used, without any instantiation. E.g., with
-cestrel one can write</p>
-<pre><code>    import cestrel
+<p>This class can be directly used, without any instantiation.</p>
+<pre><code>import cestrel
 
-    mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
 
-    min_skew = cestrel.MeshQuality.min_skewness(mesh)
-    avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+min_skew = cestrel.MeshQuality.min_skewness(mesh)
+avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
 
-    min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
-    avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
+avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
 
-    min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
-    avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
+avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
 
-    min_cond = cestrel.MeshQuality.min_condition_number(mesh)
-    avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+min_cond = cestrel.MeshQuality.min_condition_number(mesh)
+avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
 </code></pre>
-<p>This works analogously for any mesh used in fenics.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code><a title="cestrel.MeshQuality.min_skewness" href="#cestrel.MeshQuality.min_skewness">MeshQuality.min_skewness()</a></code></dt>
-<dd>Computes the quality measure based on the skewness of the mesh.</dd>
-<dt><code><a title="cestrel.MeshQuality.min_maximum_angle" href="#cestrel.MeshQuality.min_maximum_angle">MeshQuality.min_maximum_angle()</a></code></dt>
-<dd>Computes the quality measure based on the maximum angle of the elements.</dd>
-<dt><code><a title="cestrel.MeshQuality.min_radius_ratios" href="#cestrel.MeshQuality.min_radius_ratios">MeshQuality.min_radius_ratios()</a></code></dt>
-<dd>Computes the quality measure based on the radius ratios.</dd>
-<dt><code><a title="cestrel.MeshQuality.min_condition_number" href="#cestrel.MeshQuality.min_condition_number">MeshQuality.min_condition_number()</a></code></dt>
-<dd>Computes the quality based on the condition number of the mapping from element to reference element.</dd>
-</dl>
-<p><code>Initializes self.</code></p></div>
+<p>This works analogously for any mesh compatible with fenics.</p>
+<p>Initializes self.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1045,33 +1127,25 @@ cestrel one can write</p>
 
         Examples
         --------
-        This class can be directly used, without any instantiation. E.g., with
-        cestrel one can write
+        This class can be directly used, without any instantiation.
 
-                import cestrel
+            import cestrel
 
-                mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+            mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
 
-                min_skew = cestrel.MeshQuality.min_skewness(mesh)
-                avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+            min_skew = cestrel.MeshQuality.min_skewness(mesh)
+            avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
 
-                min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
-                avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+            min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
+            avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
 
-                min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
-                avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+            min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
+            avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
 
-                min_cond = cestrel.MeshQuality.min_condition_number(mesh)
-                avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+            min_cond = cestrel.MeshQuality.min_condition_number(mesh)
+            avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
 
-        This works analogously for any mesh used in fenics.
-
-        See Also
-        --------
-        MeshQuality.min_skewness : Computes the quality measure based on the skewness of the mesh.
-        MeshQuality.min_maximum_angle : Computes the quality measure based on the maximum angle of the elements.
-        MeshQuality.min_radius_ratios : Computes the quality measure based on the radius ratios.
-        MeshQuality.min_condition_number : Computes the quality based on the condition number of the mapping from element to reference element.
+        This works analogously for any mesh compatible with fenics.
         &#34;&#34;&#34;
 
         _cpp_code_mesh_quality = &#34;&#34;&#34;
@@ -1263,10 +1337,11 @@ cestrel one can write</p>
                 element. The skewness corresponding to some (dihedral) angle
                 \( \alpha \) is defined as
 
-                $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+                $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
                 $$
 
-                To compute the (global) quality measure, the minimum of this expression
+                where \( \alpha^* \) is the corresponding optimal angle of the reference
+                element. To compute the quality measure, the minimum of this expression
                 over all elements and all of their (dihedral) angles is computed.
 
                 Parameters
@@ -1288,9 +1363,14 @@ cestrel one can write</p>
         def avg_skewness(cls, mesh):
                 r&#34;&#34;&#34;Computes the average skewness of the mesh.
 
-                See Also
-                --------
-                min_skewness : Computes the minimal skewness of the mesh.
+                The skewness corresponding to some (dihedral) angle
+                \( \alpha \) is defined as
+
+                $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+                $$
+
+                where \( \alpha^* \) is the corresponding optimal angle of the reference
+                element.
 
                 Parameters
                 ----------
@@ -1319,7 +1399,9 @@ cestrel one can write</p>
                 $$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
                 $$
 
-                where \( \alpha \) is the corresponding (dihedral) angle of the element.
+                where \( \alpha \) is the corresponding (dihedral) angle of the element
+                and \( \alpha^* \) is the corresponding (dihedral) angle of the reference
+                element.
 
                 Parameters
                 ----------
@@ -1339,10 +1421,6 @@ cestrel one can write</p>
         @classmethod
         def avg_maximum_angle(cls, mesh):
                 r&#34;&#34;&#34;Computes the average quality of the mesh based on the maximum angle.
-
-                See Also
-                --------
-                min_maximum_angle : Computes the minimal quality measure based on the maximum angle.
 
                 Parameters
                 ----------
@@ -1392,10 +1470,6 @@ cestrel one can write</p>
         @staticmethod
         def avg_radius_ratios(mesh):
                 r&#34;&#34;&#34;Computes the average radius ratio of the mesh.
-
-                See Also
-                --------
-                min_radius_ratios : Computes the minimal radius ratio of the mesh.
 
                 Parameters
                 ----------
@@ -1453,8 +1527,7 @@ cestrel one can write</p>
                 cond = fenics.Function(DG0)
 
                 A, b = _assemble_petsc_system(a, L)
-                ksp.setOperators(A)
-                ksp.solve(b, cond.vector().vec())
+                _solve_linear_problem(ksp, A, b, cond.vector().vec())
 
                 return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
 
@@ -1463,10 +1536,6 @@ cestrel one can write</p>
         @staticmethod
         def avg_condition_number(mesh):
                 &#34;&#34;&#34;Computes the average mesh quality based on the condition number of the reference mapping.
-
-                See Also
-                --------
-                min_condition_number : Computes the minimum condition number quality measure.
 
                 Parameters
                 ----------
@@ -1501,8 +1570,7 @@ cestrel one can write</p>
                 cond = fenics.Function(DG0)
 
                 A, b = _assemble_petsc_system(a, L)
-                ksp.setOperators(A)
-                ksp.solve(b, cond.vector().vec())
+                _solve_linear_problem(ksp, A, b, cond.vector().vec())
 
                 return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
 </details>
@@ -1513,11 +1581,6 @@ cestrel one can write</p>
 </code></dt>
 <dd>
 <div class="desc"><p>Computes the average mesh quality based on the condition number of the reference mapping.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code>min_condition_number</code></dt>
-<dd>Computes the minimum condition number quality measure.</dd>
-</dl>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
@@ -1535,10 +1598,6 @@ cestrel one can write</p>
 <pre><code class="python">@staticmethod
 def avg_condition_number(mesh):
         &#34;&#34;&#34;Computes the average mesh quality based on the condition number of the reference mapping.
-
-        See Also
-        --------
-        min_condition_number : Computes the minimum condition number quality measure.
 
         Parameters
         ----------
@@ -1573,8 +1632,7 @@ def avg_condition_number(mesh):
         cond = fenics.Function(DG0)
 
         A, b = _assemble_petsc_system(a, L)
-        ksp.setOperators(A)
-        ksp.solve(b, cond.vector().vec())
+        _solve_linear_problem(ksp, A, b, cond.vector().vec())
 
         return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
 </details>
@@ -1584,11 +1642,6 @@ def avg_condition_number(mesh):
 </code></dt>
 <dd>
 <div class="desc"><p>Computes the average quality of the mesh based on the maximum angle.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code>min_maximum_angle</code></dt>
-<dd>Computes the minimal quality measure based on the maximum angle.</dd>
-</dl>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
@@ -1606,10 +1659,6 @@ def avg_condition_number(mesh):
 <pre><code class="python">@classmethod
 def avg_maximum_angle(cls, mesh):
         r&#34;&#34;&#34;Computes the average quality of the mesh based on the maximum angle.
-
-        See Also
-        --------
-        min_maximum_angle : Computes the minimal quality measure based on the maximum angle.
 
         Parameters
         ----------
@@ -1630,11 +1679,6 @@ def avg_maximum_angle(cls, mesh):
 </code></dt>
 <dd>
 <div class="desc"><p>Computes the average radius ratio of the mesh.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code>min_radius_ratios</code></dt>
-<dd>Computes the minimal radius ratio of the mesh.</dd>
-</dl>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
@@ -1652,10 +1696,6 @@ def avg_maximum_angle(cls, mesh):
 <pre><code class="python">@staticmethod
 def avg_radius_ratios(mesh):
         r&#34;&#34;&#34;Computes the average radius ratio of the mesh.
-
-        See Also
-        --------
-        min_radius_ratios : Computes the minimal radius ratio of the mesh.
 
         Parameters
         ----------
@@ -1676,11 +1716,13 @@ def avg_radius_ratios(mesh):
 </code></dt>
 <dd>
 <div class="desc"><p>Computes the average skewness of the mesh.</p>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code>min_skewness</code></dt>
-<dd>Computes the minimal skewness of the mesh.</dd>
-</dl>
+<p>The skewness corresponding to some (dihedral) angle
+<span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is defined as</p>
+<p><span><span class="MathJax_Preview"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+</span><script type="math/tex; mode=display"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+</script></span></p>
+<p>where <span><span class="MathJax_Preview"> \alpha^* </span><script type="math/tex"> \alpha^* </script></span> is the corresponding optimal angle of the reference
+element.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
@@ -1699,9 +1741,14 @@ def avg_radius_ratios(mesh):
 def avg_skewness(cls, mesh):
         r&#34;&#34;&#34;Computes the average skewness of the mesh.
 
-        See Also
-        --------
-        min_skewness : Computes the minimal skewness of the mesh.
+        The skewness corresponding to some (dihedral) angle
+        \( \alpha \) is defined as
+
+        $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+        $$
+
+        where \( \alpha^* \) is the corresponding optimal angle of the reference
+        element.
 
         Parameters
         ----------
@@ -1780,8 +1827,7 @@ def min_condition_number(mesh):
         cond = fenics.Function(DG0)
 
         A, b = _assemble_petsc_system(a, L)
-        ksp.setOperators(A)
-        ksp.solve(b, cond.vector().vec())
+        _solve_linear_problem(ksp, A, b, cond.vector().vec())
 
         return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
 </details>
@@ -1798,7 +1844,9 @@ angle. The optimal angle is defined as the angle an equilateral
 <p><span><span class="MathJax_Preview"> 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
 </span><script type="math/tex; mode=display"> 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
 </script></span></p>
-<p>where <span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is the corresponding (dihedral) angle of the element.</p>
+<p>where <span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is the corresponding (dihedral) angle of the element
+and <span><span class="MathJax_Preview"> \alpha^* </span><script type="math/tex"> \alpha^* </script></span> is the corresponding (dihedral) angle of the reference
+element.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mesh</code></strong> :&ensp;<code>dolfin.cpp.mesh.Mesh</code></dt>
@@ -1825,7 +1873,9 @@ def min_maximum_angle(cls, mesh):
         $$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
         $$
 
-        where \( \alpha \) is the corresponding (dihedral) angle of the element.
+        where \( \alpha \) is the corresponding (dihedral) angle of the element
+        and \( \alpha^* \) is the corresponding (dihedral) angle of the reference
+        element.
 
         Parameters
         ----------
@@ -1913,10 +1963,11 @@ and thus equiangular, element has. The skewness lies in
 (equilateral) element, and 0 corresponds to a degenerate
 element. The skewness corresponding to some (dihedral) angle
 <span><span class="MathJax_Preview"> \alpha </span><script type="math/tex"> \alpha </script></span> is defined as</p>
-<p><span><span class="MathJax_Preview"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
-</span><script type="math/tex; mode=display"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+<p><span><span class="MathJax_Preview"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+</span><script type="math/tex; mode=display"> 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 </script></span></p>
-<p>To compute the (global) quality measure, the minimum of this expression
+<p>where <span><span class="MathJax_Preview"> \alpha^* </span><script type="math/tex"> \alpha^* </script></span> is the corresponding optimal angle of the reference
+element. To compute the quality measure, the minimum of this expression
 over all elements and all of their (dihedral) angles is computed.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1945,10 +1996,11 @@ def min_skewness(cls, mesh):
         element. The skewness corresponding to some (dihedral) angle
         \( \alpha \) is defined as
 
-        $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right)
+        $$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
         $$
 
-        To compute the (global) quality measure, the minimum of this expression
+        where \( \alpha^* \) is the corresponding optimal angle of the reference
+        element. To compute the quality measure, the minimum of this expression
         over all elements and all of their (dihedral) angles is computed.
 
         Parameters
@@ -2105,16 +2157,16 @@ in the "demos" folder.</p></div>
                                         if controls[i].__module__ == &#39;dolfin.function.function&#39; and type(controls[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise Exception(&#39;controls have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;controls have to be fenics Functions.&#39;)
 
                                 self.controls = controls
 
                         elif controls.__module__ == &#39;dolfin.function.function&#39; and type(controls).__name__ == &#39;Function&#39;:
                                 self.controls = [controls]
                         else:
-                                raise Exception(&#39;Type of controls is wrong.&#39;)
+                                raise InputError(&#39;Type of controls is wrong.&#39;)
                 except:
-                        raise Exception(&#39;Type of controls is wrong.&#39;)
+                        raise InputError(&#39;Type of controls is wrong.&#39;)
 
                 self.control_dim = len(self.controls)
 
@@ -2130,14 +2182,14 @@ in the "demos" folder.</p></div>
                                                 if riesz_scalar_products[i].__module__== &#39;ufl.form&#39; and type(riesz_scalar_products[i]).__name__== &#39;Form&#39;:
                                                         pass
                                                 else:
-                                                        raise Exception(&#39;riesz_scalar_products have to be ufl forms&#39;)
+                                                        raise InputError(&#39;riesz_scalar_products have to be ufl forms&#39;)
                                         self.riesz_scalar_products = riesz_scalar_products
                                 elif riesz_scalar_products.__module__== &#39;ufl.form&#39; and type(riesz_scalar_products).__name__== &#39;Form&#39;:
                                         self.riesz_scalar_products = [riesz_scalar_products]
                                 else:
-                                        raise Exception(&#39;State forms have to be ufl forms&#39;)
+                                        raise InputError(&#39;State forms have to be ufl forms&#39;)
                         except:
-                                raise Exception(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
+                                raise InputError(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
 
                 ### control_constraints
                 if control_constraints is None:
@@ -2160,20 +2212,20 @@ in the "demos" folder.</p></div>
                                                                         elif control_constraints[i][j].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[i][j]).__name__ == &#39;Function&#39;:
                                                                                 pass
                                                                         else:
-                                                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                                 pass
                                                         else:
-                                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                 self.control_constraints = control_constraints
                                         elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[0]).__name__==&#39;Function&#39;)) \
                                                 and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[1]).__name__==&#39;Function&#39;)):
 
                                                 self.control_constraints = [control_constraints]
                                         else:
-                                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                         except:
-                                raise Exception(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                 # recast floats into functions for compatibility
                 temp_constraints = self.control_constraints[:]
@@ -2185,7 +2237,7 @@ in the "demos" folder.</p></div>
                         elif pair[0].__module__ == &#39;dolfin.function.function&#39; and type(pair[0]).__name__ == &#39;Function&#39;:
                                 lower_bound = pair[0]
                         else:
-                                raise Exception(&#39;Wrong type for the control constraints&#39;)
+                                raise InputError(&#39;Wrong type for the control constraints&#39;)
 
                         if type(pair[1]) in [float, int]:
                                 upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -2193,7 +2245,7 @@ in the "demos" folder.</p></div>
                         elif pair[1].__module__ == &#39;dolfin.function.function&#39; and type(pair[1]).__name__ == &#39;Function&#39;:
                                 upper_bound = pair[1]
                         else:
-                                raise Exception(&#39;Wrong type for the control constraints&#39;)
+                                raise InputError(&#39;Wrong type for the control constraints&#39;)
 
                         self.control_constraints.append([lower_bound, upper_bound])
 
@@ -2296,7 +2348,7 @@ in the "demos" folder.</p></div>
                 elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                         self.solver = PDAS(self)
                 else:
-                        raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
                 
                 self.solver.run()
                 self.solver.finalize()
@@ -2421,7 +2473,7 @@ to the optimization method, i.e., the user-input functions.</p>
         elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                 self.solver = PDAS(self)
         else:
-                raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
         
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -2552,7 +2604,7 @@ as for the state systems are used (default is None).</dd>
                         try:
                                 assert self.states[0].function_space().mesh()._cestrel_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
                         except:
-                                raise Exception(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
+                                raise InputError(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
 
                         if not &#39;_cestrel_remesh_flag&#39; in sys.argv:
                                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -2575,7 +2627,7 @@ as for the state systems are used (default is None).</dd>
                 if boundaries.__module__ == &#39;dolfin.cpp.mesh&#39; and type(boundaries).__name__ == &#39;MeshFunctionSizet&#39;:
                         self.boundaries = boundaries
                 else:
-                        raise Exception(&#39;Not a valid format for boundaries.&#39;)
+                        raise InputError(&#39;Not a valid format for boundaries.&#39;)
 
                 assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
@@ -2619,7 +2671,7 @@ as for the state systems are used (default is None).</dd>
                 elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                         self.solver = CG(self)
                 else:
-                        raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.&#39;)
 
                 self.solver.run()
                 self.solver.finalize()
@@ -2763,7 +2815,7 @@ are carried out automatically.</p>
         elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                 self.solver = CG(self)
         else:
-                raise Exception(&#39;OptimizationRoutine.algorithm needs to be one of gd, lbfgs, or cg.&#39;)
+                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.&#39;)
 
         self.solver.run()
         self.solver.finalize()</code></pre>

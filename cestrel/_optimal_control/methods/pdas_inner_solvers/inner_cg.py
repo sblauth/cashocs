@@ -8,6 +8,7 @@ import fenics
 import numpy as np
 from ...optimization_algorithm import OptimizationAlgorithm
 from .unconstrained_line_search import UnconstrainedLineSearch
+from ...._exceptions import NotConvergedError, ConfigError
 
 
 
@@ -132,7 +133,7 @@ class InnerCG(OptimizationAlgorithm):
 				self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient) / dy
 
 			else:
-				raise Exception('Not a valid method for nonlinear CG. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
+				raise ConfigError('Not a valid choice for OptimizationRoutine.cg_method. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
 
 			if self.iteration==0:
 				self.gradient_norm_initial = self.gradient_norm
@@ -170,7 +171,7 @@ class InnerCG(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise Exception('Armijo rule failed.')
+					raise NotConvergedError('Armijo rule failed.')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -179,4 +180,4 @@ class InnerCG(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')

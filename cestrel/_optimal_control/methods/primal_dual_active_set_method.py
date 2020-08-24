@@ -8,6 +8,7 @@ import fenics
 import numpy as np
 from ..._optimal_control import OptimizationAlgorithm
 from .pdas_inner_solvers import InnerCG, InnerLBFGS, InnerNewton, InnerGradientDescent
+from ..._exceptions import NotConvergedError, ConfigError
 
 
 
@@ -45,7 +46,7 @@ class PDAS(OptimizationAlgorithm):
 		elif self.inner_pdas == 'newton':
 			self.inner_solver = InnerNewton(optimization_problem)
 		else:
-			raise Exception('OptimizationRoutine.inner_pdas needs to be one of gradient_descent, lbfgs, cg, or newton.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_pdas. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
 
 
 
@@ -126,7 +127,7 @@ class PDAS(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise Exception('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Maximum number of iterations exceeded.')
 
 			self.compute_active_inactive_sets()
 

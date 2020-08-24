@@ -6,6 +6,7 @@ Created on 06/03/2020, 10.22
 
 import fenics
 import numpy as np
+from .._exceptions import ConfigError
 
 
 
@@ -24,9 +25,6 @@ class SemiSmoothHessianProblem:
 		gradient_problem : cestrel._pde_problems.GradientProblem
 			the GradientProblem object (we need the gradient for the computation of the Hessian)
 		"""
-
-		# TODO: Bring the implementation up-to-date
-		raise Exception('The semi-smooth Newton method is currently not implemented correctly.')
 
 		self.form_handler = form_handler
 		self.gradient_problem = gradient_problem
@@ -73,11 +71,14 @@ class SemiSmoothHessianProblem:
 
 
 
-	def hessian_application(self):
+	def __hessian_application(self):
 		"""Returns the application of J''(u)[h] where h = self.test_direction
 
 		This is needed in the truncated Newton method where we solve the system
-			J''(u) du = - J'(u)
+
+		$$ J''(u) [\delta u] = - J'(u)
+		$$
+
 		via iterative methods (cg, minres, cr)
 
 		Returns
@@ -91,6 +92,7 @@ class SemiSmoothHessianProblem:
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
+		# TODO: Update this
 		for i in range(self.state_dim):
 			fenics.solve(self.form_handler.sensitivity_eqs_lhs[i]==self.form_handler.sensitivity_eqs_rhs[i], self.states_prime[i], self.bcs_list_ad[i])
 
@@ -112,7 +114,7 @@ class SemiSmoothHessianProblem:
 
 
 
-	def hessian_application_simplified(self, x):
+	def __hessian_application_simplified(self, x):
 		"""A simplified version of the application of the Hessian.
 
 		Computes J''(u)[x], where x is the input vector (see self.__hessian_application for more details)
@@ -132,71 +134,31 @@ class SemiSmoothHessianProblem:
 		for i in range(self.control_dim):
 			self.test_directions[i].vector()[:] = x[i].vector()[:]
 
-		self.hessian_actions = self.hessian_application()
+		self.hessian_actions = self.__hessian_application()
 
 		return self.hessian_actions
 
 
 
-	def compute_sets(self):
+	def __double_scalar_product(self, a1, a2, b1, b2):
+		"""Computes the scalar product for functions with two components.
 
-		self.idx_active_lower = [(self.mu[j].vector()[:] + self.cc*(self.controls[j].vector()[:] - self.control_constraints[j][0]) < 0).nonzero()[0] for j in range(self.control_dim)]
-		self.idx_active_upper = [(self.mu[j].vector()[:] + self.cc*(self.controls[j].vector()[:] - self.control_constraints[j][1]) > 0).nonzero()[0] for j in range(self.control_dim)]
+		Parameters
+		----------
+		a1 : list[dolfin.function.function.Function]
+			The first component of the first argument.
+		a2 : list[dolfin.function.function.Function]
+			The second component of the first argument.
+		b1 : list[dolfin.function.function.Function]
+			The first component of the second argument.
+		b2 : list[dolfin.function.function.Function]
+			The second component of the second argument.
 
-		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
-		self.idx_active.sort()
-
-		self.idx_inactive = [np.setdiff1d(np.arange(self.form_handler.control_spaces[j].dim()), self.idx_active[j] ) for j in range(self.control_dim)]
-
-		return None
-
-
-
-	def project_active(self, a, b):
-
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def project_active_lower(self, a, b):
-
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def project_active_upper(self, a, b):
-
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def project_inactive(self, a, b):
-
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def double_scalar_product(self, a1, a2, b1, b2):
+		Returns
+		-------
+		float
+			The value of the scalar product.
+		"""
 
 		s1 = self.form_handler.scalar_product(a1, b1)
 		s2 = self.form_handler.scalar_product(a2, b2)
@@ -205,18 +167,17 @@ class SemiSmoothHessianProblem:
 
 
 
-
 	def newton_solve(self):
-		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr)
+		"""Solves the truncated Newton problem using an iterative method (cg, minres or cr).
 
 		Returns
 		-------
 		self.delta_control : List[dolfin.function.function.Function]
-			the Newton increment
+			The Newton increment.
 
 		"""
 
-		self.compute_sets()
+		self.form_handler.compute_active_sets()
 
 		for j in range(self.control_dim):
 			self.delta_control[j].vector()[:] = 0.0
@@ -235,9 +196,9 @@ class SemiSmoothHessianProblem:
 				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
 				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
 
-			self.project_active(self.mu, self.temp_storage)
-			self.project_active_lower(self.temp_storage1, self.temp_storage1)
-			self.project_active_upper(self.temp_storage2, self.temp_storage2)
+			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
+			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
+			self.form_handler.restrict_to_upper_active_set(self.temp_storage2, self.temp_storage2)
 
 			for j in range(self.control_dim):
 				self.residual1[j].vector()[:] = -self.gradients[j].vector()[:] - self.temp_storage[j].vector()[:]
@@ -245,13 +206,13 @@ class SemiSmoothHessianProblem:
 				self.p1[j].vector()[:] = self.residual1[j].vector()[:]
 				self.p2[j].vector()[:] = self.residual2[j].vector()[:]
 
-			self.res_norm_squared = self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
+			self.res_norm_squared = self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
 			self.eps_0 = np.sqrt(self.res_norm_squared)
 
 			for i in range(self.max_it_inner_newton):
-				self.hessian_actions = self.hessian_application_simplified(self.p1)
-				self.project_active(self.p2, self.temp_storage1)
-				self.project_active(self.p1, self.temp_storage2)
+				self.hessian_actions = self.__hessian_application_simplified(self.p1)
+				self.form_handler.restrict_to_active_set(self.p2, self.temp_storage1)
+				self.form_handler.restrict_to_active_set(self.p1, self.temp_storage2)
 
 				for j in range(self.control_dim):
 					self.Ap1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage1[j].vector()[:]
@@ -264,14 +225,14 @@ class SemiSmoothHessianProblem:
 					break
 
 				### Problem: Matrix Not Positive Definitie!!! Need minres
-				self.alpha = self.res_norm_squared / self.double_scalar_product(self.p1, self.p2, self.Ap1, self.Ap2)
+				self.alpha = self.res_norm_squared / self.__double_scalar_product(self.p1, self.p2, self.Ap1, self.Ap2)
 				for j in range(self.control_dim):
 					self.delta_control[j].vector()[:] += self.alpha*self.p1[j].vector()[:]
 					self.delta_mu[j].vector()[:] += self.alpha*self.p2[j].vector()[:]
 					self.residual1[j].vector()[:] -= self.alpha*self.Ap1[j].vector()[:]
 					self.residual2[j].vector()[:] -= self.alpha*self.Ap2[j].vector()[:]
 
-				self.res_norm_squared = self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
+				self.res_norm_squared = self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
 				self.beta = self.res_norm_squared / pow(self.eps, 2)
 
 				for j in range(self.control_dim):
@@ -298,9 +259,9 @@ class SemiSmoothHessianProblem:
 				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
 				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
 
-			self.project_active(self.mu, self.temp_storage)
-			self.project_active_lower(self.temp_storage1, self.temp_storage1)
-			self.project_active_upper(self.temp_storage2, self.temp_storage2)
+			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
+			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
+			self.form_handler.restrict_to_upper_active_set(self.temp_storage2, self.temp_storage2)
 
 			for j in range(self.control_dim):
 				self.residual1[j].vector()[:] = -self.gradients[j].vector()[:] - self.temp_storage[j].vector()[:]
@@ -308,18 +269,18 @@ class SemiSmoothHessianProblem:
 				self.p_prev1[j].vector()[:] = self.residual1[j].vector()[:]
 				self.p_prev2[j].vector()[:] = self.residual2[j].vector()[:]
 
-			self.eps_0 = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
+			self.eps_0 = np.sqrt(self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
 
-			self.hessian_actions = self.hessian_application_simplified(self.p_prev1)
-			self.project_active(self.p_prev1, self.temp_storage1)
-			self.project_active(self.p_prev2, self.temp_storage2)
+			self.hessian_actions = self.__hessian_application_simplified(self.p_prev1)
+			self.form_handler.restrict_to_active_set(self.p_prev1, self.temp_storage1)
+			self.form_handler.restrict_to_active_set(self.p_prev2, self.temp_storage2)
 
 			for j in range(self.control_dim):
 				self.s_prev1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
 				self.s_prev2[j].vector()[:] = self.temp_storage1[j].vector()[:]
 
 			for i in range(self.max_it_inner_newton):
-				self.alpha = self.double_scalar_product(self.residual1, self.residual2, self.s_prev1, self.s_prev2) / self.double_scalar_product(self.s_prev1, self.s_prev2, self.s_prev1, self.s_prev2)
+				self.alpha = self.__double_scalar_product(self.residual1, self.residual2, self.s_prev1, self.s_prev2) / self.__double_scalar_product(self.s_prev1, self.s_prev2, self.s_prev1, self.s_prev2)
 
 				for j in range(self.control_dim):
 					self.delta_control[j].vector()[:] += self.alpha*self.p_prev1[j].vector()[:]
@@ -328,7 +289,7 @@ class SemiSmoothHessianProblem:
 					self.residual1[j].vector()[:] -= self.alpha*self.s_prev1[j].vector()[:]
 					self.residual2[j].vector()[:] -= self.alpha*self.s_prev2[j].vector()[:]
 
-				self.eps = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
+				self.eps = np.sqrt(self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
 				# print('Eps (mr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps/self.eps_0 < self.inner_newton_tolerance or i==self.max_it_inner_newton - 1:
 					break
@@ -337,21 +298,20 @@ class SemiSmoothHessianProblem:
 					self.p1[j].vector()[:] = self.s_prev1[j].vector()[:]
 					self.p2[j].vector()[:] = self.s_prev2[j].vector()[:]
 
-
-				self.hessian_actions = self.hessian_application_simplified(self.s_prev1)
-				self.project_active(self.s_prev1, self.temp_storage1)
-				self.project_active(self.s_prev2, self.temp_storage2)
+				self.hessian_actions = self.__hessian_application_simplified(self.s_prev1)
+				self.form_handler.restrict_to_active_set(self.s_prev1, self.temp_storage1)
+				self.form_handler.restrict_to_active_set(self.s_prev2, self.temp_storage2)
 
 				for j in range(self.control_dim):
 					self.s1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
 					self.s2[j].vector()[:] = self.temp_storage1[j].vector()[:]
 
-				self.beta_prev = self.double_scalar_product(self.s1, self.s2, self.s_prev1, self.s_prev2) / self.double_scalar_product(self.s_prev1, self.s_prev2, self.s_prev1, self.s_prev2)
+				self.beta_prev = self.__double_scalar_product(self.s1, self.s2, self.s_prev1, self.s_prev2) / self.__double_scalar_product(self.s_prev1, self.s_prev2, self.s_prev1, self.s_prev2)
 
 				if i==0:
 					self.beta_pprev = 0.0
 				else:
-					self.beta_pprev = self.double_scalar_product(self.s1, self.s2, self.s_pprev1, self.s_pprev2) / self.double_scalar_product(self.s_pprev1, self.s_pprev2, self.s_pprev1, self.s_pprev2)
+					self.beta_pprev = self.__double_scalar_product(self.s1, self.s2, self.s_pprev1, self.s_pprev2) / self.__double_scalar_product(self.s_pprev1, self.s_pprev2, self.s_pprev1, self.s_pprev2)
 
 				for j in range(self.control_dim):
 					self.p1[j].vector()[:] -= self.beta_prev*self.s_prev1[j].vector()[:] + self.beta_pprev*self.p_prev1[j].vector()[:]
@@ -382,9 +342,9 @@ class SemiSmoothHessianProblem:
 				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
 				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
 
-			self.project_active(self.mu, self.temp_storage)
-			self.project_active_lower(self.temp_storage1, self.temp_storage1)
-			self.project_active_upper(self.temp_storage2, self.temp_storage2)
+			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
+			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
+			self.form_handler.restrict_to_upper_active_set(self.temp_storage2, self.temp_storage2)
 
 			for j in range(self.control_dim):
 				self.residual1[j].vector()[:] = -self.gradients[j].vector()[:] - self.temp_storage[j].vector()[:]
@@ -392,11 +352,11 @@ class SemiSmoothHessianProblem:
 				self.p1[j].vector()[:] = self.residual1[j].vector()[:]
 				self.p2[j].vector()[:] = self.residual2[j].vector()[:]
 
-			self.eps_0 = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
+			self.eps_0 = np.sqrt(self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
 
-			self.hessian_actions = self.hessian_application_simplified(self.residual1)
-			self.project_active(self.residual1, self.temp_storage1)
-			self.project_active(self.residual2, self.temp_storage2)
+			self.hessian_actions = self.__hessian_application_simplified(self.residual1)
+			self.form_handler.restrict_to_active_set(self.residual1, self.temp_storage1)
+			self.form_handler.restrict_to_active_set(self.residual2, self.temp_storage2)
 
 			for j in range(self.control_dim):
 				self.Ar1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
@@ -404,11 +364,11 @@ class SemiSmoothHessianProblem:
 				self.Ap1[j].vector()[:] = self.Ar1[j].vector()[:]
 				self.Ap2[j].vector()[:] = self.Ar2[j].vector()[:]
 
-			self.rAr = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
+			self.rAr = self.__double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
 
 			for i in range(self.max_it_inner_newton):
-				# self.alpha = self.double_scalar_product(self.residual1, self.residual2, self.Ap1, self.Ap2) / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
-				self.alpha = self.rAr / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
+				# self.alpha = self.__double_scalar_product(self.residual1, self.residual2, self.Ap1, self.Ap2) / self.__double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
+				self.alpha = self.rAr / self.__double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
 
 				for j in range(self.control_dim):
 					self.delta_control[j].vector()[:] += self.alpha*self.p1[j].vector()[:]
@@ -417,22 +377,22 @@ class SemiSmoothHessianProblem:
 					self.residual1[j].vector()[:] -= self.alpha*self.Ap1[j].vector()[:]
 					self.residual2[j].vector()[:] -= self.alpha*self.Ap2[j].vector()[:]
 
-				self.eps = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
+				self.eps = np.sqrt(self.__double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
 				print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
 				if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 					break
 
-				self.hessian_actions = self.hessian_application_simplified(self.residual1)
-				self.project_active(self.residual1, self.temp_storage1)
-				self.project_active(self.residual2, self.temp_storage2)
+				self.hessian_actions = self.__hessian_application_simplified(self.residual1)
+				self.form_handler.restrict_to_active_set(self.residual1, self.temp_storage1)
+				self.form_handler.restrict_to_active_set(self.residual2, self.temp_storage2)
 
 				for j in range(self.control_dim):
 					self.Ar1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
 					self.Ar2[j].vector()[:] = self.temp_storage1[j].vector()[:]
 
-				self.rAr_new = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
+				self.rAr_new = self.__double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
 				self.beta = self.rAr_new / self.rAr
-				# self.beta = -self.double_scalar_product(self.Ar1, self.Ar2, self.Ap1, self.Ap2) / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
+				# self.beta = -self.__double_scalar_product(self.Ar1, self.Ar2, self.Ap1, self.Ap2) / self.__double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
 
 				for j in range(self.control_dim):
 					self.p1[j].vector()[:] = self.residual1[j].vector()[:] + self.beta*self.p1[j].vector()[:]
@@ -444,6 +404,6 @@ class SemiSmoothHessianProblem:
 				self.rAr = self.rAr_new
 
 		else:
-			raise Exception('OptimizationRoutine.inner_newton needs to be one of cg, minres or cr.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_newton. Needs to be one of cg, minres or cr.')
 
 		return self.delta_control, self.delta_mu
