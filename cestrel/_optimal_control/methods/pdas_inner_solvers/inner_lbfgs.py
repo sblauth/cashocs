@@ -138,12 +138,12 @@ class InnerLBFGS(OptimizationAlgorithm):
 			self.first_gradient_norm = self.gradient_norm_initial
 			self.first_iteration = False
 
-		while not (self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2):
+		while not (self.gradient_norm <= self.tolerance*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2):
 			self.search_directions = self.compute_search_direction(self.reduced_gradient, idx_active)
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.reduced_gradient)
 			if self.directional_derivative > 0:
-				print('No descent direction found')
+				# print('No descent direction found')
 				for j in range(self.form_handler.control_dim):
 					self.search_directions[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
 
@@ -193,7 +193,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
+				# self.print_results()
 				if self.soft_exit:
 					print('Maximum number of iterations exceeded.')
 					break

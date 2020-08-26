@@ -9,7 +9,7 @@ actions.
 import fenics
 import configparser
 import numpy as np
-from ._exceptions import PETScKSPError, InputError
+from ._exceptions import PETScKSPError, InputError, ConfigError
 from petsc4py import PETSc
 
 
@@ -561,3 +561,62 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 			if line == '$Nodes\n':
 				node_section = True
 				info_section = True
+
+
+
+def _optimization_algorithm_configuration(config, algorithm=None):
+	"""Returns the internal name of the optimization algorithm and updates config.
+
+	Parameters
+	----------
+	config : configparser.ConfigParser or None
+		The config of the problem.
+	algorithm : str or None, optional
+		A string representing user input for the optimization algorithm
+		if this is set via keywords in the .solve() call. If this is
+		None, then the config is used to return a consistent value
+		for internal use. (Default is None).
+
+	Returns
+	-------
+	str
+		Internal name of the algorithms.
+	"""
+
+	internal_algorithm = None
+
+	if algorithm is not None:
+		overwrite = True
+	else:
+		overwrite = False
+
+	if algorithm is None:
+		algorithm = config.get('OptimizationRoutine', 'algorithm')
+
+	assert type(algorithm) == str, 'Not a valid input type for algorithm.'
+
+	if algorithm in ['gradient_descent', 'gd']:
+		internal_algorithm = 'gradient_descent'
+	elif algorithm in ['cg', 'conjugate_gradient', 'ncg', 'nonlinear_cg']:
+		internal_algorithm = 'conjugate_gradient'
+	elif algorithm in ['lbfgs', 'bfgs']:
+		internal_algorithm = 'lbfgs'
+	elif algorithm in ['newton']:
+		internal_algorithm = 'newton'
+	# elif algorithm in ['ss_newton', 'semi_smooth_newton']:
+	# 	internal_algorithm = 'semi_smooth_newton'
+	elif algorithm in ['pdas', 'primal_dual_active_set']:
+		internal_algorithm = 'pdas'
+	else:
+		raise InputError('Not a valid choice for the optimization algorithm.\n'
+						 '	For a gradient descent method, use `gradient_descent` or `gd`.\n'
+						 '	For a nonlinear conjugate gradient method use `cg`, `conjugate_gradient`, `ncg`, or `nonlinear_cg`.\n'
+						 '	For a limited memory BFGS method use `bfgs` or `lbfgs`.\n'
+						 '	For a truncated Newton method use `newton.`\n'
+						 # '	For a semi smooth Newton method use `semi_smooth_newton` or `ss_newton`.\n'
+						 '	For a primal dual active set method use `pdas` or `primal dual active set`.')
+
+	if overwrite:
+		config.set('OptimizationRoutine', 'algorithm', internal_algorithm)
+
+	return internal_algorithm

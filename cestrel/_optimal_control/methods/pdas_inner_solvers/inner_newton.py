@@ -75,14 +75,14 @@ class InnerNewton(OptimizationAlgorithm):
 					self.first_iteration = False
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
-				self.print_results()
+			if self.gradient_norm <= self.tolerance*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
+				# self.print_results()
 				break
 
 			self.search_directions = self.optimization_problem.unconstrained_hessian.newton_solve(idx_active)
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.reduced_gradient)
 			if self.directional_derivative > 0:
-				print('No descent direction')
+				# print('No descent direction')
 				for i in range(len(self.controls)):
 					self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 

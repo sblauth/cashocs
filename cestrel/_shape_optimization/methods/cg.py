@@ -98,11 +98,6 @@ class CG(ShapeOptimizationAlgorithm):
 					self.beta_denominator = self.shape_form_handler.scalar_product(self.search_direction, self.difference)
 					self.beta = self.beta_numerator / self.beta_denominator
 
-				elif self.cg_method == 'CD':
-					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.gradient)
-					self.beta_denominator = -self.shape_form_handler.scalar_product(self.search_direction, self.gradient)
-					self.beta = self.beta_numerator / self.beta_denominator
-
 				elif self.cg_method == 'HZ':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 
@@ -114,7 +109,8 @@ class CG(ShapeOptimizationAlgorithm):
 					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
 
 				else:
-					raise ConfigError('Not a valid choice for OptimizationRoutine.cg_method. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), HS (Hestenes Stiefel), DY (Dai Yuan), CD (Conjugate Descent) or HZ (Hager Zhang).')
+					raise ConfigError('Not a valid choice for OptimizationRoutine.cg_method. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), '
+									  'HS (Hestenes Stiefel), DY (Dai Yuan), or HZ (Hager Zhang).')
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm

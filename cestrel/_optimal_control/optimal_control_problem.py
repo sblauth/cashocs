@@ -12,6 +12,7 @@ from .._pde_problems import (StateProblem, AdjointProblem, GradientProblem,
 from .._optimal_control import ReducedCostFunctional
 from .methods import GradientDescent, LBFGS, CG, Newton, PDAS, SemiSmoothNewton
 from .._exceptions import InputError, ConfigError
+from ..utils import _optimization_algorithm_configuration
 import numpy as np
 
 
@@ -217,14 +218,14 @@ class OptimalControlProblem(OptimizationProblem):
 		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 
-		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
+		self.algorithm = _optimization_algorithm_configuration(self.config)
 
-		if self.algorithm == 'newton':
-			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+		# if self.algorithm == 'newton':
+		# 	self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
 		# if self.algorithm == 'semi_smooth_newton':
 		# 	self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-		if self.algorithm == 'pdas':
-			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+		# if self.algorithm == 'pdas':
+		# 	self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -309,20 +310,18 @@ class OptimalControlProblem(OptimizationProblem):
 		$$
 		"""
 
-		if algorithm is not None:
-			self.config.set('OptimizationRoutine', 'algorithm', algorithm)
-			self.algorithm = algorithm
+		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-			if self.algorithm == 'newton' or self.algorithm == 'semi_smooth_newton' or \
-					(self.algorithm == 'pdas' and self.form_handler.inner_pdas == 'newton'):
-				self.form_handler._ControlFormHandler__compute_newton_forms()
+		if self.algorithm == 'newton' or self.algorithm == 'semi_smooth_newton' or \
+				(self.algorithm == 'pdas' and self.form_handler.inner_pdas == 'newton'):
+			self.form_handler._ControlFormHandler__compute_newton_forms()
 
-			if self.algorithm == 'newton':
-				self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-			# if self.algorithm == 'semi_smooth_newton':
-			# 	self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-			if self.algorithm == 'pdas':
-				self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+		if self.algorithm == 'newton':
+			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+		if self.algorithm == 'semi_smooth_newton':
+			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+		if self.algorithm == 'pdas':
+			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
 		if (rtol is not None) and (atol is None):
 			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
@@ -337,17 +336,17 @@ class OptimalControlProblem(OptimizationProblem):
 		if max_iter is not None:
 			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
 
-		if self.algorithm in ['gd', 'gradient_descent']:
+		if self.algorithm == 'gradient_descent':
 			self.solver = GradientDescent(self)
-		elif self.algorithm in ['lbfgs', 'bfgs']:
+		elif self.algorithm == 'lbfgs':
 			self.solver = LBFGS(self)
-		elif self.algorithm in ['cg', 'conjugate_gradient']:
+		elif self.algorithm == 'conjugate_gradient':
 			self.solver = CG(self)
 		elif self.algorithm == 'newton':
 			self.solver = Newton(self)
-		# elif self.algorithm in ['semi_smooth_newton', 'ss_newton']:
-		# 	self.solver = SemiSmoothNewton(self)
-		elif self.algorithm in ['pdas', 'primal_dual_active_set']:
+		elif self.algorithm == 'semi_smooth_newton':
+			self.solver = SemiSmoothNewton(self)
+		elif self.algorithm == 'pdas':
 			self.solver = PDAS(self)
 		else:
 			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one '

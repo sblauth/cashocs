@@ -12,7 +12,7 @@ import cestrel
 set_log_level(LogLevel.CRITICAL)
 config = cestrel.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(20)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -33,7 +33,7 @@ u_b = interpolate(Expression('50*x[0]', degree=1), V)
 cc = [u_a, u_b]
 
 ocp = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
-ocp.solve()
+ocp.solve('semi_smooth_newton')
 
 import numpy as np
 assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(u.vector()[:] <= u_b.vector()[:])

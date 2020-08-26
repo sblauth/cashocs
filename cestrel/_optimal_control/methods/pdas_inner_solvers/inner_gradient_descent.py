@@ -70,15 +70,15 @@ class InnerGradientDescent(OptimizationAlgorithm):
 			if self.iteration==0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0.0:
-					self.print_results()
+					# self.print_results()
 					break
 				if self.first_iteration:
 					self.first_gradient_norm = self.gradient_norm_initial
 					self.first_iteration = False
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2:
-				self.print_results()
+			if self.gradient_norm <= self.atol + self.tolerance*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2:
+				# self.print_results()
 				break
 
 			for i in range(len(self.controls)):
@@ -95,7 +95,7 @@ class InnerGradientDescent(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
+				# self.print_results()
 				if self.soft_exit:
 					print('Maximum number of iterations exceeded.')
 					break

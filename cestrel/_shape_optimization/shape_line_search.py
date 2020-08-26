@@ -7,6 +7,7 @@ Created on 15/06/2020, 08.00
 import fenics
 import numpy as np
 from .._exceptions import NotConvergedError
+from ..utils import _optimization_algorithm_configuration
 
 
 
@@ -26,7 +27,6 @@ class ArmijoLineSearch:
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
 		self.shape_form_handler = self.optimization_problem.shape_form_handler
 		self.mesh_handler = self.optimization_problem.mesh_handler
-		# self.mesh_handler = _MeshHandler(self.shape_form_handler)
 		self.deformation = fenics.Function(self.shape_form_handler.deformation_space)
 
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial', fallback=1.0)
@@ -38,10 +38,10 @@ class ArmijoLineSearch:
 
 		self.gradient = self.optimization_algorithm.gradient
 
-		algorithm = self.config.get('OptimizationRoutine', 'algorithm')
-		self.is_newton_like = algorithm in ['lbfgs']
-		self.is_newton = algorithm in ['newton', 'semi_smooth_newton']
-		self.is_steepest_descent = algorithm in ['gradient_descent']
+		self.algorithm = _optimization_algorithm_configuration(self.config)
+		self.is_newton_like = (self.algorithm == 'lbfgs')
+		self.is_newton = self.algorithm in ['newton', 'semi_smooth_newton']
+		self.is_steepest_descent = (self.algorithm == 'gradient_descent')
 		if self.is_newton:
 			self.stepsize = 1.0
 

@@ -270,8 +270,6 @@ of
 
 - 'cg' : A linear conjugate gradient method
 
-- 'minres' : A minimal residual method
-
 - 'cr' : A conjugate residual method
 
 Note, that all of these Krylov solvers are streamlined for symmetric linear

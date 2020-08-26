@@ -6,6 +6,7 @@ Created on 05/03/2020, 08.33
 
 import fenics
 import numpy as np
+from ..utils import _optimization_algorithm_configuration
 
 
 
@@ -42,9 +43,9 @@ class ArmijoLineSearch:
 		self.controls_temp = self.optimization_algorithm.controls_temp
 		self.gradients = self.optimization_algorithm.gradients
 
-		self.is_newton_like = self.config.get('OptimizationRoutine', 'algorithm') in ['lbfgs', 'bfgs']
-		self.is_newton = self.config.get('OptimizationRoutine', 'algorithm') in ['newton', 'semi_smooth_newton']
-		self.is_steepest_descent = self.config.get('OptimizationRoutine', 'algorithm') in ['gd', 'gradient_descent']
+		self.is_newton_like = (_optimization_algorithm_configuration(self.config) == 'lbfgs')
+		self.is_newton = _optimization_algorithm_configuration(self.config) in ['newton', 'semi_smooth_newton']
+		self.is_steepest_descent = (_optimization_algorithm_configuration(self.config) == 'gradient_descent')
 		if self.is_newton:
 			self.stepsize = 1.0
 

@@ -11,6 +11,7 @@ from .._shape_optimization import ReducedShapeCostFunctional
 from .methods import LBFGS, CG, GradientDescent
 from ..geometry import _MeshHandler
 from .._exceptions import InputError, ConfigError
+from ..utils import _optimization_algorithm_configuration
 import sys
 import tempfile
 import os
@@ -102,7 +103,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
 								  'OptimizationRoutine' : {'iteration_counter' : 0, 'gradient_norm_initial' : 0.0},
 								  'output_dict' : {}}
 
-
 			else:
 				self.temp_dir = sys.argv[-1]
 				self.__change_except_hook()
@@ -187,10 +187,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		$$
 		"""
 
-		if algorithm is not None:
-			self.config.set('OptimizationRoutine', 'algorithm', algorithm)
-
-		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
+		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if (rtol is not None) and (atol is None):
 			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
@@ -205,11 +202,11 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		if max_iter is not None:
 			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
 
-		if self.algorithm in ['gradient_descent', 'gd']:
+		if self.algorithm == 'gradient_descent':
 			self.solver = GradientDescent(self)
-		elif self.algorithm in ['lbfgs', 'bfgs']:
+		elif self.algorithm == 'lbfgs':
 			self.solver = LBFGS(self)
-		elif self.algorithm in ['cg', 'conjugate_gradient']:
+		elif self.algorithm == 'conjugate_gradient':
 			self.solver = CG(self)
 		else:
 			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).')

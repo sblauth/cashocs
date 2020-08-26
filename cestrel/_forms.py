@@ -12,8 +12,9 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 import numpy as np
 from petsc4py import PETSc
 from ._shape_optimization import Regularization
-from .utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem, summation
-from ._exceptions import InputError
+from .utils import (_assemble_petsc_system, _setup_petsc_options,
+					_solve_linear_problem, summation, _optimization_algorithm_configuration)
+from ._exceptions import InputError, ConfigError
 import json
 import warnings
 
@@ -129,7 +130,8 @@ class FormHandler:
 
 		self.state_is_linear = self.config.getboolean('StateEquation', 'is_linear', fallback = False)
 		self.state_is_picard = self.config.getboolean('StateEquation', 'picard_iteration', fallback=False)
-		self.opt_algo = self.config.get('OptimizationRoutine', 'algorithm')
+		self.opt_algo = _optimization_algorithm_configuration(config)
+
 		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
 
 		self.__compute_state_equations()
@@ -376,6 +378,8 @@ class ControlFormHandler(FormHandler):
 		-------
 		None
 		"""
+
+		# TODO: Only call this if we actually have control constraints
 
 		self.idx_active_lower = [(self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
 		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
