@@ -1,0 +1,139 @@
+"""
+Created on 01.04.20, 11:27
+
+@author: sebastian
+"""
+
+import fenics
+import numpy as np
+from ..._optimal_control import OptimizationAlgorithm
+from .pdas_inner_solvers import InnerCG, InnerLBFGS, InnerNewton, InnerGradientDescent
+from ..._exceptions import NotConvergedError, ConfigError
+
+
+
+class PDAS(OptimizationAlgorithm):
+	"""A primal-dual-active-set method.
+
+	"""
+
+	def __init__(self, optimization_problem):
+		"""Initialize the primal-dual-active-set method
+
+		Parameters
+		----------
+		optimization_problem : cashocs.OptimalControlProblem
+			the OptimalControlProblem object
+		"""
+
+		OptimizationAlgorithm.__init__(self, optimization_problem)
+
+		self.idx_active_upper_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
+		self.idx_active_lower_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
+		self.initialized = False
+		self.converged = False
+		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
+		self.shift_mult = self.config.getfloat('OptimizationRoutine', 'pdas_shift_mult')
+		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
+
+		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+		if self.inner_pdas in ['gradient_descent', 'gd']:
+			self.inner_solver = InnerGradientDescent(optimization_problem)
+		elif self.inner_pdas in ['cg', 'conjugate_gradient', 'ncg', 'nonlinear_cg']:
+			self.inner_solver = InnerCG(optimization_problem)
+		elif self.inner_pdas in ['lbfgs', 'bfgs']:
+			self.inner_solver = InnerLBFGS(optimization_problem)
+		elif self.inner_pdas == 'newton':
+			self.inner_solver = InnerNewton(optimization_problem)
+		else:
+			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_pdas. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
+
+
+
+	def compute_active_inactive_sets(self):
+		"""Computes the active and inactive sets.
+
+		This implementation differs slightly from the one in
+		cashocs._forms.ControlFormHandler as it is needed for the PDAS.
+
+		Returns
+		-------
+		None
+		"""
+
+		self.idx_active_lower = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][0].vector()[:]) < 0).nonzero()[0]
+								 for j in range(self.optimization_problem.control_dim)]
+		self.idx_active_upper = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][1].vector()[:]) > 0).nonzero()[0]
+								 for j in range(self.optimization_problem.state_dim)]
+
+		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.optimization_problem.control_dim)]
+		[self.idx_active[j].sort() for j in range(self.optimization_problem.control_dim)]
+
+		self.idx_inactive = [np.setdiff1d(np.arange(self.optimization_problem.control_spaces[j].dim()), self.idx_active[j]) for j in range(self.optimization_problem.control_dim)]
+
+		if self.initialized:
+			if all([np.array_equal(self.idx_active_upper[j], self.idx_active_upper_prev[j]) and np.array_equal(self.idx_active_lower[j], self.idx_active_lower_prev[j]) for j in range(self.optimization_problem.control_dim)]):
+				self.converged = True
+
+		self.idx_active_upper_prev = [self.idx_active_upper[j] for j in range(self.optimization_problem.control_dim)]
+		self.idx_active_lower_prev = [self.idx_active_lower[j] for j in range(self.optimization_problem.control_dim)]
+		self.initialized = True
+
+
+
+	def run(self):
+		"""Solves the optimization problem with the primal-dual-active-set method.
+
+		Returns
+		-------
+		None
+		"""
+		self.iteration = 0
+
+		### TODO: Check for feasible initialization
+
+		self.compute_active_inactive_sets()
+
+		func_value = self.optimization_problem.reduced_cost_functional.evaluate()
+		self.optimization_problem.state_problem.has_solution = True
+		self.optimization_problem.gradient_problem.solve()
+		norm_init = np.sqrt(self.optimization_problem._stationary_measure_squared())
+		self.optimization_problem.adjoint_problem.has_solution = True
+
+		print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value,'.3e') + ' - Gradient norm: ' + format(norm_init, '.3e'))
+
+		while True:
+
+			for j in range(len(self.controls)):
+				self.controls[j].vector()[self.idx_active_lower[j]] = self.optimization_problem.control_constraints[j][0].vector()[self.idx_active_lower[j]]
+				self.controls[j].vector()[self.idx_active_upper[j]] = self.optimization_problem.control_constraints[j][1].vector()[self.idx_active_upper[j]]
+
+
+			self.inner_solver.run(self.idx_active)
+
+			for j in range(len(self.controls)):
+				self.mu[j].vector()[:] = -self.optimization_problem.gradients[j].vector()[:]
+				self.mu[j].vector()[self.idx_inactive[j]] = 0.0
+
+			self.iteration += 1
+
+			func_value = self.inner_solver.line_search.objective_step
+			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+
+
+			if self.iteration >= self.maximum_iterations:
+				# self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					break
+				else:
+					raise NotConvergedError('Maximum number of iterations exceeded.')
+
+			self.compute_active_inactive_sets()
+
+			if self.converged:
+				print('')
+				print('Primal Dual Active Set Method Converged.')
+				break
+
+			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')

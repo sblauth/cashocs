@@ -5,7 +5,7 @@ Created on 15/06/2020, 16.11
 """
 
 from fenics import *
-from cestrel import ShapeOptimizationProblem, import_mesh
+from cashocs import ShapeOptimizationProblem, import_mesh
 import numpy as np
 import configparser
 

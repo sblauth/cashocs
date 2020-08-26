@@ -5,14 +5,14 @@ Created on 13/08/2020, 12.55
 """
 
 from fenics import *
-import cestrel
+import cashocs
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = cestrel.create_config('config.ini')
+config = cashocs.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(20)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -21,7 +21,7 @@ u = Function(V)
 
 e = inner(grad(y), grad(p))*dx - u*p*dx
 
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 alpha = 1e-6
@@ -32,8 +32,9 @@ u_b = interpolate(Expression('50*x[0]', degree=1), V)
 
 cc = [u_a, u_b]
 
-ocp = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
+ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
 ocp.solve('semi_smooth_newton')
 
 import numpy as np
 assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(u.vector()[:] <= u_b.vector()[:])
+

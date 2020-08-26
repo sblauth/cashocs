@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>cestrel.utils API documentation</title>
+<title>cashocs.utils API documentation</title>
 <meta name="description" content="Module including utility and helper functions …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -20,11 +20,11 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>cestrel.utils</code></h1>
+<h1 class="title">Module <code>cashocs.utils</code></h1>
 </header>
 <section id="section-intro">
 <p>Module including utility and helper functions.</p>
-<p>These module includes utility and helper functions used in cestrel. They
+<p>These module includes utility and helper functions used in cashocs. They
 might also be interesting for users, so they are part of the public API.
 They include wrappers that allow to shorten the coding for often recurring
 actions.</p>
@@ -34,7 +34,7 @@ actions.</p>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Module including utility and helper functions.
 
-These module includes utility and helper functions used in cestrel. They
+These module includes utility and helper functions used in cashocs. They
 might also be interesting for users, so they are part of the public API.
 They include wrappers that allow to shorten the coding for often recurring
 actions.
@@ -77,7 +77,7 @@ def summation(x):
 
         Examples
         --------
-            a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+            a = cashocs.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
 
         is equivalent to
 
@@ -121,7 +121,7 @@ def multiplication(x):
 
         Examples
         --------
-            a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+            a = cashocs.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
 
         is equivalent to
 
@@ -215,15 +215,15 @@ def generate_measure(idx, measure):
 
         Returns
         -------
-        ufl.measure.Measure or cestrel.utils.EmptyMeasure
+        ufl.measure.Measure or cashocs.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
 
         Examples
         --------
             from fenics import *
-            import cestrel
-            mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
-            top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+            import cashocs
+            mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
+            top_bottom_measure = cashocs.utils.generate_measure([3,4], ds)
             assemble(1*top_bottom_measure)
         &#34;&#34;&#34;
 
@@ -297,11 +297,11 @@ def create_bcs_list(function_space, value, boundaries, idcs):
         Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
 
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, &#39;CG&#39;, 1)
-            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+            bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
@@ -329,16 +329,16 @@ class Interpolator:
         Examples
         --------
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
             V1 = FunctionSpace(mesh, &#39;CG&#39;, 1)
             V2 = FunctionSpace(mesh, &#39;CG&#39;, 2)
 
             expr = Expression(&#39;sin(2*pi*x[0])&#39;, degree=1)
             u = interpolate(expr, V1)
 
-            interp = cestrel.utils.Interpolator(V1, V2)
+            interp = cashocs.utils.Interpolator(V1, V2)
             interp.interpolate(u)
         &#34;&#34;&#34;
 
@@ -604,7 +604,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="cestrel.utils.create_bcs_list"><code class="name flex">
+<dt id="cashocs.utils.create_bcs_list"><code class="name flex">
 <span>def <span class="ident">create_bcs_list</span></span>(<span>function_space, value, boundaries, idcs)</span>
 </code></dt>
 <dd>
@@ -635,11 +635,11 @@ Can also be a single integer for a single boundary.</dd>
 <h2 id="examples">Examples</h2>
 <p>Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.</p>
 <pre><code>from fenics import *
-import cestrel
+import cashocs
 
-mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 </code></pre></div>
 <details class="source">
 <summary>
@@ -677,11 +677,11 @@ bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
 
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, &#39;CG&#39;, 1)
-            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+            bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
@@ -695,7 +695,7 @@ bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         return bcs_list</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.create_config"><code class="name flex">
+<dt id="cashocs.utils.create_config"><code class="name flex">
 <span>def <span class="ident">create_config</span></span>(<span>path)</span>
 </code></dt>
 <dd>
@@ -741,7 +741,7 @@ to the .ini file.</dd>
         return config</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.generate_measure"><code class="name flex">
+<dt id="cashocs.utils.generate_measure"><code class="name flex">
 <span>def <span class="ident">generate_measure</span></span>(<span>idx, measure)</span>
 </code></dt>
 <dd>
@@ -760,14 +760,14 @@ shall define the new measure.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>ufl.measure.Measure</code> or <code><a title="cestrel.utils.EmptyMeasure" href="#cestrel.utils.EmptyMeasure">EmptyMeasure</a></code></dt>
+<dt><code>ufl.measure.Measure</code> or <code><a title="cashocs.utils.EmptyMeasure" href="#cashocs.utils.EmptyMeasure">EmptyMeasure</a></code></dt>
 <dd>The corresponding sum of the measures or an empty measure.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <pre><code>from fenics import *
-import cestrel
-mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
-top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+import cashocs
+mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
+top_bottom_measure = cashocs.utils.generate_measure([3,4], ds)
 assemble(1*top_bottom_measure)
 </code></pre></div>
 <details class="source">
@@ -792,15 +792,15 @@ assemble(1*top_bottom_measure)
 
         Returns
         -------
-        ufl.measure.Measure or cestrel.utils.EmptyMeasure
+        ufl.measure.Measure or cashocs.utils.EmptyMeasure
                 The corresponding sum of the measures or an empty measure.
 
         Examples
         --------
             from fenics import *
-            import cestrel
-            mesh, _, boundaries, dx, ds, _ = cestrel.regular_mesh(25)
-            top_bottom_measure = cestrel.utils.generate_measure([3,4], ds)
+            import cashocs
+            mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
+            top_bottom_measure = cashocs.utils.generate_measure([3,4], ds)
             assemble(1*top_bottom_measure)
         &#34;&#34;&#34;
 
@@ -816,7 +816,7 @@ assemble(1*top_bottom_measure)
         return out_measure</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.multiplication"><code class="name flex">
+<dt id="cashocs.utils.multiplication"><code class="name flex">
 <span>def <span class="ident">multiplication</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -835,11 +835,11 @@ a UFL form.</p>
 </dl>
 <h2 id="see-also">See Also</h2>
 <dl>
-<dt><code><a title="cestrel.utils.summation" href="#cestrel.utils.summation">summation()</a></code></dt>
+<dt><code><a title="cashocs.utils.summation" href="#cashocs.utils.summation">summation()</a></code></dt>
 <dd>Sums elements of a list.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
-<pre><code>a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+<pre><code>a = cashocs.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
 </code></pre>
 <p>is equivalent to</p>
 <pre><code>a = u.dx(0) * u.dx(1)
@@ -871,7 +871,7 @@ a UFL form.</p>
 
         Examples
         --------
-            a = cestrel.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
+            a = cashocs.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
 
         is equivalent to
 
@@ -892,7 +892,7 @@ a UFL form.</p>
         return y</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.summation"><code class="name flex">
+<dt id="cashocs.utils.summation"><code class="name flex">
 <span>def <span class="ident">summation</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -911,7 +911,7 @@ that can be used in UFL forms.</p>
 </dl>
 <h2 id="see-also">See Also</h2>
 <dl>
-<dt><code><a title="cestrel.utils.multiplication" href="#cestrel.utils.multiplication">multiplication()</a></code></dt>
+<dt><code><a title="cashocs.utils.multiplication" href="#cashocs.utils.multiplication">multiplication()</a></code></dt>
 <dd>Multiplies the elements of a list.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
@@ -920,7 +920,7 @@ of python or the numpy variant are recommended. Still, they are
 incompatible with fenics objects, so this function should be used for
 the latter.</p>
 <h2 id="examples">Examples</h2>
-<pre><code>a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+<pre><code>a = cashocs.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
 </code></pre>
 <p>is equivalent to</p>
 <pre><code>a = u.dx(0)*v.dx(0)*dx + u.dx(1)*v.dx(1)*dx
@@ -959,7 +959,7 @@ the latter.</p>
 
         Examples
         --------
-            a = cestrel.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
+            a = cashocs.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
 
         is equivalent to
 
@@ -980,7 +980,7 @@ the latter.</p>
         return y</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.write_out_mesh"><code class="name flex">
+<dt id="cashocs.utils.write_out_mesh"><code class="name flex">
 <span>def <span class="ident">write_out_mesh</span></span>(<span>mesh, original_msh_file, out_msh_file)</span>
 </code></dt>
 <dd>
@@ -1095,7 +1095,7 @@ but this is not tested or ensured in any way.</p></div>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="cestrel.utils.EmptyMeasure"><code class="flex name class">
+<dt id="cashocs.utils.EmptyMeasure"><code class="flex name class">
 <span>class <span class="ident">EmptyMeasure</span></span>
 <span>(</span><span>measure)</span>
 </code></dt>
@@ -1171,7 +1171,7 @@ u*dm
                 return fenics.Constant(0)*other*self.measure</code></pre>
 </details>
 </dd>
-<dt id="cestrel.utils.Interpolator"><code class="flex name class">
+<dt id="cashocs.utils.Interpolator"><code class="flex name class">
 <span>class <span class="ident">Interpolator</span></span>
 <span>(</span><span>V, W)</span>
 </code></dt>
@@ -1183,16 +1183,16 @@ faster by computing the corresponding matrix.
 The function spaces can even be defined on different meshes.</p>
 <h2 id="examples">Examples</h2>
 <pre><code>from fenics import *
-import cestrel
+import cashocs
 
-mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
 V1 = FunctionSpace(mesh, 'CG', 1)
 V2 = FunctionSpace(mesh, 'CG', 2)
 
 expr = Expression('sin(2*pi*x[0])', degree=1)
 u = interpolate(expr, V1)
 
-interp = cestrel.utils.Interpolator(V1, V2)
+interp = cashocs.utils.Interpolator(V1, V2)
 interp.interpolate(u)
 </code></pre>
 <p>Initializes the object.</p>
@@ -1218,16 +1218,16 @@ interp.interpolate(u)
         Examples
         --------
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
             V1 = FunctionSpace(mesh, &#39;CG&#39;, 1)
             V2 = FunctionSpace(mesh, &#39;CG&#39;, 2)
 
             expr = Expression(&#39;sin(2*pi*x[0])&#39;, degree=1)
             u = interpolate(expr, V1)
 
-            interp = cestrel.utils.Interpolator(V1, V2)
+            interp = cashocs.utils.Interpolator(V1, V2)
             interp.interpolate(u)
         &#34;&#34;&#34;
 
@@ -1274,7 +1274,7 @@ interp.interpolate(u)
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="cestrel.utils.Interpolator.interpolate"><code class="name flex">
+<dt id="cashocs.utils.Interpolator.interpolate"><code class="name flex">
 <span>def <span class="ident">interpolate</span></span>(<span>self, u)</span>
 </code></dt>
 <dd>
@@ -1336,28 +1336,28 @@ on the function (this is done automatically due to the method).</p>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="cestrel" href="index.html">cestrel</a></code></li>
+<li><code><a title="cashocs" href="index.html">cashocs</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="cestrel.utils.create_bcs_list" href="#cestrel.utils.create_bcs_list">create_bcs_list</a></code></li>
-<li><code><a title="cestrel.utils.create_config" href="#cestrel.utils.create_config">create_config</a></code></li>
-<li><code><a title="cestrel.utils.generate_measure" href="#cestrel.utils.generate_measure">generate_measure</a></code></li>
-<li><code><a title="cestrel.utils.multiplication" href="#cestrel.utils.multiplication">multiplication</a></code></li>
-<li><code><a title="cestrel.utils.summation" href="#cestrel.utils.summation">summation</a></code></li>
-<li><code><a title="cestrel.utils.write_out_mesh" href="#cestrel.utils.write_out_mesh">write_out_mesh</a></code></li>
+<li><code><a title="cashocs.utils.create_bcs_list" href="#cashocs.utils.create_bcs_list">create_bcs_list</a></code></li>
+<li><code><a title="cashocs.utils.create_config" href="#cashocs.utils.create_config">create_config</a></code></li>
+<li><code><a title="cashocs.utils.generate_measure" href="#cashocs.utils.generate_measure">generate_measure</a></code></li>
+<li><code><a title="cashocs.utils.multiplication" href="#cashocs.utils.multiplication">multiplication</a></code></li>
+<li><code><a title="cashocs.utils.summation" href="#cashocs.utils.summation">summation</a></code></li>
+<li><code><a title="cashocs.utils.write_out_mesh" href="#cashocs.utils.write_out_mesh">write_out_mesh</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="cestrel.utils.EmptyMeasure" href="#cestrel.utils.EmptyMeasure">EmptyMeasure</a></code></h4>
+<h4><code><a title="cashocs.utils.EmptyMeasure" href="#cashocs.utils.EmptyMeasure">EmptyMeasure</a></code></h4>
 </li>
 <li>
-<h4><code><a title="cestrel.utils.Interpolator" href="#cestrel.utils.Interpolator">Interpolator</a></code></h4>
+<h4><code><a title="cashocs.utils.Interpolator" href="#cashocs.utils.Interpolator">Interpolator</a></code></h4>
 <ul class="">
-<li><code><a title="cestrel.utils.Interpolator.interpolate" href="#cestrel.utils.Interpolator.interpolate">interpolate</a></code></li>
+<li><code><a title="cashocs.utils.Interpolator.interpolate" href="#cashocs.utils.Interpolator.interpolate">interpolate</a></code></li>
 </ul>
 </li>
 </ul>

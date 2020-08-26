@@ -5,13 +5,13 @@ Created on 25/08/2020, 14.36
 """
 
 from fenics import *
-import cestrel
+import cashocs
 import numpy as np
 
 
 
-config = cestrel.create_config('./config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(10)
+config = cashocs.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -21,15 +21,15 @@ u_orig = Function(V)
 u_orig.vector()[:] = u.vector()[:]
 
 F = inner(grad(y), grad(p))*dx - u*p*dx
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 alpha = 1e-6
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 
-ocp = cestrel.OptimalControlProblem(F, bcs, J, y, u, p, config)
+ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 
-cestrel.verification.taylor_tests.control_gradient_test(ocp, [u_orig])
+cashocs.verification.taylor_tests.control_gradient_test(ocp, [u_orig])
 
 
 # Ju = ocp.reduced_cost_functional.evaluate()

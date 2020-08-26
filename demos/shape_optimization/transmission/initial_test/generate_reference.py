@@ -6,7 +6,7 @@ Created on 16/06/2020, 15.52
 
 from fenics import *
 import numpy as np
-from cestrel import import_mesh
+from cashocs import import_mesh
 
 
 

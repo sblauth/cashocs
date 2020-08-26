@@ -5,14 +5,14 @@ Created on 15/06/2020, 08.09
 """
 
 from fenics import *
-import cestrel
+import cashocs
 import numpy as np
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = cestrel.create_config('./config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.import_mesh(config)
+config = cashocs.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
 V = FunctionSpace(mesh, 'CG', 1)
 
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
@@ -28,7 +28,7 @@ e = inner(grad(u), grad(p))*dx - f*p*dx
 
 J = u*dx
 
-optimization_problem = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+optimization_problem = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 optimization_problem.solve()
 # optimization_problem.compute_state_variables()
 

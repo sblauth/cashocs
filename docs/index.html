@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>cestrel API documentation</title>
-<meta name="description" content="Cestrel is an adjoint-based optimization package for python …" />
+<title>cashocs API documentation</title>
+<meta name="description" content="cashocs is an adjoint-based optimization package for python …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -20,21 +20,21 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>cestrel</code></h1>
+<h1 class="title">Package <code>cashocs</code></h1>
 </header>
 <section id="section-intro">
-<p>Cestrel is an adjoint-based optimization package for python.</p>
-<p>Cestrel can be used to treat optimal control and shape optimization
+<p>cashocs is an adjoint-based optimization package for python.</p>
+<p>cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
-problems. Cestrel is based in the finite element fenics and
+problems. cashocs is based in the finite element fenics and
 allows the user to define the optimization problems in the
 high-level unified form language (UFL) of fenics.</p>
 <h2 id="how-to-use">How to use?</h2>
-<p>Since cestrel is based on FEniCS, most of the user input consists of definining
+<p>Since cashocs is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
 has a functioning code for the forward problem and the evaluation of the cost
-functional, the necessary modifications to optimize the problem in cestrel
+functional, the necessary modifications to optimize the problem in cashocs
 are minimal. Consider, e.g., the following optimization problem</p>
 <p><span><span class="MathJax_Preview"> \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 \text{d}x + \frac{\alpha}{2} u^2 \text{d}x \\
 \text{ subject to } - \Delta y = u \quad \text{ in } \Omega, \\
@@ -47,10 +47,10 @@ are minimal. Consider, e.g., the following optimization problem</p>
 <p>For our purposes, we assume that a mesh for this problem is defined and that a
 suitable function space is chosen. This can, e.g., be achieved via</p>
 <pre><code>from fenics import *
-import cestrel
+import cashocs
 
-config = cestrel.create_config('path_to_config')
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(25)
+config = cashocs.create_config('path_to_config')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 </code></pre>
 <p>The config object which is created from a .ini file is used to determine the
@@ -61,22 +61,22 @@ p and a control variable u, and write the PDE as a weak form</p>
 p = Function(V)
 u = Function(V)
 e = inner(grad(y), grad(p)) - u*p*dx
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 </code></pre>
 <p>Finally, we have to define the cost functional and the optimization problem</p>
 <pre><code>y_d = Expression('sin(2*pi * x[0] * sin(2*pi*x[1]))', degree=1)
 alpha = 1e-6
 J = 1/2*(y - y_d) * (y - y_d) * dx + alpha/2*u*u*dx
-opt_problem = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config)
+opt_problem = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
 opt_problem.solve()
 </code></pre>
-<p>The only major difference between cestrel and fenics code is that one has to
+<p>The only major difference between cashocs and fenics code is that one has to
 use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with fenics.</p>
-<p>For a detailed discussion of the features of cestrel and its usage we refer to the deomos.</p>
+<p>For a detailed discussion of the features of cashocs and its usage we refer to the deomos.</p>
 <h2 id="command-line-interface-for-mesh-conversion">Command Line Interface For Mesh Conversion</h2>
-<p>cestrel includes a command line interface for converting gmsh mesh files to
+<p>cashocs includes a command line interface for converting gmsh mesh files to
 xdmf ones, which can be read very easily into fenics. The corresponding command
 for the conversion (after having generated a mesh file 'in.msh' with gmsh)
 is given by</p>
@@ -85,26 +85,26 @@ is given by</p>
 <p>This also create .xdmf files for subdomains and boundaries in case they are tagged
 in gmsh as Physical quantities.</p>
 <h2 id="a-word-of-caution">A Word Of Caution</h2>
-<p>I develop cestrel as part of my PhD. I will try my best to document everything
+<p>I develop cashocs as part of my PhD. I will try my best to document everything
 the package is capable of and to maintain the project in a sensible fashion.
 However, I cannot guarantee this. It is still undergoing many developments and,
 unfortunately, the API still may undergo large changes. So use it with care.</p>
 <h2 id="contributing">Contributing</h2>
-<p>cestrel is available on gitlab. As this project is part of my PhD, I am currently
+<p>cashocs is available on gitlab. As this project is part of my PhD, I am currently
 the sole developer. Bug reports, feedback, and further suggestions are always
 welcome.</p>
 <h2 id="license">License</h2>
-<p>cestrel is licensed under the &hellip; license.</p>
+<p>cashocs is licensed under the &hellip; license.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">r&#34;&#34;&#34;Cestrel is an adjoint-based optimization package for python.
+<pre><code class="python">r&#34;&#34;&#34;cashocs is an adjoint-based optimization package for python.
 
-Cestrel can be used to treat optimal control and shape optimization
+cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
-problems. Cestrel is based in the finite element fenics and
+problems. cashocs is based in the finite element fenics and
 allows the user to define the optimization problems in the
 high-level unified form language (UFL) of fenics.
 
@@ -128,23 +128,23 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="cestrel.geometry" href="geometry.html">cestrel.geometry</a></code></dt>
+<dt><code class="name"><a title="cashocs.geometry" href="geometry.html">cashocs.geometry</a></code></dt>
 <dd>
 <div class="desc"><p>Mesh generation and import tools …</p></div>
 </dd>
-<dt><code class="name"><a title="cestrel.nonlinear_solvers" href="nonlinear_solvers.html">cestrel.nonlinear_solvers</a></code></dt>
+<dt><code class="name"><a title="cashocs.nonlinear_solvers" href="nonlinear_solvers.html">cashocs.nonlinear_solvers</a></code></dt>
 <dd>
 <div class="desc"><p>Custom solvers for nonlinear equations …</p></div>
 </dd>
-<dt><code class="name"><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></dt>
+<dt><code class="name"><a title="cashocs.optimization_problem" href="optimization_problem.html">cashocs.optimization_problem</a></code></dt>
 <dd>
 <div class="desc"><p>Blueprint for the PDE constrained optimization problems …</p></div>
 </dd>
-<dt><code class="name"><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></dt>
+<dt><code class="name"><a title="cashocs.utils" href="utils.html">cashocs.utils</a></code></dt>
 <dd>
 <div class="desc"><p>Module including utility and helper functions …</p></div>
 </dd>
-<dt><code class="name"><a title="cestrel.verification" href="verification.html">cestrel.verification</a></code></dt>
+<dt><code class="name"><a title="cashocs.verification" href="verification.html">cashocs.verification</a></code></dt>
 <dd>
 <div class="desc"><p>Created on 25/08/2020, 14.52 …</p></div>
 </dd>
@@ -155,7 +155,7 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="cestrel.create_bcs_list"><code class="name flex">
+<dt id="cashocs.create_bcs_list"><code class="name flex">
 <span>def <span class="ident">create_bcs_list</span></span>(<span>function_space, value, boundaries, idcs)</span>
 </code></dt>
 <dd>
@@ -186,11 +186,11 @@ Can also be a single integer for a single boundary.</dd>
 <h2 id="examples">Examples</h2>
 <p>Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.</p>
 <pre><code>from fenics import *
-import cestrel
+import cashocs
 
-mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 </code></pre></div>
 <details class="source">
 <summary>
@@ -228,11 +228,11 @@ bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
 
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(25)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, &#39;CG&#39;, 1)
-            bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+            bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         &#34;&#34;&#34;
 
         bcs_list = []
@@ -246,7 +246,7 @@ bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
         return bcs_list</code></pre>
 </details>
 </dd>
-<dt id="cestrel.create_config"><code class="name flex">
+<dt id="cashocs.create_config"><code class="name flex">
 <span>def <span class="ident">create_config</span></span>(<span>path)</span>
 </code></dt>
 <dd>
@@ -292,7 +292,7 @@ to the .ini file.</dd>
         return config</code></pre>
 </details>
 </dd>
-<dt id="cestrel.damped_newton_solve"><code class="name flex">
+<dt id="cashocs.damped_newton_solve"><code class="name flex">
 <span>def <span class="ident">damped_newton_solve</span></span>(<span>F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2', damped=True, verbose=True, ksp=None)</span>
 </code></dt>
 <dd>
@@ -362,16 +362,16 @@ u = 0 \quad \text{ on } \Gamma.
 u = 0 \quad \text{ on } \Gamma.
 </script></span></p>
 <pre><code>from fenics import *
-import cestrel
+import cashocs
 
-mesh, _, boundaries, dx, _, _ = cestrel.regular_mesh(25)
+mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 u = Function(V)
 v = TestFunction(V)
 F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-bcs = cestrel.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
-cestrel.damped_newton_solve(F, u, bcs)
+bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+cashocs.damped_newton_solve(F, u, bcs)
 </code></pre></div>
 <details class="source">
 <summary>
@@ -448,16 +448,16 @@ cestrel.damped_newton_solve(F, u, bcs)
         $$
 
             from fenics import *
-            import cestrel
+            import cashocs
 
-            mesh, _, boundaries, dx, _, _ = cestrel.regular_mesh(25)
+            mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, &#39;CG&#39;, 1)
 
             u = Function(V)
             v = TestFunction(V)
             F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-            bcs = cestrel.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
-            cestrel.damped_newton_solve(F, u, bcs)
+            bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+            cashocs.damped_newton_solve(F, u, bcs)
         &#34;&#34;&#34;
 
         assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
@@ -579,13 +579,13 @@ cestrel.damped_newton_solve(F, u, bcs)
         return u</code></pre>
 </details>
 </dd>
-<dt id="cestrel.import_mesh"><code class="name flex">
+<dt id="cashocs.import_mesh"><code class="name flex">
 <span>def <span class="ident">import_mesh</span></span>(<span>arg)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Imports a mesh file for use with cestrel / fenics.</p>
+<div class="desc"><p>Imports a mesh file for use with cashocs / fenics.</p>
 <p>This function imports a mesh file that was generated by GMSH and converted to
-.xdmf with the command line function mesh-convert (see cestrel main documentation).
+.xdmf with the command line function mesh-convert (see cashocs main documentation).
 The syntax for the conversion is</p>
 <pre><code>mesh-convert in.msh out.xdmf
 </code></pre>
@@ -627,10 +627,10 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def import_mesh(arg):
-        &#34;&#34;&#34;Imports a mesh file for use with cestrel / fenics.
+        &#34;&#34;&#34;Imports a mesh file for use with cashocs / fenics.
 
         This function imports a mesh file that was generated by GMSH and converted to
-        .xdmf with the command line function mesh-convert (see cestrel main documentation).
+        .xdmf with the command line function mesh-convert (see cashocs main documentation).
         The syntax for the conversion is
 
             mesh-convert in.msh out.xdmf
@@ -683,7 +683,7 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                 if not arg.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False):
                         mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
                 else:
-                        if not (&#39;_cestrel_remesh_flag&#39; in sys.argv):
+                        if not (&#39;_cashocs_remesh_flag&#39; in sys.argv):
                                 mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
                         else:
                                 temp_dir = sys.argv[-1]
@@ -728,12 +728,12 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
         print(&#39;&#39;)
 
         # Add an attribute to the mesh to show with what procedure it was generated
-        mesh._cestrel_generator = mesh_attribute
+        mesh._cashocs_generator = mesh_attribute
 
         return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
 </details>
 </dd>
-<dt id="cestrel.regular_box_mesh"><code class="name flex">
+<dt id="cashocs.regular_box_mesh"><code class="name flex">
 <span>def <span class="ident">regular_box_mesh</span></span>(<span>n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None)</span>
 </code></dt>
 <dd>
@@ -919,7 +919,7 @@ and accordingly many along the longer ones. The resulting domain is</p>
         return mesh, subdomains, boundaries, dx, ds, dS</code></pre>
 </details>
 </dd>
-<dt id="cestrel.regular_mesh"><code class="name flex">
+<dt id="cashocs.regular_mesh"><code class="name flex">
 <span>def <span class="ident">regular_mesh</span></span>(<span>n=10, L_x=1.0, L_y=1.0, L_z=None)</span>
 </code></dt>
 <dd>
@@ -1088,7 +1088,7 @@ will be two-dimensional (default is None).</dd>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="cestrel.MeshQuality"><code class="flex name class">
+<dt id="cashocs.MeshQuality"><code class="flex name class">
 <span>class <span class="ident">MeshQuality</span></span>
 </code></dt>
 <dd>
@@ -1099,21 +1099,21 @@ All quality measures have values in <span><span class="MathJax_Preview"> [0, 1] 
 to the best / perfect element, and 0 corresponds to degenerate elements.</p>
 <h2 id="examples">Examples</h2>
 <p>This class can be directly used, without any instantiation.</p>
-<pre><code>import cestrel
+<pre><code>import cashocs
 
-mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+mesh, _, _, _, _, _ = cashocs.regular_mesh(10)
 
-min_skew = cestrel.MeshQuality.min_skewness(mesh)
-avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+min_skew = cashocs.MeshQuality.min_skewness(mesh)
+avg_skew = cashocs.MeshQuality.avg_skewness(mesh)
 
-min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
-avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+min_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
+avg_angle = cashocs.MeshQuality.avg_maximum_angle(mesh)
 
-min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
-avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+min_rad = cashocs.MeshQuality.min_radius_ratios(mesh)
+avg_rad = cashocs.MeshQuality.avg_radius_ratios(mesh)
 
-min_cond = cestrel.MeshQuality.min_condition_number(mesh)
-avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+min_cond = cashocs.MeshQuality.min_condition_number(mesh)
+avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
 </code></pre>
 <p>This works analogously for any mesh compatible with fenics.</p>
 <p>Initializes self.</p></div>
@@ -1133,21 +1133,21 @@ avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
         --------
         This class can be directly used, without any instantiation.
 
-            import cestrel
+            import cashocs
 
-            mesh, _, _, _, _, _ = cestrel.regular_mesh(10)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(10)
 
-            min_skew = cestrel.MeshQuality.min_skewness(mesh)
-            avg_skew = cestrel.MeshQuality.avg_skewness(mesh)
+            min_skew = cashocs.MeshQuality.min_skewness(mesh)
+            avg_skew = cashocs.MeshQuality.avg_skewness(mesh)
 
-            min_angle = cestrel.MeshQuality.min_maximum_angle(mesh)
-            avg_angle = cestrel.MeshQuality.avg_maximum_angle(mesh)
+            min_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
+            avg_angle = cashocs.MeshQuality.avg_maximum_angle(mesh)
 
-            min_rad = cestrel.MeshQuality.min_radius_ratios(mesh)
-            avg_rad = cestrel.MeshQuality.avg_radius_ratios(mesh)
+            min_rad = cashocs.MeshQuality.min_radius_ratios(mesh)
+            avg_rad = cashocs.MeshQuality.avg_radius_ratios(mesh)
 
-            min_cond = cestrel.MeshQuality.min_condition_number(mesh)
-            avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
+            min_cond = cashocs.MeshQuality.min_condition_number(mesh)
+            avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
 
         This works analogously for any mesh compatible with fenics.
         &#34;&#34;&#34;
@@ -1258,7 +1258,7 @@ avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
                                 }
                                 else
                                 {
-                                  dolfin_error(&#34;cestrel_quality.cpp&#34;, &#34;skewness&#34;, &#34;Not a valid dimension for the mesh.&#34;);
+                                  dolfin_error(&#34;cashocs_quality.cpp&#34;, &#34;skewness&#34;, &#34;Not a valid dimension for the mesh.&#34;);
                                 }
                                 
                                 for (unsigned int i = 0; i &lt; angs.size(); ++i)
@@ -1297,7 +1297,7 @@ avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
                                 }
                                 else
                                 {
-                                  dolfin_error(&#34;cestrel_quality.cpp&#34;, &#34;maximum_angle&#34;, &#34;Not a valid dimension for the mesh.&#34;);
+                                  dolfin_error(&#34;cashocs_quality.cpp&#34;, &#34;maximum_angle&#34;, &#34;Not a valid dimension for the mesh.&#34;);
                                 }
                                 
                                 for (unsigned int i = 0; i &lt; angs.size(); ++i)
@@ -1580,7 +1580,7 @@ avg_cond = cestrel.MeshQuality.avg_condition_number(mesh)
 </details>
 <h3>Static methods</h3>
 <dl>
-<dt id="cestrel.MeshQuality.avg_condition_number"><code class="name flex">
+<dt id="cashocs.MeshQuality.avg_condition_number"><code class="name flex">
 <span>def <span class="ident">avg_condition_number</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1641,7 +1641,7 @@ def avg_condition_number(mesh):
         return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.avg_maximum_angle"><code class="name flex">
+<dt id="cashocs.MeshQuality.avg_maximum_angle"><code class="name flex">
 <span>def <span class="ident">avg_maximum_angle</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1678,7 +1678,7 @@ def avg_maximum_angle(cls, mesh):
         return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.avg_radius_ratios"><code class="name flex">
+<dt id="cashocs.MeshQuality.avg_radius_ratios"><code class="name flex">
 <span>def <span class="ident">avg_radius_ratios</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1715,7 +1715,7 @@ def avg_radius_ratios(mesh):
         return np.average(fenics.MeshQuality.radius_ratios(mesh).array())</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.avg_skewness"><code class="name flex">
+<dt id="cashocs.MeshQuality.avg_skewness"><code class="name flex">
 <span>def <span class="ident">avg_skewness</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1768,7 +1768,7 @@ def avg_skewness(cls, mesh):
         return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.min_condition_number"><code class="name flex">
+<dt id="cashocs.MeshQuality.min_condition_number"><code class="name flex">
 <span>def <span class="ident">min_condition_number</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1836,7 +1836,7 @@ def min_condition_number(mesh):
         return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.min_maximum_angle"><code class="name flex">
+<dt id="cashocs.MeshQuality.min_maximum_angle"><code class="name flex">
 <span>def <span class="ident">min_maximum_angle</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1895,7 +1895,7 @@ def min_maximum_angle(cls, mesh):
         return np.min(cls._quality_object.maximum_angle(mesh).array())</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.min_radius_ratios"><code class="name flex">
+<dt id="cashocs.MeshQuality.min_radius_ratios"><code class="name flex">
 <span>def <span class="ident">min_radius_ratios</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -1954,7 +1954,7 @@ def min_radius_ratios(mesh):
         return np.min(fenics.MeshQuality.radius_ratios(mesh).array())</code></pre>
 </details>
 </dd>
-<dt id="cestrel.MeshQuality.min_skewness"><code class="name flex">
+<dt id="cashocs.MeshQuality.min_skewness"><code class="name flex">
 <span>def <span class="ident">min_skewness</span></span>(<span>mesh)</span>
 </code></dt>
 <dd>
@@ -2023,7 +2023,7 @@ def min_skewness(cls, mesh):
 </dd>
 </dl>
 </dd>
-<dt id="cestrel.OptimalControlProblem"><code class="flex name class">
+<dt id="cashocs.OptimalControlProblem"><code class="flex name class">
 <span>class <span class="ident">OptimalControlProblem</span></span>
 <span>(</span><span>state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config, riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
@@ -2058,7 +2058,7 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 <dt><strong><code>adjoints</code></strong> :&ensp;<code>dolfin.function.function.Function</code> or <code>list[dolfin.function.function.Function]</code></dt>
 <dd>the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these</dd>
 <dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
-<dd>the config file for the problem, generated via cestrel.create_config(path_to_config)</dd>
+<dd>the config file for the problem, generated via cashocs.create_config(path_to_config)</dd>
 <dt><strong><code>riesz_scalar_products</code></strong> :&ensp;<code>None</code> or <code>ufl.form.Form</code> or <code>list[ufl.form.Form]</code>, optional</dt>
 <dd>the scalar products of the control space. Can either be None, a single UFL form, or a
 (ordered) list of UFL forms. If None, the <span><span class="MathJax_Preview">L^2(\Omega)</span><script type="math/tex">L^2(\Omega)</script></span> product is used.
@@ -2125,7 +2125,7 @@ in the "demos" folder.</p></div>
                 adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
                         the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these
                 config : configparser.ConfigParser
-                        the config file for the problem, generated via cestrel.create_config(path_to_config)
+                        the config file for the problem, generated via cashocs.create_config(path_to_config)
                 riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
                         the scalar products of the control space. Can either be None, a single UFL form, or a
                         (ordered) list of UFL forms. If None, the \(L^2(\Omega)\) product is used.
@@ -2447,21 +2447,21 @@ in the "demos" folder.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
+<li><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="cestrel.OptimalControlProblem.compute_adjoint_variables"><code class="name flex">
+<dt id="cashocs.OptimalControlProblem.compute_adjoint_variables"><code class="name flex">
 <span>def <span class="ident">compute_adjoint_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
+<code><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cashocs.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the adjoint system …</p></div>
 </dd>
-<dt id="cestrel.OptimalControlProblem.compute_gradient"><code class="name flex">
+<dt id="cashocs.OptimalControlProblem.compute_gradient"><code class="name flex">
 <span>def <span class="ident">compute_gradient</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2496,17 +2496,17 @@ are carried out automatically.</p>
         return self.gradients</code></pre>
 </details>
 </dd>
-<dt id="cestrel.OptimalControlProblem.compute_state_variables"><code class="name flex">
+<dt id="cashocs.OptimalControlProblem.compute_state_variables"><code class="name flex">
 <span>def <span class="ident">compute_state_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
+<code><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cashocs.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
-<dt id="cestrel.OptimalControlProblem.solve"><code class="name flex">
+<dt id="cashocs.OptimalControlProblem.solve"><code class="name flex">
 <span>def <span class="ident">solve</span></span>(<span>self, algorithm=None, rtol=None, atol=None, max_iter=None)</span>
 </code></dt>
 <dd>
@@ -2665,7 +2665,7 @@ call, the termination criterion changes to:</p>
 </dd>
 </dl>
 </dd>
-<dt id="cestrel.ShapeOptimizationProblem"><code class="flex name class">
+<dt id="cashocs.ShapeOptimizationProblem"><code class="flex name class">
 <span>class <span class="ident">ShapeOptimizationProblem</span></span>
 <span>(</span><span>state_forms, bcs_list, cost_functional_form, states, adjoints, boundaries, config, initial_guess=None, ksp_options=None, adjoint_ksp_options=None)</span>
 </code></dt>
@@ -2700,7 +2700,7 @@ If this is None, then no Dirichlet boundary conditions are imposed.</dd>
 <dt><strong><code>boundaries</code></strong> :&ensp;<code>dolfin.cpp.mesh.MeshFunctionSizet</code></dt>
 <dd>MeshFunction that indicates the boundary markers</dd>
 <dt><strong><code>config</code></strong> :&ensp;<code>configparser.ConfigParser</code></dt>
-<dd>the config file for the problem, generated via cestrel.create_config(path_to_config)</dd>
+<dd>the config file for the problem, generated via cashocs.create_config(path_to_config)</dd>
 <dt><strong><code>initial_guess</code></strong> :&ensp;<code>list[dolfin.function.function.Function]</code>, optional</dt>
 <dd>A list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
 (defaults to None (which means a zero initial guess))</dd>
@@ -2756,7 +2756,7 @@ as for the state systems are used (default is None).</dd>
                 boundaries : dolfin.cpp.mesh.MeshFunctionSizet
                         MeshFunction that indicates the boundary markers
                 config : configparser.ConfigParser
-                        the config file for the problem, generated via cestrel.create_config(path_to_config)
+                        the config file for the problem, generated via cashocs.create_config(path_to_config)
                 initial_guess : list[dolfin.function.function.Function], optional
                         A list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
                         (defaults to None (which means a zero initial guess))
@@ -2786,14 +2786,14 @@ as for the state systems are used (default is None).</dd>
                                 pass
 
                         try:
-                                assert self.states[0].function_space().mesh()._cestrel_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
+                                assert self.states[0].function_space().mesh()._cashocs_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
                         except:
                                 raise InputError(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
 
-                        if not (&#39;_cestrel_remesh_flag&#39; in sys.argv):
+                        if not (&#39;_cashocs_remesh_flag&#39; in sys.argv):
                                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
                                 self.__clean_previous_temp_files()
-                                self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cestrel_remesh_temp&#39;, dir=self.directory)
+                                self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cashocs_remesh_temp&#39;, dir=self.directory)
                                 self.__change_except_hook()
                                 self.temp_dict = {&#39;temp_dir&#39; : self.temp_dir, &#39;gmsh_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;),
                                                                   &#39;geo_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;),
@@ -2940,7 +2940,7 @@ as for the state systems are used (default is None).</dd>
         def __clean_previous_temp_files(self):
 
                 for file in os.listdir(self.directory):
-                        if file.startswith(&#39;._cestrel_remesh_temp&#39;):
+                        if file.startswith(&#39;._cashocs_remesh_temp&#39;):
                                 os.system(&#39;rm -r &#39; + file)
 
 
@@ -2964,21 +2964,21 @@ as for the state systems are used (default is None).</dd>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
+<li><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="cestrel.ShapeOptimizationProblem.compute_adjoint_variables"><code class="name flex">
+<dt id="cashocs.ShapeOptimizationProblem.compute_adjoint_variables"><code class="name flex">
 <span>def <span class="ident">compute_adjoint_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
+<code><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cashocs.optimization_problem.OptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the adjoint system …</p></div>
 </dd>
-<dt id="cestrel.ShapeOptimizationProblem.compute_shape_gradient"><code class="name flex">
+<dt id="cashocs.ShapeOptimizationProblem.compute_shape_gradient"><code class="name flex">
 <span>def <span class="ident">compute_shape_gradient</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -3013,17 +3013,17 @@ are carried out automatically.</p>
         return self.gradient</code></pre>
 </details>
 </dd>
-<dt id="cestrel.ShapeOptimizationProblem.compute_state_variables"><code class="name flex">
+<dt id="cashocs.ShapeOptimizationProblem.compute_state_variables"><code class="name flex">
 <span>def <span class="ident">compute_state_variables</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
 <em>Inherited from:</em>
-<code><a title="cestrel.optimization_problem.OptimizationProblem" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cestrel.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
+<code><a title="cashocs.optimization_problem.OptimizationProblem" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem">OptimizationProblem</a></code>.<code><a title="cashocs.optimization_problem.OptimizationProblem.compute_state_variables" href="optimization_problem.html#cashocs.optimization_problem.OptimizationProblem.compute_state_variables">compute_state_variables</a></code>
 </p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
-<dt id="cestrel.ShapeOptimizationProblem.solve"><code class="name flex">
+<dt id="cashocs.ShapeOptimizationProblem.solve"><code class="name flex">
 <span>def <span class="ident">solve</span></span>(<span>self, algorithm=None, rtol=None, atol=None, max_iter=None)</span>
 </code></dt>
 <dd>
@@ -3175,54 +3175,54 @@ call, the termination criterion changes to:</p>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="cestrel.geometry" href="geometry.html">cestrel.geometry</a></code></li>
-<li><code><a title="cestrel.nonlinear_solvers" href="nonlinear_solvers.html">cestrel.nonlinear_solvers</a></code></li>
-<li><code><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></li>
-<li><code><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></li>
-<li><code><a title="cestrel.verification" href="verification.html">cestrel.verification</a></code></li>
+<li><code><a title="cashocs.geometry" href="geometry.html">cashocs.geometry</a></code></li>
+<li><code><a title="cashocs.nonlinear_solvers" href="nonlinear_solvers.html">cashocs.nonlinear_solvers</a></code></li>
+<li><code><a title="cashocs.optimization_problem" href="optimization_problem.html">cashocs.optimization_problem</a></code></li>
+<li><code><a title="cashocs.utils" href="utils.html">cashocs.utils</a></code></li>
+<li><code><a title="cashocs.verification" href="verification.html">cashocs.verification</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="cestrel.create_bcs_list" href="#cestrel.create_bcs_list">create_bcs_list</a></code></li>
-<li><code><a title="cestrel.create_config" href="#cestrel.create_config">create_config</a></code></li>
-<li><code><a title="cestrel.damped_newton_solve" href="#cestrel.damped_newton_solve">damped_newton_solve</a></code></li>
-<li><code><a title="cestrel.import_mesh" href="#cestrel.import_mesh">import_mesh</a></code></li>
-<li><code><a title="cestrel.regular_box_mesh" href="#cestrel.regular_box_mesh">regular_box_mesh</a></code></li>
-<li><code><a title="cestrel.regular_mesh" href="#cestrel.regular_mesh">regular_mesh</a></code></li>
+<li><code><a title="cashocs.create_bcs_list" href="#cashocs.create_bcs_list">create_bcs_list</a></code></li>
+<li><code><a title="cashocs.create_config" href="#cashocs.create_config">create_config</a></code></li>
+<li><code><a title="cashocs.damped_newton_solve" href="#cashocs.damped_newton_solve">damped_newton_solve</a></code></li>
+<li><code><a title="cashocs.import_mesh" href="#cashocs.import_mesh">import_mesh</a></code></li>
+<li><code><a title="cashocs.regular_box_mesh" href="#cashocs.regular_box_mesh">regular_box_mesh</a></code></li>
+<li><code><a title="cashocs.regular_mesh" href="#cashocs.regular_mesh">regular_mesh</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="cestrel.MeshQuality" href="#cestrel.MeshQuality">MeshQuality</a></code></h4>
+<h4><code><a title="cashocs.MeshQuality" href="#cashocs.MeshQuality">MeshQuality</a></code></h4>
 <ul class="">
-<li><code><a title="cestrel.MeshQuality.avg_condition_number" href="#cestrel.MeshQuality.avg_condition_number">avg_condition_number</a></code></li>
-<li><code><a title="cestrel.MeshQuality.avg_maximum_angle" href="#cestrel.MeshQuality.avg_maximum_angle">avg_maximum_angle</a></code></li>
-<li><code><a title="cestrel.MeshQuality.avg_radius_ratios" href="#cestrel.MeshQuality.avg_radius_ratios">avg_radius_ratios</a></code></li>
-<li><code><a title="cestrel.MeshQuality.avg_skewness" href="#cestrel.MeshQuality.avg_skewness">avg_skewness</a></code></li>
-<li><code><a title="cestrel.MeshQuality.min_condition_number" href="#cestrel.MeshQuality.min_condition_number">min_condition_number</a></code></li>
-<li><code><a title="cestrel.MeshQuality.min_maximum_angle" href="#cestrel.MeshQuality.min_maximum_angle">min_maximum_angle</a></code></li>
-<li><code><a title="cestrel.MeshQuality.min_radius_ratios" href="#cestrel.MeshQuality.min_radius_ratios">min_radius_ratios</a></code></li>
-<li><code><a title="cestrel.MeshQuality.min_skewness" href="#cestrel.MeshQuality.min_skewness">min_skewness</a></code></li>
+<li><code><a title="cashocs.MeshQuality.avg_condition_number" href="#cashocs.MeshQuality.avg_condition_number">avg_condition_number</a></code></li>
+<li><code><a title="cashocs.MeshQuality.avg_maximum_angle" href="#cashocs.MeshQuality.avg_maximum_angle">avg_maximum_angle</a></code></li>
+<li><code><a title="cashocs.MeshQuality.avg_radius_ratios" href="#cashocs.MeshQuality.avg_radius_ratios">avg_radius_ratios</a></code></li>
+<li><code><a title="cashocs.MeshQuality.avg_skewness" href="#cashocs.MeshQuality.avg_skewness">avg_skewness</a></code></li>
+<li><code><a title="cashocs.MeshQuality.min_condition_number" href="#cashocs.MeshQuality.min_condition_number">min_condition_number</a></code></li>
+<li><code><a title="cashocs.MeshQuality.min_maximum_angle" href="#cashocs.MeshQuality.min_maximum_angle">min_maximum_angle</a></code></li>
+<li><code><a title="cashocs.MeshQuality.min_radius_ratios" href="#cashocs.MeshQuality.min_radius_ratios">min_radius_ratios</a></code></li>
+<li><code><a title="cashocs.MeshQuality.min_skewness" href="#cashocs.MeshQuality.min_skewness">min_skewness</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="cestrel.OptimalControlProblem" href="#cestrel.OptimalControlProblem">OptimalControlProblem</a></code></h4>
+<h4><code><a title="cashocs.OptimalControlProblem" href="#cashocs.OptimalControlProblem">OptimalControlProblem</a></code></h4>
 <ul class="">
-<li><code><a title="cestrel.OptimalControlProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.OptimalControlProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
-<li><code><a title="cestrel.OptimalControlProblem.compute_gradient" href="#cestrel.OptimalControlProblem.compute_gradient">compute_gradient</a></code></li>
-<li><code><a title="cestrel.OptimalControlProblem.compute_state_variables" href="optimization_problem.html#cestrel.OptimalControlProblem.compute_state_variables">compute_state_variables</a></code></li>
-<li><code><a title="cestrel.OptimalControlProblem.solve" href="#cestrel.OptimalControlProblem.solve">solve</a></code></li>
+<li><code><a title="cashocs.OptimalControlProblem.compute_adjoint_variables" href="optimization_problem.html#cashocs.OptimalControlProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
+<li><code><a title="cashocs.OptimalControlProblem.compute_gradient" href="#cashocs.OptimalControlProblem.compute_gradient">compute_gradient</a></code></li>
+<li><code><a title="cashocs.OptimalControlProblem.compute_state_variables" href="optimization_problem.html#cashocs.OptimalControlProblem.compute_state_variables">compute_state_variables</a></code></li>
+<li><code><a title="cashocs.OptimalControlProblem.solve" href="#cashocs.OptimalControlProblem.solve">solve</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="cestrel.ShapeOptimizationProblem" href="#cestrel.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></h4>
+<h4><code><a title="cashocs.ShapeOptimizationProblem" href="#cashocs.ShapeOptimizationProblem">ShapeOptimizationProblem</a></code></h4>
 <ul class="">
-<li><code><a title="cestrel.ShapeOptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cestrel.ShapeOptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
-<li><code><a title="cestrel.ShapeOptimizationProblem.compute_shape_gradient" href="#cestrel.ShapeOptimizationProblem.compute_shape_gradient">compute_shape_gradient</a></code></li>
-<li><code><a title="cestrel.ShapeOptimizationProblem.compute_state_variables" href="optimization_problem.html#cestrel.ShapeOptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
-<li><code><a title="cestrel.ShapeOptimizationProblem.solve" href="#cestrel.ShapeOptimizationProblem.solve">solve</a></code></li>
+<li><code><a title="cashocs.ShapeOptimizationProblem.compute_adjoint_variables" href="optimization_problem.html#cashocs.ShapeOptimizationProblem.compute_adjoint_variables">compute_adjoint_variables</a></code></li>
+<li><code><a title="cashocs.ShapeOptimizationProblem.compute_shape_gradient" href="#cashocs.ShapeOptimizationProblem.compute_shape_gradient">compute_shape_gradient</a></code></li>
+<li><code><a title="cashocs.ShapeOptimizationProblem.compute_state_variables" href="optimization_problem.html#cashocs.ShapeOptimizationProblem.compute_state_variables">compute_state_variables</a></code></li>
+<li><code><a title="cashocs.ShapeOptimizationProblem.solve" href="#cashocs.ShapeOptimizationProblem.solve">solve</a></code></li>
 </ul>
 </li>
 </ul>

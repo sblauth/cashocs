@@ -26,14 +26,14 @@ Initially, the code is again identical to the one demo_01 and demo_02,
 i.e., we have 
 
     from fenics import *
-    import cestrel
+    import cashocs
     
     
     
     set_log_level(LogLevel.CRITICAL)
-    config = cestrel.create_config('./config.ini')
+    config = cashocs.create_config('./config.ini')
     
-    mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
     
     y = Function(V)
@@ -88,7 +88,7 @@ Setup of the optimization problem and its solution
 With this, we can now define the optimal control problem with the 
 additional keyword argument riesz_scalar_products as follows
 
-    ocp = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
     ocp.solve()
     
 which also directly solves the problem.

@@ -5,14 +5,14 @@ Created on 18/08/2020, 10.55
 """
 
 from fenics import *
-import cestrel
+import cashocs
 
 
 
 set_log_level(LogLevel.CRITICAL)
-config = cestrel.create_config('config.ini')
+config = cashocs.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -44,11 +44,11 @@ adjoint_ksp_options = [
 	# ['ksp_view']
 ]
 
-bcs = cestrel.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 alpha = 1e-6
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 
-ocp = cestrel.OptimalControlProblem(e, bcs, J, y, u, p, config, ksp_options=ksp_options, adjoint_ksp_options=adjoint_ksp_options)
+ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, ksp_options=ksp_options, adjoint_ksp_options=adjoint_ksp_options)
 ocp.solve()

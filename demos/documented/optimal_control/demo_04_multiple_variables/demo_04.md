@@ -1,7 +1,7 @@
 Demo 04 : Multiple Variables
 ============================
 
-In this demo we show how cestrel can be used to treat multiple
+In this demo we show how cashocs can be used to treat multiple
 state equations as constraint. Additionally, this also highlights 
 how multiple controls can be treated. As model example, we consider the 
 following problem
@@ -39,14 +39,14 @@ Initialization
 The initial setup is identical to the previous cases, where we again use
 
     from fenics import *
-    import cestrel
+    import cashocs
     
     
     
     set_log_level(LogLevel.CRITICAL)
-    config = cestrel.create_config('./config.ini')
+    config = cashocs.create_config('./config.ini')
     
-    mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
 
 which defines the geometry and the function space.
@@ -65,7 +65,7 @@ we do with
     v = Function(V)
 
 Here p1 is the adjoint state corresponding to y1, and p2 is the adjoint 
-state corresponding to y2. For the treatment with cestrel these have to 
+state corresponding to y2. For the treatment with cashocs these have to 
 be put in (ordered) lists, so that the states and adjoints obey the
 same order. This means, we define
 
@@ -94,8 +94,8 @@ has to be in analogy to the list y, i.e.,
 Finally, the boundary conditions for both states are homogeneous 
 Dirichlet conditions, which we generate via
 
-    bcs1 = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
-    bcs2 = cestrel.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
     
     bcs_list = [bcs1, bcs2]
     
@@ -116,7 +116,7 @@ For the optimization problem we now define the cost functional via
 This setup is sufficient to now define the optimal control problem and solve
 it, via
 
-    optimization_problem = cestrel.OptimalControlProblem(pdes, bcs_list, J, y, controls, p, config)
+    optimization_problem = cashocs.OptimalControlProblem(pdes, bcs_list, J, y, controls, p, config)
     optimization_problem.solve()
     
 > Note, that for the case that we consider control constraints (see demo_02)

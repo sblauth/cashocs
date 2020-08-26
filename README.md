@@ -1,8 +1,7 @@
-CESTREL
+CASHOCS
 =========
 
-cestrel is a continuous adjoint-based optimal control and shape
-optimization package for python
+cashocs is a **C**omputational **A**djoint based **SH**ape optimization and **O**ptimal **C**ontrol **S**oftware for python.
 
 
 Installation
@@ -10,15 +9,15 @@ Installation
 
 Setup (from ITWM)
 
-- Load the module tv/cestrel
+- Load the module tv/cashocs
 
-    `module load tv/cestrel`
+    `module load tv/cashocs`
 
     and run
 
     `activate`
 
-- The git repository with the demos can be found under /p/tv/local/cestrel
+- The git repository with the demos can be found under /p/tv/local/cashocs
 
 - If you want to have a custom installation, you can clone the git repository yourself,
   but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)
@@ -40,7 +39,7 @@ Setup (external)
 
     `conda env create -f conda_env.yml -n your_environment_name`
 
-    where you replace 'your_environment_name' by an appropriate name such as 'cestrel'
+    where you replace 'your_environment_name' by an appropriate name such as 'cashocs'
 
   - Alternatively, use the environment file conda_env.yml to install the packages
     (or maybe even newer versions of them) via conda-forge and pip

@@ -5,8 +5,8 @@ Created on 15/06/2020, 08.09
 """
 
 from fenics import *
-from cestrel import ShapeOptimizationProblem
-import cestrel
+from cashocs import ShapeOptimizationProblem
+import cashocs
 import numpy as np
 import configparser
 

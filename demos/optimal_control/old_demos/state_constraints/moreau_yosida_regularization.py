@@ -6,7 +6,7 @@ Created on 03.04.20, 09:46
 
 import configparser
 from fenics import *
-from cestrel import OptimalControlProblem, import_mesh, regular_mesh
+from cashocs import OptimalControlProblem, import_mesh, regular_mesh
 from ufl import Max
 import numpy as np
 

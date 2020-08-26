@@ -5,12 +5,12 @@ Created on 25/08/2020, 16.33
 """
 
 from fenics import *
-import cestrel
+import cashocs
 import numpy as np
 
 
 
-config = cestrel.create_config('./config_sop.ini')
+config = cashocs.create_config('./config_sop.ini')
 
 meshlevel = 10
 degree = 1
@@ -44,17 +44,17 @@ J = u*dx
 def test_shape_gradient():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
-	sop = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-	assert cestrel.verification.shape_gradient_test(sop) > 1.9
-	assert cestrel.verification.shape_gradient_test(sop) > 1.9
-	assert cestrel.verification.shape_gradient_test(sop) > 1.9
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
 
 
 
 def test_shape_gd():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
-	sop = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 	sop.solve('gd', rtol=1e-2, atol=0.0, max_iter=35)
 	assert sop.solver.relative_norm < sop.solver.rtol
 
@@ -63,7 +63,7 @@ def test_shape_gd():
 def test_shape_cg():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
-	sop = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=20)
 	assert sop.solver.relative_norm < sop.solver.rtol
 
@@ -72,10 +72,10 @@ def test_shape_cg():
 def test_shape_lbfgs():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
-	sop = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 	sop.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=10)
 	assert sop.solver.relative_norm < sop.solver.rtol
 
 
-# sop = cestrel.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+# sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 # sop.solve('gd', rtol=1e-2, atol=0.0, max_iter=35)
