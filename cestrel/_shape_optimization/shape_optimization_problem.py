@@ -92,7 +92,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			except:
 				raise InputError('For remeshing, the mesh has to be created via import mesh, with a config as input.')
 
-			if not '_cestrel_remesh_flag' in sys.argv:
+			if not ('_cestrel_remesh_flag' in sys.argv):
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 				self.__clean_previous_temp_files()
 				self.temp_dir = tempfile.mkdtemp(prefix='._cestrel_remesh_temp', dir=self.directory)
@@ -140,15 +140,70 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 
 
-	def solve(self):
-		"""Solves the optimization problem by the method specified in the config file.
+	def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+		r"""Solves the optimization problem by the method specified in the config file.
+
+		Parameters
+		----------
+		algorithm : str or None, optional
+			Selects the optimization algorithm. Valid choices are
+			'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
+			or 'lbfgs' ('bfgs'). This overwrites the value specified
+			in the config file. If this is None, then the value in the
+			config file is used. Default is None.
+		rtol : float or None, optional
+			The relative tolerance used for the termination criterion.
+			Overwrites the value specified in the config file. If this
+			is None, the value from the config file is taken. Default
+			is None.
+		atol : float or None, optional
+			The absolute tolerance used for the termination criterion.
+			Overwrites the value specified in the config file. If this
+			is None, the value from the config file is taken. Default
+			is None.
+		max_iter : int or None, optional
+			The maximum number of iterations the optimization algorithm
+			can carry out before it is terminated. Overwrites the value
+			specified in the config file. If this is None, the value from
+			the config file is taken. Default is None.
 
 		Returns
 		-------
 		None
+
+		Notes
+		-----
+		If either `rtol` or `atol` are specified as arguments to the solve
+		call, the termination criterion changes to:
+
+		  - a purely relative one (if only `rtol` is specified), i.e.,
+		$$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+		$$
+		  - a purely absolute one (if only `atol` is specified), i.e.,
+		$$ || \nabla J(u_K) || \leq \texttt{atol}.
+		$$
+		  - a combined one if both `rtol` and `atol` are specified, i.e.,
+		$$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+		$$
 		"""
 
+		if algorithm is not None:
+			self.config.set('OptimizationRoutine', 'algorithm', algorithm)
+
 		self.algorithm = self.config.get('OptimizationRoutine', 'algorithm')
+
+		if (rtol is not None) and (atol is None):
+			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
+			self.config.set('OptimizationRoutine', 'atol', str(0.0))
+		elif (atol is not None) and (rtol is None):
+			self.config.set('OptimizationRoutine', 'rtol', str(0.0))
+			self.config.set('OptimizationRoutine', 'atol', str(atol))
+		elif (atol is not None) and (rtol is not None):
+			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
+			self.config.set('OptimizationRoutine', 'atol', str(atol))
+
+		if max_iter is not None:
+			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
 
 		if self.algorithm in ['gradient_descent', 'gd']:
 			self.solver = GradientDescent(self)
@@ -157,7 +212,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		elif self.algorithm in ['cg', 'conjugate_gradient']:
 			self.solver = CG(self)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).')
 
 		self.solver.run()
 		self.solver.finalize()

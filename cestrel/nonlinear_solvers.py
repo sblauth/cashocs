@@ -23,9 +23,9 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 	The method terminates after `max_iter` iterations, or if a termination criterion is
 	satisfied. These criteria are given by
-	$$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is 'rel'} \\
-	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if `convergence_type` is 'abs'} \\
-	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is 'combined'}
+	$$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
+	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
 	$$
 	The norm chosen for the termination criterion is specified via `norm_type`.
 

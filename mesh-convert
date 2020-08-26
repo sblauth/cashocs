@@ -19,7 +19,7 @@ def run(argv):
 			usage()
 			sys.exit()
 	# Check that we have two files
-	if not len(args) == 2:
+	if not (len(args) == 2):
 		usage()
 		sys.exit(2)
 	
@@ -27,7 +27,7 @@ def run(argv):
 	inputfile = args[0]
 	outputfile = args[1]
 	# Check that the inputfile has .msh file format
-	if not inputfile[-4:] == '.msh':
+	if not (inputfile[-4:] == '.msh'):
 		print('Error: Cannot use the current file format as input')
 		print('')
 		usage()

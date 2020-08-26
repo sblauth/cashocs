@@ -6,6 +6,7 @@ Created on 15/06/2020, 08.00
 
 import fenics
 import numpy as np
+from .._exceptions import NotConvergedError
 
 
 
@@ -116,8 +117,12 @@ class ArmijoLineSearch:
 					if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_upper:
 						self.stepsize /= self.beta_armijo
 						self.mesh_handler.revert_transformation()
-						print('\nMesh Quality too low. Perform a remeshing operation.')
-						self.mesh_handler.remesh()
+						if self.mesh_handler.do_remesh:
+							print('\nMesh Quality too low. Perform a remeshing operation.')
+							self.mesh_handler.remesh()
+						else:
+							print('Mesh Quality is too low.')
+							self.optimization_algorithm.line_search_broken = True
 
 					if self.optimization_algorithm.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize

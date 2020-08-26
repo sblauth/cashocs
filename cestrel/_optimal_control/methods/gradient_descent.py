@@ -58,6 +58,8 @@ class GradientDescent(OptimizationAlgorithm):
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
+				if self.iteration == 0:
+					self.objective_value = self.cost_functional.evaluate()
 				self.print_results()
 				break
 			

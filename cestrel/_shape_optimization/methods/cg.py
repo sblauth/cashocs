@@ -34,7 +34,7 @@ class CG(ShapeOptimizationAlgorithm):
 
 		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method', fallback='FR')
 		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart', fallback=False)
-		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', 10)
+		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', fallback=10)
 		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart', fallback=False)
 		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol', fallback=0.25)
 

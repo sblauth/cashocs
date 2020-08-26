@@ -56,9 +56,9 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
         The method terminates after `max_iter` iterations, or if a termination criterion is
         satisfied. These criteria are given by
-        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;rel&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if `convergence_type` is &#39;abs&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;combined&#39;}
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
         $$
         The norm chosen for the termination criterion is specified via `norm_type`.
 
@@ -265,12 +265,12 @@ and combined stopping criteria. Can also be used to specify the solver for
 the inner (linear) subproblems via petsc ksps.</p>
 <p>The method terminates after <code>max_iter</code> iterations, or if a termination criterion is
 satisfied. These criteria are given by
-<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'combined'}
-</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if <code>convergence\_type</code> is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'combined'}
+<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
 </script></span>
 The norm chosen for the termination criterion is specified via <code>norm_type</code>.</p>
 <h2 id="parameters">Parameters</h2>
@@ -350,9 +350,9 @@ cestrel.damped_newton_solve(F, u, bcs)
 
         The method terminates after `max_iter` iterations, or if a termination criterion is
         satisfied. These criteria are given by
-        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;rel&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if `convergence_type` is &#39;abs&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;combined&#39;}
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
         $$
         The norm chosen for the termination criterion is specified via `norm_type`.
 

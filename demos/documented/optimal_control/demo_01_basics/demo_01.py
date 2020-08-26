@@ -12,7 +12,7 @@ import cestrel
 set_log_level(LogLevel.CRITICAL)
 config = cestrel.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = cestrel.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)

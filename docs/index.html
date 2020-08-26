@@ -117,12 +117,12 @@ from .nonlinear_solvers import damped_newton_solve
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .utils import create_config, create_bcs_list
-
+from . import verification
 
 
 __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;MeshQuality&#39;,
                    &#39;damped_newton_solve&#39;, &#39;OptimalControlProblem&#39;, &#39;ShapeOptimizationProblem&#39;,
-                   &#39;create_config&#39;, &#39;create_bcs_list&#39;]</code></pre>
+                   &#39;create_config&#39;, &#39;create_bcs_list&#39;, &#39;verification&#39;]</code></pre>
 </details>
 </section>
 <section>
@@ -143,6 +143,10 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 <dt><code class="name"><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></dt>
 <dd>
 <div class="desc"><p>Module including utility and helper functions …</p></div>
+</dd>
+<dt><code class="name"><a title="cestrel.verification" href="verification.html">cestrel.verification</a></code></dt>
+<dd>
+<div class="desc"><p>Created on 25/08/2020, 14.52 …</p></div>
 </dd>
 </dl>
 </section>
@@ -299,12 +303,12 @@ and combined stopping criteria. Can also be used to specify the solver for
 the inner (linear) subproblems via petsc ksps.</p>
 <p>The method terminates after <code>max_iter</code> iterations, or if a termination criterion is
 satisfied. These criteria are given by
-<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if &lt;code&gt;convergence\_type&lt;/code&gt; is 'combined'}
-</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'rel'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if <code>convergence\_type</code> is 'abs'} \\
-\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if <code>convergence\_type</code> is 'combined'}
+<span><span class="MathJax_Preview"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
+</span><script type="math/tex; mode=display"> \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
+\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
 </script></span>
 The norm chosen for the termination criterion is specified via <code>norm_type</code>.</p>
 <h2 id="parameters">Parameters</h2>
@@ -384,9 +388,9 @@ cestrel.damped_newton_solve(F, u, bcs)
 
         The method terminates after `max_iter` iterations, or if a termination criterion is
         satisfied. These criteria are given by
-        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;rel&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if `convergence_type` is &#39;abs&#39;} \\
-        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if `convergence_type` is &#39;combined&#39;}
+        $$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;rel&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is &#39;abs&#39;} \\
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is &#39;combined&#39;}
         $$
         The norm chosen for the termination criterion is specified via `norm_type`.
 
@@ -679,7 +683,7 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                 if not arg.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False):
                         mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
                 else:
-                        if not &#39;_cestrel_remesh_flag&#39; in sys.argv:
+                        if not (&#39;_cestrel_remesh_flag&#39; in sys.argv):
                                 mesh_file = arg.get(&#39;Mesh&#39;, &#39;mesh_file&#39;)
                         else:
                                 temp_dir = sys.argv[-1]
@@ -2287,8 +2291,8 @@ in the "demos" folder.</p></div>
 
                 if self.algorithm == &#39;newton&#39;:
                         self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-                if self.algorithm == &#39;semi_smooth_newton&#39;:
-                        self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+                # if self.algorithm == &#39;semi_smooth_newton&#39;:
+                #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
                 if self.algorithm == &#39;pdas&#39;:
                         self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
@@ -2324,17 +2328,85 @@ in the "demos" folder.</p></div>
 
 
                 
-        def solve(self):
-                &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+        def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+                r&#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
 
                 Updates / overwrites states, controls, and adjoints according
                 to the optimization method, i.e., the user-input functions.
 
+                Parameters
+                ----------
+                algorithm : str or None, optional
+                        Selects the optimization algorithm. Valid choices are
+                        &#39;gradient_descent&#39; (&#39;gd&#39;), &#39;conjugate_gradient&#39; (&#39;cg&#39;),
+                        &#39;lbfgs&#39; (&#39;bfgs&#39;), &#39;newton&#39;, or &#39;pdas&#39;. This overwrites
+                        the value specified in the config file. If this is None,
+                        then the value in the config file is used. Default is
+                        None.
+                rtol : float or None, optional
+                        The relative tolerance used for the termination criterion.
+                        Overwrites the value specified in the config file. If this
+                        is None, the value from the config file is taken. Default
+                        is None.
+                atol : float or None, optional
+                        The absolute tolerance used for the termination criterion.
+                        Overwrites the value specified in the config file. If this
+                        is None, the value from the config file is taken. Default
+                        is None.
+                max_iter : int or None, optional
+                        The maximum number of iterations the optimization algorithm
+                        can carry out before it is terminated. Overwrites the value
+                        specified in the config file. If this is None, the value from
+                        the config file is taken. Default is None.
+
                 Returns
                 -------
                 None
+
+                Notes
+                -----
+                If either `rtol` or `atol` are specified as arguments to the solve
+                call, the termination criterion changes to:
+
+                  - a purely relative one (if only `rtol` is specified), i.e.,
+                $$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+                $$
+                  - a purely absolute one (if only `atol` is specified), i.e.,
+                $$ || \nabla J(u_K) || \leq \texttt{atol}.
+                $$
+                  - a combined one if both `rtol` and `atol` are specified, i.e.,
+                $$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+                $$
                 &#34;&#34;&#34;
-                
+
+                if algorithm is not None:
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
+                        self.algorithm = algorithm
+
+                        if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+                                        (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                                self.form_handler._ControlFormHandler__compute_newton_forms()
+
+                        if self.algorithm == &#39;newton&#39;:
+                                self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+                        # if self.algorithm == &#39;semi_smooth_newton&#39;:
+                        #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+                        if self.algorithm == &#39;pdas&#39;:
+                                self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+
+                if (rtol is not None) and (atol is None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(0.0))
+                elif (atol is not None) and (rtol is None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(0.0))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+                elif (atol is not None) and (rtol is not None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+
+                if max_iter is not None:
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
+
                 if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
                         self.solver = GradientDescent(self)
                 elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
@@ -2343,12 +2415,13 @@ in the "demos" folder.</p></div>
                         self.solver = CG(self)
                 elif self.algorithm == &#39;newton&#39;:
                         self.solver = Newton(self)
-                elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
-                        self.solver = SemiSmoothNewton(self)
+                # elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
+                #       self.solver = SemiSmoothNewton(self)
                 elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                         self.solver = PDAS(self)
                 else:
-                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
+                                                          &#39;of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).&#39;)
                 
                 self.solver.run()
                 self.solver.finalize()
@@ -2434,32 +2507,142 @@ are carried out automatically.</p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
 <dt id="cestrel.OptimalControlProblem.solve"><code class="name flex">
-<span>def <span class="ident">solve</span></span>(<span>self)</span>
+<span>def <span class="ident">solve</span></span>(<span>self, algorithm=None, rtol=None, atol=None, max_iter=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Solves the optimization problem by the method specified in the config file.</p>
 <p>Updates / overwrites states, controls, and adjoints according
 to the optimization method, i.e., the user-input functions.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>algorithm</code></strong> :&ensp;<code>str</code> or <code>None</code>, optional</dt>
+<dd>Selects the optimization algorithm. Valid choices are
+'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
+'lbfgs' ('bfgs'), 'newton', or 'pdas'. This overwrites
+the value specified in the config file. If this is None,
+then the value in the config file is used. Default is
+None.</dd>
+<dt><strong><code>rtol</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>The relative tolerance used for the termination criterion.
+Overwrites the value specified in the config file. If this
+is None, the value from the config file is taken. Default
+is None.</dd>
+<dt><strong><code>atol</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>The absolute tolerance used for the termination criterion.
+Overwrites the value specified in the config file. If this
+is None, the value from the config file is taken. Default
+is None.</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code> or <code>None</code>, optional</dt>
+<dd>The maximum number of iterations the optimization algorithm
+can carry out before it is terminated. Overwrites the value
+specified in the config file. If this is None, the value from
+the config file is taken. Default is None.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>None</code></dt>
 <dd>&nbsp;</dd>
-</dl></div>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If either <code>rtol</code> or <code>atol</code> are specified as arguments to the solve
+call, the termination criterion changes to:</p>
+<ul>
+<li>a purely relative one (if only <code>rtol</code> is specified), i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+</span><script type="math/tex; mode=display"> || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+</script></span></li>
+<li>a purely absolute one (if only <code>atol</code> is specified), i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_K) || \leq \texttt{atol}.
+</span><script type="math/tex; mode=display"> || \nabla J(u_K) || \leq \texttt{atol}.
+</script></span></li>
+<li>a combined one if both <code>rtol</code> and <code>atol</code> are specified, i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+</span><script type="math/tex; mode=display"> || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+</script></span></li>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def solve(self):
-        &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+<pre><code class="python">def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+        r&#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
 
         Updates / overwrites states, controls, and adjoints according
         to the optimization method, i.e., the user-input functions.
 
+        Parameters
+        ----------
+        algorithm : str or None, optional
+                Selects the optimization algorithm. Valid choices are
+                &#39;gradient_descent&#39; (&#39;gd&#39;), &#39;conjugate_gradient&#39; (&#39;cg&#39;),
+                &#39;lbfgs&#39; (&#39;bfgs&#39;), &#39;newton&#39;, or &#39;pdas&#39;. This overwrites
+                the value specified in the config file. If this is None,
+                then the value in the config file is used. Default is
+                None.
+        rtol : float or None, optional
+                The relative tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is None, the value from the config file is taken. Default
+                is None.
+        atol : float or None, optional
+                The absolute tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is None, the value from the config file is taken. Default
+                is None.
+        max_iter : int or None, optional
+                The maximum number of iterations the optimization algorithm
+                can carry out before it is terminated. Overwrites the value
+                specified in the config file. If this is None, the value from
+                the config file is taken. Default is None.
+
         Returns
         -------
         None
+
+        Notes
+        -----
+        If either `rtol` or `atol` are specified as arguments to the solve
+        call, the termination criterion changes to:
+
+          - a purely relative one (if only `rtol` is specified), i.e.,
+        $$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+        $$
+          - a purely absolute one (if only `atol` is specified), i.e.,
+        $$ || \nabla J(u_K) || \leq \texttt{atol}.
+        $$
+          - a combined one if both `rtol` and `atol` are specified, i.e.,
+        $$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+        $$
         &#34;&#34;&#34;
-        
+
+        if algorithm is not None:
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
+                self.algorithm = algorithm
+
+                if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+                                (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                        self.form_handler._ControlFormHandler__compute_newton_forms()
+
+                if self.algorithm == &#39;newton&#39;:
+                        self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+                # if self.algorithm == &#39;semi_smooth_newton&#39;:
+                #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+                if self.algorithm == &#39;pdas&#39;:
+                        self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+
+        if (rtol is not None) and (atol is None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(0.0))
+        elif (atol is not None) and (rtol is None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(0.0))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+        elif (atol is not None) and (rtol is not None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+
+        if max_iter is not None:
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
+
         if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
                 self.solver = GradientDescent(self)
         elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
@@ -2468,12 +2651,13 @@ to the optimization method, i.e., the user-input functions.</p>
                 self.solver = CG(self)
         elif self.algorithm == &#39;newton&#39;:
                 self.solver = Newton(self)
-        elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
-                self.solver = SemiSmoothNewton(self)
+        # elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
+        #       self.solver = SemiSmoothNewton(self)
         elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                 self.solver = PDAS(self)
         else:
-                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.&#39;)
+                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
+                                                  &#39;of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).&#39;)
         
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -2606,7 +2790,7 @@ as for the state systems are used (default is None).</dd>
                         except:
                                 raise InputError(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
 
-                        if not &#39;_cestrel_remesh_flag&#39; in sys.argv:
+                        if not (&#39;_cestrel_remesh_flag&#39; in sys.argv):
                                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
                                 self.__clean_previous_temp_files()
                                 self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cestrel_remesh_temp&#39;, dir=self.directory)
@@ -2654,15 +2838,70 @@ as for the state systems are used (default is None).</dd>
 
 
 
-        def solve(self):
-                &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+        def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+                r&#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+                Parameters
+                ----------
+                algorithm : str or None, optional
+                        Selects the optimization algorithm. Valid choices are
+                        &#39;gradient_descent&#39; (&#39;gd&#39;), &#39;conjugate_gradient&#39; (&#39;cg&#39;),
+                        or &#39;lbfgs&#39; (&#39;bfgs&#39;). This overwrites the value specified
+                        in the config file. If this is None, then the value in the
+                        config file is used. Default is None.
+                rtol : float or None, optional
+                        The relative tolerance used for the termination criterion.
+                        Overwrites the value specified in the config file. If this
+                        is None, the value from the config file is taken. Default
+                        is None.
+                atol : float or None, optional
+                        The absolute tolerance used for the termination criterion.
+                        Overwrites the value specified in the config file. If this
+                        is None, the value from the config file is taken. Default
+                        is None.
+                max_iter : int or None, optional
+                        The maximum number of iterations the optimization algorithm
+                        can carry out before it is terminated. Overwrites the value
+                        specified in the config file. If this is None, the value from
+                        the config file is taken. Default is None.
 
                 Returns
                 -------
                 None
+
+                Notes
+                -----
+                If either `rtol` or `atol` are specified as arguments to the solve
+                call, the termination criterion changes to:
+
+                  - a purely relative one (if only `rtol` is specified), i.e.,
+                $$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+                $$
+                  - a purely absolute one (if only `atol` is specified), i.e.,
+                $$ || \nabla J(u_K) || \leq \texttt{atol}.
+                $$
+                  - a combined one if both `rtol` and `atol` are specified, i.e.,
+                $$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+                $$
                 &#34;&#34;&#34;
 
+                if algorithm is not None:
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
+
                 self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+
+                if (rtol is not None) and (atol is None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(0.0))
+                elif (atol is not None) and (rtol is None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(0.0))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+                elif (atol is not None) and (rtol is not None):
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+
+                if max_iter is not None:
+                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
                 if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
                         self.solver = GradientDescent(self)
@@ -2671,7 +2910,7 @@ as for the state systems are used (default is None).</dd>
                 elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                         self.solver = CG(self)
                 else:
-                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.&#39;)
+                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)
 
                 self.solver.run()
                 self.solver.finalize()
@@ -2785,28 +3024,124 @@ are carried out automatically.</p>
 <div class="desc inherited"><p>Solves the state system …</p></div>
 </dd>
 <dt id="cestrel.ShapeOptimizationProblem.solve"><code class="name flex">
-<span>def <span class="ident">solve</span></span>(<span>self)</span>
+<span>def <span class="ident">solve</span></span>(<span>self, algorithm=None, rtol=None, atol=None, max_iter=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Solves the optimization problem by the method specified in the config file.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>algorithm</code></strong> :&ensp;<code>str</code> or <code>None</code>, optional</dt>
+<dd>Selects the optimization algorithm. Valid choices are
+'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
+or 'lbfgs' ('bfgs'). This overwrites the value specified
+in the config file. If this is None, then the value in the
+config file is used. Default is None.</dd>
+<dt><strong><code>rtol</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>The relative tolerance used for the termination criterion.
+Overwrites the value specified in the config file. If this
+is None, the value from the config file is taken. Default
+is None.</dd>
+<dt><strong><code>atol</code></strong> :&ensp;<code>float</code> or <code>None</code>, optional</dt>
+<dd>The absolute tolerance used for the termination criterion.
+Overwrites the value specified in the config file. If this
+is None, the value from the config file is taken. Default
+is None.</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code> or <code>None</code>, optional</dt>
+<dd>The maximum number of iterations the optimization algorithm
+can carry out before it is terminated. Overwrites the value
+specified in the config file. If this is None, the value from
+the config file is taken. Default is None.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>None</code></dt>
 <dd>&nbsp;</dd>
-</dl></div>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If either <code>rtol</code> or <code>atol</code> are specified as arguments to the solve
+call, the termination criterion changes to:</p>
+<ul>
+<li>a purely relative one (if only <code>rtol</code> is specified), i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+</span><script type="math/tex; mode=display"> || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+</script></span></li>
+<li>a purely absolute one (if only <code>atol</code> is specified), i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_K) || \leq \texttt{atol}.
+</span><script type="math/tex; mode=display"> || \nabla J(u_K) || \leq \texttt{atol}.
+</script></span></li>
+<li>a combined one if both <code>rtol</code> and <code>atol</code> are specified, i.e.,
+<span><span class="MathJax_Preview"> || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+</span><script type="math/tex; mode=display"> || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+</script></span></li>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def solve(self):
-        &#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+<pre><code class="python">def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+        r&#34;&#34;&#34;Solves the optimization problem by the method specified in the config file.
+
+        Parameters
+        ----------
+        algorithm : str or None, optional
+                Selects the optimization algorithm. Valid choices are
+                &#39;gradient_descent&#39; (&#39;gd&#39;), &#39;conjugate_gradient&#39; (&#39;cg&#39;),
+                or &#39;lbfgs&#39; (&#39;bfgs&#39;). This overwrites the value specified
+                in the config file. If this is None, then the value in the
+                config file is used. Default is None.
+        rtol : float or None, optional
+                The relative tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is None, the value from the config file is taken. Default
+                is None.
+        atol : float or None, optional
+                The absolute tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is None, the value from the config file is taken. Default
+                is None.
+        max_iter : int or None, optional
+                The maximum number of iterations the optimization algorithm
+                can carry out before it is terminated. Overwrites the value
+                specified in the config file. If this is None, the value from
+                the config file is taken. Default is None.
 
         Returns
         -------
         None
+
+        Notes
+        -----
+        If either `rtol` or `atol` are specified as arguments to the solve
+        call, the termination criterion changes to:
+
+          - a purely relative one (if only `rtol` is specified), i.e.,
+        $$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+        $$
+          - a purely absolute one (if only `atol` is specified), i.e.,
+        $$ || \nabla J(u_K) || \leq \texttt{atol}.
+        $$
+          - a combined one if both `rtol` and `atol` are specified, i.e.,
+        $$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+        $$
         &#34;&#34;&#34;
 
+        if algorithm is not None:
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
+
         self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+
+        if (rtol is not None) and (atol is None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(0.0))
+        elif (atol is not None) and (rtol is None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(0.0))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+        elif (atol is not None) and (rtol is not None):
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;atol&#39;, str(atol))
+
+        if max_iter is not None:
+                self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
         if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
                 self.solver = GradientDescent(self)
@@ -2815,7 +3150,7 @@ are carried out automatically.</p>
         elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
                 self.solver = CG(self)
         else:
-                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, or cg.&#39;)
+                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)
 
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -2844,6 +3179,7 @@ are carried out automatically.</p>
 <li><code><a title="cestrel.nonlinear_solvers" href="nonlinear_solvers.html">cestrel.nonlinear_solvers</a></code></li>
 <li><code><a title="cestrel.optimization_problem" href="optimization_problem.html">cestrel.optimization_problem</a></code></li>
 <li><code><a title="cestrel.utils" href="utils.html">cestrel.utils</a></code></li>
+<li><code><a title="cestrel.verification" href="verification.html">cestrel.verification</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>

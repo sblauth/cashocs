@@ -16,9 +16,9 @@ from .nonlinear_solvers import damped_newton_solve
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .utils import create_config, create_bcs_list
-
+from . import verification
 
 
 __all__ = ['import_mesh', 'regular_mesh', 'regular_box_mesh', 'MeshQuality',
 		   'damped_newton_solve', 'OptimalControlProblem', 'ShapeOptimizationProblem',
-		   'create_config', 'create_bcs_list']
+		   'create_config', 'create_bcs_list', 'verification']

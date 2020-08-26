@@ -7,11 +7,22 @@ Created on 24/08/2020, 14.30
 
 
 class CestrelException(Exception):
+	"""Base class for exceptions raised by cestrel.
+
+	"""
+
 	pass
 
 
 
 class NotConvergedError(CestrelException):
+	"""This exception is raised when a solver does not converge.
+
+	This includes any type of iterative method used to solve a problem,
+	whether it is a linear or nonlinear system of equations, or an
+	optimization problem.
+	"""
+
 	pass
 
 
@@ -19,8 +30,7 @@ class NotConvergedError(CestrelException):
 class PETScKSPError(CestrelException):
 	"""This exception is raised when the solution of a linear problem with PETSc fails.
 
-	It also returns the PETSc error code and reason.
-
+	Also returns the PETSc error code and reason.
 	"""
 
 	def __init__(self, error_code, message='PETSc linear solver did not converge.'):
@@ -59,6 +69,7 @@ class InputError(CestrelException):
 	"""This exception gets raised when the user input to a public API method is wrong or inconsistent.
 
 	"""
+
 	pass
 
 
@@ -67,4 +78,5 @@ class ConfigError(CestrelException):
 	"""This exception gets raised when parameters in the config file are wrong.
 
 	"""
+
 	pass

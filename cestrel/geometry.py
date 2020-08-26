@@ -79,7 +79,7 @@ def import_mesh(arg):
 		if not arg.getboolean('Mesh', 'remesh', fallback=False):
 			mesh_file = arg.get('Mesh', 'mesh_file')
 		else:
-			if not '_cestrel_remesh_flag' in sys.argv:
+			if not ('_cestrel_remesh_flag' in sys.argv):
 				mesh_file = arg.get('Mesh', 'mesh_file')
 			else:
 				temp_dir = sys.argv[-1]
@@ -407,7 +407,7 @@ class _MeshHandler:
 			self.remesh_directory = self.mesh_directory + '/cestrel_remesh'
 			if not os.path.exists(self.remesh_directory):
 				os.mkdir(self.remesh_directory)
-			if not '_cestrel_remesh_flag' in sys.argv:
+			if not ('_cestrel_remesh_flag' in sys.argv):
 				os.system('rm -r ' + self.remesh_directory + '/*')
 			self.remesh_geo_file = self.remesh_directory + '/remesh.geo'
 
@@ -492,7 +492,7 @@ class _MeshHandler:
 		self.trial_dg0 = fenics.TrialFunction(self.shape_form_handler.DG0)
 		self.test_dg0 = fenics.TestFunction(self.shape_form_handler.DG0)
 
-		if not self.angle_change == float('inf'):
+		if not (self.angle_change == float('inf')):
 			self.search_direction_container = fenics.Function(self.shape_form_handler.deformation_space)
 
 			self.a_frobenius = self.trial_dg0*self.test_dg0*self.dx
@@ -779,7 +779,7 @@ class _MeshHandler:
 			with open(self.temp_dir + '/temp_dict.json', 'w') as file:
 				json.dump(self.temp_dict, file)
 
-			if not '_cestrel_remesh_flag' in sys.argv:
+			if not ('_cestrel_remesh_flag' in sys.argv):
 				os.execv(sys.executable, [sys.executable] + sys.argv + ['_cestrel_remesh_flag'] + [self.temp_dir])
 			else:
 				os.execv(sys.executable, [sys.executable] + sys.argv[:-2] + ['_cestrel_remesh_flag'] + [self.temp_dir])

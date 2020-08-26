@@ -1,4 +1,4 @@
-DESCENDAL
+CESTREL
 =========
 
 cestrel is a continuous adjoint-based optimal control and shape

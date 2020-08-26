@@ -24,6 +24,7 @@ class SemiSmoothHessianProblem:
 			the FormHandler object for the optimization problem
 		gradient_problem : cestrel._pde_problems.GradientProblem
 			the GradientProblem object (we need the gradient for the computation of the Hessian)
+		control_constraints : list[list[dolfin.function.function.Function]]
 		"""
 
 		self.form_handler = form_handler
@@ -33,9 +34,9 @@ class SemiSmoothHessianProblem:
 		self.config = self.form_handler.config
 		self.gradients = self.gradient_problem.gradients
 
-		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton')
+		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton', fallback='cr')
 		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton', fallback=50)
-		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance', fallback=1e-10)
+		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance', fallback=1e-15)
 
 		self.test_directions = self.form_handler.test_directions
 		self.residual1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
@@ -193,8 +194,8 @@ class SemiSmoothHessianProblem:
 			self.Ap2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 			for j in range(self.control_dim):
-				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
-				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
+				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]
+				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]
 
 			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
 			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
@@ -256,8 +257,8 @@ class SemiSmoothHessianProblem:
 			self.s2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 			for j in range(self.control_dim):
-				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
-				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
+				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]
+				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]
 
 			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
 			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
@@ -339,8 +340,8 @@ class SemiSmoothHessianProblem:
 			self.Ap2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
 			for j in range(self.control_dim):
-				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0]
-				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1]
+				self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]
+				self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]
 
 			self.form_handler.restrict_to_active_set(self.mu, self.temp_storage)
 			self.form_handler.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)

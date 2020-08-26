@@ -7,6 +7,7 @@ Created on 24/02/2020, 11.47
 import configparser
 from fenics import *
 from cestrel import OptimalControlProblem, import_mesh
+import cestrel
 import numpy as np
 
 

@@ -6,6 +6,8 @@ optimization problems.
 """
 
 from ._exceptions import InputError
+import fenics
+
 
 
 class OptimizationProblem:
@@ -223,6 +225,8 @@ class OptimizationProblem:
 			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
 		assert len(self.ksp_options) == self.state_dim, 'Length of states does not match'
 		assert len(self.adjoint_ksp_options) == self.state_dim, 'Length of states does not match'
+
+		fenics.set_log_level(fenics.LogLevel.ERROR)
 
 		self.state_problem = None
 		self.adjoint_problem = None

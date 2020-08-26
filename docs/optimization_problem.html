@@ -39,6 +39,8 @@ optimization problems.
 &#34;&#34;&#34;
 
 from ._exceptions import InputError
+import fenics
+
 
 
 class OptimizationProblem:
@@ -256,6 +258,8 @@ class OptimizationProblem:
                         assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+
+                fenics.set_log_level(fenics.LogLevel.ERROR)
 
                 self.state_problem = None
                 self.adjoint_problem = None
@@ -579,6 +583,8 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                         assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
                 assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+
+                fenics.set_log_level(fenics.LogLevel.ERROR)
 
                 self.state_problem = None
                 self.adjoint_problem = None

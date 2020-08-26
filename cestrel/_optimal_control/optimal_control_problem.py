@@ -221,8 +221,8 @@ class OptimalControlProblem(OptimizationProblem):
 
 		if self.algorithm == 'newton':
 			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-		if self.algorithm == 'semi_smooth_newton':
-			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem, self.control_constraints)
+		# if self.algorithm == 'semi_smooth_newton':
+		# 	self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
 		if self.algorithm == 'pdas':
 			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
@@ -258,17 +258,85 @@ class OptimalControlProblem(OptimizationProblem):
 
 
 		
-	def solve(self):
-		"""Solves the optimization problem by the method specified in the config file.
+	def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+		r"""Solves the optimization problem by the method specified in the config file.
 
 		Updates / overwrites states, controls, and adjoints according
 		to the optimization method, i.e., the user-input functions.
 
+		Parameters
+		----------
+		algorithm : str or None, optional
+			Selects the optimization algorithm. Valid choices are
+			'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
+			'lbfgs' ('bfgs'), 'newton', or 'pdas'. This overwrites
+			the value specified in the config file. If this is None,
+			then the value in the config file is used. Default is
+			None.
+		rtol : float or None, optional
+			The relative tolerance used for the termination criterion.
+			Overwrites the value specified in the config file. If this
+			is None, the value from the config file is taken. Default
+			is None.
+		atol : float or None, optional
+			The absolute tolerance used for the termination criterion.
+			Overwrites the value specified in the config file. If this
+			is None, the value from the config file is taken. Default
+			is None.
+		max_iter : int or None, optional
+			The maximum number of iterations the optimization algorithm
+			can carry out before it is terminated. Overwrites the value
+			specified in the config file. If this is None, the value from
+			the config file is taken. Default is None.
+
 		Returns
 		-------
 		None
+
+		Notes
+		-----
+		If either `rtol` or `atol` are specified as arguments to the solve
+		call, the termination criterion changes to:
+
+		  - a purely relative one (if only `rtol` is specified), i.e.,
+		$$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+		$$
+		  - a purely absolute one (if only `atol` is specified), i.e.,
+		$$ || \nabla J(u_K) || \leq \texttt{atol}.
+		$$
+		  - a combined one if both `rtol` and `atol` are specified, i.e.,
+		$$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+		$$
 		"""
-		
+
+		if algorithm is not None:
+			self.config.set('OptimizationRoutine', 'algorithm', algorithm)
+			self.algorithm = algorithm
+
+			if self.algorithm == 'newton' or self.algorithm == 'semi_smooth_newton' or \
+					(self.algorithm == 'pdas' and self.form_handler.inner_pdas == 'newton'):
+				self.form_handler._ControlFormHandler__compute_newton_forms()
+
+			if self.algorithm == 'newton':
+				self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+			# if self.algorithm == 'semi_smooth_newton':
+			# 	self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+			if self.algorithm == 'pdas':
+				self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+
+		if (rtol is not None) and (atol is None):
+			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
+			self.config.set('OptimizationRoutine', 'atol', str(0.0))
+		elif (atol is not None) and (rtol is None):
+			self.config.set('OptimizationRoutine', 'rtol', str(0.0))
+			self.config.set('OptimizationRoutine', 'atol', str(atol))
+		elif (atol is not None) and (rtol is not None):
+			self.config.set('OptimizationRoutine', 'rtol', str(rtol))
+			self.config.set('OptimizationRoutine', 'atol', str(atol))
+
+		if max_iter is not None:
+			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
+
 		if self.algorithm in ['gd', 'gradient_descent']:
 			self.solver = GradientDescent(self)
 		elif self.algorithm in ['lbfgs', 'bfgs']:
@@ -277,12 +345,13 @@ class OptimalControlProblem(OptimizationProblem):
 			self.solver = CG(self)
 		elif self.algorithm == 'newton':
 			self.solver = Newton(self)
-		elif self.algorithm in ['semi_smooth_newton', 'ss_newton']:
-			self.solver = SemiSmoothNewton(self)
+		# elif self.algorithm in ['semi_smooth_newton', 'ss_newton']:
+		# 	self.solver = SemiSmoothNewton(self)
 		elif self.algorithm in ['pdas', 'primal_dual_active_set']:
 			self.solver = PDAS(self)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of gd, lbfgs, cg, newton, semi_smooth_newton or pdas.')
+			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one '
+							  'of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).')
 		
 		self.solver.run()
 		self.solver.finalize()

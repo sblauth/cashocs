@@ -144,12 +144,15 @@ class CG(OptimizationAlgorithm):
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
+					self.objective_value = self.cost_functional.evaluate()
 					self.print_results()
 					break
 				self.beta = 0.0
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
+				if self.iteration == 0:
+					self.objective_value = self.cost_functional.evaluate()
 				self.print_results()
 				break
 

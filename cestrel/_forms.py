@@ -289,8 +289,7 @@ class ControlFormHandler(FormHandler):
 		# Define the necessary functions
 		self.states_prime = [fenics.Function(V) for V in self.state_spaces]
 		self.adjoints_prime = [fenics.Function(V) for V in self.adjoint_spaces]
-		
-		self.hessian_actions = [fenics.Function(V) for V in self.control_spaces]
+
 		self.test_directions = [fenics.Function(V) for V in self.control_spaces]
 
 		self.trial_functions_control = [fenics.TrialFunction(V) for V in self.control_spaces]
@@ -579,8 +578,9 @@ class ControlFormHandler(FormHandler):
 			pass
 
 		# Add right-hand-side for picard iteration
-		for i in range(self.state_dim):
-			self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
+		if self.state_is_picard:
+			for i in range(self.state_dim):
+				self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 
 		self.adjoint_sensitivity_eqs_rhs = [summation([fenics.derivative(self.adjoint_sensitivity_eqs_all_temp[j], self.controls[i], self.test_functions_control[i])
 													   for j in range(self.state_dim)]) for i in range(self.control_dim)]
@@ -703,7 +703,7 @@ class ShapeFormHandler(FormHandler):
 			if coeff.id() in self.state_adjoint_ids:
 				pass
 			else:
-				if not coeff.ufl_element().family() == 'Real':
+				if not (coeff.ufl_element().family() == 'Real'):
 					self.material_derivative_coeffs.append(coeff)
 
 		if len(self.material_derivative_coeffs) > 0:
