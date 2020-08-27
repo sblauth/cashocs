@@ -30,7 +30,9 @@ For the domain of this problem, we once again consider the space time cylinder g
 "https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%280%2C+T%29+%5Ctimes+%5COmega"
 alt="(0, T) \times \Omega"> <img src=
 "https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29%5E2"
-alt="\Omega = (0, 1)^2">.
+alt="\Omega = (0, 1)^2">. And for the initial condition we use <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
+alt="y_0 = 0">.
 
 
 Temporal Discretization
@@ -117,7 +119,10 @@ one Function for each time step. Hence, we initialize these (together with the a
 Note, that `states[k]` corresponds to <img src=
 "https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk%2B1%7D"
 alt="y_{k+1}"> (due to the differences in indexing between computer scientists and
-mathematicians), and analogously for `controls[k]`.
+mathematicians), and analogously for `controls[k]`. Note, that in the following there
+will  be made no such distinctions anymore, it should be obvious from the context
+what and where to apply the index shift between the semi-continuous and the discretized
+versions of the functions.
 
 As the boundary conditions are not time dependent, we can initialize them now, and
 repeat them in a list, since they are the same for every state
@@ -132,6 +137,9 @@ approximations of the desired state, and the summands of the cost functional.
     y_d = []
     e = []
     J_list = []
+
+Definition of the optimization problem
+--------------------------------------
 
 For the desired state, we define it with the help of a fenics expression, that is
 dependent on an additional parameter which models the time.
@@ -160,5 +168,76 @@ Next, we have the following for loop, which we describe in detail in the followi
 
     	J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
 
-At the beginning, the 'current' time t is determined from `t_array`, and the
-expression for the desired state is updated to reflect the current time.
+> At the beginning, the 'current' time t is determined from `t_array`, and the
+> expression for the desired state is updated to reflect the current time.
+> The line
+>
+>     y = states[k]
+>
+> sets the object `y` to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_k"
+alt="y_k">. For the backward difference in the implicit Euler method, we also need
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
+alt="y_{k-1}">, which we define by the if condition
+>
+>     if k == 0:
+>         y_prev = Function(V)
+>     else:
+>         y_prev = states[k - 1]
+>
+> which ensures that <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
+alt="y_0 = 0">. Hence, `y_prev` indeed corresponds to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
+alt="y_{k-1}">. Moreover, we get the current control and adjoint state via
+>
+>     p = adjoints[k]
+>	u = controls[k]
+>
+> This allow us to define the state equation at time t as
+>
+>     state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
+>
+> This is then appended to the list of state constraints
+>
+>     e.append(state_eq)
+>
+> Further, we also put the current desired state into the respective list, i.e.,
+>
+> 	y_d.append(interpolate(y_d_expr, V))
+>
+> Finally, we can define the k-th summand of the cost functional via
+>
+>     J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
+>
+> and directly append this to the cost functional list.
+
+To sum up over all elements of
+this list, cashocs includes a summation command in the utils module, which we call now
+
+    J = cashocs.utils.summation(J_list)
+
+Finally, we can define an optimal control as always, and solve it in the same fashion
+
+    ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+    ocp.solve()
+
+For a postprocessing, which visualizes the resulting optimal control and optimal state
+the following lines are added at the end
+
+u_file = File('./visualization/u.pvd')
+y_file = File('./visualization/y.pvd')
+temp_u = Function(V)
+temp_y = Function(V)
+
+    for k in range(len(t_array)):
+    	t = t_array[k]
+
+    	temp_u.vector()[:] = controls[k].vector()[:]
+    	u_file << temp_u, t
+
+    	temp_y.vector()[:] = states[k].vector()[:]
+    	y_file << temp_y, t
+
+which saves the result in the folder visualization as paraview .pvd files.
