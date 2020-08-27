@@ -8,10 +8,13 @@ problem" of PDE constrained optimization, i.e.,
 min J(y, u) = 1/2 || y - y<sub>d</sub> ||<sub>&Omega;</sub><sup>2</sup> + &alpha;/2  || u ||<sub>&Omega;</sub><sup>2</sup>
 
 
-subject to &nbsp;&nbsp;&nbsp;  - &Delta; y  = u &nbsp;&nbsp;&nbsp;&nbsp; in &Omega;
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y = 0 &nbsp;&nbsp;&nbsp;&nbsp; on &Gamma;
+subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D%0A"
+alt="\begin{align*}
+-\Delta y &= u \quad \text{ in }\; \Omega,\\
+y &= 0 \quad \text{ on }\; \Gamma
+\end{align*}
+">
 
 
 (see, e.g., Tröltzsch, Optimal Control of Partial Differential Equations,
