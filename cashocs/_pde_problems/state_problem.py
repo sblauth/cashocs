@@ -1,3 +1,20 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Created on 24/02/2020, 09.19
 
@@ -6,10 +23,11 @@ Created on 24/02/2020, 09.19
 
 import fenics
 import numpy as np
-from ..nonlinear_solvers import damped_newton_solve
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+
 from .._exceptions import NotConvergedError
+from ..nonlinear_solvers import damped_newton_solve
+from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
 
@@ -81,7 +99,7 @@ class StateProblem:
 				for j in range(self.form_handler.state_dim):
 					fenics.assign(self.states[j], self.initial_guess[j])
 
-			if not self.form_handler.state_is_picard:
+			if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 				if self.form_handler.state_is_linear:
 					for i in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[i], self.form_handler.state_eq_forms_rhs[i], self.bcs_list[i])
@@ -132,11 +150,14 @@ class StateProblem:
 						if not self.form_handler.state_is_linear:
 							self.ksps[j].setTolerances(rtol=np.minimum(0.9*res, 0.9)/100, atol=self.newton_atols[j]/100)
 
-						self.states[j] = damped_newton_solve(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
-															 rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], max_iter=self.newton_iter,
-															 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[j])
+							self.states[j] = damped_newton_solve(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
+																 rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], max_iter=self.newton_iter,
+																 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[j])
+						else:
+							A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[j], self.form_handler.state_eq_forms_rhs[j], self.bcs_list[j])
+							_solve_linear_problem(self.ksps[j], A, b, self.states[j].vector().vec())
 
-			if self.picard_verbose:
+			if self.picard_verbose and self.form_handler.state_is_picard:
 				print('')
 			self.has_solution = True
 			self.number_of_solves += 1

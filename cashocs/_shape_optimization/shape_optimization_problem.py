@@ -1,22 +1,40 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Created on 15/06/2020, 08.00
 
 @author: blauths
 """
 
-from ..optimization_problem import OptimizationProblem
-from .._forms import Lagrangian, ShapeFormHandler
-from .._pde_problems import StateProblem, AdjointProblem, ShapeGradientProblem
-from .._shape_optimization import ReducedShapeCostFunctional
-from .methods import LBFGS, CG, GradientDescent
-from ..geometry import _MeshHandler
-from .._exceptions import InputError, ConfigError
-from ..utils import _optimization_algorithm_configuration
+import json
+import os
 import sys
 import tempfile
-import os
-import json
 import warnings
+
+from .methods import CG, GradientDescent, LBFGS
+from .._exceptions import ConfigError, InputError
+from .._forms import Lagrangian, ShapeFormHandler
+from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
+from .._shape_optimization import ReducedShapeCostFunctional
+from ..geometry import _MeshHandler
+from ..optimization_problem import OptimizationProblem
+from ..utils import _optimization_algorithm_configuration
 
 
 
@@ -137,6 +155,25 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		self.gradient = self.shape_gradient_problem.gradient
 		self.objective_value = 1.0
+	
+	
+	
+	def _erase_pde_memory(self):
+		"""Resets the memory of the PDE problems so that new solutions are computed.
+		
+		This sets the value of has_solution to false for all relevant PDE problems,
+		where memory is stored.
+		
+		Returns
+		-------
+		None
+		"""
+		
+		self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
+		self.shape_form_handler.update_scalar_product()
+		self.state_problem.has_solution = False
+		self.adjoint_problem.has_solution = False
+		self.shape_gradient_problem.has_solution = False
 
 
 

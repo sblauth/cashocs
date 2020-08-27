@@ -1,14 +1,30 @@
-"""
-Created on 24/02/2020, 09.24
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-@author: blauths
+"""Abstract implementation of an adjoint problem.
+
 """
 
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+
 from .._exceptions import NotConvergedError
+from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
 
@@ -67,7 +83,7 @@ class AdjointProblem:
 		self.state_problem.solve()
 
 		if not self.has_solution:
-			if not self.form_handler.state_is_picard:
+			if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 				for i in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - i], self.form_handler.adjoint_eq_rhs[-1 - i], self.bcs_list_ad[-1 - i])
 					_solve_linear_problem(self.ksps[-1 - i], A, b, self.adjoints[-1 - i].vector().vec())
@@ -101,7 +117,7 @@ class AdjointProblem:
 						A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - j], self.form_handler.adjoint_eq_rhs[-1 - j], self.bcs_list_ad[-1 - j])
 						_solve_linear_problem(self.ksps[-1 - j], A, b, self.adjoints[-1 - j].vector().vec())
 
-			if self.picard_verbose:
+			if self.picard_verbose and self.form_handler.state_is_picard:
 				print('')
 			self.has_solution = True
 			self.number_of_solves += 1

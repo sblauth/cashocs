@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cashocs API documentation</title>
-<meta name="description" content="cashocs is an adjoint-based optimization package for python …" />
+<meta name="description" content="cashocs is a Computational Adjoint based SHape optimization and Optimal Control Software for python …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,7 +23,7 @@
 <h1 class="title">Package <code>cashocs</code></h1>
 </header>
 <section id="section-intro">
-<p>cashocs is an adjoint-based optimization package for python.</p>
+<p>cashocs is a Computational Adjoint based SHape optimization and Optimal Control Software for python.</p>
 <p>cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
@@ -94,12 +94,40 @@ unfortunately, the API still may undergo large changes. So use it with care.</p>
 the sole developer. Bug reports, feedback, and further suggestions are always
 welcome.</p>
 <h2 id="license">License</h2>
-<p>cashocs is licensed under the &hellip; license.</p>
+<p>CASHOCS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>CASHOCS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the
+GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with CASHOCS.
+If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">r&#34;&#34;&#34;cashocs is an adjoint-based optimization package for python.
+<pre><code class="python"># Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
+r&#34;&#34;&#34;cashocs is a Computational Adjoint based SHape optimization and Optimal Control Software for python.
 
 cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
@@ -112,12 +140,13 @@ high-level unified form language (UFL) of fenics.
 
 &#34;&#34;&#34;
 
-from .geometry import import_mesh, regular_mesh, regular_box_mesh, MeshQuality
-from .nonlinear_solvers import damped_newton_solve
+from . import verification
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-from .utils import create_config, create_bcs_list
-from . import verification
+from .geometry import MeshQuality, import_mesh, regular_box_mesh, regular_mesh
+from .nonlinear_solvers import damped_newton_solve
+from .utils import create_bcs_list, create_config
+
 
 
 __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&#39;, &#39;MeshQuality&#39;,
@@ -146,7 +175,7 @@ __all__ = [&#39;import_mesh&#39;, &#39;regular_mesh&#39;, &#39;regular_box_mesh&
 </dd>
 <dt><code class="name"><a title="cashocs.verification" href="verification.html">cashocs.verification</a></code></dt>
 <dd>
-<div class="desc"><p>Created on 25/08/2020, 14.52 …</p></div>
+<div class="desc"><p>This module includes finite difference Taylor tests to verify the computed gradients.</p></div>
 </dd>
 </dl>
 </section>
@@ -506,6 +535,11 @@ cashocs.damped_newton_solve(F, u, bcs)
         b = fenics.as_backend_type(residuum).vec()
         
         res_0 = residuum.norm(norm_type)
+        if res_0 == 0.0:
+                if verbose:
+                        print(&#39;Residual vanishes, input is already a solution.&#39;)
+                return u
+
         res = res_0
         if verbose:
                 print(&#39;Newton Iteration &#39; + format(iterations, &#39;2d&#39;) + &#39; - residuum (abs):  &#39;
@@ -2287,14 +2321,14 @@ in the "demos" folder.</p></div>
                 self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
                 self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 
-                self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+                self.algorithm = _optimization_algorithm_configuration(self.config)
 
-                if self.algorithm == &#39;newton&#39;:
-                        self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+                # if self.algorithm == &#39;newton&#39;:
+                #       self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
                 # if self.algorithm == &#39;semi_smooth_newton&#39;:
                 #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-                if self.algorithm == &#39;pdas&#39;:
-                        self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+                # if self.algorithm == &#39;pdas&#39;:
+                #       self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
                 self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -2325,7 +2359,24 @@ in the "demos" folder.</p></div>
                         self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
 
                 return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
-
+        
+        
+        
+        def _erase_pde_memory(self):
+                &#34;&#34;&#34;Resets the memory of the PDE problems so that new solutions are computed.
+                
+                This sets the value of has_solution to false for all relevant PDE problems,
+                where memory is stored.
+                
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+                
+                self.state_problem.has_solution = False
+                self.adjoint_problem.has_solution = False
+                self.gradient_problem.has_solution = False
+                
 
                 
         def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
@@ -2379,20 +2430,18 @@ in the "demos" folder.</p></div>
                 $$
                 &#34;&#34;&#34;
 
-                if algorithm is not None:
-                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
-                        self.algorithm = algorithm
+                self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-                        if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
-                                        (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
-                                self.form_handler._ControlFormHandler__compute_newton_forms()
+                if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+                                (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                        self.form_handler._ControlFormHandler__compute_newton_forms()
 
-                        if self.algorithm == &#39;newton&#39;:
-                                self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-                        # if self.algorithm == &#39;semi_smooth_newton&#39;:
-                        #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-                        if self.algorithm == &#39;pdas&#39;:
-                                self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+                if self.algorithm == &#39;newton&#39;:
+                        self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+                if self.algorithm == &#39;semi_smooth_newton&#39;:
+                        self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+                if self.algorithm == &#39;pdas&#39;:
+                        self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
                 if (rtol is not None) and (atol is None):
                         self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
@@ -2407,17 +2456,17 @@ in the "demos" folder.</p></div>
                 if max_iter is not None:
                         self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
-                if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
+                if self.algorithm == &#39;gradient_descent&#39;:
                         self.solver = GradientDescent(self)
-                elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                elif self.algorithm == &#39;lbfgs&#39;:
                         self.solver = LBFGS(self)
-                elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                elif self.algorithm == &#39;conjugate_gradient&#39;:
                         self.solver = CG(self)
                 elif self.algorithm == &#39;newton&#39;:
                         self.solver = Newton(self)
-                # elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
-                #       self.solver = SemiSmoothNewton(self)
-                elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
+                elif self.algorithm == &#39;semi_smooth_newton&#39;:
+                        self.solver = SemiSmoothNewton(self)
+                elif self.algorithm == &#39;pdas&#39;:
                         self.solver = PDAS(self)
                 else:
                         raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
@@ -2615,20 +2664,18 @@ call, the termination criterion changes to:</p>
         $$
         &#34;&#34;&#34;
 
-        if algorithm is not None:
-                self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
-                self.algorithm = algorithm
+        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-                if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
-                                (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
-                        self.form_handler._ControlFormHandler__compute_newton_forms()
+        if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+                        (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                self.form_handler._ControlFormHandler__compute_newton_forms()
 
-                if self.algorithm == &#39;newton&#39;:
-                        self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-                # if self.algorithm == &#39;semi_smooth_newton&#39;:
-                #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-                if self.algorithm == &#39;pdas&#39;:
-                        self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
+        if self.algorithm == &#39;newton&#39;:
+                self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
+        if self.algorithm == &#39;semi_smooth_newton&#39;:
+                self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
+        if self.algorithm == &#39;pdas&#39;:
+                self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
         if (rtol is not None) and (atol is None):
                 self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
@@ -2643,17 +2690,17 @@ call, the termination criterion changes to:</p>
         if max_iter is not None:
                 self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
-        if self.algorithm in [&#39;gd&#39;, &#39;gradient_descent&#39;]:
+        if self.algorithm == &#39;gradient_descent&#39;:
                 self.solver = GradientDescent(self)
-        elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+        elif self.algorithm == &#39;lbfgs&#39;:
                 self.solver = LBFGS(self)
-        elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+        elif self.algorithm == &#39;conjugate_gradient&#39;:
                 self.solver = CG(self)
         elif self.algorithm == &#39;newton&#39;:
                 self.solver = Newton(self)
-        # elif self.algorithm in [&#39;semi_smooth_newton&#39;, &#39;ss_newton&#39;]:
-        #       self.solver = SemiSmoothNewton(self)
-        elif self.algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
+        elif self.algorithm == &#39;semi_smooth_newton&#39;:
+                self.solver = SemiSmoothNewton(self)
+        elif self.algorithm == &#39;pdas&#39;:
                 self.solver = PDAS(self)
         else:
                 raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
@@ -2800,7 +2847,6 @@ as for the state systems are used (default is None).</dd>
                                                                   &#39;OptimizationRoutine&#39; : {&#39;iteration_counter&#39; : 0, &#39;gradient_norm_initial&#39; : 0.0},
                                                                   &#39;output_dict&#39; : {}}
 
-
                         else:
                                 self.temp_dir = sys.argv[-1]
                                 self.__change_except_hook()
@@ -2835,6 +2881,25 @@ as for the state systems are used (default is None).</dd>
 
                 self.gradient = self.shape_gradient_problem.gradient
                 self.objective_value = 1.0
+        
+        
+        
+        def _erase_pde_memory(self):
+                &#34;&#34;&#34;Resets the memory of the PDE problems so that new solutions are computed.
+                
+                This sets the value of has_solution to false for all relevant PDE problems,
+                where memory is stored.
+                
+                Returns
+                -------
+                None
+                &#34;&#34;&#34;
+                
+                self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
+                self.shape_form_handler.update_scalar_product()
+                self.state_problem.has_solution = False
+                self.adjoint_problem.has_solution = False
+                self.shape_gradient_problem.has_solution = False
 
 
 
@@ -2885,10 +2950,7 @@ as for the state systems are used (default is None).</dd>
                 $$
                 &#34;&#34;&#34;
 
-                if algorithm is not None:
-                        self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
-
-                self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+                self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
                 if (rtol is not None) and (atol is None):
                         self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
@@ -2903,11 +2965,11 @@ as for the state systems are used (default is None).</dd>
                 if max_iter is not None:
                         self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
-                if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
+                if self.algorithm == &#39;gradient_descent&#39;:
                         self.solver = GradientDescent(self)
-                elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                elif self.algorithm == &#39;lbfgs&#39;:
                         self.solver = LBFGS(self)
-                elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+                elif self.algorithm == &#39;conjugate_gradient&#39;:
                         self.solver = CG(self)
                 else:
                         raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)
@@ -3125,10 +3187,7 @@ call, the termination criterion changes to:</p>
         $$
         &#34;&#34;&#34;
 
-        if algorithm is not None:
-                self.config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, algorithm)
-
-        self.algorithm = self.config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
         if (rtol is not None) and (atol is None):
                 self.config.set(&#39;OptimizationRoutine&#39;, &#39;rtol&#39;, str(rtol))
@@ -3143,11 +3202,11 @@ call, the termination criterion changes to:</p>
         if max_iter is not None:
                 self.config.set(&#39;OptimizationRoutine&#39;, &#39;maximum_iterations&#39;, str(max_iter))
 
-        if self.algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
+        if self.algorithm == &#39;gradient_descent&#39;:
                 self.solver = GradientDescent(self)
-        elif self.algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+        elif self.algorithm == &#39;lbfgs&#39;:
                 self.solver = LBFGS(self)
-        elif self.algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;]:
+        elif self.algorithm == &#39;conjugate_gradient&#39;:
                 self.solver = CG(self)
         else:
                 raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)

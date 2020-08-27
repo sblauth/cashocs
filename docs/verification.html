@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cashocs.verification API documentation</title>
-<meta name="description" content="Created on 25/08/2020, 14.52 …" />
+<meta name="description" content="This module includes finite difference Taylor tests to verify the computed gradients." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -23,21 +23,36 @@
 <h1 class="title">Module <code>cashocs.verification</code></h1>
 </header>
 <section id="section-intro">
-<p>Created on 25/08/2020, 14.52</p>
-<p>@author: blauths</p>
+<p>This module includes finite difference Taylor tests to verify the computed gradients.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;
-Created on 25/08/2020, 14.52
+<pre><code class="python"># Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
-@author: blauths
+&#34;&#34;&#34;This module includes finite difference Taylor tests to verify the computed gradients.
+
 &#34;&#34;&#34;
 
-import numpy as np
-import fenics
 import warnings
+
+import fenics
+import numpy as np
 
 
 
@@ -104,10 +119,8 @@ def control_gradient_test(ocp, u=None, h=None):
         if scaling &lt; 1e-3:
                 scaling = 1.0
 
-        ocp.state_problem.has_solution = False
+        ocp._erase_pde_memory()
         Ju = ocp.reduced_cost_functional.evaluate()
-        ocp.adjoint_problem.has_solution = False
-        ocp.gradient_problem.has_solution = False
         grad_Ju = ocp.compute_gradient()
         grad_Ju_h = ocp.form_handler.scalar_product(grad_Ju, h)
 
@@ -117,7 +130,7 @@ def control_gradient_test(ocp, u=None, h=None):
         for eps in epsilons:
                 for j in range(ocp.control_dim):
                         ocp.controls[j].vector()[:] = u[j].vector()[:] + eps * h[j].vector()[:]
-                ocp.state_problem.has_solution = False
+                ocp._erase_pde_memory()
                 Jv = ocp.reduced_cost_functional.evaluate()
 
                 res = abs(Jv - Ju - eps*grad_Ju_h)
@@ -159,10 +172,8 @@ def shape_gradient_test(sop, h=None):
 
         transformation = fenics.Function(sop.shape_form_handler.deformation_space)
 
-        sop.state_problem.has_solution = False
+        sop._erase_pde_memory()
         J_curr = sop.reduced_cost_functional.evaluate()
-        sop.adjoint_problem.has_solution = False
-        sop.shape_gradient_problem.has_solution = False
         shape_grad = sop.compute_shape_gradient()
         shape_derivative_h = sop.shape_form_handler.scalar_product(shape_grad, h)
 
@@ -177,7 +188,7 @@ def shape_gradient_test(sop, h=None):
         for idx, eps in enumerate(epsilons):
                 transformation.vector()[:] = eps*h.vector()[:]
                 if sop.mesh_handler.move_mesh(transformation):
-                        sop.state_problem.has_solution = False
+                        sop._erase_pde_memory()
                         J_pert = sop.reduced_cost_functional.evaluate()
 
                         res = abs(J_pert - J_curr - eps*shape_derivative_h)
@@ -326,10 +337,8 @@ as expected.</dd>
         if scaling &lt; 1e-3:
                 scaling = 1.0
 
-        ocp.state_problem.has_solution = False
+        ocp._erase_pde_memory()
         Ju = ocp.reduced_cost_functional.evaluate()
-        ocp.adjoint_problem.has_solution = False
-        ocp.gradient_problem.has_solution = False
         grad_Ju = ocp.compute_gradient()
         grad_Ju_h = ocp.form_handler.scalar_product(grad_Ju, h)
 
@@ -339,7 +348,7 @@ as expected.</dd>
         for eps in epsilons:
                 for j in range(ocp.control_dim):
                         ocp.controls[j].vector()[:] = u[j].vector()[:] + eps * h[j].vector()[:]
-                ocp.state_problem.has_solution = False
+                ocp._erase_pde_memory()
                 Jv = ocp.reduced_cost_functional.evaluate()
 
                 res = abs(Jv - Ju - eps*grad_Ju_h)
@@ -403,10 +412,8 @@ this quanitity is (about) 2.</dd>
 
         transformation = fenics.Function(sop.shape_form_handler.deformation_space)
 
-        sop.state_problem.has_solution = False
+        sop._erase_pde_memory()
         J_curr = sop.reduced_cost_functional.evaluate()
-        sop.adjoint_problem.has_solution = False
-        sop.shape_gradient_problem.has_solution = False
         shape_grad = sop.compute_shape_gradient()
         shape_derivative_h = sop.shape_form_handler.scalar_product(shape_grad, h)
 
@@ -421,7 +428,7 @@ this quanitity is (about) 2.</dd>
         for idx, eps in enumerate(epsilons):
                 transformation.vector()[:] = eps*h.vector()[:]
                 if sop.mesh_handler.move_mesh(transformation):
-                        sop.state_problem.has_solution = False
+                        sop._erase_pde_memory()
                         J_pert = sop.reduced_cost_functional.evaluate()
 
                         res = abs(J_pert - J_curr - eps*shape_derivative_h)

@@ -1,12 +1,28 @@
-"""
-Created on 25/08/2020, 14.52
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-@author: blauths
+"""This module includes finite difference Taylor tests to verify the computed gradients.
+
 """
 
-import numpy as np
-import fenics
 import warnings
+
+import fenics
+import numpy as np
 
 
 
@@ -73,10 +89,8 @@ def control_gradient_test(ocp, u=None, h=None):
 	if scaling < 1e-3:
 		scaling = 1.0
 
-	ocp.state_problem.has_solution = False
+	ocp._erase_pde_memory()
 	Ju = ocp.reduced_cost_functional.evaluate()
-	ocp.adjoint_problem.has_solution = False
-	ocp.gradient_problem.has_solution = False
 	grad_Ju = ocp.compute_gradient()
 	grad_Ju_h = ocp.form_handler.scalar_product(grad_Ju, h)
 
@@ -86,7 +100,7 @@ def control_gradient_test(ocp, u=None, h=None):
 	for eps in epsilons:
 		for j in range(ocp.control_dim):
 			ocp.controls[j].vector()[:] = u[j].vector()[:] + eps * h[j].vector()[:]
-		ocp.state_problem.has_solution = False
+		ocp._erase_pde_memory()
 		Jv = ocp.reduced_cost_functional.evaluate()
 
 		res = abs(Jv - Ju - eps*grad_Ju_h)
@@ -128,10 +142,8 @@ def shape_gradient_test(sop, h=None):
 
 	transformation = fenics.Function(sop.shape_form_handler.deformation_space)
 
-	sop.state_problem.has_solution = False
+	sop._erase_pde_memory()
 	J_curr = sop.reduced_cost_functional.evaluate()
-	sop.adjoint_problem.has_solution = False
-	sop.shape_gradient_problem.has_solution = False
 	shape_grad = sop.compute_shape_gradient()
 	shape_derivative_h = sop.shape_form_handler.scalar_product(shape_grad, h)
 
@@ -146,7 +158,7 @@ def shape_gradient_test(sop, h=None):
 	for idx, eps in enumerate(epsilons):
 		transformation.vector()[:] = eps*h.vector()[:]
 		if sop.mesh_handler.move_mesh(transformation):
-			sop.state_problem.has_solution = False
+			sop._erase_pde_memory()
 			J_pert = sop.reduced_cost_functional.evaluate()
 
 			res = abs(J_pert - J_curr - eps*shape_derivative_h)

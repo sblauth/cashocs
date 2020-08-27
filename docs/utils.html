@@ -32,7 +32,24 @@ actions.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Module including utility and helper functions.
+<pre><code class="python"># Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
+&#34;&#34;&#34;Module including utility and helper functions.
 
 These module includes utility and helper functions used in cashocs. They
 might also be interesting for users, so they are part of the public API.
@@ -40,11 +57,13 @@ They include wrappers that allow to shorten the coding for often recurring
 actions.
 &#34;&#34;&#34;
 
-import fenics
 import configparser
+
+import fenics
 import numpy as np
-from ._exceptions import PETScKSPError, InputError
 from petsc4py import PETSc
+
+from ._exceptions import InputError, PETScKSPError
 
 
 
@@ -594,7 +613,66 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 
                         if line == &#39;$Nodes\n&#39;:
                                 node_section = True
-                                info_section = True</code></pre>
+                                info_section = True
+
+
+
+def _optimization_algorithm_configuration(config, algorithm=None):
+        &#34;&#34;&#34;Returns the internal name of the optimization algorithm and updates config.
+
+        Parameters
+        ----------
+        config : configparser.ConfigParser or None
+                The config of the problem.
+        algorithm : str or None, optional
+                A string representing user input for the optimization algorithm
+                if this is set via keywords in the .solve() call. If this is
+                None, then the config is used to return a consistent value
+                for internal use. (Default is None).
+
+        Returns
+        -------
+        str
+                Internal name of the algorithms.
+        &#34;&#34;&#34;
+
+        internal_algorithm = None
+
+        if algorithm is not None:
+                overwrite = True
+        else:
+                overwrite = False
+
+        if algorithm is None:
+                algorithm = config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
+
+        assert type(algorithm) == str, &#39;Not a valid input type for algorithm.&#39;
+
+        if algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
+                internal_algorithm = &#39;gradient_descent&#39;
+        elif algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;, &#39;ncg&#39;, &#39;nonlinear_cg&#39;]:
+                internal_algorithm = &#39;conjugate_gradient&#39;
+        elif algorithm in [&#39;lbfgs&#39;, &#39;bfgs&#39;]:
+                internal_algorithm = &#39;lbfgs&#39;
+        elif algorithm in [&#39;newton&#39;]:
+                internal_algorithm = &#39;newton&#39;
+        # elif algorithm in [&#39;ss_newton&#39;, &#39;semi_smooth_newton&#39;]:
+        #       internal_algorithm = &#39;semi_smooth_newton&#39;
+        elif algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
+                internal_algorithm = &#39;pdas&#39;
+        else:
+                raise InputError(&#39;Not a valid choice for the optimization algorithm.\n&#39;
+                                                 &#39;      For a gradient descent method, use `gradient_descent` or `gd`.\n&#39;
+                                                 &#39;      For a nonlinear conjugate gradient method use `cg`, `conjugate_gradient`, `ncg`, or `nonlinear_cg`.\n&#39;
+                                                 &#39;      For a limited memory BFGS method use `bfgs` or `lbfgs`.\n&#39;
+                                                 &#39;      For a truncated Newton method use `newton.`\n&#39;
+                                                 # &#39;    For a semi smooth Newton method use `semi_smooth_newton` or `ss_newton`.\n&#39;
+                                                 &#39;      For a primal dual active set method use `pdas` or `primal dual active set`.&#39;)
+
+        if overwrite:
+                config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, internal_algorithm)
+
+        return internal_algorithm</code></pre>
 </details>
 </section>
 <section>

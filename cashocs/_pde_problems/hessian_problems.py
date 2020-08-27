@@ -1,3 +1,20 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Created on 25/08/2020, 08.28
 
@@ -6,9 +23,10 @@ Created on 25/08/2020, 08.28
 
 import fenics
 import numpy as np
-from .._exceptions import NotConvergedError, ConfigError, cashocsException
 from petsc4py import PETSc
-from ..utils import _assemble_petsc_system, _solve_linear_problem, _setup_petsc_options
+
+from .._exceptions import ConfigError, NotConvergedError, cashocsException
+from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
 
@@ -107,7 +125,7 @@ class BaseHessianProblem:
 		self.adjoints_prime = self.form_handler.adjoints_prime
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-		if not self.form_handler.state_is_picard:
+		if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 
 			for i in range(self.state_dim):
 				A, b = _assemble_petsc_system(self.form_handler.sensitivity_eqs_lhs[i], self.form_handler.sensitivity_eqs_rhs[i], self.bcs_list_ad[i])

@@ -1,3 +1,20 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """Private module forms of cashocs.
 
 This is used to carry out form manipulations such as generating the UFL
@@ -5,18 +22,20 @@ This is used to carry out form manipulations such as generating the UFL
 problems.
 """
 
+import json
+import warnings
+
 import fenics
+import numpy as np
+from petsc4py import PETSc
 from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
-import numpy as np
-from petsc4py import PETSc
+
+from ._exceptions import InputError
 from ._shape_optimization import Regularization
-from .utils import (_assemble_petsc_system, _setup_petsc_options,
-					_solve_linear_problem, summation, _optimization_algorithm_configuration)
-from ._exceptions import InputError, ConfigError
-import json
-import warnings
+from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration,
+					_setup_petsc_options, _solve_linear_problem, summation)
 
 
 
@@ -147,7 +166,7 @@ class FormHandler:
 		None
 		"""
 
-		if self.state_is_linear and not self.state_is_picard:
+		if self.state_is_linear:
 			self.state_eq_forms = [replace(self.state_forms[i], {self.states[i] : self.trial_functions_state[i],
 																 self.adjoints[i] : self.test_functions_state[i]})
 								   for i in range(self.state_dim)]

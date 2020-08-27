@@ -44,6 +44,15 @@ Setup (external)
   - Alternatively, use the environment file conda_env.yml to install the packages
     (or maybe even newer versions of them) via conda-forge and pip
 
+  - If you want to have the mesh-convert and / or remeshing functionality, you should
+    install [gmsh](https://gmsh.info) (version 4.6.0) and [meshio](https://pypi.org/project/meshio/4.0.16/) (version 4.0.16).
+    For the mesh convert, meshio version has to be at least 4, and for the remeshing
+    gmsh needs to be able to write MSH4.1 format, at least. Additionally, gmsh has to
+    be able to be called via
+
+    `gmsh`
+
+    from the command line, for remeshing to work.
 
 - Run the setup (currently only supprted from the directory of the repository, i.e.,
   the directory of this file) via
@@ -66,6 +75,16 @@ Documentation
 The documentation of the project can be found in the docs folder, just open "index.html"
 to view them in a web browser. Hower, I recommend using the documented demos in the demos
 folder as reference, as they indicate more clearly how to actually use the project.
+
+
+License
+-------
+
+CASHOCS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+CASHCOS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with CASHOCS. If not, see <http://www.gnu.org/licenses/>.
 
 
 Contact / About

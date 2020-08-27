@@ -1,19 +1,34 @@
-"""
-Created on 26/02/2020, 11.13
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-@author: blauths
+"""Class representing an abstract optimal control problem.
+
 """
 
 import fenics
-from ..optimization_problem import OptimizationProblem
-from .._forms import Lagrangian, ControlFormHandler
-from .._pde_problems import (StateProblem, AdjointProblem, GradientProblem,
-							 HessianProblem, SemiSmoothHessianProblem, UnconstrainedHessianProblem)
-from .._optimal_control import ReducedCostFunctional
-from .methods import GradientDescent, LBFGS, CG, Newton, PDAS, SemiSmoothNewton
-from .._exceptions import InputError, ConfigError
-from ..utils import _optimization_algorithm_configuration
 import numpy as np
+
+from .methods import CG, GradientDescent, LBFGS, Newton, PDAS, SemiSmoothNewton
+from .._exceptions import ConfigError, InputError
+from .._forms import ControlFormHandler, Lagrangian
+from .._optimal_control import ReducedCostFunctional
+from .._pde_problems import (AdjointProblem, GradientProblem, HessianProblem, SemiSmoothHessianProblem, StateProblem, UnconstrainedHessianProblem)
+from ..optimization_problem import OptimizationProblem
+from ..utils import _optimization_algorithm_configuration
 
 
 
@@ -256,7 +271,24 @@ class OptimalControlProblem(OptimizationProblem):
 			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
 
 		return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
-
+	
+	
+	
+	def _erase_pde_memory(self):
+		"""Resets the memory of the PDE problems so that new solutions are computed.
+		
+		This sets the value of has_solution to false for all relevant PDE problems,
+		where memory is stored.
+		
+		Returns
+		-------
+		None
+		"""
+		
+		self.state_problem.has_solution = False
+		self.adjoint_problem.has_solution = False
+		self.gradient_problem.has_solution = False
+		
 
 		
 	def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):

@@ -1,14 +1,30 @@
-"""
-Created on 01.04.20, 11:27
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-@author: sebastian
+"""A primal dual active set strategy for control constraints.
+
 """
 
 import fenics
 import numpy as np
+
+from .pdas_inner_solvers import InnerCG, InnerGradientDescent, InnerLBFGS, InnerNewton
+from ..._exceptions import ConfigError, NotConvergedError
 from ..._optimal_control import OptimizationAlgorithm
-from .pdas_inner_solvers import InnerCG, InnerLBFGS, InnerNewton, InnerGradientDescent
-from ..._exceptions import NotConvergedError, ConfigError
 
 
 
@@ -93,7 +109,10 @@ class PDAS(OptimizationAlgorithm):
 		### TODO: Check for feasible initialization
 
 		self.compute_active_inactive_sets()
-
+		
+		self.state_problem.has_solution = False
+		self.adjoint_problem.has_solution = False
+		self.gradient_problem.has_solution = False
 		func_value = self.optimization_problem.reduced_cost_functional.evaluate()
 		self.optimization_problem.state_problem.has_solution = True
 		self.optimization_problem.gradient_problem.solve()
@@ -119,7 +138,8 @@ class PDAS(OptimizationAlgorithm):
 
 			func_value = self.inner_solver.line_search.objective_step
 			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
-
+			
+			self.relative_norm = norm / norm_init
 
 			if self.iteration >= self.maximum_iterations:
 				# self.print_results()

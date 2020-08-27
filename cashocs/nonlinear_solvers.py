@@ -1,3 +1,20 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """Custom solvers for nonlinear equations.
 
 This module has custom solvers for nonlinear PDEs, including a damped
@@ -7,8 +24,9 @@ follow.
 
 import fenics
 from petsc4py import PETSc
-from .utils import _setup_petsc_options, _solve_linear_problem
+
 from ._exceptions import NotConvergedError
+from .utils import _setup_petsc_options, _solve_linear_problem
 
 
 
@@ -141,6 +159,11 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	b = fenics.as_backend_type(residuum).vec()
 	
 	res_0 = residuum.norm(norm_type)
+	if res_0 == 0.0:
+		if verbose:
+			print('Residual vanishes, input is already a solution.')
+		return u
+
 	res = res_0
 	if verbose:
 		print('Newton Iteration ' + format(iterations, '2d') + ' - residuum (abs):  '
