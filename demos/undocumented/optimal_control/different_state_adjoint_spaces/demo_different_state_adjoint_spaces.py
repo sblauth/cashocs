@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For a documentation of this demo see demo_different_state_adjoint_spaces.md
+"""This demo shows how to use different discretizations for state and
+adjoint system.
 
 """
 

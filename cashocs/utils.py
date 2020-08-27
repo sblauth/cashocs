@@ -250,7 +250,7 @@ def create_config(path):
 
 
 
-def create_bcs_list(function_space, value, boundaries, idcs):
+def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 	"""Create several Dirichlet boundary conditions at once.
 
 	Wraps multiple Dirichlet boundary conditions into a list, in case
@@ -292,10 +292,10 @@ def create_bcs_list(function_space, value, boundaries, idcs):
 	bcs_list = []
 	if type(idcs) == list:
 		for i in idcs:
-			bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i))
+			bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, i, **kwargs))
 
 	elif type(idcs) == int:
-		bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, idcs))
+		bcs_list.append(fenics.DirichletBC(function_space, value, boundaries, idcs, **kwargs))
 
 	return bcs_list
 

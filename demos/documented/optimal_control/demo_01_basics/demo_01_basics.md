@@ -5,7 +5,9 @@ In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
-min J(y, u) = 1/2 || y - y<sub>d</sub> ||<sub>&Omega;</sub><sup>2</sup> + &alpha;/2  || u ||<sub>&Omega;</sub><sup>2</sup>
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%5COmega%7D+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%7B%5COmega%7D+u%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x">
 
 
 subject to <img src=
@@ -17,15 +19,18 @@ y &= 0 \quad \text{ on }\; \Gamma
 ">
 
 
-(see, e.g., Tröltzsch, Optimal Control of Partial Differential Equations,
-or Hinze et al., Optimization with PDE constraints). Here,
-the norm is the L<sup>2</sup> norm on &Omega;.
+(see, e.g., [Tröltzsch, Optimal Control of Partial Differential Equations](https://doi.org/10.1090/gsm/112),
+or [Hinze et al., Optimization with PDE constraints](https://doi.org/10.1007/978-1-4020-8839-1)).
 
 For this first example, we do not consider control constraints,
 but search for an optimal control u in the entire space
-L<sup>2</sup>(&Omega;), for the sake of simplicitiy. For
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E2%28%5COmega%29"
+alt="L^2(\Omega)">, for the sake of simplicitiy. For
 the domain under consideration, we use the unit square
-&Omega; = (0,1)x(0,1), since this is built into cashocs.
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
+alt="\Omega = (0, 1) \times (0,1)">, since this is built into cashocs.
 
 In the following, we will describe how to solve this problem
 using cashocs, using as much of the package as possible. Moreover,
@@ -41,13 +46,6 @@ better readability we import everyting from the fenics package.
     from fenics import *
     import cashocs
 
-At the beginning of the script it is usually very beneficial
-to disable the verbose output of fenics such that it does not
-interfere with cashocs's output. Therefore, we use the line
-
-    set_log_level(LogLevel.CRITICAL)
-
-which disables most of fenics's output messages.
 
 Next, we have to load the config file which loads the user's
 input parameters into the script. For a detailed documentation
@@ -80,14 +78,15 @@ via
 The input for regular_mesh determines the number of elements that
 are placed along each axis of the square. Note, that the mesh could be
 further manipulated with additional, optional arguments, and we
-refer to the documentation of regular_mesh for more infos. Note,
-that the subdomains object is a (empty) MeshFunction, and that
-boundaries is MeshFunction that contains markers for the following
+refer to the documentation of `regular_mesh` for more infos. Note,
+that the `subdomains` object is a (empty) MeshFunction, and that
+`boundaries` is MeshFunction that contains markers for the following
 boundaries
 - The left side of the square is marked by 1
 - The right side is marked by 2
 - The bottom is marked by 3
 - The top is marked by 4
+
 Again, we refer the reader to the documentation of regular_mesh
 for the marking conventions.
 
@@ -104,14 +103,14 @@ Definition of the state equation
 
 To describe the state system in cashocs, we use nearly standard
 fenics syntax, and the differences will be highlighted in the
-following. First, we define a Function object that models our
-state variable y, and a Function that models the corresponding
+following. First, we define a Function `y` that models our
+state variable y, and a Function `p` that models the corresponding
 adjoint variable p via
 
     y = Function(V)
     p = Function(V)
 
-Next up, we analogously define the control variable as a Function
+Next up, we analogously define the control variable as Function `u`
 
     u = Function(V)
 
@@ -166,7 +165,7 @@ boundaries 1,2,3, and 4, i.e., everywhere.
 >     bc = DirichletBC(V, Constant(0), boundary)
 >
 > which would yield a single DirichletBC object, instead of
-> the list returned by create_bcs_list. Any of the many methods for
+> the list returned by `create_bcs_list`. Any of the many methods for
 > defining the boundary conditions works here, as long as it
 > is valid input for the fenics' solve function.
 
@@ -181,11 +180,11 @@ Definition of the cost functional
 
 Now, we have to define the optimal control problem which we do
 by first specifying the cost functional. To do so, we define the
-desired state y_d as an UFL expression, i.e.,
+desired state y<sub>d</sub> as an UFL expression `y_d`, i.e.,
 
     y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 
-Alternatively, y_d could also be a function or any other object
+Alternatively, `y_d` could also be a function or any other object
 that is usable in an UFL form (e.g. generate with SpatialCoordinate).
 
 Then, we define the regularization parameter alpha and the tracking-type
@@ -204,11 +203,23 @@ so that we have only very little overhead.
 Definition of the optimization problem and its solution
 -------------------------------------------------------
 
-Finally, we set up an optimal control problem ocp and then
+Finally, we set up an optimal control problem `ocp` and then
 directly solve it via cashocs with the commands
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()
+
+Note, that the `solve` command without any additional keyword arguments leads to
+cashocs using the settings defined in the config file. However, there are some options
+that can be directly set with keyword arguments for the `solve` call. These are
+
+  - `algorithm` : Specifies which solution algorithm shall be used.
+  - `rtol` : The relative tolerance for the optimization algorithm.
+  - `atol` : The absolute tolerance for the optimization algorithm.
+  - `max_iter` : The maximum amount of iterations that can be carried out.
+
+The possible values for these are the same as the corresponding ones in the config file.
+This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
 
 This concludes the demo, and the corresponding full code can
 be found in the file "demo_01.py".

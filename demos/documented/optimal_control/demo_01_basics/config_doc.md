@@ -115,17 +115,15 @@ The first parameter determines the choice of the particular algorithm, via
     algorithm = lbfgs
 
 The possible choices are given by
-- 'gd' or 'gradient_descent' : A gradient descent method
+- `gd` or `gradient_descent` : A gradient descent method
 
-- 'cg' or 'conjugate_gradient' : Nonlinear CG methods
+- `cg`, `conjugate_gradient`, `ncg`, `nonlinear_cg` : Nonlinear CG methods
 
-- 'lbfgs' or 'bfgs' : limited memory BFGS method
+- `lbfgs` or `bfgs` : limited memory BFGS method
 
-- 'newton' : a truncated Newton method
+- `newton` : a truncated Newton method
 
-- 'semi_smooth_newton' : a semi-smooth newton method
-
-- 'pdas' or 'primal_dual_active_set' : a primal dual active set method
+- `pdas` or `primal_dual_active_set` : a primal dual active set method
     (for control constraints)
 
 
@@ -223,15 +221,15 @@ Nonlinear conjugate gradient methods
 
 Determines which of the nonlinear cg methods shall be used. Available are
 
-- 'FR' : The Fletcher-Reeves method
+- `FR` : The Fletcher-Reeves method
 
-- 'PR' : The Polak-Ribiere method
+- `PR` : The Polak-Ribiere method
 
-- 'HS' : The Hestenes-Stiefel method
+- `HS` : The Hestenes-Stiefel method
 
-- 'DY' : The Dai-Yuan method
+- `DY` : The Dai-Yuan method
 
-- 'HZ' : The Hager-Zhang method
+- `HZ` : The Hager-Zhang method
 
 
     cg_periodic_restart = False
@@ -249,7 +247,7 @@ Another possibility to restart NCG methods is based on a relative criterion
 
     cg_relative_restart = False
 
-and the corresponding relative tolerance (which should lie in (0,1)) is determined via
+and the corresponding relative tolerance (which should lie in (0,1) ) is determined via
 
     cg_restart_tol = 0.5
 
@@ -268,9 +266,9 @@ Newton method are determined in the following.
 Determines the Krylov method for the solution of the Newton problem. Should be one
 of
 
-- 'cg' : A linear conjugate gradient method
+- `cg` : A linear conjugate gradient method
 
-- 'cr' : A conjugate residual method
+- `cr` : A conjugate residual method
 
 Note, that all of these Krylov solvers are streamlined for symmetric linear
 operators, which the Hessian is (should be also positive definite for a minimizer
@@ -300,13 +298,13 @@ This parameter determines which solution algorithm is used for the inner
 (unconstrained) optimization problem in the primal dual active set method.
 Can be one of
 
-- 'gd' or 'gradient_descent' : A gradient descent method
+- `gd` or `gradient_descent` : A gradient descent method
 
-- 'cg' or 'conjugate_gradient' : A nonlinear conjugate gradient method
+- `cg`, `conjugate_gradient`, `ncg`, or `nonlinear_cg` : A nonlinear conjugate gradient method
 
-- 'lbfgs' or 'bfgs' : A limited memory BFGS method
+- `lbfgs` or `bfgs` : A limited memory BFGS method
 
-- 'newton' : A truncated newton method
+- `newton` : A truncated newton method
 
 Note, that the parameters for these inner solvers are determined via the same
 interfaces used for the solution algorithms, i.e, setting

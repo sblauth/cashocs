@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 18/08/2020, 10.55
+"""This demo shows the interface for specifying the linear solvers.
 
-@author: blauths
 """
 
 from fenics import *

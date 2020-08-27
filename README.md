@@ -1,7 +1,7 @@
 CASHOCS
 =========
 
-cashocs is a **C**omputational **A**djoint based **SH**ape optimization and **O**ptimal **C**ontrol **S**oftware for python.
+CASHOCS is a **C**omputational **A**djoint based **SH**ape optimization and **O**ptimal **C**ontrol **S**oftware for python.
 
 
 Installation
@@ -59,15 +59,6 @@ Setup (external)
 
     `bash setup.sh`
 
-- Remember to activate your environment with the
-
-    `activate`
-
-  command
-
-
-- Have fun!
-
 
 Documentation
 -------------
@@ -75,6 +66,16 @@ Documentation
 The documentation of the project can be found in the docs folder, just open "index.html"
 to view them in a web browser. Hower, I recommend using the documented demos in the demos
 folder as reference, as they indicate more clearly how to actually use the project.
+
+
+Testing
+-------
+
+To run the unit tests for this CASHOCS, run
+
+    pytest
+
+from the ./tests directory.
 
 
 License
@@ -87,6 +88,15 @@ CASHCOS is distributed in the hope that it will be useful, but WITHOUT ANY WARRA
 You should have received a copy of the GNU General Public License along with CASHOCS. If not, see <http://www.gnu.org/licenses/>.
 
 
+Contributing
+------------
+
+CASHOCS is available on gitlab. As this project is part of my PhD, I am currently
+the sole developer. Bug reports, feedback, and further suggestions are always
+welcome. If you want to implement new features for CASHOCS, please consider
+contacting me first.
+
+
 Contact / About
 ---------------
 
@@ -94,7 +104,3 @@ I'm Sebastian Blauth, a PhD student at Fraunhofer ITWM and TU Kaiserslautern,
 and I developed this project as part of my work. If you have any questions /
 suggestions / feedback, etc., you can contact me via
 [sebastian.blauth@itwm.fraunhofer.de](mailto:sebastian.blauth@itwm.fraunhofer.de).
-
-As this project is part of my PhD, it has to be adapted to my needs, so use it with care.
-Note, that future updates may break some of your code based on this package,
-but I try my best that this does not happen.

@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 01.04.20, 11:51
+"""Line search for inner PDAS solvers.
 
-@author: sebastian
 """
 
 import numpy as np

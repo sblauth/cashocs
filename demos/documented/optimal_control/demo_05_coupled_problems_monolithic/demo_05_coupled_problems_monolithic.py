@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For a documentation of this demo see demo_05.md
+"""For a documentation of this demo see demo_05_coupled_problems_monolithic.md
 
 """
 
@@ -24,9 +24,7 @@ import cashocs
 
 
 
-set_log_level(LogLevel.CRITICAL)
 config = cashocs.create_config('config.ini')
-
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 
 elem_1 = FiniteElement('CG', mesh.ufl_cell(), 1)

@@ -244,7 +244,7 @@ class OptimizationProblem:
 		assert len(self.ksp_options) == self.state_dim, 'Length of states does not match'
 		assert len(self.adjoint_ksp_options) == self.state_dim, 'Length of states does not match'
 
-		fenics.set_log_level(fenics.LogLevel.ERROR)
+		fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
 		self.state_problem = None
 		self.adjoint_problem = None

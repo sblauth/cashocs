@@ -1,0 +1,58 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
+"""For a documentation of this demo see demo_07_stokes_control.md
+
+"""
+
+from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
+
+v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
+p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
+U = VectorFunctionSpace(mesh, 'CG', 1)
+
+up = Function(V)
+u, p = split(up)
+vq = Function(V)
+v, q = split(vq)
+c = Function(U)
+
+e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx - inner(c, v)*dx
+
+def pressure_point(x, on_boundary):
+	return near(x[0], 0) and near(x[1], 0)
+no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
+lid_velocity = Expression(('4*x[0]*(1-x[0])', '0.0'), degree=2)
+bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
+bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
+bcs = no_slip_bcs + [bc_lid, bc_pressure]
+
+alpha = 1e-5
+u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
+J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*dx
+
+ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
+ocp.solve()
+
+u, p = up.split(True)
+v, q = vq.split(True)

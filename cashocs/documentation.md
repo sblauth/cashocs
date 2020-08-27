@@ -49,7 +49,7 @@ use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with fenics.
 
-For a detailed discussion of the features of cashocs and its usage we refer to the deomos.
+For a detailed discussion of the features of cashocs and its usage we refer to the demos.
 
 
 Command line interface for mesh conversion
@@ -64,23 +64,6 @@ is given by
 
 This also create .xdmf files for subdomains and boundaries in case they are tagged
 in gmsh as Physical quantities.
-
-
-A word of caution
------------------
-
-I develop cashocs as part of my PhD. I will try my best to document everything
-the package is capable of and to maintain the project in a sensible fashion.
-However, I cannot guarantee this. It is still undergoing many developments and,
-unfortunately, the API still may undergo large changes. So use it with care.
-
-
-Contributing
-------------
-
-cashocs is available on gitlab. As this project is part of my PhD, I am currently
-the sole developer. Bug reports, feedback, and further suggestions are always
-welcome.
 
 
 License
@@ -98,3 +81,16 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
+
+Contact / About
+---------------
+
+I'm Sebastian Blauth, a PhD student at Fraunhofer ITWM and TU Kaiserslautern,
+and I developed this project as part of my work. If you have any questions /
+suggestions / feedback, etc., you can contact me via
+[sebastian.blauth@itwm.fraunhofer.de](mailto:sebastian.blauth@itwm.fraunhofer.de).
+
+
+
+Copyright (C) 2020 Sebastian Blauth
