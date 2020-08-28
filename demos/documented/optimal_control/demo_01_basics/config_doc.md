@@ -1,5 +1,5 @@
-Documentation of the config files for optimal control problems
-==============================================================
+## Documentation of the config files for optimal control problems
+
 
 Let us take a look at how the config files are structured for optimal control problems.
 The corresponding config file is located at './config.ini'.
@@ -8,8 +8,8 @@ First of all, the config is divided into three sections: Mesh, StateEquation, an
 These manage the settings for the mesh, the state equation of the optimization problem, and for the solution
 algorithm, respectively.
 
-Mesh
-----
+**Mesh**
+
 
 The mesh section consists, for optimal control problems, only of a path to the .xdmf version of the mesh file
 
@@ -24,8 +24,8 @@ To convert a .msh file to the .xdmf format, you can use the built-in converter a
 from the command line.
 
 
-StateEquation
--------------
+**StateEquation**
+
 
 The state equation section is used to detail how the state systems and, hence, also the
 adjoint systems are solved. This includes settings for a Picard iteration. The section
@@ -102,8 +102,7 @@ for the state system, but this is planned in a future release, and will be
 available via the config files.
 
 
-OptimizationRoutine
--------------------
+**OptimizationRoutine**
 
 The final section is the heart of the solution algorithm, which can be customized here.
 It starts with
@@ -195,8 +194,8 @@ in the folder "pvd", located in the same directory as the optimization script.
 The following sections describe parameters that belong to the certain solution
 algorithms, and are also specified under the [OptimizationRoutine] section.
 
-Limited memory BFGS method
---------------------------
+***Limited memory BFGS method***
+
 
 For the L-BFGS method we have the following parameters.
 
@@ -214,8 +213,8 @@ This determines, whether one should use a scaling of the initial Hessian approxi
 (see Nocedal and Wright, Numerical Optimization). This is usually very beneficial
 and should be kept enabled.
 
-Nonlinear conjugate gradient methods
-------------------------------------
+***Nonlinear conjugate gradient methods***
+
 
     cg_method = PR
 
@@ -255,8 +254,7 @@ Note, that this relative restart reinitializes the iteration with a gradient
 step in case subsequent gradients are not "sufficiently" orthogonal anymore.
 
 
-Truncated Newton method
------------------------
+***Truncated Newton method***
 
 The parameters for both the classical truncated Newton method and for the semi-smooth
 Newton method are determined in the following.
@@ -287,8 +285,8 @@ of whether this is converged or not
 This determines the relative tolerance of the iterative Krylov solver for the
 Hessian problem.
 
-Primal-Dual-Active-Set Method
------------------------------
+***Primal-Dual-Active-Set Method***
+
 
 Finally, we take a look at the parameters for the primal dual active set method.
 

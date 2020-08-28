@@ -17,6 +17,8 @@
 
 """For the documentation of this demo, see demo_01_basics.md
 
+.. include:: ./demo_01_basics.md
+
 """
 
 from fenics import *

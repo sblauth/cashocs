@@ -1,5 +1,5 @@
-Demo 06 : Coupled Problems Part II - Picard Approach
-====================================================
+## Demo 06 : Coupled Problems Part II - Picard Approach
+
 
 In this demo we show how cashocs can be used with a coupled PDE constraint.
 For this demo, we consider a iterative approach, whereas we investigated
@@ -27,8 +27,7 @@ the first PDE is solved, with the second state variable being fixed. Then, the s
 with the value of the first variable fixed (to the one obtained by the prior solve). This is then repeated
 until convergence is reached (but of course this does not have to occur).
 
-Initialization
---------------
+**Initialization**
 
 The setup is as usual
 
@@ -48,8 +47,8 @@ the Picard iteration as solver for the state PDEs, we now specify
 in the config file. Note, that only the flag is_linear = false works for the Picard iteration, regardless
 of the actual (non)-linearity of the underlying problem.    
 
-Definition of the state equations
----------------------------------
+**Definition of the state equations**
+
 
 As we solve both PDEs decoupled (or seperately), we now only need a single FunctionSpace object. The
 corresponding state and adjoint variables are defined via
@@ -84,8 +83,8 @@ The boundary conditions are treated analogously
     bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
     bcs = [bcs1, bcs2]
 
-Definition of the optimization problem
---------------------------------------
+**Definition of the optimization problem**
+
 
 The same is true for the cost functional
 

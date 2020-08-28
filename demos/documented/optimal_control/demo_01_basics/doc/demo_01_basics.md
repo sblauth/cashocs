@@ -1,15 +1,25 @@
-## Demo 01 : Basics
+Module demo_01_basics
+=====================
+For the documentation of this demo, see demo_01_basics.md
+
+Demo 01 : Basics
+================
 
 In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
-$$\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
-\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
-\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
-$$
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%5COmega%7D+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%7B%5COmega%7D+u%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x">
 
-
+subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D%0A"
+alt="\begin{align*}
+-\Delta y &= u \quad \text{ in }\; \Omega,\\
+y &= 0 \quad \text{ on }\; \Gamma
+\end{align*}
+">
 
 (see, e.g., [Tröltzsch, Optimal Control of Partial Differential Equations](https://doi.org/10.1090/gsm/112),
 or [Hinze et al., Optimization with PDE constraints](https://doi.org/10.1007/978-1-4020-8839-1)).
@@ -29,14 +39,14 @@ using cashocs, using as much of the package as possible. Moreover,
 we also detail alternative / equivalent FEniCS code which could
 be used to define the problem instead.
 
-**The initialization**
+The initialization
+------------------
 
 We begin by importing fenics and cashocs. For the sake of
 better readability we import everyting from the fenics package.
 
     from fenics import *
     import cashocs
-
 
 Next, we have to load the config file which loads the user's
 input parameters into the script. For a detailed documentation
@@ -89,8 +99,8 @@ fenics syntax
 which creates a function space of continuous, linear Lagrange
 elements.
 
-**Definition of the state equation**
-
+Definition of the state equation
+--------------------------------
 
 To describe the state system in cashocs, we use nearly standard
 fenics syntax, and the differences will be highlighted in the
@@ -166,8 +176,8 @@ the only major difference lies in the definition of the state
 and adjoint variables as Function objects, instead of Trial- and
 TestFunctions.
 
-**Definition of the cost functional**
-
+Definition of the cost functional
+---------------------------------
 
 Now, we have to define the optimal control problem which we do
 by first specifying the cost functional. To do so, we define the
@@ -191,8 +201,8 @@ would have to be performed in this (or a similar) way in fenics
 when one would want to evaluate the (reduced) cost functional,
 so that we have only very little overhead.
 
-**Definition of the optimization problem and its solution**
-
+Definition of the optimization problem and its solution
+-------------------------------------------------------
 
 Finally, we set up an optimal control problem `ocp` and then
 directly solve it via cashocs with the commands

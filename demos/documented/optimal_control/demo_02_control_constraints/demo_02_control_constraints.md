@@ -1,5 +1,5 @@
-Demo 02 : Control Constraints
-=============================
+## Demo 02 : Control Constraints
+
 
 In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
@@ -34,8 +34,8 @@ as domain the unit square, i.e., <img src=
 "https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
 alt="\Omega = (0, 1) \times (0,1)">.
 
-Initialization
---------------
+**Initialization**
+
 
 The beginning of the script is completely identical to the
 one of the previous example, so we only restate the corresponding
@@ -63,8 +63,8 @@ in the documentation of "demo_01.py".
     alpha = 1e-6
     J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 
-Definition of the control constraints
--------------------------------------
+**Definition of the control constraints**
+
 
 Here, we have nearly everything at hand to define the optimal
 control problem, the only missing ingredient are the box constraints,
@@ -85,8 +85,8 @@ into the list `cc`, which models the control constraints, i.e.,
 Note, that we discuss alternative methods of defining the box
 constraints at the end of this documentation.
 
-Setup of the optimization problem and its solution
---------------------------------------------------
+**Setup of the optimization problem and its solution**
+
 
 Now, we can set up the optimal control problem as we did before,
 using the additional keyword argument control_constraints into which

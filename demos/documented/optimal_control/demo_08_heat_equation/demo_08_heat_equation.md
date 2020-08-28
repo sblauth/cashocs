@@ -1,5 +1,5 @@
-Demo 08 : Heat Equation (Time Dependent Problems)
-=================================================
+## Demo 08 : Heat Equation (Time Dependent Problems)
+
 
 In this demo  we take a look at how time dependent problems can be treated with cashocs.
 To do so, we investigate a problem considered in [Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model](https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727) (my Master's thesis). It reads
@@ -35,8 +35,8 @@ alt="\Omega = (0, 1)^2">. And for the initial condition we use <img src=
 alt="y_0 = 0">.
 
 
-Temporal Discretization
------------------------
+**Temporal Discretization**
+
 
 For the temporal discretization, we use the implicit Euler scheme as this is unconditionally stable for the parabolic heat equation. This means, we discretize the
 interval <img src=
@@ -85,8 +85,8 @@ alt="(y_d)_k \approx y_d(t_k)"> is an approximation of the desired state at time
 
 Let us now investigate how to solve this problem with cashocs.
 
-Initialization
---------------
+**Initialization**
+
 
 This section is the same as for all previous problems and is done via
 
@@ -138,8 +138,7 @@ approximations of the desired state, and the summands of the cost functional.
     e = []
     J_list = []
 
-Definition of the optimization problem
---------------------------------------
+**Definition of the optimization problem**
 
 For the desired state, we define it with the help of a fenics expression, that is
 dependent on an additional parameter which models the time.

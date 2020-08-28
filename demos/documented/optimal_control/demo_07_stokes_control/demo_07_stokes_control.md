@@ -1,5 +1,4 @@
-Demo 07 : Optimal Control of a Stokes Problem
-=============================================
+## Demo 07 : Optimal Control of a Stokes Problem
 
 In this demo we investigate how cashocs can be used to tackle a different class
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
@@ -38,8 +37,8 @@ specifying the value of the pressure at a single point in the domain. Alternativ
 we could have also required that, e.g., the integral of the velocity u over &Omega;
 vanishes (the implementation would then only be slightly longer, but not as intuitive).
 
-Initialization
---------------
+**Initialization**
+
 As with all previous problems so far, the initialization is the same, i.e.,
 
     from fenics import *
@@ -100,8 +99,8 @@ velocity for the lid of the cavity as a fenics Expression, and create a correspo
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,
 that in order to make this work, one has to specify the keyword argument `method='pointwise'`.
 
-Defintion of the optimization problem
--------------------------------------
+**Defintion of the optimization problem**
+
 
 The definition of the optimization problem is in complete analogy to the previous
 ones we considered. The only difference is the fact that we now have to use `inner`

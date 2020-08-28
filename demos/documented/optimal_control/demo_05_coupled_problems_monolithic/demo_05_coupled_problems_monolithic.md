@@ -1,5 +1,5 @@
-Demo 05 : Coupled Problems Part I - Monolithic Approach
-=======================================================
+## Demo 05 : Coupled Problems Part I - Monolithic Approach
+
 
 In this demo we show how cashocs can be used with a coupled PDE constraint.
 For this demo, we consider a monolithic approach, whereas we investigate
@@ -23,8 +23,8 @@ z &= 0 \quad \text{ on }\; \Gamma, \\
 
 In constrast to the example in demo_04, the system is now two-way coupled. To solve it, we employ a mixed finite element method in this demo.
 
-Initialization and variable definitions
----------------------------------------
+**Initialization and variable definitions**
+
 
 The initialization for this example works as before, i.e., we use
 
@@ -72,8 +72,8 @@ and group them to the list controls.
 > the de-facto behavior of both methods is completely identical, just the interpretation is slightly
 > different (since the individual components of the V FunctionSpace are also CG1 functions).
 
-Definition of the mixed weak form
----------------------------------
+**Definition of the mixed weak form**
+
 
 Next, we define the mixed weak form, by specifying the components individually and then summing them up
 
@@ -93,8 +93,8 @@ Moreover, we define the boundary conditions for the components as
 Again, note that we now return a single list of DirichletBC objects, since both lists specify the boundary
 conditions for the components of `state`.
 
-Defintion of the optimization problem
--------------------------------------
+**Defintion of the optimization problem**
+
 
 The cost functional can be specified in analogy to the previous one
 

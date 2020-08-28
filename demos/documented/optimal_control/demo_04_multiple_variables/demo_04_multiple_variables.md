@@ -1,5 +1,5 @@
-Demo 04 : Multiple Variables
-============================
+## Demo 04 : Multiple Variables
+
 
 In this demo we show how cashocs can be used to treat multiple
 state equations as constraint. Additionally, this also highlights
@@ -29,8 +29,8 @@ either decoupled or only one-way coupled, the corresponding state equations are 
 so that every input related to the state and adjoint variables has to be put into a ordered list, so
 that they can be treated subsequently.
 
-Initialization
---------------
+**Initialization**
+
 
 The initial setup is identical to the previous cases, where we again use
 
@@ -44,8 +44,7 @@ The initial setup is identical to the previous cases, where we again use
 
 which defines the geometry and the function space.
 
-Defintion of the variables
---------------------------
+**Defintion of the variables**
 
 Next, we have to define the state, adjoint, and control variables, which
 we do with
@@ -70,8 +69,8 @@ Note, that the control variables are completely independent of the state
 and adjoint ones, so that the relative ordering between these objects does
 not matter.
 
-Defintion of the state equations / state system
------------------------------------------------
+**Defintion of the state equations / state system**
+
 
 Now, we can define the PDE constraints corresponding to `y` and `z`, which
 read in fenics syntax
@@ -94,8 +93,8 @@ Dirichlet conditions, which we generate via
 
 and who are also put into a joint list.
 
-Defintion of the cost functional and optimization problem
----------------------------------------------------------
+**Defintion of the cost functional and optimization problem**
+
 
 For the optimization problem we now define the cost functional via
 

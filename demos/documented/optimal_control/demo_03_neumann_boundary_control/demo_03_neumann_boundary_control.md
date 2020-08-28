@@ -1,5 +1,5 @@
-Demo 03 : Neumann boundary control
-==================================
+## Demo 03 : Neumann boundary control
+
 
 In this demo we investigate an optimal control problem with
 a Neumann type boundary control. This problem reads
@@ -21,8 +21,7 @@ Note, that we cannot use a simple Poisson equation as constraint
 since this would not be compatible with the boundary conditions
 (i.e. not well-posed).
 
-Initialization
---------------
+**Initialization**
 
 Initially, the code is again identical to the one demo_01 and demo_02,
 i.e., we have
@@ -39,8 +38,8 @@ i.e., we have
     p = Function(V)
     u = Function(V)
 
-Definition of the state equation
---------------------------------
+**Definition of the state equation**
+
 
 Now, the definition of the state problem obviously differs from the
 previous two examples, and we now use
@@ -59,8 +58,8 @@ use
 >
 > instead
 
-Definition of the cost functional
----------------------------------
+**Definition of the cost functional**
+
 
 The definition of the cost functional is now nearly identical to before,
 only the integration measure for the regularization term changes, so that we have
@@ -81,8 +80,8 @@ The scalar_product always has to be a symmetric, coercive and continuous
 bilinear form, so that it induces an actual scalar product on the
 corresponding space.
 
-Setup of the optimization problem and its solution
---------------------------------------------------
+**Setup of the optimization problem and its solution**
+
 
 With this, we can now define the optimal control problem with the
 additional keyword argument riesz_scalar_products as follows

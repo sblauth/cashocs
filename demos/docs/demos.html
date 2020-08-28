@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.1" />
+<title>Documentation of cashocs demos</title>
+<meta name="description" content="Here, you find an overview over all demos …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Documentation of the demos</h1>
+</header>
+<section id="section-intro">
+<p>Here, you find an overview over all demos.</p>
+<h1 id="optimal-control-demos">Optimal Control Demos</h1>
+<p>This includes a collection of demos showcasing cashocs' features for optimal control problems.</p>
+<h2 id="demo-01-basics">Demo 01 : Basics</h2>
+<p>In this demo we investigate the basics of cashocs for
+optimal control problems. To do so, we investigate the "mother
+problem" of PDE constrained optimization, i.e.,</p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
+\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
+\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
+</script></span></p>
+<p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
+or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
+<p>For this first example, we do not consider control constraints,
+but search for an optimal control u in the entire space
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E2%28%5COmega%29"
+alt="L^2(\Omega)">, for the sake of simplicitiy. For
+the domain under consideration, we use the unit square
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
+alt="\Omega = (0, 1) \times (0,1)">, since this is built into cashocs.</p>
+<p>In the following, we will describe how to solve this problem
+using cashocs, using as much of the package as possible. Moreover,
+we also detail alternative / equivalent FEniCS code which could
+be used to define the problem instead.</p>
+<p><strong>The initialization</strong></p>
+<p>We begin by importing fenics and cashocs. For the sake of
+better readability we import everyting from the fenics package.</p>
+<pre><code>from fenics import *
+import cashocs
+</code></pre>
+<p>Next, we have to load the config file which loads the user's
+input parameters into the script. For a detailed documentation
+of the config files and the parameters within, we refer to
+the file "config_doc.md". The config is then loaded via</p>
+<pre><code>config = cashocs.create_config('./config.ini')
+</code></pre>
+<blockquote>
+<p>An alternative way of loading the config file (usually found
+in previous iterations of the software) would be to load
+the config file manually, via</p>
+<pre><code>import configparser
+config = configparser.ConfigParser()
+config.read('path_to_config_file')
+</code></pre>
+<p>which is equivalent for optimal control problems, but does
+not work for shape optimization problems. Hence, the former
+method is to be preferred.</p>
+</blockquote>
+<p>Next up, we have to define the state equation. This mostly
+works with usual fenics syntax. In cashocs, we can quickly
+generate meshes for squares and cubes, as well as import
+meshes generated by gmsh, for more complex geometries. In this
+example we take a built-in unit square as example. This is generated
+via</p>
+<pre><code>mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+</code></pre>
+<p>The input for regular_mesh determines the number of elements that
+are placed along each axis of the square. Note, that the mesh could be
+further manipulated with additional, optional arguments, and we
+refer to the documentation of <code>regular_mesh</code> for more infos. Note,
+that the <code>subdomains</code> object is a (empty) MeshFunction, and that
+<code>boundaries</code> is MeshFunction that contains markers for the following
+boundaries
+- The left side of the square is marked by 1
+- The right side is marked by 2
+- The bottom is marked by 3
+- The top is marked by 4</p>
+<p>Again, we refer the reader to the documentation of regular_mesh
+for the marking conventions.</p>
+<p>With the geometry defined, we create a function space with the classical
+fenics syntax</p>
+<pre><code>V = FunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>which creates a function space of continuous, linear Lagrange
+elements.</p>
+<p><strong>Definition of the state equation</strong></p>
+<p>To describe the state system in cashocs, we use nearly standard
+fenics syntax, and the differences will be highlighted in the
+following. First, we define a Function <code>y</code> that models our
+state variable y, and a Function <code>p</code> that models the corresponding
+adjoint variable p via</p>
+<pre><code>y = Function(V)
+p = Function(V)
+</code></pre>
+<p>Next up, we analogously define the control variable as Function <code>u</code></p>
+<pre><code>u = Function(V)
+</code></pre>
+<p>This enables us to define the weak form of the state equation,
+which is tested not with a TestFunction but with the adjoint
+variable via the classical fenics / UFL syntax</p>
+<pre><code>e = inner(grad(y), grad(p))*dx - u*p*dx
+</code></pre>
+<blockquote>
+<p>For the clasical definition of this weak form with fenics
+one would do the following</p>
+<pre><code>y = TrialFunction(V)
+p = TestFunction(V)
+u = Function(V)
+a = inner(grad(y), grad(p))*dx
+L = u*p*dx
+</code></pre>
+<p>as this is a linear problem. However, to have greater flexibility
+we have to treat the problems as being potentially nonlinear.
+In this case, the classical fenics formulation for this as
+nonlinear problem would be</p>
+<pre><code>y = Function(V)
+p = TestFunction(V)
+u = Function(V)
+F = inner(grad(y), grad(p))*dx -u*p*dx
+</code></pre>
+<p>which could then be solved via the "solve" interface. The
+weak formulation we consider above mimics this nonlinear
+formulation, which comes more naturally for nonlinear
+variational problems (see the fenics examples). However,
+for the use with cashocs, the state variable y <strong>must not</strong>
+be a TrialFunction, and the adjoint variable p <strong>must not</strong>
+be a TestFunction. They <strong>have to</strong> be defined as regular
+Functions, otherwise the code will not work properly.</p>
+</blockquote>
+<p>After defining the weak form of the state equation, we now
+specify the corresponding (homogeneous) Dirichlet boundary
+conditions via</p>
+<pre><code>bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+</code></pre>
+<p>This creates Dirichlet boundary conditions with value 0 at the
+boundaries 1,2,3, and 4, i.e., everywhere.</p>
+<blockquote>
+<p>Classically, these boundary conditions could also be defined
+via</p>
+<pre><code>def boundary(x, on_bdry):
+    return on_boundary
+bc = DirichletBC(V, Constant(0), boundary)
+</code></pre>
+<p>which would yield a single DirichletBC object, instead of
+the list returned by <code>create_bcs_list</code>. Any of the many methods for
+defining the boundary conditions works here, as long as it
+is valid input for the fenics' solve function.</p>
+</blockquote>
+<p>With the above description, we see that defining the state system
+for cashocs is nearly identical to defining it with fenics,
+the only major difference lies in the definition of the state
+and adjoint variables as Function objects, instead of Trial- and
+TestFunctions.</p>
+<p><strong>Definition of the cost functional</strong></p>
+<p>Now, we have to define the optimal control problem which we do
+by first specifying the cost functional. To do so, we define the
+desired state y<sub>d</sub> as an UFL expression <code>y_d</code>, i.e.,</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+</code></pre>
+<p>Alternatively, <code>y_d</code> could also be a function or any other object
+that is usable in an UFL form (e.g. generate with SpatialCoordinate).</p>
+<p>Then, we define the regularization parameter alpha and the tracking-type
+cost functional via the commands</p>
+<pre><code>alpha = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+</code></pre>
+<p>The cost functional has to be a UFL form, which returns the
+value when evaluated with the assemble command from fenics.
+These definitions are also classical in the sense that they
+would have to be performed in this (or a similar) way in fenics
+when one would want to evaluate the (reduced) cost functional,
+so that we have only very little overhead.</p>
+<p><strong>Definition of the optimization problem and its solution</strong></p>
+<p>Finally, we set up an optimal control problem <code>ocp</code> and then
+directly solve it via cashocs with the commands</p>
+<pre><code>ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+ocp.solve()
+</code></pre>
+<p>Note, that the <code>solve</code> command without any additional keyword arguments leads to
+cashocs using the settings defined in the config file. However, there are some options
+that can be directly set with keyword arguments for the <code>solve</code> call. These are</p>
+<ul>
+<li><code>algorithm</code> : Specifies which solution algorithm shall be used.</li>
+<li><code>rtol</code> : The relative tolerance for the optimization algorithm.</li>
+<li><code>atol</code> : The absolute tolerance for the optimization algorithm.</li>
+<li><code>max_iter</code> : The maximum amount of iterations that can be carried out.</li>
+</ul>
+<p>The possible values for these are the same as the corresponding ones in the config file.
+This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.</p>
+<p>This concludes the demo, and the corresponding full code can
+be found in the file "demo_01.py".
+<br/></p>
+<h2 id="documentation-of-the-config-files-for-optimal-control-problems">Documentation of the config files for optimal control problems</h2>
+<p>Let us take a look at how the config files are structured for optimal control problems.
+The corresponding config file is located at './config.ini'.</p>
+<p>First of all, the config is divided into three sections: Mesh, StateEquation, and OptimizationRoutine.
+These manage the settings for the mesh, the state equation of the optimization problem, and for the solution
+algorithm, respectively.</p>
+<p><strong>Mesh</strong></p>
+<p>The mesh section consists, for optimal control problems, only of a path to the .xdmf version of the mesh file</p>
+<pre><code>[Mesh]
+mesh_file = ../mesh/mesh.xdmf
+</code></pre>
+<p>This section is completely optional and can be used when importing GMSH generated meshes.
+To convert a .msh file to the .xdmf format, you can use the built-in converter as</p>
+<pre><code>mesh-convert gmsh_file.msh xdmf_file.xdmf
+</code></pre>
+<p>from the command line.</p>
+<p><strong>StateEquation</strong></p>
+<p>The state equation section is used to detail how the state systems and, hence, also the
+adjoint systems are solved. This includes settings for a Picard iteration. The section
+starts as usual with the following command</p>
+<pre><code>[StateEquation]
+</code></pre>
+<p>In the following, we go over each parameter in detail. First, we have</p>
+<pre><code>is_linear = true
+</code></pre>
+<p>This is a boolean parameter which indicates, whether the state equation / system
+is linear. This is used to speed up some computations. Note, that the program will
+always work when this is set to false, as it treats the linear problem in a nonlinear
+fashion and converges in one iteration. However, using is_linear = true on a nonlinear
+state system throws a fenics error.</p>
+<pre><code>inner_newton_atol = 1e-13
+</code></pre>
+<p>This parameter determines the absolute tolerance for the Newton solver that is used
+to solve a nonlinear state system.</p>
+<pre><code>inner_newton_rtol = 1e-11
+</code></pre>
+<p>This parameter determines the relative tolerance for the Newton solver used to
+solve a nonlinear state system. Moreover, we have the following parameters for the Newton method</p>
+<pre><code>newton_damped = True
+</code></pre>
+<p>which determines if a damping should be used (in case this is true) or not (otherwise). This defaults to True if nothing is given. The parameter</p>
+<pre><code>newton_verbose = False
+</code></pre>
+<p>is used to make the Newton solver's output verbose. This is disabled by default. Finally, the parameter</p>
+<pre><code>newton_iter = 50
+</code></pre>
+<p>controls how many iterations the Newton method is allowed to make before it terminates. This defaults to 50.</p>
+<p>Next, we have</p>
+<pre><code>picard_iteration = false
+</code></pre>
+<p>This is another boolean flag. This is used to determine, whether the state system
+shall be solved using a Picard iteration (true) or not (false). For a single
+state equation (i.e. one single state variable) both options are equivalent.
+Moreover, for an uncoupled system picard_iteration = true converges in a single
+Picard iteration so that it is also equivalent to picard_iteration = false. The difference
+is only active when considering a coupled system with multiple state variables
+that is coupled.</p>
+<pre><code>picard_rtol = 1e-10
+</code></pre>
+<p>This parameter determines the relative tolerance used for the Picard iteration, in case
+this is enabled.</p>
+<pre><code>picard_atol = 1e-12
+</code></pre>
+<p>This parameter determines the absolute tolerance used for the Picard iteration, in case
+this is enabled.</p>
+<pre><code>picard_iter = 10
+</code></pre>
+<p>This paramter determines the maximum amount of iterations that are carried out to
+solve the state system before the iteration is terminated.</p>
+<pre><code>picard_verbose = false
+</code></pre>
+<p>This enables verbose output of the convergence of the Picard iteration</p>
+<p>Note, that it is currently not possible to determine custom krylov solvers
+for the state system, but this is planned in a future release, and will be
+available via the config files.</p>
+<p><strong>OptimizationRoutine</strong></p>
+<p>The final section is the heart of the solution algorithm, which can be customized here.
+It starts with</p>
+<pre><code>[OptimizationRoutine]
+</code></pre>
+<p>The first parameter determines the choice of the particular algorithm, via</p>
+<pre><code>algorithm = lbfgs
+</code></pre>
+<p>The possible choices are given by
+- <code>gd</code> or <code>gradient_descent</code> : A gradient descent method</p>
+<ul>
+<li>
+<p><code>cg</code>, <code>conjugate_gradient</code>, <code>ncg</code>, <code>nonlinear_cg</code> : Nonlinear CG methods</p>
+</li>
+<li>
+<p><code>lbfgs</code> or <code>bfgs</code> : limited memory BFGS method</p>
+</li>
+<li>
+<p><code>newton</code> : a truncated Newton method</p>
+</li>
+<li>
+<p><code>pdas</code> or <code>primal_dual_active_set</code> : a primal dual active set method
+(for control constraints)</p>
+<p>maximum_iterations = 250</p>
+</li>
+</ul>
+<p>This parameter determines the maximum number of iterations carried out by the
+solution algorithm before it is terminated.</p>
+<pre><code>rtol = 1e-4
+</code></pre>
+<p>This parameter determines the relative tolerance for the solution algorithm.
+In the case where no control constraints are present, this uses the "classical"
+norm of the gradient of the cost functional as measure. In case there are box
+constraints present, it uses the stationarity measure (see Kelley, Iterative Methods
+for Optimization, Chapter 4) as measure.</p>
+<pre><code>atol = 0.0
+</code></pre>
+<p>This determines the absolute tolerance for the solution algorithm. The corresponding
+measures are chosen analogously to the relative tolerance above.</p>
+<pre><code>step_initial = 1.0
+</code></pre>
+<p>This parameter determines the initial step size to be used in the line search.
+This can have an important effect on performance of "first order" algorithms</p>
+<pre><code>epsilon_armijo = 1e-4
+</code></pre>
+<p>This paramter describes the parameter used in the Armijo rule to determine
+sufficient decrease, via
+<em>J(u + td) &lt;= J(u) + eps * t * <g, d>,</em>
+where u is the current optimization variable, d is the search direction, t is the
+step size, and g is the current gradient. eps is the parameter determined above.
+A value of 1e-4 is recommended and commonly used (see Nocedal and Wright,
+Numerical Optimization).</p>
+<pre><code>beta_armijo = 2
+</code></pre>
+<p>This parameter determines the factor by the which the step size is decreased
+if the Armijo condition is not satisfied, i.e., we get <em>t = t / beta</em> as new
+step size.</p>
+<pre><code>soft_exit = true
+</code></pre>
+<p>This parameter determines, whether we get a hard (false) or soft (true) exit
+of the optimization routine in case it does not converge. In case of a hard exit
+an Exception is raised and the script does not complete. However, it can be beneficial
+to still have the subsequent code be processed, which happens in case soft_exit = true.
+Note, however, that in this case the returned results are <strong>NOT</strong> optimal,
+as defined by the user input parameters.</p>
+<pre><code>verbose = true
+</code></pre>
+<p>This parameter determines, whether the solution algorithm generates a verbose
+output in the console, useful for monitoring its convergence.</p>
+<pre><code>save_results = false
+</code></pre>
+<p>If this parameter is set to true, the history of the optimization is saved in
+a .json file located in the same folder as the optimization script. This is
+very useful for postprocessing the results.</p>
+<pre><code>save_pvd = false
+</code></pre>
+<p>If this is set to true, the state variables are saved to .pvd files
+in the folder "pvd", located in the same directory as the optimization script.</p>
+<p>The following sections describe parameters that belong to the certain solution
+algorithms, and are also specified under the [OptimizationRoutine] section.</p>
+<p><strong><em>Limited memory BFGS method</em></strong></p>
+<p>For the L-BFGS method we have the following parameters.</p>
+<pre><code>memory_vectors = 2
+</code></pre>
+<p>Determines the size of the memory of the L-BFGS method. E.g., the command
+above specifies that information of the previous two iterations shall be used.
+The case memory_vectors = 0 yields the classical gradient descent method,
+whereas memory_vectors &gt; maximum_iterations gives rise to the classical
+BFGS method with unlimited memory.</p>
+<pre><code>use_bfgs_scaling = true
+</code></pre>
+<p>This determines, whether one should use a scaling of the initial Hessian approximation
+(see Nocedal and Wright, Numerical Optimization). This is usually very beneficial
+and should be kept enabled.</p>
+<p><strong><em>Nonlinear conjugate gradient methods</em></strong></p>
+<pre><code>cg_method = PR
+</code></pre>
+<p>Determines which of the nonlinear cg methods shall be used. Available are</p>
+<ul>
+<li>
+<p><code>FR</code> : The Fletcher-Reeves method</p>
+</li>
+<li>
+<p><code>PR</code> : The Polak-Ribiere method</p>
+</li>
+<li>
+<p><code>HS</code> : The Hestenes-Stiefel method</p>
+</li>
+<li>
+<p><code>DY</code> : The Dai-Yuan method</p>
+</li>
+<li>
+<p><code>HZ</code> : The Hager-Zhang method</p>
+<p>cg_periodic_restart = False</p>
+</li>
+</ul>
+<p>This parameter determines, whether the CG method should be restarted with a gradient
+step periodically, which can lead to faster convergence. The amount of iterations
+between restarts is then determined by</p>
+<pre><code>cg_periodic_its = 5
+</code></pre>
+<p>In this example, the NCG method is restarted after 5 iterations.</p>
+<p>Another possibility to restart NCG methods is based on a relative criterion
+(see Nocedal and Wright, Numerical Optimization). This is enabled via the flag</p>
+<pre><code>cg_relative_restart = False
+</code></pre>
+<p>and the corresponding relative tolerance (which should lie in (0,1) ) is determined via</p>
+<pre><code>cg_restart_tol = 0.5
+</code></pre>
+<p>Note, that this relative restart reinitializes the iteration with a gradient
+step in case subsequent gradients are not "sufficiently" orthogonal anymore.</p>
+<p><strong><em>Truncated Newton method</em></strong></p>
+<p>The parameters for both the classical truncated Newton method and for the semi-smooth
+Newton method are determined in the following.</p>
+<pre><code>inner_newton = cg
+</code></pre>
+<p>Determines the Krylov method for the solution of the Newton problem. Should be one
+of</p>
+<ul>
+<li>
+<p><code>cg</code> : A linear conjugate gradient method</p>
+</li>
+<li>
+<p><code>cr</code> : A conjugate residual method</p>
+</li>
+</ul>
+<p>Note, that all of these Krylov solvers are streamlined for symmetric linear
+operators, which the Hessian is (should be also positive definite for a minimizer
+so that the conjugate gradient method should yield good results when initialized
+not too far from the optimum)</p>
+<pre><code>max_it_inner_newton = 50
+</code></pre>
+<p>This parameter determines how many iterations of the Krylov solver are performed
+before the inner iteration is terminated. Note, that the approximate solution
+of the Hessian problem is used after max_it_inner_newton iterations regardless
+of whether this is converged or not</p>
+<pre><code>inner_newton_tolerance = 1e-15
+</code></pre>
+<p>This determines the relative tolerance of the iterative Krylov solver for the
+Hessian problem.</p>
+<p><strong><em>Primal-Dual-Active-Set Method</em></strong></p>
+<p>Finally, we take a look at the parameters for the primal dual active set method.</p>
+<pre><code>inner_pdas = newton
+</code></pre>
+<p>This parameter determines which solution algorithm is used for the inner
+(unconstrained) optimization problem in the primal dual active set method.
+Can be one of</p>
+<ul>
+<li>
+<p><code>gd</code> or <code>gradient_descent</code> : A gradient descent method</p>
+</li>
+<li>
+<p><code>cg</code>, <code>conjugate_gradient</code>, <code>ncg</code>, or <code>nonlinear_cg</code> : A nonlinear conjugate gradient method</p>
+</li>
+<li>
+<p><code>lbfgs</code> or <code>bfgs</code> : A limited memory BFGS method</p>
+</li>
+<li>
+<p><code>newton</code> : A truncated newton method</p>
+</li>
+</ul>
+<p>Note, that the parameters for these inner solvers are determined via the same
+interfaces used for the solution algorithms, i.e, setting</p>
+<pre><code>algorithm = pdas
+inner_pdas = bfgs
+memory_vectors = 2
+</code></pre>
+<p>uses the limited memory BFGS method with memory size 2 as inner solver for the
+primal dual active set method.</p>
+<pre><code>maximum_iterations_inner_pdas = 100
+</code></pre>
+<p>This parameter detemines the maximum amount of iterations performed by the
+inner solution algorithm for the sub-problems encountered in the primal
+dual active set method.</p>
+<pre><code>pdas_shift_mult = 1e-4
+</code></pre>
+<p>This determines the shift multiplier for the determination of the active and
+inactive sets, usually denoted by \gamma, and should be positive. This comes from
+the interpretation as semi-smooth Newton method with Moreau Yosida regularization
+of the constraints.</p>
+<pre><code>pdas_inner_tolerance = 1e-2
+</code></pre>
+<p>This parameter determines the relative tolerance used for the inner
+solution algorithms.
+<br/></p>
+<h2 id="demo-02-control-constraints">Demo 02 : Control Constraints</h2>
+<p>In this demo we investigate the basics of cashocs for
+optimal control problems. To do so, we investigate the "mother
+problem" of PDE constrained optimization, i.e.,</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%5COmega%7D+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%7B%5COmega%7D+u%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D%0A"
+alt="\begin{align*}
+-\Delta y &= u \quad \text{ in }\; \Omega,\\
+y &= 0 \quad \text{ on }\; \Gamma
+\end{align*}
+"></p>
+<p>and <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+u_a+%5Cleq+u+%5Cleq+u_b"
+alt="u_a \leq u \leq u_b"></p>
+<p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
+or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
+<p>This example differs from the first one only in the fact that
+we now also consider box constraints on the control variables
+Here, the functions u<sub>a</sub> and u<sub>b</sub> are
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E%5Cinfty%28%5COmega%29"
+alt="L^\infty(\Omega)"> functions. As before, we consider
+as domain the unit square, i.e., <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
+alt="\Omega = (0, 1) \times (0,1)">.</p>
+<p><strong>Initialization</strong></p>
+<p>The beginning of the script is completely identical to the
+one of the previous example, so we only restate the corresponding
+code in the following. A detailed description can be found
+in the documentation of "demo_01.py".</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('./config.ini')
+
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+V = FunctionSpace(mesh, 'CG', 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+
+e = inner(grad(y), grad(p))*dx - u*p*dx
+
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+
+y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+alpha = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+</code></pre>
+<p><strong>Definition of the control constraints</strong></p>
+<p>Here, we have nearly everything at hand to define the optimal
+control problem, the only missing ingredient are the box constraints,
+which we define now. For the purposes of this example, we
+consider a linear (in the x-direction) corridor for these
+constraints, as it highlights the capabilities of the code.
+Hence, we define the lower and upper bounds via</p>
+<pre><code>u_a = interpolate(Expression('50*(x[0]-1)', degree=1), V)
+u_b = interpolate(Expression('50*x[0]', degree=1), V)
+</code></pre>
+<p>which just corresponds to two functions, generated from
+Expression objects via interpolation. These are then put
+into the list <code>cc</code>, which models the control constraints, i.e.,</p>
+<pre><code>cc = [u_a, u_b]
+</code></pre>
+<p>Note, that we discuss alternative methods of defining the box
+constraints at the end of this documentation.</p>
+<p><strong>Setup of the optimization problem and its solution</strong></p>
+<p>Now, we can set up the optimal control problem as we did before,
+using the additional keyword argument control_constraints into which
+we put the list <code>cc</code>, and then solve it via <code>ocp.solve()</code></p>
+<pre><code>ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
+ocp.solve()
+</code></pre>
+<p>To check that the box constraints are actually satisfied by our
+solution, we perform an assertion</p>
+<pre><code>import numpy as np
+assert np.alltrue(u_a.vector()[:] &lt;= u.vector()[:]) and np.alltrue(u.vector()[:] &lt;= u_b.vector()[:])
+</code></pre>
+<p>which shows that they are indeed satisfied.</p>
+<blockquote>
+<p>As an alternative way of specifying the box constraints, one
+can also use regular float or int objects, in case that they
+are constant. For example, the constraint that we only want to
+consider positive value for u, i.e., 0 &le; u &le; &infin; can
+be realized via</p>
+<pre><code>u_a = 0
+u_b = float(inf)
+cc = [u_a, u_b]
+</code></pre>
+<p>and completely analogous with float(-inf) for no constraint
+on the lower bound.
+<br/></p>
+</blockquote>
+<h2 id="demo-03-neumann-boundary-control">Demo 03 : Neumann boundary control</h2>
+<p>In this demo we investigate an optimal control problem with
+a Neumann type boundary control. This problem reads</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5CGamma+u%5E2+%5Ctext%7Bd%7Ds"
+alt="\min\; J(y,u) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Gamma u^2 \text{d}s"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+y+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0An+%5Ccdot+%5Cnabla+y+%26%3D+u+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D"
+alt="\begin{align*}
+-\Delta y + y &= 0 \quad \text{ in }\; \Omega, \\
+n \cdot \nabla y &= u \quad \text{ on }\; \Gamma
+\end{align*}"></p>
+<p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
+or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).
+Note, that we cannot use a simple Poisson equation as constraint
+since this would not be compatible with the boundary conditions
+(i.e. not well-posed).</p>
+<p><strong>Initialization</strong></p>
+<p>Initially, the code is again identical to the one demo_01 and demo_02,
+i.e., we have</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+V = FunctionSpace(mesh, 'CG', 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+</code></pre>
+<p><strong>Definition of the state equation</strong></p>
+<p>Now, the definition of the state problem obviously differs from the
+previous two examples, and we now use</p>
+<pre><code>e = inner(grad(y), grad(p))*dx + y*p*dx - u*p*ds
+</code></pre>
+<p>which directly puts the Neumann boundary condition into the weak form.
+For this problem, we do not have Dirichlet boundary conditions, so that we
+use</p>
+<pre><code>bcs = None
+</code></pre>
+<blockquote>
+<p>Alternatively, we could have also used a empty list, i.e.,</p>
+<pre><code>bcs = []
+</code></pre>
+<p>instead</p>
+</blockquote>
+<p><strong>Definition of the cost functional</strong></p>
+<p>The definition of the cost functional is now nearly identical to before,
+only the integration measure for the regularization term changes, so that we have</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+alpha = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
+</code></pre>
+<p>As the default Hilbert space for a control is L<sup>2</sup>(&Omega;), we now
+also have to change this, to accommodate for the fact that the control
+variable u now lies in the space L<sup>2</sup>(&Gamma;), i.e., it is
+only defined on the boundary. This is done by defining the scalar
+product of the corresponding Hilbert space, which we do with</p>
+<pre><code>scalar_product = TrialFunction(V)*TestFunction(V)*ds
+</code></pre>
+<p>The scalar_product always has to be a symmetric, coercive and continuous
+bilinear form, so that it induces an actual scalar product on the
+corresponding space.</p>
+<p><strong>Setup of the optimization problem and its solution</strong></p>
+<p>With this, we can now define the optimal control problem with the
+additional keyword argument riesz_scalar_products as follows</p>
+<pre><code>ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+ocp.solve()
+</code></pre>
+<p>which also directly solves the problem.</p>
+<p>Hence, in order to treat boundary control problems, the corresponding
+weak forms have to be modified accordingly, and one <strong>has to</strong> adapt the
+scalar products used to determine the gradients.
+<br/></p>
+<h2 id="demo-04-multiple-variables">Demo 04 : Multiple Variables</h2>
+<p>In this demo we show how cashocs can be used to treat multiple
+state equations as constraint. Additionally, this also highlights
+how multiple controls can be treated. As model example, we consider the
+following problem</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+-+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
+alt="\begin{align*}
+-\Delta y &= u \quad \text{ in }\; \Omega, \\
+-\Delta z - y &= v \quad \text{ in }\; \Omega, \\
+y &= 0 \quad \text{ on }\; \Gamma, \\
+z &= 0 \quad \text{ on }\; \Gamma, \\
+\end{align*}"></p>
+<p>For the sake of simplicity, we restrict this investigation to
+homogeneous boundary conditions as well as to a very simple one way
+coupling. More complex problems (using e.g. Neumann control or more
+difficult couplings) are straightforward to implement.</p>
+<p>In contrast to the previous examples, in the case where we have multiple state equations, which are
+either decoupled or only one-way coupled, the corresponding state equations are solved one after the other
+so that every input related to the state and adjoint variables has to be put into a ordered list, so
+that they can be treated subsequently.</p>
+<p><strong>Initialization</strong></p>
+<p>The initial setup is identical to the previous cases, where we again use</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+V = FunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>which defines the geometry and the function space.</p>
+<p><strong>Defintion of the variables</strong></p>
+<p>Next, we have to define the state, adjoint, and control variables, which
+we do with</p>
+<pre><code>y = Function(V)
+z = Function(V)
+p = Function(V)
+q = Function(V)
+u = Function(V)
+v = Function(V)
+</code></pre>
+<p>Here <code>p</code> is the adjoint state corresponding to <code>y</code>, and <code>q</code> is the adjoint
+state belonging to <code>z</code>. For the treatment with cashocs these have to
+be put in (ordered) lists, so that the states and adjoints obey the
+same order. This means, we define</p>
+<pre><code>states = [y, z]
+adjoints = [p, q]
+controls = [u, v]
+</code></pre>
+<p>Note, that the control variables are completely independent of the state
+and adjoint ones, so that the relative ordering between these objects does
+not matter.</p>
+<p><strong>Defintion of the state equations / state system</strong></p>
+<p>Now, we can define the PDE constraints corresponding to <code>y</code> and <code>z</code>, which
+read in fenics syntax</p>
+<pre><code>e_y = inner(grad(y), grad(p)) * dx - u * p * dx
+e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
+</code></pre>
+<p>Again, the state equations have to be gathered into a list, where the order
+has to be in analogy to the list y, i.e.,</p>
+<pre><code>e = [e_y, e_z]
+</code></pre>
+<p>Finally, the boundary conditions for both states are homogeneous
+Dirichlet conditions, which we generate via</p>
+<pre><code>bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+bcs_list = [bcs1, bcs2]
+</code></pre>
+<p>and who are also put into a joint list.</p>
+<p><strong>Defintion of the cost functional and optimization problem</strong></p>
+<p>For the optimization problem we now define the cost functional via</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+alpha = 1e-6
+beta = 1e-4
+J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5) * (z - z_d) * (z - z_d) * dx \
+    + Constant(0.5*alpha) * u * u * dx + Constant(0.5*beta) * v * v * dx
+</code></pre>
+<p>This setup is sufficient to now define the optimal control problem and solve
+it, via</p>
+<pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+optimization_problem.solve()
+</code></pre>
+<blockquote>
+<p>Note, that for the case that we consider control constraints (see demo_02)
+or different Hilbert spaces, e.g., for boundary control (see demo_03),
+the corresponding control constraints have also to be put into a list, i.e.,</p>
+<pre><code>cc_u = [u_a, u_b]
+cc_v = [v_a, v_b]
+cc = [cc_u, cc_v]
+</code></pre>
+<p>and the corresponding scalar products are treated analogously, i.e.,</p>
+<pre><code>scalar_product_u = TrialFunction(V)*TestFunction(V)*dx
+scalar_product_v = TrialFunction(V)*TestFunction(V)*dx
+scalar_products = [scalar_product_u, scalar_produt_v]
+</code></pre>
+</blockquote>
+<p>In summary, to treat multiple (control or state) variables, the
+corresponding objects simply have to placed into ordered lists which
+are then given to the OptimalControlProblem instead of the "single" objects.
+Note, that each individual object of these lists is allowed to be from a
+different function space.
+<br/></p>
+<h2 id="demo-05-coupled-problems-part-i-monolithic-approach">Demo 05 : Coupled Problems Part I - Monolithic Approach</h2>
+<p>In this demo we show how cashocs can be used with a coupled PDE constraint.
+For this demo, we consider a monolithic approach, whereas we investigate
+an approach based on a Picard iteration in the following demo.</p>
+<p>As model example, we consider the
+following problem</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+z+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+%2B+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
+alt="\begin{align*}
+-\Delta y + z &= u \quad \text{ in }\; \Omega, \\
+-\Delta z + y &= v \quad \text{ in }\; \Omega, \\
+y &= 0 \quad \text{ on }\; \Gamma, \\
+z &= 0 \quad \text{ on }\; \Gamma, \\
+\end{align*}"></p>
+<p>In constrast to the example in demo_04, the system is now two-way coupled. To solve it, we employ a mixed finite element method in this demo.</p>
+<p><strong>Initialization and variable definitions</strong></p>
+<p>The initialization for this example works as before, i.e., we use</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+</code></pre>
+<p>For the mixed finite element method we have to define a "mixed" function space, via</p>
+<pre><code>elem_1 = FiniteElement('CG', mesh.ufl_cell(), 1)
+elem_2 = FiniteElement('CG', mesh.ufl_cell(), 1)
+V = FunctionSpace(mesh, MixedElement([elem_1, elem_2]))
+</code></pre>
+<p>The control variables get their own function space</p>
+<pre><code>U = FunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>Then, the state and adjoint variables are defined</p>
+<pre><code>state = Function(V)
+adjoint = Function(V)
+y, z = split(state)
+p, q = split(adjoint)
+</code></pre>
+<p>Here, the <code>split</code> command allows us to acces the individual components of the elements, which is very
+helpful for defining the mixed weak form in the following.</p>
+<p>We then define the control variables as</p>
+<pre><code>u = Function(U)
+v = Function(U)
+controls = [u, v]
+</code></pre>
+<p>and group them to the list controls.</p>
+<blockquote>
+<p>An alternative way of specifying the controls would be to reuse the mixed function space and use</p>
+<pre><code>controls = Function(V)
+u, v = split(controls)
+</code></pre>
+<p>Allthough this formulation is slightly different (it uses a Function for the controls, and not a list)
+the de-facto behavior of both methods is completely identical, just the interpretation is slightly
+different (since the individual components of the V FunctionSpace are also CG1 functions).</p>
+</blockquote>
+<p><strong>Definition of the mixed weak form</strong></p>
+<p>Next, we define the mixed weak form, by specifying the components individually and then summing them up</p>
+<pre><code>e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+e = e1 + e2
+</code></pre>
+<p>Note, that we can only have one state equation as we also have only a single state variable <code>state</code>,
+and the number of state variables and state equations has to coincide.</p>
+<p>Moreover, we define the boundary conditions for the components as</p>
+<pre><code>bcs1 = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1,2,3,4])
+bcs2 = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1,2,3,4])
+bcs = bcs1 + bcs2
+</code></pre>
+<p>Again, note that we now return a single list of DirichletBC objects, since both lists specify the boundary
+conditions for the components of <code>state</code>.</p>
+<p><strong>Defintion of the optimization problem</strong></p>
+<p>The cost functional can be specified in analogy to the previous one</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+alpha = 1e-6
+beta = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx \
+    + Constant(0.5*alpha)*u*u*dx + Constant(0.5*beta)*v*v*dx
+</code></pre>
+<p>Finally, we can set up the optimization problem and solve it</p>
+<pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, state, controls, adjoint, config)
+optimization_problem.solve()
+</code></pre>
+<p><br/></p>
+<h2 id="demo-06-coupled-problems-part-ii-picard-approach">Demo 06 : Coupled Problems Part II - Picard Approach</h2>
+<p>In this demo we show how cashocs can be used with a coupled PDE constraint.
+For this demo, we consider a iterative approach, whereas we investigated
+a monolithic approach in the previous demo.</p>
+<p>As model example, we consider the
+following problem</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+z+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+%2B+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
+alt="\begin{align*}
+-\Delta y + z &= u \quad \text{ in }\; \Omega, \\
+-\Delta z + y &= v \quad \text{ in }\; \Omega, \\
+y &= 0 \quad \text{ on }\; \Gamma, \\
+z &= 0 \quad \text{ on }\; \Gamma, \\
+\end{align*}"></p>
+<p>Again, the system is two-way coupled. To solve it, we now employ a Picard iteration. Therefore,
+the two PDEs are solved subsequently, where the variables are frozen in between: At the beginning
+the first PDE is solved, with the second state variable being fixed. Then, the second PDE is solved
+with the value of the first variable fixed (to the one obtained by the prior solve). This is then repeated
+until convergence is reached (but of course this does not have to occur).</p>
+<p><strong>Initialization</strong></p>
+<p>The setup is as usual</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+V = FunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>However, compared to the previous examples, there is a major change in the config file. As we want to use
+the Picard iteration as solver for the state PDEs, we now specify</p>
+<pre><code>picard_iteration = true
+</code></pre>
+<p>in the config file. Note, that only the flag is_linear = false works for the Picard iteration, regardless
+of the actual (non)-linearity of the underlying problem.
+</p>
+<p><strong>Definition of the state equations</strong></p>
+<p>As we solve both PDEs decoupled (or seperately), we now only need a single FunctionSpace object. The
+corresponding state and adjoint variables are defined via</p>
+<pre><code>y = Function(V)
+z = Function(V)
+p = Function(V)
+q = Function(V)
+states = [y, z]
+adjoints = [p, q]
+</code></pre>
+<p>which basically reverses the idea of the monolithic approach. Here, we first define the "components" as
+single, decoupled functions, and only identify them as the state variables later by putting them
+into a joint list. The same is true for the adjoint variables.</p>
+<p>The control variables are defined as previously</p>
+<pre><code>u = Function(V)
+v = Function(V)
+controls = [u, v]
+</code></pre>
+<p>Similarly to before, we define the state equations, but instead of adding them, we also put them
+into a joint list, since we solve them in a decoupled fashion</p>
+<pre><code>e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+e = [e1, e2]
+</code></pre>
+<p>The boundary conditions are treated analogously</p>
+<pre><code>bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs = [bcs1, bcs2]
+</code></pre>
+<p><strong>Definition of the optimization problem</strong></p>
+<p>The same is true for the cost functional</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+alpha = 1e-6
+beta = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx \
+    + Constant(0.5*alpha)*u*u*dx + Constant(0.5*beta)*v*v*dx
+</code></pre>
+<p>Finally, we set up the optimization problem and solve it</p>
+<pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
+optimization_problem.solve()
+</code></pre>
+<blockquote>
+<p>Comparing the output (especially in the early iterations) between the monlithic and Picard apporach
+we observe that both methods yield essentially the same results (up to machine precision). This validates
+the Picard approach.</p>
+<p>However, one should note that for this example, the Picard approach takes significantly longer to
+compute the optimizer. This is due to the fact that the individual PDEs have to be solved several
+times, whereas in the monolithic approach the state system is (slightly) larger, but has to be solved
+less often. However, the monolithic approach needs significantly more memory, so that the Picard
+iteration becomes feasible for very large problems. Further, the convergence properties of the
+Picard iteration are better, so that it can converge even when the monolithic approach fails.
+<br/></p>
+</blockquote>
+<h2 id="demo-07-optimal-control-of-a-stokes-problem">Demo 07 : Optimal Control of a Stokes Problem</h2>
+<p>In this demo we investigate how cashocs can be used to tackle a different class
+of PDE constraint, in particular, we investigate a Stokes problem. The optimization
+problem reads as follows</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28u%2C+c%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+u+-+u_d+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+c+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx"
+alt="\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+u+%2B+%5Cnabla+p+%26%3D+c+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A%5Ctext%7Bdiv%7D+%28u%29+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Au+%26%3D+u_%5Ctext%7Bdir%7D+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bdir%7D%2C%5C%5C%0Au+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bnoslip%7D%2C+%5C%5C%0Ap+%26%3D+0+%5Cquad+%5Ctext%7B+at+%7D%5C%3B+x%5E%5Ctext%7Bpres%7D%0A%5Cend%7Balign%2A%7D%0A"
+alt="\begin{align*}
+-\Delta u + \nabla p &= c \quad \text{ in }\; \Omega, \\
+\text{div} (u) &= 0 \quad \text{ in }\; \Omega, \\
+u &= u_\text{dir} \quad \text{ on }\; \Gamma^\text{dir},\\
+u &= 0 \quad \text{ on }\; \Gamma^\text{noslip}, \\
+p &= 0 \quad \text{ at }\; x^\text{pres}
+\end{align*}
+"></p>
+<p>In contrast to the other demos, here we denote by u the velocity of a fluid and by
+p its pressure, which are the two state variables. The control is now denoted by c and
+acts as a volume source for the system. The tracking type cost functional again
+aims at getting the velocity u close to some desired velocity u_d.</p>
+<p>For this example, the geometry is again given by <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
+alt="\Omega = (0, 1) \times (0,1)">, and we take a look at the setting of the well known
+lid driven cavity benchmark here. In particular, the boundary conditions are classical
+no slip boundary conditions at the left, right, and bottom sides of the square. On the
+top (or the lid), a velocity u_dir is prescribed, pointing into the positive x-direction.
+Note, that since this problem has Dirichlet conditions on the entire boundary, the
+pressure is only determined up to a constant, and hence we have to specify another
+condition to ensure uniqueness. For this demo we choose another Dirichlet condition,
+specifying the value of the pressure at a single point in the domain. Alternatively,
+we could have also required that, e.g., the integral of the velocity u over &Omega;
+vanishes (the implementation would then only be slightly longer, but not as intuitive).</p>
+<p><strong>Initialization</strong></p>
+<p>As with all previous problems so far, the initialization is the same, i.e.,</p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('./config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
+</code></pre>
+<p>For the solution of the Stokes (and adjoint Stokes) system, which have a saddle point
+structure, we have to choose LBB stable elements or stabilization <a href="https://doi.org/10.1007/978-1-4757-4355-5">see, e.g., Ern and Guermond, Theory and Practice of Finite Elements</a>. For this demo, we use the classical Taylor-Hood elements of piecewise
+quadratic Lagrange elements for the velocity, and piecewise linear ones for the pressure.
+These are defined as</p>
+<pre><code>v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
+p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
+U = VectorFunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>Moreover, we have defined the control space U as Function space with piecewise linear
+Lagrange elements.</p>
+<p>Next, we set up the corresponding function objects, as follows</p>
+<pre><code>up = Function(V)
+u, p = split(up)
+vq = Function(V)
+v, q = split(vq)
+c = Function(U)
+</code></pre>
+<p>Here, <code>up</code> plays the role of the state variable, having components <code>u</code> and <code>p</code>, which
+are extracted using the <code>split</code> command. The adjoint state <code>vq</code>
+is structured in
+exactly the same fashion. Similarly to before, <code>v</code> will play the role of the adjoint
+velocity, and <code>q</code> the one of the adjoint pressure.</p>
+<p>Next up is the definition of the Stokes system. This can be done via</p>
+<pre><code>e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx - inner(c, v)*dx
+</code></pre>
+<blockquote>
+<p>Note, that we have chosen to consider the incompressibility condition with a negative
+sign. This is used to make sure that the resulting system is symmetric (but indefinite)
+which can simplify its solution. Using the positive sign for the divergence
+constraint would instead lead to a non-symmetric but positive-definite system.</p>
+</blockquote>
+<p>The boundary conditions for this system can then be defined as follows</p>
+<pre><code>def pressure_point(x, on_boundary):
+    return on_boundary and near(x[0], 0) and near(x[1], 0)
+no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
+lid_velocity = Expression(('4*x[0]*(1-x[0])', '0.0'), degree=2)
+bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
+bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
+bcs = no_slip_bcs + [bc_lid, bc_pressure]
+</code></pre>
+<p>Here, we first define the point x<sup>pres</sup>, where the pressure is set to 0. Afterwards, we use the cashocs function <code>create_bcs_list</code> to quickly create the no slip
+conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
+velocity for the lid of the cavity as a fenics Expression, and create a corresponding
+boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,
+that in order to make this work, one has to specify the keyword argument <code>method='pointwise'</code>.</p>
+<p><strong>Defintion of the optimization problem</strong></p>
+<p>The definition of the optimization problem is in complete analogy to the previous
+ones we considered. The only difference is the fact that we now have to use <code>inner</code>
+to multiply the vector valued functions <code>u</code>, <code>u_d</code> and <code>c</code>.</p>
+<pre><code>alpha = 1e-5
+u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
+J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*dx
+</code></pre>
+<p>As before, we then set up the optimization problem and solve it</p>
+<pre><code>ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
+ocp.solve()
+</code></pre>
+<p>For post processing, we then create deepcopies of the single components of the state
+and the adjoint variables with</p>
+<pre><code>u, p = up.split(True)
+v, q = vq.split(True)
+</code></pre>
+<p>The full code for this example can be found in demo_07_control_stokes.py .
+<br/></p>
+<h2 id="demo-08-heat-equation-time-dependent-problems">Demo 08 : Heat Equation (Time Dependent Problems)</h2>
+<p>In this demo
+we take a look at how time dependent problems can be treated with cashocs.
+To do so, we investigate a problem considered in <a href="https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727">Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model</a> (my Master's thesis). It reads</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_0%5ET+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%5Ctext%7Bd%7Dt+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_0%5ET+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%5Ctext%7Bd%7Dt"
+alt="\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{d}x \text{d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{d}x \text{d}t"></p>
+<p>subject to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cpartial_t+y+-+%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%280%2C+T%29+%5Ctimes+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D+%280%2C+T%29+%5Ctimes+%5CGamma%2C%5C%5C%0Ay%280%2C+%5Ccdot%29+%26%3D+y_0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%0A%5Cend%7Balign%2A%7D"
+alt="\begin{align*}
+\partial_t y - \Delta y &= u \quad \text{ in }\; (0, T) \times \Omega,\\
+y &= 0 \quad \text{ on } (0, T) \times \Gamma,\\
+y(0, \cdot) &= y_0 \quad \text{ in }\; \Omega
+\end{align*}"></p>
+<p>Since fenics does not have any direct built-in support for time dependent problems,
+cashocs also does not have one. Hence, one first has to perform a semi-discretization
+of the PDE system in the temporal component (e.g. via finite differences), and then
+solve the resulting sequence of PDEs.</p>
+<p>In particular, for the use with cashocs, we have to create not a single weak form and
+fenics Function, that can be re-used, like one would in classical fenics programs, but
+we have to create the corresponding objects a-priori for each time step.</p>
+<p>For the domain of this problem, we once again consider the space time cylinder given by
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%280%2C+T%29+%5Ctimes+%5COmega"
+alt="(0, T) \times \Omega"> <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29%5E2"
+alt="\Omega = (0, 1)^2">. And for the initial condition we use <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
+alt="y_0 = 0">.</p>
+<p><strong>Temporal Discretization</strong></p>
+<p>For the temporal discretization, we use the implicit Euler scheme as this is unconditionally stable for the parabolic heat equation. This means, we discretize the
+interval <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5B0%2CT%5D"
+alt="[0,T]"> by a grid with nodes <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+t_k%2C+k%3D1%2C%5Cdots%2C+n%2C%5C%3B+%5Ctext%7B+with+%7D%5C%3B+t_0+%3A%3D+0%5C%3B+%5Ctext%7B+and+%7D%5C%3B+t_n+%3A%3D+T"
+alt="t_k, k=1,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T">. Then, we approximate the time derivative <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5Cpartial_t+y%28t_k%29"
+alt="\partial_t y(t_k)"> at some time <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+t_k"
+alt="t_k"> by the backward difference</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5Cpartial_t+y%28t_k%29+%5Capprox+%5Cfrac%7By%28t_k%29+-+y%28t_%7Bk-1%7D%29%7D%7B%5CDelta+t%7D"
+alt="\partial_t y(t_k) \approx \frac{y(t_k) - y(t_{k-1})}{\Delta t}">,</p>
+<p>where <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5CDelta+t+%3D+t_k+-+t_%7Bk-1%7D"
+alt="\Delta t = t_k - t_{k-1}">, and thus get the sequence of PDEs</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cfrac%7By_k+-+y_%7Bk-1%7D%7D%7B%5CDelta+t%7D+-+%5CDelta+y_k+%26%3D+u_k+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%5C%3B+%5Ctext%7Bfor%7D%5C%3B+k%3D1%2C%5Cdots%2Cn%2C%5C%5C%0Ay_k+%26%3D+0+%5Cquad+%5Ctext%7Bon%7D%5C%3B+%5CGamma%5C%3B+%5Ctext%7Bfor%7D%5C%3B+k%3D1%2C%5Cdots%2Cn%2C%5C%5C%0A%5Cend%7Balign%2A%7D%0A"
+alt="\begin{align*}
+\frac{y_k - y_{k-1}}{\Delta t} - \Delta y_k &= u_k \quad \text{ in }\; \Omega\; \text{for}\; k=1,\dots,n,\\
+y_k &= 0 \quad \text{on}\; \Gamma\; \text{for}\; k=1,\dots,n,\\
+\end{align*}
+">.</p>
+<p>Note, that <img src=
+"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+y_k+%5Capprox+y%28t_k%29%2C+%5Ctext+%7Band+%7D%5C%3B+u_k+%5Capprox+u%28t_k%29"
+alt="y_k \approx y(t_k), \text {and }\; u_k \approx u(t_k)"> are approximations of the
+continuous functions. The initial condition is included by definition of <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0"
+alt="y_0">.</p>
+<p>Moreover, for the cost functionals, we can discretize the temporal integrals using
+rectangle rules. This means we approximate the cost functional via</p>
+<p><img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+J%28y%2C+u%29+%5Capprox+%5Cfrac%7B1%7D%7B2%7D+%5Csum_%7Bk%3D1%7D%5En+%5CDelta+t+%5Cleft%28+%5Cint_%5COmega+%5Cleft%28+y_k+-+%28y_d%29_k+%5Cright%29%5E2+%5Ctext%7Bd%7Dx++%2B+%5Calpha+%5Cint_%5COmega+u_k%5E2+%5Ctext%7Bd%7Dx+%5Cright%29"
+alt="J(y, u) \approx \frac{1}{2} \sum_{k=1}^n \Delta t \left( \int_\Omega \left( y_k - (y_d)_k \right)^2 \text{d}x
++ \alpha \int_\Omega u_k^2 \text{d}x \right)">.</p>
+<p>Here, <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%28y_d%29_k+%5Capprox+y_d%28t_k%29"
+alt="(y_d)_k \approx y_d(t_k)"> is an approximation of the desired state at time t_k.</p>
+<p>Let us now investigate how to solve this problem with cashocs.</p>
+<p><strong>Initialization</strong></p>
+<p>This section is the same as for all previous problems and is done via</p>
+<pre><code>from fenics import *
+import cashocs
+import numpy as np
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
+V = FunctionSpace(mesh, 'CG', 1)
+</code></pre>
+<p>Next up, we specify the temporal discretization via</p>
+<pre><code>dt = 1 / 10
+t_start = dt
+t_end = 1.0
+t_array = np.linspace(t_start, t_end, int(1/dt))
+</code></pre>
+<p>Here, <code>t_array</code> is a numpy array containing all time steps. Note, that we do <strong>not</strong>
+include t=0 in the array. This is due to the fact, that the initial condition
+is prescribed and fixed. Due to the fact that we discretize the equation temporally,
+we do not only get a single fenics Function describing our state and control, but
+one Function for each time step. Hence, we initialize these (together with the adjoint states) directly in lists</p>
+<pre><code>states = [Function(V) for i in range(len(t_array))]
+controls = [Function(V) for i in range(len(t_array))]
+adjoints = [Function(V) for i in range(len(t_array))]
+</code></pre>
+<p>Note, that <code>states[k]</code> corresponds to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk%2B1%7D"
+alt="y_{k+1}"> (due to the differences in indexing between computer scientists and
+mathematicians), and analogously for <code>controls[k]</code>. Note, that in the following there
+will
+be made no such distinctions anymore, it should be obvious from the context
+what and where to apply the index shift between the semi-continuous and the discretized
+versions of the functions.</p>
+<p>As the boundary conditions are not time dependent, we can initialize them now, and
+repeat them in a list, since they are the same for every state</p>
+<pre><code>bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+bcs_list = [bcs for i in range(len(t_array))]
+</code></pre>
+<p>To define the sequence of PDEs, we will use a loop over all time steps. But before we
+can do that, we first initialize empty lists for the state equations, the
+approximations of the desired state, and the summands of the cost functional.</p>
+<pre><code>y_d = []
+e = []
+J_list = []
+</code></pre>
+<p><strong>Definition of the optimization problem</strong></p>
+<p>For the desired state, we define it with the help of a fenics expression, that is
+dependent on an additional parameter which models the time.</p>
+<pre><code>alpha = 1e-5
+y_d_expr = Expression('exp(-20*(pow(x[0] - 0.5 - 0.25*cos(2*pi*t), 2) + pow(x[1] - 0.5 - 0.25*sin(2*pi*t), 2)))', degree=1, t=0.0)
+</code></pre>
+<p>Next, we have the following for loop, which we describe in detail in the following</p>
+<pre><code>for k in range(len(t_array)):
+    t = t_array[k]
+    y_d_expr.t = t
+
+    y = states[k]
+    if k == 0:
+        y_prev = Function(V)
+    else:
+        y_prev = states[k - 1]
+    p = adjoints[k]
+    u = controls[k]
+
+    state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
+
+    e.append(state_eq)
+    y_d.append(interpolate(y_d_expr, V))
+
+    J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
+</code></pre>
+<blockquote>
+<p>At the beginning, the 'current' time t is determined from <code>t_array</code>, and the
+expression for the desired state is updated to reflect the current time.
+The line</p>
+<pre><code>y = states[k]
+</code></pre>
+<p>sets the object <code>y</code> to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_k"
+alt="y_k">. For the backward difference in the implicit Euler method, we also need
+<img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
+alt="y_{k-1}">, which we define by the if condition</p>
+<pre><code>if k == 0:
+    y_prev = Function(V)
+else:
+    y_prev = states[k - 1]
+</code></pre>
+<p>which ensures that <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
+alt="y_0 = 0">. Hence, <code>y_prev</code> indeed corresponds to <img src=
+"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
+alt="y_{k-1}">. Moreover, we get the current control and adjoint state via</p>
+<pre><code>p = adjoints[k]
+</code></pre>
+<p>u = controls[k]</p>
+<p>This allow us to define the state equation at time t as</p>
+<pre><code>state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
+</code></pre>
+<p>This is then appended to the list of state constraints</p>
+<pre><code>e.append(state_eq)
+</code></pre>
+<p>Further, we also put the current desired state into the respective list, i.e.,</p>
+<p>y_d.append(interpolate(y_d_expr, V))</p>
+<p>Finally, we can define the k-th summand of the cost functional via</p>
+<pre><code>J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
+</code></pre>
+<p>and directly append this to the cost functional list.</p>
+</blockquote>
+<p>To sum up over all elements of
+this list, cashocs includes a summation command in the utils module, which we call now</p>
+<pre><code>J = cashocs.utils.summation(J_list)
+</code></pre>
+<p>Finally, we can define an optimal control as always, and solve it in the same fashion</p>
+<pre><code>ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+ocp.solve()
+</code></pre>
+<p>For a postprocessing, which visualizes the resulting optimal control and optimal state
+the following lines are added at the end</p>
+<p>u_file = File('./visualization/u.pvd')
+y_file = File('./visualization/y.pvd')
+temp_u = Function(V)
+temp_y = Function(V)</p>
+<pre><code>for k in range(len(t_array)):
+    t = t_array[k]
+
+    temp_u.vector()[:] = controls[k].vector()[:]
+    u_file &lt;&lt; temp_u, t
+
+    temp_y.vector()[:] = states[k].vector()[:]
+    y_file &lt;&lt; temp_y, t
+</code></pre>
+<p>which saves the result in the folder visualization as paraview .pvd files.</p>
+<h1 id="shape-optimization">Shape Optimization</h1>
+<p>Here, you find demos for shape optimization.</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#optimal-control-demos">Optimal Control Demos</a><ul>
+<li><a href="#demo-01-basics">Demo 01 : Basics</a></li>
+<li><a href="#documentation-of-the-config-files-for-optimal-control-problems">Documentation of the config files for optimal control problems</a></li>
+<li><a href="#demo-02-control-constraints">Demo 02 : Control Constraints</a></li>
+<li><a href="#demo-03-neumann-boundary-control">Demo 03 : Neumann boundary control</a></li>
+<li><a href="#demo-04-multiple-variables">Demo 04 : Multiple Variables</a></li>
+<li><a href="#demo-05-coupled-problems-part-i-monolithic-approach">Demo 05 : Coupled Problems Part I - Monolithic Approach</a></li>
+<li><a href="#demo-06-coupled-problems-part-ii-picard-approach">Demo 06 : Coupled Problems Part II - Picard Approach</a></li>
+<li><a href="#demo-07-optimal-control-of-a-stokes-problem">Demo 07 : Optimal Control of a Stokes Problem</a></li>
+<li><a href="#demo-08-heat-equation-time-dependent-problems">Demo 08 : Heat Equation (Time Dependent Problems)</a></li>
+</ul>
+</li>
+<li><a href="#shape-optimization">Shape Optimization</a></li>
+</ul>
+</div>
+<ul id="index">
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,5 +1,5 @@
-How to use?
------------
+Getting started
+---------------
 
 Since cashocs is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
@@ -7,7 +7,7 @@ has a functioning code for the forward problem and the evaluation of the cost
 functional, the necessary modifications to optimize the problem in cashocs
 are minimal. Consider, e.g., the following optimization problem
 
-$$ \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 \text{d}x + \frac{\alpha}{2} u^2 \text{d}x \\
+$$ \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 + \frac{\alpha}{2} u^2 \text{d}x \\
 \text{ subject to } - \Delta y = u \quad \text{ in } \Omega, \\
 \hspace{7em} y = 0 \quad \text{ on } \Gamma.
 $$
@@ -49,7 +49,12 @@ use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with fenics.
 
-For a detailed discussion of the features of cashocs and its usage we refer to the demos.
+For a detailed discussion of the features of cashocs and its usage we refer to the [demos](#demos).
+
+
+Demos
+-----
+The documentation of the demos can be found <a target="_blank" rel="noopener noreferrer" href="../demos/docs/demos.html">here</a>.
 
 
 Command line interface for mesh conversion
