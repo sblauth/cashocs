@@ -6,18 +6,15 @@ state equations as constraint. Additionally, this also highlights
 how multiple controls can be treated. As model example, we consider the
 following problem
 
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x">
-
-subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+-+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y &= u \quad \text{ in }\; \Omega, \\
--\Delta z - y &= v \quad \text{ in }\; \Omega, \\
-y &= 0 \quad \text{ on }\; \Gamma, \\
-z &= 0 \quad \text{ on }\; \Gamma, \\
-\end{align*}">
+$$ \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega, \\
+-\Delta z - y &= v \quad &&\text{ in } \Omega, \\
+y &= 0 \quad &&\text{ on } \Gamma,\\
+z &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+$$
 
 For the sake of simplicity, we restrict this investigation to
 homogeneous boundary conditions as well as to a very simple one way

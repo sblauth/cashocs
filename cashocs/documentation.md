@@ -8,8 +8,11 @@ functional, the necessary modifications to optimize the problem in cashocs
 are minimal. Consider, e.g., the following optimization problem
 
 $$ \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 + \frac{\alpha}{2} u^2 \text{d}x \\
-\text{ subject to } - \Delta y = u \quad \text{ in } \Omega, \\
-\hspace{7em} y = 0 \quad \text{ on } \Gamma.
+\text{ subject to }
+\begin{aligned}
+- \Delta y &= u \quad \text{ in } \Omega, \\
+y &= 0 \quad \text{ on } \Gamma.
+\end{aligned}
 $$
 
 Note, that the entire problem is treated in detail in demo_01.py in the demos folder.

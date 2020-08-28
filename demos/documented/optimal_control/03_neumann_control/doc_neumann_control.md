@@ -4,16 +4,13 @@
 In this demo we investigate an optimal control problem with
 a Neumann type boundary control. This problem reads
 
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5CGamma+u%5E2+%5Ctext%7Bd%7Ds"
-alt="\min\; J(y,u) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Gamma u^2 \text{d}s">
-
-subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+y+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0An+%5Ccdot+%5Cnabla+y+%26%3D+u+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y + y &= 0 \quad \text{ in }\; \Omega, \\
-n \cdot \nabla y &= u \quad \text{ on }\; \Gamma
-\end{align*}">
+$$\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{d}s \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= 0 \quad &&\text{ in } \Omega,\\
+n\cdot \nabla y &= u \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+$$
 
 (see, e.g., [Tröltzsch, Optimal Control of Partial Differential Equations](https://doi.org/10.1090/gsm/112),
 or [Hinze et al., Optimization with PDE constraints](https://doi.org/10.1007/978-1-4020-8839-1)).
@@ -68,9 +65,9 @@ only the integration measure for the regularization term changes, so that we hav
     alpha = 1e-6
     J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
 
-As the default Hilbert space for a control is L<sup>2</sup>(&Omega;), we now
+As the default Hilbert space for a control is \( L^2(\Omega) \), we now
 also have to change this, to accommodate for the fact that the control
-variable u now lies in the space L<sup>2</sup>(&Gamma;), i.e., it is
+variable u now lies in the space \( L^2(\Gamma) \), i.e., it is
 only defined on the boundary. This is done by defining the scalar
 product of the corresponding Hilbert space, which we do with
 

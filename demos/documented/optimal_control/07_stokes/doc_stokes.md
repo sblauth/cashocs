@@ -4,29 +4,23 @@ In this demo we investigate how cashocs can be used to tackle a different class
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
 problem reads as follows
 
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28u%2C+c%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+u+-+u_d+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+c+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x">
-
-subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+u+%2B+%5Cnabla+p+%26%3D+c+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A%5Ctext%7Bdiv%7D+%28u%29+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Au+%26%3D+u_%5Ctext%7Bdir%7D+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bdir%7D%2C%5C%5C%0Au+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bnoslip%7D%2C+%5C%5C%0Ap+%26%3D+0+%5Cquad+%5Ctext%7B+at+%7D%5C%3B+x%5E%5Ctext%7Bpres%7D%0A%5Cend%7Balign%2A%7D%0A"
-alt="\begin{align*}
--\Delta u + \nabla p &= c \quad \text{ in }\; \Omega, \\
-\text{div} (u) &= 0 \quad \text{ in }\; \Omega, \\
-u &= u_\text{dir} \quad \text{ on }\; \Gamma^\text{dir},\\
-u &= 0 \quad \text{ on }\; \Gamma^\text{noslip}, \\
-p &= 0 \quad \text{ at }\; x^\text{pres}
-\end{align*}
-">
+$$\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta u + \nabla p &= c \quad &&\text{ in } \Omega, \\
+\text{div}(u) &= 0 \quad &&\text{ in } \Omega,\\
+u &= u_\text{dir} \quad &&\text{ on } \Gamma^\text{dir},\\
+u &= 0 \quad &&\text{ on } \Gamma^\text{no slip},\\
+p &= 0 \quad &&\text{ at } x^\text{pres}.
+\end{alignedat} \right.
+$$
 
 In contrast to the other demos, here we denote by u the velocity of a fluid and by
 p its pressure, which are the two state variables. The control is now denoted by c and
 acts as a volume source for the system. The tracking type cost functional again
 aims at getting the velocity u close to some desired velocity u_d.
 
-For this example, the geometry is again given by <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">, and we take a look at the setting of the well known
+For this example, the geometry is again given by \( \Omega = (0,1)^2 \), and we take a look at the setting of the well known
 lid driven cavity benchmark here. In particular, the boundary conditions are classical
 no slip boundary conditions at the left, right, and bottom sides of the square. On the
 top (or the lid), a velocity u_dir is prescribed, pointing into the positive x-direction.
@@ -93,7 +87,7 @@ The boundary conditions for this system can then be defined as follows
     bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
     bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
-Here, we first define the point x<sup>pres</sup>, where the pressure is set to 0. Afterwards, we use the cashocs function `create_bcs_list` to quickly create the no slip
+Here, we first define the point \( x^\text{pres}\), where the pressure is set to 0. Afterwards, we use the cashocs function `create_bcs_list` to quickly create the no slip
 conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
 velocity for the lid of the cavity as a fenics Expression, and create a corresponding
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,

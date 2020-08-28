@@ -31,23 +31,23 @@
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,</p>
 <p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
-\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
-\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
 </span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
-\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
-\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
 </script></span></p>
 <p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
 or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
 <p>For this first example, we do not consider control constraints,
-but search for an optimal control u in the entire space
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E2%28%5COmega%29"
-alt="L^2(\Omega)">, for the sake of simplicitiy. For
-the domain under consideration, we use the unit square
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">, since this is built into cashocs.</p>
+but search for an optimal control u in the entire space <span><span class="MathJax_Preview"> L^2(\Omega) </span><script type="math/tex"> L^2(\Omega) </script></span>, for the sake of simplicitiy. For
+the domain under consideration, we use the unit square <span><span class="MathJax_Preview"> \Omega = (0, 1)^2 </span><script type="math/tex"> \Omega = (0, 1)^2 </script></span>, since this is built into cashocs.</p>
 <p>In the following, we will describe how to solve this problem
 using cashocs, using as much of the package as possible. Moreover,
 we also detail alternative / equivalent FEniCS code which could
@@ -174,7 +174,7 @@ TestFunctions.</p>
 <p><strong>Definition of the cost functional</strong></p>
 <p>Now, we have to define the optimal control problem which we do
 by first specifying the cost functional. To do so, we define the
-desired state y<sub>d</sub> as an UFL expression <code>y_d</code>, i.e.,</p>
+desired state <span><span class="MathJax_Preview"> y_d </span><script type="math/tex"> y_d </script></span> as an UFL expression <code>y_d</code>, i.e.,</p>
 <pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 </code></pre>
 <p>Alternatively, <code>y_d</code> could also be a function or any other object
@@ -332,7 +332,9 @@ This can have an important effect on performance of "first order" algorithms</p>
 </code></pre>
 <p>This paramter describes the parameter used in the Armijo rule to determine
 sufficient decrease, via
-<em>J(u + td) &lt;= J(u) + eps * t * <g, d>,</em>
+<span><span class="MathJax_Preview"> J(u + td) \leq J(u) + \varepsilon t \left\langle g, d \right\rangle
+</span><script type="math/tex; mode=display"> J(u + td) \leq J(u) + \varepsilon t \left\langle g, d \right\rangle
+</script></span>
 where u is the current optimization variable, d is the search direction, t is the
 step size, and g is the current gradient. eps is the parameter determined above.
 A value of 1e-4 is recommended and commonly used (see Nocedal and Wright,
@@ -494,30 +496,28 @@ solution algorithms.
 <p>In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%5COmega%7D+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%7B%5COmega%7D+u%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D%0A"
-alt="\begin{align*}
--\Delta y &= u \quad \text{ in }\; \Omega,\\
-y &= 0 \quad \text{ on }\; \Gamma
-\end{align*}
-"></p>
-<p>and <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+u_a+%5Cleq+u+%5Cleq+u_b"
-alt="u_a \leq u \leq u_b"></p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma, \\
+u_a \leq u &amp;\leq u_b \quad &amp;&amp;\text{ in } \Omega
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma, \\
+u_a \leq u &\leq u_b \quad &&\text{ in } \Omega
+\end{alignedat} \right.
+</script></span></p>
 <p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
 or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
 <p>This example differs from the first one only in the fact that
 we now also consider box constraints on the control variables
-Here, the functions u<sub>a</sub> and u<sub>b</sub> are
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E%5Cinfty%28%5COmega%29"
-alt="L^\infty(\Omega)"> functions. As before, we consider
-as domain the unit square, i.e., <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">.</p>
+Here, the functions <span><span class="MathJax_Preview"> u_a </span><script type="math/tex"> u_a </script></span> and <span><span class="MathJax_Preview"> u_b </span><script type="math/tex"> u_b </script></span> are <span><span class="MathJax_Preview"> L^\infty(\Omega) </span><script type="math/tex"> L^\infty(\Omega) </script></span>
+functions. As before, we consider
+as domain the unit square, i.e., <span><span class="MathJax_Preview"> \Omega = (0, 1)^2 </span><script type="math/tex"> \Omega = (0, 1)^2 </script></span>.</p>
 <p><strong>Initialization</strong></p>
 <p>The beginning of the script is completely identical to the
 one of the previous example, so we only restate the corresponding
@@ -591,15 +591,19 @@ on the lower bound.
 <h2 id="demo-03-neumann-boundary-control">Demo 03 : Neumann boundary control</h2>
 <p>In this demo we investigate an optimal control problem with
 a Neumann type boundary control. This problem reads</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5CGamma+u%5E2+%5Ctext%7Bd%7Ds"
-alt="\min\; J(y,u) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Gamma u^2 \text{d}s"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+y+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0An+%5Ccdot+%5Cnabla+y+%26%3D+u+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y + y &= 0 \quad \text{ in }\; \Omega, \\
-n \cdot \nabla y &= u \quad \text{ on }\; \Gamma
-\end{align*}"></p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{d}s \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= 0 \quad &amp;&amp;\text{ in } \Omega,\\
+n\cdot \nabla y &amp;= u \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{d}s \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= 0 \quad &&\text{ in } \Omega,\\
+n\cdot \nabla y &= u \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
 <p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
 or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).
 Note, that we cannot use a simple Poisson equation as constraint
@@ -643,9 +647,9 @@ only the integration measure for the regularization term changes, so that we hav
 alpha = 1e-6
 J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
 </code></pre>
-<p>As the default Hilbert space for a control is L<sup>2</sup>(&Omega;), we now
+<p>As the default Hilbert space for a control is <span><span class="MathJax_Preview"> L^2(\Omega) </span><script type="math/tex"> L^2(\Omega) </script></span>, we now
 also have to change this, to accommodate for the fact that the control
-variable u now lies in the space L<sup>2</sup>(&Gamma;), i.e., it is
+variable u now lies in the space <span><span class="MathJax_Preview"> L^2(\Gamma) </span><script type="math/tex"> L^2(\Gamma) </script></span>, i.e., it is
 only defined on the boundary. This is done by defining the scalar
 product of the corresponding Hilbert space, which we do with</p>
 <pre><code>scalar_product = TrialFunction(V)*TestFunction(V)*ds
@@ -669,17 +673,23 @@ scalar products used to determine the gradients.
 state equations as constraint. Additionally, this also highlights
 how multiple controls can be treated. As model example, we consider the
 following problem</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+-+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y &= u \quad \text{ in }\; \Omega, \\
--\Delta z - y &= v \quad \text{ in }\; \Omega, \\
-y &= 0 \quad \text{ on }\; \Gamma, \\
-z &= 0 \quad \text{ on }\; \Gamma, \\
-\end{align*}"></p>
+<p><span><span class="MathJax_Preview"> \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega, \\
+-\Delta z - y &amp;= v \quad &amp;&amp;\text{ in } \Omega, \\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma,\\
+z &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display"> \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega, \\
+-\Delta z - y &= v \quad &&\text{ in } \Omega, \\
+y &= 0 \quad &&\text{ on } \Gamma,\\
+z &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
 <p>For the sake of simplicity, we restrict this investigation to
 homogeneous boundary conditions as well as to a very simple one way
 coupling. More complex problems (using e.g. Neumann control or more
@@ -778,17 +788,23 @@ For this demo, we consider a monolithic approach, whereas we investigate
 an approach based on a Picard iteration in the following demo.</p>
 <p>As model example, we consider the
 following problem</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+z+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+%2B+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y + z &= u \quad \text{ in }\; \Omega, \\
--\Delta z + y &= v \quad \text{ in }\; \Omega, \\
-y &= 0 \quad \text{ on }\; \Gamma, \\
-z &= 0 \quad \text{ on }\; \Gamma, \\
-\end{align*}"></p>
+<p><span><span class="MathJax_Preview">\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y + z &amp;= u \quad &amp;&amp;\text{ in } \Omega, \\
+-\Delta z + y &amp;= v \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma,\\
+z &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y + z &= u \quad &&\text{ in } \Omega, \\
+-\Delta z + y &= v \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma,\\
+z &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
 <p>In constrast to the example in demo_04, the system is now two-way coupled. To solve it, we employ a mixed finite element method in this demo.</p>
 <p><strong>Initialization and variable definitions</strong></p>
 <p>The initialization for this example works as before, i.e., we use</p>
@@ -865,17 +881,23 @@ For this demo, we consider a iterative approach, whereas we investigated
 a monolithic approach in the previous demo.</p>
 <p>As model example, we consider the
 following problem</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28%28y%2Cz%29%2C%28u%2Cv%29%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%28+z+-+z_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Cbeta%7D%7B2%7D+%5Cint_%5COmega+v%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%2B+z+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A-%5CDelta+z+%2B+y+%26%3D+v+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0Az+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%2C+%5C%5C%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
--\Delta y + z &= u \quad \text{ in }\; \Omega, \\
--\Delta z + y &= v \quad \text{ in }\; \Omega, \\
-y &= 0 \quad \text{ on }\; \Gamma, \\
-z &= 0 \quad \text{ on }\; \Gamma, \\
-\end{align*}"></p>
+<p><span><span class="MathJax_Preview">\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y + z &amp;= u \quad &amp;&amp;\text{ in } \Omega, \\
+-\Delta z + y &amp;= v \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma,\\
+z &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y + z &= u \quad &&\text{ in } \Omega, \\
+-\Delta z + y &= v \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma,\\
+z &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
 <p>Again, the system is two-way coupled. To solve it, we now employ a Picard iteration. Therefore,
 the two PDEs are solved subsequently, where the variables are frozen in between: At the beginning
 the first PDE is solved, with the second state variable being fixed. Then, the second PDE is solved
@@ -956,26 +978,30 @@ Picard iteration are better, so that it can converge even when the monolithic ap
 <p>In this demo we investigate how cashocs can be used to tackle a different class
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
 problem reads as follows</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28u%2C+c%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+u+-+u_d+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%5COmega+%5Cleft%5Clvert+c+%5Cright%5Crvert%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+u+%2B+%5Cnabla+p+%26%3D+c+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0A%5Ctext%7Bdiv%7D+%28u%29+%26%3D+0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C+%5C%5C%0Au+%26%3D+u_%5Ctext%7Bdir%7D+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bdir%7D%2C%5C%5C%0Au+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%5E%5Ctext%7Bnoslip%7D%2C+%5C%5C%0Ap+%26%3D+0+%5Cquad+%5Ctext%7B+at+%7D%5C%3B+x%5E%5Ctext%7Bpres%7D%0A%5Cend%7Balign%2A%7D%0A"
-alt="\begin{align*}
--\Delta u + \nabla p &= c \quad \text{ in }\; \Omega, \\
-\text{div} (u) &= 0 \quad \text{ in }\; \Omega, \\
-u &= u_\text{dir} \quad \text{ on }\; \Gamma^\text{dir},\\
-u &= 0 \quad \text{ on }\; \Gamma^\text{noslip}, \\
-p &= 0 \quad \text{ at }\; x^\text{pres}
-\end{align*}
-"></p>
+<p><span><span class="MathJax_Preview">\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta u + \nabla p &amp;= c \quad &amp;&amp;\text{ in } \Omega, \\
+\text{div}(u) &amp;= 0 \quad &amp;&amp;\text{ in } \Omega,\\
+u &amp;= u_\text{dir} \quad &amp;&amp;\text{ on } \Gamma^\text{dir},\\
+u &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma^\text{no slip},\\
+p &amp;= 0 \quad &amp;&amp;\text{ at } x^\text{pres}.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta u + \nabla p &= c \quad &&\text{ in } \Omega, \\
+\text{div}(u) &= 0 \quad &&\text{ in } \Omega,\\
+u &= u_\text{dir} \quad &&\text{ on } \Gamma^\text{dir},\\
+u &= 0 \quad &&\text{ on } \Gamma^\text{no slip},\\
+p &= 0 \quad &&\text{ at } x^\text{pres}.
+\end{alignedat} \right.
+</script></span></p>
 <p>In contrast to the other demos, here we denote by u the velocity of a fluid and by
 p its pressure, which are the two state variables. The control is now denoted by c and
 acts as a volume source for the system. The tracking type cost functional again
 aims at getting the velocity u close to some desired velocity u_d.</p>
-<p>For this example, the geometry is again given by <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">, and we take a look at the setting of the well known
+<p>For this example, the geometry is again given by <span><span class="MathJax_Preview"> \Omega = (0,1)^2 </span><script type="math/tex"> \Omega = (0,1)^2 </script></span>, and we take a look at the setting of the well known
 lid driven cavity benchmark here. In particular, the boundary conditions are classical
 no slip boundary conditions at the left, right, and bottom sides of the square. On the
 top (or the lid), a velocity u_dir is prescribed, pointing into the positive x-direction.
@@ -1035,7 +1061,7 @@ bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
 bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
 bcs = no_slip_bcs + [bc_lid, bc_pressure]
 </code></pre>
-<p>Here, we first define the point x<sup>pres</sup>, where the pressure is set to 0. Afterwards, we use the cashocs function <code>create_bcs_list</code> to quickly create the no slip
+<p>Here, we first define the point <span><span class="MathJax_Preview"> x^\text{pres}</span><script type="math/tex"> x^\text{pres}</script></span>, where the pressure is set to 0. Afterwards, we use the cashocs function <code>create_bcs_list</code> to quickly create the no slip
 conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
 velocity for the lid of the cavity as a fenics Expression, and create a corresponding
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,
@@ -1063,16 +1089,21 @@ v, q = vq.split(True)
 <p>In this demo
 we take a look at how time dependent problems can be treated with cashocs.
 To do so, we investigate a problem considered in <a href="https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727">Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model</a> (my Master's thesis). It reads</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_0%5ET+%5Cint_%5COmega+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%5Ctext%7Bd%7Dt+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_0%5ET+%5Cint_%5COmega+u%5E2+%5Ctext%7Bd%7Dx+%5Ctext%7Bd%7Dt"
-alt="\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{d}x \text{d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{d}x \text{d}t"></p>
-<p>subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cpartial_t+y+-+%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%280%2C+T%29+%5Ctimes+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D+%280%2C+T%29+%5Ctimes+%5CGamma%2C%5C%5C%0Ay%280%2C+%5Ccdot%29+%26%3D+y_0+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%0A%5Cend%7Balign%2A%7D"
-alt="\begin{align*}
-\partial_t y - \Delta y &= u \quad \text{ in }\; (0, T) \times \Omega,\\
-y &= 0 \quad \text{ on } (0, T) \times \Gamma,\\
-y(0, \cdot) &= y_0 \quad \text{ in }\; \Omega
-\end{align*}"></p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{d}x \text{d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{d}x \text{d}t \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+\partial_t y - \Delta y &amp;= u \quad &amp;&amp;\text{ in } (0,T) \times \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } (0,T) \times \Gamma, \\
+y(0, \cdot) &amp;= y_0 \quad &amp;&amp;\text{ in } \Omega.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{d}x \text{d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{d}x \text{d}t \\
+\text{ subject to }\quad \left\lbrace \quad
+\begin{alignedat}{2}
+\partial_t y - \Delta y &= u \quad &&\text{ in } (0,T) \times \Omega,\\
+y &= 0 \quad &&\text{ on } (0,T) \times \Gamma, \\
+y(0, \cdot) &= y_0 \quad &&\text{ in } \Omega.
+\end{alignedat} \right.
+</script></span></p>
 <p>Since fenics does not have any direct built-in support for time dependent problems,
 cashocs also does not have one. Hence, one first has to perform a semi-discretization
 of the PDE system in the temporal component (e.g. via finite differences), and then
@@ -1080,53 +1111,31 @@ solve the resulting sequence of PDEs.</p>
 <p>In particular, for the use with cashocs, we have to create not a single weak form and
 fenics Function, that can be re-used, like one would in classical fenics programs, but
 we have to create the corresponding objects a-priori for each time step.</p>
-<p>For the domain of this problem, we once again consider the space time cylinder given by
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%280%2C+T%29+%5Ctimes+%5COmega"
-alt="(0, T) \times \Omega"> <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29%5E2"
-alt="\Omega = (0, 1)^2">. And for the initial condition we use <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
-alt="y_0 = 0">.</p>
+<p>For the domain of this problem, we once again consider the space time cylinder given by <span><span class="MathJax_Preview"> (0,T) \times \Omega = (0,1) \times (0,1)^2 </span><script type="math/tex"> (0,T) \times \Omega = (0,1) \times (0,1)^2 </script></span>.
+And for the initial condition we use <span><span class="MathJax_Preview"> y_0 = 0 </span><script type="math/tex"> y_0 = 0 </script></span>.</p>
 <p><strong>Temporal Discretization</strong></p>
 <p>For the temporal discretization, we use the implicit Euler scheme as this is unconditionally stable for the parabolic heat equation. This means, we discretize the
-interval <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5B0%2CT%5D"
-alt="[0,T]"> by a grid with nodes <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+t_k%2C+k%3D1%2C%5Cdots%2C+n%2C%5C%3B+%5Ctext%7B+with+%7D%5C%3B+t_0+%3A%3D+0%5C%3B+%5Ctext%7B+and+%7D%5C%3B+t_n+%3A%3D+T"
-alt="t_k, k=1,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T">. Then, we approximate the time derivative <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5Cpartial_t+y%28t_k%29"
-alt="\partial_t y(t_k)"> at some time <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+t_k"
-alt="t_k"> by the backward difference</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5Cpartial_t+y%28t_k%29+%5Capprox+%5Cfrac%7By%28t_k%29+-+y%28t_%7Bk-1%7D%29%7D%7B%5CDelta+t%7D"
-alt="\partial_t y(t_k) \approx \frac{y(t_k) - y(t_{k-1})}{\Delta t}">,</p>
-<p>where <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5CDelta+t+%3D+t_k+-+t_%7Bk-1%7D"
-alt="\Delta t = t_k - t_{k-1}">, and thus get the sequence of PDEs</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cfrac%7By_k+-+y_%7Bk-1%7D%7D%7B%5CDelta+t%7D+-+%5CDelta+y_k+%26%3D+u_k+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%5C%3B+%5Ctext%7Bfor%7D%5C%3B+k%3D1%2C%5Cdots%2Cn%2C%5C%5C%0Ay_k+%26%3D+0+%5Cquad+%5Ctext%7Bon%7D%5C%3B+%5CGamma%5C%3B+%5Ctext%7Bfor%7D%5C%3B+k%3D1%2C%5Cdots%2Cn%2C%5C%5C%0A%5Cend%7Balign%2A%7D%0A"
-alt="\begin{align*}
-\frac{y_k - y_{k-1}}{\Delta t} - \Delta y_k &= u_k \quad \text{ in }\; \Omega\; \text{for}\; k=1,\dots,n,\\
-y_k &= 0 \quad \text{on}\; \Gamma\; \text{for}\; k=1,\dots,n,\\
-\end{align*}
-">.</p>
-<p>Note, that <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+y_k+%5Capprox+y%28t_k%29%2C+%5Ctext+%7Band+%7D%5C%3B+u_k+%5Capprox+u%28t_k%29"
-alt="y_k \approx y(t_k), \text {and }\; u_k \approx u(t_k)"> are approximations of the
-continuous functions. The initial condition is included by definition of <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0"
-alt="y_0">.</p>
+interval <span><span class="MathJax_Preview"> [0,T] </span><script type="math/tex"> [0,T] </script></span> by a grid with nodes <span><span class="MathJax_Preview"> t_k, k=1,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T </span><script type="math/tex"> t_k, k=1,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T </script></span>. Then, we approximate the time derivative
+<span><span class="MathJax_Preview"> \partial_t y(t_k) </span><script type="math/tex"> \partial_t y(t_k) </script></span> at some time <span><span class="MathJax_Preview"> t_k </span><script type="math/tex"> t_k </script></span> by the backward difference</p>
+<p><span><span class="MathJax_Preview">\partial_t y(t_k) \approx \frac{y(t_k) - y(t_{k-1})}{\Delta t},
+</span><script type="math/tex; mode=display">\partial_t y(t_k) \approx \frac{y(t_k) - y(t_{k-1})}{\Delta t},
+</script></span></p>
+<p>where <span><span class="MathJax_Preview"> \Delta t = t_k - t_{k-1} </span><script type="math/tex"> \Delta t = t_k - t_{k-1} </script></span>, and thus get the sequence of PDEs</p>
+<p><span><span class="MathJax_Preview">\frac{y_k - y_{k-1}}{\Delta t} - \Delta y_k = u_k \quad \text{ in }\; \Omega\; \text{for}\; k=1,\dots,n,\\
+y_k = 0 \quad \text{on}\; \Gamma\; \text{for}\; k=1,\dots,n,
+</span><script type="math/tex; mode=display">\frac{y_k - y_{k-1}}{\Delta t} - \Delta y_k = u_k \quad \text{ in }\; \Omega\; \text{for}\; k=1,\dots,n,\\
+y_k = 0 \quad \text{on}\; \Gamma\; \text{for}\; k=1,\dots,n,
+</script></span></p>
+<p>Note, that <span><span class="MathJax_Preview"> y_k \approx y(t_k), \text {and }\; u_k \approx u(t_k) </span><script type="math/tex"> y_k \approx y(t_k), \text {and }\; u_k \approx u(t_k) </script></span> are approximations of the
+continuous functions. The initial condition is included by definition of <span><span class="MathJax_Preview"> y_0 </span><script type="math/tex"> y_0 </script></span>.</p>
 <p>Moreover, for the cost functionals, we can discretize the temporal integrals using
 rectangle rules. This means we approximate the cost functional via</p>
-<p><img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+J%28y%2C+u%29+%5Capprox+%5Cfrac%7B1%7D%7B2%7D+%5Csum_%7Bk%3D1%7D%5En+%5CDelta+t+%5Cleft%28+%5Cint_%5COmega+%5Cleft%28+y_k+-+%28y_d%29_k+%5Cright%29%5E2+%5Ctext%7Bd%7Dx++%2B+%5Calpha+%5Cint_%5COmega+u_k%5E2+%5Ctext%7Bd%7Dx+%5Cright%29"
-alt="J(y, u) \approx \frac{1}{2} \sum_{k=1}^n \Delta t \left( \int_\Omega \left( y_k - (y_d)_k \right)^2 \text{d}x
-+ \alpha \int_\Omega u_k^2 \text{d}x \right)">.</p>
-<p>Here, <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%28y_d%29_k+%5Capprox+y_d%28t_k%29"
-alt="(y_d)_k \approx y_d(t_k)"> is an approximation of the desired state at time t_k.</p>
+<p><span><span class="MathJax_Preview">J(y, u) \approx \frac{1}{2} \sum_{k=1}^n \Delta t \left( \int_\Omega \left( y_k - (y_d)_k \right)^2 \text{d}x
++ \alpha \int_\Omega u_k^2 \text{d}x \right).
+</span><script type="math/tex; mode=display">J(y, u) \approx \frac{1}{2} \sum_{k=1}^n \Delta t \left( \int_\Omega \left( y_k - (y_d)_k \right)^2 \text{d}x
++ \alpha \int_\Omega u_k^2 \text{d}x \right).
+</script></span></p>
+<p>Here, <span><span class="MathJax_Preview"> (y_d)_k </span><script type="math/tex"> (y_d)_k </script></span> is an approximation of the desired state at time <span><span class="MathJax_Preview"> t_k </span><script type="math/tex"> t_k </script></span>.</p>
 <p>Let us now investigate how to solve this problem with cashocs.</p>
 <p><strong>Initialization</strong></p>
 <p>This section is the same as for all previous problems and is done via</p>
@@ -1154,9 +1163,7 @@ one Function for each time step. Hence, we initialize these (together with the a
 controls = [Function(V) for i in range(len(t_array))]
 adjoints = [Function(V) for i in range(len(t_array))]
 </code></pre>
-<p>Note, that <code>states[k]</code> corresponds to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk%2B1%7D"
-alt="y_{k+1}"> (due to the differences in indexing between computer scientists and
+<p>Note, that <code>states[k]</code> corresponds to <span><span class="MathJax_Preview"> y_{k+1} </span><script type="math/tex"> y_{k+1} </script></span> (due to the differences in indexing between computer scientists and
 mathematicians), and analogously for <code>controls[k]</code>. Note, that in the following there
 will
 be made no such distinctions anymore, it should be obvious from the context
@@ -1206,25 +1213,17 @@ expression for the desired state is updated to reflect the current time.
 The line</p>
 <pre><code>y = states[k]
 </code></pre>
-<p>sets the object <code>y</code> to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_k"
-alt="y_k">. For the backward difference in the implicit Euler method, we also need
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
-alt="y_{k-1}">, which we define by the if condition</p>
+<p>sets the object <code>y</code> to <span><span class="MathJax_Preview"> y_k </span><script type="math/tex"> y_k </script></span>. For the backward difference in the implicit Euler method, we also need
+<span><span class="MathJax_Preview"> y_{k-1} </span><script type="math/tex"> y_{k-1} </script></span> which we define by the if condition</p>
 <pre><code>if k == 0:
     y_prev = Function(V)
 else:
     y_prev = states[k - 1]
 </code></pre>
-<p>which ensures that <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_0+%3D+0"
-alt="y_0 = 0">. Hence, <code>y_prev</code> indeed corresponds to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+y_%7Bk-1%7D"
-alt="y_{k-1}">. Moreover, we get the current control and adjoint state via</p>
+<p>which ensures that <span><span class="MathJax_Preview"> y_0 = 0 </span><script type="math/tex"> y_0 = 0 </script></span>. Hence, <code>y_prev</code> indeed corresponds to <span><span class="MathJax_Preview"> y_{k-1} </span><script type="math/tex"> y_{k-1} </script></span>. Moreover, we get the current control and adjoint state via</p>
 <pre><code>p = adjoints[k]
+u = controls[k]
 </code></pre>
-<p>u = controls[k]</p>
 <p>This allow us to define the state equation at time t as</p>
 <pre><code>state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
 </code></pre>

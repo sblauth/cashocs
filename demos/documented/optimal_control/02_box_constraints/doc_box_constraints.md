@@ -5,34 +5,23 @@ In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cmin%5C%3B+J%28y%2Cu%29+%3D+%5Cfrac%7B1%7D%7B2%7D+%5Cint_%7B%5COmega%7D+%5Cleft%28+y+-+y_d+%5Cright%29%5E2+%5Ctext%7Bd%7Dx+%2B+%5Cfrac%7B%5Calpha%7D%7B2%7D+%5Cint_%7B%5COmega%7D+u%5E2+%5Ctext%7Bd%7Dx"
-alt="\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x">
-
-subject to <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A-%5CDelta+y+%26%3D+u+%5Cquad+%5Ctext%7B+in+%7D%5C%3B+%5COmega%2C%5C%5C%0Ay+%26%3D+0+%5Cquad+%5Ctext%7B+on+%7D%5C%3B+%5CGamma%0A%5Cend%7Balign%2A%7D%0A"
-alt="\begin{align*}
--\Delta y &= u \quad \text{ in }\; \Omega,\\
-y &= 0 \quad \text{ on }\; \Gamma
-\end{align*}
-">
-
-and <img src=
-"https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+u_a+%5Cleq+u+%5Cleq+u_b"
-alt="u_a \leq u \leq u_b">
+$$\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma, \\
+u_a \leq u &\leq u_b \quad &&\text{ in } \Omega
+\end{alignedat} \right.
+$$
 
 (see, e.g., [Tröltzsch, Optimal Control of Partial Differential Equations](https://doi.org/10.1090/gsm/112),
 or [Hinze et al., Optimization with PDE constraints](https://doi.org/10.1007/978-1-4020-8839-1)).
 
 This example differs from the first one only in the fact that
 we now also consider box constraints on the control variables
-Here, the functions u<sub>a</sub> and u<sub>b</sub> are
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E%5Cinfty%28%5COmega%29"
-alt="L^\infty(\Omega)"> functions. As before, we consider
-as domain the unit square, i.e., <img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">.
+Here, the functions \( u_a \) and \( u_b \) are \( L^\infty(\Omega) \)
+functions. As before, we consider
+as domain the unit square, i.e., \( \Omega = (0, 1)^2 \).
 
 **Initialization**
 

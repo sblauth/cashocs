@@ -153,7 +153,8 @@ This can have an important effect on performance of "first order" algorithms
 
 This paramter describes the parameter used in the Armijo rule to determine
 sufficient decrease, via
-_J(u + td) <= J(u) + eps * t * <g, d>,_
+$$ J(u + td) \leq J(u) + \varepsilon t \left\langle g, d \right\rangle
+$$
 where u is the current optimization variable, d is the search direction, t is the
 step size, and g is the current gradient. eps is the parameter determined above.
 A value of 1e-4 is recommended and commonly used (see Nocedal and Wright,

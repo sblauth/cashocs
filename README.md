@@ -64,10 +64,8 @@ Documentation
 -------------
 
 The documentation of the project can be found in the docs folder, just open "index.html"
-to view them in a web browser. Hower, I recommend using the documented demos in the demos
-folder as reference, as they indicate more clearly how to actually use the project.
-
-Alternatively, see the [documentation](./docs/index.html) and the [documented demos](./demos/docs/demos.html).
+to view them in a web browser. Moreover, there is also a link to a website containing
+the documentation of the demos.
 
 
 Testing

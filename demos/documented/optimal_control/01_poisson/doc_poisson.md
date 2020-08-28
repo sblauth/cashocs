@@ -5,8 +5,11 @@ optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
 $$\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
-\text{ subject to } -\Delta y = u \quad \text{ in }\; \Omega,\\
-\hspace{7em} y = 0 \quad \text{ on }\; \Gamma
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
 $$
 
 
@@ -15,14 +18,8 @@ $$
 or [Hinze et al., Optimization with PDE constraints](https://doi.org/10.1007/978-1-4020-8839-1)).
 
 For this first example, we do not consider control constraints,
-but search for an optimal control u in the entire space
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+L%5E2%28%5COmega%29"
-alt="L^2(\Omega)">, for the sake of simplicitiy. For
-the domain under consideration, we use the unit square
-<img src=
-"https://render.githubusercontent.com/render/math?math=%5Ctextstyle+%5COmega+%3D+%280%2C+1%29+%5Ctimes+%280%2C1%29"
-alt="\Omega = (0, 1) \times (0,1)">, since this is built into cashocs.
+but search for an optimal control u in the entire space \( L^2(\Omega) \), for the sake of simplicitiy. For
+the domain under consideration, we use the unit square \( \Omega = (0, 1)^2 \), since this is built into cashocs.
 
 In the following, we will describe how to solve this problem
 using cashocs, using as much of the package as possible. Moreover,
@@ -171,7 +168,7 @@ TestFunctions.
 
 Now, we have to define the optimal control problem which we do
 by first specifying the cost functional. To do so, we define the
-desired state y<sub>d</sub> as an UFL expression `y_d`, i.e.,
+desired state \( y_d \) as an UFL expression `y_d`, i.e.,
 
     y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 

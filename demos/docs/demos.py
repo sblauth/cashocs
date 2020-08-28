@@ -4,39 +4,39 @@
 
 This includes a collection of demos showcasing cashocs' features for optimal control problems.
 
-.. include:: ../documented/optimal_control/demo_01_basics/demo_01_basics.md
+.. include:: ../documented/optimal_control/01_poisson/doc_poisson.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_01_basics/config_doc.md
+.. include:: ../documented/optimal_control/01_poisson/doc_config.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_02_control_constraints/demo_02_control_constraints.md
+.. include:: ../documented/optimal_control/02_box_constraints/doc_box_constraints.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_03_neumann_boundary_control/demo_03_neumann_boundary_control.md
+.. include:: ../documented/optimal_control/03_neumann_control/doc_neumann_control.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_04_multiple_variables/demo_04_multiple_variables.md
+.. include:: ../documented/optimal_control/04_multiple_variables/doc_multiple_variables.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_05_coupled_problems_monolithic/demo_05_coupled_problems_monolithic.md
+.. include:: ../documented/optimal_control/05_monolithic_problems/doc_monolithic_problems.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_06_coupled_problems_iteratively/demo_06_coupled_problems_iteratively.md
+.. include:: ../documented/optimal_control/06_picard_iteration/doc_picard_iteration.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_07_stokes_control/demo_07_stokes_control.md
+.. include:: ../documented/optimal_control/07_stokes/doc_stokes.md
 
 <br/>
 
-.. include:: ../documented/optimal_control/demo_08_heat_equation/demo_08_heat_equation.md
+.. include:: ../documented/optimal_control/08_heat_equation/doc_heat_equation.md
 
 
 # Shape Optimization
