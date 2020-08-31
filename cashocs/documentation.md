@@ -57,7 +57,7 @@ For a detailed discussion of the features of cashocs and its usage we refer to t
 
 Demos
 -----
-The documentation of the demos can be found <a target="_blank" rel="noopener noreferrer" href="../demos/docs/demos.html">here</a>.
+The documentation of the demos can be found <a target="_blank" rel="noopener noreferrer" href="./doc_demos.html">here</a>.
 
 
 Command line interface for mesh conversion

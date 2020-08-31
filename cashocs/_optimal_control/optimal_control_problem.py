@@ -199,7 +199,8 @@ class OptimalControlProblem(OptimizationProblem):
 
 			self.control_constraints.append([lower_bound, upper_bound])
 
-		### Check whether the control constraints are feasible
+		### Check whether the control constraints are feasible, and whether they are actually present
+		self.require_control_constraints = [False for i in range(self.control_dim)]
 		for idx, pair in enumerate(self.control_constraints):
 			assert np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]), 'the lower bound must always be smaller than the upper bound'
 
@@ -207,6 +208,7 @@ class OptimalControlProblem(OptimizationProblem):
 				# no control constraint for this component
 				pass
 			else:
+				self.require_control_constraints[idx] = True
 				assert self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1, \
 					'Control constraints are only implemented for linear Lagrange elements'
 
@@ -221,7 +223,8 @@ class OptimalControlProblem(OptimizationProblem):
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
-											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options)
+											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options,
+											   self.require_control_constraints)
 
 		self.state_spaces = self.form_handler.state_spaces
 		self.control_spaces = self.form_handler.control_spaces

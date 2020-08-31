@@ -36,7 +36,7 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import InputError
+from ._exceptions import InputError, ConfigError
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
 					_solve_linear_problem, write_out_mesh)
 
@@ -416,14 +416,23 @@ class _MeshHandler:
 
 		# Remeshing initializations
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
+		
+		if self.do_remesh or self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
+			try:
+				self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get('Mesh', 'gmsh_file')))
+			except configparser.Error:
+				if self.do_remesh:
+					raise ConfigError('Remeshing is only available with gmsh meshes.')
+				elif self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
+					raise ConfigError('The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n'
+								  'If you already use a gmsh mesh, please specify Mesh.gmsh_file.')
 
 		if self.do_remesh:
 			self.temp_dict = self.shape_optimization_problem.temp_dict
 			self.remesh_counter = self.temp_dict.get('remesh_counter', 0)
 			self.gmsh_file = self.temp_dict['gmsh_file']
 			assert self.gmsh_file[-4:] == '.msh', 'Not a valid gmsh file'
-			self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get('Mesh', 'gmsh_file')))
-
+			
 			self.remesh_directory = self.mesh_directory + '/cashocs_remesh'
 			if not os.path.exists(self.remesh_directory):
 				os.mkdir(self.remesh_directory)

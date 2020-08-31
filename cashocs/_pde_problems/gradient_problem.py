@@ -22,8 +22,9 @@ Created on 24/02/2020, 09.26
 """
 
 import fenics
+from petsc4py import PETSc
 
-from ..utils import _solve_linear_problem
+from ..utils import _solve_linear_problem, _setup_petsc_options
 
 
 
@@ -52,6 +53,26 @@ class GradientProblem:
 		self.gradients = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.config = self.form_handler.config
 
+		# Initialize the PETSc Krylov solver for the Riesz projection problems
+		self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
+
+		option = [
+			['ksp_type', 'cg'],
+			['pc_type', 'hypre'],
+			['pc_hypre_type', 'boomeramg'],
+			['pc_hypre_boomeramg_strong_threshold', 0.7],
+			['ksp_rtol', 1e-16],
+			['ksp_atol', 1e-50],
+			['ksp_max_it', 100]
+		]
+		riesz_ksp_options = []
+		for i in range(self.form_handler.control_dim):
+			riesz_ksp_options.append(option)
+
+		_setup_petsc_options(self.ksps, riesz_ksp_options)
+		for i, ksp in enumerate(self.ksps):
+			ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
+	
 		self.has_solution = False
 
 
@@ -71,7 +92,7 @@ class GradientProblem:
 		if not self.has_solution:
 			for i in range(self.form_handler.control_dim):
 				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()
-				_solve_linear_problem(ksp=self.form_handler.ksps[i], b=b, x=self.gradients[i].vector().vec())
+				_solve_linear_problem(ksp=self.ksps[i], b=b, x=self.gradients[i].vector().vec())
 
 			self.has_solution = True
 

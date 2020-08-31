@@ -45,9 +45,11 @@ e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx
 J = inner(grad(u), grad(u))*dx
 
 optimization_problem = ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
-# optimization_problem.solve()
-optimization_problem.state_problem.solve()
-optimization_problem.adjoint_problem.solve()
+optimization_problem.solve()
+# optimization_problem.state_problem.solve()
+# optimization_problem.adjoint_problem.solve()
+
+# sg = optimization_problem.compute_shape_gradient()
 
 u, p = up.split(True)
 

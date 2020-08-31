@@ -93,6 +93,26 @@ class BaseHessianProblem:
 		_setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
 		self.adjoint_ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
 		_setup_petsc_options(self.adjoint_ksps, self.form_handler.adjoint_ksp_options)
+		
+		# Initialize the PETSc Krylov solver for the Riesz projection problems
+		self.ksps = [PETSc.KSP().create() for i in range(self.control_dim)]
+
+		option = [
+			['ksp_type', 'cg'],
+			['pc_type', 'hypre'],
+			['pc_hypre_type', 'boomeramg'],
+			['pc_hypre_boomeramg_strong_threshold', 0.7],
+			['ksp_rtol', 1e-16],
+			['ksp_atol', 1e-50],
+			['ksp_max_it', 100]
+		]
+		riesz_ksp_options = []
+		for i in range(self.control_dim):
+			riesz_ksp_options.append(option)
+
+		_setup_petsc_options(self.ksps, riesz_ksp_options)
+		for i, ksp in enumerate(self.ksps):
+			ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
 
 
@@ -200,11 +220,8 @@ class BaseHessianProblem:
 
 		for i in range(self.control_dim):
 			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
-			x = out[i].vector().vec()
-			self.form_handler.ksps[i].solve(b, x)
-
-			if self.form_handler.ksps[i].getConvergedReason() < 0:
-				raise Exception('Krylov solver did not converge. Reason: ' + str(self.form_handler.ksps[i].getConvergedReason()))
+			
+			_solve_linear_problem(self.ksps[i], b=b, x=out[i].vector().vec())
 
 		self.no_sensitivity_solves += 2
 

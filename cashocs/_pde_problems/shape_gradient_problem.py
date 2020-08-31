@@ -22,8 +22,9 @@ Created on 15/06/2020, 08.10
 """
 
 import fenics
+from petsc4py import PETSc
 
-from ..utils import _solve_linear_problem
+from ..utils import _solve_linear_problem, _setup_petsc_options
 
 
 
@@ -53,6 +54,19 @@ class ShapeGradientProblem:
 		self.gradient_norm_squared = 1.0
 
 		self.config = self.shape_form_handler.config
+		
+		# Generate the Krylov solver for the shape gradient problem
+		self.ksp = PETSc.KSP().create()
+		options = [[
+			['ksp_type', 'cg'],
+			['pc_type', 'hypre'],
+			['pc_hypre_type', 'boomeramg'],
+			['pc_hypre_boomeramg_strong_threshold', 0.7],
+			['ksp_rtol', 1e-20],
+			['ksp_atol', 1e-50],
+			['ksp_max_it', 250]
+		]]
+		_setup_petsc_options([self.ksp], options)
 
 		self.has_solution = False
 
@@ -75,7 +89,7 @@ class ShapeGradientProblem:
 			self.shape_form_handler.regularization.update_geometric_quantities()
 			self.shape_form_handler.assembler.assemble(self.shape_form_handler.fe_shape_derivative_vector)
 			b = fenics.as_backend_type(self.shape_form_handler.fe_shape_derivative_vector).vec()
-			_solve_linear_problem(self.shape_form_handler.ksp, self.shape_form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
+			_solve_linear_problem(self.ksp, self.shape_form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
 
 			self.has_solution = True
 

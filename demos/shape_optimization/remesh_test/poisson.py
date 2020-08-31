@@ -30,6 +30,7 @@ J = u*dx
 
 optimization_problem = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 optimization_problem.solve()
+
 # optimization_problem.compute_state_variables()
 
 # optimization_problem.solver.line_search.mesh_handler.remesh()

@@ -197,17 +197,24 @@ directly solve it via cashocs with the commands
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()
 
-Note, that the `solve` command without any additional keyword arguments leads to
-cashocs using the settings defined in the config file. However, there are some options
-that can be directly set with keyword arguments for the `solve` call. These are
-
-  - `algorithm` : Specifies which solution algorithm shall be used.
-  - `rtol` : The relative tolerance for the optimization algorithm.
-  - `atol` : The absolute tolerance for the optimization algorithm.
-  - `max_iter` : The maximum amount of iterations that can be carried out.
-
-The possible values for these are the same as the corresponding ones in the config file.
-This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
+> Note, that the `solve` command without any additional keyword arguments leads to
+> cashocs using the settings defined in the config file. However, there are some options
+> that can be directly set with keyword arguments for the `solve` call. These are
+>
+>   - `algorithm` : Specifies which solution algorithm shall be used.
+>   - `rtol` : The relative tolerance for the optimization algorithm.
+>   - `atol` : The absolute tolerance for the optimization algorithm.
+>   - `max_iter` : The maximum amount of iterations that can be carried out.
+>
+> Hence, we could also use the command
+>
+>     ocp.solve('lbfgs', 1e-3, 0.0, 100)
+>
+> to solve the optimization problem with the L-BFGS method, an relative tolerance
+> of 1e-3, no absolute tolerance, and a maximum of 100 iterations.
+>
+> The possible values for these are the same as the corresponding ones in the config file.
+> This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
 
 This concludes the demo, and the corresponding full code can
-be found in the file "demo_01.py".
+be found in the file "demo_poisson.py".

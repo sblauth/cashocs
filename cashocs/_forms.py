@@ -25,6 +25,7 @@ problems.
 import json
 import warnings
 
+import dolfin.cpp as cpp
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -32,10 +33,10 @@ from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
-from ._exceptions import InputError
+from ._exceptions import InputError, ConfigError
 from ._shape_optimization import Regularization
 from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration,
-					_setup_petsc_options, _solve_linear_problem, summation)
+					_setup_petsc_options, _solve_linear_problem, summation, create_bcs_list)
 
 
 
@@ -185,7 +186,11 @@ class FormHandler:
 			for i in range(self.state_dim):
 				a, L = fenics.system(self.state_eq_forms[i])
 				self.state_eq_forms_lhs.append(a)
-				self.state_eq_forms_rhs.append(L)
+				if L.empty():
+					zero_form = fenics.inner(fenics.Constant(np.zeros(self.test_functions_state[i].ufl_shape)), self.test_functions_state[i])*self.dx
+					self.state_eq_forms_rhs.append(zero_form)
+				else:
+					self.state_eq_forms_rhs.append(L)
 
 
 
@@ -212,7 +217,11 @@ class FormHandler:
 		for i in range(self.state_dim):
 			a, L = fenics.system(self.adjoint_eq_forms[i])
 			self.adjoint_eq_lhs.append(a)
-			self.adjoint_eq_rhs.append(L)
+			if L.empty():
+				zero_form = fenics.inner(fenics.Constant(np.zeros(self.test_functions_adjoint[i].ufl_shape)), self.test_functions_adjoint[i])*self.dx
+				self.adjoint_eq_rhs.append(zero_form)
+			else:
+				self.adjoint_eq_rhs.append(L)
 
 		# Compute the  adjoint boundary conditions
 		if self.state_adjoint_equal_spaces:
@@ -268,7 +277,7 @@ class ControlFormHandler(FormHandler):
 	ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints, ksp_options, adjoint_ksp_options):
+	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints, ksp_options, adjoint_ksp_options, require_control_constraints):
 		"""Initializes the ControlFormHandler class.
 
 		Parameters
@@ -295,6 +304,9 @@ class ControlFormHandler(FormHandler):
 		adjoint_ksp_options : list[list[list[str]]]
 			The list of command line options for the KSP for the
 			adjoint systems.
+		require_control_constraints : list[bool]
+			A list of boolean flags that indicates, whether the i-th control
+			has actual control constraints present.
 		"""
 
 		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
@@ -303,6 +315,7 @@ class ControlFormHandler(FormHandler):
 		self.controls = controls
 		self.riesz_scalar_products = riesz_scalar_products
 		self.control_constraints = control_constraints
+		self.require_control_constraints = require_control_constraints
 		
 		self.control_dim = len(self.controls)
 		self.control_spaces = [x.function_space() for x in self.controls]
@@ -336,27 +349,6 @@ class ControlFormHandler(FormHandler):
 			if not self.riesz_projection_matrices[i].isSymmetric():
 				if not self.riesz_projection_matrices[i].isSymmetric(1e-12):
 					raise InputError('Supplied scalar product form is not symmetric.')
-
-
-		# Initialize the PETSc Krylov solver for the Riesz projection problems
-		self.ksps = [PETSc.KSP().create() for i in range(self.control_dim)]
-
-		option = [
-			['ksp_type', 'cg'],
-			['pc_type', 'hypre'],
-			['pc_hypre_type', 'boomeramg'],
-			['pc_hypre_boomeramg_strong_threshold', 0.7],
-			['ksp_rtol', 1e-16],
-			['ksp_atol', 1e-50],
-			['ksp_max_it', 100]
-		]
-		riesz_ksp_options = []
-		for i in range(self.control_dim):
-			riesz_ksp_options.append(option)
-
-		_setup_petsc_options(self.ksps, riesz_ksp_options)
-		for ksp in self.ksps:
-			ksp.setOperators(self.riesz_projection_matrices[i])
 
 
 
@@ -397,18 +389,25 @@ class ControlFormHandler(FormHandler):
 		-------
 		None
 		"""
-
-		# TODO: Only call this if we actually have control constraints
-
-		self.idx_active_lower = [(self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
-		self.idx_active_upper = [(self.controls[j].vector()[:] >= self.control_constraints[j][1].vector()[:]).nonzero()[0] for j in range(self.control_dim)]
-
-		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
-		[self.idx_active[j].sort() for j in range(self.control_dim)]
-
-		self.idx_inactive = [np.setdiff1d(np.arange(self.control_spaces[j].dim()), self.idx_active[j] ) for j in range(self.control_dim)]
-
-		return None
+		
+		self.idx_active_lower = []
+		self.idx_active_upper = []
+		self.idx_active = []
+		self.idx_inactive = []
+		
+		for j in range(self.control_dim):
+			
+			if self.require_control_constraints[j]:
+				self.idx_active_lower.append((self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:]).nonzero()[0])
+				self.idx_active_upper.append((self.controls[j].vector()[:] >= self.control_constraints[j][1].vector()[:]).nonzero()[0])
+			else:
+				self.idx_active_lower.append([])
+				self.idx_active_upper.append([])
+			
+			temp_active = np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j]))
+			temp_active.sort()
+			self.idx_active.append(temp_active)
+			self.idx_inactive.append(np.setdiff1d(np.arange(self.control_spaces[j].dim()), self.idx_active[j]))
 
 
 
@@ -430,34 +429,46 @@ class ControlFormHandler(FormHandler):
 		b : list[dolfin.function.function.Function]
 			The result of the projection (overwrites input b).
 		"""
-
+		
 		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
+			if self.require_control_constraints[j]:
+				self.temp[j].vector()[:] = 0.0
+				self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
+				b[j].vector()[:] = self.temp[j].vector()[:]
+			
+			else:
+				b[j].vector()[:] = 0.0
 
 		return b
 
 
 
 	def restrict_to_lower_active_set(self, a, b):
-
+		
 		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
+			if self.require_control_constraints[j]:
+				self.temp[j].vector()[:] = 0.0
+				self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
+				b[j].vector()[:] = self.temp[j].vector()[:]
+			
+			else:
+				b[j].vector()[:] = 0.0
 
 		return b
 
 
 
 	def restrict_to_upper_active_set(self, a, b):
-
+		
 		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
+			if self.require_control_constraints[j]:
+				self.temp[j].vector()[:] = 0.0
+				self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
+				b[j].vector()[:] = self.temp[j].vector()[:]
+			
+			else:
+				b[j].vector()[:] = 0.0
+		
 		return b
 
 
@@ -480,11 +491,15 @@ class ControlFormHandler(FormHandler):
 		b : list[dolfin.function.function.Function]
 			The result of the projection of a onto the inactive set (overwrites input b).
 		"""
-
+		
 		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
+			if self.require_control_constraints[j]:
+				self.temp[j].vector()[:] = 0.0
+				self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
+				b[j].vector()[:] = self.temp[j].vector()[:]
+			
+			else:
+				b[j].vector()[:] = a[j].vector()[:]
 
 		return b
 
@@ -507,9 +522,10 @@ class ControlFormHandler(FormHandler):
 		a : list[dolfin.function.function.Function]
 			The result of the projection (overwrites input a)
 		"""
-
+		
 		for j in range(self.control_dim):
-			a[j].vector()[:] = np.maximum(self.control_constraints[j][0].vector()[:], np.minimum(self.control_constraints[j][1].vector()[:], a[j].vector()[:]))
+			if self.require_control_constraints[j]:
+				a[j].vector()[:] = np.maximum(self.control_constraints[j][0].vector()[:], np.minimum(self.control_constraints[j][1].vector()[:], a[j].vector()[:]))
 
 		return a
 
@@ -665,8 +681,10 @@ class ShapeFormHandler(FormHandler):
 		self.regularization = Regularization(self)
 
 		# Calculate the necessary UFL forms
+		self.inhomogeneous_mu = False
 		self.__compute_shape_derivative()
 		self.__compute_shape_gradient_forms()
+		self.__setup_mu_computation()
 
 		if self.degree_estimation:
 			self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product),
@@ -685,19 +703,6 @@ class ShapeFormHandler(FormHandler):
 		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' \
 				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
 			raise NotImplementedError('Second order methods are not implemented for shape optimization yet')
-
-		# Generate the Krylov solver for the shape gradient problem
-		self.ksp = PETSc.KSP().create()
-		options = [[
-			['ksp_type', 'cg'],
-			['pc_type', 'hypre'],
-			['pc_hypre_type', 'boomeramg'],
-			['pc_hypre_boomeramg_strong_threshold', 0.7],
-			['ksp_rtol', 1e-20],
-			['ksp_atol', 1e-50],
-			['ksp_max_it', 250]
-		]]
-		_setup_petsc_options([self.ksp], options)
 
 
 
@@ -730,7 +735,8 @@ class ShapeFormHandler(FormHandler):
 					self.material_derivative_coeffs.append(coeff)
 
 		if len(self.material_derivative_coeffs) > 0:
-			warnings.warn('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints.')
+			warnings.warn('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n '
+						  'You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test ')
 
 		for coeff in self.material_derivative_coeffs:
 			# temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())
@@ -758,9 +764,27 @@ class ShapeFormHandler(FormHandler):
 		"""
 
 		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
-		assert type(self.shape_bdry_def) == list, 'ShapeGradient.shape_bdry_def has to be a list'
+		if not type(self.shape_bdry_def) == list:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_def has to be a list.')
+		if not len(self.shape_bdry_def) > 0:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_def must not be empty.')
+		
 		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
-		assert type(self.shape_bdry_fix) == list, 'ShapeGradient.shape_bdry_fix has to be a list'
+		if not type(self.shape_bdry_def) == list:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix has to be a list.')
+		
+		self.shape_bdry_fix_x = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_x', fallback='[]'))
+		if not type(self.shape_bdry_fix_x) == list:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_x has to be a list.')
+		
+		self.shape_bdry_fix_y = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_y', fallback='[]'))
+		if not type(self.shape_bdry_fix_y) == list:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_y has to be a list')
+		
+		self.shape_bdry_fix_z = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_z', fallback='[]'))
+		if not type(self.shape_bdry_fix_z) == list:
+			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_z has to be a list')
+		
 
 		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
 		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
@@ -786,10 +810,57 @@ class ShapeFormHandler(FormHandler):
 		self.riesz_scalar_product = fenics.Constant(2)*self.mu_lame/self.volumes*fenics.inner(eps(trial), eps(test))*self.dx \
 									+ fenics.Constant(self.lambda_lame)/self.volumes*fenics.div(trial)*fenics.div(test)*self.dx \
 									+ fenics.Constant(self.damping_factor)/self.volumes*fenics.inner(trial, test)*self.dx
+		
+		self.bcs_shape = create_bcs_list(self.deformation_space, fenics.Constant([0]*self.deformation_space.ufl_element().value_size()), self.boundaries, self.shape_bdry_fix)
+		self.bcs_shape += create_bcs_list(self.deformation_space.sub(0), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_x)
+		self.bcs_shape += create_bcs_list(self.deformation_space.sub(1), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_y)
+		if self.deformation_space.num_sub_spaces() == 3:
+			self.bcs_shape += create_bcs_list(self.deformation_space.sub(2), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_z)
+	
+	
+	
+	def __setup_mu_computation(self):
+		self.mu_def = self.config.getfloat('ShapeGradient', 'mu_def')
+		self.mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix')
 
-		self.bcs_shape = [fenics.DirichletBC(self.deformation_space,
-											 fenics.Constant([0]*self.deformation_space.ufl_element().value_size()), self.boundaries, i)
-						  for i in self.shape_bdry_fix]
+		if np.abs(self.mu_def - self.mu_fix)/self.mu_fix > 1e-2:
+			
+			self.inhomogeneous_mu = True
+			
+			# dx = self.dx
+
+			options = [[
+				['ksp_type', 'cg'],
+				['pc_type', 'hypre'],
+				['pc_hypre_type', 'boomeramg'],
+				['ksp_rtol', 1e-16],
+				['ksp_atol', 1e-50],
+				['ksp_max_it', 100]
+			]]
+			self.ksp_mu = PETSc.KSP().create()
+			_setup_petsc_options([self.ksp_mu], options)
+
+			phi = fenics.TrialFunction(self.CG1)
+			psi = fenics.TestFunction(self.CG1)
+
+			self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi))*self.dx
+			self.L_mu = fenics.Constant(0.0)*psi*self.dx
+
+			self.bcs_mu = [fenics.DirichletBC(self.CG1, fenics.Constant(self.mu_fix), self.boundaries, i)
+				   for i in self.shape_bdry_fix]
+			self.bcs_mu += [fenics.DirichletBC(self.CG1, fenics.Constant(self.mu_def), self.boundaries, i)
+					for i in self.shape_bdry_def]
+
+		# 	A, b = _assemble_petsc_system(a, L, bcs)
+		# 	x = _solve_linear_problem(ksp, A, b)
+		#
+		# 	if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
+		# 		self.mu_lame.vector()[:] = np.sqrt(x[:])
+		# 	else:
+		# 		self.mu_lame.vector()[:] = x[:]
+		#
+		# else:
+		# 	self.mu_lame.vector()[:] = mu_fix
 
 
 
@@ -806,38 +877,11 @@ class ShapeFormHandler(FormHandler):
 			PDE Constrained Shape Optimization, Computational Methods in Applied Mathematics",
 			2016, Vol. 16, Iss. 3, https://doi.org/10.1515/cmam-2016-0009
 		"""
-
-		mu_def = self.config.getfloat('ShapeGradient', 'mu_def')
-		mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix')
-
-		if np.abs(mu_def - mu_fix)/mu_fix > 1e-2:
-
-			dx = self.dx
-
-			options = [[
-				['ksp_type', 'cg'],
-				['pc_type', 'hypre'],
-				['pc_hypre_type', 'boomeramg'],
-				['ksp_rtol', 1e-16],
-				['ksp_atol', 1e-50],
-				['ksp_max_it', 100]
-			]]
-			ksp = PETSc.KSP().create()
-			_setup_petsc_options([ksp], options)
-
-			phi = fenics.TrialFunction(self.CG1)
-			psi = fenics.TestFunction(self.CG1)
-
-			a = fenics.inner(fenics.grad(phi), fenics.grad(psi))*dx
-			L = fenics.Constant(0.0)*psi*dx
-
-			bcs = [fenics.DirichletBC(self.CG1, fenics.Constant(mu_fix), self.boundaries, i)
-				   for i in self.shape_bdry_fix]
-			bcs += [fenics.DirichletBC(self.CG1, fenics.Constant(mu_def), self.boundaries, i)
-					for i in self.shape_bdry_def]
-
-			A, b = _assemble_petsc_system(a, L, bcs)
-			x = _solve_linear_problem(ksp, A, b)
+		
+		if self.inhomogeneous_mu:
+		
+			A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
+			x = _solve_linear_problem(self.ksp_mu, A, b)
 
 			if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
 				self.mu_lame.vector()[:] = np.sqrt(x[:])
@@ -845,7 +889,7 @@ class ShapeFormHandler(FormHandler):
 				self.mu_lame.vector()[:] = x[:]
 
 		else:
-			self.mu_lame.vector()[:] = mu_fix
+			self.mu_lame.vector()[:] = self.mu_fix
 
 
 

@@ -114,7 +114,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			if not ('_cashocs_remesh_flag' in sys.argv):
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 				self.__clean_previous_temp_files()
-				self.temp_dir = tempfile.mkdtemp(prefix='._cashocs_remesh_temp', dir=self.directory)
+				self.temp_dir = tempfile.mkdtemp(prefix='._cashocs_remesh_temp_', dir=self.directory)
 				self.__change_except_hook()
 				self.temp_dict = {'temp_dir' : self.temp_dir, 'gmsh_file' : self.config.get('Mesh', 'gmsh_file'),
 								  'geo_file' : self.config.get('Mesh', 'geo_file'),
@@ -276,7 +276,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	def __clean_previous_temp_files(self):
 
 		for file in os.listdir(self.directory):
-			if file.startswith('._cashocs_remesh_temp'):
+			if file.startswith('._cashocs_remesh_temp_'):
 				os.system('rm -r ' + file)
 
 
@@ -290,8 +290,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		Returns
 		-------
-		list[dolfin.function.function.Function]
-			a list consisting of the (components) of the gradient
+		dolfin.function.function.Function
+			The shape gradient function
 		"""
 
 		self.shape_gradient_problem.solve()

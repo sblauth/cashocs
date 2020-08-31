@@ -20,9 +20,9 @@ r"""cashocs is a Computational Adjoint based SHape optimization and Optimal Cont
 cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
-problems. cashocs is based in the finite element fenics and
+problems. cashocs is based on the finite element package FEniCS and
 allows the user to define the optimization problems in the
-high-level unified form language (UFL) of fenics.
+high-level unified form language (UFL).
 
 .. include:: ./documentation.md
 
