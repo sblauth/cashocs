@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For the documentation of this demo, see doc_poisson.md
+"""For the documentation of this demo, see doc_nonlinear_pdes.md
 
 """
 
@@ -32,7 +32,8 @@ y = Function(V)
 p = Function(V)
 u = Function(V)
 
-e = inner(grad(y), grad(p))*dx - u*p*dx
+c = Constant(1e2)
+e = inner(grad(y), grad(p))*dx + c*pow(y, 3)*p*dx - u*p*dx
 
 bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 

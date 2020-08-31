@@ -6,7 +6,7 @@ Created on 19/03/2020, 08.59
 
 import configparser
 from fenics import *
-from cashocs import OptimalControlProblem, import_mesh
+from cashocs import OptimalControlProblem, import_mesh, regular_mesh
 import numpy as np
 
 
@@ -16,7 +16,8 @@ set_log_level(LogLevel.CRITICAL)
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = import_mesh(config.get('Mesh', 'mesh_file'))
+# mesh, subdomains, boundaries, dx, ds, dS = import_mesh(config.get('Mesh', 'mesh_file'))
+mesh, subdomains, boundaries, dx, ds, dS = regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 n = FacetNormal(mesh)
 h = MaxCellEdgeLength(mesh)

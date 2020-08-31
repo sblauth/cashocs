@@ -71,7 +71,7 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import InputError
+from ._exceptions import InputError, ConfigError
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
                                         _solve_linear_problem, write_out_mesh)
 
@@ -451,14 +451,23 @@ class _MeshHandler:
 
                 # Remeshing initializations
                 self.do_remesh = self.config.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False)
+                
+                if self.do_remesh or self.config.getboolean(&#39;OptimizationRoutine&#39;, &#39;save_mesh&#39;, fallback=False):
+                        try:
+                                self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;)))
+                        except configparser.Error:
+                                if self.do_remesh:
+                                        raise ConfigError(&#39;Remeshing is only available with gmsh meshes.&#39;)
+                                elif self.config.getboolean(&#39;OptimizationRoutine&#39;, &#39;save_mesh&#39;, fallback=False):
+                                        raise ConfigError(&#39;The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n&#39;
+                                                                  &#39;If you already use a gmsh mesh, please specify Mesh.gmsh_file.&#39;)
 
                 if self.do_remesh:
                         self.temp_dict = self.shape_optimization_problem.temp_dict
                         self.remesh_counter = self.temp_dict.get(&#39;remesh_counter&#39;, 0)
                         self.gmsh_file = self.temp_dict[&#39;gmsh_file&#39;]
                         assert self.gmsh_file[-4:] == &#39;.msh&#39;, &#39;Not a valid gmsh file&#39;
-                        self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;)))
-
+                        
                         self.remesh_directory = self.mesh_directory + &#39;/cashocs_remesh&#39;
                         if not os.path.exists(self.remesh_directory):
                                 os.mkdir(self.remesh_directory)

@@ -27,9 +27,9 @@
 <p>cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
-problems. cashocs is based in the finite element fenics and
+problems. cashocs is based on the finite element package FEniCS and
 allows the user to define the optimization problems in the
-high-level unified form language (UFL) of fenics.</p>
+high-level unified form language (UFL).</p>
 <h2 id="getting-started">Getting Started</h2>
 <p>Since cashocs is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
@@ -137,9 +137,9 @@ r&#34;&#34;&#34;cashocs is a Computational Adjoint based SHape optimization and 
 cashocs can be used to treat optimal control and shape optimization
 problems constrained by PDEs. It derives the necessary adjoint
 equations automatically and implements various solvers for the
-problems. cashocs is based in the finite element fenics and
+problems. cashocs is based on the finite element package FEniCS and
 allows the user to define the optimization problems in the
-high-level unified form language (UFL) of fenics.
+high-level unified form language (UFL).
 
 .. include:: ./documentation.md
 
@@ -2292,7 +2292,8 @@ in the "demos" folder.</p></div>
 
                         self.control_constraints.append([lower_bound, upper_bound])
 
-                ### Check whether the control constraints are feasible
+                ### Check whether the control constraints are feasible, and whether they are actually present
+                self.require_control_constraints = [False for i in range(self.control_dim)]
                 for idx, pair in enumerate(self.control_constraints):
                         assert np.alltrue(pair[0].vector()[:] &lt; pair[1].vector()[:]), &#39;the lower bound must always be smaller than the upper bound&#39;
 
@@ -2300,6 +2301,7 @@ in the "demos" folder.</p></div>
                                 # no control constraint for this component
                                 pass
                         else:
+                                self.require_control_constraints[idx] = True
                                 assert self.controls[idx].ufl_element().family() == &#39;Lagrange&#39; and self.controls[idx].ufl_element().degree() == 1, \
                                         &#39;Control constraints are only implemented for linear Lagrange elements&#39;
 
@@ -2314,7 +2316,8 @@ in the "demos" folder.</p></div>
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
                 self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
-                                                                                           self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options)
+                                                                                           self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options,
+                                                                                           self.require_control_constraints)
 
                 self.state_spaces = self.form_handler.state_spaces
                 self.control_spaces = self.form_handler.control_spaces
@@ -2845,7 +2848,7 @@ as for the state systems are used (default is None).</dd>
                         if not (&#39;_cashocs_remesh_flag&#39; in sys.argv):
                                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
                                 self.__clean_previous_temp_files()
-                                self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cashocs_remesh_temp&#39;, dir=self.directory)
+                                self.temp_dir = tempfile.mkdtemp(prefix=&#39;._cashocs_remesh_temp_&#39;, dir=self.directory)
                                 self.__change_except_hook()
                                 self.temp_dict = {&#39;temp_dir&#39; : self.temp_dir, &#39;gmsh_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;),
                                                                   &#39;geo_file&#39; : self.config.get(&#39;Mesh&#39;, &#39;geo_file&#39;),
@@ -3007,7 +3010,7 @@ as for the state systems are used (default is None).</dd>
         def __clean_previous_temp_files(self):
 
                 for file in os.listdir(self.directory):
-                        if file.startswith(&#39;._cashocs_remesh_temp&#39;):
+                        if file.startswith(&#39;._cashocs_remesh_temp_&#39;):
                                 os.system(&#39;rm -r &#39; + file)
 
 
@@ -3021,8 +3024,8 @@ as for the state systems are used (default is None).</dd>
 
                 Returns
                 -------
-                list[dolfin.function.function.Function]
-                        a list consisting of the (components) of the gradient
+                dolfin.function.function.Function
+                        The shape gradient function
                 &#34;&#34;&#34;
 
                 self.shape_gradient_problem.solve()
@@ -3055,8 +3058,8 @@ The necessary solutions of the state and adjoint systems
 are carried out automatically.</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>list[dolfin.function.function.Function]</code></dt>
-<dd>a list consisting of the (components) of the gradient</dd>
+<dt><code>dolfin.function.function.Function</code></dt>
+<dd>The shape gradient function</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -3071,8 +3074,8 @@ are carried out automatically.</p>
 
         Returns
         -------
-        list[dolfin.function.function.Function]
-                a list consisting of the (components) of the gradient
+        dolfin.function.function.Function
+                The shape gradient function
         &#34;&#34;&#34;
 
         self.shape_gradient_problem.solve()

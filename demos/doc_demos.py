@@ -38,6 +38,14 @@ This includes a collection of demos showcasing cashocs' features for optimal con
 
 .. include:: ./documented/optimal_control/08_heat_equation/doc_heat_equation.md
 
+<br/>
+
+.. include:: ./documented/optimal_control/09_nonlinear_pdes/doc_nonlinear_pdes.md
+
+<br/>
+
+.. include:: ./documented/optimal_control/10_dirichlet_control/doc_dirichlet_control.md
+
 
 # Shape Optimization
 

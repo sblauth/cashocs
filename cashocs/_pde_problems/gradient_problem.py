@@ -55,7 +55,14 @@ class GradientProblem:
 
 		# Initialize the PETSc Krylov solver for the Riesz projection problems
 		self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
-
+		
+		# option = [
+		# 		['ksp_type', 'preonly'],
+		# 		['pc_type', 'lu'],
+		# 		['pc_factor_mat_solver_type', 'mumps'],
+		# 		['mat_mumps_icntl_24', 1]
+		# 	]
+		
 		option = [
 			['ksp_type', 'cg'],
 			['pc_type', 'hypre'],
