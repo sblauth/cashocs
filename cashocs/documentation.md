@@ -7,7 +7,7 @@ has a functioning code for the forward problem and the evaluation of the cost
 functional, the necessary modifications to optimize the problem in cashocs
 are minimal. Consider, e.g., the following optimization problem
 
-$$ \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 + \frac{\alpha}{2} u^2 \text{d}x \\
+$$ \min J(y, u) = \frac{1}{2} \int_{\Omega} \lvert y - y_d \rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x \\
 \text{ subject to }
 \begin{aligned}
 - \Delta y &= u \quad \text{ in } \Omega, \\
@@ -59,6 +59,9 @@ Demos
 -----
 The documentation of the demos can be found <a target="_blank" rel="noopener noreferrer" href="./doc_demos.html">here</a>.
 
+Note, that cashocs was also used to obtain the numerical results for my preprints
+[Blauth, Leithäuser, and Pinnau, Optimal Control of the Sabatier Process in Microchannel Reactors](url) and [Blauth, Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization based on Steklov-Poincare Type Metrics](url)
+
 
 Command line interface for mesh conversion
 ------------------------------------------
@@ -68,7 +71,7 @@ xdmf ones, which can be read very easily into fenics. The corresponding command
 for the conversion (after having generated a mesh file 'in.msh' with gmsh)
 is given by
 
-    mesh-convert in.msh out.xdmf
+    cashocs-convert in.msh out.xdmf
 
 This also create .xdmf files for subdomains and boundaries in case they are tagged
 in gmsh as Physical quantities.

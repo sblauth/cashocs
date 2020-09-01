@@ -34,14 +34,14 @@ We can derive a weak form for this equation in \( H^1(\Omega) \)
 \( p \in H^1(\Omega) \) and applying the divergence theorem
 
 $$ \int_\Omega - \Delta y p \text{d}x =
-\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s.
+\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s.
 $$
 
 This weak form is the starting point for Nitsche's method. First of all, observe that
 this weak form is not symmetric anymore. To restore symmetry of the problem, we can
 use the Dirichlet boundary condition and "add a zero" by adding \( \int_\Gamma \nabla p \cdot n (y - u) \text{d}s \). This gives the weak form
 
-$$\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s.
+$$\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s.
 $$
 
 However, one can show that this weak form is not coercive. Hence, Nitsche's method
@@ -49,10 +49,12 @@ adds another zero to this weak form, namely \( \int_\Gamma \eta (y - u) p \text{
 which yields the coercivity of the problem if \( \eta \) is sufficiently large. Hence,
 we consider the following weak form
 
-$$\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s + \eta \int_\Gamma u p \text{d}s,
+$$\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s + \eta \int_\Gamma u p \text{d}s,
 $$
 
 and this is the form we implement for this problem.
+
+For a detailed introduction to Nitsche's method, we refer to [Assous and Michaeli, A numerical method for handling boundary and transmission conditions in some linear partial differential equations](https://doi.org/10.1016/j.procs.2012.04.045)
 
 **Initialization**
 
@@ -134,3 +136,5 @@ The optimal control problem is solved with the usual syntax
 >
 > We see, that with `eta = 1e4` we get a relative error of under `5e-3 %`, which is
 > more than sufficient for any application.
+
+The complete code can be found in demo_dirichlet_control.py

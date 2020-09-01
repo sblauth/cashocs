@@ -7,7 +7,7 @@ how multiple controls can be treated. As model example, we consider the
 following problem
 
 $$ \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
-\text{ subject to } \quad \left\lbrace quad
+\text{ subject to } \quad \left\lbrace \quad
 \begin{alignedat}{2}
 -\Delta y &= u \quad &&\text{ in } \Omega, \\
 -\Delta z - y &= v \quad &&\text{ in } \Omega, \\

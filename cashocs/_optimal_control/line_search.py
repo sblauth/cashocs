@@ -67,23 +67,6 @@ class ArmijoLineSearch:
 
 
 
-	# def project_direction_active(self, search_directions):
-	# 	self.control_constraints = self.optimization_problem.control_constraints
-	#
-	# 	self.directions = [fenics.Function(space) for space in self.form_handler.control_spaces]
-	#
-	# 	for j in range(self.form_handler.control_dim):
-	# 		self.directions[j].vector()[:] = search_directions[j].vector()[:]
-	# 		idx = np.asarray(np.logical_or(np.logical_and(self.controls_temp[j].vector()[:] <= self.control_constraints[j][0].vector()[:], search_directions[j].vector()[:] < 0.0),
-	# 									   np.logical_and(self.controls_temp[j].vector()[:] >= self.control_constraints[j][1].vector()[:], search_directions[j].vector()[:] > 0.0))
-	# 									   ).nonzero()[0]
-	#
-	# 		self.directions[j].vector()[idx] = 0.0
-	#
-	# 	return self.directions
-
-
-
 	def decrease_measure(self):
 		"""Computes the measure of decrease needed for the Armijo test
 

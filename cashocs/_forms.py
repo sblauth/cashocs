@@ -339,10 +339,12 @@ class ControlFormHandler(FormHandler):
 			self.__compute_newton_forms()
 
 		# Initialize the scalar products
-		fe_scalar_product_matrices = [fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
-		self.scalar_products_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
-		[fe_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
-		self.riesz_projection_matrices = [fenics.as_backend_type(fe_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
+		fenics_scalar_product_matrices = [fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
+		self.scalar_products_matrices = [fenics.as_backend_type(fenics_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
+		
+		copy_scalar_product_matrices = [fenics_scalar_product_matrices[i].copy() for i in range(self.control_dim)]
+		[copy_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
+		self.riesz_projection_matrices = [fenics.as_backend_type(copy_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
 
 		# Test for symmetry of the scalar products
 		for i in range(self.control_dim):

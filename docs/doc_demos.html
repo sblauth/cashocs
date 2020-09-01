@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>Documentation of cashocs demos</title>
-<meta name="description" content="Here, you find an overview over all demos …" />
+<meta name="description" content="Cashocs is a computational, adjoint based, shape optimization and optimal control software for python.
+On this site, we are taking a deep look into …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +24,27 @@
 <h1 class="title">Documentation of the demos</h1>
 </header>
 <section id="section-intro">
-<p>Here, you find an overview over all demos.</p>
+<p>Cashocs is a computational, adjoint based, shape optimization and optimal control software for python.
+On this site, we are taking a deep look into its capabilities regarding these two fields of optimization,
+which is done with various demo programs. Our intention is to give the user a detailed guide and overview
+over what cashocs can do, and to also give an introduction of how to use it. As cashocs takes more of
+a first optimize, then discretize approach, its features are manifold, but some familiarity with
+PDE constrained optimization may be required to solve the problems successfully. In particular, cashocs
+should <strong>not</strong> be treated as a black box solver for these kinds of problems.</p>
+<p>For beginners, we recommend reading through the demos roughly in the same order as they are presented.
+In particular, we also strongly recommend that you read the optimal control demos first, before you proceed
+to the shape optimization demos, due to the following. First, optimal control is a much more established field
+in PDE constrained optimization, and more well-known in general. Second, many concepts of the optimal control
+demos are directly transferred to the shape optimization setting. Things such as the definition of (multiple)
+PDE constraints, the different solution techniques for systems of PDEs (a monolithic approach vs a Picard iteration),
+the treatment of time-dependent and nonlinear problems, as well as the choice of linear solvers are all applicable
+to both kinds of problems. While we will still recall some of these concepts in the shape optimization demos,
+they are explained in most detail in the demos for optimal control, so that one should look there first.</p>
+<p>Without further ado, let us take a look at the demo programs.</p>
 <h1 id="optimal-control-demos">Optimal Control Demos</h1>
-<p>This includes a collection of demos showcasing cashocs' features for optimal control problems.</p>
+<p>Here, we showcase the capabilities of cashocs for optimal control problems. As stated earlier,
+newcomers should start reading here to get a grasp of how the problem definition in cashocs works,
+as this is identical for optimal control and shape optimization problems.</p>
 <h2 id="demo-01-basics">Demo 01 : Basics</h2>
 <p>In this demo we investigate the basics of cashocs for
 optimal control problems. To do so, we investigate the "mother
@@ -219,7 +238,7 @@ be found in the file "demo_poisson.py".
 <br/></p>
 <h2 id="documentation-of-the-config-files-for-optimal-control-problems">Documentation of the config files for optimal control problems</h2>
 <p>Let us take a look at how the config files are structured for optimal control problems.
-The corresponding config file is located at './config.ini'.</p>
+The corresponding config file can is located at 'demos/documented/optimal_control/01_poisson/config.ini'.</p>
 <p>First of all, the config is divided into three sections: Mesh, StateEquation, and OptimizationRoutine.
 These manage the settings for the mesh, the state equation of the optimization problem, and for the solution
 algorithm, respectively.</p>
@@ -230,7 +249,7 @@ mesh_file = ../mesh/mesh.xdmf
 </code></pre>
 <p>This section is completely optional and can be used when importing GMSH generated meshes.
 To convert a .msh file to the .xdmf format, you can use the built-in converter as</p>
-<pre><code>mesh-convert gmsh_file.msh xdmf_file.xdmf
+<pre><code>cashocs-convert gmsh_file.msh xdmf_file.xdmf
 </code></pre>
 <p>from the command line.</p>
 <p><strong>StateEquation</strong></p>
@@ -681,7 +700,7 @@ state equations as constraint. Additionally, this also highlights
 how multiple controls can be treated. As model example, we consider the
 following problem</p>
 <p><span><span class="MathJax_Preview"> \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
-\text{ subject to } \quad \left\lbrace quad
+\text{ subject to } \quad \left\lbrace \quad
 \begin{alignedat}{2}
 -\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega, \\
 -\Delta z - y &amp;= v \quad &amp;&amp;\text{ in } \Omega, \\
@@ -689,7 +708,7 @@ y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma,\\
 z &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
 \end{alignedat} \right.
 </span><script type="math/tex; mode=display"> \min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
-\text{ subject to } \quad \left\lbrace quad
+\text{ subject to } \quad \left\lbrace \quad
 \begin{alignedat}{2}
 -\Delta y &= u \quad &&\text{ in } \Omega, \\
 -\Delta z - y &= v \quad &&\text{ in } \Omega, \\
@@ -1372,24 +1391,25 @@ y &= u \quad &&\text{ on } \Gamma.
 (not <span><span class="MathJax_Preview"> H^1_0(\Omega) </span><script type="math/tex"> H^1_0(\Omega) </script></span>) by multiplying the equation by a test function
 <span><span class="MathJax_Preview"> p \in H^1(\Omega) </span><script type="math/tex"> p \in H^1(\Omega) </script></span> and applying the divergence theorem</p>
 <p><span><span class="MathJax_Preview"> \int_\Omega - \Delta y p \text{d}x =
-\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s.
+\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s.
 </span><script type="math/tex; mode=display"> \int_\Omega - \Delta y p \text{d}x =
-\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s.
+\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s.
 </script></span></p>
 <p>This weak form is the starting point for Nitsche's method. First of all, observe that
 this weak form is not symmetric anymore. To restore symmetry of the problem, we can
 use the Dirichlet boundary condition and "add a zero" by adding <span><span class="MathJax_Preview"> \int_\Gamma \nabla p \cdot n (y - u) \text{d}s </span><script type="math/tex"> \int_\Gamma \nabla p \cdot n (y - u) \text{d}s </script></span>. This gives the weak form</p>
-<p><span><span class="MathJax_Preview">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s.
-</span><script type="math/tex; mode=display">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s.
+<p><span><span class="MathJax_Preview">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s.
+</span><script type="math/tex; mode=display">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s.
 </script></span></p>
 <p>However, one can show that this weak form is not coercive. Hence, Nitsche's method
 adds another zero to this weak form, namely <span><span class="MathJax_Preview"> \int_\Gamma \eta (y - u) p \text{d}s </span><script type="math/tex"> \int_\Gamma \eta (y - u) p \text{d}s </script></span>,
 which yields the coercivity of the problem if <span><span class="MathJax_Preview"> \eta </span><script type="math/tex"> \eta </script></span> is sufficiently large. Hence,
 we consider the following weak form</p>
-<p><span><span class="MathJax_Preview">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s + \eta \int_\Gamma u p \text{d}s,
-</span><script type="math/tex; mode=display">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma \nabla y \cdot n p \text{d}s - \int_\Gamma \nabla p \cdot n y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma \nabla p \cdot n u \text{d}s + \eta \int_\Gamma u p \text{d}s,
+<p><span><span class="MathJax_Preview">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s + \eta \int_\Gamma u p \text{d}s,
+</span><script type="math/tex; mode=display">\int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s + \eta \int_\Gamma u p \text{d}s,
 </script></span></p>
 <p>and this is the form we implement for this problem.</p>
+<p>For a detailed introduction to Nitsche's method, we refer to <a href="https://doi.org/10.1016/j.procs.2012.04.045">Assous and Michaeli, A numerical method for handling boundary and transmission conditions in some linear partial differential equations</a></p>
 <p><strong>Initialization</strong></p>
 <p>The beginning of the program is exactly the same as for our previous Poisson problems:</p>
 <pre><code>from fenics import *
@@ -1458,8 +1478,365 @@ print('Error L^2: ' + format(error_l2, '.3e') + ' %')
 <p>We see, that with <code>eta = 1e4</code> we get a relative error of under <code>5e-3 %</code>, which is
 more than sufficient for any application.</p>
 </blockquote>
+<p>The complete code can be found in demo_dirichlet_control.py
+<br/></p>
+<h2 id="demo-11-iterative-solvers">Demo 11 : Iterative Solvers</h2>
+<p>Cashocs is also capable of using iterative solvers through the linear algebra
+backend PETSc. In this demo we show how this can be used. For the sake of simplicitiy,
+we consider the same setting as in <a href="#demo-01-basics">Demo 01</a>, i.e.</p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
+<p>(see, e.g., <a href="https://doi.org/10.1090/gsm/112">Tröltzsch, Optimal Control of Partial Differential Equations</a>,
+or <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
+<p>It is well-known, that the state problem, when discretized using a classical Ritz-Galerkin method, gives rise to a linear system with a symmetric and positive definite
+Matrix. We use these properties in this demo by solving the state system with the
+conjugate gradient method. Moreover, the adjoint system is also a Poisson problem with
+right-hand side <span><span class="MathJax_Preview"> y - y_d </span><script type="math/tex"> y - y_d </script></span>, and so also gives rise to a symmetric and positive definite system, for which we also employ iterative solvers.</p>
+<p><strong>Initialization</strong></p>
+<p>The initialization works exactly as in <a href="#demo-01-basics">Demo 01</a></p>
+<pre><code>from fenics import *
+import cashocs
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+V = FunctionSpace(mesh, 'CG', 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+
+e = inner(grad(y), grad(p))*dx - u*p*dx
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+</code></pre>
+<p><strong>Definition of the iterative solvers</strong></p>
+<p>The options for the state and adjoint systems are defined as follows. For the state
+system we have</p>
+<pre><code>ksp_options = [
+    ['ksp_type', 'cg'],
+    ['pc_type', 'hypre'],
+    ['pc_hypre_type', 'boomeramg'],
+    ['ksp_rtol', 1e-10],
+    ['ksp_atol', 1e-13],
+    ['ksp_max_it', 100],
+]
+</code></pre>
+<p>This corresponds to a list of lists, where the inner ones have either 1 or 2 entries,
+which correspond to the command line options for PETSc. For a detailed documentation
+of the possibilities, we refer to the <a href="https://www.mcs.anl.gov/petsc/documentation/index.html">PETSc Documentation</a>. Of particular interest are the pages for the
+<a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/index.html">Krylov solvers</a> and <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/index.html">Preconditioners</a>. The relevant options for the command line are described
+under "Options Database Keys". For example, the first command</p>
+<pre><code>['ksp_type', 'cg'],
+</code></pre>
+<p>can be found in the <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetType.html#KSPSetType">KSPSetType</a>, and the corresponding options are shown
+under <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html#KSPType">KSPTYPE</a>. Here, we see that the above line corresponds to using the
+conjugate gradient method as krylov solver. The following two lines</p>
+<pre><code>['pc_type', 'hypre'],
+['pc_hypre_type', 'boomeramg'],
+</code></pre>
+<p>specify that we use the algebraic multigrid preconditioner BOOMERAMG from HYPRE. This is documented in <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSetType.html#PCSetType">PCSetType</a>, <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html">PCTYPE</a>, and <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRETYPE</a>. Finally, the last three lines</p>
+<pre><code>['ksp_rtol', '1e-10'],
+['ksp_atol', '1e-13'],
+['ksp_max_it', 100],
+</code></pre>
+<p>specify that we use a relative tolerance of <code>1e-10</code>, an absolute one of <code>1e-13</code>, and
+at most <code>100</code> iterations for each solve of the linear system, cf. <a href="https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetTolerances.html#KSPSetTolerances">KSPSetTolerances</a>.</p>
+<p>Coming from the first optimize, then discretize view point, it is not required that
+the adjoint system should be solved exactly the same as the state system. This is why we
+can also define PETSc options for the adjoint system, which we do with</p>
+<pre><code>adjoint_ksp_options = [
+    ['ksp_type', 'minres'],
+    ['pc_type', 'icc'],
+    ['pc_factor_levels', 0],
+    ['ksp_rtol', 1e-6],
+    ['ksp_atol', 1e-15],
+]
+</code></pre>
+<p>As can be seen, we now use a completely different solver, namely MINRES (the minimal residual method) with an ICC (incomplete Cholesky factorization) preconditioner, which
+has zero levels of fill, i.e., it uses the sparsity pattern of the system matrix. Finally, the tolerances for the adjoint solver can also be drastically different from
+the ones of the state system, as is shown here.</p>
+<blockquote>
+<p>To verify that the options indeed are used, one can supply the option</p>
+<pre><code>['ksp_view'],
+</code></pre>
+<p>which shows the detailed settings of the solvers, and also</p>
+<pre><code>['ksp_monitor_true_residual'],
+</code></pre>
+<p>which prints the residual of the method over its iterations.</p>
+<p>For multiple state and adjoint systems, one can proceed analogously to <a href="#demo-04-multiple-variables">Demo 04</a>, and one has to create a such a list of options for each component, and then put them into an additional list.</p>
+</blockquote>
+<p>With these definitions, we can now proceed as in <a href="#demo-01-basics">Demo 01</a> and solve the optimization problem with</p>
+<pre><code>y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+alpha = 1e-6
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+
+ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, ksp_options=ksp_options, adjoint_ksp_options=adjoint_ksp_options)
+ocp.solve()
+</code></pre>
+<p>Note, that if the ksp_options and adjoint_ksp_options are not defined or None (which)
+is the default value of these keyword parameters, then the direct solver MUMPS is used.
+Moreover, if one wants to use identical options for state and adjoint systems, then only
+the ksp_options have to be passed. This is because of the fact that adjoint_ksp_options
+always mirrors the ksp_options in case that the input is None.
+<br/></p>
+<h2 id="demo-12-state-constraints">Demo 12 : State Constraints</h2>
+<p>In this demo we investigate how state constraints can be handled in cashocs. Thanks to
+the high level interface for solving (control-constrained) optimal control problems,
+the state constrained case can be treated (approximately) using a Moreau-Yosida regularization, which we show in the following. As model problem, we consider the
+following one</p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma, \\
+y &amp;\leq \bar{y} \quad &amp;&amp;\text{ in } \Omega,
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma, \\
+y &\leq \bar{y} \quad &&\text{ in } \Omega,
+\end{alignedat} \right.
+</script></span></p>
+<p>see, e.g., <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
+<p>Instead of solving this problem directly, the Moreau-Yosida regularization instead solves
+a sequence of problems without state constraints which are of the form</p>
+<p><span><span class="MathJax_Preview">\min J_\gamma(y, u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x + \frac{1}{2\gamma} \int_\Omega \lvert \max\left( 0, \hat{\mu} + \gamma (y - \bar{y}) \right) \rvert^2 \text{d}x
+</span><script type="math/tex; mode=display">\min J_\gamma(y, u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x + \frac{1}{2\gamma} \int_\Omega \lvert \max\left( 0, \hat{\mu} + \gamma (y - \bar{y}) \right) \rvert^2 \text{d}x
+</script></span></p>
+<p>for <span><span class="MathJax_Preview"> \gamma \to +\infty </span><script type="math/tex"> \gamma \to +\infty </script></span>. We employ a simple homotopy method, and solve the problem for one value of <span><span class="MathJax_Preview"> \gamma </span><script type="math/tex"> \gamma </script></span>, and then use this solution as initial guess for the next
+higher value of <span><span class="MathJax_Preview"> \gamma </span><script type="math/tex"> \gamma </script></span>. As initial guess we use the solution of the unconstrained
+problem. For a detailed discussion of the Moreau-Yosida regularization, we refer the
+reader to, e.g., <a href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze et al., Optimization with PDE constraints</a>).</p>
+<p><strong>Initial guess</strong></p>
+<p>The python code starts as in <a href="#demo-01-basics">Demo 01</a>:</p>
+<pre><code>from fenics import *
+import cashocs
+import numpy as np
+from ufl import Max
+
+
+
+config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
+V = FunctionSpace(mesh, 'CG', 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+
+e = inner(grad(y), grad(p))*dx - u*p*dx
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+y_d = Expression('sin(2*pi*x[0]*x[1])', degree=1)
+alpha = 1e-3
+J_init = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+ocp_init = cashocs.OptimalControlProblem(e, bcs, J_init, y, u, p, config)
+ocp_init.solve()
+</code></pre>
+<p>In fact, the code can be reused, as we first solve the unconstrained problem to get
+the initial guess for the control. Remember that cashocs automatically updates the
+user input, so after the solve command has returned, the solution is already stored in <code>u</code>.</p>
+<p><strong>Moreau-Yosida regularized problems</strong></p>
+<p>For the homotopy method with the Moreau-Yosida regularization, we first define the upper
+bound for the state <code>\bar{y}</code> and select a sequence of values for <span><span class="MathJax_Preview"> \gamma </span><script type="math/tex"> \gamma </script></span> via</p>
+<pre><code>y_bar = 1e-1
+gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
+</code></pre>
+<p>Solving the regularized problems is then as simple as writing</p>
+<pre><code>for gamma in gammas:
+
+    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx + Constant(1/(2*gamma))*pow(Max(0, Constant(gamma)*(y - y_bar)), 2)*dx
+
+    ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+    ocp_gamma.solve()
+</code></pre>
+<p>Here, we use a for loop, define the new cost functional (with the new value of <span><span class="MathJax_Preview"> \gamma </span><script type="math/tex"> \gamma </script></span> ), set up the optimal control problem and solve it, as usual.</p>
+<blockquote>
+<p>Note, that we could have also defined <code>y_bar</code> as a FEniCS Function or Expression, and
+the method would have worked exactly the same, the corresponding object just has to
+be a valid input for an UFL form.</p>
+</blockquote>
+<p><strong>Validation of the method</strong></p>
+<p>Finally, we perform a post processing to see whether the state constraint is (approximately) satisfied. Therefore, we compute the maximum value of <code>y</code>, and compute the relative error between this and <code>y_bar</code></p>
+<pre><code>y_max = np.max(y.vector()[:])
+error = abs(y_max - y_bar) / abs(y_bar) * 100
+print('Maximum value of y: ' + str(y_max))
+print('Relative error between y_max and y_bar: ' + str(error) + ' %')
+</code></pre>
+<p>As the error is about 0.01 %, we observe that the regularization indeed works as expected, and of course this tolerance is sufficiently low for all applications.</p>
+<p>The complete code can be found under demos/documented/optimal_control/12_state_constraints/demo_state_constraints.py
+<br/></p>
+<h2 id="demo-13-sparse-control">Demo 13 : Sparse Control</h2>
+<p>In this demo, we investigate a possibility for obtaining sparse optimal controls.
+To do so, we use a sparsity promoting <span><span class="MathJax_Preview"> L^1 </span><script type="math/tex"> L^1 </script></span> regularization. Hence, our model problem
+for this demo is given by</p>
+<p><span><span class="MathJax_Preview">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} \lvert u \rvert \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} \lvert u \rvert \text{d}x \\
+\text{ subject to } \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta y &= u \quad &&\text{ in } \Omega,\\
+y &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
+<p>This is basically the same problem as in <a href="#demo-01-basics">Demo 01</a>, but the regularization is now not the <span><span class="MathJax_Preview"> L^2</span><script type="math/tex"> L^2</script></span> norm squared, but just the <span><span class="MathJax_Preview"> L^1 </span><script type="math/tex"> L^1 </script></span> norm.</p>
+<p><strong>Implementation</strong></p>
+<p>The implementation of this problem is completely analogous to the one of <a href="#demo-01-basics">Demo 01</a>, the only difference is the definition of the cost functional. Hence, the entire code reads</p>
+<p>from fenics import *
+import cashocs</p>
+<pre><code>config = cashocs.create_config('config.ini')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
+V = FunctionSpace(mesh, 'CG', 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+
+e = inner(grad(y), grad(p))*dx - u*p*dx
+bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+alpha = 1e-4
+J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*abs(u)*dx
+
+ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+ocp.solve()
+</code></pre>
+<p>Note, that for the regularization term we now do not use <code>Constant(0.5*alpha)*u*u*dx</code>,
+which corresponds to the <span><span class="MathJax_Preview"> L^2 </span><script type="math/tex"> L^2 </script></span> norm squared, but rather</p>
+<pre><code>Constant(0.5*alpha)*abs(u)*dx
+</code></pre>
+<p>which corresponds to the <span><span class="MathJax_Preview"> L^1 </span><script type="math/tex"> L^1 </script></span> norm. Other than that, the code is identical. To
+verify that this yields in fact a sparse control, one can use the command</p>
+<pre><code>plot(u)
+</code></pre>
+<p>which shows a plot of the computed optimal control. It should look like this
+<img alt="" src="../demos/documented/optimal_control/13_sparse_control/sparse_control.png"></p>
+<p>Note, that the oscillations in between the peaks are just numerical noise.</p>
 <h1 id="shape-optimization">Shape Optimization</h1>
-<p>Here, you find demos for shape optimization.</p>
+<p>In this second part, we take a look at shape optimization problems. It is assumed that
+the reader is now somewhat familiar with the problem definition in cashocs, if not, please
+refer to the optimal control demos.</p>
+<p><br/></p>
+<h2 id="demo-01-shape-poisson">Demo 01 : Shape Poisson</h2>
+<p>In this demo, we investigate the basics of cashocs for shape optimization problems.
+As a model problem, we investigate the following one from <a href="https://doi.org/10.1137/19M1241465">Etling et al., First and Second Order Shape Optimization Based on Restricted Mesh Deformations</a></p>
+<p><span><span class="MathJax_Preview">\min_\Omega J(u, \Omega) = \int_\Omega u \text{d}x \\
+\text{subject to} \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta u &amp;= f \quad &amp;&amp;\text{ in } \Omega,\\
+u &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+\end{alignedat} \right.
+</span><script type="math/tex; mode=display">\min_\Omega J(u, \Omega) = \int_\Omega u \text{d}x \\
+\text{subject to} \quad \left\lbrace \quad
+\begin{alignedat}{2}
+-\Delta u &= f \quad &&\text{ in } \Omega,\\
+u &= 0 \quad &&\text{ on } \Gamma.
+\end{alignedat} \right.
+</script></span></p>
+<p>For the initial domain, we use the unit disc <span><span class="MathJax_Preview"> \Omega = \{ x \in \mathbb{R}^2 \,\mid\, \lvert\lvert x \rvert\rvert_2 &lt; 1 \} </span><script type="math/tex"> \Omega = \{ x \in \mathbb{R}^2 \,\mid\, \lvert\lvert x \rvert\rvert_2 < 1 \} </script></span>, and the right-hand side <span><span class="MathJax_Preview">f </span><script type="math/tex">f </script></span> is given by</p>
+<p><span><span class="MathJax_Preview"> f(x) = 2.5 \left( x_1 + 0.4 - x_2^2 \right)^2 + x_1^2 + x_2^2 - 1.
+</span><script type="math/tex; mode=display"> f(x) = 2.5 \left( x_1 + 0.4 - x_2^2 \right)^2 + x_1^2 + x_2^2 - 1.
+</script></span></p>
+<p><strong>Initialization</strong></p>
+<p>Similarly to the optimal control case, we also require config files for shape optimization problems in cashocs. Note, that for the moment we assume to have a valid
+one, a detailed discussion of the config files for shape optimization is given in the <a href="#documentation-of-the-config-files-for-shape-optimization-problems">next demo</a>.</p>
+<p>As before, we start the problem by importing everything from FEniCS, and importing cashocs.</p>
+<pre><code>from fenics import *
+import cashocs
+</code></pre>
+<p>Thereafter, we read the config file with the <code>cashocs.create_config</code> command</p>
+<pre><code>config = cashocs.create_config('./config.ini')
+</code></pre>
+<p>Next, we have to define the mesh. As the above problem is posed on the unit disc initially, we define this via FEniCS commands (cashocs only has rectangular meshes built
+in). This is done via the following code</p>
+<pre><code>meshlevel = 10
+degree = 1
+dim = 2
+mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
+</code></pre>
+<p>Next up, we define the <code>Measure</code> objects, which we need to define the optimization problem. For the volume measure, we can simply invoke</p>
+<pre><code>dx = Measure('dx', mesh)
+</code></pre>
+<p>However, for the surface measure, we need to mark the boundary. This is required since
+cashocs distinguishes between three types of boundary: The deformable boundary, the
+fixed boundary, and boundaries that can only be deformed perpendicular to a certain
+coordinate axis. Most importantly for this example, one of the deformable boundaries
+must not be empty, so that we can actually optimize something. In this example,
+we investigate the case of a completely deformable boundary, which makes things slightly
+easier. We mark this boundary with the marker <code>1</code> with the following piece of code</p>
+<pre><code>boundary = CompiledSubDomain('on_boundary')
+boundaries = MeshFunction('size_t', mesh, dim=1)
+boundary.mark(boundaries, 1)
+ds = Measure('ds', mesh, subdomain_data=boundaries)
+</code></pre>
+<p>Note, that all of the alternative ways of marking subdomains or boundaries with
+numbers, as explained in <a href="https://doi.org/10.1007/978-3-319-52462-7">Langtangen and Logg, Solving PDEs in Python</a> also work here. If it is valid for FEniCS, it is also for
+cashocs.</p>
+<p>After having defined the initial geometry, we define a <code>FunctionSpace</code> consisting of
+piecewise linear Lagrange elements via</p>
+<pre><code>V = FunctionSpace(mesh, 'CG', 1)
+u = Function(V)
+p = Function(V)
+</code></pre>
+<p>This also defines our state variable <span><span class="MathJax_Preview"> u </span><script type="math/tex"> u </script></span> as <code>u</code>, and the adjoint state is given by
+<code>p</code>. As remarked in <a href="#demo-01-basics">the first demo for optimal control problems</a>, in
+classical FEniCS syntax we would use a <code>TrialFunction</code> for <code>u</code> and a <code>TestFunction</code> for
+<code>p</code>. However, for cashocs this must not be the case. Instead, the state and adjoint
+variables have to be <code>Function</code> objects.</p>
+<p>The right-hand side of the PDE constraint is then defined as</p>
+<pre><code>x = SpatialCoordinate(mesh)
+f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+</code></pre>
+<p>which allows us to define the weak form of the state equation via</p>
+<pre><code>e = inner(grad(u), grad(p))*dx - f*p*dx
+bcs = DirichletBC(V, Constant(0), boundaries, 1)
+</code></pre>
+<p><strong>The optimization problem and its solution</strong></p>
+<p>We are now almost done, the only thing left to do is to define the cost functional</p>
+<pre><code>J = u*dx
+</code></pre>
+<p>and the shape optimization problem</p>
+<pre><code>sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+</code></pre>
+<p>This can then be solved in complete analogy to <a href="#demo-01-basics">Demo 01 : Basics</a> with
+the <code>solve()</code> command</p>
+<pre><code>sop.solve()
+</code></pre>
+<p>A picture of the corresponding optimized geometry is given by
+<img alt="" src="../demos/documented/shape_optimization/01_shape_poisson/opt_mesh_poisson.png"></p>
+<blockquote>
+<p>As in <a href="#demo-01-basics">the first optimal control demo</a> we can specify some keyword
+arguments for the <code>solve</code> command. If none are given, then the settings from the
+config file are used, but if some are given, they override the parameters specified
+in the config file. In particular, these arguments are</p>
+<ul>
+<li><code>algorithm</code> : Specifies which solution algorithm shall be used.</li>
+<li><code>rtol</code> : The relative tolerance for the optimization algorithm.</li>
+<li><code>atol</code> : The absolute tolerance for the optimization algorithm.</li>
+<li><code>max_iter</code> : The maximum amount of iterations that can be carried out.</li>
+</ul>
+<p>The choices for these parameters are discussed in detail in the <a href="#documentation-of-the-config-files-for-shape-optimization-problems">following demo</a>.</p>
+</blockquote>
+<p>This concludes the demo, and the corresponding full code can
+be found in the file demos/documented/shape_optimization/01_shape_poisson.py</p>
 </section>
 <section>
 </section>
@@ -1486,9 +1863,15 @@ more than sufficient for any application.</p>
 <li><a href="#demo-08-heat-equation-time-dependent-problems">Demo 08 : Heat Equation (Time Dependent Problems)</a></li>
 <li><a href="#demo-09-nonlinear-pde-constraints">Demo 09: Nonlinear PDE constraints</a></li>
 <li><a href="#demo-10-dirichlet-boundary-control">Demo 10 : Dirichlet Boundary Control</a></li>
+<li><a href="#demo-11-iterative-solvers">Demo 11 : Iterative Solvers</a></li>
+<li><a href="#demo-12-state-constraints">Demo 12 : State Constraints</a></li>
+<li><a href="#demo-13-sparse-control">Demo 13 : Sparse Control</a></li>
 </ul>
 </li>
-<li><a href="#shape-optimization">Shape Optimization</a></li>
+<li><a href="#shape-optimization">Shape Optimization</a><ul>
+<li><a href="#demo-01-shape-poisson">Demo 01 : Shape Poisson</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <ul id="index">

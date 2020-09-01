@@ -1,0 +1,72 @@
+## Documentation of the config files for shape optimization problems
+
+Let us take a detailed look at the config files for shape optimization problems and
+discusss the corresponding parameters and the possible choices. The corresponding
+config file used for this discussion is located at
+/demos/documented/shape_optimization/01_shape_poisson/config.ini
+
+For the shape optimization, the config file is a lot larger compared to the config files
+for optimal control (whose documentation can be found
+[here](#documentation-of-the-config-files-for-optimal-control-problems)).
+However, the most important parameters are shared between both types of optimization
+problems.
+
+A general config file for shape optimization has a total of 6 sections, namely Mesh, StateEquation,
+OptimizationRoutine, ShapeGradient, Regularization, and MeshQuality. We go over these
+sections and each parameter in them in the following.
+
+
+**Mesh**
+
+The mesh section is, in contrast to the corresponding one for optimal control problems,
+more important and also has more parameters. However, its primary importance is for
+remeshing, which we cover ind detail in another demo.
+
+As first parameter, we have
+
+    mesh_file = ./mesh/mesh.xdmf
+
+This specifies a path to a .xdmf file containing the discretized geometry. For all purposes, cashocs assumes that this .xdmf file was generated via conversion from a
+gmsh file using the command line command
+
+    cashocs-convert in.msh out.xdmf
+
+Note, that the corresponding files for the boundaries and subdomains are generated automatically with `cashocs-convert`, and they will also be read if they are present.
+This applies to both uses of `cashocs.import_mesh`, so passing either the config file
+or the path to the (main) .xdmf mesh file works here. Note, that the parameter `mesh_file` is only important for remeshing. For all other cases, the mesh can be imported / generated in whatever way you prefer, but it might not be possible to
+read these files successfully with `cashocs.import_mesh`.
+
+The second parameter in the Mesh section, `gmsh_file`, is defined via
+
+    gmsh_file = ./mesh/mesh.msh
+
+This defines the path to the gmsh .msh file which was used to create the .xdmf_file
+specified in `mesh_file`. As before, this parameter is only relevant for remeshing
+purposes, and not needed otherwise.
+
+The next parameter is `geo_file`, which is the final file we need for remeshing (
+and only there). It is also given by a path to a file, in this case to the gmsh .geo
+file used to generate the `gmsh_file`. It is specified, .e.g., as
+
+    geo_file = ./mesh/mesh.geo
+
+Next up is a boolean flag that is used to indicate, whether remeshing shall be performed.
+
+    remesh = false
+
+
+As the remeshing feature is somewhat experimental, we do advise to always try without
+remeshing. Note, that by default this flag is set to `False` and remeshing is disabled.
+
+Finally, we have the boolean flag `show_gmsh_output`, specified via
+
+    show_gmsh_output = false
+
+This is used to toggle on / off the command line output of gmsh when it performs a
+remeshing operation. This can be helpful for debugging purposes.
+
+As stated throughout the Mesh section, these parameters are optional most of the time,
+and only really required for remeshing. You can safely leave them out of your config file, and you should not need them, unless you want to perform remeshing.
+
+
+**StateEquation**

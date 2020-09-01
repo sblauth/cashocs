@@ -44,7 +44,7 @@ Setup (external)
   - Alternatively, use the environment file conda_env.yml to install the packages
     (or maybe even newer versions of them) via conda-forge and pip
 
-  - If you want to have the mesh-convert and / or remeshing functionality, you should
+  - If you want to have the cashocs-convert and / or remeshing functionality, you should
     install [gmsh](https://gmsh.info) (version 4.6.0) and [meshio](https://pypi.org/project/meshio/4.0.16/) (version 4.0.16).
     For the mesh convert, meshio version has to be at least 4, and for the remeshing
     gmsh needs to be able to write MSH4.1 format, at least. Additionally, gmsh has to
