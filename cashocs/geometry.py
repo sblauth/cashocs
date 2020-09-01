@@ -1083,7 +1083,7 @@ class MeshQuality:
 			The average skewness of the mesh.
 		"""
 
-		return np.average(cls._quality_object.maximum_angle(mesh).array())
+		return np.average(cls._quality_object.skewness(mesh).array())
 
 
 

@@ -113,13 +113,14 @@ def test_picard_state_solver():
 	
 	assert np.allclose(y.vector()[:], y_ref.vector()[:])
 	assert np.allclose(y_m.vector()[:], y_ref.vector()[:])
-	assert np.max(np.abs(y.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-14
-	assert np.max(np.abs(y_m.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-14
+	assert np.max(np.abs(y.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-13
+	assert np.max(np.abs(y_m.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-13
 	
 	assert np.allclose(z.vector()[:], z_ref.vector()[:])
 	assert np.allclose(z_m.vector()[:], z_ref.vector()[:])
-	assert np.max(np.abs(z.vector()[:] - z_ref.vector()[:])) / np.max(np.abs(z_ref.vector()[:])) <= 1e-14
-	assert np.max(np.abs(z_m.vector()[:] - z_ref.vector()[:])) / np.max(np.abs(z_ref.vector()[:])) <= 1e-14
+	assert np.max(np.abs(z.vector()[:] - z_ref.vector()[:])) / np.max(np.abs(z_ref.vector()[:])) <= 1e-13
+	assert np.max(np.abs(z_m.vector()[:] - z_ref.vector()[:])) / np.max(np.abs(z_ref.vector()[:])) <= 1e-13
+
 
 
 def test_picard_solver_for_optimization():
@@ -145,4 +146,4 @@ def test_picard_solver_for_optimization():
 	assert ocp_mixed.solver.relative_norm < 1e-6
 	
 	assert np.allclose(u.vector()[:], u_picard.vector()[:])
-	assert np.max(np.abs(u.vector()[:] - u_picard.vector()[:])) / np.max(np.abs(u.vector()[:])) <= 1e-10
+	assert np.max(np.abs(u.vector()[:] - u_picard.vector()[:])) / np.max(np.abs(u.vector()[:])) <= 1e-9

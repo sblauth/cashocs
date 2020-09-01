@@ -132,9 +132,13 @@ def test_control_newton_cc():
 
 
 def test_control_pdas_cc():
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=20)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])

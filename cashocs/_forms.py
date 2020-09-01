@@ -687,7 +687,8 @@ class ShapeFormHandler(FormHandler):
 		self.__compute_shape_derivative()
 		self.__compute_shape_gradient_forms()
 		self.__setup_mu_computation()
-
+		
+		# TODO: See if we can do this using try / except
 		if self.degree_estimation:
 			self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product),
 											   estimate_total_polynomial_degree(self.shape_derivative))
