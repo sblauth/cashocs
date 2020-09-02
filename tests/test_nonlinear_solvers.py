@@ -21,9 +21,10 @@ Created on 02/09/2020, 08.33
 @author: blauths
 """
 
-from fenics import *
-import cashocs
 import numpy as np
+from fenics import *
+
+import cashocs
 
 
 

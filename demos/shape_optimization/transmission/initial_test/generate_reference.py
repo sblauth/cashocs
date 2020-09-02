@@ -4,8 +4,9 @@ Created on 16/06/2020, 15.52
 @author: blauths
 """
 
-from fenics import *
 import numpy as np
+from fenics import *
+
 from cashocs import import_mesh
 
 

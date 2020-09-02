@@ -24,7 +24,7 @@ Created on 24/02/2020, 09.26
 import fenics
 from petsc4py import PETSc
 
-from ..utils import _solve_linear_problem, _setup_petsc_options
+from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
 

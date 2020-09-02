@@ -4,10 +4,11 @@ Created on 16/06/2020, 11.14
 @author: blauths
 """
 
-from fenics import *
-from cashocs import ShapeOptimizationProblem, import_mesh
-import numpy as np
 import configparser
+
+from fenics import *
+
+from cashocs import ShapeOptimizationProblem, import_mesh
 
 
 

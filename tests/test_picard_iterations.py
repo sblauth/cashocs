@@ -21,10 +21,10 @@ Created on 27/08/2020, 08.01
 @author: blauths
 """
 
-import pytest
-from fenics import *
-import cashocs
 import numpy as np
+from fenics import *
+
+import cashocs
 
 
 
@@ -146,4 +146,4 @@ def test_picard_solver_for_optimization():
 	assert ocp_mixed.solver.relative_norm < 1e-6
 	
 	assert np.allclose(u.vector()[:], u_picard.vector()[:])
-	assert np.max(np.abs(u.vector()[:] - u_picard.vector()[:])) / np.max(np.abs(u.vector()[:])) <= 1e-9
+	assert np.max(np.abs(u.vector()[:] - u_picard.vector()[:])) / np.max(np.abs(u.vector()[:])) <= 1e-8

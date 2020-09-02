@@ -4,10 +4,11 @@ Created on 18.05.20, 16:10
 @author: sebastian
 """
 
-from fenics import *
-from cashocs import OptimalControlProblem, regular_mesh
-import numpy as np
 import configparser
+
+from fenics import *
+
+from cashocs import OptimalControlProblem, regular_mesh
 
 
 

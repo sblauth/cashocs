@@ -5,11 +5,13 @@ Created on 20.04.20, 08:49
 """
 
 import configparser
+import time
+
+import numpy as np
 from fenics import *
+
 from cashocs import OptimalControlProblem, regular_mesh
 from cashocs.utils import summation
-import numpy as np
-import time
 
 
 

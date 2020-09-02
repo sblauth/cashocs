@@ -5,10 +5,11 @@ Created on 03.04.20, 10:28
 """
 
 import configparser
-from fenics import *
-from cashocs import OptimalControlProblem, import_mesh, regular_mesh
-from ufl import Max
+
 import numpy as np
+from fenics import *
+
+from cashocs import OptimalControlProblem, regular_mesh
 
 
 

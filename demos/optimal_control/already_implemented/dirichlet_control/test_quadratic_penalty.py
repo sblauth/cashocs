@@ -5,9 +5,11 @@ Created on 23.03.20, 15:15
 """
 
 import configparser
-from fenics import *
-from cashocs import OptimalControlProblem, import_mesh
+
 import numpy as np
+from fenics import *
+
+from cashocs import OptimalControlProblem, import_mesh
 
 
 

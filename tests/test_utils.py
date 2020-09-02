@@ -22,8 +22,9 @@ Created on 02/09/2020, 07.41
 """
 
 import fenics
-import cashocs
 import numpy as np
+
+import cashocs
 
 
 

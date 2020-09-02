@@ -20,7 +20,9 @@
 """
 
 from fenics import *
+
 import cashocs
+
 
 
 config = cashocs.create_config('./config.ini')

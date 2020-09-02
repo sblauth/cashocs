@@ -5,10 +5,10 @@ Created on 24/02/2020, 11.47
 """
 
 import configparser
+
 from fenics import *
+
 from cashocs import OptimalControlProblem, import_mesh
-import cashocs
-import numpy as np
 
 
 

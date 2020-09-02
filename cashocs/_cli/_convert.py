@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (C) 2020 Sebastian Blauth
 #
 # This file is part of CASHOCS.
@@ -21,37 +23,48 @@ Created on 02/09/2020, 12.03
 @author: blauths
 """
 
+import argparse
 import getopt
 import sys
+
 import meshio
 
 
 
-def convert(argv):
-	try:
-		opts, args = getopt.getopt(argv, "h", ["help"])
-	except getopt.GetoptError:
-		usage()
-		sys.exit(2)
+
+parser = argparse.ArgumentParser(description='Convert gmsh file to XDMF.')
+parser.add_argument('gmshfile', type=str, help='gmsh file that shall be converted, has to end in .msh')
+parser.add_argument('xdmffile', type=str, help='xdmf file into which the mesh shall be converted, has to end in .xdmf')
+	
+
+
+def convert(argv=None):
+	args = argv or parser.parse_args(argv)
+	
+	# try:
+	# 	opts, args = getopt.getopt(argv, "h", ["help"])
+	# except getopt.GetoptError:
+	# 	usage()
+	# 	sys.exit(2)
+	#
+	#
+	# for opt, arg in opts:
+	# 	if opt in ('-h', '--help'):
+	# 		usage()
+	# 		sys.exit()
+	# # Check that we have two files
+	# if not (len(args) == 2):
+	# 	usage()
+	# 	sys.exit(2)
 	
 	
-	for opt, arg in opts:
-		if opt in ('-h', '--help'):
-			usage()
-			sys.exit()
-	# Check that we have two files
-	if not (len(args) == 2):
-		usage()
-		sys.exit(2)
-	
-	
-	inputfile = args[0]
-	outputfile = args[1]
+	inputfile = args.gmshfile
+	outputfile = args.xdmffile
 	# Check that the inputfile has .msh file format
 	if not (inputfile[-4:] == '.msh'):
 		print('Error: Cannot use the current file format as input')
 		print('')
-		usage()
+		# usage()
 		sys.exit(2)
 	
 	# Check that the outputfile has .xdmf format
@@ -61,7 +74,7 @@ def convert(argv):
 	else:
 		print('Error: Cannot use the current file format as output')
 		print('')
-		usage()
+		# usage()
 		sys.exit(2)
 	
 	mesh_collection = meshio.read(inputfile)
@@ -79,7 +92,7 @@ def convert(argv):
 	else:
 		print('Error: This is not a valid input mesh.')
 		print('')
-		usage()
+		# usage()
 		sys.exit(2)
 	
 	if meshdim == 2:
@@ -115,15 +128,20 @@ def convert(argv):
 
 
 
-def usage():
-	"Display usage"
-	print("""\
-Usage: cashocs-convert input.msh output.xdmf
+# def usage():
+# 	"Display usage"
+# 	print("""\
+# Usage: cashocs-convert input.msh output.xdmf
+#
+# Supported formats
+# 		Input:
+# 		.msh	- Gmsh, version 2.0 or 4.0 file format
+#
+# 		Output:
+# 		.xdmf 	- XDMF file format
+# """)
 
-Supported formats
-		Input:
-		.msh	- Gmsh, version 2.0 or 4.0 file format
 
-		Output:
-		.xdmf 	- XDMF file format
-""")
+
+if __name__ == "__main__":
+	convert(parser.parse_args())

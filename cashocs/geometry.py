@@ -36,7 +36,7 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import InputError, ConfigError
+from ._exceptions import ConfigError, InputError
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
 					_solve_linear_problem, write_out_mesh)
 

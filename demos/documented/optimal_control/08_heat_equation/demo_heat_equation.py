@@ -19,9 +19,10 @@
 
 """
 
-from fenics import *
-import cashocs
 import numpy as np
+from fenics import *
+
+import cashocs
 
 
 

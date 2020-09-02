@@ -5,8 +5,8 @@ Created on 15/06/2020, 08.09
 """
 
 from fenics import *
+
 import cashocs
-import numpy as np
 
 
 

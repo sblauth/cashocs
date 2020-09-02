@@ -1,64 +1,25 @@
 CASHOCS
 =========
 
-CASHOCS is a **C**omputational **A**djoint based **SH**ape optimization and **O**ptimal **C**ontrol **S**oftware for python.
-
+CASHOCS is a computational adjoint-based shape optimization and optimal control software for python.
 
 Installation
 ------------
 
-Setup (from ITWM)
+- First, install [FEniCS](https://fenicsproject.org/download/), version 2019.1. Note, that
+FEniCS should be compiled with PETSc and petsc4py.
 
-- Load the module tv/cashocs
+- 
 
-    `module load tv/cashocs`
+- You might also want to install [GMSH](https://gmsh.info/). CASHOCS does not necessarily need this to function properly, but it is required for the remeshing functionality.
 
-    and run
+- Finally, you can install CASHOCS with the command
 
-    `activate`
+        pip3 install cashocs
 
-- The git repository with the demos can be found under /p/tv/local/cashocs
+ You can install the newest (development) version of cashocs with
 
-- If you want to have a custom installation, you can clone the git repository yourself,
-  but then you have to modify your PATH and PYTHONPATH (see, e.g., the setup.sh script)
-
-
-Setup (external)
-
-- Note, that for all commands shown below it is assumed that you run them from
-  the location where you cloned this repository to, otherwise you will be missing
-  the corresponding files or might even break things!
-
-- Install fenics (only guaranteed to work with version 2019.1), see
-  [the official installation instructions](https://fenicsproject.org/download/)
-  or follow the steps below for an installation using conda
-
-  - [Install conda (or anaconda)](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
-
-  - Clone (e.g.) this environment by running
-
-    `conda env create -f conda_env.yml -n your_environment_name`
-
-    where you replace 'your_environment_name' by an appropriate name such as 'cashocs'
-
-  - Alternatively, use the environment file conda_env.yml to install the packages
-    (or maybe even newer versions of them) via conda-forge and pip
-
-  - If you want to have the cashocs-convert and / or remeshing functionality, you should
-    install [gmsh](https://gmsh.info) (version 4.6.0) and [meshio](https://pypi.org/project/meshio/4.0.16/) (version 4.0.16).
-    For the mesh convert, meshio version has to be at least 4, and for the remeshing
-    gmsh needs to be able to write MSH4.1 format, at least. Additionally, gmsh has to
-    be able to be called via
-
-    `gmsh`
-
-    from the command line, for remeshing to work.
-
-- Run the setup (currently only supprted from the directory of the repository, i.e.,
-  the directory of this file) via
-
-    `bash setup.sh`
-
+        pip3 install git+https://github.com/plugged/cashocs
 
 Documentation
 -------------
@@ -86,15 +47,6 @@ CASHOCS is free software: you can redistribute it and/or modify it under the ter
 CASHCOS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with CASHOCS. If not, see <http://www.gnu.org/licenses/>.
-
-
-Contributing
-------------
-
-CASHOCS is available on gitlab. As this project is part of my PhD, I am currently
-the sole developer. Bug reports, feedback, and further suggestions are always
-welcome. If you want to implement new features for CASHOCS, please consider
-contacting me first.
 
 
 Contact / About

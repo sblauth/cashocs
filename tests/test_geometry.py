@@ -21,11 +21,12 @@ Created on 01/09/2020, 14.18
 @author: blauths
 """
 
-import pytest
 import os
+
 import fenics
-import cashocs
 import numpy as np
+
+import cashocs
 
 
 

@@ -25,7 +25,6 @@ problems.
 import json
 import warnings
 
-import dolfin.cpp as cpp
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -33,10 +32,9 @@ from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
-from ._exceptions import InputError, ConfigError
+from ._exceptions import ConfigError, InputError
 from ._shape_optimization import Regularization
-from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration,
-					_setup_petsc_options, _solve_linear_problem, summation, create_bcs_list)
+from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration, _setup_petsc_options, _solve_linear_problem, create_bcs_list, summation)
 
 
 
