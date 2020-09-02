@@ -107,6 +107,10 @@ The optimal control problem is solved with the usual syntax
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
     ocp.solve()
 
+The result should look like this
+
+![](./img/optimal_control/10_dirichlet_control.png)
+
 > **Verification of the boundary conditions**
 >
 > In the end, we validate whether the boundary conditions are applied correctly using this approach. Therefore, we first compute the indices of all DOF's that lie on the

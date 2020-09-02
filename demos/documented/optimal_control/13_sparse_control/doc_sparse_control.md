@@ -53,6 +53,8 @@ verify that this yields in fact a sparse control, one can use the command
     plot(u)
 
 which shows a plot of the computed optimal control. It should look like this
-![](../demos/documented/optimal_control/13_sparse_control/sparse_control.png)
+
+![](./img/optimal_control/13_sparse_control.png)
+
 
 Note, that the oscillations in between the peaks are just numerical noise.

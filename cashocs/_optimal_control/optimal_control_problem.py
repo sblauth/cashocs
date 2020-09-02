@@ -348,7 +348,7 @@ class OptimalControlProblem(OptimizationProblem):
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if self.algorithm == 'newton' or self.algorithm == 'semi_smooth_newton' or \
-				(self.algorithm == 'pdas' and self.form_handler.inner_pdas == 'newton'):
+				(self.algorithm == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
 			self.form_handler._ControlFormHandler__compute_newton_forms()
 
 		if self.algorithm == 'newton':

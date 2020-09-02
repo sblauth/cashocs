@@ -854,17 +854,6 @@ class ShapeFormHandler(FormHandler):
 			self.bcs_mu += [fenics.DirichletBC(self.CG1, fenics.Constant(self.mu_def), self.boundaries, i)
 					for i in self.shape_bdry_def]
 
-		# 	A, b = _assemble_petsc_system(a, L, bcs)
-		# 	x = _solve_linear_problem(ksp, A, b)
-		#
-		# 	if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
-		# 		self.mu_lame.vector()[:] = np.sqrt(x[:])
-		# 	else:
-		# 		self.mu_lame.vector()[:] = x[:]
-		#
-		# else:
-		# 	self.mu_lame.vector()[:] = mu_fix
-
 
 
 	def __compute_mu_elas(self):

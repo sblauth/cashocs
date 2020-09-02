@@ -26,7 +26,7 @@ import numpy as np
 
 
 config = cashocs.create_config('config.ini')
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 n = FacetNormal(mesh)
 h = MaxCellEdgeLength(mesh)
 V = FunctionSpace(mesh, 'CG', 1)
@@ -66,3 +66,25 @@ error_l2 = np.sqrt(assemble((y - u)*(y - u)*ds)) / np.sqrt(assemble(u*u*ds)) * 1
 print('Error regarding the (weak) imposition of the boundary values')
 print('Error L^\infty: ' + format(error_inf, '.3e') + ' %')
 print('Error L^2: ' + format(error_l2, '.3e') + ' %')
+
+
+
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,5))
+
+plt.subplot(1, 3, 1)
+fig = plot(u)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Control variable u')
+
+plt.subplot(1,3,2)
+fig = plot(y)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('State variable y')
+
+plt.subplot(1,3,3)
+fig = plot(y_d, mesh=mesh)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Desired state y_d')
+
+plt.tight_layout()

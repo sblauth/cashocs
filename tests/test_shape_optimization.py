@@ -231,16 +231,57 @@ def test_shape_gd():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-	sop.solve('gd', rtol=1e-2, atol=0.0, max_iter=35)
+	sop.solve('gd', rtol=1e-2, atol=0.0, max_iter=32)
 	assert sop.solver.relative_norm < sop.solver.rtol
 
 
 
-def test_shape_cg():
+def test_shape_cg_fr():
+	config.set('OptimizationRoutine', 'cg_method', 'FR')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=20)
+	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=15)
+	assert sop.solver.relative_norm < sop.solver.rtol
+
+
+
+def test_shape_cg_pr():
+	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=25)
+	assert sop.solver.relative_norm < sop.solver.rtol
+
+
+
+def test_shape_cg_hs():
+	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=23)
+	assert sop.solver.relative_norm < sop.solver.rtol
+
+
+
+def test_shape_cg_dy():
+	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=17)
+	assert sop.solver.relative_norm < sop.solver.rtol
+
+
+
+def test_shape_cg_hz():
+	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	sop.solve('cg', rtol=1e-2, atol=0.0, max_iter=22)
 	assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -249,7 +290,5 @@ def test_shape_lbfgs():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-	sop.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=10)
+	sop.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=8)
 	assert sop.solver.relative_norm < sop.solver.rtol
-
-	

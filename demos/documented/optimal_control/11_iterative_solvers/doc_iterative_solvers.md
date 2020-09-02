@@ -120,3 +120,7 @@ is the default value of these keyword parameters, then the direct solver MUMPS i
 Moreover, if one wants to use identical options for state and adjoint systems, then only
 the ksp_options have to be passed. This is because of the fact that adjoint_ksp_options
 always mirrors the ksp_options in case that the input is None.
+
+The result of the optimization looks very much like that of [Demo 01](#demo-01-basics)
+
+![](./img/optimal_control/11_iterative_solvers.png)

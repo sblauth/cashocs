@@ -337,10 +337,16 @@ class Interpolator:
 		W : dolfin.function.functionspace.FunctionSpace
 			The space into which they shall be interpolated.
 		"""
-
+		
+		assert V.ufl_element().family() == 'Lagrange' or (V.ufl_element().family() == 'Discontinuous Lagrange' and V.ufl_element().degree() == 0), \
+			'The interpolator only works with CGn or DG0 elements'
+		assert W.ufl_element().family() == 'Lagrange' or (W.ufl_element().family() == 'Discontinuous Lagrange' and W.ufl_element().degree() == 0), \
+			'The interpolator only works with CGn or DG0 elements'
+		
 		self.V = V
 		self.W = W
 		self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
 
 
 	def interpolate(self, u):

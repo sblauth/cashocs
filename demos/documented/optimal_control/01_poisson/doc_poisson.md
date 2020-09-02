@@ -216,5 +216,32 @@ directly solve it via cashocs with the commands
 > The possible values for these are the same as the corresponding ones in the config file.
 > This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
 
+
+Finally, we visualize the results using matplotlib and the following code
+
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(16,9))
+
+    plt.subplot(1, 3, 1)
+    fig = plot(u)
+    plt.colorbar(fig, fraction=0.046, pad=0.04)
+    plt.title('Control variable u')
+
+    plt.subplot(1,3,2)
+    fig = plot(y)
+    plt.colorbar(fig, fraction=0.046, pad=0.04)
+    plt.title('State variable y')
+
+    plt.subplot(1,3,3)
+    fig = plot(interpolate(y_d, V))
+    plt.colorbar(fig, fraction=0.046, pad=0.04)
+    plt.title('Desired state y_d')
+
+    plt.tight_layout()
+
+The output should look like this
+
+![](./img/optimal_control/01_poisson.png)
+
 This concludes the demo, and the corresponding full code can
 be found in the file "demo_poisson.py".

@@ -26,7 +26,6 @@ import os
 import fenics
 import cashocs
 import numpy as np
-import filecmp
 
 
 
@@ -171,14 +170,3 @@ def test_write_mesh():
 	os.system('rm ./mesh/mesh_subdomains.h5')
 	os.system('rm ./mesh/mesh_boundaries.xdmf')
 	os.system('rm ./mesh/mesh_boundaries.h5')
-
-
-
-def test_create_measure():
-	mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
-	meas = cashocs.utils.generate_measure([1,2,3], ds)
-	test = ds(1) + ds(2) + ds(3)
-	
-	assert abs(fenics.assemble(1*meas) - 3) < 1e-14
-	for i in range(3):
-		assert meas._measures[i] == test._measures[i]

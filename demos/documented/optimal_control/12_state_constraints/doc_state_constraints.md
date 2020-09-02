@@ -93,5 +93,8 @@ Finally, we perform a post processing to see whether the state constraint is (ap
 
 As the error is about 0.01 %, we observe that the regularization indeed works as expected, and of course this tolerance is sufficiently low for all applications.
 
+The visualization of the solution looks as follows
+
+![](./img/optimal_control/12_state_constraints.png)
 
 The complete code can be found under demos/documented/optimal_control/12_state_constraints/demo_state_constraints.py

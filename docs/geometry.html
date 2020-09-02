@@ -1118,7 +1118,7 @@ class MeshQuality:
                         The average skewness of the mesh.
                 &#34;&#34;&#34;
 
-                return np.average(cls._quality_object.maximum_angle(mesh).array())
+                return np.average(cls._quality_object.skewness(mesh).array())
 
 
 
@@ -2125,7 +2125,7 @@ avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
                         The average skewness of the mesh.
                 &#34;&#34;&#34;
 
-                return np.average(cls._quality_object.maximum_angle(mesh).array())
+                return np.average(cls._quality_object.skewness(mesh).array())
 
 
 
@@ -2503,7 +2503,7 @@ def avg_skewness(cls, mesh):
                 The average skewness of the mesh.
         &#34;&#34;&#34;
 
-        return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
+        return np.average(cls._quality_object.skewness(mesh).array())</code></pre>
 </details>
 </dd>
 <dt id="cashocs.geometry.MeshQuality.min_condition_number"><code class="name flex">

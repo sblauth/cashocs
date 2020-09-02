@@ -83,6 +83,8 @@ also be valid with fenics.</p>
 <p>For a detailed discussion of the features of cashocs and its usage we refer to the <a href="#demos">demos</a>.</p>
 <h2 id="demos">Demos</h2>
 <p>The documentation of the demos can be found <a target="_blank" rel="noopener noreferrer" href="./doc_demos.html">here</a>.</p>
+<p>Note, that cashocs was also used to obtain the numerical results for my preprints
+<a href="url">Blauth, Leithäuser, and Pinnau, Optimal Control of the Sabatier Process in Microchannel Reactors</a> and <a href="url">Blauth, Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization based on Steklov-Poincare Type Metrics</a></p>
 <h2 id="command-line-interface-for-mesh-conversion">Command Line Interface For Mesh Conversion</h2>
 <p>cashocs includes a command line interface for converting gmsh mesh files to
 xdmf ones, which can be read very easily into fenics. The corresponding command
@@ -1426,7 +1428,7 @@ avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
                         The average skewness of the mesh.
                 &#34;&#34;&#34;
 
-                return np.average(cls._quality_object.maximum_angle(mesh).array())
+                return np.average(cls._quality_object.skewness(mesh).array())
 
 
 
@@ -1804,7 +1806,7 @@ def avg_skewness(cls, mesh):
                 The average skewness of the mesh.
         &#34;&#34;&#34;
 
-        return np.average(cls._quality_object.maximum_angle(mesh).array())</code></pre>
+        return np.average(cls._quality_object.skewness(mesh).array())</code></pre>
 </details>
 </dd>
 <dt id="cashocs.MeshQuality.min_condition_number"><code class="name flex">
@@ -2441,7 +2443,7 @@ in the "demos" folder.</p></div>
                 self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
                 if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
-                                (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                                (self.algorithm == &#39;pdas&#39; and self.config.get(&#39;OptimizationRoutine&#39;, &#39;inner_pdas&#39;) == &#39;newton&#39;):
                         self.form_handler._ControlFormHandler__compute_newton_forms()
 
                 if self.algorithm == &#39;newton&#39;:
@@ -2675,7 +2677,7 @@ call, the termination criterion changes to:</p>
         self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
         if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
-                        (self.algorithm == &#39;pdas&#39; and self.form_handler.inner_pdas == &#39;newton&#39;):
+                        (self.algorithm == &#39;pdas&#39; and self.config.get(&#39;OptimizationRoutine&#39;, &#39;inner_pdas&#39;) == &#39;newton&#39;):
                 self.form_handler._ControlFormHandler__compute_newton_forms()
 
         if self.algorithm == &#39;newton&#39;:

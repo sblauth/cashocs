@@ -107,3 +107,7 @@ Finally, we can set up the optimization problem and solve it
 
     optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, state, controls, adjoint, config)
     optimization_problem.solve()
+
+The result should look like this
+
+![](./img/optimal_control/05_monolithic_problems.png)

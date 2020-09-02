@@ -65,3 +65,7 @@ To define and solve the optimization problem, we now proceed exactly as before, 
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()
+
+The results looks like this
+
+![](./img/optimal_control/09_nonlinear_pdes.png)

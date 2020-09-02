@@ -90,7 +90,10 @@ solution, we perform an assertion
     import numpy as np
     assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(u.vector()[:] <= u_b.vector()[:])
 
-which shows that they are indeed satisfied.
+which shows that they are indeed satisfied. The visualization is carried out analogously
+to before, and should yield the following result
+
+![](./img/optimal_control/02_box_constraints.png)
 
 > As an alternative way of specifying the box constraints, one
 > can also use regular float or int objects, in case that they

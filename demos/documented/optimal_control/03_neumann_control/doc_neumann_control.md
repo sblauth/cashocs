@@ -91,3 +91,7 @@ which also directly solves the problem.
 Hence, in order to treat boundary control problems, the corresponding
 weak forms have to be modified accordingly, and one **has to** adapt the
 scalar products used to determine the gradients.
+
+The resulting visualization of the result looks as follows
+
+![](./img/optimal_control/03_neumann_control.png)

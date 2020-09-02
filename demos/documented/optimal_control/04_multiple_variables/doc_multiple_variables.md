@@ -108,6 +108,10 @@ it, via
     optimization_problem = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
     optimization_problem.solve()
 
+The result should look like this
+
+![](./img/optimal_control/04_multiple_variables.png)
+
 > Note, that for the case that we consider control constraints (see demo_02)
 > or different Hilbert spaces, e.g., for boundary control (see demo_03),
 > the corresponding control constraints have also to be put into a list, i.e.,

@@ -371,10 +371,16 @@ class Interpolator:
                 W : dolfin.function.functionspace.FunctionSpace
                         The space into which they shall be interpolated.
                 &#34;&#34;&#34;
-
+                
+                assert V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0), \
+                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                assert W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0), \
+                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                
                 self.V = V
                 self.W = W
                 self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
 
 
         def interpolate(self, u):
@@ -1319,10 +1325,16 @@ interp.interpolate(u)
                 W : dolfin.function.functionspace.FunctionSpace
                         The space into which they shall be interpolated.
                 &#34;&#34;&#34;
-
+                
+                assert V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0), \
+                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                assert W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0), \
+                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                
                 self.V = V
                 self.W = W
                 self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
+
 
 
         def interpolate(self, u):

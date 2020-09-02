@@ -54,5 +54,25 @@ J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*d
 ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
 ocp.solve()
 
+
+
 u, p = up.split(True)
-v, q = vq.split(True)
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,5))
+
+plt.subplot(1, 3, 1)
+fig = plot(c)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Control variable c')
+
+plt.subplot(1,3,2)
+fig = plot(u)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('State variable u')
+
+plt.subplot(1,3,3)
+fig = plot(u_d, mesh=mesh)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Desired state u_d')
+
+plt.tight_layout()

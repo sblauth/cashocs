@@ -233,6 +233,29 @@ of 1e-3, no absolute tolerance, and a maximum of 100 iterations.</p>
 <p>The possible values for these are the same as the corresponding ones in the config file.
 This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.</p>
 </blockquote>
+<p>Finally, we visualize the results using matplotlib and the following code</p>
+<pre><code>import matplotlib.pyplot as plt
+plt.figure(figsize=(16,9))
+
+plt.subplot(1, 3, 1)
+fig = plot(u)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Control variable u')
+
+plt.subplot(1,3,2)
+fig = plot(y)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('State variable y')
+
+plt.subplot(1,3,3)
+fig = plot(interpolate(y_d, V))
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Desired state y_d')
+
+plt.tight_layout()
+</code></pre>
+<p>The output should look like this</p>
+<p><img alt="" src="./img/optimal_control/01_poisson.png"></p>
 <p>This concludes the demo, and the corresponding full code can
 be found in the file "demo_poisson.py".
 <br/></p>
@@ -599,7 +622,9 @@ solution, we perform an assertion</p>
 <pre><code>import numpy as np
 assert np.alltrue(u_a.vector()[:] &lt;= u.vector()[:]) and np.alltrue(u.vector()[:] &lt;= u_b.vector()[:])
 </code></pre>
-<p>which shows that they are indeed satisfied.</p>
+<p>which shows that they are indeed satisfied. The visualization is carried out analogously
+to before, and should yield the following result</p>
+<p><img alt="" src="./img/optimal_control/02_box_constraints.png"></p>
 <blockquote>
 <p>As an alternative way of specifying the box constraints, one
 can also use regular float or int objects, in case that they
@@ -692,7 +717,9 @@ ocp.solve()
 <p>which also directly solves the problem.</p>
 <p>Hence, in order to treat boundary control problems, the corresponding
 weak forms have to be modified accordingly, and one <strong>has to</strong> adapt the
-scalar products used to determine the gradients.
+scalar products used to determine the gradients.</p>
+<p>The resulting visualization of the result looks as follows</p>
+<p><img alt="" src="./img/optimal_control/03_neumann_control.png">
 <br/></p>
 <h2 id="demo-04-multiple-variables">Demo 04 : Multiple Variables</h2>
 <p>In this demo we show how cashocs can be used to treat multiple
@@ -788,6 +815,8 @@ it, via</p>
 <pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
 optimization_problem.solve()
 </code></pre>
+<p>The result should look like this</p>
+<p><img alt="" src="./img/optimal_control/04_multiple_variables.png"></p>
 <blockquote>
 <p>Note, that for the case that we consider control constraints (see demo_02)
 or different Hilbert spaces, e.g., for boundary control (see demo_03),
@@ -900,7 +929,9 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx 
 <pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, state, controls, adjoint, config)
 optimization_problem.solve()
 </code></pre>
-<p><br/></p>
+<p>The result should look like this</p>
+<p><img alt="" src="./img/optimal_control/05_monolithic_problems.png">
+<br/></p>
 <h2 id="demo-06-coupled-problems-part-ii-picard-approach">Demo 06 : Coupled Problems Part II - Picard Approach</h2>
 <p>In this demo we show how cashocs can be used with a coupled PDE constraint.
 For this demo, we consider a iterative approach, whereas we investigated
@@ -988,6 +1019,8 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx 
 <pre><code>optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
 optimization_problem.solve()
 </code></pre>
+<p>The result should look like this</p>
+<p><img alt="" src="./img/optimal_control/06_picard_iteration.png"></p>
 <blockquote>
 <p>Comparing the output (especially in the early iterations) between the monlithic and Picard apporach
 we observe that both methods yield essentially the same results (up to machine precision). This validates
@@ -1109,6 +1142,8 @@ and the adjoint variables with</p>
 <pre><code>u, p = up.split(True)
 v, q = vq.split(True)
 </code></pre>
+<p>The result should look like this</p>
+<p><img alt="" src="./img/optimal_control/07_stokes.png"></p>
 <p>The full code for this example can be found in demo_07_control_stokes.py .
 <br/></p>
 <h2 id="demo-08-heat-equation-time-dependent-problems">Demo 08 : Heat Equation (Time Dependent Problems)</h2>
@@ -1352,7 +1387,9 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
 ocp.solve()
 </code></pre>
-<p><br/></p>
+<p>The results looks like this</p>
+<p><img alt="" src="./img/optimal_control/09_nonlinear_pdes.png">
+<br/></p>
 <h2 id="demo-10-dirichlet-boundary-control">Demo 10 : Dirichlet Boundary Control</h2>
 <p>In this demo, we investigate how Dirichlet boundary control is possible with
 cashocs. To do this, we have to employ the so-called Nitsche method, which we
@@ -1451,6 +1488,8 @@ J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
 <pre><code>ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
 ocp.solve()
 </code></pre>
+<p>The result should look like this</p>
+<p><img alt="" src="./img/optimal_control/10_dirichlet_control.png"></p>
 <blockquote>
 <p><strong>Verification of the boundary conditions</strong></p>
 <p>In the end, we validate whether the boundary conditions are applied correctly using this approach. Therefore, we first compute the indices of all DOF's that lie on the
@@ -1588,7 +1627,9 @@ ocp.solve()
 is the default value of these keyword parameters, then the direct solver MUMPS is used.
 Moreover, if one wants to use identical options for state and adjoint systems, then only
 the ksp_options have to be passed. This is because of the fact that adjoint_ksp_options
-always mirrors the ksp_options in case that the input is None.
+always mirrors the ksp_options in case that the input is None.</p>
+<p>The result of the optimization looks very much like that of <a href="#demo-01-basics">Demo 01</a></p>
+<p><img alt="" src="./img/optimal_control/11_iterative_solvers.png">
 <br/></p>
 <h2 id="demo-12-state-constraints">Demo 12 : State Constraints</h2>
 <p>In this demo we investigate how state constraints can be handled in cashocs. Thanks to
@@ -1677,6 +1718,8 @@ print('Maximum value of y: ' + str(y_max))
 print('Relative error between y_max and y_bar: ' + str(error) + ' %')
 </code></pre>
 <p>As the error is about 0.01 %, we observe that the regularization indeed works as expected, and of course this tolerance is sufficiently low for all applications.</p>
+<p>The visualization of the solution looks as follows</p>
+<p><img alt="" src="./img/optimal_control/12_state_constraints.png"></p>
 <p>The complete code can be found under demos/documented/optimal_control/12_state_constraints/demo_state_constraints.py
 <br/></p>
 <h2 id="demo-13-sparse-control">Demo 13 : Sparse Control</h2>
@@ -1727,8 +1770,8 @@ which corresponds to the <span><span class="MathJax_Preview"> L^2 </span><script
 verify that this yields in fact a sparse control, one can use the command</p>
 <pre><code>plot(u)
 </code></pre>
-<p>which shows a plot of the computed optimal control. It should look like this
-<img alt="" src="../demos/documented/optimal_control/13_sparse_control/sparse_control.png"></p>
+<p>which shows a plot of the computed optimal control. It should look like this</p>
+<p><img alt="" src="./img/optimal_control/13_sparse_control.png"></p>
 <p>Note, that the oscillations in between the peaks are just numerical noise.</p>
 <h1 id="shape-optimization">Shape Optimization</h1>
 <p>In this second part, we take a look at shape optimization problems. It is assumed that

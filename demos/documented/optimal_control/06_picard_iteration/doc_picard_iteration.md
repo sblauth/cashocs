@@ -97,6 +97,10 @@ Finally, we set up the optimization problem and solve it
     optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
     optimization_problem.solve()
 
+The result should look like this
+
+![](./img/optimal_control/06_picard_iteration.png)
+
 > Comparing the output (especially in the early iterations) between the monlithic and Picard apporach
 > we observe that both methods yield essentially the same results (up to machine precision). This validates
 > the Picard approach.

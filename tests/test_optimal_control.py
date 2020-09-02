@@ -29,7 +29,6 @@ import numpy as np
 
 
 config = cashocs.create_config('./config_ocp.ini')
-
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, 'CG', 1)
 
@@ -62,15 +61,52 @@ def test_control_gradient():
 def test_control_gd():
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
-	ocp.solve('gd', rtol=1e-2, atol=0.0, max_iter=50)
+	ocp.solve('gd', rtol=1e-2, atol=0.0, max_iter=46)
 	assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 
-def test_control_cg():
+def test_control_cg_fr():
+	config.set('OptimizationRoutine', 'cg_method', 'FR')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=30)
+	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=21)
+	assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+
+def test_control_cg_pr():
+	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	u.vector()[:] = 0.0
+	ocp._erase_pde_memory()
+	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=26)
+	assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+
+def test_control_cg_hs():
+	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	u.vector()[:] = 0.0
+	ocp._erase_pde_memory()
+	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=28)
+	assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+
+def test_control_cg_dy():
+	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	u.vector()[:] = 0.0
+	ocp._erase_pde_memory()
+	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=10)
+	assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+
+def test_control_cg_hz():
+	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	u.vector()[:] = 0.0
+	ocp._erase_pde_memory()
+	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=28)
 	assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -78,33 +114,88 @@ def test_control_cg():
 def test_control_bfgs():
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
-	ocp.solve('bfgs', rtol=1e-2, atol=0.0, max_iter=10)
+	ocp.solve('bfgs', rtol=1e-2, atol=0.0, max_iter=7)
 	assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 
-def test_control_newton():
+def test_control_newton_cg():
+	config.set('OptimizationRoutine', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
+	assert ocp.solver.relative_norm <= 1e-6
+
+
+
+def test_control_newton_cr():
+	config.set('OptimizationRoutine', 'inner_newton', 'cr')
+	u.vector()[:] = 0.0
+	ocp._erase_pde_memory()
+	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
+	assert ocp.solver.relative_norm <= 1e-6
 
 
 
 def test_control_gd_cc():
 	u.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp_cc.solve('gd', rtol=1e-2, atol=0.0, max_iter=25)
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('gd', rtol=1e-2, atol=0.0, max_iter=22)
 	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
 
-def test_control_cg_cc():
+def test_control_cg_fr_cc():
+	config.set('OptimizationRoutine', 'cg_method', 'FR')
 	u.vector()[:] = 0.0
-	ocp._erase_pde_memory()
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=48)
+	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_cg_pr_cc():
+	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=25)
+	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_cg_hs_cc():
+	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=30)
+	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_cg_dy_cc():
+	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=9)
+	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_cg_hz_cc():
+	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=37)
 	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -113,18 +204,30 @@ def test_control_cg_cc():
 
 def test_control_lbfgs_cc():
 	u.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp_cc.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=12)
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=11)
 	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
 
-def test_control_newton_cc():
+def test_control_newton_cg_cc():
+	config.set('OptimizationRoutine', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=10)
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=8)
+	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_newton_cr_cc():
+	config.set('OptimizationRoutine', 'inner_newton', 'cr')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=9)
 	assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -132,13 +235,16 @@ def test_control_newton_cc():
 
 
 def test_control_pdas_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'lbfgs')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=20)
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
 	
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
 	
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+

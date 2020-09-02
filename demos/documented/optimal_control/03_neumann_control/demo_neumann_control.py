@@ -26,7 +26,7 @@ import cashocs
 
 config = cashocs.create_config('config.ini')
 
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -45,3 +45,25 @@ scalar_product = TrialFunction(V)*TestFunction(V)*ds
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
 ocp.solve()
+
+
+
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,5))
+
+plt.subplot(1, 3, 1)
+fig = plot(u)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Control variable u')
+
+plt.subplot(1,3,2)
+fig = plot(y)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('State variable y')
+
+plt.subplot(1,3,3)
+fig = plot(y_d, mesh=mesh)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Desired state y_d')
+
+plt.tight_layout()

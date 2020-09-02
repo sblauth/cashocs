@@ -115,4 +115,8 @@ and the adjoint variables with
     u, p = up.split(True)
     v, q = vq.split(True)
 
+The result should look like this
+
+![](./img/optimal_control/07_stokes.png)
+
 The full code for this example can be found in demo_07_control_stokes.py .
