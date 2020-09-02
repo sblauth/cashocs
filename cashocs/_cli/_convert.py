@@ -39,6 +39,7 @@ parser.add_argument('xdmffile', type=str, help='xdmf file into which the mesh sh
 
 
 def convert(argv=None):
+	
 	args = argv or parser.parse_args(argv)
 	
 	# try:
