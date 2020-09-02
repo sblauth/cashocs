@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (C) 2020 Sebastian Blauth
 #
 # This file is part of CASHOCS.
@@ -17,13 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+Created on 02/09/2020, 12.03
+
+@author: blauths
+"""
+
 import getopt
 import sys
 import meshio
 
 
 
-def run(argv):
+def convert(argv):
 	try:
 		opts, args = getopt.getopt(argv, "h", ["help"])
 	except getopt.GetoptError:
@@ -114,7 +118,7 @@ def run(argv):
 def usage():
 	"Display usage"
 	print("""\
-Usage: cashocs-convert input.msh output.y
+Usage: cashocs-convert input.msh output.xdmf
 
 Supported formats
 		Input:
@@ -123,8 +127,3 @@ Supported formats
 		Output:
 		.xdmf 	- XDMF file format
 """)
-
-
-
-if __name__ == "__main__":
-	run(sys.argv[1:])

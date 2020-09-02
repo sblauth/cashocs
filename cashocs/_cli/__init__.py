@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright (C) 2020 Sebastian Blauth
 #
 # This file is part of CASHOCS.
@@ -17,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-echo '### Added by cashocs installation routine' >> ~/.bashrc
-echo 'PATH=$PATH:'$(pwd) >> ~/.bashrc
-echo 'export PATH' >> ~/.bashrc
-echo 'PYTHONPATH=$PYTHONPATH:'$(pwd) >> ~/.bashrc
-echo 'export PYTHONPATH' >> ~/.bashrc
-echo '### end cashocs installation routine' >> ~/.bashrc
+"""
+Created on 02/09/2020, 12.02
+
+@author: blauths
+"""
+
+from ._convert import convert
