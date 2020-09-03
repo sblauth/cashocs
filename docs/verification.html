@@ -54,6 +54,8 @@ import warnings
 import fenics
 import numpy as np
 
+from ._exceptions import InputError
+
 
 
 def control_gradient_test(ocp, u=None, h=None):
@@ -91,8 +93,9 @@ def control_gradient_test(ocp, u=None, h=None):
                         temp = fenics.Function(ocp.form_handler.control_spaces[j])
                         temp.vector()[:] = ocp.controls[j].vector()[:]
                         u.append(temp)
-
-        assert len(u) == ocp.control_dim, &#39;Length of u does not match the length of controls of the problem.&#39;
+        
+        if not len(u) == ocp.control_dim:
+                raise InputError(&#39;cashocs.verification.control_gradient_test&#39;, &#39;u&#39;, &#39;Length of u does not match the length of controls of the problem.&#39;)
 
         # check if u and ocp.controls coincide, if yes, make a deepcopy
         ids_u = [fun.id() for fun in u]
@@ -309,8 +312,9 @@ as expected.</dd>
                         temp = fenics.Function(ocp.form_handler.control_spaces[j])
                         temp.vector()[:] = ocp.controls[j].vector()[:]
                         u.append(temp)
-
-        assert len(u) == ocp.control_dim, &#39;Length of u does not match the length of controls of the problem.&#39;
+        
+        if not len(u) == ocp.control_dim:
+                raise InputError(&#39;cashocs.verification.control_gradient_test&#39;, &#39;u&#39;, &#39;Length of u does not match the length of controls of the problem.&#39;)
 
         # check if u and ocp.controls coincide, if yes, make a deepcopy
         ids_u = [fun.id() for fun in u]

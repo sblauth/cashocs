@@ -372,10 +372,10 @@ class Interpolator:
                         The space into which they shall be interpolated.
                 &#34;&#34;&#34;
                 
-                assert V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0), \
-                        &#39;The interpolator only works with CGn or DG0 elements&#39;
-                assert W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0), \
-                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                if not (V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0)):
+                        raise InputError(&#39;cashocs.utils.Interpolator&#39;, &#39;V&#39;, &#39;The interpolator only works with CG n or DG 0 elements&#39;)
+                if not (W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0)):
+                        raise InputError(&#39;cashocs.utils.Interpolator&#39;, &#39;W&#39;, &#39;The interpolator only works with CG n or DG 0 elements&#39;)
                 
                 self.V = V
                 self.W = W
@@ -401,8 +401,9 @@ class Interpolator:
                 dolfin.function.function.Function
                         The result of the interpolation.
                 &#34;&#34;&#34;
-
-                assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+                
+                if not u.function_space() == self.V:
+                        raise InputError(&#39;cashocs.utils.Interpolator.interpolate&#39;, &#39;u&#39;, &#39;The input does not belong to the correct function space.&#39;)
                 v = fenics.Function(self.W)
                 v.vector()[:] = (self.transfer_matrix*u.vector())[:]
 
@@ -467,8 +468,9 @@ def _setup_petsc_options(ksps, ksp_options):
         -------
         None
         &#34;&#34;&#34;
-
-        assert len(ksps) == len(ksp_options), &#39;Length of options and ksps does not match&#39;
+        
+        if not len(ksps) == len(ksp_options):
+                raise InputError(&#39;cashocs.utils._setup_petsc_options&#39;, &#39;ksps&#39;, &#39;Length of ksp_options and ksps does not match.&#39;)
 
         opts = fenics.PETScOptions
 
@@ -525,7 +527,7 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None):
         else:
                 A = ksp.getOperators()[0]
                 if A.size[0] == -1 and A.size[1] == -1:
-                        raise InputError(&#39;The KSP object has to be initialized with some Matrix in case A is None.&#39;)
+                        raise InputError(&#39;cashocs.utils._solve_linear_problem&#39;, &#39;ksp&#39;, &#39;The KSP object has to be initialized with some Matrix in case A is None.&#39;)
 
         if b is None:
                 return A.getVecs()[0]
@@ -568,9 +570,11 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
         The method only works with gmsh mesh 4.1 file format. Others might also work,
         but this is not tested or ensured in any way.
         &#34;&#34;&#34;
-
-        assert original_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for original_mesh_file is wrong&#39;
-        assert out_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for out_mesh_file is wrong&#39;
+        
+        if not original_msh_file[-4:] == &#39;.msh&#39;:
+                raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;original_msh_file&#39;, &#39;Format for original_mesh_file is wrong, has to end in .msh&#39;)
+        if not out_msh_file[-4:] == &#39;.msh&#39;:
+                raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;out_msh_file&#39;, &#39;Format for out_mesh_file is wrong, has to end in .msh&#39;)
 
         dim = mesh.geometric_dimension()
 
@@ -612,7 +616,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
                                                 elif dim == 3:
                                                         mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][2], &#39;.16f&#39;) + &#39;\n&#39;
                                                 else:
-                                                        raise InputError(&#39;Not a valid dimension for the mesh.&#39;)
+                                                        raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;mesh&#39;, &#39;Not a valid dimension for the mesh.&#39;)
                                                 new_file.write(mod_line)
                                                 subwrite_counter += 1
 
@@ -651,9 +655,10 @@ def _optimization_algorithm_configuration(config, algorithm=None):
 
         if algorithm is None:
                 algorithm = config.get(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;)
-
-        assert type(algorithm) == str, &#39;Not a valid input type for algorithm.&#39;
-
+        
+        if not type(algorithm) == str:
+                raise InputError(&#39;cashocs.utils._optimization_algorithm_configuration&#39;, &#39;algorithm&#39;, &#39;Not a valid input type for algorithm. Has to be a string.&#39;)
+        
         if algorithm in [&#39;gradient_descent&#39;, &#39;gd&#39;]:
                 internal_algorithm = &#39;gradient_descent&#39;
         elif algorithm in [&#39;cg&#39;, &#39;conjugate_gradient&#39;, &#39;ncg&#39;, &#39;nonlinear_cg&#39;]:
@@ -662,18 +667,15 @@ def _optimization_algorithm_configuration(config, algorithm=None):
                 internal_algorithm = &#39;lbfgs&#39;
         elif algorithm in [&#39;newton&#39;]:
                 internal_algorithm = &#39;newton&#39;
-        # elif algorithm in [&#39;ss_newton&#39;, &#39;semi_smooth_newton&#39;]:
-        #       internal_algorithm = &#39;semi_smooth_newton&#39;
         elif algorithm in [&#39;pdas&#39;, &#39;primal_dual_active_set&#39;]:
                 internal_algorithm = &#39;pdas&#39;
         else:
-                raise InputError(&#39;Not a valid choice for the optimization algorithm.\n&#39;
-                                                 &#39;      For a gradient descent method, use `gradient_descent` or `gd`.\n&#39;
-                                                 &#39;      For a nonlinear conjugate gradient method use `cg`, `conjugate_gradient`, `ncg`, or `nonlinear_cg`.\n&#39;
-                                                 &#39;      For a limited memory BFGS method use `bfgs` or `lbfgs`.\n&#39;
-                                                 &#39;      For a truncated Newton method use `newton.`\n&#39;
-                                                 # &#39;    For a semi smooth Newton method use `semi_smooth_newton` or `ss_newton`.\n&#39;
-                                                 &#39;      For a primal dual active set method use `pdas` or `primal dual active set`.&#39;)
+                raise InputError(&#39;cashocs.utils._optimization_algorithm_configuration&#39;, &#39;algorithm&#39;, &#39;Not a valid choice for the optimization algorithm.\n&#39;
+                                                 &#39;      For a gradient descent method, use \&#39;gradient_descent\&#39; or \&#39;gd\&#39;.\n&#39;
+                                                 &#39;      For a nonlinear conjugate gradient method use \&#39;cg\&#39;, \&#39;conjugate_gradient\&#39;, \&#39;ncg\&#39;, or \&#39;nonlinear_cg\&#39;.\n&#39;
+                                                 &#39;      For a limited memory BFGS method use \&#39;bfgs\&#39; or \&#39;lbfgs\&#39;.\n&#39;
+                                                 &#39;      For a truncated Newton method use \&#39;newton\&#39; (optimal control only).\n&#39;
+                                                 &#39;      For a primal dual active set method use \&#39;pdas\&#39; or \&#39;primal dual active set\&#39; (optimal control only).&#39;)
 
         if overwrite:
                 config.set(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, internal_algorithm)
@@ -1120,9 +1122,11 @@ but this is not tested or ensured in any way.</p></div>
         The method only works with gmsh mesh 4.1 file format. Others might also work,
         but this is not tested or ensured in any way.
         &#34;&#34;&#34;
-
-        assert original_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for original_mesh_file is wrong&#39;
-        assert out_msh_file[-4:] == &#39;.msh&#39;, &#39;Format for out_mesh_file is wrong&#39;
+        
+        if not original_msh_file[-4:] == &#39;.msh&#39;:
+                raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;original_msh_file&#39;, &#39;Format for original_mesh_file is wrong, has to end in .msh&#39;)
+        if not out_msh_file[-4:] == &#39;.msh&#39;:
+                raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;out_msh_file&#39;, &#39;Format for out_mesh_file is wrong, has to end in .msh&#39;)
 
         dim = mesh.geometric_dimension()
 
@@ -1164,7 +1168,7 @@ but this is not tested or ensured in any way.</p></div>
                                                 elif dim == 3:
                                                         mod_line = format(points[idcs[subwrite_counter]][0], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][1], &#39;.16f&#39;) + &#39; &#39; + format(points[idcs[subwrite_counter]][2], &#39;.16f&#39;) + &#39;\n&#39;
                                                 else:
-                                                        raise InputError(&#39;Not a valid dimension for the mesh.&#39;)
+                                                        raise InputError(&#39;cashocs.utils.write_out_mesh&#39;, &#39;mesh&#39;, &#39;Not a valid dimension for the mesh.&#39;)
                                                 new_file.write(mod_line)
                                                 subwrite_counter += 1
 
@@ -1326,10 +1330,10 @@ interp.interpolate(u)
                         The space into which they shall be interpolated.
                 &#34;&#34;&#34;
                 
-                assert V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0), \
-                        &#39;The interpolator only works with CGn or DG0 elements&#39;
-                assert W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0), \
-                        &#39;The interpolator only works with CGn or DG0 elements&#39;
+                if not (V.ufl_element().family() == &#39;Lagrange&#39; or (V.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and V.ufl_element().degree() == 0)):
+                        raise InputError(&#39;cashocs.utils.Interpolator&#39;, &#39;V&#39;, &#39;The interpolator only works with CG n or DG 0 elements&#39;)
+                if not (W.ufl_element().family() == &#39;Lagrange&#39; or (W.ufl_element().family() == &#39;Discontinuous Lagrange&#39; and W.ufl_element().degree() == 0)):
+                        raise InputError(&#39;cashocs.utils.Interpolator&#39;, &#39;W&#39;, &#39;The interpolator only works with CG n or DG 0 elements&#39;)
                 
                 self.V = V
                 self.W = W
@@ -1355,8 +1359,9 @@ interp.interpolate(u)
                 dolfin.function.function.Function
                         The result of the interpolation.
                 &#34;&#34;&#34;
-
-                assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+                
+                if not u.function_space() == self.V:
+                        raise InputError(&#39;cashocs.utils.Interpolator.interpolate&#39;, &#39;u&#39;, &#39;The input does not belong to the correct function space.&#39;)
                 v = fenics.Function(self.W)
                 v.vector()[:] = (self.transfer_matrix*u.vector())[:]
 
@@ -1405,8 +1410,9 @@ on the function (this is done automatically due to the method).</p>
         dolfin.function.function.Function
                 The result of the interpolation.
         &#34;&#34;&#34;
-
-        assert u.function_space() == self.V, &#39;input does not belong to the correct function space&#39;
+        
+        if not u.function_space() == self.V:
+                raise InputError(&#39;cashocs.utils.Interpolator.interpolate&#39;, &#39;u&#39;, &#39;The input does not belong to the correct function space.&#39;)
         v = fenics.Function(self.W)
         v.vector()[:] = (self.transfer_matrix*u.vector())[:]
 

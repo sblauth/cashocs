@@ -257,8 +257,7 @@ step in case subsequent gradients are not "sufficiently" orthogonal anymore.
 
 ***Truncated Newton method***
 
-The parameters for both the classical truncated Newton method and for the semi-smooth
-Newton method are determined in the following.
+The parameters for the truncated Newton method are determined in the following.
 
     inner_newton = cg
 

@@ -57,7 +57,7 @@ class UnconstrainedLineSearch:
 
 		inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
 		self.is_newton_like = inner_pdas in ['lbfgs', 'bfgs']
-		self.is_newton = inner_pdas in ['newton', 'semi_smooth_newton', 'ss_newton']
+		self.is_newton = inner_pdas in ['newton']
 		self.is_steepest_descent = inner_pdas in ['gradient_descent', 'gd']
 		if self.is_newton:
 			self.stepsize = 1.0

@@ -332,7 +332,7 @@ class ControlFormHandler(FormHandler):
 		# Compute the necessary equations
 		self.__compute_gradient_equations()
 
-		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' or \
+		if self.opt_algo == 'newton' or \
 				(self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
 			self.__compute_newton_forms()
 
@@ -348,7 +348,7 @@ class ControlFormHandler(FormHandler):
 		for i in range(self.control_dim):
 			if not self.riesz_projection_matrices[i].isSymmetric():
 				if not self.riesz_projection_matrices[i].isSymmetric(1e-12):
-					raise InputError('Supplied scalar product form is not symmetric.')
+					raise InputError('cashocs._forms.ControlFormHandler', 'riesz_scalar_products', 'Supplied scalar product form is not symmetric.')
 
 
 
@@ -701,7 +701,7 @@ class ShapeFormHandler(FormHandler):
 
 		self.update_scalar_product()
 
-		if self.opt_algo == 'newton' or self.opt_algo == 'semi_smooth_newton' \
+		if self.opt_algo == 'newton' \
 				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
 			raise NotImplementedError('Second order methods are not implemented for shape optimization yet')
 
@@ -766,25 +766,25 @@ class ShapeFormHandler(FormHandler):
 
 		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
 		if not type(self.shape_bdry_def) == list:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_def has to be a list.')
+			raise ConfigError('ShapeGradient', 'shape_bdry_def', 'The input has to be a list.')
 		if not len(self.shape_bdry_def) > 0:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_def must not be empty.')
+			raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
 		
 		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
 		if not type(self.shape_bdry_def) == list:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix has to be a list.')
+			raise ConfigError('ShapeGradient', 'shape_bdry_fix', 'The input has to be a list.')
 		
 		self.shape_bdry_fix_x = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_x', fallback='[]'))
 		if not type(self.shape_bdry_fix_x) == list:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_x has to be a list.')
+			raise ConfigError('ShapeGradient', 'shape_bdry_fix_x', 'The input has to be a list.')
 		
 		self.shape_bdry_fix_y = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_y', fallback='[]'))
 		if not type(self.shape_bdry_fix_y) == list:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_y has to be a list')
+			raise ConfigError('ShapeGradient', 'shape_bdry_fix_y', 'The input has to be a list.')
 		
 		self.shape_bdry_fix_z = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_z', fallback='[]'))
 		if not type(self.shape_bdry_fix_z) == list:
-			raise ConfigError('The config file input for ShapeGradient.shape_bdry_fix_z has to be a list')
+			raise ConfigError('ShapeGradient', 'shape_bdry_fix_z', 'The input has to be a list.')
 		
 
 		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)

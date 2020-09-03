@@ -26,6 +26,8 @@ import json
 import fenics
 from fenics import Constant, div, inner
 
+from .._exceptions import ConfigError
+
 
 
 def eps(u):
@@ -111,17 +113,20 @@ class Regularization:
 		if self.measure_hole:
 			self.x_start = self.config.getfloat('Regularization', 'x_start', fallback=0.0)
 			self.x_end = self.config.getfloat('Regularization', 'x_end', fallback=1.0)
-			assert self.x_end >= self.x_start, 'x_end must not be smaller than x_start'
+			if not self.x_end >= self.x_start:
+				raise ConfigError('Regularization', 'x_end', 'x_end must not be smaller than x_start.')
 			self.delta_x = self.x_end - self.x_start
 
 			self.y_start = self.config.getfloat('Regularization', 'y_start', fallback=0.0)
 			self.y_end = self.config.getfloat('Regularization', 'y_end', fallback=1.0)
-			assert self.y_end >= self.y_start, 'y_end must not be smaller than y_start'
+			if not self.y_end >= self.y_start:
+				raise ConfigError('Regularization', 'y_end', 'y_end must not be smaller than y_start.')
 			self.delta_y = self.y_end - self.y_start
 
 			self.z_start = self.config.getfloat('Regularization', 'z_start', fallback=0.0)
 			self.z_end = self.config.getfloat('Regularization', 'z_end', fallback=1.0)
-			assert self.z_end >= self.z_start, 'z_end must not be smaller than z_start'
+			if not self.z_end >= self.z_start:
+				raise ConfigError('Regularization', 'z_end', 'z_end must not be smaller than z_start.')
 			self.delta_z = self.z_end - self.z_start
 			if self.shape_form_handler.mesh.geometric_dimension() == 2:
 				self.delta_z = 1.0
@@ -161,8 +166,8 @@ class Regularization:
 				else:
 					self.target_barycenter_list[2] = 0.0
 
-		assert self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0, \
-			'All regularization constants have to be nonnegative'
+		if not (self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0):
+			raise ConfigError('Regularization', 'mu_volume, mu_surface, or mu_barycenter', 'All regularization constants have to be nonnegative.')
 
 		if self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
 			self.has_regularization = True

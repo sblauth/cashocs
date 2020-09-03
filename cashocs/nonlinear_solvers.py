@@ -25,7 +25,7 @@ follow.
 import fenics
 from petsc4py import PETSc
 
-from ._exceptions import NotConvergedError
+from ._exceptions import NotConvergedError, InputError
 from .utils import _setup_petsc_options, _solve_linear_problem
 
 
@@ -112,11 +112,12 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	    bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
 	    cashocs.damped_newton_solve(F, u, bcs)
 	"""
-
-	assert convergence_type in ['rel', 'abs', 'combined'], \
-		'Input convergence_type has to be one of \'rel\', \'abs\', or \'combined\''
-	assert norm_type in ['l2', 'linf'], \
-		'Input norm_type has to be one of \'l2\' or \'linf\''
+	
+	if not convergence_type in ['rel', 'abs', 'combined']:
+		raise InputError('cashocs.nonlinear_solvers.damped_newton_solve', 'convergence_type', 'Input convergence_type has to be one of \'rel\', \'abs\', or \'combined\'.')
+	
+	if not norm_type in ['l2', 'linf']:
+		raise InputError('cashocs.nonlinear_solvers.damped_newton_solve', 'norm_type', 'Input norm_type has to be one of \'l2\' or \'linf\'.')
 
 	# create the PETSc ksp
 	if ksp is None:

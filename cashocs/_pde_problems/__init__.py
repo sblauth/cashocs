@@ -21,11 +21,11 @@
 
 from .adjoint_problem import AdjointProblem
 from .gradient_problem import GradientProblem
-from .hessian_problems import HessianProblem, SemiSmoothHessianProblem, UnconstrainedHessianProblem
+from .hessian_problems import HessianProblem, UnconstrainedHessianProblem
 from .shape_gradient_problem import ShapeGradientProblem
 from .state_problem import StateProblem
 
 
 
-__all__ = ['AdjointProblem', 'GradientProblem', 'HessianProblem', 'SemiSmoothHessianProblem',
+__all__ = ['AdjointProblem', 'GradientProblem', 'HessianProblem',
 		   'ShapeGradientProblem', 'StateProblem', 'UnconstrainedHessianProblem']

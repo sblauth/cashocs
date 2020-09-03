@@ -25,7 +25,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .._exceptions import ConfigError, NotConvergedError, cashocsException
+from .._exceptions import ConfigError, NotConvergedError, CashocsException
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
@@ -240,7 +240,7 @@ class BaseHessianProblem:
 		elif self.inner_newton == 'cr':
 			self.cr(idx_active)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_newton. Needs to be either cg or cr.')
+			raise ConfigError('OptimizationRoutine', 'inner_newton', 'Not a valid choice. Needs to be either \'cg\' or \'cr\'.')
 
 		return self.delta_control
 
@@ -297,7 +297,7 @@ class HessianProblem(BaseHessianProblem):
 	def newton_solve(self, idx_active=None):
 
 		if idx_active is not None:
-			raise cashocsException('Must not pass idx_active to HessianProblem.')
+			raise CashocsException('Must not pass idx_active to HessianProblem.')
 
 		return BaseHessianProblem.newton_solve(self)
 
@@ -447,7 +447,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 	def newton_solve(self, idx_active=None):
 
 		if idx_active is None:
-			raise cashocsException('Need to pass idx_active to UnconstrainedHessianProblem.')
+			raise CashocsException('Need to pass idx_active to UnconstrainedHessianProblem.')
 
 		self.gradient_problem.solve()
 
@@ -526,269 +526,5 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 			for j in range(self.control_dim):
 				self.p[j].vector()[:] = self.residual[j].vector()[:] + self.beta * self.p[j].vector()[:]
 				self.q[j].vector()[:] = self.s[j].vector()[:] + self.beta * self.q[j].vector()[:]
-
-			self.rAr = self.rAr_new
-
-
-
-
-
-class SemiSmoothHessianProblem(BaseHessianProblem):
-	"""Hessian problem for the semi smooth Newton method.
-
-	"""
-
-	def __init__(self, form_handler, gradient_problem):
-		"""Initializes self.
-
-		Parameters
-		----------
-		form_handler : cashocs._forms.ControlFormHandler
-			The FormHandler object for the optimization problem.
-		gradient_problem : cashocs._pde_problems.GradientProblem
-			The GradientProblem object (this is needed for the computation
-			of the Hessian).
-		"""
-
-		BaseHessianProblem.__init__(self, form_handler, gradient_problem)
-
-		self.control_constraints = self.form_handler.control_constraints
-		self.residual1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.residual2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.delta_mu = [fenics.Function(V) for V in self.form_handler.control_spaces]
-
-		self.p1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.p2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-
-		self.mu = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		for j in range(self.control_dim):
-			self.mu[j].vector()[:] = -1.0
-		self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.temp_storage = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.cc = 1e-4
-
-
-
-	def double_scalar_product(self, a1, a2, b1, b2):
-		"""Computes the scalar product for functions with two components.
-
-		Parameters
-		----------
-		a1 : list[dolfin.function.function.Function]
-			The first component of the first argument.
-		a2 : list[dolfin.function.function.Function]
-			The second component of the first argument.
-		b1 : list[dolfin.function.function.Function]
-			The first component of the second argument.
-		b2 : list[dolfin.function.function.Function]
-			The second component of the second argument.
-
-		Returns
-		-------
-		float
-			The value of the scalar product.
-		"""
-
-		s1 = self.form_handler.scalar_product(a1, b1)
-		s2 = self.form_handler.scalar_product(a2, b2)
-
-		return s1 + s2
-
-
-
-	def compute_semi_smooth_active_sets(self):
-
-		self.idx_active_lower = [(self.mu[j].vector()[:] + self.cc*(self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]) < 0.0).nonzero()[0] for j in range(self.control_dim)]
-		self.idx_active_upper = [(self.mu[j].vector()[:] + self.cc*(self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]) > 0.0).nonzero()[0] for j in range(self.control_dim)]
-
-		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.control_dim)]
-		[self.idx_active[j].sort() for j in range(self.control_dim)]
-
-		self.idx_inactive = [np.setdiff1d(np.arange(self.form_handler.control_spaces[j].dim()), self.idx_active[j] ) for j in range(self.control_dim)]
-
-		return None
-
-
-
-	def restrict_to_active_set(self, a, b):
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def restrict_to_lower_active_set(self, a, b):
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def restrict_to_upper_active_set(self, a, b):
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def restrict_to_inactive_set(self, a, b):
-		for j in range(self.control_dim):
-			self.temp[j].vector()[:] = 0.0
-			self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
-			b[j].vector()[:] = self.temp[j].vector()[:]
-
-		return b
-
-
-
-	def newton_solve(self, idx_active=None):
-
-		if idx_active is not None:
-			raise cashocsException('Must not pass idx_active to SemiSmoothHessianProblem.')
-
-		self.compute_semi_smooth_active_sets()
-
-		for j in range(self.control_dim):
-			self.delta_mu[j].vector()[:] = 0.0
-
-		BaseHessianProblem.newton_solve(self)
-		return self.delta_control, self.delta_mu
-
-
-
-	def cg(self, idx_active=None):
-
-		self.temp_storage1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.temp_storage2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ap1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ap2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-
-		for j in range(self.control_dim):
-			self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]
-			self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]
-
-		self.restrict_to_active_set(self.mu, self.temp_storage)
-		self.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
-		self.restrict_to_upper_active_set(self.temp_storage2, self.temp_storage2)
-
-		for j in range(self.control_dim):
-			self.residual1[j].vector()[:] = -self.gradients[j].vector()[:] - self.temp_storage[j].vector()[:]
-			self.residual2[j].vector()[:] = - self.temp_storage1[j].vector()[:] - self.temp_storage2[j].vector()[:]
-			self.p1[j].vector()[:] = self.residual1[j].vector()[:]
-			self.p2[j].vector()[:] = self.residual2[j].vector()[:]
-
-		self.res_norm_squared = self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
-		self.eps_0 = np.sqrt(self.res_norm_squared)
-
-		for i in range(self.max_it_inner_newton):
-			self.hessian_application(self.p1, self.hessian_actions)
-			self.restrict_to_active_set(self.p2, self.temp_storage1)
-			self.restrict_to_active_set(self.p1, self.temp_storage2)
-
-			for j in range(self.control_dim):
-				self.Ap1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage1[j].vector()[:]
-				self.Ap2[j].vector()[:] = self.temp_storage2[j].vector()[:]
-
-			self.eps = np.sqrt(self.res_norm_squared)
-			print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
-			if self.eps / self.eps_0 < self.inner_newton_tolerance:
-				break
-
-			self.alpha = self.res_norm_squared / self.double_scalar_product(self.p1, self.p2, self.Ap1, self.Ap2)
-			for j in range(self.control_dim):
-				self.delta_control[j].vector()[:] += self.alpha*self.p1[j].vector()[:]
-				self.delta_mu[j].vector()[:] += self.alpha*self.p2[j].vector()[:]
-				self.residual1[j].vector()[:] -= self.alpha*self.Ap1[j].vector()[:]
-				self.residual2[j].vector()[:] -= self.alpha*self.Ap2[j].vector()[:]
-
-			self.res_norm_squared = self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2)
-			self.beta = self.res_norm_squared / pow(self.eps, 2)
-
-			for j in range(self.control_dim):
-				self.p1[j].vector()[:] = self.residual1[j].vector()[:] + self.beta*self.p1[j].vector()[:]
-				self.p2[j].vector()[:] = self.residual2[j].vector()[:] + self.beta*self.p2[j].vector()[:]
-
-
-
-	def cr(self, idx_active=None):
-
-		self.temp_storage1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.temp_storage2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ar1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ar2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ap1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-		self.Ap2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-
-		for j in range(self.control_dim):
-			self.temp_storage1[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]
-			self.temp_storage2[j].vector()[:] = self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]
-
-		self.restrict_to_active_set(self.mu, self.temp_storage)
-		self.restrict_to_lower_active_set(self.temp_storage1, self.temp_storage1)
-		self.restrict_to_upper_active_set(self.temp_storage2, self.temp_storage2)
-
-		for j in range(self.control_dim):
-			self.residual1[j].vector()[:] = -self.gradients[j].vector()[:] - self.temp_storage[j].vector()[:]
-			self.residual2[j].vector()[:] = -self.temp_storage1[j].vector()[:] - self.temp_storage2[j].vector()[:]
-			self.p1[j].vector()[:] = self.residual1[j].vector()[:]
-			self.p2[j].vector()[:] = self.residual2[j].vector()[:]
-
-		self.eps_0 = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
-
-		self.hessian_application(self.residual1, self.hessian_actions)
-		self.restrict_to_active_set(self.residual1, self.temp_storage1)
-		self.restrict_to_active_set(self.residual2, self.temp_storage2)
-
-		for j in range(self.control_dim):
-			self.Ar1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
-			self.Ar2[j].vector()[:] = self.temp_storage1[j].vector()[:]
-			self.Ap1[j].vector()[:] = self.Ar1[j].vector()[:]
-			self.Ap2[j].vector()[:] = self.Ar2[j].vector()[:]
-
-		self.rAr = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
-
-		for i in range(self.max_it_inner_newton):
-			# self.alpha = self.__double_scalar_product(self.residual1, self.residual2, self.Ap1, self.Ap2) / self.__double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
-			self.alpha = self.rAr / self.double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
-
-			for j in range(self.control_dim):
-				self.delta_control[j].vector()[:] += self.alpha*self.p1[j].vector()[:]
-				self.delta_mu[j].vector()[:] += self.alpha*self.p2[j].vector()[:]
-
-				self.residual1[j].vector()[:] -= self.alpha*self.Ap1[j].vector()[:]
-				self.residual2[j].vector()[:] -= self.alpha*self.Ap2[j].vector()[:]
-
-			self.eps = np.sqrt(self.double_scalar_product(self.residual1, self.residual2, self.residual1, self.residual2))
-			print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
-			if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
-				break
-
-			self.hessian_application(self.residual1, self.hessian_actions)
-			self.restrict_to_active_set(self.residual1, self.temp_storage1)
-			self.restrict_to_active_set(self.residual2, self.temp_storage2)
-
-			for j in range(self.control_dim):
-				self.Ar1[j].vector()[:] = self.hessian_actions[j].vector()[:] + self.temp_storage2[j].vector()[:]
-				self.Ar2[j].vector()[:] = self.temp_storage1[j].vector()[:]
-
-			self.rAr_new = self.double_scalar_product(self.residual1, self.residual2, self.Ar1, self.Ar2)
-			self.beta = self.rAr_new / self.rAr
-			# self.beta = -self.__double_scalar_product(self.Ar1, self.Ar2, self.Ap1, self.Ap2) / self.__double_scalar_product(self.Ap1, self.Ap2, self.Ap1, self.Ap2)
-
-			for j in range(self.control_dim):
-				self.p1[j].vector()[:] = self.residual1[j].vector()[:] + self.beta*self.p1[j].vector()[:]
-				self.p2[j].vector()[:] = self.residual2[j].vector()[:] + self.beta*self.p2[j].vector()[:]
-
-				self.Ap1[j].vector()[:] = self.Ar1[j].vector()[:] + self.beta*self.Ap1[j].vector()[:]
-				self.Ap2[j].vector()[:] = self.Ar2[j].vector()[:] + self.beta*self.Ap2[j].vector()[:]
 
 			self.rAr = self.rAr_new

@@ -22,11 +22,11 @@
 import fenics
 import numpy as np
 
-from .methods import CG, GradientDescent, LBFGS, Newton, PDAS, SemiSmoothNewton
+from .methods import CG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
 from .._forms import ControlFormHandler, Lagrangian
 from .._optimal_control import ReducedCostFunctional
-from .._pde_problems import (AdjointProblem, GradientProblem, HessianProblem, SemiSmoothHessianProblem, StateProblem, UnconstrainedHessianProblem)
+from .._pde_problems import (AdjointProblem, GradientProblem, HessianProblem, StateProblem, UnconstrainedHessianProblem)
 from ..optimization_problem import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration
 
@@ -107,16 +107,16 @@ class OptimalControlProblem(OptimizationProblem):
 					if controls[i].__module__ == 'dolfin.function.function' and type(controls[i]).__name__ == 'Function':
 						pass
 					else:
-						raise InputError('controls have to be fenics Functions.')
+						raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls', 'controls have to be fenics Functions.')
 
 				self.controls = controls
 
 			elif controls.__module__ == 'dolfin.function.function' and type(controls).__name__ == 'Function':
 				self.controls = [controls]
 			else:
-				raise InputError('Type of controls is wrong.')
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls', 'Type of controls is wrong.')
 		except:
-			raise InputError('Type of controls is wrong.')
+			raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls', 'Type of controls is wrong.')
 
 		self.control_dim = len(self.controls)
 
@@ -132,14 +132,14 @@ class OptimalControlProblem(OptimizationProblem):
 						if riesz_scalar_products[i].__module__== 'ufl.form' and type(riesz_scalar_products[i]).__name__== 'Form':
 							pass
 						else:
-							raise InputError('riesz_scalar_products have to be ufl forms')
+							raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'riesz_scalar_products have to be ufl forms')
 					self.riesz_scalar_products = riesz_scalar_products
 				elif riesz_scalar_products.__module__== 'ufl.form' and type(riesz_scalar_products).__name__== 'Form':
 					self.riesz_scalar_products = [riesz_scalar_products]
 				else:
-					raise InputError('State forms have to be ufl forms')
+					raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'riesz_scalar_products have to be ufl forms')
 			except:
-				raise InputError('Type of riesz_scalar_prodcuts is wrong..')
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'riesz_scalar_products have to be ufl forms')
 
 		### control_constraints
 		if control_constraints is None:
@@ -162,20 +162,24 @@ class OptimalControlProblem(OptimizationProblem):
 									elif control_constraints[i][j].__module__ == 'dolfin.function.function' and type(control_constraints[i][j]).__name__ == 'Function':
 										pass
 									else:
-										raise InputError('control_constraints has to be a list containing upper and lower bounds')
+										raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints',
+														 'control_constraints has to be a list containing upper and lower bounds')
 								pass
 							else:
-								raise InputError('control_constraints has to be a list containing upper and lower bounds')
+								raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints',
+														 'control_constraints has to be a list containing upper and lower bounds')
 						self.control_constraints = control_constraints
 					elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == 'dolfin.function.function' and type(control_constraints[0]).__name__=='Function')) \
 						and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == 'dolfin.function.function' and type(control_constraints[1]).__name__=='Function')):
 
 						self.control_constraints = [control_constraints]
 					else:
-						raise InputError('control_constraints has to be a list containing upper and lower bounds')
+						raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints',
+														 'control_constraints has to be a list containing upper and lower bounds')
 
 			except:
-				raise InputError('control_constraints has to be a list containing upper and lower bounds')
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints',
+														 'control_constraints has to be a list containing upper and lower bounds')
 
 		# recast floats into functions for compatibility
 		temp_constraints = self.control_constraints[:]
@@ -187,7 +191,7 @@ class OptimalControlProblem(OptimizationProblem):
 			elif pair[0].__module__ == 'dolfin.function.function' and type(pair[0]).__name__ == 'Function':
 				lower_bound = pair[0]
 			else:
-				raise InputError('Wrong type for the control constraints')
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints', 'Wrong type for the control constraints')
 
 			if type(pair[1]) in [float, int]:
 				upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -195,30 +199,30 @@ class OptimalControlProblem(OptimizationProblem):
 			elif pair[1].__module__ == 'dolfin.function.function' and type(pair[1]).__name__ == 'Function':
 				upper_bound = pair[1]
 			else:
-				raise InputError('Wrong type for the control constraints')
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints', 'Wrong type for the control constraints')
 
 			self.control_constraints.append([lower_bound, upper_bound])
 
 		### Check whether the control constraints are feasible, and whether they are actually present
 		self.require_control_constraints = [False for i in range(self.control_dim)]
 		for idx, pair in enumerate(self.control_constraints):
-			assert np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]), 'the lower bound must always be smaller than the upper bound'
+			if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):
+				raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints',
+								 'The lower bound must always be smaller than the upper bound for the control_constraints.')
 
 			if np.max(pair[0].vector()[:]) == float('-inf') and np.min(pair[1].vector()[:]) == float('inf'):
 				# no control constraint for this component
 				pass
 			else:
 				self.require_control_constraints[idx] = True
-				assert self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1, \
-					'Control constraints are only implemented for linear Lagrange elements'
-
-		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
-		assert len(self.riesz_scalar_products) == self.control_dim, 'Length of controls does not match'
-		assert len(self.states) == self.state_dim, 'Length of states does not match'
-		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
-		assert len(self.control_constraints) == self.control_dim, 'Length of controls does not match'
-		if self.initial_guess is not None:
-			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
+				if not (self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1):
+					raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls',
+									 'Control constraints are only implemented for linear Lagrange elements')
+		
+		if not len(self.riesz_scalar_products) == self.control_dim:
+			raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'Length of controls does not match')
+		if not len(self.control_constraints) == self.control_dim:
+			raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'control_constraints', 'Length of controls does not match')
 		### end overloading
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
@@ -237,13 +241,6 @@ class OptimalControlProblem(OptimizationProblem):
 		self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 
 		self.algorithm = _optimization_algorithm_configuration(self.config)
-
-		# if self.algorithm == 'newton':
-		# 	self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-		# if self.algorithm == 'semi_smooth_newton':
-		# 	self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-		# if self.algorithm == 'pdas':
-		# 	self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
 		self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -347,14 +344,12 @@ class OptimalControlProblem(OptimizationProblem):
 
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-		if self.algorithm == 'newton' or self.algorithm == 'semi_smooth_newton' or \
+		if self.algorithm == 'newton' or \
 				(self.algorithm == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
 			self.form_handler._ControlFormHandler__compute_newton_forms()
 
 		if self.algorithm == 'newton':
 			self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-		if self.algorithm == 'semi_smooth_newton':
-			self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
 		if self.algorithm == 'pdas':
 			self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
@@ -379,13 +374,11 @@ class OptimalControlProblem(OptimizationProblem):
 			self.solver = CG(self)
 		elif self.algorithm == 'newton':
 			self.solver = Newton(self)
-		elif self.algorithm == 'semi_smooth_newton':
-			self.solver = SemiSmoothNewton(self)
 		elif self.algorithm == 'pdas':
 			self.solver = PDAS(self)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one '
-							  'of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).')
+			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one '
+							  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), \'conjugate_gradient\' (\'cg\'), \'newton\', or \'primal_dual_active_set\' (\'pdas\').')
 		
 		self.solver.run()
 		self.solver.finalize()

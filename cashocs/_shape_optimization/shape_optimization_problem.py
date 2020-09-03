@@ -28,7 +28,7 @@ import tempfile
 import warnings
 
 from .methods import CG, GradientDescent, LBFGS
-from .._exceptions import ConfigError, InputError
+from .._exceptions import ConfigError, InputError, CashocsException
 from .._forms import Lagrangian, ShapeFormHandler
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
@@ -97,8 +97,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.do_remesh = config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
 		if self.do_remesh:
-
-			assert os.path.isfile(os.path.realpath(sys.argv[0])), 'Not a valid configuration. The script has to be the first "command line argument".'
+			
+			if not os.path.isfile(os.path.realpath(sys.argv[0])):
+				raise CashocsException('Not a valid configuration. The script has to be the first command line argument.')
 
 			try:
 				if __IPYTHON__:
@@ -107,9 +108,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
 				pass
 
 			try:
-				assert self.states[0].function_space().mesh()._cashocs_generator == 'config', 'Can only handle the config file mesh import for remeshing'
-			except:
-				raise InputError('For remeshing, the mesh has to be created via import mesh, with a config as input.')
+				if not self.states[0].function_space().mesh()._cashocs_generator == 'config':
+					raise InputError('cashocs.import_mesh', 'arg', 'You must specify a config file as input for remeshing.')
+			except AttributeError:
+				raise InputError('cashocs.import_mesh', 'arg', 'You must specify a config file as input for remeshing.')
 
 			if not ('_cashocs_remesh_flag' in sys.argv):
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -131,13 +133,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		if boundaries.__module__ == 'dolfin.cpp.mesh' and type(boundaries).__name__ == 'MeshFunctionSizet':
 			self.boundaries = boundaries
 		else:
-			raise InputError('Not a valid format for boundaries.')
-
-		assert len(self.bcs_list) == self.state_dim, 'Length of states does not match'
-		assert len(self.states) == self.state_dim, 'Length of states does not match'
-		assert len(self.adjoints) == self.state_dim, 'Length of states does not match'
-		if self.initial_guess is not None:
-			assert len(self.initial_guess) == self.state_dim, 'Length of states does not match'
+			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'boundaries', 'Not a valid type for boundaries.')
 
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
@@ -246,7 +242,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		elif self.algorithm == 'conjugate_gradient':
 			self.solver = CG(self)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).')
+			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), or \'conjugate_gradient\' (\'cg\').')
 
 		self.solver.run()
 		self.solver.finalize()

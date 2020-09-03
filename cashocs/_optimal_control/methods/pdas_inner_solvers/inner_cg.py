@@ -145,8 +145,8 @@ class InnerCG(OptimizationAlgorithm):
 					self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient) / dy
 
 				else:
-					raise ConfigError('Not a valid choice for OptimizationRoutine.cg_method. Choose either FR (Fletcher Reeves), PR (Polak Ribiere), '
-									  'HS (Hestenes Stiefel), DY (Dai Yuan), or HZ (Hager Zhang).')
+					raise ConfigError('OptimizationRoutine', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
+									  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
 
 			if self.iteration==0:
 				self.gradient_norm_initial = self.gradient_norm

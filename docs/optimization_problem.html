@@ -128,14 +128,14 @@ class OptimizationProblem:
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;state_forms have to be ufl forms&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise InputError(&#39;State forms have to be ufl forms&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                 except:
-                        raise InputError(&#39;Type of state_forms is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -150,7 +150,7 @@ class OptimizationProblem:
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -158,23 +158,23 @@ class OptimizationProblem:
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise InputError(&#39;Type of bcs_list is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of bcs_list is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise InputError(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;cost_functional_form&#39;, &#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise InputError(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;cost_functional_form&#39;, &#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -183,16 +183,16 @@ class OptimizationProblem:
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;states have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise InputError(&#39;Type of states is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Type of states is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of states is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -201,22 +201,22 @@ class OptimizationProblem:
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise InputError(&#39;Type of adjoints is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of adjoints is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise InputError(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;config&#39;, &#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -228,7 +228,7 @@ class OptimizationProblem:
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise InputError(&#39;Initial guess has to be a list of functions&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;initial_guess&#39;, &#39;initial guess has to be a list of functions&#39;)
 
 
                 ### ksp_options
@@ -251,7 +251,7 @@ class OptimizationProblem:
                         self.ksp_options = ksp_options[:]
 
                 else:
-                        raise InputError(&#39;Wrong input format for ksp_options.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Wrong input format for ksp_options.&#39;)
 
 
 
@@ -266,16 +266,24 @@ class OptimizationProblem:
                         self.adjoint_ksp_options = adjoint_ksp_options[:]
 
                 else:
-                        raise InputError(&#39;Wrong input format for adjoint_ksp_options.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoint_ksp_options&#39;, &#39;Wrong input format for adjoint_ksp_options.&#39;)
 
-
-                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
+                if not len(self.bcs_list) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.states) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.adjoints) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Length of states does not match&#39;)
+                
                 if self.initial_guess is not None:
-                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+                        if not len(self.initial_guess) == self.state_dim:
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;initial_guess&#39;, &#39;Length of states does not match&#39;)
+                
+                if not len(self.ksp_options) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.adjoint_ksp_options) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Length of states does not match&#39;)
+                
 
                 fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
@@ -453,14 +461,14 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                         if state_forms[i].__module__==&#39;ufl.form&#39; and type(state_forms[i]).__name__==&#39;Form&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;state_forms have to be ufl forms&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                                 self.state_forms = state_forms
                         elif state_forms.__module__ == &#39;ufl.form&#39; and type(state_forms).__name__ == &#39;Form&#39;:
                                 self.state_forms = [state_forms]
                         else:
-                                raise InputError(&#39;State forms have to be ufl forms&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                 except:
-                        raise InputError(&#39;Type of state_forms is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;state_forms&#39;, &#39;state_forms have to be ufl forms&#39;)
                 self.state_dim = len(self.state_forms)
 
                 ### bcs_list
@@ -475,7 +483,7 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                                 if type(bcs_list[i]) == list:
                                                         pass
                                                 else:
-                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = bcs_list
 
                                 elif bcs_list[0].__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[0]).__name__ == &#39;DirichletBC&#39;:
@@ -483,23 +491,23 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                                 if bcs_list[i].__module__==&#39;dolfin.fem.dirichletbc&#39; and type(bcs_list[i]).__name__==&#39;DirichletBC&#39;:
                                                         pass
                                                 else:
-                                                        raise InputError(&#39;bcs_list has inconsistent types.&#39;)
+                                                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;bcs_list has inconsistent types.&#39;)
                                         self.bcs_list = [bcs_list]
                         elif bcs_list.__module__ == &#39;dolfin.fem.dirichletbc&#39; and type(bcs_list).__name__ == &#39;DirichletBC&#39;:
                                 self.bcs_list = [[bcs_list]]
                         else:
-                                raise InputError(&#39;Type of bcs_list is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Type of bcs_list is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of bcs_list is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Type of bcs_list is wrong.&#39;)
 
                 ### cost_functional_form
                 try:
                         if cost_functional_form.__module__ == &#39;ufl.form&#39; and type(cost_functional_form).__name__ == &#39;Form&#39;:
                                 self.cost_functional_form = cost_functional_form
                         else:
-                                raise InputError(&#39;cost_functional_form has to be a ufl form&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;cost_functional_form&#39;, &#39;cost_functional_form has to be a ufl form&#39;)
                 except:
-                        raise InputError(&#39;Type of cost_functional_form is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;cost_functional_form&#39;, &#39;Type of cost_functional_form is wrong.&#39;)
 
                 ### states
                 try:
@@ -508,16 +516,16 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                         if states[i].__module__ == &#39;dolfin.function.function&#39; and type(states[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;states have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;states have to be fenics Functions.&#39;)
 
                                 self.states = states
 
                         elif states.__module__ == &#39;dolfin.function.function&#39; and type(states).__name__ == &#39;Function&#39;:
                                 self.states = [states]
                         else:
-                                raise InputError(&#39;Type of states is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Type of states is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of states is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Type of states is wrong.&#39;)
 
                 ### adjoints
                 try:
@@ -526,22 +534,22 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                         if adjoints[i].__module__ == &#39;dolfin.function.function&#39; and type(adjoints[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;adjoints have to fenics Functions.&#39;)
+                                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;adjoints have to fenics Functions.&#39;)
 
                                 self.adjoints = adjoints
 
                         elif adjoints.__module__ == &#39;dolfin.function.function&#39; and type(adjoints).__name__ == &#39;Function&#39;:
                                 self.adjoints = [adjoints]
                         else:
-                                raise InputError(&#39;Type of adjoints is wrong.&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Type of adjoints is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of adjoints is wrong.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Type of adjoints is wrong.&#39;)
 
                 ### config
                 if config.__module__ == &#39;configparser&#39; and type(config).__name__ == &#39;ConfigParser&#39;:
                         self.config = config
                 else:
-                        raise InputError(&#39;config has to be of configparser.ConfigParser type&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;config&#39;, &#39;config has to be of configparser.ConfigParser type&#39;)
 
                 ### initial guess
                 if initial_guess is None:
@@ -553,7 +561,7 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                                 elif initial_guess.__module__ == &#39;dolfin.function.function&#39; and type(initial_guess).__name__ == &#39;Function&#39;:
                                         self.initial_guess = [initial_guess]
                         except:
-                                raise InputError(&#39;Initial guess has to be a list of functions&#39;)
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;initial_guess&#39;, &#39;initial guess has to be a list of functions&#39;)
 
 
                 ### ksp_options
@@ -576,7 +584,7 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                         self.ksp_options = ksp_options[:]
 
                 else:
-                        raise InputError(&#39;Wrong input format for ksp_options.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Wrong input format for ksp_options.&#39;)
 
 
 
@@ -591,16 +599,24 @@ conditions <code>bcs_list[i]</code> and corresponding adjoint state <code>adjoin
                         self.adjoint_ksp_options = adjoint_ksp_options[:]
 
                 else:
-                        raise InputError(&#39;Wrong input format for adjoint_ksp_options.&#39;)
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoint_ksp_options&#39;, &#39;Wrong input format for adjoint_ksp_options.&#39;)
 
-
-                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
+                if not len(self.bcs_list) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;bcs_list&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.states) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;states&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.adjoints) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;adjoints&#39;, &#39;Length of states does not match&#39;)
+                
                 if self.initial_guess is not None:
-                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoint_ksp_options) == self.state_dim, &#39;Length of states does not match&#39;
+                        if not len(self.initial_guess) == self.state_dim:
+                                raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;initial_guess&#39;, &#39;Length of states does not match&#39;)
+                
+                if not len(self.ksp_options) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Length of states does not match&#39;)
+                if not len(self.adjoint_ksp_options) == self.state_dim:
+                        raise InputError(&#39;cashocs.optimization_problem.OptimizationProblem&#39;, &#39;ksp_options&#39;, &#39;Length of states does not match&#39;)
+                
 
                 fenics.set_log_level(fenics.LogLevel.CRITICAL)
 

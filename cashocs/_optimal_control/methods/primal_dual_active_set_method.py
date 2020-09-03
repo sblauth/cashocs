@@ -62,7 +62,7 @@ class PDAS(OptimizationAlgorithm):
 		elif self.inner_pdas == 'newton':
 			self.inner_solver = InnerNewton(optimization_problem)
 		else:
-			raise ConfigError('Not a valid choice for OptimizationRoutine.inner_pdas. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
+			raise ConfigError('OptimizationRoutine', 'inner_pdas', 'Not a valid input. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
 
 
 

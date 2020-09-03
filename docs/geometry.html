@@ -71,7 +71,7 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import ConfigError, InputError
+from ._exceptions import ConfigError, InputError, CashocsException
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
                                         _solve_linear_problem, write_out_mesh)
 
@@ -143,12 +143,12 @@ def import_mesh(arg):
                                 mesh_file = temp_dict[&#39;mesh_file&#39;]
 
         else:
-                raise InputError(&#39;Not a valid argument for import_mesh.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.&#39;)
 
         if mesh_file[-5:] == &#39;.xdmf&#39;:
                 file_string = mesh_file[:-5]
         else:
-                raise InputError(&#39;Not a suitable mesh file format.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a suitable mesh file format. Has to end in .xdmf.&#39;)
         
         mesh = fenics.Mesh()
         xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -238,7 +238,14 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
         dS : ufl.measure.Measure
                 The interior facet measure of the mesh corresponding to boundaries.
         &#34;&#34;&#34;
-
+        
+        if not L_x &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_x&#39;, &#39;L_x needs to be positive&#39;)
+        if not L_y &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_y&#39;, &#39;L_y needs to be positive&#39;)
+        if not (L_z is None or L_z &gt; 0.0):
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_z&#39;, &#39;L_z needs to be positive or None (for 2D mesh)&#39;)
+        
         n = int(n)
         
         if L_z is None:
@@ -345,10 +352,13 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
         &#34;&#34;&#34;
 
         n = int(n)
-
-        assert S_x &lt; E_x, &#39;Incorrect input for the x-coordinate&#39;
-        assert S_y &lt; E_y, &#39;Incorrect input for the y-coordinate&#39;
-        assert (S_z is None and E_z is None) or (S_z &lt; E_z), &#39;Incorrect input for the z-coordinate&#39;
+        
+        if not S_x &lt; E_x:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_x&#39;, &#39;Incorrect input for the x-coordinate. S_x has to be smaller than E_x.&#39;)
+        if not S_y &lt; E_y:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_y&#39;, &#39;Incorrect input for the y-coordinate. S_y has to be smaller than E_y.&#39;)
+        if not ((S_z is None and E_z is None) or (S_z &lt; E_z)):
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_z&#39;, &#39;Incorrect input for the z-coordinate. S_z has to be smaller than E_z, or only one of them is specified.&#39;)
 
         if S_z is None:
                 lx = E_x - S_x
@@ -430,18 +440,19 @@ class _MeshHandler:
 
                 self.mesh_quality_tol_lower = self.config.getfloat(&#39;MeshQuality&#39;, &#39;tol_lower&#39;, fallback=0.05)
                 self.mesh_quality_tol_upper =  self.config.getfloat(&#39;MeshQuality&#39;, &#39;tol_upper&#39;, fallback=0.1)
-                assert self.mesh_quality_tol_lower &lt; self.mesh_quality_tol_upper, \
-                        &#39;The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance&#39;
+                if not self.mesh_quality_tol_lower &lt; self.mesh_quality_tol_upper:
+                        raise ConfigError(&#39;MeshQuality&#39;, &#39;tol_lower&#39;, &#39;The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance&#39;)
+
                 if self.mesh_quality_tol_lower &gt; 0.9*self.mesh_quality_tol_upper:
                         warnings.warn(&#39;You are using a lower remesh tolerance close to the upper one. This may slow down the optimization considerably.&#39;)
 
                 self.mesh_quality_measure = self.config.get(&#39;MeshQuality&#39;, &#39;measure&#39;, fallback=&#39;skewness&#39;)
-                assert self.mesh_quality_measure in [&#39;skewness&#39;, &#39;maximum_angle&#39;, &#39;radius_ratios&#39;, &#39;condition_number&#39;], \
-                        &#39;MeshQuality measure has to be one of `skewness`, `maximum_angle`, `condition_number`, or `radius_ratios`.&#39;
+                if not self.mesh_quality_measure in [&#39;skewness&#39;, &#39;maximum_angle&#39;, &#39;radius_ratios&#39;, &#39;condition_number&#39;]:
+                        raise ConfigError(&#39;MeshQuality&#39;, &#39;measure&#39;, &#39;Has to be one of \&#39;skewness\&#39;, \&#39;maximum_angle\&#39;, \&#39;condition_number\&#39;, or \&#39;radius_ratios\&#39;.&#39;)
 
                 self.mesh_quality_type = self.config.get(&#39;MeshQuality&#39;, &#39;type&#39;, fallback=&#39;min&#39;)
-                assert self.mesh_quality_type in [&#39;min&#39;, &#39;minimum&#39;, &#39;avg&#39;, &#39;average&#39;], \
-                        &#39;MeshQuality type has to be one of `min`, `minimum`, `avg`, or `average`.&#39;
+                if not self.mesh_quality_type in [&#39;min&#39;, &#39;minimum&#39;, &#39;avg&#39;, &#39;average&#39;]:
+                        raise ConfigError(&#39;MeshQuality&#39;, &#39;type&#39;, &#39;Has to be one of \&#39;min\&#39;, \&#39;minimum\&#39;, \&#39;avg\&#39;, or \&#39;average\&#39;.&#39;)
 
                 self.current_mesh_quality = 1.0
                 self.compute_mesh_quality()
@@ -457,16 +468,17 @@ class _MeshHandler:
                                 self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get(&#39;Mesh&#39;, &#39;gmsh_file&#39;)))
                         except configparser.Error:
                                 if self.do_remesh:
-                                        raise ConfigError(&#39;Remeshing is only available with gmsh meshes.&#39;)
+                                        raise ConfigError(&#39;Mesh&#39;, &#39;gmsh_file&#39;, &#39;Remeshing is only available with gmsh meshes. Please specify gmsh_file.&#39;)
                                 elif self.config.getboolean(&#39;OptimizationRoutine&#39;, &#39;save_mesh&#39;, fallback=False):
-                                        raise ConfigError(&#39;The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n&#39;
-                                                                  &#39;If you already use a gmsh mesh, please specify Mesh.gmsh_file.&#39;)
+                                        raise ConfigError(&#39;Mesh&#39;, &#39;save_mesh&#39;, &#39;The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n&#39;
+                                                                  &#39;If you already use a gmsh mesh, please specify gmsh_file.&#39;)
 
                 if self.do_remesh:
                         self.temp_dict = self.shape_optimization_problem.temp_dict
                         self.remesh_counter = self.temp_dict.get(&#39;remesh_counter&#39;, 0)
                         self.gmsh_file = self.temp_dict[&#39;gmsh_file&#39;]
-                        assert self.gmsh_file[-4:] == &#39;.msh&#39;, &#39;Not a valid gmsh file&#39;
+                        if not self.gmsh_file[-4:] == &#39;.msh&#39;:
+                                raise ConfigError(&#39;Mesh&#39;, &#39;gmsh_file&#39;, &#39;Not a valid gmsh file. Has to end in .msh&#39;)
                         
                         self.remesh_directory = self.mesh_directory + &#39;/cashocs_remesh&#39;
                         if not os.path.exists(self.remesh_directory):
@@ -500,9 +512,9 @@ class _MeshHandler:
                 transformation : dolfin.function.function.Function
                         The transformation for the mesh, a vector CG1 Function.
                 &#34;&#34;&#34;
-
-                assert transformation.ufl_element().family() == &#39;Lagrange&#39; and \
-                           transformation.ufl_element().degree() == 1, &#39;Not a valid mesh transformation&#39;
+                
+                if not (transformation.ufl_element().family() == &#39;Lagrange&#39; and transformation.ufl_element().degree() == 1):
+                        raise CashocsException(&#39;Not a valid mesh transformation&#39;)
 
                 if not self.__test_a_priori(transformation):
                         return False
@@ -539,8 +551,9 @@ class _MeshHandler:
                 -------
                 None
                 &#34;&#34;&#34;
-
-                assert self.angle_change &gt; 0, &#39;Angle change has to be positive&#39;
+                
+                if not self.angle_change &gt; 0:
+                        raise ConfigError(&#39;MeshQuality&#39;, &#39;angle_change&#39;, &#39;This parameter has to be positive.&#39;)
 
                 options = [[
                                 [&#39;ksp_type&#39;, &#39;preonly&#39;],
@@ -588,8 +601,7 @@ class _MeshHandler:
                         A guess for the number of &#34;Armijo halvings&#34; to get a better stepsize
                 &#34;&#34;&#34;
 
-
-                assert self.angle_change &gt; 0, &#39;Angle change has to be positive&#39;
+                
                 if self.angle_change == float(&#39;inf&#39;):
                         return 0
 
@@ -627,7 +639,10 @@ class _MeshHandler:
 
                         self.transformation_container = fenics.Function(self.shape_form_handler.deformation_space)
                         dim = self.mesh.geometric_dimension()
-                        assert self.volume_change &gt; 1, &#39;Volume change has to be larger than 1&#39;
+                        
+                        if not self.volume_change &gt; 1:
+                                raise ConfigError(&#39;MeshQuality&#39;, &#39;volume_change&#39;, &#39;This parameter has to be larger than 1.&#39;)
+                        
                         self.a_prior = self.trial_dg0*self.test_dg0*self.dx
                         self.L_prior = fenics.det(fenics.Identity(dim) + fenics.grad(self.transformation_container))*self.test_dg0*self.dx
 
@@ -1430,12 +1445,12 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                                 mesh_file = temp_dict[&#39;mesh_file&#39;]
 
         else:
-                raise InputError(&#39;Not a valid argument for import_mesh.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.&#39;)
 
         if mesh_file[-5:] == &#39;.xdmf&#39;:
                 file_string = mesh_file[:-5]
         else:
-                raise InputError(&#39;Not a suitable mesh file format.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a suitable mesh file format. Has to end in .xdmf.&#39;)
         
         mesh = fenics.Mesh()
         xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -1606,10 +1621,13 @@ and accordingly many along the longer ones. The resulting domain is</p>
         &#34;&#34;&#34;
 
         n = int(n)
-
-        assert S_x &lt; E_x, &#39;Incorrect input for the x-coordinate&#39;
-        assert S_y &lt; E_y, &#39;Incorrect input for the y-coordinate&#39;
-        assert (S_z is None and E_z is None) or (S_z &lt; E_z), &#39;Incorrect input for the z-coordinate&#39;
+        
+        if not S_x &lt; E_x:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_x&#39;, &#39;Incorrect input for the x-coordinate. S_x has to be smaller than E_x.&#39;)
+        if not S_y &lt; E_y:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_y&#39;, &#39;Incorrect input for the y-coordinate. S_y has to be smaller than E_y.&#39;)
+        if not ((S_z is None and E_z is None) or (S_z &lt; E_z)):
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_z&#39;, &#39;Incorrect input for the z-coordinate. S_z has to be smaller than E_z, or only one of them is specified.&#39;)
 
         if S_z is None:
                 lx = E_x - S_x
@@ -1777,7 +1795,14 @@ will be two-dimensional (default is None).</dd>
         dS : ufl.measure.Measure
                 The interior facet measure of the mesh corresponding to boundaries.
         &#34;&#34;&#34;
-
+        
+        if not L_x &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_x&#39;, &#39;L_x needs to be positive&#39;)
+        if not L_y &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_y&#39;, &#39;L_y needs to be positive&#39;)
+        if not (L_z is None or L_z &gt; 0.0):
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_z&#39;, &#39;L_z needs to be positive or None (for 2D mesh)&#39;)
+        
         n = int(n)
         
         if L_z is None:

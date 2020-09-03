@@ -30,6 +30,37 @@ equations automatically and implements various solvers for the
 problems. cashocs is based on the finite element package FEniCS and
 allows the user to define the optimization problems in the
 high-level unified form language (UFL).</p>
+<h2 id="installation">Installation</h2>
+<ul>
+<li>
+<p>First, install <a href="https://fenicsproject.org/download/">FEniCS</a>, version 2019.1. Note, that FEniCS should be compiled with PETSc and petsc4py.</p>
+</li>
+<li>
+<p>Then, install <a href="https://github.com/nschloe/meshio">meshio</a> with a <a href="https://www.h5py.org">h5py</a> version that matches the hdf5 version used in FEniCS, and <a href="https://matplotlib.org/">matplotlib</a></p>
+</li>
+</ul>
+<p>Note, that if you want to have a <a href="https://docs.conda.io/en/latest/index.html">conda</a> installation, you can simply create a new environment with</p>
+<pre><code>conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib
+</code></pre>
+<p>which automatically installs all prerequisites to get started.</p>
+<ul>
+<li>
+<p>You might also want to install <a href="https://gmsh.info/">GMSH</a>. CASHOCS does not necessarily need this to function properly, but it is required for the remeshing functionality.</p>
+</li>
+<li>
+<p>Clone this repository with git, and run</p>
+<pre><code>pip3 install .
+</code></pre>
+</li>
+<li>
+<p>Alternatively, you can install CASHOCS via the PYPI</p>
+<pre><code>pip3 install cashocs
+</code></pre>
+</li>
+</ul>
+<p>You can install the newest (development) version of cashocs with</p>
+<pre><code>    pip3 install git+temp_url
+</code></pre>
 <h2 id="getting-started">Getting Started</h2>
 <p>Since cashocs is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
@@ -495,11 +526,12 @@ cashocs.damped_newton_solve(F, u, bcs)
             bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
             cashocs.damped_newton_solve(F, u, bcs)
         &#34;&#34;&#34;
-
-        assert convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;], \
-                &#39;Input convergence_type has to be one of \&#39;rel\&#39;, \&#39;abs\&#39;, or \&#39;combined\&#39;&#39;
-        assert norm_type in [&#39;l2&#39;, &#39;linf&#39;], \
-                &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;&#39;
+        
+        if not convergence_type in [&#39;rel&#39;, &#39;abs&#39;, &#39;combined&#39;]:
+                raise InputError(&#39;cashocs.nonlinear_solvers.damped_newton_solve&#39;, &#39;convergence_type&#39;, &#39;Input convergence_type has to be one of \&#39;rel\&#39;, \&#39;abs\&#39;, or \&#39;combined\&#39;.&#39;)
+        
+        if not norm_type in [&#39;l2&#39;, &#39;linf&#39;]:
+                raise InputError(&#39;cashocs.nonlinear_solvers.damped_newton_solve&#39;, &#39;norm_type&#39;, &#39;Input norm_type has to be one of \&#39;l2\&#39; or \&#39;linf\&#39;.&#39;)
 
         # create the PETSc ksp
         if ksp is None:
@@ -733,12 +765,12 @@ to boundaries (i.e. gmsh Physical region indices).</dd>
                                 mesh_file = temp_dict[&#39;mesh_file&#39;]
 
         else:
-                raise InputError(&#39;Not a valid argument for import_mesh.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.&#39;)
 
         if mesh_file[-5:] == &#39;.xdmf&#39;:
                 file_string = mesh_file[:-5]
         else:
-                raise InputError(&#39;Not a suitable mesh file format.&#39;)
+                raise InputError(&#39;cashocs.geometry.import_mesh&#39;, &#39;arg&#39;, &#39;Not a suitable mesh file format. Has to end in .xdmf.&#39;)
         
         mesh = fenics.Mesh()
         xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -909,10 +941,13 @@ and accordingly many along the longer ones. The resulting domain is</p>
         &#34;&#34;&#34;
 
         n = int(n)
-
-        assert S_x &lt; E_x, &#39;Incorrect input for the x-coordinate&#39;
-        assert S_y &lt; E_y, &#39;Incorrect input for the y-coordinate&#39;
-        assert (S_z is None and E_z is None) or (S_z &lt; E_z), &#39;Incorrect input for the z-coordinate&#39;
+        
+        if not S_x &lt; E_x:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_x&#39;, &#39;Incorrect input for the x-coordinate. S_x has to be smaller than E_x.&#39;)
+        if not S_y &lt; E_y:
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_y&#39;, &#39;Incorrect input for the y-coordinate. S_y has to be smaller than E_y.&#39;)
+        if not ((S_z is None and E_z is None) or (S_z &lt; E_z)):
+                raise InputError(&#39;cashocs.geometry.regular_box_mesh&#39;, &#39;S_z&#39;, &#39;Incorrect input for the z-coordinate. S_z has to be smaller than E_z, or only one of them is specified.&#39;)
 
         if S_z is None:
                 lx = E_x - S_x
@@ -1080,7 +1115,14 @@ will be two-dimensional (default is None).</dd>
         dS : ufl.measure.Measure
                 The interior facet measure of the mesh corresponding to boundaries.
         &#34;&#34;&#34;
-
+        
+        if not L_x &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_x&#39;, &#39;L_x needs to be positive&#39;)
+        if not L_y &gt; 0.0:
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_y&#39;, &#39;L_y needs to be positive&#39;)
+        if not (L_z is None or L_z &gt; 0.0):
+                raise InputError(&#39;cashocs.geometry.regular_mesh&#39;, &#39;L_z&#39;, &#39;L_z needs to be positive or None (for 2D mesh)&#39;)
+        
         n = int(n)
         
         if L_z is None:
@@ -1267,16 +1309,16 @@ in the "demos" folder.</p></div>
                                         if controls[i].__module__ == &#39;dolfin.function.function&#39; and type(controls[i]).__name__ == &#39;Function&#39;:
                                                 pass
                                         else:
-                                                raise InputError(&#39;controls have to be fenics Functions.&#39;)
+                                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;controls&#39;, &#39;controls have to be fenics Functions.&#39;)
 
                                 self.controls = controls
 
                         elif controls.__module__ == &#39;dolfin.function.function&#39; and type(controls).__name__ == &#39;Function&#39;:
                                 self.controls = [controls]
                         else:
-                                raise InputError(&#39;Type of controls is wrong.&#39;)
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;controls&#39;, &#39;Type of controls is wrong.&#39;)
                 except:
-                        raise InputError(&#39;Type of controls is wrong.&#39;)
+                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;controls&#39;, &#39;Type of controls is wrong.&#39;)
 
                 self.control_dim = len(self.controls)
 
@@ -1292,14 +1334,14 @@ in the "demos" folder.</p></div>
                                                 if riesz_scalar_products[i].__module__== &#39;ufl.form&#39; and type(riesz_scalar_products[i]).__name__== &#39;Form&#39;:
                                                         pass
                                                 else:
-                                                        raise InputError(&#39;riesz_scalar_products have to be ufl forms&#39;)
+                                                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;riesz_scalar_products&#39;, &#39;riesz_scalar_products have to be ufl forms&#39;)
                                         self.riesz_scalar_products = riesz_scalar_products
                                 elif riesz_scalar_products.__module__== &#39;ufl.form&#39; and type(riesz_scalar_products).__name__== &#39;Form&#39;:
                                         self.riesz_scalar_products = [riesz_scalar_products]
                                 else:
-                                        raise InputError(&#39;State forms have to be ufl forms&#39;)
+                                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;riesz_scalar_products&#39;, &#39;riesz_scalar_products have to be ufl forms&#39;)
                         except:
-                                raise InputError(&#39;Type of riesz_scalar_prodcuts is wrong..&#39;)
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;riesz_scalar_products&#39;, &#39;riesz_scalar_products have to be ufl forms&#39;)
 
                 ### control_constraints
                 if control_constraints is None:
@@ -1322,20 +1364,24 @@ in the "demos" folder.</p></div>
                                                                         elif control_constraints[i][j].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[i][j]).__name__ == &#39;Function&#39;:
                                                                                 pass
                                                                         else:
-                                                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;,
+                                                                                                                 &#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                                 pass
                                                         else:
-                                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;,
+                                                                                                                 &#39;control_constraints has to be a list containing upper and lower bounds&#39;)
                                                 self.control_constraints = control_constraints
                                         elif (type(control_constraints[0]) in [float, int] or (control_constraints[0].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[0]).__name__==&#39;Function&#39;)) \
                                                 and (type(control_constraints[1]) in [float, int] or (control_constraints[1].__module__ == &#39;dolfin.function.function&#39; and type(control_constraints[1]).__name__==&#39;Function&#39;)):
 
                                                 self.control_constraints = [control_constraints]
                                         else:
-                                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;,
+                                                                                                                 &#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                         except:
-                                raise InputError(&#39;control_constraints has to be a list containing upper and lower bounds&#39;)
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;,
+                                                                                                                 &#39;control_constraints has to be a list containing upper and lower bounds&#39;)
 
                 # recast floats into functions for compatibility
                 temp_constraints = self.control_constraints[:]
@@ -1347,7 +1393,7 @@ in the "demos" folder.</p></div>
                         elif pair[0].__module__ == &#39;dolfin.function.function&#39; and type(pair[0]).__name__ == &#39;Function&#39;:
                                 lower_bound = pair[0]
                         else:
-                                raise InputError(&#39;Wrong type for the control constraints&#39;)
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;, &#39;Wrong type for the control constraints&#39;)
 
                         if type(pair[1]) in [float, int]:
                                 upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -1355,30 +1401,30 @@ in the "demos" folder.</p></div>
                         elif pair[1].__module__ == &#39;dolfin.function.function&#39; and type(pair[1]).__name__ == &#39;Function&#39;:
                                 upper_bound = pair[1]
                         else:
-                                raise InputError(&#39;Wrong type for the control constraints&#39;)
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;, &#39;Wrong type for the control constraints&#39;)
 
                         self.control_constraints.append([lower_bound, upper_bound])
 
                 ### Check whether the control constraints are feasible, and whether they are actually present
                 self.require_control_constraints = [False for i in range(self.control_dim)]
                 for idx, pair in enumerate(self.control_constraints):
-                        assert np.alltrue(pair[0].vector()[:] &lt; pair[1].vector()[:]), &#39;the lower bound must always be smaller than the upper bound&#39;
+                        if not np.alltrue(pair[0].vector()[:] &lt; pair[1].vector()[:]):
+                                raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;,
+                                                                 &#39;The lower bound must always be smaller than the upper bound for the control_constraints.&#39;)
 
                         if np.max(pair[0].vector()[:]) == float(&#39;-inf&#39;) and np.min(pair[1].vector()[:]) == float(&#39;inf&#39;):
                                 # no control constraint for this component
                                 pass
                         else:
                                 self.require_control_constraints[idx] = True
-                                assert self.controls[idx].ufl_element().family() == &#39;Lagrange&#39; and self.controls[idx].ufl_element().degree() == 1, \
-                                        &#39;Control constraints are only implemented for linear Lagrange elements&#39;
-
-                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.riesz_scalar_products) == self.control_dim, &#39;Length of controls does not match&#39;
-                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.control_constraints) == self.control_dim, &#39;Length of controls does not match&#39;
-                if self.initial_guess is not None:
-                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                                if not (self.controls[idx].ufl_element().family() == &#39;Lagrange&#39; and self.controls[idx].ufl_element().degree() == 1):
+                                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;controls&#39;,
+                                                                         &#39;Control constraints are only implemented for linear Lagrange elements&#39;)
+                
+                if not len(self.riesz_scalar_products) == self.control_dim:
+                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;riesz_scalar_products&#39;, &#39;Length of controls does not match&#39;)
+                if not len(self.control_constraints) == self.control_dim:
+                        raise InputError(&#39;cashocs._optimization.optimal_control_problem.OptimalControlProblem&#39;, &#39;control_constraints&#39;, &#39;Length of controls does not match&#39;)
                 ### end overloading
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
@@ -1397,13 +1443,6 @@ in the "demos" folder.</p></div>
                 self.gradient_problem = GradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 
                 self.algorithm = _optimization_algorithm_configuration(self.config)
-
-                # if self.algorithm == &#39;newton&#39;:
-                #       self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-                # if self.algorithm == &#39;semi_smooth_newton&#39;:
-                #       self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
-                # if self.algorithm == &#39;pdas&#39;:
-                #       self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
                 self.reduced_cost_functional = ReducedCostFunctional(self.form_handler, self.state_problem)
 
@@ -1507,14 +1546,12 @@ in the "demos" folder.</p></div>
 
                 self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-                if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+                if self.algorithm == &#39;newton&#39; or \
                                 (self.algorithm == &#39;pdas&#39; and self.config.get(&#39;OptimizationRoutine&#39;, &#39;inner_pdas&#39;) == &#39;newton&#39;):
                         self.form_handler._ControlFormHandler__compute_newton_forms()
 
                 if self.algorithm == &#39;newton&#39;:
                         self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-                if self.algorithm == &#39;semi_smooth_newton&#39;:
-                        self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
                 if self.algorithm == &#39;pdas&#39;:
                         self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
@@ -1539,13 +1576,11 @@ in the "demos" folder.</p></div>
                         self.solver = CG(self)
                 elif self.algorithm == &#39;newton&#39;:
                         self.solver = Newton(self)
-                elif self.algorithm == &#39;semi_smooth_newton&#39;:
-                        self.solver = SemiSmoothNewton(self)
                 elif self.algorithm == &#39;pdas&#39;:
                         self.solver = PDAS(self)
                 else:
-                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
-                                                          &#39;of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).&#39;)
+                        raise ConfigError(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, &#39;Not a valid input. Needs to be one &#39;
+                                                          &#39;of \&#39;gradient_descent\&#39; (\&#39;gd\&#39;), \&#39;lbfgs\&#39; (\&#39;bfgs\&#39;), \&#39;conjugate_gradient\&#39; (\&#39;cg\&#39;), \&#39;newton\&#39;, or \&#39;primal_dual_active_set\&#39; (\&#39;pdas\&#39;).&#39;)
                 
                 self.solver.run()
                 self.solver.finalize()
@@ -1741,14 +1776,12 @@ call, the termination criterion changes to:</p>
 
         self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
-        if self.algorithm == &#39;newton&#39; or self.algorithm == &#39;semi_smooth_newton&#39; or \
+        if self.algorithm == &#39;newton&#39; or \
                         (self.algorithm == &#39;pdas&#39; and self.config.get(&#39;OptimizationRoutine&#39;, &#39;inner_pdas&#39;) == &#39;newton&#39;):
                 self.form_handler._ControlFormHandler__compute_newton_forms()
 
         if self.algorithm == &#39;newton&#39;:
                 self.hessian_problem = HessianProblem(self.form_handler, self.gradient_problem)
-        if self.algorithm == &#39;semi_smooth_newton&#39;:
-                self.semi_smooth_hessian = SemiSmoothHessianProblem(self.form_handler, self.gradient_problem)
         if self.algorithm == &#39;pdas&#39;:
                 self.unconstrained_hessian = UnconstrainedHessianProblem(self.form_handler, self.gradient_problem)
 
@@ -1773,13 +1806,11 @@ call, the termination criterion changes to:</p>
                 self.solver = CG(self)
         elif self.algorithm == &#39;newton&#39;:
                 self.solver = Newton(self)
-        elif self.algorithm == &#39;semi_smooth_newton&#39;:
-                self.solver = SemiSmoothNewton(self)
         elif self.algorithm == &#39;pdas&#39;:
                 self.solver = PDAS(self)
         else:
-                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm or argument algorithm. Needs to be one &#39;
-                                                  &#39;of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), `conjugate_gradient` (`cg`), `newton`, or `primal_dual_active_set` (`pdas`).&#39;)
+                raise ConfigError(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, &#39;Not a valid input. Needs to be one &#39;
+                                                  &#39;of \&#39;gradient_descent\&#39; (\&#39;gd\&#39;), \&#39;lbfgs\&#39; (\&#39;bfgs\&#39;), \&#39;conjugate_gradient\&#39; (\&#39;cg\&#39;), \&#39;newton\&#39;, or \&#39;primal_dual_active_set\&#39; (\&#39;pdas\&#39;).&#39;)
         
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -1898,8 +1929,9 @@ as for the state systems are used (default is None).</dd>
                 self.do_remesh = config.getboolean(&#39;Mesh&#39;, &#39;remesh&#39;, fallback=False)
                 self.temp_dict = None
                 if self.do_remesh:
-
-                        assert os.path.isfile(os.path.realpath(sys.argv[0])), &#39;Not a valid configuration. The script has to be the first &#34;command line argument&#34;.&#39;
+                        
+                        if not os.path.isfile(os.path.realpath(sys.argv[0])):
+                                raise CashocsException(&#39;Not a valid configuration. The script has to be the first command line argument.&#39;)
 
                         try:
                                 if __IPYTHON__:
@@ -1908,9 +1940,10 @@ as for the state systems are used (default is None).</dd>
                                 pass
 
                         try:
-                                assert self.states[0].function_space().mesh()._cashocs_generator == &#39;config&#39;, &#39;Can only handle the config file mesh import for remeshing&#39;
-                        except:
-                                raise InputError(&#39;For remeshing, the mesh has to be created via import mesh, with a config as input.&#39;)
+                                if not self.states[0].function_space().mesh()._cashocs_generator == &#39;config&#39;:
+                                        raise InputError(&#39;cashocs.import_mesh&#39;, &#39;arg&#39;, &#39;You must specify a config file as input for remeshing.&#39;)
+                        except AttributeError:
+                                raise InputError(&#39;cashocs.import_mesh&#39;, &#39;arg&#39;, &#39;You must specify a config file as input for remeshing.&#39;)
 
                         if not (&#39;_cashocs_remesh_flag&#39; in sys.argv):
                                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -1932,13 +1965,7 @@ as for the state systems are used (default is None).</dd>
                 if boundaries.__module__ == &#39;dolfin.cpp.mesh&#39; and type(boundaries).__name__ == &#39;MeshFunctionSizet&#39;:
                         self.boundaries = boundaries
                 else:
-                        raise InputError(&#39;Not a valid format for boundaries.&#39;)
-
-                assert len(self.bcs_list) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.states) == self.state_dim, &#39;Length of states does not match&#39;
-                assert len(self.adjoints) == self.state_dim, &#39;Length of states does not match&#39;
-                if self.initial_guess is not None:
-                        assert len(self.initial_guess) == self.state_dim, &#39;Length of states does not match&#39;
+                        raise InputError(&#39;cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem&#39;, &#39;boundaries&#39;, &#39;Not a valid type for boundaries.&#39;)
 
                 self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
                 self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
@@ -2047,7 +2074,7 @@ as for the state systems are used (default is None).</dd>
                 elif self.algorithm == &#39;conjugate_gradient&#39;:
                         self.solver = CG(self)
                 else:
-                        raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)
+                        raise ConfigError(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, &#39;Not a valid input. Needs to be one of \&#39;gradient_descent\&#39; (\&#39;gd\&#39;), \&#39;lbfgs\&#39; (\&#39;bfgs\&#39;), or \&#39;conjugate_gradient\&#39; (\&#39;cg\&#39;).&#39;)
 
                 self.solver.run()
                 self.solver.finalize()
@@ -2284,7 +2311,7 @@ call, the termination criterion changes to:</p>
         elif self.algorithm == &#39;conjugate_gradient&#39;:
                 self.solver = CG(self)
         else:
-                raise ConfigError(&#39;Not a valid choice for OptimizationRoutine.algorithm. Needs to be one of `gradient_descent` (`gd`), `lbfgs` (`bfgs`), or `conjugate_gradient` (`cg`).&#39;)
+                raise ConfigError(&#39;OptimizationRoutine&#39;, &#39;algorithm&#39;, &#39;Not a valid input. Needs to be one of \&#39;gradient_descent\&#39; (\&#39;gd\&#39;), \&#39;lbfgs\&#39; (\&#39;bfgs\&#39;), or \&#39;conjugate_gradient\&#39; (\&#39;cg\&#39;).&#39;)
 
         self.solver.run()
         self.solver.finalize()</code></pre>
@@ -2345,6 +2372,7 @@ setTimeout(() => input.focus(), 100);
 <h1>Index</h1>
 <div class="toc">
 <ul>
+<li><a href="#installation">Installation</a></li>
 <li><a href="#getting-started">Getting started</a></li>
 <li><a href="#demos">Demos</a></li>
 <li><a href="#command-line-interface-for-mesh-conversion">Command line interface for mesh conversion</a></li>

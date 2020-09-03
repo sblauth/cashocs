@@ -21,7 +21,7 @@
 
 
 
-class cashocsException(Exception):
+class CashocsException(Exception):
 	"""Base class for exceptions raised by cashocs.
 
 	"""
@@ -30,7 +30,7 @@ class cashocsException(Exception):
 
 
 
-class NotConvergedError(cashocsException):
+class NotConvergedError(CashocsException):
 	"""This exception is raised when a solver does not converge.
 
 	This includes any type of iterative method used to solve a problem,
@@ -42,7 +42,7 @@ class NotConvergedError(cashocsException):
 
 
 
-class PETScKSPError(cashocsException):
+class PETScKSPError(CashocsException):
 	"""This exception is raised when the solution of a linear problem with PETSc fails.
 
 	Also returns the PETSc error code and reason.
@@ -81,18 +81,38 @@ class PETScKSPError(cashocsException):
 
 
 
-class InputError(cashocsException):
+class InputError(CashocsException):
 	"""This exception gets raised when the user input to a public API method is wrong or inconsistent.
 
 	"""
+	
+	def __init__(self, obj, param, message=None):
+		self.obj = obj
+		self.param = param
+		self.message = message
+		
+	def __str__(self):
+		if self.message is None:
+			return f'Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.'
+		else:
+			return f'Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.\n{self.message}'
 
-	pass
 
 
-
-class ConfigError(cashocsException):
+class ConfigError(CashocsException):
 	"""This exception gets raised when parameters in the config file are wrong.
 
 	"""
-
-	pass
+	
+	pre_message = 'You have an error in your config file.\n'
+	
+	def __init__(self, section, key, message=None):
+		self.section = section
+		self.key = key
+		self.message = message
+	
+	def __str__(self):
+		if self.message is None:
+			return f'{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.'
+		else:
+			return f'{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}'
