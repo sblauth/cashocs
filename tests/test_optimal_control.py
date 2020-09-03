@@ -234,8 +234,24 @@ def test_control_newton_cr_cc():
 
 
 
-def test_control_pdas_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'lbfgs')
+def test_control_pdas_gd_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'gd')
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=9)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
+	assert ocp_cc.solver.converged
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+	
+
+
+def test_control_pdas_cg_fr_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
+	config.set('OptimizationRoutine', 'cg_method', 'FR')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -248,3 +264,62 @@ def test_control_pdas_cc():
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
+
+def test_control_pdas_cg_pr_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
+	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=11)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
+	assert ocp_cc.solver.converged
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_pdas_cg_dy_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
+	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
+	assert ocp_cc.solver.converged
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+
+def test_control_pdas_bfgs_cc():
+	config.set('OptimizationRoutine', 'inner_pdas', 'lbfgs')
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=17)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
+	assert ocp_cc.solver.converged
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+def test_control_pdas_newton():
+	config.set('OptimizationRoutine', 'inner_pdas', 'newton')
+	config.set('OptimizationRoutine', 'soft_exit', 'True')
+	u.vector()[:] = 0.0
+	ocp_cc._erase_pde_memory()
+	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
+	
+	config.set('OptimizationRoutine', 'soft_exit', 'False')
+	
+	assert ocp_cc.solver.converged
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])

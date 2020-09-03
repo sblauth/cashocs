@@ -178,7 +178,7 @@ class BaseHessianProblem:
 					break
 
 				if i==self.maxiter:
-					raise NotConvergedError('Failed to solve the Picard iteration.')
+					raise NotConvergedError('Picard iteration for the computation of the state sensitivity', 'Maximum number of iterations were exceeded.')
 
 				for j in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.sensitivity_eqs_lhs[j], self.form_handler.sensitivity_eqs_rhs[j], self.bcs_list_ad[j])
@@ -209,7 +209,7 @@ class BaseHessianProblem:
 					break
 
 				if i==self.maxiter:
-					raise NotConvergedError('Failed to solve the Picard iteration.')
+					raise NotConvergedError('Picard iteration for the computation of the adjoint sensitivity', 'Maximum number of iterations were exceeded.')
 
 				for j in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - j], self.form_handler.w_1[-1 - j], self.bcs_list_ad[-1 - j])

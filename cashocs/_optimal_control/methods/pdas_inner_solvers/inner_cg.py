@@ -108,7 +108,7 @@ class InnerCG(OptimizationAlgorithm):
 					self.beta = self.beta_numerator/self.beta_denominator
 
 				elif self.cg_method=='PR':
-					for i in range(len(self.gradients)):
+					for i in range(self.form_handler.control_dim):
 						self.differences[i].vector()[:] = self.reduced_gradient[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
 					self.beta_numerator = self.form_handler.scalar_product(self.reduced_gradient, self.differences)
@@ -117,7 +117,7 @@ class InnerCG(OptimizationAlgorithm):
 
 
 				elif self.cg_method=='HS':
-					for i in range(len(self.gradients)):
+					for i in range(self.form_handler.control_dim):
 						self.differences[i].vector()[:] = self.reduced_gradient[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
 					self.beta_numerator = self.form_handler.scalar_product(self.reduced_gradient, self.differences)
@@ -125,7 +125,7 @@ class InnerCG(OptimizationAlgorithm):
 					self.beta = self.beta_numerator/self.beta_denominator
 
 				elif self.cg_method=='DY':
-					for i in range(len(self.gradients)):
+					for i in range(self.form_handler.control_dim):
 						self.differences[i].vector()[:] = self.reduced_gradient[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
 					self.beta_numerator = self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient)
@@ -133,13 +133,13 @@ class InnerCG(OptimizationAlgorithm):
 					self.beta = self.beta_numerator/self.beta_denominator
 
 				elif self.cg_method=='HZ':
-					for i in range(len(self.gradients)):
+					for i in range(self.form_handler.control_dim):
 						self.differences[i].vector()[:] = self.reduced_gradient[i].vector()[:] - self.gradients_prev[i].vector()[:]
 
 					dy = self.form_handler.scalar_product(self.search_directions, self.differences)
 					y2 = self.form_handler.scalar_product(self.differences, self.differences)
 
-					for i in range(len(self.gradients)):
+					for i in range(self.form_handler.control_dim):
 						self.differences[i].vector()[:] = self.differences[i].vector()[:] - 2*y2/dy*self.search_directions[i].vector()[:]
 
 					self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient) / dy
@@ -161,24 +161,25 @@ class InnerCG(OptimizationAlgorithm):
 				break
 
 			for i in range(self.form_handler.control_dim):
-				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:] + self.beta*self.search_directions[i].vector()[:]
+				self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:] + self.beta*self.search_directions[i].vector()[:]
 
 			if self.cg_periodic_restart:
 				if self.memory < self.cg_periodic_its:
 					self.memory += 1
 				else:
-					for i in range(len(self.gradients)):
-						self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
+					for i in range(self.form_handler.control_dim):
+						self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 					self.memory = 0
+					
 			if self.cg_relative_restart:
-				if abs(self.form_handler.scalar_product(self.gradients, self.gradients_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
-					for i in range(len(self.gradients)):
-						self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
+				if abs(self.form_handler.scalar_product(self.reduced_gradient, self.gradients_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
+					for i in range(self.form_handler.control_dim):
+						self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 
 			self.directional_derivative = self.form_handler.scalar_product(self.reduced_gradient, self.search_directions)
 
 			if self.directional_derivative >= 0:
-				for i in range(len(self.gradients)):
+				for i in range(self.form_handler.control_dim):
 					self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 
 			self.line_search.search(self.search_directions)
@@ -187,7 +188,7 @@ class InnerCG(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise NotConvergedError('Armijo rule failed.')
+					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -196,4 +197,4 @@ class InnerCG(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('nonlinear CG method for the primal dual active set method', 'Maximum number of iterations were exceeded.')

@@ -111,7 +111,7 @@ class AdjointProblem:
 						break
 
 					if i==self.maxiter:
-						raise NotConvergedError('Failed to solve the Picard iteration.')
+						raise NotConvergedError('Picard iteration for the adjoint system')
 
 					for j in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - j], self.form_handler.adjoint_eq_rhs[-1 - j], self.bcs_list_ad[-1 - j])

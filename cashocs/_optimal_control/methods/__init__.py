@@ -25,7 +25,7 @@ from .cg import CG
 from .gradient_descent import GradientDescent
 from .l_bfgs import LBFGS
 from .newton import Newton
-from .primal_dual_active_set_method import PDAS
+from .pdas import PDAS
 
 
 

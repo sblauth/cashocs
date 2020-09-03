@@ -108,14 +108,14 @@ class Newton(OptimizationAlgorithm):
 						print('Armijo rule failed.')
 						break
 					else:
-						raise NotConvergedError('Armijo rule failed.')
+						raise NotConvergedError('Armijo line search')
 
 			elif self.armijo_broken and not self.has_curvature_info:
 				if self.soft_exit:
 					print('Armijo rule failed.')
 					break
 				else:
-					raise NotConvergedError('Armijo rule failed.')
+					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
 
@@ -125,4 +125,4 @@ class Newton(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('Newton method (optimization)', 'Maximum number of iterations were exceeded.')

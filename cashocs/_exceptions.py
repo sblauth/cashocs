@@ -37,8 +37,18 @@ class NotConvergedError(CashocsException):
 	whether it is a linear or nonlinear system of equations, or an
 	optimization problem.
 	"""
-
-	pass
+	
+	def __init__(self, solver, message=None):
+		self.solver = solver
+		self.message = message
+	
+	
+	
+	def __str__(self):
+		if self.message is None:
+			return f'The {self.solver} failed to converge.'
+		else:
+			return f'The {self.solver} failed to converge.\n{self.message}'
 
 
 
@@ -76,6 +86,7 @@ class PETScKSPError(CashocsException):
 			self.error_reason = ' (unknown)'
 
 
+
 	def __str__(self):
 		return f'{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}'
 
@@ -90,6 +101,8 @@ class InputError(CashocsException):
 		self.obj = obj
 		self.param = param
 		self.message = message
+		
+		
 		
 	def __str__(self):
 		if self.message is None:
@@ -110,6 +123,8 @@ class ConfigError(CashocsException):
 		self.section = section
 		self.key = key
 		self.message = message
+	
+	
 	
 	def __str__(self):
 		if self.message is None:

@@ -147,7 +147,7 @@ class PDAS(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('primal dual active set method', 'Maximum number of iterations were exceeded.')
 
 			self.compute_active_inactive_sets()
 

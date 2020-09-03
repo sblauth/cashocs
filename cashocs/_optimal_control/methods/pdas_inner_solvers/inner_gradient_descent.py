@@ -98,8 +98,7 @@ class InnerGradientDescent(OptimizationAlgorithm):
 				break
 
 			for i in range(len(self.controls)):
-				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
-				self.search_directions[i].vector()[idx_active[i]] = 0
+				self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 
 			self.line_search.search(self.search_directions)
 			if self.line_search_broken:
@@ -107,7 +106,7 @@ class InnerGradientDescent(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise NotConvergedError('Armijo rule failed.')
+					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -116,4 +115,4 @@ class InnerGradientDescent(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('gradient descent method for the primal dual active set method', 'Maximum number of iterations were exceeded.')

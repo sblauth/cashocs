@@ -203,7 +203,8 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
 	dS : ufl.measure.Measure
 		The interior facet measure of the mesh corresponding to boundaries.
 	"""
-	
+	if not n>0:
+		raise InputError('cashocs.geometry.regular_mesh', 'n', 'This needs to be positive.')
 	if not L_x > 0.0:
 		raise InputError('cashocs.geometry.regular_mesh', 'L_x', 'L_x needs to be positive')
 	if not L_y > 0.0:
@@ -317,6 +318,9 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
 	"""
 
 	n = int(n)
+	
+	if not n>0:
+		raise InputError('cashocs.geometry.regular_box_mesh', 'n', 'This needs to be positive.')
 	
 	if not S_x < E_x:
 		raise InputError('cashocs.geometry.regular_box_mesh', 'S_x', 'Incorrect input for the x-coordinate. S_x has to be smaller than E_x.')

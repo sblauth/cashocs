@@ -195,7 +195,7 @@ class CG(OptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise NotConvergedError('Armijo rule failed.')
+					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -204,4 +204,4 @@ class CG(OptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('nonlinear CG method', 'Maximum number of iterations were exceeded.')

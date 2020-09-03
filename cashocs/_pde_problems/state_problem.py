@@ -140,7 +140,7 @@ class StateProblem:
 						break
 
 					if i==self.maxiter:
-						raise NotConvergedError('Failed to solve the Picard Iteration')
+						raise NotConvergedError('Picard iteration for the state system')
 
 					for j in range(self.form_handler.state_dim):
 						if self.initial_guess is not None:

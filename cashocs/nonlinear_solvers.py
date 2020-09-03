@@ -210,10 +210,10 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 			u.vector()[:] += du.vector()[:]
 		
 		if breakdown:
-			raise NotConvergedError('Damped Newton Solver Breakdown, stepsize for increment too low.')
+			raise NotConvergedError('Newton solver (state system)', 'Stepsize for increment too low.')
 
 		if iterations == max_iter:
-			raise NotConvergedError('Newton Solver exceeded maximum number of iterations.')
+			raise NotConvergedError('Newton solver (state system)', 'Maximum number of iterations were exceeded.')
 
 		# compute the new residual
 		assembler.assemble(A_fenics, residuum)

@@ -156,7 +156,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
-					raise NotConvergedError('Armijo rule failed.')
+					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
@@ -165,7 +165,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
-					raise NotConvergedError('Maximum number of iterations exceeded.')
+					raise NotConvergedError('L-BFGS method', 'Maximum number of iterations were exceeded.')
 
 			if self.memory_vectors > 0:
 				self.gradient_prev.vector()[:] = self.gradient.vector()[:]
