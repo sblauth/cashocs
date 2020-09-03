@@ -8,5 +8,6 @@ build/
 dist/
 *.egg-info/
 
-build.sh
+build_docs.sh
+build_pypi.sh
 test.sh

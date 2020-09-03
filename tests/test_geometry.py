@@ -27,6 +27,7 @@ import fenics
 import numpy as np
 
 import cashocs
+from cashocs.geometry import MeshQuality
 
 
 
@@ -91,16 +92,16 @@ def test_mesh_quality_2D():
 	q_2 = 1 - np.maximum((alpha_2 - opt_angle) / (np.pi - opt_angle), (opt_angle - alpha_2) / (opt_angle))
 	q = np.minimum(q_1, q_2)
 	
-	min_max_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
-	min_radius_ratios = cashocs.MeshQuality.min_radius_ratios(mesh)
-	average_radius_ratios = cashocs.MeshQuality.avg_radius_ratios(mesh)
-	min_condition = cashocs.MeshQuality.min_condition_number(mesh)
-	average_condition = cashocs.MeshQuality.avg_condition_number(mesh)
+	min_max_angle = MeshQuality.min_maximum_angle(mesh)
+	min_radius_ratios = MeshQuality.min_radius_ratios(mesh)
+	average_radius_ratios = MeshQuality.avg_radius_ratios(mesh)
+	min_condition = MeshQuality.min_condition_number(mesh)
+	average_condition = MeshQuality.avg_condition_number(mesh)
 	
-	assert abs(min_max_angle - cashocs.MeshQuality.avg_maximum_angle(mesh)) < 1e-14
+	assert abs(min_max_angle - MeshQuality.avg_maximum_angle(mesh)) < 1e-14
 	assert abs(min_max_angle - q) < 1e-14
-	assert abs(min_max_angle - cashocs.MeshQuality.avg_skewness(mesh)) < 1e-14
-	assert abs(min_max_angle - cashocs.MeshQuality.min_skewness(mesh)) < 1e-14
+	assert abs(min_max_angle - MeshQuality.avg_skewness(mesh)) < 1e-14
+	assert abs(min_max_angle - MeshQuality.min_skewness(mesh)) < 1e-14
 	
 	assert abs(min_radius_ratios - average_radius_ratios) < 1e-14
 	assert abs(min_radius_ratios - np.min(fenics.MeshQuality.radius_ratio_min_max(mesh))) < 1e-14
@@ -125,17 +126,17 @@ def test_mesh_quality_3D():
 	r_2 = 1 - np.maximum((alpha_min - opt_angle) / (np.pi - opt_angle), 0.0)
 	r = np.minimum(r_1, r_2)
 	
-	min_max_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
-	min_radius_ratios = cashocs.MeshQuality.min_radius_ratios(mesh)
-	min_skewness = cashocs.MeshQuality.min_skewness(mesh)
-	average_radius_ratios = cashocs.MeshQuality.avg_radius_ratios(mesh)
-	min_condition = cashocs.MeshQuality.min_condition_number(mesh)
-	average_condition = cashocs.MeshQuality.avg_condition_number(mesh)
+	min_max_angle = MeshQuality.min_maximum_angle(mesh)
+	min_radius_ratios = MeshQuality.min_radius_ratios(mesh)
+	min_skewness = MeshQuality.min_skewness(mesh)
+	average_radius_ratios = MeshQuality.avg_radius_ratios(mesh)
+	min_condition = MeshQuality.min_condition_number(mesh)
+	average_condition = MeshQuality.avg_condition_number(mesh)
 	
-	assert abs(min_max_angle - cashocs.MeshQuality.avg_maximum_angle(mesh)) < 1e-14
+	assert abs(min_max_angle - MeshQuality.avg_maximum_angle(mesh)) < 1e-14
 	assert abs(min_max_angle - r) < 1e-14
 	
-	assert abs(min_skewness - cashocs.MeshQuality.avg_skewness(mesh)) < 1e-14
+	assert abs(min_skewness - MeshQuality.avg_skewness(mesh)) < 1e-14
 	assert abs(min_skewness - q) < 1e-14
 	
 	assert abs(min_radius_ratios - average_radius_ratios) < 1e-14

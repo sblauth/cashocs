@@ -24,11 +24,9 @@ Created on 02/09/2020, 12.03
 """
 
 import argparse
-import getopt
 import sys
 
 import meshio
-
 
 
 

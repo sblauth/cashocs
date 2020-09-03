@@ -31,12 +31,12 @@ high-level unified form language (UFL).
 from . import verification
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-from .geometry import MeshQuality, import_mesh, regular_box_mesh, regular_mesh
+from .geometry import import_mesh, regular_box_mesh, regular_mesh
 from .nonlinear_solvers import damped_newton_solve
 from .utils import create_bcs_list, create_config
 
 
 
-__all__ = ['import_mesh', 'regular_mesh', 'regular_box_mesh', 'MeshQuality',
+__all__ = ['import_mesh', 'regular_mesh', 'regular_box_mesh',
 		   'damped_newton_solve', 'OptimalControlProblem', 'ShapeOptimizationProblem',
 		   'create_config', 'create_bcs_list', 'verification']
