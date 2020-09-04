@@ -120,9 +120,8 @@ class BaseHessianProblem:
 		r"""Computes the application of the Hessian to some element
 
 		This is needed in the truncated Newton method where we solve the system
-
-		$$ J''(u) [\delta u] = - J'(u)
-		$$
+		
+		.. math:: J''(u) [\Delta u] = - J'(u)
 
 		via iterative methods (conjugate gradient or conjugate residual method)
 

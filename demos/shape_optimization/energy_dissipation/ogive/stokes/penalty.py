@@ -53,8 +53,8 @@ i_bc_y = assemble(x[1]*dx) / i_vol
 
 config.set('Regularization', 'target_barycenter', '[' + str(i_bc_x) +', ' + str(i_bc_y) + ', 0]')
 config.set('Regularization', 'target_volume', str(i_vol))
-config.set('Regularization', 'use_initial_volume', 'false')
-config.set('Regularization', 'use_initial_barycenter', 'false')
+config.set('Regularization', 'use_initial_volume', 'False')
+config.set('Regularization', 'use_initial_barycenter', 'False')
 
 for reg in regularizations:
 

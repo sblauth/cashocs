@@ -25,7 +25,7 @@ setuptools.setup(
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3 :: Only",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
     keywords="Computational Adjoint-Based Shape Optimization and Optimal Control Software",

@@ -41,10 +41,13 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 	The method terminates after `max_iter` iterations, or if a termination criterion is
 	satisfied. These criteria are given by
-	$$ \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'rel'} \\
-	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} \quad \text{ if convergence_type is 'abs'} \\
-	\lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad \text{ if convergence_type is 'combined'}
-	$$
+	
+	.. math::
+		
+		\norm{F_k}{} &\leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad &&\text{ if convergence_type is 'rel'} \\
+		\lvert\lvert F_{k} \rvert\rvert &\leq \texttt{atol} \quad &&\text{ if convergence_type is 'abs'} \\
+		\lvert\lvert F_{k} \rvert\rvert &\leq \texttt{atol} + \text{rtol} \lvert\lvert F_0 \rvert\rvert \quad &&\text{ if convergence_type is 'combined'}
+
 	The norm chosen for the termination criterion is specified via `norm_type`.
 
 	Parameters
@@ -71,11 +74,11 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	norm_type : {'l2', 'linf'}
 		Determines which norm is used in the stopping criterion.
 	damped : bool, optional
-		If true, then a damping strategy is used. If false, the classical
+		If True, then a damping strategy is used. If False, the classical
 		Newton-Raphson iteration (without damping) is used (default is True).
 	verbose : bool, optional
-		If true, prints status of the iteration to the console (default
-		is true).
+		If True, prints status of the iteration to the console (default
+		is True).
 	ksp : petsc4py.PETSc.KSP, optional
 		The PETSc ksp object used to solve the inner (linear) problem
 		if this is None it uses the direct solver MUMPS (default is
@@ -95,22 +98,23 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	Examples
 	--------
 	This example solves the problem
-
-	$$ - \Delta u + u^3 = 1 \quad \text{ in } \Omega=(0,1)^2 \\
-	u = 0 \quad \text{ on } \Gamma.
-	$$
-
-	    from fenics import *
-	    import cashocs
-
-	    mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
-	    V = FunctionSpace(mesh, 'CG', 1)
-
-	    u = Function(V)
-	    v = TestFunction(V)
-	    F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-	    bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
-	    cashocs.damped_newton_solve(F, u, bcs)
+	
+	.. math::
+		- \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
+		u &= 0 \quad &&\text{ on } \Gamma.
+	
+	::
+		from fenics import *
+		import cashocs
+	
+		mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
+		V = FunctionSpace(mesh, 'CG', 1)
+	
+		u = Function(V)
+		v = TestFunction(V)
+		F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
+		bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+		cashocs.damped_newton_solve(F, u, bcs)
 	"""
 	
 	if not convergence_type in ['rel', 'abs', 'combined']:

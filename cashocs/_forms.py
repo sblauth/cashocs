@@ -43,9 +43,8 @@ class Lagrangian:
 
 	This corresponds to the classical Lagrangian of a PDE constrained
 	optimization problem, of the form
-
-	$$L = J + e,
-	$$
+	
+	.. math:: L = J + e,
 
 	where J is the cost functional and e the (weak) PDE constrained, tested by
 	the adjoint variables. This is used to derive the adjoint and gradient

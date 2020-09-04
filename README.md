@@ -3,7 +3,7 @@
 
 CASHOCS is a computational adjoint-based shape optimization and optimal control software for python.
 
-CASHOCS is based on the finite element package [FEniCS](https://fenicsproject.org) and uses its high-level unified form language UFL to treat general PDE constrained optimization problems, in particuarl, shape optimization and optimal control problems.
+CASHOCS is based on the finite element package [FEniCS](https://fenicsproject.org) and uses its high-level unified form language UFL to treat general PDE constrained optimization problems, in particular, shape optimization and optimal control problems.
 
 Note, that we assume that you are (at least somewhat) familiar with PDE constrained optimization and FEniCS. For a introduction to these topics, we can recommend the textbooks
 
@@ -36,14 +36,13 @@ Installation
 
 - Then, install [meshio](https://github.com/nschloe/meshio) with a [h5py](https://www.h5py.org) version that matches the hdf5 version used in FEniCS, and [matplotlib](https://matplotlib.org/)
 
+- You might also want to install [GMSH](https://gmsh.info/). CASHOCS does not necessarily need this to function properly, but it is required for the remeshing functionality.
 
 Note, that if you want to have a [conda](https://docs.conda.io/en/latest/index.html) installation, you can simply create a new environment with
 
-    conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib
+    conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
 
 which automatically installs all prerequisites to get started.
-
-- You might also want to install [GMSH](https://gmsh.info/). CASHOCS does not necessarily need this to function properly, but it is required for the remeshing functionality.
 
 - Clone this repository with git, and run
 

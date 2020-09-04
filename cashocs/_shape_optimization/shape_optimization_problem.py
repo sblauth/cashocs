@@ -157,7 +157,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	def _erase_pde_memory(self):
 		"""Resets the memory of the PDE problems so that new solutions are computed.
 		
-		This sets the value of has_solution to false for all relevant PDE problems,
+		This sets the value of has_solution to False for all relevant PDE problems,
 		where memory is stored.
 		
 		Returns
@@ -210,14 +210,16 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		call, the termination criterion changes to:
 
 		  - a purely relative one (if only `rtol` is specified), i.e.,
-		$$ || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-		$$
+		  
+		  .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+		  
 		  - a purely absolute one (if only `atol` is specified), i.e.,
-		$$ || \nabla J(u_K) || \leq \texttt{atol}.
-		$$
+		  
+		  .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+
 		  - a combined one if both `rtol` and `atol` are specified, i.e.,
-		$$ || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
-		$$
+		  
+		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
 		"""
 
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)

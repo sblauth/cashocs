@@ -20,7 +20,7 @@
 This module consists of tools for for the fast generation
 or import of meshes into fenics. The import_mesh function
 is used to import (converted) gmsh mesh files, and the
-regular_(box_)mesh commands create 2D and 3D box meshes
+``regular_mesh`` and ``regular_box_mesh`` commands create 2D and 3D box meshes
 which are great for testing.
 """
 
@@ -158,23 +158,24 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
 	in lx, lx, lz. The resulting mesh uses n elements along the
 	shortest direction and accordingly many along the longer ones.
 	The resulting domain is
-		$$[0, L_x] \times [0, L_y] \phantom{ \times [0, L_z] a} \quad \text{ in } 2D, \\
-		[0, L_x] \times [0, L_y] \times [0, L_z] \quad \text{ in } 3D.
-		$$
+	
+	.. math::
+		&[0, L_x] \times [0, L_y] \quad &&\text{ in } 2D, \\
+		&[0, L_x] \times [0, L_y] \times [0, L_z] \quad &&\text{ in } 3D.
 
 	The boundary markers are ordered as follows:
 
-	  - 1 corresponds to \(\{x=0\}\).
+	  - 1 corresponds to :math:`x=0`.
 
-	  - 2 corresponds to \(\{x=L_x\}\).
+	  - 2 corresponds to :math:`x=L_x`.
 
-	  - 3 corresponds to \(\{y=0\}\).
+	  - 3 corresponds to :math:`y=0`.
 
-	  - 4 corresponds to \(\{y=L_y\}\).
+	  - 4 corresponds to :math:`y=L_y`.
 
-	  - 5 corresponds to \(\{z=0\}\) (only in 3D).
+	  - 5 corresponds to :math:`z=0` (only in 3D).
 
-	  - 6 corresponds to \(\{z=L_z\}\) (only in 3D).
+	  - 6 corresponds to :math:`z=L_z` (only in 3D).
 
 	Parameters
 	----------
@@ -260,27 +261,27 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
 	r"""Creates a mesh corresponding to a rectangle or cube.
 
 	This function creates a uniform mesh of either a rectangle
-	or a cube, with specified start (S_) and end points (E_).
+	or a cube, with specified start (``S_``) and end points (``E_``).
 	The resulting mesh uses n elements along the shortest direction
 	and accordingly many along the longer ones. The resulting domain is
-
-	$$[S_x, E_x] \times [S_y, E_y] \phantom{ \times [S_z, E_z] a} \quad \text{ in } 2D, \\
-	[S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad \text{ in } 3D.
-	$$
+	
+	.. math::
+		&[S_x, E_x] \times [S_y, E_y] \quad &&\text{ in } 2D, \\
+		&[S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad &&\text{ in } 3D.
 
 	The boundary markers are ordered as follows:
 
-	  - 1 corresponds to \(\{x=S_x\}\).
+	  - 1 corresponds to :math:`x=S_x`.
 
-	  - 2 corresponds to \(\{x=E_x\}\).
+	  - 2 corresponds to :math:`x=E_x`.
 
-	  - 3 corresponds to \(\{y=S_y\}\).
+	  - 3 corresponds to :math:`y=S_y`.
 
-	  - 4 corresponds to \(\{y=E_y\}\).
+	  - 4 corresponds to :math:`y=E_y`.
 
-	  - 5 corresponds to \(\{z=S_z\}\) (only in 3D).
+	  - 5 corresponds to :math:`z=S_z` (only in 3D).
 
-	  - 6 corresponds to \(\{z=E_z\}\) (only in 3D).
+	  - 6 corresponds to :math:`z=E_z` (only in 3D).
 
 	Parameters
 	----------
@@ -469,11 +470,10 @@ class _MeshHandler:
 		r"""Transforms the mesh by perturbation of identity.
 
 		Moves the mesh according to the deformation given by
+		
+		.. math:: \text{id} + \mathcal{V}(x),
 
-		$$\text{id} + \mathcal{V}(x),
-		$$
-
-		where \(\mathcal{V}\) is the transformation. This
+		where :math:`\mathcal{V}` is the transformation. This
 		represents the perturbation of identity.
 
 		Parameters
@@ -621,9 +621,8 @@ class _MeshHandler:
 		r"""Check the quality of the transformation before the actual mesh is moved.
 
 		Checks the quality of the transformation. The criterion is that
-
-		$$ \det(I + D \texttt{transformation})
-		$$
+		
+		.. math:: \det(I + D \texttt{transformation})
 
 		should neither be too large nor too small in order to achieve the best
 		transformations.
@@ -841,7 +840,7 @@ class MeshQuality:
 
 	This class implements either a skewness quality measure, one based
 	on the maximum angle of the elements, or one based on the radius ratios.
-	All quality measures have values in \( [0, 1] \), where 1 corresponds
+	All quality measures have values in :math:`[0,1]`, where 1 corresponds
 	to the best / perfect element, and 0 corresponds to degenerate elements.
 
 	Examples
@@ -1051,15 +1050,14 @@ class MeshQuality:
 		a tetrahedrons dihedral angles to the corresponding optimal
 		angle. The optimal angle is defined as the angle an equilateral,
 		and thus equiangular, element has. The skewness lies in
-		\( [0,1] \), where 1 corresponds to the case of an optimal
+		:math:`[0,1]`, where 1 corresponds to the case of an optimal
 		(equilateral) element, and 0 corresponds to a degenerate
 		element. The skewness corresponding to some (dihedral) angle
-		\( \alpha \) is defined as
+		:math:`\alpha` is defined as
+		
+		.. math:: 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 
-		$$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
-		$$
-
-		where \( \alpha^* \) is the corresponding optimal angle of the reference
+		where :math:`\alpha^*` is the corresponding optimal angle of the reference
 		element. To compute the quality measure, the minimum of this expression
 		over all elements and all of their (dihedral) angles is computed.
 
@@ -1083,12 +1081,11 @@ class MeshQuality:
 		r"""Computes the average skewness of the mesh.
 
 		The skewness corresponding to some (dihedral) angle
-		\( \alpha \) is defined as
+		:math:`\alpha` is defined as
+		
+		.. math:: 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 
-		$$ 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
-		$$
-
-		where \( \alpha^* \) is the corresponding optimal angle of the reference
+		where :math:`\alpha^*` is the corresponding optimal angle of the reference
 		element.
 
 		Parameters
@@ -1114,12 +1111,11 @@ class MeshQuality:
 		tetrahedron's dihedral angles to the corresponding optimal
 		angle. The optimal angle is defined as the angle an equilateral
 		(and thus equiangular) element has. This is defined as
+		
+		.. math:: 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
 
-		$$ 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
-		$$
-
-		where \( \alpha \) is the corresponding (dihedral) angle of the element
-		and \( \alpha^* \) is the corresponding (dihedral) angle of the reference
+		where :math:`\alpha` is the corresponding (dihedral) angle of the element
+		and :math:`\alpha^*` is the corresponding (dihedral) angle of the reference
 		element.
 
 		Parameters
@@ -1160,14 +1156,13 @@ class MeshQuality:
 		r"""Computes the minimal radius ratio of the mesh.
 
 		This measures the ratio of the element's inradius to it's circumradius,
-		normalized by the geometric dimension. It is an element of \( [0,1] \),
+		normalized by the geometric dimension. It is an element of :math:`[0,1]`,
 		where 1 indicates best element quality and 0 is obtained for degenerate
 		elements. This is computed via
+		
+		.. math:: d \frac{r}{R},
 
-		$$d \frac{r}{R},
-		$$
-
-		where \(d\) is the spatial dimension, \(r\) is the inradius, and \(R\) is
+		where :math:`d` is the spatial dimension, :math:`r` is the inradius, and :math:`R` is
 		the circumradius. To compute the (global) quality measure, the minimum
 		of this expression over all elements is returned.
 
