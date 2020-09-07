@@ -63,7 +63,7 @@ def test_not_converged_error():
 		u.vector()[:] = 0.0
 		ocp._erase_pde_memory()
 		ocp.solve('gd', 1e-10, 0.0, 1)
-	
+
 	with pytest.raises(CashocsException):
 		ocp.solve('gd', 1e-10, 0.0, 0)
 
@@ -72,7 +72,7 @@ def test_not_converged_error():
 def test_input_error():
 	with pytest.raises(InputError):
 		cashocs.regular_mesh(-1)
-	
+
 	with pytest.raises(CashocsException):
 		cashocs.regular_mesh(0)
 
@@ -83,7 +83,7 @@ def test_petsc_error():
 		u.vector()[:] = np.random.rand(V.dim())
 		ocp_ksp._erase_pde_memory()
 		ocp_ksp.compute_state_variables()
-	
+
 	with pytest.raises(PETScKSPError):
 		ocp_ksp.compute_state_variables()
 
@@ -97,7 +97,7 @@ def test_config_error():
 		u.vector()[:] = np.random.rand(V.dim())
 		ocp_conf = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 		ocp_conf.solve(max_iter=10)
-	
+
 	with pytest.raises(CashocsException):
 		ocp_conf._erase_pde_memory()
 		ocp_conf.solve(max_iter=10)

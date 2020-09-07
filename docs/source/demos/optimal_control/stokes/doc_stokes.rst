@@ -6,7 +6,7 @@ Distributed Control of a Stokes Problem
 Problem Formulation
 -------------------
 
-In this demo we investigate how cashocs can be used to tackle a different class
+In this demo we investigate how CASHOCS can be used to tackle a different class
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
 problem reads as follows
 
@@ -109,7 +109,7 @@ The boundary conditions for this system can be defined as follows ::
     bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
 Here, we first define the point :math:`x^\text{pres}`, where the pressure is set to 0.
-Afterwards, we use the cashocs function :py:func:`create_bcs_list <cashocs.create_bcs_list>`
+Afterwards, we use the CASHOCS function :py:func:`create_bcs_list <cashocs.create_bcs_list>`
 to quickly create the no slip conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
 velocity :math:`u_\text{dir}` for the lid of the cavity as a :py:class:`fenics.Expression`, and create a corresponding
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,

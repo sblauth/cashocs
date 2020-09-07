@@ -38,7 +38,7 @@ class StateProblem:
 
 	def __init__(self, form_handler, initial_guess, temp_dict=None):
 		"""Initializes the state system.
-		
+
 		Parameters
 		----------
 		form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
@@ -48,7 +48,7 @@ class StateProblem:
 		temp_dict : dict
 			A dict used for reinitialization when remeshing is performed.
 		"""
-		
+
 		self.form_handler = form_handler
 		self.initial_guess = initial_guess
 		self.temp_dict = temp_dict
@@ -82,12 +82,12 @@ class StateProblem:
 		except TypeError:
 			self.number_of_solves = 0
 		self.has_solution = False
-	
-	
-	
+
+
+
 	def solve(self):
 		"""Solves the state system.
-		
+
 		Returns
 		-------
 		states : list[dolfin.function.function.Function]

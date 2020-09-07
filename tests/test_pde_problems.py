@@ -52,20 +52,20 @@ def test_state_adjoint_problems():
 	test = TestFunction(V)
 	state = Function(V)
 	adjoint = Function(V)
-	
+
 	a = inner(grad(trial), grad(test))*dx
 	L_state = u*test*dx
 	L_adjoint = -(state - y_d)*test*dx
-	
+
 	y_d.vector()[:] = np.random.rand(V.dim())
 	u.vector()[:] = np.random.rand(V.dim())
-	
+
 	ocp.compute_state_variables()
 	ocp.compute_adjoint_variables()
-	
+
 	solve(a==L_state, state, bcs)
 	solve(a==L_adjoint, adjoint, bcs)
-	
+
 	assert np.allclose(state.vector()[:], y.vector()[:])
 	assert np.allclose(adjoint.vector()[:], p.vector()[:])
 
@@ -75,15 +75,15 @@ def test_control_gradient():
 	trial = TrialFunction(V)
 	test = TestFunction(V)
 	gradient = Function(V)
-	
+
 	a = trial*test*dx
 	L = Constant(alpha)*u*test*dx - p*test*dx
-	
+
 	ocp._erase_pde_memory()
 	y_d.vector()[:] = np.random.rand(V.dim())
 	u.vector()[:] = np.random.rand(V.dim())
-	
+
 	c_gradient = ocp.compute_gradient()[0]
 	solve(a==L, gradient)
-	
+
 	assert np.allclose(c_gradient.vector()[:], gradient.vector()[:])

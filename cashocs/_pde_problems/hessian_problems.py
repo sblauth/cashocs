@@ -93,7 +93,7 @@ class BaseHessianProblem:
 		_setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
 		self.adjoint_ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
 		_setup_petsc_options(self.adjoint_ksps, self.form_handler.adjoint_ksp_options)
-		
+
 		# Initialize the PETSc Krylov solver for the Riesz projection problems
 		self.ksps = [PETSc.KSP().create() for i in range(self.control_dim)]
 
@@ -120,7 +120,7 @@ class BaseHessianProblem:
 		r"""Computes the application of the Hessian to some element
 
 		This is needed in the truncated Newton method where we solve the system
-		
+
 		.. math:: J''(u) [\Delta u] = - J'(u)
 
 		via iterative methods (conjugate gradient or conjugate residual method)
@@ -219,7 +219,7 @@ class BaseHessianProblem:
 
 		for i in range(self.control_dim):
 			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
-			
+
 			_solve_linear_problem(self.ksps[i], b=b, x=out[i].vector().vec())
 
 		self.no_sensitivity_solves += 2

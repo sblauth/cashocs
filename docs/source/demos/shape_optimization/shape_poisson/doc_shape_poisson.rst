@@ -6,7 +6,7 @@ Shape Optimization with a Poisson Problem
 Problem Formulation
 -------------------
 
-In this demo, we investigate the basics of cashocs for shape optimization problems.
+In this demo, we investigate the basics of CASHOCS for shape optimization problems.
 As a model problem, we investigate the following one from
 `Etling et al., First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
 
@@ -35,11 +35,11 @@ Initialization
 **************
 
 Similarly to the optimal control case, we also require config files for shape
-optimization problems in cashocs. A detailed discussion of the config files
+optimization problems in CASHOCS. A detailed discussion of the config files
 for shape optimization is given in :ref:`config_shape_optimization`.
 
 As before, we start the problem by importing everything from FEniCS,
-and importing cashocs ::
+and importing CASHOCS ::
 
     from fenics import *
     import cashocs
@@ -49,7 +49,7 @@ Thereafter, we read the config file with the :py:func:`create_config <cashocs.cr
     config = cashocs.create_config('./config.ini')
 
 Next, we have to define the mesh. As the above problem is posed on the unit disc
-initially, we define this via FEniCS commands (cashocs only has rectangular meshes built
+initially, we define this via FEniCS commands (CASHOCS only has rectangular meshes built
 in). This is done via the following code ::
 
     meshlevel = 10
@@ -63,12 +63,12 @@ the problem. For the volume measure, we can simply invoke ::
     dx = Measure('dx', mesh)
 
 However, for the surface measure, we need to mark the boundary. This is required since
-cashocs distinguishes between three types of boundaries: The deformable boundary, the
+CASHOCS distinguishes between three types of boundaries: The deformable boundary, the
 fixed boundary, and boundaries that can only be deformed perpendicular to a certain
 coordinate axis (see :ref:`config_shape_shape_gradient`). Most importantly, for this example,
 one of the deformable boundaries must not be empty, so that we can actually optimize something.
 Here, we investigate the case of a completely deformable boundary, which makes things slightly
-easier. We mark this boundary with the marker `1` with the following piece of code ::
+easier. We mark this boundary with the marker ``1`` with the following piece of code ::
 
     boundary = CompiledSubDomain('on_boundary')
     boundaries = MeshFunction('size_t', mesh, dim=1)
@@ -92,7 +92,7 @@ easier. We mark this boundary with the marker `1` with the following piece of co
 Note, that all of the alternative ways of marking subdomains or boundaries with
 numbers, as explained in `Langtangen and Logg, Solving PDEs in Python
 <https://doi.org/10.1007/978-3-319-52462-7>`_ also work here. If it is valid for FEniCS, it is also for
-cashocs.
+CASHOCS.
 
 After having defined the initial geometry, we define a :py:class:`fenics.FunctionSpace` consisting of
 piecewise linear Lagrange elements via ::
@@ -108,7 +108,7 @@ This also defines our state variable :math:`u` as ``u``, and the adjoint state i
 
     As remarked in :ref:`demo_poisson`, in
     classical FEniCS syntax we would use a :py:class:`fenics.TrialFunction` for ``u``
-    and a :py:class:`fenics.TestFunction` for ``p``. However, for cashocs this must not
+    and a :py:class:`fenics.TestFunction` for ``p``. However, for CASHOCS this must not
     be the case. Instead, the state and adjoint variables have to be :py:class:`fenics.Function` objects.
 
 The right-hand side of the PDE constraint is then defined as ::

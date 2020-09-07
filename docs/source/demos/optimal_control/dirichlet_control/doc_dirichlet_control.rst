@@ -7,7 +7,7 @@ Problem Formulation
 -------------------
 
 In this demo, we investigate how Dirichlet boundary control is possible with
-cashocs. To do this, we have to employ the so-called Nitsche method, which we
+CASHOCS. To do this, we have to employ the so-called Nitsche method, which we
 briefly recall in the following. Our model problem for this example is given by
 
 .. math::
@@ -22,7 +22,7 @@ briefly recall in the following. Our model problem for this example is given by
 
 In contrast to our previous problems, the control now enters the problem as a
 Dirichlet boundary condition. However, we cannot apply these via a :py:class:`fenics.DirichletBC`,
-because for cashocs to work properly, the controls,
+because for CASHOCS to work properly, the controls,
 states, and adjoints are only allowed to appear in UFL forms. Nitsche's Method
 circumvents this problem by imposing the boundary conditions in the weak form
 directly. Let us first briefly recall this method.
@@ -33,9 +33,10 @@ Nitsche's method
 Consider the Laplace problem
 
 .. math::
-
+    \begin{alignedat}{2}
     -\Delta y &= 0 \quad &&\text{ in } \Omega,\\
     y &= u \quad &&\text{ on } \Gamma.
+    \end{alignedat}
 
 We can derive a weak form for this equation in :math:`H^1(\Omega)`
 (not :math:`H^1_0(\Omega)`) by multiplying the equation by a test function

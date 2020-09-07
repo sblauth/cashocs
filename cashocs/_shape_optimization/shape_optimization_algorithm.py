@@ -169,7 +169,7 @@ class ShapeOptimizationAlgorithm:
 
 		if self.config.getboolean('Mesh', 'remesh', fallback=False):
 			os.system('rm -r ' + self.optimization_problem.temp_dir)
-		
+
 		if self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
 			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.optimization_problem.mesh_handler.mesh_directory + '/optimized_mesh.msh')
 

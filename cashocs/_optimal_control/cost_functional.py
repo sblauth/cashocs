@@ -29,10 +29,10 @@ class ReducedCostFunctional:
 	A class that represents an reduced cost functional of an optimal control problem, which
 	is used to evaluate it.
 	"""
-	
+
 	def __init__(self, form_handler, state_problem):
 		"""Initialize the reduced cost functional
-		
+
 		Parameters
 		----------
 		form_handler : cashocs._forms.ControlFormHandler
@@ -40,10 +40,10 @@ class ReducedCostFunctional:
 		state_problem : cashocs._pde_problems.StateProblem
 			the StateProblem object corresponding to the state system
 		"""
-		
+
 		self.form_handler = form_handler
 		self.state_problem = state_problem
-	
+
 
 
 	def evaluate(self):
@@ -58,7 +58,7 @@ class ReducedCostFunctional:
 		float
 			the value of the reduced cost functional
 		"""
-		
+
 		self.state_problem.solve()
-		
+
 		return fenics.assemble(self.form_handler.cost_functional_form)

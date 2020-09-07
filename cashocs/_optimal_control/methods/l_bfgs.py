@@ -36,13 +36,13 @@ class LBFGS(OptimizationAlgorithm):
 
 	def __init__(self, optimization_problem):
 		"""Initializes the L-BFGS method.
-		
+
 		Parameters
 		----------
 		optimization_problem : cashocs.OptimalControlProblem
 			the optimization problem to be solved
 		"""
-		
+
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
@@ -66,10 +66,10 @@ class LBFGS(OptimizationAlgorithm):
 			self.s_k = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
 
-	
+
 	def compute_search_direction(self, grad):
 		"""Computes the search direction for the BFGS method with a double loop
-		
+
 		Parameters
 		----------
 		grad : list[dolfin.function.function.Function]
@@ -80,33 +80,33 @@ class LBFGS(OptimizationAlgorithm):
 		search_directions : list[dolfin.function.function.Function]
 			a function corresponding to the current / next search direction
 		"""
-		
+
 		if self.memory_vectors > 0 and len(self.history_s) > 0:
 			history_alpha = deque()
 			for j in range(len(self.controls)):
 				self.search_directions[j].vector()[:] = grad[j].vector()[:]
 
 			self.form_handler.restrict_to_inactive_set(self.search_directions, self.search_directions)
-				
+
 			for i, _ in enumerate(self.history_s):
 				alpha = self.history_rho[i]*self.form_handler.scalar_product(self.history_s[i], self.search_directions)
 				history_alpha.append(alpha)
 				for j in range(len(self.controls)):
 					self.search_directions[j].vector()[:] -= alpha * self.history_y[i][j].vector()[:]
-			
+
 			if self.use_bfgs_scaling and self.iteration > 0:
 				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
-			
+
 			for j in range(len(self.controls)):
 				self.search_directions[j].vector()[:] *= factor
 
 			self.form_handler.restrict_to_inactive_set(self.search_directions, self.search_directions)
-			
+
 			for i, _ in enumerate(self.history_s):
 				beta = self.history_rho[-1 - i]*self.form_handler.scalar_product(self.history_y[-1 - i], self.search_directions)
-				
+
 				for j in range(len(self.controls)):
 					self.search_directions[j].vector()[:] += self.history_s[-1 - i][j].vector()[:] * (history_alpha[-1 - i] - beta)
 
@@ -115,23 +115,23 @@ class LBFGS(OptimizationAlgorithm):
 			for j in range(len(self.controls)):
 				self.search_directions[j].vector()[:] += self.temp[j].vector()[:]
 				self.search_directions[j].vector()[:] *= -1
-		
+
 		else:
 			for j in range(len(self.controls)):
 				self.search_directions[j].vector()[:] = - grad[j].vector()[:]
-		
+
 		return self.search_directions
 
 
-	
+
 	def run(self):
 		"""Performs the optimization via the limited memory BFGS method
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.iteration = 0
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False
@@ -175,12 +175,12 @@ class LBFGS(OptimizationAlgorithm):
 			if self.memory_vectors > 0:
 				for i in range(len(self.gradients)):
 					self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
-			
+
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 			self.form_handler.compute_active_sets()
-			
+
 			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 

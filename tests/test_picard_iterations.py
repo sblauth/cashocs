@@ -107,15 +107,15 @@ def test_picard_state_solver():
 	ocp_mixed._erase_pde_memory()
 	ocp_mixed.compute_state_variables()
 	y_m, z_m = state_m.split(True)
-	
+
 	solve(F_newton==0, state_newton, bcs_m)
 	y_ref, z_ref = state_newton.split(True)
-	
+
 	assert np.allclose(y.vector()[:], y_ref.vector()[:])
 	assert np.allclose(y_m.vector()[:], y_ref.vector()[:])
 	assert np.max(np.abs(y.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-13
 	assert np.max(np.abs(y_m.vector()[:] - y_ref.vector()[:])) / np.max(np.abs(y_ref.vector()[:])) <= 1e-13
-	
+
 	assert np.allclose(z.vector()[:], z_ref.vector()[:])
 	assert np.allclose(z_m.vector()[:], z_ref.vector()[:])
 	assert np.max(np.abs(z.vector()[:] - z_ref.vector()[:])) / np.max(np.abs(z_ref.vector()[:])) <= 1e-13
@@ -126,24 +126,24 @@ def test_picard_state_solver():
 def test_picard_solver_for_optimization():
 	# it is sufficient to test the behavior with the newton method, as this includes
 	# all kinds of solves
-	
+
 	u_picard = Function(V)
 	v_picard = Function(V)
-	
+
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', 1e-6, 0.0, 2)
 	assert ocp.solver.relative_norm <= 1e-6
-	
+
 	u_picard.vector()[:] = u.vector()[:]
 	v_picard.vector()[:] = v.vector()[:]
-	
+
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp_mixed._erase_pde_memory()
 	ocp_mixed.solve('newton', 1e-6, 0.0, 2)
 	assert ocp_mixed.solver.relative_norm < 1e-6
-	
+
 	assert np.allclose(u.vector()[:], u_picard.vector()[:])
 	assert np.max(np.abs(u.vector()[:] - u_picard.vector()[:])) / np.max(np.abs(u.vector()[:])) <= 1e-8

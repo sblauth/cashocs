@@ -1,10 +1,14 @@
 Getting Started
 ===============
 
-Since cashocs is based on FEniCS, most of the user input consists of definining
+As newcomer to CASHOCS, we recommend reading the :ref:`tutorial <tutorial_index>`.
+In the following, we briefly showcase how CASHOCS can be used to solve a
+distributed optimal control problem with a Poisson equation as PDE constaint.
+
+Since CASHOCS is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
 has a functioning code for the forward problem and the evaluation of the cost
-functional, the necessary modifications to optimize the problem in cashocs
+functional, the necessary modifications to optimize the problem in CASHOCS
 are minimal. Consider, e.g., the following optimization problem
 
 .. math::
@@ -17,7 +21,7 @@ are minimal. Consider, e.g., the following optimization problem
     y &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
-Note, that the entire problem is treated in detail in the :ref:`corresponding cashocs tutorial <demo_poisson>`.
+Note, that the entire problem is treated in detail in the :ref:`corresponding CASHOCS tutorial <demo_poisson>`.
 
 For our purposes, we assume that a mesh for this problem is defined and that a
 suitable function space is chosen. This can, e.g., be achieved via ::
@@ -49,10 +53,10 @@ Finally, we have to define the cost functional and the optimization problem ::
     opt_problem = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     opt_problem.solve()
 
-The only major difference between cashocs and FEniCS code is that one has to
+The only major difference between CASHOCS and FEniCS code is that one has to
 use Function objects for states and adjoints, and that Trial- and TestFunctions
 are not needed to define the state equation. Other than that, the syntax would
 also be valid with FEniCS.
 
-For a detailed discussion of the features of cashocs and its usage we refer to the
-:ref:`cashocs tutorial <tutorial_index>`.
+For a detailed discussion of the features of CASHOCS and its usage we refer to the
+:ref:`CASHOCS tutorial <tutorial_index>`.

@@ -32,10 +32,10 @@ class GradientProblem:
 	"""A class representing the Riesz problem to determine the gradient.
 
 	"""
-	
+
 	def __init__(self, form_handler, state_problem, adjoint_problem):
 		"""Initializes the gradient problem.
-		
+
 		Parameters
 		----------
 		form_handler : cashocs._forms.ControlFormHandler
@@ -45,24 +45,24 @@ class GradientProblem:
 		adjoint_problem : cashocs._pde_problems.AdjointProblem
 			The AdjointProblem used to solve the adjoint equations.
 		"""
-		
+
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 		self.adjoint_problem = adjoint_problem
-		
+
 		self.gradients = [fenics.Function(V) for V in self.form_handler.control_spaces]
 		self.config = self.form_handler.config
 
 		# Initialize the PETSc Krylov solver for the Riesz projection problems
 		self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
-		
+
 		# option = [
 		# 		['ksp_type', 'preonly'],
 		# 		['pc_type', 'lu'],
 		# 		['pc_factor_mat_solver_type', 'mumps'],
 		# 		['mat_mumps_icntl_24', 1]
 		# 	]
-		
+
 		option = [
 			['ksp_type', 'cg'],
 			['pc_type', 'hypre'],
@@ -79,23 +79,23 @@ class GradientProblem:
 		_setup_petsc_options(self.ksps, riesz_ksp_options)
 		for i, ksp in enumerate(self.ksps):
 			ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
-	
+
 		self.has_solution = False
 
 
-	
+
 	def solve(self):
 		"""Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.
-		
+
 		Returns
 		-------
 		gradients : list[dolfin.function.function.Function]
 			The list of gradient of the cost functional.
 		"""
-		
+
 		self.state_problem.solve()
 		self.adjoint_problem.solve()
-		
+
 		if not self.has_solution:
 			for i in range(self.form_handler.control_dim):
 				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()

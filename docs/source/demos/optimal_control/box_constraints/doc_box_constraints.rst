@@ -7,7 +7,7 @@ Control Constraints
 Problem Formulation
 -------------------
 
-In this demo we investigate the basics of cashocs for
+In this demo we investigate the basics of CASHOCS for
 optimal control problems. To do so, we investigate the "mother
 problem" of PDE constrained optimization, i.e.,
 
@@ -81,7 +81,7 @@ Hence, we define the lower and upper bounds via ::
 
 which just corresponds to two functions, generated from
 Expression objects via interpolation. These are then put
-into the list `cc`, which models the control constraints, i.e., ::
+into the list ``cc``, which models the control constraints, i.e., ::
 
     cc = [u_a, u_b]
 

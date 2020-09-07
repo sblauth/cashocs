@@ -33,27 +33,27 @@ class GradientDescent(OptimizationAlgorithm):
 
 	def __init__(self, optimization_problem):
 		"""Initializes the method.
-		
+
 		Parameters
 		----------
 		optimization_problem : cashocs.OptimalControlProblem
 			the OptimalControlProblem object
 		"""
-		
+
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
 
 
-	
+
 	def run(self):
 		"""Performs the optimization via the gradient descent method
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.iteration = 0
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False
@@ -77,7 +77,7 @@ class GradientDescent(OptimizationAlgorithm):
 					self.objective_value = self.cost_functional.evaluate()
 				self.print_results()
 				break
-			
+
 			for i in range(len(self.controls)):
 				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 

@@ -17,7 +17,7 @@
 
 r"""Computational adjoint based package for PDE constrained optimization
 
-cashocs is based on the finite element package `FEniCS <https://fenicsproject.org>`_
+CASHOCS is based on the finite element package `FEniCS <https://fenicsproject.org>`_
 and uses its high-level unified form language UFL to treat general PDE constrained
 optimization problems, in particular, shape optimization and optimal control problems.
 

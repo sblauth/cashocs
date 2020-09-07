@@ -6,7 +6,7 @@ Distributed Control for Time Dependent Problems
 Problem Formulation
 -------------------
 
-In this demo  we take a look at how time dependent problems can be treated with cashocs.
+In this demo  we take a look at how time dependent problems can be treated with CASHOCS.
 To do so, we investigate a problem considered in
 `Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model
 <https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727>`_.
@@ -24,11 +24,11 @@ It reads
 
 
 Since fenics does not have any direct built-in support for time dependent problems,
-cashocs also does not have one. Hence, one first has to perform a semi-discretization
+CASHOCS also does not have one. Hence, one first has to perform a semi-discretization
 of the PDE system in the temporal component (e.g. via finite differences), and then
 solve the resulting sequence of PDEs.
 
-In particular, for the use with cashocs, we have to create not a single weak form and
+In particular, for the use with CASHOCS, we have to create not a single weak form and
 fenics Function, that can be re-used, like one would in classical fenics programs, but
 we have to create the corresponding objects a-priori for each time step.
 
@@ -63,7 +63,7 @@ rectangle rules. This means we approximate the cost functional via
 
 Here, :math:`(y_d)_k` is an approximation of the desired state at time :math:`t_k`.
 
-Let us now investigate how to solve this problem with cashocs.
+Let us now investigate how to solve this problem with CASHOCS.
 
 
 Implementation
@@ -156,7 +156,7 @@ Next, we have the following for loop, which we describe in detail after stating 
 
 .. note::
 
-    At the beginning, the 'current' time t is determined from `t_array`, and the
+    At the beginning, the 'current' time t is determined from ``t_array``, and the
     expression for the desired state is updated to reflect the current time.
     The line ::
 
@@ -195,7 +195,7 @@ Next, we have the following for loop, which we describe in detail after stating 
     and directly append this to the cost functional list.
 
 To sum up over all elements of
-this list, cashocs includes the function :py:func:`cashocs.utils.summation`, which we call ::
+this list, CASHOCS includes the function :py:func:`cashocs.utils.summation`, which we call ::
 
     J = cashocs.utils.summation(J_list)
 

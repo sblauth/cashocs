@@ -240,13 +240,13 @@ def test_control_pdas_gd_cc():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=9)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-	
+
 
 
 def test_control_pdas_cg_fr_cc():
@@ -256,9 +256,9 @@ def test_control_pdas_cg_fr_cc():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -272,9 +272,9 @@ def test_control_pdas_cg_pr_cc():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=11)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -288,9 +288,9 @@ def test_control_pdas_cg_dy_cc():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -303,9 +303,9 @@ def test_control_pdas_bfgs_cc():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=17)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -317,9 +317,9 @@ def test_control_pdas_newton():
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('pdas', rtol=1e-2, atol=0.0, max_iter=10)
-	
+
 	config.set('OptimizationRoutine', 'soft_exit', 'False')
-	
+
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])

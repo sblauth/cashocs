@@ -30,33 +30,21 @@ import meshio
 
 
 
-parser = argparse.ArgumentParser(description='Convert gmsh file to XDMF.')
-parser.add_argument('gmshfile', type=str, help='gmsh file that shall be converted, has to end in .msh')
-parser.add_argument('xdmffile', type=str, help='xdmf file into which the mesh shall be converted, has to end in .xdmf')
+def _generate_parser():
+	parser = argparse.ArgumentParser(description='Convert GMSH to XDMF.')
+	parser.add_argument('infile', type=str, help='GMSH file that shall be converted, has to end in .msh')
+	parser.add_argument('outfile', type=str, help='XDMF file into which the mesh shall be converted, has to end in .xdmf')
 	
+	return parser
+
 
 
 def convert(argv=None):
 	
+	parser = _generate_parser()
+	
 	args = argv or parser.parse_args(argv)
-	
-	# try:
-	# 	opts, args = getopt.getopt(argv, "h", ["help"])
-	# except getopt.GetoptError:
-	# 	usage()
-	# 	sys.exit(2)
-	#
-	#
-	# for opt, arg in opts:
-	# 	if opt in ('-h', '--help'):
-	# 		usage()
-	# 		sys.exit()
-	# # Check that we have two files
-	# if not (len(args) == 2):
-	# 	usage()
-	# 	sys.exit(2)
-	
-	
+
 	inputfile = args.gmshfile
 	outputfile = args.xdmffile
 	# Check that the inputfile has .msh file format
@@ -65,7 +53,7 @@ def convert(argv=None):
 		print('')
 		# usage()
 		sys.exit(2)
-	
+
 	# Check that the outputfile has .xdmf format
 	if outputfile[-5:] == '.xdmf':
 		oformat = '.xdmf'
@@ -75,9 +63,9 @@ def convert(argv=None):
 		print('')
 		# usage()
 		sys.exit(2)
-	
+
 	mesh_collection = meshio.read(inputfile)
-	
+
 	points = mesh_collection.points
 	cells_dict = mesh_collection.cells_dict
 	cell_data_dict = mesh_collection.cell_data_dict
@@ -93,7 +81,7 @@ def convert(argv=None):
 		print('')
 		# usage()
 		sys.exit(2)
-	
+
 	if meshdim == 2:
 		points = points[:, :2]
 		xdmf_mesh = meshio.Mesh(points=points, cells={'triangle' : cells_dict['triangle']})
@@ -109,7 +97,7 @@ def convert(argv=None):
 				xdmf_boundaries = meshio.Mesh(points=points, cells={'line' : cells_dict['line']},
 											  cell_data={'boundaries' : [cell_data_dict['gmsh:physical']['line']]})
 				meshio.write(ostring + '_boundaries.xdmf', xdmf_boundaries)
-	
+
 	elif meshdim == 3:
 		xdmf_mesh = meshio.Mesh(points=points, cells={'tetra' : cells_dict['tetra']})
 		meshio.write(ostring + '.xdmf', xdmf_mesh)
@@ -127,20 +115,6 @@ def convert(argv=None):
 
 
 
-# def usage():
-# 	"Display usage"
-# 	print("""\
-# Usage: cashocs-convert input.msh output.xdmf
-#
-# Supported formats
-# 		Input:
-# 		.msh	- Gmsh, version 2.0 or 4.0 file format
-#
-# 		Output:
-# 		.xdmf 	- XDMF file format
-# """)
-
-
-
 if __name__ == "__main__":
+	parser = _generate_parser()
 	convert(parser.parse_args())

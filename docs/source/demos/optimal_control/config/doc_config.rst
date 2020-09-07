@@ -219,7 +219,7 @@ The next line reads ::
 
     verbose = True
 
-The parameter `verbose` determines, whether the solution algorithm generates a verbose
+The parameter ``verbose`` determines, whether the solution algorithm generates a verbose
 output in the console, useful for monitoring its convergence.
 
 Next up, we define the paramter ``save_results`` ::

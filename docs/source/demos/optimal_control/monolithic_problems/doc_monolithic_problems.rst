@@ -7,7 +7,7 @@ Coupled Problems - Monolithic Approach
 Problem Formulation
 -------------------
 
-In this demo we show how cashocs can be used with a coupled PDE constraint.
+In this demo we show how CASHOCS can be used with a coupled PDE constraint.
 For this demo, we consider a monolithic approach, whereas we investigate
 an approach based on a Picard iteration in the following demo.
 

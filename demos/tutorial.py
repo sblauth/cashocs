@@ -18,9 +18,9 @@
 """Cashocs is a computational, adjoint based, shape optimization and optimal control software for python.
 On this site, we are taking a deep look into its capabilities regarding these two fields of optimization,
 which is done with various demo programs. Our intention is to give the user a detailed guide and overview
-over what cashocs can do, and to also give an introduction of how to use it. As cashocs takes more of
+over what CASHOCS can do, and to also give an introduction of how to use it. As CASHOCS takes more of
 a first optimize, then discretize approach, its features are manifold, but some familiarity with
-PDE constrained optimization may be required to solve the problems successfully. In particular, cashocs
+PDE constrained optimization may be required to solve the problems successfully. In particular, CASHOCS
 should **not** be treated as a black box solver for these kinds of problems.
 
 For beginners, we recommend reading through the demos roughly in the same order as they are presented.
@@ -37,8 +37,8 @@ Without further ado, let us take a look at the demo programs.
 
 # Optimal Control Demos
 
-Here, we showcase the capabilities of cashocs for optimal control problems. As stated earlier,
-newcomers should start reading here to get a grasp of how the problem definition in cashocs works,
+Here, we showcase the capabilities of CASHOCS for optimal control problems. As stated earlier,
+newcomers should start reading here to get a grasp of how the problem definition in CASHOCS works,
 as this is identical for optimal control and shape optimization problems.
 
 .. include:: ./documented/optimal_control/01_poisson/doc_poisson.md
@@ -100,7 +100,7 @@ as this is identical for optimal control and shape optimization problems.
 # Shape Optimization
 
 In this second part, we take a look at shape optimization problems. It is assumed that
-the reader is now somewhat familiar with the problem definition in cashocs, if not, please
+the reader is now somewhat familiar with the problem definition in CASHOCS, if not, please
 refer to the optimal control demos.
 
 <br/>

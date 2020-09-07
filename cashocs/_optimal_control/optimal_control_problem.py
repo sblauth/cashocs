@@ -53,7 +53,7 @@ class OptimalControlProblem(OptimizationProblem):
 		This is used to generate all classes and functionalities. First ensures
 		consistent input as the __init__ function is overloaded. Afterwards, the
 		solution algorithm is initialized.
-		
+
 		Parameters
 		----------
 		state_forms : ufl.form.Form or list[ufl.form.Form]
@@ -218,7 +218,7 @@ class OptimalControlProblem(OptimizationProblem):
 				if not (self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1):
 					raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls',
 									 'Control constraints are only implemented for linear Lagrange elements')
-		
+
 		if not len(self.riesz_scalar_products) == self.control_dim:
 			raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'Length of controls does not match')
 		if not len(self.control_constraints) == self.control_dim:
@@ -271,26 +271,26 @@ class OptimalControlProblem(OptimizationProblem):
 			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
 
 		return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
-	
-	
-	
+
+
+
 	def _erase_pde_memory(self):
 		"""Resets the memory of the PDE problems so that new solutions are computed.
-		
+
 		This sets the value of has_solution to False for all relevant PDE problems,
 		where memory is stored.
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.state_problem.has_solution = False
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
-		
 
-		
+
+
 	def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
 		r"""Solves the optimization problem by the method specified in the config file.
 
@@ -328,19 +328,19 @@ class OptimalControlProblem(OptimizationProblem):
 
 		Notes
 		-----
-		If either `rtol` or `atol` are specified as arguments to the solve
+		If either ``rtol`` or ``atol`` are specified as arguments to the solve
 		call, the termination criterion changes to:
 
-		  - a purely relative one (if only `rtol` is specified), i.e.,
-		
+		  - a purely relative one (if only ``rtol`` is specified), i.e.,
+
 		  .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
 
-		  - a purely absolute one (if only `atol` is specified), i.e.,
-		
+		  - a purely absolute one (if only ``atol`` is specified), i.e.,
+
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol}.
 
-		  - a combined one if both `rtol` and `atol` are specified, i.e.,
-		  
+		  - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||.
 		"""
 
@@ -381,7 +381,7 @@ class OptimalControlProblem(OptimizationProblem):
 		else:
 			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one '
 							  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), \'conjugate_gradient\' (\'cg\'), \'newton\', or \'primal_dual_active_set\' (\'pdas\').')
-		
+
 		self.solver.run()
 		self.solver.finalize()
 

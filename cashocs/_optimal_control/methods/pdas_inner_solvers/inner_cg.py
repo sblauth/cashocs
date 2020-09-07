@@ -170,7 +170,7 @@ class InnerCG(OptimizationAlgorithm):
 					for i in range(self.form_handler.control_dim):
 						self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
 					self.memory = 0
-					
+
 			if self.cg_relative_restart:
 				if abs(self.form_handler.scalar_product(self.reduced_gradient, self.gradients_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
 					for i in range(self.form_handler.control_dim):

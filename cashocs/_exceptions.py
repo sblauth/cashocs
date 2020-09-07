@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Exceptions raised by cashocs.
+"""Exceptions raised by CASHOCS.
 
 """
 
 
 
 class CashocsException(Exception):
-	"""Base class for exceptions raised by cashocs.
+	"""Base class for exceptions raised by CASHOCS.
 
 	"""
 
@@ -37,13 +37,13 @@ class NotConvergedError(CashocsException):
 	whether it is a linear or nonlinear system of equations, or an
 	optimization problem.
 	"""
-	
+
 	def __init__(self, solver, message=None):
 		self.solver = solver
 		self.message = message
-	
-	
-	
+
+
+
 	def __str__(self):
 		if self.message is None:
 			return f'The {self.solver} failed to converge.'
@@ -96,14 +96,14 @@ class InputError(CashocsException):
 	"""This exception gets raised when the user input to a public API method is wrong or inconsistent.
 
 	"""
-	
+
 	def __init__(self, obj, param, message=None):
 		self.obj = obj
 		self.param = param
 		self.message = message
-		
-		
-		
+
+
+
 	def __str__(self):
 		if self.message is None:
 			return f'Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.'
@@ -116,16 +116,16 @@ class ConfigError(CashocsException):
 	"""This exception gets raised when parameters in the config file are wrong.
 
 	"""
-	
+
 	pre_message = 'You have an error in your config file.\n'
-	
+
 	def __init__(self, section, key, message=None):
 		self.section = section
 		self.key = key
 		self.message = message
-	
-	
-	
+
+
+
 	def __str__(self):
 		if self.message is None:
 			return f'{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.'

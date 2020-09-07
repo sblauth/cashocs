@@ -24,7 +24,6 @@ Table of Contents
 
   * [Installation](#installation)
   * [Usage](#usage)
-  * [Testing](#testing)
   * [License](#license)
   * [Contributing](#contributing)
   * [Contact / About](#contact-about)
@@ -52,26 +51,23 @@ which automatically installs all prerequisites to get started.
 
         pip3 install cashocs
 
- You can install the newest (development) version of cashocs with
+ You can install the newest (development) version of CASHOCS with
 
         pip3 install git+temp_url
+
+To verify that the installation was successful, run the tests for CASHOCS
+with
+
+    cd tests
+    pytest
+
+from the source / repository root directory.
 
 Usage
 =====
 
 For an introduction to CASHOCS as well as it's API reference, see [here](temp_url). Moreover, we have several [documented demos](temp_url) which explain how to use CASHOCS
 using simple examples. The python code of the demos is located in the "demos" folder, and they can easily be acquired by cloning this repository.
-
-
-Testing
-=======
-
-To run the unit tests for this CASHOCS, run
-
-    cd tests
-    pytest
-
-from the source / repository root directory.
 
 
 License
@@ -87,7 +83,7 @@ You should have received a copy of the GNU General Public License along with CAS
 Contributing
 ============
 
-Please see [CONTRIBUTING](./CONTRIBUTING.md).
+Please see [here](temp_url).
 
 Contact / About
 ===============

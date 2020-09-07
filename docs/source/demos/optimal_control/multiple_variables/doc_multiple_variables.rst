@@ -7,7 +7,7 @@ Using Multiple Variables and PDEs
 Problem Formulation
 -------------------
 
-In this demo we show how cashocs can be used to treat multiple
+In this demo we show how CASHOCS can be used to treat multiple
 state equations as constraint. Additionally, this also highlights
 how multiple controls can be treated. As model example, we consider the
 following problem
@@ -69,7 +69,7 @@ we do with ::
     v = Function(V)
 
 Here ``p`` is the adjoint state corresponding to ``y``, and ``q`` is the adjoint
-state belonging to ``z``. For the treatment with cashocs these have to
+state belonging to ``z``. For the treatment with CASHOCS these have to
 be put in (ordered) lists, so that the states and adjoints obey the
 same order. This means, we define ::
 

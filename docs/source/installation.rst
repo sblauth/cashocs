@@ -8,7 +8,7 @@ Installation
   version that matches the hdf5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_
 
 - You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.0.
-  cashocs does not necessarily need this to function properly,
+  CASHOCS does not necessarily need this to function properly,
   but it is required for the remeshing functionality.
 
 Note, that if you want to have a `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_
@@ -22,10 +22,21 @@ which automatically installs all prerequisites to get started.
 
         pip3 install .
 
-- Alternatively, you can install cashocs via the PYPI::
+- Alternatively, you can install CASHOCS via the PYPI::
 
         pip3 install cashocs
 
- You can install the newest (development) version of cashocs with::
+ You can install the newest (development) version of CASHOCS with::
 
         pip3 install git+temp_url
+
+
+.. note::
+
+    To verify that the installation was successful, run the tests for CASHOCS
+    with ::
+
+        cd tests
+        pytest
+
+    from the source / repository root directory.

@@ -33,10 +33,10 @@ class AdjointProblem:
 
 	This class implements the adjoint problem as well as its solver.
 	"""
-	
+
 	def __init__(self, form_handler, state_problem, temp_dict=None):
 		"""Initializes the AdjointProblem
-		
+
 		Parameters
 		----------
 		form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
@@ -46,11 +46,11 @@ class AdjointProblem:
 		temp_dict : dict
 			A dictionary used for reinitializations when remeshing is performed.
 		"""
-		
+
 		self.form_handler = form_handler
 		self.state_problem = state_problem
 		self.temp_dict = temp_dict
-		
+
 		self.config = self.form_handler.config
 		self.adjoints = self.form_handler.adjoints
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
@@ -68,18 +68,18 @@ class AdjointProblem:
 		except TypeError:
 			self.number_of_solves = 0
 		self.has_solution = False
-	
-	
-	
+
+
+
 	def solve(self):
 		"""Solves the adjoint system.
-		
+
 		Returns
 		-------
 		adjoints : list[dolfin.function.function.Function]
 			The list of adjoint variables.
 		"""
-		
+
 		self.state_problem.solve()
 
 		if not self.has_solution:
@@ -121,5 +121,5 @@ class AdjointProblem:
 				print('')
 			self.has_solution = True
 			self.number_of_solves += 1
-		
+
 		return self.adjoints

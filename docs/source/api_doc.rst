@@ -8,7 +8,7 @@ API Documentation
 PDE Constrained Optimization Problems
 -------------------------------------
 
-If you are using cashocs to solve PDE constrained optimization problems, you should
+If you are using CASHOCS to solve PDE constrained optimization problems, you should
 use the following two classes, for either optimal control or shape optimization
 problems.
 
@@ -29,6 +29,15 @@ ShapeOptimizationProblem
 	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
+
+
+Command Line Interface
+----------------------
+
+.. argparse::
+	:module: cashocs._cli._convert
+	:func: _generate_parser
+	:prog: cashocs-convert
 
 
 MeshQuality
@@ -80,7 +89,7 @@ Sub-Modules
 -----------
 
 The sub-modules include several duplicates of entries already shown above. If
-a method or class is important or very relevant for cashocs, it can be found
+a method or class is important or very relevant for CASHOCS, it can be found
 in the main module directly, and there is no need for sub-modules. However,
 there may still be useful classes or functions here, for public use.
 

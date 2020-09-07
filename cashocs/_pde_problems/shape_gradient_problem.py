@@ -54,7 +54,7 @@ class ShapeGradientProblem:
 		self.gradient_norm_squared = 1.0
 
 		self.config = self.shape_form_handler.config
-		
+
 		# Generate the Krylov solver for the shape gradient problem
 		self.ksp = PETSc.KSP().create()
 		options = [[

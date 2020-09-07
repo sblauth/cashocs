@@ -63,7 +63,7 @@ def control_gradient_test(ocp, u=None, h=None):
 			temp = fenics.Function(ocp.form_handler.control_spaces[j])
 			temp.vector()[:] = ocp.controls[j].vector()[:]
 			u.append(temp)
-	
+
 	if not len(u) == ocp.control_dim:
 		raise InputError('cashocs.verification.control_gradient_test', 'u', 'Length of u does not match the length of controls of the problem.')
 

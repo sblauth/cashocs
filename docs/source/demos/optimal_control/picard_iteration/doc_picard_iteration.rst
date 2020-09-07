@@ -6,7 +6,7 @@ Coupled Problems - Picard Iteration
 Problem Formulation
 -------------------
 
-In this demo we show how cashocs can be used with a coupled PDE constraint.
+In this demo we show how CASHOCS can be used with a coupled PDE constraint.
 For this demo, we consider a iterative approach, whereas we investigated
 a monolithic approach in the previous demo.
 

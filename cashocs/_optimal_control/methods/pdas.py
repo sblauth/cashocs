@@ -109,7 +109,7 @@ class PDAS(OptimizationAlgorithm):
 		### TODO: Check for feasible initialization
 
 		self.compute_active_inactive_sets()
-		
+
 		self.state_problem.has_solution = False
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
@@ -138,7 +138,7 @@ class PDAS(OptimizationAlgorithm):
 
 			func_value = self.inner_solver.line_search.objective_step
 			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
-			
+
 			self.relative_norm = norm / norm_init
 
 			if self.iteration >= self.maximum_iterations:

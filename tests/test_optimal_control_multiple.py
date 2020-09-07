@@ -96,7 +96,7 @@ def test_control_cg_pr_multiple():
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=36)
 	assert ocp.solver.relative_norm <= ocp.solver.rtol
-	
+
 
 
 def test_control_cg_hs_multiple():

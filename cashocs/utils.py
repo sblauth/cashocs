@@ -17,7 +17,7 @@
 
 """Module including utility and helper functions.
 
-These module includes utility and helper functions used in cashocs. They
+These module includes utility and helper functions used in CASHOCS. They
 might also be interesting for users, so they are part of the public API.
 They include wrappers that allow to shorten the coding for often recurring
 actions.
@@ -62,24 +62,26 @@ def summation(x):
 
 	Examples
 	--------
+	The command ::
+
 	    a = cashocs.summation([u.dx(i)*v.dx(i)*dx for i in mesh.geometric_dimension()])
 
-	is equivalent to
+	is equivalent to ::
 
 	    a = u.dx(0)*v.dx(0)*dx + u.dx(1)*v.dx(1)*dx
 
 	(for a 2D mesh).
 	"""
-	
+
 	if len(x) == 0:
 		y = fenics.Constant(0.0)
 		print('Careful, empty list handed to summ')
 	else:
 		y = x[0]
-		
+
 		for item in x[1:]:
 			y += item
-	
+
 	return y
 
 
@@ -106,24 +108,26 @@ def multiplication(x):
 
 	Examples
 	--------
+	The command ::
+
 	    a = cashocs.multiplication([u.dx(i) for i in range(mesh.geometric_dimension())])
 
-	is equivalent to
+	is equivalent to ::
 
 	    a = u.dx(0) * u.dx(1)
 
 	(for a 2D mesh).
 	"""
-	
+
 	if len(x) == 0:
 		y = fenics.Constant(1.0)
 		print('Careful, empty list handed to multiplication')
 	else:
 		y = x[0]
-		
+
 		for item in x[1:]:
 			y *= item
-			
+
 	return y
 
 
@@ -205,6 +209,9 @@ def generate_measure(idx, measure):
 
 	Examples
 	--------
+	Here, we create a wrapper for the surface measure on the top and bottom of
+	the unit square::
+
 	    from fenics import *
 	    import cashocs
 	    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
@@ -264,7 +271,7 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 		The function space onto which the BCs should be imposed on.
 	value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
 		The value of the boundary condition. Has to be compatible with the function_space,
-		so that it could also be used as DirichletBC(function_space, value, ...).
+		so that it could also be used as ``DirichletBC(function_space, value, ...)``.
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 		The MeshFunction object representing the boundaries.
 	idcs : list[int] or int
@@ -279,7 +286,7 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 
 	Examples
 	--------
-	Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square.
+	Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square ::
 
 	    from fenics import *
 	    import cashocs
@@ -313,6 +320,8 @@ class Interpolator:
 
 	Examples
 	--------
+	Here, we consider interpolating from CG1 elements to CG2 elements ::
+	
 	    from fenics import *
 	    import cashocs
 
@@ -337,12 +346,12 @@ class Interpolator:
 		W : dolfin.function.functionspace.FunctionSpace
 			The space into which they shall be interpolated.
 		"""
-		
+
 		if not (V.ufl_element().family() == 'Lagrange' or (V.ufl_element().family() == 'Discontinuous Lagrange' and V.ufl_element().degree() == 0)):
 			raise InputError('cashocs.utils.Interpolator', 'V', 'The interpolator only works with CG n or DG 0 elements')
 		if not (W.ufl_element().family() == 'Lagrange' or (W.ufl_element().family() == 'Discontinuous Lagrange' and W.ufl_element().degree() == 0)):
 			raise InputError('cashocs.utils.Interpolator', 'W', 'The interpolator only works with CG n or DG 0 elements')
-		
+
 		self.V = V
 		self.W = W
 		self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(self.V, self.W)
@@ -367,7 +376,7 @@ class Interpolator:
 		dolfin.function.function.Function
 			The result of the interpolation.
 		"""
-		
+
 		if not u.function_space() == self.V:
 			raise InputError('cashocs.utils.Interpolator.interpolate', 'u', 'The input does not belong to the correct function space.')
 		v = fenics.Function(self.W)
@@ -434,7 +443,7 @@ def _setup_petsc_options(ksps, ksp_options):
 	-------
 	None
 	"""
-	
+
 	if not len(ksps) == len(ksp_options):
 		raise InputError('cashocs.utils._setup_petsc_options', 'ksps', 'Length of ksp_options and ksps does not match.')
 
@@ -513,9 +522,9 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None):
 def write_out_mesh(mesh, original_msh_file, out_msh_file):
 	"""Writes out the current mesh as .msh file.
 
-	This method updates the vertex positions in the `original_gmsh_file`, the
+	This method updates the vertex positions in the ``original_gmsh_file``, the
 	topology of the mesh and its connections are the same. The original gmsh
-	file is kept, and a new one is generated under `out_mesh_file`.
+	file is kept, and a new one is generated under ``out_mesh_file``.
 
 	Parameters
 	----------
@@ -536,7 +545,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 	The method only works with gmsh mesh 4.1 file format. Others might also work,
 	but this is not tested or ensured in any way.
 	"""
-	
+
 	if not original_msh_file[-4:] == '.msh':
 		raise InputError('cashocs.utils.write_out_mesh', 'original_msh_file', 'Format for original_mesh_file is wrong, has to end in .msh')
 	if not out_msh_file[-4:] == '.msh':
@@ -621,10 +630,10 @@ def _optimization_algorithm_configuration(config, algorithm=None):
 
 	if algorithm is None:
 		algorithm = config.get('OptimizationRoutine', 'algorithm')
-	
+
 	if not type(algorithm) == str:
 		raise InputError('cashocs.utils._optimization_algorithm_configuration', 'algorithm', 'Not a valid input type for algorithm. Has to be a string.')
-	
+
 	if algorithm in ['gradient_descent', 'gd']:
 		internal_algorithm = 'gradient_descent'
 	elif algorithm in ['cg', 'conjugate_gradient', 'ncg', 'nonlinear_cg']:

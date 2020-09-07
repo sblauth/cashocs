@@ -6,7 +6,7 @@ Optimal Control with State Constraints
 Problem Formulation
 -------------------
 
-In this demo we investigate how state constraints can be handled in cashocs. Thanks to
+In this demo we investigate how state constraints can be handled in CASHOCS. Thanks to
 the high level interface for solving (control-constrained) optimal control problems,
 the state constrained case can be treated (approximately) using a Moreau-Yosida
 regularization, which we show in the following. As model problem, we consider the

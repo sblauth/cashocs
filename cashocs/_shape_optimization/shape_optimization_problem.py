@@ -97,7 +97,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.do_remesh = config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
 		if self.do_remesh:
-			
+
 			if not os.path.isfile(os.path.realpath(sys.argv[0])):
 				raise CashocsException('Not a valid configuration. The script has to be the first command line argument.')
 
@@ -151,20 +151,20 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		self.gradient = self.shape_gradient_problem.gradient
 		self.objective_value = 1.0
-	
-	
-	
+
+
+
 	def _erase_pde_memory(self):
 		"""Resets the memory of the PDE problems so that new solutions are computed.
-		
+
 		This sets the value of has_solution to False for all relevant PDE problems,
 		where memory is stored.
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
 		self.shape_form_handler.update_scalar_product()
 		self.state_problem.has_solution = False
@@ -206,19 +206,19 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		Notes
 		-----
-		If either `rtol` or `atol` are specified as arguments to the solve
+		If either ``rtol`` or ``atol`` are specified as arguments to the solve
 		call, the termination criterion changes to:
 
-		  - a purely relative one (if only `rtol` is specified), i.e.,
-		  
+		  - a purely relative one (if only ``rtol`` is specified), i.e.,
+
 		  .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-		  
-		  - a purely absolute one (if only `atol` is specified), i.e.,
-		  
+
+		  - a purely absolute one (if only ``atol`` is specified), i.e.,
+
 		  .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
 
-		  - a combined one if both `rtol` and `atol` are specified, i.e.,
-		  
+		  - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
 		"""
 

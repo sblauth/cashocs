@@ -39,12 +39,12 @@ class OptimizationAlgorithm:
 	methods.newton.Newton
 	methods.primal_dual_active_set_method.PDAS
 	"""
-	
+
 	def __init__(self, optimization_problem):
 		"""Initializes the optimization algorithm
 
 		Defines common parameters used by all sub-classes.
-		
+
 		Parameters
 		----------
 		optimization_problem : cashocs._optimal_control.optimal_control_problem.OptimalControlProblem

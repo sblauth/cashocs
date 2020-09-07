@@ -100,8 +100,8 @@ under "Options Database Keys".
         ['ksp_atol', '1e-13'],
         ['ksp_max_it', 100],
 
-    specify that we use a relative tolerance of `1e-10`, an absolute one of `1e-13`, and
-    at most `100` iterations for each solve of the linear system, cf. `KSPSetTolerances
+    specify that we use a relative tolerance of 1e-10, an absolute one of 1e-13, and
+    at most 100 iterations for each solve of the linear system, cf. `KSPSetTolerances
     <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetTolerances.html#KSPSetTolerances>`_.
 
 Coming from the first optimize, then discretize view point, it is not required that

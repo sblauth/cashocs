@@ -78,8 +78,8 @@ class OptimizationProblem:
 		(UFL forms, functions, etc.) directly. In case multiple PDE constraints
 		are present the inputs have to be put into (ordered) lists. The order of
 		the objects depends on the order of the state variables, so that
-		`state_forms[i]` is the weak form of the PDE for state[i] with boundary
-		conditions `bcs_list[i]` and corresponding adjoint state `adjoints[i]`.
+		``state_forms[i]`` is the weak form of the PDE for state[i] with boundary
+		conditions ``bcs_list[i]`` and corresponding adjoint state ``adjoints[i]``.
 
 		See Also
 		--------
@@ -241,16 +241,16 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'states', 'Length of states does not match')
 		if not len(self.adjoints) == self.state_dim:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'adjoints', 'Length of states does not match')
-		
+
 		if self.initial_guess is not None:
 			if not len(self.initial_guess) == self.state_dim:
 				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'initial_guess', 'Length of states does not match')
-		
+
 		if not len(self.ksp_options) == self.state_dim:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match')
 		if not len(self.adjoint_ksp_options) == self.state_dim:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match')
-		
+
 
 		fenics.set_log_level(fenics.LogLevel.CRITICAL)
 

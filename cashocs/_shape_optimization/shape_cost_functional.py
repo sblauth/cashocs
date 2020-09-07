@@ -32,7 +32,7 @@ class ReducedShapeCostFunctional:
 
 	def __init__(self, shape_form_handler, state_problem):
 		"""Initializes the reduced cost functional
-		
+
 		Parameters
 		----------
 		shape_form_handler : cashocs._forms.ShapeFormHandler
@@ -40,7 +40,7 @@ class ReducedShapeCostFunctional:
 		state_problem : cashocs._pde_problems.StateProblem
 			the StateProblem object corresponding to the state system
 		"""
-		
+
 		self.shape_form_handler = shape_form_handler
 		self.state_problem = state_problem
 		self.regularization = self.shape_form_handler.regularization
@@ -49,14 +49,14 @@ class ReducedShapeCostFunctional:
 
 	def evaluate(self):
 		"""Evaluates the reduced cost functional
-		
+
 		Returns
 		-------
 		float
 			the value of the reduced cost functional at the current control
 
 		"""
-		
+
 		self.state_problem.solve()
 		# self.regularization.update_geometric_quantities()
 

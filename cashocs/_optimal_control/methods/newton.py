@@ -33,13 +33,13 @@ class Newton(OptimizationAlgorithm):
 
 	def __init__(self, optimization_problem):
 		"""Initializes the Newton method
-		
+
 		Parameters
 		----------
 		optimization_problem : cashocs.OptimalControlProblem
 			the OptimalControlProblem object
 		"""
-		
+
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
@@ -55,12 +55,12 @@ class Newton(OptimizationAlgorithm):
 
 	def run(self):
 		"""Performs the optimization via the truncated Newton method
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.iteration = 0
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False

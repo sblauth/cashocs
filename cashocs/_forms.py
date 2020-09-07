@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Private module forms of cashocs.
+"""Private module forms of CASHOCS.
 
 This is used to carry out form manipulations such as generating the UFL
  forms for the adjoint system and for the Riesz gradient identificiation
@@ -43,7 +43,7 @@ class Lagrangian:
 
 	This corresponds to the classical Lagrangian of a PDE constrained
 	optimization problem, of the form
-	
+
 	.. math:: L = J + e,
 
 	where J is the cost functional and e the (weak) PDE constrained, tested by
@@ -54,10 +54,10 @@ class Lagrangian:
 	--------
 	FormHandler : Derives necessary adjoint and gradient / shape derivative equations.
 	"""
-	
+
 	def __init__(self, state_forms, cost_functional_form):
 		"""Initializes the Lagrangian.
-		
+
 		Parameters
 		----------
 		state_forms : list[ufl.form.Form]
@@ -65,7 +65,7 @@ class Lagrangian:
 		cost_functional_form : ufl.form.Form
 			The cost functional, as implemented by the user.
 		"""
-		
+
 		self.state_forms = state_forms
 		self.cost_functional_form = cost_functional_form
 
@@ -313,7 +313,7 @@ class ControlFormHandler(FormHandler):
 		self.riesz_scalar_products = riesz_scalar_products
 		self.control_constraints = control_constraints
 		self.require_control_constraints = require_control_constraints
-		
+
 		self.control_dim = len(self.controls)
 		self.control_spaces = [x.function_space() for x in self.controls]
 
@@ -338,7 +338,7 @@ class ControlFormHandler(FormHandler):
 		# Initialize the scalar products
 		fenics_scalar_product_matrices = [fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True) for i in range(self.control_dim)]
 		self.scalar_products_matrices = [fenics.as_backend_type(fenics_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
-		
+
 		copy_scalar_product_matrices = [fenics_scalar_product_matrices[i].copy() for i in range(self.control_dim)]
 		[copy_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
 		self.riesz_projection_matrices = [fenics.as_backend_type(copy_scalar_product_matrices[i]).mat() for i in range(self.control_dim)]
@@ -388,21 +388,21 @@ class ControlFormHandler(FormHandler):
 		-------
 		None
 		"""
-		
+
 		self.idx_active_lower = []
 		self.idx_active_upper = []
 		self.idx_active = []
 		self.idx_inactive = []
-		
+
 		for j in range(self.control_dim):
-			
+
 			if self.require_control_constraints[j]:
 				self.idx_active_lower.append((self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:]).nonzero()[0])
 				self.idx_active_upper.append((self.controls[j].vector()[:] >= self.control_constraints[j][1].vector()[:]).nonzero()[0])
 			else:
 				self.idx_active_lower.append([])
 				self.idx_active_upper.append([])
-			
+
 			temp_active = np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j]))
 			temp_active.sort()
 			self.idx_active.append(temp_active)
@@ -428,13 +428,13 @@ class ControlFormHandler(FormHandler):
 		b : list[dolfin.function.function.Function]
 			The result of the projection (overwrites input b).
 		"""
-		
+
 		for j in range(self.control_dim):
 			if self.require_control_constraints[j]:
 				self.temp[j].vector()[:] = 0.0
 				self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[self.idx_active[j]]
 				b[j].vector()[:] = self.temp[j].vector()[:]
-			
+
 			else:
 				b[j].vector()[:] = 0.0
 
@@ -443,13 +443,13 @@ class ControlFormHandler(FormHandler):
 
 
 	def restrict_to_lower_active_set(self, a, b):
-		
+
 		for j in range(self.control_dim):
 			if self.require_control_constraints[j]:
 				self.temp[j].vector()[:] = 0.0
 				self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[self.idx_active_lower[j]]
 				b[j].vector()[:] = self.temp[j].vector()[:]
-			
+
 			else:
 				b[j].vector()[:] = 0.0
 
@@ -458,16 +458,16 @@ class ControlFormHandler(FormHandler):
 
 
 	def restrict_to_upper_active_set(self, a, b):
-		
+
 		for j in range(self.control_dim):
 			if self.require_control_constraints[j]:
 				self.temp[j].vector()[:] = 0.0
 				self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[self.idx_active_upper[j]]
 				b[j].vector()[:] = self.temp[j].vector()[:]
-			
+
 			else:
 				b[j].vector()[:] = 0.0
-		
+
 		return b
 
 
@@ -490,13 +490,13 @@ class ControlFormHandler(FormHandler):
 		b : list[dolfin.function.function.Function]
 			The result of the projection of a onto the inactive set (overwrites input b).
 		"""
-		
+
 		for j in range(self.control_dim):
 			if self.require_control_constraints[j]:
 				self.temp[j].vector()[:] = 0.0
 				self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[self.idx_inactive[j]]
 				b[j].vector()[:] = self.temp[j].vector()[:]
-			
+
 			else:
 				b[j].vector()[:] = a[j].vector()[:]
 
@@ -521,7 +521,7 @@ class ControlFormHandler(FormHandler):
 		a : list[dolfin.function.function.Function]
 			The result of the projection (overwrites input a)
 		"""
-		
+
 		for j in range(self.control_dim):
 			if self.require_control_constraints[j]:
 				a[j].vector()[:] = np.maximum(self.control_constraints[j][0].vector()[:], np.minimum(self.control_constraints[j][1].vector()[:], a[j].vector()[:]))
@@ -529,10 +529,10 @@ class ControlFormHandler(FormHandler):
 		return a
 
 
-	
+
 	def __compute_gradient_equations(self):
 		"""Calculates the variational form of the gradient equation, for the Riesz projection.
-		
+
 		Returns
 		-------
 		None
@@ -540,8 +540,8 @@ class ControlFormHandler(FormHandler):
 
 		self.gradient_forms_rhs = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
 
-	
-	
+
+
 	def __compute_newton_forms(self):
 		"""Calculates the needed forms for the truncated Newton method.
 
@@ -684,7 +684,7 @@ class ShapeFormHandler(FormHandler):
 		self.__compute_shape_derivative()
 		self.__compute_shape_gradient_forms()
 		self.__setup_mu_computation()
-		
+
 		# TODO: See if we can do this using try / except
 		if self.degree_estimation:
 			self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product),
@@ -768,23 +768,23 @@ class ShapeFormHandler(FormHandler):
 			raise ConfigError('ShapeGradient', 'shape_bdry_def', 'The input has to be a list.')
 		if not len(self.shape_bdry_def) > 0:
 			raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
-		
+
 		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
 		if not type(self.shape_bdry_def) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix', 'The input has to be a list.')
-		
+
 		self.shape_bdry_fix_x = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_x', fallback='[]'))
 		if not type(self.shape_bdry_fix_x) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix_x', 'The input has to be a list.')
-		
+
 		self.shape_bdry_fix_y = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_y', fallback='[]'))
 		if not type(self.shape_bdry_fix_y) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix_y', 'The input has to be a list.')
-		
+
 		self.shape_bdry_fix_z = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_z', fallback='[]'))
 		if not type(self.shape_bdry_fix_z) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix_z', 'The input has to be a list.')
-		
+
 
 		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
 		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
@@ -810,23 +810,23 @@ class ShapeFormHandler(FormHandler):
 		self.riesz_scalar_product = fenics.Constant(2)*self.mu_lame/self.volumes*fenics.inner(eps(trial), eps(test))*self.dx \
 									+ fenics.Constant(self.lambda_lame)/self.volumes*fenics.div(trial)*fenics.div(test)*self.dx \
 									+ fenics.Constant(self.damping_factor)/self.volumes*fenics.inner(trial, test)*self.dx
-		
+
 		self.bcs_shape = create_bcs_list(self.deformation_space, fenics.Constant([0]*self.deformation_space.ufl_element().value_size()), self.boundaries, self.shape_bdry_fix)
 		self.bcs_shape += create_bcs_list(self.deformation_space.sub(0), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_x)
 		self.bcs_shape += create_bcs_list(self.deformation_space.sub(1), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_y)
 		if self.deformation_space.num_sub_spaces() == 3:
 			self.bcs_shape += create_bcs_list(self.deformation_space.sub(2), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_z)
-	
-	
-	
+
+
+
 	def __setup_mu_computation(self):
 		self.mu_def = self.config.getfloat('ShapeGradient', 'mu_def')
 		self.mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix')
 
 		if np.abs(self.mu_def - self.mu_fix)/self.mu_fix > 1e-2:
-			
+
 			self.inhomogeneous_mu = True
-			
+
 			# dx = self.dx
 
 			options = [[
@@ -866,9 +866,9 @@ class ShapeFormHandler(FormHandler):
 			PDE Constrained Shape Optimization, Computational Methods in Applied Mathematics",
 			2016, Vol. 16, Iss. 3, https://doi.org/10.1515/cmam-2016-0009
 		"""
-		
+
 		if self.inhomogeneous_mu:
-		
+
 			A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
 			x = _solve_linear_problem(self.ksp_mu, A, b)
 

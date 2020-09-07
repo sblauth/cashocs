@@ -40,7 +40,7 @@ class CG(OptimizationAlgorithm):
 		optimization_problem : cashocs.OptimalControlProblem
 			the OptimalControlProblem object
 		"""
-		
+
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
@@ -79,16 +79,16 @@ class CG(OptimizationAlgorithm):
 
 			a[j].vector()[idx] = 0.0
 
-	
-	
+
+
 	def run(self):
 		"""Performs the optimization via the nonlinear cg method
-		
+
 		Returns
 		-------
 		None
 		"""
-		
+
 		self.iteration = 0
 		self.memory = 0
 		self.relative_norm = 1.0
@@ -184,7 +184,7 @@ class CG(OptimizationAlgorithm):
 
 			self.project_direction(self.search_directions)
 			self.directional_derivative = self.form_handler.scalar_product(self.gradients, self.search_directions)
-			
+
 			if self.directional_derivative >= 0:
 				for i in range(len(self.gradients)):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
