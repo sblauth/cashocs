@@ -1,4 +1,4 @@
-API Documentation
+API Reference
 =================
 
 .. automodule:: cashocs

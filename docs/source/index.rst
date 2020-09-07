@@ -20,8 +20,6 @@ CASHOCS Documentation
    about
 
 
-
-
 Indices and tables
 ==================
 
