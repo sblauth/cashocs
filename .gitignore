@@ -11,3 +11,5 @@ dist/
 build_docs.sh
 build_pypi.sh
 test.sh
+
+/cashocs-convert

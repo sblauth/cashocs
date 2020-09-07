@@ -40,13 +40,12 @@ def _generate_parser():
 
 
 def convert(argv=None):
-	
 	parser = _generate_parser()
 	
 	args = argv or parser.parse_args(argv)
 
-	inputfile = args.gmshfile
-	outputfile = args.xdmffile
+	inputfile = args.infile
+	outputfile = args.outfile
 	# Check that the inputfile has .msh file format
 	if not (inputfile[-4:] == '.msh'):
 		print('Error: Cannot use the current file format as input')

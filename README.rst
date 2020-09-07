@@ -23,7 +23,7 @@ we can recommend the textbooks
     - `Logg, Mardal, and Wells, Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
 
 
-However, the `CASHOCS tutorial <https://temp-url.com/>`_ also give many references either
+However, the `CASHOCS tutorial <https://temp-url.com/>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
@@ -84,7 +84,7 @@ Usage
 
 The complete CASHOCS documentation is available here `<https://temp-url.com/>`_. For a detailed
 introduction, see the `CASHOCS tutorial <https://temp-url.com/>`_. The python source code
-for the demo programs is located in the "demos" folder.
+for the demo programs is located inside the "demos" folder.
 
 
 .. readme_start_license

@@ -68,7 +68,7 @@ fixed boundary, and boundaries that can only be deformed perpendicular to a cert
 coordinate axis (see :ref:`config_shape_shape_gradient`). Most importantly, for this example,
 one of the deformable boundaries must not be empty, so that we can actually optimize something.
 Here, we investigate the case of a completely deformable boundary, which makes things slightly
-easier. We mark this boundary with the marker ``1`` with the following piece of code ::
+easier. We mark this boundary with the marker 1 with the following piece of code ::
 
     boundary = CompiledSubDomain('on_boundary')
     boundaries = MeshFunction('size_t', mesh, dim=1)
@@ -78,12 +78,12 @@ easier. We mark this boundary with the marker ``1`` with the following piece of 
 .. note::
 
     In :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`,
-    in the section :ref:`[ShapeGradient] <config_shape_shape_gradient>`, there is
+    in the section :ref:`ShapeGradient <config_shape_shape_gradient>`, there is
     the line ::
 
         shape_bdry_def = [1]
 
-    which specifies that the boundary marked with ``1`` is deformable. For our
+    which specifies that the boundary marked with 1 is deformable. For our
     example this is exactly what we want, as this means that the entire boundary
     is variable, due to the previous commands. For a detailed documentation we
     refer to :ref:`the corresponding documentation of the ShapeGradient section
@@ -137,7 +137,7 @@ the :py:meth:`sop.solve() <cashocs.ShapeOptimizationProblem.solve>` command ::
 
     sop.solve()
 
-A picture of the corresponding optimized geometry is given by
+The optimized geometry looks like this
 
 .. image:: opt_mesh_poisson.png
 
