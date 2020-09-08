@@ -63,38 +63,41 @@ optimization_problem.solve()
 
 
 
-y, z = state.split(True)
-import matplotlib.pyplot as plt
-plt.figure(figsize=(15,10))
-
-plt.subplot(2, 3, 1)
-fig = plot(u)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable u')
-
-plt.subplot(2, 3, 2)
-fig = plot(y)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable y')
-
-plt.subplot(2, 3, 3)
-fig = plot(y_d, mesh=mesh)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state y_d')
-
-plt.subplot(2, 3, 4)
-fig = plot(v)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable v')
-
-plt.subplot(2, 3, 5)
-fig = plot(z)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable z')
-
-plt.subplot(2, 3, 6)
-fig = plot(z_d, mesh=mesh)
-plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state z_d')
-
-plt.tight_layout()
+### Post Processing
+#
+# y, z = state.split(True)
+# import matplotlib.pyplot as plt
+# plt.figure(figsize=(15,10))
+#
+# plt.subplot(2, 3, 1)
+# fig = plot(u)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('Control variable u')
+#
+# plt.subplot(2, 3, 2)
+# fig = plot(y)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('State variable y')
+#
+# plt.subplot(2, 3, 3)
+# fig = plot(y_d, mesh=mesh)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('Desired state y_d')
+#
+# plt.subplot(2, 3, 4)
+# fig = plot(v)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('Control variable v')
+#
+# plt.subplot(2, 3, 5)
+# fig = plot(z)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('State variable z')
+#
+# plt.subplot(2, 3, 6)
+# fig = plot(z_d, mesh=mesh)
+# plt.colorbar(fig, fraction=0.046, pad=0.04)
+# plt.title('Desired state z_d')
+#
+# plt.tight_layout()
+# plt.savefig('./img_monolithic_problems.png', dpi=150, bbox_inches='tight')

@@ -142,7 +142,10 @@ def shape_gradient_test(sop, h=None):
 	if h is None:
 		h = fenics.Function(sop.shape_form_handler.deformation_space)
 		h.vector()[:] = np.random.rand(sop.shape_form_handler.deformation_space.dim())
-
+	
+	# ensure that the shape boundary conditions are applied
+	[bc.apply(h.vector()) for bc in sop.shape_form_handler.bcs_shape]
+	
 	transformation = fenics.Function(sop.shape_form_handler.deformation_space)
 
 	sop._erase_pde_memory()
@@ -153,7 +156,6 @@ def shape_gradient_test(sop, h=None):
 	box_lower = np.max(sop.mesh_handler.mesh.coordinates())
 	box_upper = np.min(sop.mesh_handler.mesh.coordinates())
 	length = box_upper - box_lower
-
 
 	epsilons = [length*1e-4 / 2**i for i in range(4)]
 	residuals = []

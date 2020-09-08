@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/pypa/sampleproject",
     # project_urls={'Source' : 'https://github.com/plugged/cashocs',
     #               'Documentation' : 'https://plugged.github.io/cashocs/docs/',
+    #               'Tutorial' : 'https://github.com/plugged/cashocs/issues',
     #               'Tracker' : 'https://github.com/plugged/cashocs/issues'
     #               },
     packages=setuptools.find_packages(),

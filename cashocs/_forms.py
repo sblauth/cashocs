@@ -148,8 +148,9 @@ class FormHandler:
 		self.state_is_linear = self.config.getboolean('StateEquation', 'is_linear', fallback = False)
 		self.state_is_picard = self.config.getboolean('StateEquation', 'picard_iteration', fallback=False)
 		self.opt_algo = _optimization_algorithm_configuration(config)
-
-		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+		
+		if self.opt_algo == 'pdas':
+			self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
 
 		self.__compute_state_equations()
 		self.__compute_adjoint_equations()

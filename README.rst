@@ -45,18 +45,20 @@ Installation
   CASHOCS does not necessarily need this to function properly,
   but it is required for the remeshing functionality.
 
-Note, that if you want to have a `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_
-installation, you can simply create a new environment with::
+.. note::
 
-    conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
+    If you want to use `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_,
+    you can simply create a new environment with::
 
-which automatically installs all prerequisites to get started.
+        conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
+
+    which automatically installs all prerequisites (including the optional ones of gmsh and matplotlib) to get started.
 
 - Clone this repository with git, and run::
 
         pip3 install .
 
-- Alternatively, you can install CASHOCS via the PYPI::
+- Alternatively, you can install CASHOCS via the `PYPI <https://pypi.org/>`_::
 
         pip3 install cashocs
 

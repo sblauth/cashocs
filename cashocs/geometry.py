@@ -805,6 +805,7 @@ class _MeshHandler:
 				os.system(gmsh_command + ' >/dev/null 2>&1')
 			else:
 				os.system(gmsh_command)
+			
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
 

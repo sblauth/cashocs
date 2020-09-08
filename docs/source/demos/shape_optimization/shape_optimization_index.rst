@@ -6,5 +6,9 @@ Shape Optimization Problems
    :maxdepth: 1
    :caption: Contents:
 
-   shape_poisson/doc_shape_poisson
-   shape_config/doc_config
+   doc_shape_poisson
+   doc_config
+   doc_regularization
+   doc_inverse_tomography
+   doc_shape_stokes
+   doc_remeshing

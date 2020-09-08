@@ -42,12 +42,17 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	The method terminates after ``max_iter`` iterations, or if a termination criterion is
 	satisfied. These criteria are given by
 
-	.. math::
-		\begin{alignedat}{2}
-			\lvert\lvert F_{k} \rvert\rvert &\leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad &&\text{ if convergence type is 'rel'} \\
-			\lvert\lvert F_{k} \rvert\rvert &\leq \texttt{atol} \quad &&\text{ if convergence type is 'abs'} \\
-			\lvert\lvert F_{k} \rvert\rvert &\leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert \quad &&\text{ if convergence type is 'combined'}
-		\end{alignedat}
+	- a relative one in case ``convergence_type = 'rel'``, i.e.,
+
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert
+
+	- an absolute one in case ``convergence_type = 'abs'``, i.e.,
+
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}
+
+	- a combination of both in case ``convergence_type = 'combined'``, i.e.,
+
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert
 
 	The norm chosen for the termination criterion is specified via ``norm_type``.
 
@@ -62,24 +67,24 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	bcs : list[dolfin.fem.dirichletbc.DirichletBC]
 		A list of DirichletBCs for the nonlinear variational problem.
 	rtol : float, optional
-		Relative tolerance of the solver if convergence_type is either 'combined' or 'rel'
-		(default is ``rtol`` = 1e-10).
+		Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
+		(default is ``rtol = 1e-10``).
 	atol : float, optional
-		Absolute tolerance of the solver if convergence_type is either 'combined' or 'abs'
-		(default is atol = 1e-10).
+		Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
+		(default is ``atol = 1e-10``).
 	max_iter : int, optional
 		Maximum number of iterations carried out by the method
-		(default is max_iter = 50).
+		(default is ``max_iter = 50``).
 	convergence_type : {'combined', 'rel', 'abs'}
 		Determines the type of stopping criterion that is used.
 	norm_type : {'l2', 'linf'}
 		Determines which norm is used in the stopping criterion.
 	damped : bool, optional
-		If True, then a damping strategy is used. If False, the classical
-		Newton-Raphson iteration (without damping) is used (default is True).
+		If ``True``, then a damping strategy is used. If ``False``, the classical
+		Newton-Raphson iteration (without damping) is used (default is ``True``).
 	verbose : bool, optional
-		If True, prints status of the iteration to the console (default
-		is True).
+		If ``True``, prints status of the iteration to the console (default
+		is ``True``).
 	ksp : petsc4py.PETSc.KSP, optional
 		The PETSc ksp object used to solve the inner (linear) problem
 		if this is None it uses the direct solver MUMPS (default is
