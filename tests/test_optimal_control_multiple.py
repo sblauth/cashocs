@@ -80,7 +80,7 @@ def test_control_gd_multiple():
 
 
 def test_control_cg_fr_multiple():
-	config.set('OptimizationRoutine', 'cg_method', 'FR')
+	config.set('AlgoCG', 'cg_method', 'FR')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -90,7 +90,7 @@ def test_control_cg_fr_multiple():
 
 
 def test_control_cg_pr_multiple():
-	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('AlgoCG', 'cg_method', 'PR')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -100,7 +100,7 @@ def test_control_cg_pr_multiple():
 
 
 def test_control_cg_hs_multiple():
-	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	config.set('AlgoCG', 'cg_method', 'HS')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -110,7 +110,7 @@ def test_control_cg_hs_multiple():
 
 
 def test_control_cg_dy_multiple():
-	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('AlgoCG', 'cg_method', 'DY')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -120,7 +120,7 @@ def test_control_cg_dy_multiple():
 
 
 def test_control_cg_hz_multiple():
-	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	config.set('AlgoCG', 'cg_method', 'HZ')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -139,7 +139,7 @@ def test_control_bfgs_multiple():
 
 
 def test_control_newton_cg_multiple():
-	config.set('OptimizationRoutine', 'inner_newton', 'cg')
+	config.set('AlgoNEWTON', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -149,7 +149,7 @@ def test_control_newton_cg_multiple():
 
 
 def test_control_newton_cr_multiple():
-	config.set('OptimizationRoutine', 'inner_newton', 'cr')
+	config.set('AlgoNEWTON', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()

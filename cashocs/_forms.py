@@ -150,7 +150,7 @@ class FormHandler:
 		self.opt_algo = _optimization_algorithm_configuration(config)
 		
 		if self.opt_algo == 'pdas':
-			self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+			self.inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
 
 		self.__compute_state_equations()
 		self.__compute_adjoint_equations()
@@ -674,6 +674,7 @@ class ShapeFormHandler(FormHandler):
 		self.boundaries = boundaries
 
 		self.degree_estimation = self.config.getboolean('ShapeGradient', 'degree_estimation', fallback=False)
+		self.use_pull_back = self.config.getboolean('ShapeGradient', 'use_pull_back', fallback=True)
 
 		self.deformation_space = fenics.VectorFunctionSpace(self.mesh, 'CG', 1)
 		self.test_vector_field = fenics.TestFunction(self.deformation_space)
@@ -685,15 +686,20 @@ class ShapeFormHandler(FormHandler):
 		self.__compute_shape_derivative()
 		self.__compute_shape_gradient_forms()
 		self.__setup_mu_computation()
-
-		# TODO: See if we can do this using try / except
+		
 		if self.degree_estimation:
 			self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product),
 											   estimate_total_polynomial_degree(self.shape_derivative))
 			self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape,
 													form_compiler_parameters={'quadrature_degree' : self.estimated_degree})
 		else:
-			self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape)
+			try:
+				self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape)
+			except (AssertionError, ValueError):
+				self.estimated_degree = np.maximum(estimate_total_polynomial_degree(self.riesz_scalar_product),
+											   estimate_total_polynomial_degree(self.shape_derivative))
+				self.assembler = fenics.SystemAssembler(self.riesz_scalar_product, self.shape_derivative, self.bcs_shape,
+													form_compiler_parameters={'quadrature_degree' : self.estimated_degree})
 
 		self.assembler.keep_diagonal = True
 		self.fe_scalar_product_matrix = fenics.PETScMatrix()
@@ -725,31 +731,32 @@ class ShapeFormHandler(FormHandler):
 		self.shape_derivative = fenics.derivative(self.lagrangian.lagrangian_form, fenics.SpatialCoordinate(self.mesh), self.test_vector_field)
 
 		# Add pull-backs
-		self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [coeff.id() for coeff in self.adjoints]
-
-		self.material_derivative_coeffs = []
-		for coeff in self.lagrangian.lagrangian_form.coefficients():
-			if coeff.id() in self.state_adjoint_ids:
-				pass
-			else:
-				if not (coeff.ufl_element().family() == 'Real'):
-					self.material_derivative_coeffs.append(coeff)
-
-		if len(self.material_derivative_coeffs) > 0:
-			warnings.warn('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n '
-						  'You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test ')
-
-		for coeff in self.material_derivative_coeffs:
-			# temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())
-			# placeholder = fenics.Function(temp_space)
-			# temp_form = fenics.derivative(self.lagrangian.lagrangian_form, coeff, placeholder)
-			# material_derivative = replace(temp_form, {placeholder : fenics.dot(fenics.grad(coeff), self.test_vector_field)})
-
-			material_derivative = fenics.derivative(self.lagrangian.lagrangian_form, coeff,
-													fenics.dot(fenics.grad(coeff), self.test_vector_field))
-			material_derivative = expand_derivatives(material_derivative)
-
-			self.shape_derivative += material_derivative
+		if self.use_pull_back:
+			self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [coeff.id() for coeff in self.adjoints]
+	
+			self.material_derivative_coeffs = []
+			for coeff in self.lagrangian.lagrangian_form.coefficients():
+				if coeff.id() in self.state_adjoint_ids:
+					pass
+				else:
+					if not (coeff.ufl_element().family() == 'Real'):
+						self.material_derivative_coeffs.append(coeff)
+	
+			if len(self.material_derivative_coeffs) > 0:
+				warnings.warn('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n '
+							  'You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test ')
+	
+			for coeff in self.material_derivative_coeffs:
+				# temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())
+				# placeholder = fenics.Function(temp_space)
+				# temp_form = fenics.derivative(self.lagrangian.lagrangian_form, coeff, placeholder)
+				# material_derivative = replace(temp_form, {placeholder : fenics.dot(fenics.grad(coeff), self.test_vector_field)})
+	
+				material_derivative = fenics.derivative(self.lagrangian.lagrangian_form, coeff,
+														fenics.dot(fenics.grad(coeff), self.test_vector_field))
+				material_derivative = expand_derivatives(material_derivative)
+	
+				self.shape_derivative += material_derivative
 
 		# Add regularization
 		self.shape_derivative += self.regularization.compute_shape_derivative()
@@ -767,8 +774,8 @@ class ShapeFormHandler(FormHandler):
 		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
 		if not type(self.shape_bdry_def) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_def', 'The input has to be a list.')
-		if not len(self.shape_bdry_def) > 0:
-			raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
+		# if not len(self.shape_bdry_def) > 0:
+		# 	raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
 
 		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
 		if not type(self.shape_bdry_def) == list:

@@ -64,8 +64,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		----------
 		state_forms : ufl.form.Form or list[ufl.form.Form]
 			the weak form of the state equation (user implemented). Can be either
-		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]]
-				   or dolfin.fem.dirichletbc.DirichletBC or None
+		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
 			If this is None, then no Dirichlet boundary conditions are imposed.
 		cost_functional_form : ufl.form.Form
@@ -180,10 +179,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		----------
 		algorithm : str or None, optional
 			Selects the optimization algorithm. Valid choices are
-			'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
-			or 'lbfgs' ('bfgs'). This overwrites the value specified
-			in the config file. If this is None, then the value in the
-			config file is used. Default is None.
+			``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+			``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+			for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
+			limited memory BFGS methods. This overwrites the value specified
+			in the config file. If this is ``None``, then the value in the
+			config file is used. Default is ``None``.
 		rtol : float or None, optional
 			The relative tolerance used for the termination criterion.
 			Overwrites the value specified in the config file. If this

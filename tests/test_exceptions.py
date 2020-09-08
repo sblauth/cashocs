@@ -50,7 +50,7 @@ ksp_options = [
 	['pc_hypre_type', 'boomeramg'],
 	['ksp_rtol', 1e-100],
 	['ksp_atol', 1e-100],
-	['ksp_max_it', 2],
+	['ksp_max_it', 1],
 ]
 
 ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
@@ -83,15 +83,17 @@ def test_petsc_error():
 		u.vector()[:] = np.random.rand(V.dim())
 		ocp_ksp._erase_pde_memory()
 		ocp_ksp.compute_state_variables()
-
-	with pytest.raises(PETScKSPError):
+	
+	with pytest.raises(CashocsException):
+		u.vector()[:] = np.random.rand(V.dim())
+		ocp_ksp._erase_pde_memory()
 		ocp_ksp.compute_state_variables()
 
 
 
 def test_config_error():
 	with pytest.raises(ConfigError):
-		config.set('OptimizationRoutine', 'cg_method', 'nonexistent')
+		config.set('AlgoCG', 'cg_method', 'nonexistent')
 		config.set('OptimizationRoutine', 'algorithm', 'cg')
 		config.set('OptimizationRoutine', 'maximum_iterations', '2')
 		u.vector()[:] = np.random.rand(V.dim())

@@ -53,10 +53,10 @@ class BaseHessianProblem:
 		self.config = self.form_handler.config
 		self.gradients = self.gradient_problem.gradients
 
-		self.inner_newton = self.config.get('OptimizationRoutine', 'inner_newton', fallback='cr')
-		self.max_it_inner_newton = self.config.getint('OptimizationRoutine', 'max_it_inner_newton', fallback=50)
+		self.inner_newton = self.config.get('AlgoNEWTON', 'inner_newton', fallback='cr')
+		self.max_it_inner_newton = self.config.getint('AlgoNEWTON', 'max_it_inner_newton', fallback=50)
 		# TODO: Add absolute tolerance, too
-		self.inner_newton_tolerance = self.config.getfloat('OptimizationRoutine', 'inner_newton_tolerance', fallback=1e-15)
+		self.inner_newton_tolerance = self.config.getfloat('AlgoNEWTON', 'inner_newton_tolerance', fallback=1e-15)
 
 		self.test_directions = self.form_handler.test_directions
 		self.residual = [fenics.Function(V) for V in self.form_handler.control_spaces]
@@ -84,7 +84,7 @@ class BaseHessianProblem:
 		self.controls = self.form_handler.controls
 
 		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-20)
+		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-12)
 		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
 		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
 
@@ -239,7 +239,7 @@ class BaseHessianProblem:
 		elif self.inner_newton == 'cr':
 			self.cr(idx_active)
 		else:
-			raise ConfigError('OptimizationRoutine', 'inner_newton', 'Not a valid choice. Needs to be either \'cg\' or \'cr\'.')
+			raise ConfigError('AlgoNEWTON', 'inner_newton', 'Not a valid choice. Needs to be either \'cg\' or \'cr\'.')
 
 		return self.delta_control
 

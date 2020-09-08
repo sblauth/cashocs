@@ -95,8 +95,8 @@ iteration.
 The next parameters are used to define the tolerances of the Newton solver, in
 case a nonlinear state system has to be solved ::
 
-    inner_newton_atol = 1e-13
-    inner_newton_rtol = 1e-11
+    newton_atol = 1e-13
+    newton_rtol = 1e-11
 
 Here, ``atol`` sets the absolute, and ``rtol`` the relative tolerance.
 

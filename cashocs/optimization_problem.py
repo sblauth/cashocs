@@ -47,8 +47,7 @@ class OptimizationProblem:
 		state_forms : ufl.form.Form or list[ufl.form.Form]
 			The weak form of the state equation. Can be either a UFL form
 			or a list of UFL forms (if we have multiple equations).
-		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]]
-				   or dolfin.fem.dirichletbc.DirichletBC or None
+		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
 			If this is None, then no Dirichlet boundary conditions are imposed.
 		cost_functional_form : ufl.form.Form

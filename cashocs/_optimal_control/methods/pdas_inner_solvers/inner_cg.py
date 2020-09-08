@@ -46,8 +46,8 @@ class InnerCG(OptimizationAlgorithm):
 
 		self.line_search = UnconstrainedLineSearch(self)
 
-		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas', fallback=50)
-		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance', fallback=1e-2)
+		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
+		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
 		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
@@ -58,11 +58,11 @@ class InnerCG(OptimizationAlgorithm):
 
 		self.armijo_broken = False
 
-		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method', fallback='FR')
-		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart', fallback=False)
-		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', fallback=10)
-		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart', fallback=False)
-		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol', fallback=0.25)
+		self.cg_method = self.config.get('AlgoCG', 'cg_method', fallback='FR')
+		self.cg_periodic_restart = self.config.getboolean('AlgoCG', 'cg_periodic_restart', fallback=False)
+		self.cg_periodic_its = self.config.getint('AlgoCG', 'cg_periodic_its', fallback=10)
+		self.cg_relative_restart = self.config.getboolean('AlgoCG', 'cg_relative_restart', fallback=False)
+		self.cg_restart_tol = self.config.getfloat('AlgoCG', 'cg_restart_tol', fallback=0.25)
 
 
 
@@ -145,7 +145,7 @@ class InnerCG(OptimizationAlgorithm):
 					self.beta = self.form_handler.scalar_product(self.differences, self.reduced_gradient) / dy
 
 				else:
-					raise ConfigError('OptimizationRoutine', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
+					raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
 									  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
 
 			if self.iteration==0:

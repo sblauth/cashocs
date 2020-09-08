@@ -49,11 +49,11 @@ class CG(ShapeOptimizationAlgorithm):
 		self.difference = fenics.Function(self.shape_form_handler.deformation_space)
 		self.temp_HZ = fenics.Function(self.shape_form_handler.deformation_space)
 
-		self.cg_method = self.config.get('OptimizationRoutine', 'cg_method', fallback='FR')
-		self.cg_periodic_restart = self.config.getboolean('OptimizationRoutine', 'cg_periodic_restart', fallback=False)
-		self.cg_periodic_its = self.config.getint('OptimizationRoutine', 'cg_periodic_its', fallback=10)
-		self.cg_relative_restart = self.config.getboolean('OptimizationRoutine', 'cg_relative_restart', fallback=False)
-		self.cg_restart_tol = self.config.getfloat('OptimizationRoutine', 'cg_restart_tol', fallback=0.25)
+		self.cg_method = self.config.get('AlgoCG', 'cg_method', fallback='FR')
+		self.cg_periodic_restart = self.config.getboolean('AlgoCG', 'cg_periodic_restart', fallback=False)
+		self.cg_periodic_its = self.config.getint('AlgoCG', 'cg_periodic_its', fallback=10)
+		self.cg_relative_restart = self.config.getboolean('AlgoCG', 'cg_relative_restart', fallback=False)
+		self.cg_restart_tol = self.config.getfloat('AlgoCG', 'cg_restart_tol', fallback=0.25)
 
 
 
@@ -126,7 +126,7 @@ class CG(ShapeOptimizationAlgorithm):
 					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
 
 				else:
-					raise ConfigError('OptimizationRoutine', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
+					raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
 									  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
 
 			if self.iteration == 0:

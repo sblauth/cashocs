@@ -49,8 +49,8 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		self.temp = fenics.Function(self.shape_form_handler.deformation_space)
 
-		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors', fallback=5)
-		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling', fallback=True)
+		self.memory_vectors = self.config.getint('AlgoLBFGS', 'memory_vectors', fallback=5)
+		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
 
 		self.has_curvature_info = False
 

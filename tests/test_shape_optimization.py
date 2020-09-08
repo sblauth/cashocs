@@ -238,7 +238,7 @@ def test_shape_gd():
 
 
 def test_shape_cg_fr():
-	config.set('OptimizationRoutine', 'cg_method', 'FR')
+	config.set('AlgoCG', 'cg_method', 'FR')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -248,7 +248,7 @@ def test_shape_cg_fr():
 
 
 def test_shape_cg_pr():
-	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('AlgoCG', 'cg_method', 'PR')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -258,7 +258,7 @@ def test_shape_cg_pr():
 
 
 def test_shape_cg_hs():
-	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	config.set('AlgoCG', 'cg_method', 'HS')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -268,7 +268,7 @@ def test_shape_cg_hs():
 
 
 def test_shape_cg_dy():
-	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('AlgoCG', 'cg_method', 'DY')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -278,7 +278,7 @@ def test_shape_cg_dy():
 
 
 def test_shape_cg_hz():
-	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	config.set('AlgoCG', 'cg_method', 'HZ')
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -293,3 +293,89 @@ def test_shape_lbfgs():
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 	sop.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=8)
 	assert sop.solver.relative_norm < sop.solver.rtol
+
+
+
+def test_shape_volume_regularization():
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	config.set('Regularization', 'factor_volume', '1.0')
+	radius = np.random.uniform(0.33, 0.66)
+	config.set('Regularization', 'target_volume', str(np.pi*radius**2))
+	config.set('MeshQuality', 'volume_change', '10')
+	J_vol = Constant(0)*dx
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
+	
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	
+	sop.solve('lbfgs', rtol=1e-6, max_iter=50)
+	max_coordinate = np.max(mesh.coordinates())
+	min_coordinate = -np.min(mesh.coordinates())
+	assert abs(max_coordinate - radius) < 5e-3
+	assert abs(min_coordinate - radius) < 5e-3
+	assert 0.5*pow(assemble(1*dx) - np.pi*radius**2, 2) < 1e-10
+	config.set('Regularization', 'factor_volume', '0.0')
+	config.set('MeshQuality', 'volume_change', 'inf')
+
+
+
+def test_shape_surface_regularization():
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	config.set('Regularization', 'factor_surface', '1.0')
+	radius = np.random.uniform(0.33, 0.66)
+	config.set('Regularization', 'target_surface', str(2*np.pi*radius))
+	config.set('MeshQuality', 'volume_change', '10')
+	J_vol = Constant(0)*dx
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
+	
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	
+	sop.solve('lbfgs', rtol=1e-6, max_iter=50)
+	max_coordinate = np.max(mesh.coordinates())
+	min_coordinate = -np.min(mesh.coordinates())
+	assert abs(max_coordinate - radius) < 5e-3
+	assert abs(min_coordinate - radius) < 5e-3
+	assert 0.5*pow(assemble(1*ds) - 2*np.pi*radius, 2) < 1e-10
+	config.set('Regularization', 'factor_surface', '0.0')
+	config.set('MeshQuality', 'volume_change', 'inf')
+
+
+
+def test_shape_barycenter_regularization():
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	config.set('Regularization', 'factor_volume', '1e2')
+	config.set('Regularization', 'use_initial_volume', 'True')
+	config.set('Regularization', 'factor_barycenter', '1.0')
+	pos_x = np.random.uniform(0.2, 0.4)
+	pos_y = np.random.uniform(-0.4, -0.2)
+	config.set('Regularization', 'target_barycenter', str([pos_x, pos_y]))
+	config.set('MeshQuality', 'volume_change', '10')
+	initial_volume = assemble(1*dx)
+	J_vol = Constant(0)*dx
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
+	
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	
+	sop.solve('lbfgs', rtol=1e-5, max_iter=50)
+	
+	x = SpatialCoordinate(mesh)
+	volume = assemble(1*dx)
+	bc_x = assemble(x[0]*dx) / volume
+	bc_y = assemble(x[1]*dx) / volume
+	
+	assert abs(volume - initial_volume) < 1e-2
+	assert abs(bc_x - pos_x) < 1e-4
+	assert abs(bc_y - pos_y) < 1e-4
+	
+	config.set('Regularization', 'factor_barycenter', '0.0')
+	config.set('MeshQuality', 'volume_change', 'inf')
+	config.set('Regularization', 'factor_volume', '0.0')
+	config.set('Regularization', 'use_initial_volume', 'False')

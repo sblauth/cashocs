@@ -131,7 +131,7 @@ class Regularization:
 			if self.shape_form_handler.mesh.geometric_dimension() == 2:
 				self.delta_z = 1.0
 
-		self.mu_volume = self.config.getfloat('Regularization', 'factor_target_volume', fallback=0.0)
+		self.mu_volume = self.config.getfloat('Regularization', 'factor_volume', fallback=0.0)
 		self.target_volume = self.config.getfloat('Regularization', 'target_volume', fallback=0.0)
 		if self.config.getboolean('Regularization', 'use_initial_volume', fallback=False):
 			if not self.measure_hole:
@@ -139,13 +139,20 @@ class Regularization:
 			else:
 				self.target_volume = self.delta_x*self.delta_y*self.delta_z - fenics.assemble(Constant(1.0)*self.dx)
 
-		self.mu_surface = self.config.getfloat('Regularization', 'factor_target_surface', fallback=0.0)
+		self.mu_surface = self.config.getfloat('Regularization', 'factor_surface', fallback=0.0)
 		self.target_surface = self.config.getfloat('Regularization', 'target_surface', fallback=0.0)
 		if self.config.getboolean('Regularization', 'use_initial_surface', fallback=False):
 			self.target_surface = fenics.assemble(Constant(1)*self.ds)
 
 		self.mu_barycenter = self.config.getfloat('Regularization', 'factor_barycenter', fallback=0.0)
 		self.target_barycenter_list = json.loads(self.config.get('Regularization', 'target_barycenter', fallback='[0,0,0]'))
+		
+		if not type(self.target_barycenter_list) == list:
+			raise ConfigError('Regularization', 'target_barycenter', 'This has to be a list.')
+		
+		if self.shape_form_handler.mesh.geometric_dimension() == 2 and len(self.target_barycenter_list) == 2:
+			self.target_barycenter_list.append(0.0)
+		
 		if self.config.getboolean('Regularization', 'use_initial_barycenter', fallback=False):
 			self.target_barycenter_list = [0.0, 0.0, 0.0]
 			if not self.measure_hole:
@@ -215,7 +222,7 @@ class Regularization:
 			else:
 				barycenter_z = 0.0
 
-		surface = fenics.assemble(Constant(1)*self.dx)
+		surface = fenics.assemble(Constant(1)*self.ds)
 
 		self.current_volume.val = volume
 		self.current_surface.val = surface
@@ -249,7 +256,7 @@ class Regularization:
 
 			if self.mu_surface > 0.0:
 				surface = fenics.assemble(Constant(1.0)*self.ds)
-				self.current_surface.val = surface
+				# self.current_surface.val = surface
 				value += 0.5*self.mu_surface*pow(surface - self.target_surface, 2)
 
 			if self.mu_barycenter > 0.0:
@@ -299,10 +306,10 @@ class Regularization:
 			n = fenics.FacetNormal(self.shape_form_handler.mesh)
 			I = fenics.Identity(self.shape_form_handler.mesh.geometric_dimension())
 
-			self.shape_form = Constant(self.mu_surface)*(self.current_surface - self.target_surface)*t_div(V, n)*self.ds
+			self.shape_form = Constant(self.mu_surface)*(self.current_surface - Constant(self.target_surface))*t_div(V, n)*self.ds
 
 			if not self.measure_hole:
-				self.shape_form += Constant(self.mu_volume)*(self.current_volume - self.target_volume)*div(V)*self.dx
+				self.shape_form += Constant(self.mu_volume)*(self.current_volume - Constant(self.target_volume))*div(V)*self.dx
 				self.shape_form += Constant(self.mu_barycenter)*(self.current_barycenter_x - Constant(self.target_barycenter_list[0]))\
 								   		*(self.current_barycenter_x/self.current_volume*div(V) + 1/self.current_volume*(V[0] + self.spatial_coordinate[0]*div(V)))*self.dx \
 								   + Constant(self.mu_barycenter)*(self.current_barycenter_y - Constant(self.target_barycenter_list[1]))\
@@ -314,7 +321,7 @@ class Regularization:
 
 
 			else:
-				self.shape_form -= Constant(self.mu_volume)*(self.current_volume - self.target_volume)*div(V)*self.dx
+				self.shape_form -= Constant(self.mu_volume)*(self.current_volume - Constant(self.target_volume))*div(V)*self.dx
 				self.shape_form += Constant(self.mu_barycenter)*(self.current_barycenter_x - Constant(self.target_barycenter_list[0]))\
 								   		*(self.current_barycenter_x/self.current_volume*div(V) - 1/self.current_volume*(V[0] + self.spatial_coordinate[0]*div(V)))*self.dx \
 								   + Constant(self.mu_barycenter)*(self.current_barycenter_y - Constant(self.target_barycenter_list[1]))\

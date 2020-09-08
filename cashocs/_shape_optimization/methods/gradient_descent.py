@@ -44,7 +44,6 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 
 		ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
 		self.line_search = ArmijoLineSearch(self)
 		self.has_curvature_info = False
 

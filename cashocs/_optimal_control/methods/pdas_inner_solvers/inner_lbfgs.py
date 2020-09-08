@@ -47,8 +47,8 @@ class InnerLBFGS(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = UnconstrainedLineSearch(self)
-		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations_inner_pdas', fallback=50)
-		self.tolerance = self.config.getfloat('OptimizationRoutine', 'pdas_inner_tolerance', fallback=1e-2)
+		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
+		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
 		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_gradient_norm = 1.0
 		self.first_iteration = True
@@ -57,8 +57,8 @@ class InnerLBFGS(OptimizationAlgorithm):
 		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.storage_s = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
-		self.memory_vectors = self.config.getint('OptimizationRoutine', 'memory_vectors', fallback=5)
-		self.use_bfgs_scaling = self.config.getboolean('OptimizationRoutine', 'use_bfgs_scaling', fallback=True)
+		self.memory_vectors = self.config.getint('AlgoLBFGS', 'memory_vectors', fallback=5)
+		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
 
 		if self.memory_vectors > 0:
 			self.history_s = deque()

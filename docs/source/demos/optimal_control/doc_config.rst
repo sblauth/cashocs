@@ -63,7 +63,7 @@ on a nonlinear state system throws a fenics error.
 
 The next parameter is defined via ::
 
-    inner_newton_atol = 1e-13
+    newton_atol = 1e-13
 
 This parameter determines the absolute tolerance for the Newton solver that is
 used to solve a nonlinear state system.
@@ -71,7 +71,7 @@ used to solve a nonlinear state system.
 Subsequently, we can also defined the relative tolerance for the Newton solver
 via ::
 
-    inner_newton_rtol = 1e-11
+    newton_rtol = 1e-11
 
 Moreover, we have the following parameters for the Newton method ::
 

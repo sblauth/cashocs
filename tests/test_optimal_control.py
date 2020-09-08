@@ -67,7 +67,7 @@ def test_control_gd():
 
 
 def test_control_cg_fr():
-	config.set('OptimizationRoutine', 'cg_method', 'FR')
+	config.set('AlgoCG', 'cg_method', 'FR')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=21)
@@ -76,7 +76,7 @@ def test_control_cg_fr():
 
 
 def test_control_cg_pr():
-	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('AlgoCG', 'cg_method', 'PR')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=26)
@@ -85,7 +85,7 @@ def test_control_cg_pr():
 
 
 def test_control_cg_hs():
-	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	config.set('AlgoCG', 'cg_method', 'HS')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=28)
@@ -94,7 +94,7 @@ def test_control_cg_hs():
 
 
 def test_control_cg_dy():
-	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('AlgoCG', 'cg_method', 'DY')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=10)
@@ -103,7 +103,7 @@ def test_control_cg_dy():
 
 
 def test_control_cg_hz():
-	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	config.set('AlgoCG', 'cg_method', 'HZ')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=28)
@@ -120,7 +120,7 @@ def test_control_bfgs():
 
 
 def test_control_newton_cg():
-	config.set('OptimizationRoutine', 'inner_newton', 'cg')
+	config.set('AlgoNEWTON', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
@@ -129,7 +129,7 @@ def test_control_newton_cg():
 
 
 def test_control_newton_cr():
-	config.set('OptimizationRoutine', 'inner_newton', 'cr')
+	config.set('AlgoNEWTON', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
@@ -148,7 +148,7 @@ def test_control_gd_cc():
 
 
 def test_control_cg_fr_cc():
-	config.set('OptimizationRoutine', 'cg_method', 'FR')
+	config.set('AlgoCG', 'cg_method', 'FR')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=48)
@@ -159,7 +159,7 @@ def test_control_cg_fr_cc():
 
 
 def test_control_cg_pr_cc():
-	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('AlgoCG', 'cg_method', 'PR')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=25)
@@ -170,7 +170,7 @@ def test_control_cg_pr_cc():
 
 
 def test_control_cg_hs_cc():
-	config.set('OptimizationRoutine', 'cg_method', 'HS')
+	config.set('AlgoCG', 'cg_method', 'HS')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=30)
@@ -181,7 +181,7 @@ def test_control_cg_hs_cc():
 
 
 def test_control_cg_dy_cc():
-	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('AlgoCG', 'cg_method', 'DY')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=9)
@@ -192,7 +192,7 @@ def test_control_cg_dy_cc():
 
 
 def test_control_cg_hz_cc():
-	config.set('OptimizationRoutine', 'cg_method', 'HZ')
+	config.set('AlgoCG', 'cg_method', 'HZ')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('cg', rtol=1e-2, atol=0.0, max_iter=37)
@@ -213,7 +213,7 @@ def test_control_lbfgs_cc():
 
 
 def test_control_newton_cg_cc():
-	config.set('OptimizationRoutine', 'inner_newton', 'cg')
+	config.set('AlgoNEWTON', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=8)
@@ -224,7 +224,7 @@ def test_control_newton_cg_cc():
 
 
 def test_control_newton_cr_cc():
-	config.set('OptimizationRoutine', 'inner_newton', 'cr')
+	config.set('AlgoNEWTON', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=9)
@@ -235,7 +235,7 @@ def test_control_newton_cr_cc():
 
 
 def test_control_pdas_gd_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'gd')
+	config.set('AlgoPDAS', 'inner_pdas', 'gd')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -250,8 +250,8 @@ def test_control_pdas_gd_cc():
 
 
 def test_control_pdas_cg_fr_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
-	config.set('OptimizationRoutine', 'cg_method', 'FR')
+	config.set('AlgoPDAS', 'inner_pdas', 'cg')
+	config.set('AlgoCG', 'cg_method', 'FR')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -266,8 +266,8 @@ def test_control_pdas_cg_fr_cc():
 
 
 def test_control_pdas_cg_pr_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
-	config.set('OptimizationRoutine', 'cg_method', 'PR')
+	config.set('AlgoPDAS', 'inner_pdas', 'cg')
+	config.set('AlgoCG', 'cg_method', 'PR')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -282,8 +282,8 @@ def test_control_pdas_cg_pr_cc():
 
 
 def test_control_pdas_cg_dy_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'cg')
-	config.set('OptimizationRoutine', 'cg_method', 'DY')
+	config.set('AlgoPDAS', 'inner_pdas', 'cg')
+	config.set('AlgoCG', 'cg_method', 'DY')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -298,7 +298,7 @@ def test_control_pdas_cg_dy_cc():
 
 
 def test_control_pdas_bfgs_cc():
-	config.set('OptimizationRoutine', 'inner_pdas', 'lbfgs')
+	config.set('AlgoPDAS', 'inner_pdas', 'lbfgs')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
@@ -312,7 +312,7 @@ def test_control_pdas_bfgs_cc():
 
 
 def test_control_pdas_newton():
-	config.set('OptimizationRoutine', 'inner_pdas', 'newton')
+	config.set('AlgoPDAS', 'inner_pdas', 'newton')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()

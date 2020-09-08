@@ -49,10 +49,10 @@ class PDAS(OptimizationAlgorithm):
 		self.initialized = False
 		self.converged = False
 		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
-		self.shift_mult = self.config.getfloat('OptimizationRoutine', 'pdas_shift_mult')
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
+		self.shift_mult = self.config.getfloat('AlgoPDAS', 'pdas_shift_mult')
+		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
 
-		self.inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+		self.inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
 		if self.inner_pdas in ['gradient_descent', 'gd']:
 			self.inner_solver = InnerGradientDescent(optimization_problem)
 		elif self.inner_pdas in ['cg', 'conjugate_gradient', 'ncg', 'nonlinear_cg']:
@@ -62,7 +62,7 @@ class PDAS(OptimizationAlgorithm):
 		elif self.inner_pdas == 'newton':
 			self.inner_solver = InnerNewton(optimization_problem)
 		else:
-			raise ConfigError('OptimizationRoutine', 'inner_pdas', 'Not a valid input. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
+			raise ConfigError('AlgoPDAS', 'inner_pdas', 'Not a valid input. Needs to be one of gradient_descent, lbfgs, cg, or newton.')
 
 
 

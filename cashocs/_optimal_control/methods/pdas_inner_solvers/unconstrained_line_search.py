@@ -55,7 +55,7 @@ class UnconstrainedLineSearch:
 		self.controls = self.optimization_algorithm.controls
 		self.gradients = self.optimization_algorithm.gradients
 
-		inner_pdas = self.config.get('OptimizationRoutine', 'inner_pdas')
+		inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
 		self.is_newton_like = inner_pdas in ['lbfgs', 'bfgs']
 		self.is_newton = inner_pdas in ['newton']
 		self.is_steepest_descent = inner_pdas in ['gradient_descent', 'gd']

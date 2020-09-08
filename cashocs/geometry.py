@@ -436,21 +436,23 @@ class _MeshHandler:
 
 		# Remeshing initializations
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
+		self.save_optimized_mesh = self.config.getboolean('Output', 'save_mesh', fallback=False)
 
-		if self.do_remesh or self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
+		if self.do_remesh or self.save_optimized_mesh:
 			try:
 				self.mesh_directory = os.path.dirname(os.path.realpath(self.config.get('Mesh', 'gmsh_file')))
 			except configparser.Error:
 				if self.do_remesh:
 					raise ConfigError('Mesh', 'gmsh_file', 'Remeshing is only available with gmsh meshes. Please specify gmsh_file.')
-				elif self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
+				elif self.save_optimized_mesh:
 					raise ConfigError('Mesh', 'save_mesh', 'The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n'
 								  'If you already use a gmsh mesh, please specify gmsh_file.')
-
+			
 		if self.do_remesh:
 			self.temp_dict = self.shape_optimization_problem.temp_dict
-			self.remesh_counter = self.temp_dict.get('remesh_counter', 0)
 			self.gmsh_file = self.temp_dict['gmsh_file']
+			self.remesh_counter = self.temp_dict.get('remesh_counter', 0)
+			
 			if not self.gmsh_file[-4:] == '.msh':
 				raise ConfigError('Mesh', 'gmsh_file', 'Not a valid gmsh file. Has to end in .msh')
 
@@ -460,6 +462,9 @@ class _MeshHandler:
 			if not ('_cashocs_remesh_flag' in sys.argv):
 				os.system('rm -r ' + self.remesh_directory + '/*')
 			self.remesh_geo_file = self.remesh_directory + '/remesh.geo'
+		
+		elif self.save_optimized_mesh:
+			self.gmsh_file = self.config.get('Mesh', 'gmsh_file')
 
 		# create a copy of the initial mesh file
 		if self.do_remesh and self.remesh_counter == 0:

@@ -79,13 +79,13 @@ class ShapeOptimizationAlgorithm:
 			self.output_dict['stepsize'] = []
 			self.output_dict['MeshQuality'] = []
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
-		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results', fallback=True)
-		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-2)
+		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
+		self.save_results = self.config.getboolean('Output', 'save_results', fallback=True)
+		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-3)
 		self.atol = self.config.getfloat('OptimizationRoutine', 'atol', fallback=0.0)
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
-		self.save_pvd = self.config.getboolean('OptimizationRoutine', 'save_pvd', fallback=False)
+		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
 
 		if self.save_pvd:
 			self.state_pvd_list = []
@@ -93,13 +93,13 @@ class ShapeOptimizationAlgorithm:
 				if self.shape_form_handler.state_spaces[i].num_sub_spaces() > 0:
 					self.state_pvd_list.append([])
 					for j in range(self.shape_form_handler.state_spaces[i].num_sub_spaces()):
-						if self.config.getboolean('Mesh', 'remesh', fallback=False):
+						if self.optimization_problem.mesh_handler.do_remesh:
 							self.state_pvd_list[i].append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 																	  + '_state_' + str(i) + '_' + str(j) + '.pvd'))
 						else:
 							self.state_pvd_list[i].append(fenics.File('./pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
 				else:
-					if self.config.getboolean('Mesh', 'remesh', fallback=False):
+					if self.optimization_problem.mesh_handler.do_remesh:
 						self.state_pvd_list.append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 															   + '_state_' + str(i) + '.pvd'))
 					else:
@@ -167,10 +167,10 @@ class ShapeOptimizationAlgorithm:
 			with open('./history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
-		if self.config.getboolean('Mesh', 'remesh', fallback=False):
+		if self.optimization_problem.mesh_handler.do_remesh:
 			os.system('rm -r ' + self.optimization_problem.temp_dir)
 
-		if self.config.getboolean('OptimizationRoutine', 'save_mesh', fallback=False):
+		if self.optimization_problem.mesh_handler.save_optimized_mesh:
 			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.optimization_problem.mesh_handler.mesh_directory + '/optimized_mesh.msh')
 
 

@@ -26,7 +26,7 @@ import cashocs
 
 config = cashocs.create_config('./config.ini')
 
-meshlevel = 25
+meshlevel = 15
 degree = 1
 dim = 2
 mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)

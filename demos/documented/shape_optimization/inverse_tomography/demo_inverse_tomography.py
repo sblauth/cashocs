@@ -1,3 +1,20 @@
+# Copyright (C) 2020 Sebastian Blauth
+#
+# This file is part of CASHOCS.
+#
+# CASHOCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CASHOCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Created on 08/09/2020, 09.27
 
@@ -9,23 +26,117 @@ import cashocs
 
 
 
+sigma_out = 1e0
+sigma_in = 1e1
+
+def generate_references():
+	mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/reference.xdmf')
+
+	cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+	r_elem = FiniteElement('R', mesh.ufl_cell(), 0)
+	V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
+
+	u, c = TrialFunctions(V)
+	v, d = TestFunctions(V)
+
+	a = sigma_out*inner(grad(u), grad(v))*dx(1) + sigma_in*inner(grad(u), grad(v))*dx(2) + u*d*ds + v*c*ds
+	L1  = Constant(1)*v*(ds(3) + ds(4)) + Constant(-1)*v*(ds(1) + ds(2))
+	L2  = Constant(1)*v*(ds(3) + ds(2)) + Constant(-1)*v*(ds(1) + ds(4))
+	L3  = Constant(1)*v*(ds(3) + ds(1)) + Constant(-1)*v*(ds(2) + ds(4))
+
+	reference1 = Function(V)
+	reference2 = Function(V)
+	reference3 = Function(V)
+	solve(a==L1, reference1)
+	solve(a==L2, reference2)
+	solve(a==L3, reference3)
+
+	ref1, _ = reference1.split(True)
+	ref2, _ = reference2.split(True)
+	ref3, _ = reference3.split(True)
+
+	return [ref1, ref2, ref3]
+
+
+config = cashocs.create_config('./config.ini')
+# mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
+cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+r_elem = FiniteElement('R', mesh.ufl_cell(), 0)
+V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
+
+references = generate_references()
+
+uc1 = Function(V)
+u1, c1 = split(uc1)
+pd1 = Function(V)
+p1, d1 = split(pd1)
+e1 = sigma_out*inner(grad(u1), grad(p1))*dx(1) + sigma_in*inner(grad(u1), grad(p1))*dx(2) + u1*d1*ds + p1*c1*ds - Constant(1)*p1*(ds(3) + ds(4)) - Constant(-1)*p1*(ds(1) + ds(2))
+
+uc2 = Function(V)
+u2, c2 = split(uc2)
+pd2 = Function(V)
+p2, d2 = split(pd2)
+e2 = sigma_out*inner(grad(u2), grad(p2))*dx(1) + sigma_in*inner(grad(u2), grad(p2))*dx(2) + u2*d2*ds + p2*c2*ds - Constant(1)*p2*(ds(3) + ds(2)) - Constant(-1)*p2*(ds(1) + ds(4))
+
+uc3 = Function(V)
+u3, c3 = split(uc3)
+pd3 = Function(V)
+p3, d3 = split(pd3)
+e3 = sigma_out*inner(grad(u3), grad(p3))*dx(1) + sigma_in*inner(grad(u3), grad(p3))*dx(2) + u3*d3*ds + p3*c3*ds - Constant(1)*p3*(ds(3) + ds(1)) - Constant(-1)*p3*(ds(2) + ds(4))
+
+e = [e1, e2, e3]
+u = [uc1, uc2, uc3]
+p = [pd1, pd2, pd3]
+
+bcs = None
+
+mu1 = Expression('val', degree=0, val=1.0, domain=mesh)
+mu2 = Expression('val', degree=0, val=1.0, domain=mesh)
+mu3 = Expression('val', degree=0, val=1.0, domain=mesh)
+
+J1 = Constant(0.5)*pow(u1 - references[0], 2)*ds
+J2 = Constant(0.5)*pow(u2 - references[1], 2)*ds
+J3 = Constant(0.5)*pow(u3 - references[2], 2)*ds
+
+
+J = J1 + J2 + J3
+
+sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+sop.compute_state_variables()
+
+mu1.val = 1/assemble(J1)
+mu2.val = 1/assemble(J2)
+mu3.val = 1/assemble(J3)
+
+sop.solve()
+
 
 
 ### Post Processing
 #
 # import matplotlib.pyplot as plt
+# DG0 = FunctionSpace(mesh, 'DG', 0)
 # plt.figure(figsize=(10,5))
 #
-# ax_mesh = plt.subplot(1, 2, 1)
-# fig_mesh = plot(mesh)
-# plt.title('Discretization of the optimized geometry')
+# result = Function(DG0)
+# a_post = TrialFunction(DG0)*TestFunction(DG0)*dx
+# L_post = Constant(1)*TestFunction(DG0)*dx(1) + Constant(2)*TestFunction(DG0)*dx(2)
+# solve(a_post==L_post, result)
 #
-# ax_u = plt.subplot(1, 2, 2)
-# ax_u.set_xlim(ax_mesh.get_xlim())
-# ax_u.set_ylim(ax_mesh.get_ylim())
-# fig_u = plot(u)
-# plt.colorbar(fig_u, fraction=0.046, pad=0.04)
-# plt.title('State variable u')
+# ax_result = plt.subplot(1,2,2)
+# fig_result = plot(result)
+# plt.title('Optimized Geometry')
+#
+# mesh_initial, _, _, _, _, _ = cashocs.import_mesh('./mesh/mesh.xdmf')
+# mesh.coordinates()[:, :] = mesh_initial.coordinates()[:, :]
+# mesh.bounding_box_tree().build(mesh)
+# initial = Function(DG0)
+# solve(a_post==L_post, initial)
+#
+# ax_initial = plt.subplot(1,2,1)
+# fig_initial = plot(initial)
+# plt.title('Initial Geometry')
 #
 # plt.tight_layout()
 # plt.savefig('./img_inverse_tomography.png', dpi=150, bbox_inches='tight')

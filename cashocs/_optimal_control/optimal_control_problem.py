@@ -301,8 +301,12 @@ class OptimalControlProblem(OptimizationProblem):
 		----------
 		algorithm : str or None, optional
 			Selects the optimization algorithm. Valid choices are
-			'gradient_descent' ('gd'), 'conjugate_gradient' ('cg'),
-			'lbfgs' ('bfgs'), 'newton', or 'pdas'. This overwrites
+			``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+			``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+			for nonlinear conjugate gradient methods, ``'lbfgs'`` or ``'bfgs'`` for
+			limited memory BFGS methods, ``'newton'`` for a truncated Newton method,
+			and ``'pdas'`` or ``'primal_dual_active_set'`` for a
+			primal dual active set method. This overwrites
 			the value specified in the config file. If this is None,
 			then the value in the config file is used. Default is
 			None.
@@ -347,7 +351,7 @@ class OptimalControlProblem(OptimizationProblem):
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if self.algorithm == 'newton' or \
-				(self.algorithm == 'pdas' and self.config.get('OptimizationRoutine', 'inner_pdas') == 'newton'):
+				(self.algorithm == 'pdas' and self.config.get('AlgoPDAS', 'inner_pdas') == 'newton'):
 			self.form_handler._ControlFormHandler__compute_newton_forms()
 
 		if self.algorithm == 'newton':

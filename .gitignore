@@ -1,15 +1,25 @@
+### python
 __pycache__/
+*.pyc
+.pytest_cache/
+
+
+### paraview
 *.pvd
 *.vtu
 
-.pytest_cache/
 
-build/
-dist/
-*.egg-info/
+### pip
+/build
+/dist
+cashocs.egg-info/
 
+
+### sphinx
+/docs/build
+
+
+### bash
 build_docs.sh
 build_pypi.sh
 test.sh
-
-/cashocs-convert

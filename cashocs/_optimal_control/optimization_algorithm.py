@@ -80,13 +80,13 @@ class OptimizationAlgorithm:
 		self.output_dict['gradient_norm'] = []
 		self.output_dict['stepsize'] = []
 
-		self.verbose = self.config.getboolean('OptimizationRoutine', 'verbose', fallback=True)
-		self.save_results = self.config.getboolean('OptimizationRoutine', 'save_results', fallback=True)
-		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-2)
+		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
+		self.save_results = self.config.getboolean('Output', 'save_results', fallback=True)
+		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-3)
 		self.atol = self.config.getfloat('OptimizationRoutine', 'atol', fallback=0.0)
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
-		self.save_pvd = self.config.getboolean('OptimizationRoutine', 'save_pvd', fallback=False)
+		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
 
 
 
