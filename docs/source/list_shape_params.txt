@@ -1,0 +1,116 @@
+Shape Optimization
+------------------
+
+[Mesh]
+
+remesh				(False)
+show_gmsh_output	(False)
+gmsh_file
+geo_file
+mesh_file
+
+
+
+[StateEquation]
+
+is_linear			(False)
+picard_iteration	(False)
+picard_rtol			(1e-10)
+picard_atol			(1e-12)
+picard_iter			(50)
+picard_verbose		(False)
+newton_rtol			(1e-11)
+newton_atol			(1e-13)
+newton_damped		(True)
+newton_verbose		(False)
+newton_iter			(50)
+
+
+
+[OptimizationRoutine]
+
+algorithm
+beta_armijo			(2)
+step_initial		(1.0)
+epsilon_armijo		(1e-4)
+rtol				(1e-3)
+atol				(0.0)
+maximum_iterations	(100)
+soft_exit			(False)
+
+
+
+[AlgoLBFGS]
+
+memory_vectors		(5)
+use_bfgs_scaling	(True)
+
+
+
+[AlgoCG]
+
+cg_method				(FR)
+cg_periodic_restart		(False)
+cg_periodic_its			(10)
+cg_relative_restart		(False)
+cg_restart_tol			(0.25)
+
+
+
+[ShapeGradient]
+
+shape_bdry_def		([])
+shape_bdry_fix		([])
+degree_estimation	(False)
+use_pull_back		(True)
+shape_bdry_fix_x	([])
+shape_bdry_fix_y	([])
+shape_bdry_fix_z	([])
+lambda_lame			(0.0)
+damping_factor		(0.0)
+inhomogeneous		(False)
+mu_def				(1.0)
+mu_fix				(1.0)
+use_sqrt_mu			(False)
+
+
+
+[Regularization]
+
+factor_volume			(0.0)
+target_volume			(0.0)
+use_initial_volume		(False)
+factor_surface			(0.0)
+target_surface			(0.0)
+use_initial_surface		(False)
+factor_barycenter		(0.0)
+target_barycenter		([0,0,0])
+use_initial_barycenter	(False)
+
+measure_hole			(False)
+x_start					(0.0)
+x_end					(1.0)
+y_start					(0.0)
+y_end					(1.0)
+z_start					(0.0)
+z_end					(1.0)
+
+
+
+[MeshQuality]
+
+volume_change	(inf)
+angle_change	(inf)
+tol_lower		(0.0)
+tol_upper		(1e-15)
+measure			(skewness)
+type			(min)
+
+
+
+[Output]
+
+save_mesh		(False)
+save_pvd		(False)
+save_results	(True)
+verbose			(True)

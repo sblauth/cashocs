@@ -30,7 +30,7 @@ import pytest
 
 
 config = cashocs.create_config('./config_ocp.ini')
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(3)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(6)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
@@ -48,9 +48,10 @@ ksp_options = [
 	['ksp_type', 'cg'],
 	['pc_type', 'hypre'],
 	['pc_hypre_type', 'boomeramg'],
-	['ksp_rtol', 1e-100],
-	['ksp_atol', 1e-100],
+	['ksp_rtol', 0.0],
+	['ksp_atol', 0.0],
 	['ksp_max_it', 1],
+	['ksp_monitor_true_residual']
 ]
 
 ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)

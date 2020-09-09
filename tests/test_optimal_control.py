@@ -120,7 +120,7 @@ def test_control_bfgs():
 
 
 def test_control_newton_cg():
-	config.set('AlgoNEWTON', 'inner_newton', 'cg')
+	config.set('AlgoTNM', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
@@ -129,7 +129,7 @@ def test_control_newton_cg():
 
 
 def test_control_newton_cr():
-	config.set('AlgoNEWTON', 'inner_newton', 'cr')
+	config.set('AlgoTNM', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	ocp._erase_pde_memory()
 	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
@@ -213,7 +213,7 @@ def test_control_lbfgs_cc():
 
 
 def test_control_newton_cg_cc():
-	config.set('AlgoNEWTON', 'inner_newton', 'cg')
+	config.set('AlgoTNM', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=8)
@@ -224,7 +224,7 @@ def test_control_newton_cg_cc():
 
 
 def test_control_newton_cr_cc():
-	config.set('AlgoNEWTON', 'inner_newton', 'cr')
+	config.set('AlgoTNM', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	ocp_cc._erase_pde_memory()
 	ocp_cc.solve('newton', rtol=1e-2, atol=0.0, max_iter=9)

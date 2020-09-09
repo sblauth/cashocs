@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Blueprint for the PDE constrained optimization problems.
+"""Blueprints for the PDE constrained optimization problems.
 
 This module is used to define the parent class for the optimization problems,
 as many parameters and variables are common for optimal control and shape
@@ -32,7 +32,7 @@ class OptimizationProblem:
 	"""Blueprint for an abstract PDE constrained optimization problem.
 
 	This class performs the initialization of the shared input so that the rest
-	of the package can use it directly. Additionally, it includes methods that
+	of CASHOCS can use it directly. Additionally, it includes methods that
 	can be used to compute the state and adjoint variables by solving the
 	corresponding equations. This could be subclassed to generate custom
 	optimization problems.
@@ -45,31 +45,30 @@ class OptimizationProblem:
 		Parameters
 		----------
 		state_forms : ufl.form.Form or list[ufl.form.Form]
-			The weak form of the state equation. Can be either a UFL form
-			or a list of UFL forms (if we have multiple equations).
+			The weak form of the state equation (user implemented). Can be either
+			a single UFL form, or a (ordered) list of UFL forms.
 		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
-			The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-			If this is None, then no Dirichlet boundary conditions are imposed.
+			The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet (essential) boundary conditions.
+			If this is ``None``, then no Dirichlet boundary conditions are imposed.
 		cost_functional_form : ufl.form.Form
-			The UFL form of the cost functional.
+			UFL form of the cost functional.
 		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
-			The state variable(s), can either be a single fenics Function, or a (ordered) list of these.
+			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
-			The adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these.
+			The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
 		config : configparser.ConfigParser
-			The config file for the problem, generated via cashocs.create_config(path_to_config).
+			The config file for the problem, generated via :py:func:`cashocs.create_config`.
 		initial_guess : list[dolfin.function.function.Function], optional
-			A list of functions that act as initial guess for the state variables, should be valid
-			input for fenics.assign. If this is None, then a zero initial guess is used
-			(default is None).
+			List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
+			Defaults to ``None``, which means a zero initial guess.
 		ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
 			A list of strings corresponding to command line options for PETSc,
-			used to solve the state systems. If this is None, then the direct solver
-			mumps is used (default is None).
+			used to solve the state systems. If this is ``None``, then the direct solver
+			mumps is used (default is ``None``).
 		adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
 			A list of strings corresponding to command line options for PETSc,
-			used to solve the adjoint systems. If this is None, then the same options
-			as for the state systems are used (default is None).
+			used to solve the adjoint systems. If this is ``None``, then the same options
+			as for the state systems are used (default is ``None``).
 
 		Notes
 		-----
@@ -77,7 +76,7 @@ class OptimizationProblem:
 		(UFL forms, functions, etc.) directly. In case multiple PDE constraints
 		are present the inputs have to be put into (ordered) lists. The order of
 		the objects depends on the order of the state variables, so that
-		``state_forms[i]`` is the weak form of the PDE for state[i] with boundary
+		``state_forms[i]`` is the weak form of the PDE for ``states[i]`` with boundary
 		conditions ``bcs_list[i]`` and corresponding adjoint state ``adjoints[i]``.
 
 		See Also
@@ -261,9 +260,8 @@ class OptimizationProblem:
 	def compute_state_variables(self):
 		"""Solves the state system.
 
-		This can be used for debugging purposes, to validate the solver
-		and general behavior. Updates and overwrites the user input for
-		the state variables.
+		This can be used for debugging purposes and to validate the solver.
+		Updates and overwrites the user input for the state variables.
 
 		Returns
 		-------

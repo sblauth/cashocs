@@ -21,7 +21,7 @@ are minimal. Consider, e.g., the following optimization problem
     y &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
-Note, that the entire problem is treated in detail in the :ref:`corresponding CASHOCS tutorial <demo_poisson>`.
+Note, that the problem is treated in detail in the :ref:`corresponding CASHOCS tutorial <demo_poisson>`.
 
 For our purposes, we assume that a mesh for this problem is defined and that a
 suitable function space is chosen. This can, e.g., be achieved via ::
@@ -33,11 +33,12 @@ suitable function space is chosen. This can, e.g., be achieved via ::
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
     V = FunctionSpace(mesh, 'CG', 1)
 
-The config object which is created from a .ini file is used to determine the
-parameters for the optimization algorithms.
+The config object, which is created from a .ini file, is used to determine the
+parameters for the optimization algorithms. This is where the user can finely
+tune the behavior of the algorithms.
 
-To define the state problem, we then define a state variable y, an adjoint variable
-p and a control variable u, and write the PDE as a weak form ::
+To define the state problem, we then define a state variable ``y``, an adjoint variable
+``p`` and a control variable ``u``, and write the PDE as a weak form ::
 
     y = Function(V)
     p = Function(V)
@@ -45,7 +46,7 @@ p and a control variable u, and write the PDE as a weak form ::
     e = inner(grad(y), grad(p)) - u*p*dx
     bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
 
-Finally, we have to define the cost functional and the optimization problem ::
+Finally, we define the cost functional and the optimization problem ::
 
     y_d = Expression('sin(2*pi * x[0] * sin(2*pi*x[1]))', degree=1)
     alpha = 1e-6
@@ -54,9 +55,10 @@ Finally, we have to define the cost functional and the optimization problem ::
     opt_problem.solve()
 
 The only major difference between CASHOCS and FEniCS code is that one has to
-use Function objects for states and adjoints, and that Trial- and TestFunctions
-are not needed to define the state equation. Other than that, the syntax would
-also be valid with FEniCS.
+use :py:class:`fenics.Function` objects for states and adjoints, and that :py:class:`fenics.TrialFunction`
+and :py:class:`fenics.TestFunction` are not needed to define the state equation.
+Other than that, the syntax would also be valid with FEniCS, at least for this
+problem.
 
 For a detailed discussion of the features of CASHOCS and its usage we refer to the
 :ref:`CASHOCS tutorial <tutorial_index>`.

@@ -4,6 +4,12 @@ API Reference
 .. automodule:: cashocs
 
 
+Here, we detail the (public) API of cashocs.
+
+For a more hands-on approach, we recommend the :ref:`tutorial <tutorial_index>`, which
+ shows many examples from PDE constrained optimization that can be efficiently
+ solved with CASHOCS.
+
 
 PDE Constrained Optimization Problems
 -------------------------------------
@@ -34,6 +40,15 @@ ShapeOptimizationProblem
 Command Line Interface
 ----------------------
 
+For the command line interface of CASHOCS, we have a mesh conversion tool which
+converts GMSH .msh files to .xdmf ones, which can be read with the :py:func:`import mesh
+<cashocs.import_mesh>` functionality. It's usage is detailed in the following.
+
+.. _cashocs_convert:
+
+cashocs-convert
+***************
+
 .. argparse::
 	:module: cashocs._cli._convert
 	:func: _generate_parser
@@ -47,13 +62,16 @@ MeshQuality
 	:members:
 	:undoc-members:
 	:inherited-members:
-	:show-inheritance:
 
 Functions
 ---------
 
-This includes several "helper" functions, which make the definition of problems
-simpler.
+The functions which are directly available in cashocs are taken from the sub-modules
+:py:mod:`geometry <cashocs.geometry>`, :py:mod:`nonlinear_solvers <cashocs.nonlinear_solvers>`,
+and :py:mod:`utils <cashocs.utils>`. These are functions that are likely to be used
+often, so that they are directly callable via ``cashocs.function`` for any of
+the functions shown below. Note, that they are repeated in the API reference for
+their :ref:`respective sub-modules <sub_modules>`.
 
 import_mesh
 ***********
@@ -84,14 +102,15 @@ damped_newton_solve
 .. autofunction:: cashocs.damped_newton_solve
 
 
+.. _sub_modules:
 
 Sub-Modules
 -----------
 
-The sub-modules include several duplicates of entries already shown above. If
-a method or class is important or very relevant for CASHOCS, it can be found
-in the main module directly, and there is no need for sub-modules. However,
-there may still be useful classes or functions here, for public use.
+CASHOCS' sub-modules include several additional classes and methods that could be
+potentially useful for the user. For the corresponding API documentation, we
+include the previously detailed objects, too, as to give a complete documentation
+of the sub-module.
 
 .. toctree::
    :maxdepth: 5

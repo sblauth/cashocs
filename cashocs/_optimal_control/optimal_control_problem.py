@@ -36,66 +36,61 @@ class OptimalControlProblem(OptimizationProblem):
 	"""Implements an optimal control problem.
 
 	This class is used to define an optimal control problem, and also to solve
-	it subsequently. For a detailed documentation, see the examples in the "demos"
-	folder. For easier input, when consider single (state or control) variables,
+	it subsequently. For a detailed documentation, see the examples in the `tutorial <https://temp-url.com/>`.
+	For easier input, when considering single (state or control) variables,
 	these do not have to be wrapped into a list.
 	Note, that in the case of multiple variables these have to be grouped into
 	ordered lists, where state_forms, bcs_list, states, adjoints have to have
-	the same order (i.e. [state1, state2, state3,...] and [adjoint1, adjoint2,
-	adjoint3, ...], where adjoint1 is the adjoint of state1 and so on.
+	the same order (i.e. [y1, y2, ...] and [p1, p2, ...], where p1 is the adjoint of y1 and so on.
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
 				 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
 				 adjoint_ksp_options=None):
-		r"""Initializes the optimal control problem.
-
-		This is used to generate all classes and functionalities. First ensures
-		consistent input as the __init__ function is overloaded. Afterwards, the
-		solution algorithm is initialized.
+		r"""This is used to generate all classes and functionalities. First ensures
+		consistent input, afterwards, the solution algorithm is initialized.
 
 		Parameters
 		----------
 		state_forms : ufl.form.Form or list[ufl.form.Form]
-			the weak form of the state equation (user implemented). Can be either
-			a single UFL form, or a (ordered) list of UFL forms
+			The weak form of the state equation (user implemented). Can be either
+			a single UFL form, or a (ordered) list of UFL forms.
 		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
-			the list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-			If this is None, then no Dirichlet boundary conditions are imposed.
+			The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+			If this is ``None``, then no Dirichlet boundary conditions are imposed.
 		cost_functional_form : ufl.form.Form
-			UFL form of the cost functional
+			UFL form of the cost functional.
 		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
-			the state variable(s), can either be a single fenics Function, or a (ordered) list of these
+			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		controls : dolfin.function.function.Function or list[dolfin.function.function.Function]
-			the control variable(s), can either be a single fenics Function, or a list of these
+			The control variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
-			the adjoint variable(s), can either be a single fenics Function, or a (ordered) list of these
+			The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
 		config : configparser.ConfigParser
-			the config file for the problem, generated via cashocs.create_config(path_to_config)
+			The config file for the problem, generated via :py:func:`cashocs.create_config`.
 		riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
-			the scalar products of the control space. Can either be None, a single UFL form, or a
-			(ordered) list of UFL forms. If None, the :math:`L^2(\Omega)` product is used.
-			(default is None)
+			The scalar products of the control space. Can either be None, a single UFL form, or a
+			(ordered) list of UFL forms. If ``None``, the :math:`L^2(\Omega)` product is used.
+			(default is ``None``).
 		control_constraints : None or list[dolfin.function.function.Function] or list[float] or list[list[dolfin.function.function.Function]] or list[list[float]], optional
-			Box constraints posed on the control, None means that there are none (default is None).
-			The (inner) lists should contain two elements of the form [u_a, u_b], where u_a is the lower,
-			and u_b the upper bound.
+			Box constraints posed on the control, ``None`` means that there are none (default is ``None``).
+			The (inner) lists should contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the lower,
+			and ``u_b`` the upper bound.
 		initial_guess : list[dolfin.function.function.Function], optional
-			list of functions that act as initial guess for the state variables, should be valid input for fenics.assign.
-			(defaults to None (which means a zero initial guess))
+			List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
+			Defaults to ``None``, which means a zero initial guess.
 		ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
 			A list of strings corresponding to command line options for PETSc,
-			used to solve the state systems. If this is None, then the direct solver
-			mumps is used (default is None).
+			used to solve the state systems. If this is ``None``, then the direct solver
+			mumps is used (default is ``None``).
 		adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
 			A list of strings corresponding to command line options for PETSc,
-			used to solve the adjoint systems. If this is None, then the same options
-			as for the state systems are used (default is None).
+			used to solve the adjoint systems. If this is ``None``, then the same options
+			as for the state systems are used (default is ``None``).
 
 		Examples
 		--------
-		The corresponding examples detailing the use of this class can be found
-		in the "demos" folder.
+		Examples how to use this class can be found in the `tutorial <https://temp-url.com/>`.
 		"""
 
 		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
@@ -295,7 +290,7 @@ class OptimalControlProblem(OptimizationProblem):
 		r"""Solves the optimization problem by the method specified in the config file.
 
 		Updates / overwrites states, controls, and adjoints according
-		to the optimization method, i.e., the user-input functions.
+		to the optimization method, i.e., the user-input :py:func:`fenics.Function` objects.
 
 		Parameters
 		----------
@@ -307,24 +302,24 @@ class OptimalControlProblem(OptimizationProblem):
 			limited memory BFGS methods, ``'newton'`` for a truncated Newton method,
 			and ``'pdas'`` or ``'primal_dual_active_set'`` for a
 			primal dual active set method. This overwrites
-			the value specified in the config file. If this is None,
+			the value specified in the config file. If this is ``None``,
 			then the value in the config file is used. Default is
-			None.
+			``None``.
 		rtol : float or None, optional
 			The relative tolerance used for the termination criterion.
 			Overwrites the value specified in the config file. If this
-			is None, the value from the config file is taken. Default
-			is None.
+			is ``None``, the value from the config file is taken. Default
+			is ``None``.
 		atol : float or None, optional
 			The absolute tolerance used for the termination criterion.
 			Overwrites the value specified in the config file. If this
-			is None, the value from the config file is taken. Default
-			is None.
+			is ``None``, the value from the config file is taken. Default
+			is ``None``.
 		max_iter : int or None, optional
 			The maximum number of iterations the optimization algorithm
 			can carry out before it is terminated. Overwrites the value
-			specified in the config file. If this is None, the value from
-			the config file is taken. Default is None.
+			specified in the config file. If this is ``None``, the value from
+			the config file is taken. Default is ``None``.
 
 		Returns
 		-------
@@ -392,7 +387,7 @@ class OptimalControlProblem(OptimizationProblem):
 
 
 	def compute_gradient(self):
-		"""Solves the Riesz problem to determine the gradient(s)
+		"""Solves the Riesz problem to determine the gradient.
 
 		This can be used for debugging, or code validation.
 		The necessary solutions of the state and adjoint systems
@@ -401,7 +396,7 @@ class OptimalControlProblem(OptimizationProblem):
 		Returns
 		-------
 		list[dolfin.function.function.Function]
-			a list consisting of the (components) of the gradient
+			A list consisting of the (components) of the gradient.
 		"""
 
 		self.gradient_problem.solve()

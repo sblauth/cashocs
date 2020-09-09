@@ -15,26 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-r"""Computational adjoint based package for PDE constrained optimization
+r"""CASHOCS is a computational, adjoint based shape optimization and optimal control software for python.
 
 CASHOCS is based on the finite element package `FEniCS <https://fenicsproject.org>`_
 and uses its high-level unified form language UFL to treat general PDE constrained
 optimization problems, in particular, shape optimization and optimal control problems.
-
-Note, that we assume that you are (at least somewhat) familiar with PDE constrained
-optimization and FEniCS. For a introduction to these topics, we can recommend the textbooks
-
-- Optimal Control and general PDE constrained optimization
-    - `Hinze, Pinnau, Ulbrich, and Ulbrich, Optimization with PDE Constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_
-    - `Tröltzsch, Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
-- Shape Optimization
-    - `Delfour and Zolesio, Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
-    - `Sokolowski and Zolesio, Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
-- FEniCS
-    - `Logg, Mardal, and Wells, Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
-
-However, the :ref:`tutorial <tutorial_index>` also gives many references either to the underlying theory of PDE constrained optimization or to relevant demos and documentation of FEniCS.
-
 """
 
 from . import verification

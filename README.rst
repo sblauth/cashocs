@@ -21,6 +21,7 @@ we can recommend the textbooks
     - `Sokolowski and Zolesio, Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
 - FEniCS
     - `Logg, Mardal, and Wells, Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
+    - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
 
 
 However, the `CASHOCS tutorial <https://temp-url.com/>`_ also gives many references either
@@ -38,8 +39,8 @@ Installation
 - First, install `FEniCS <https://fenicsproject.org/download/>`_, version 2019.1.
   Note, that FEniCS should be compiled with PETSc and petsc4py.
 
-- Then, install `meshio <https://github.com/nschloe/meshio>`_ with a `h5py <https://www.h5py.org>`_
-  version that matches the hdf5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_
+- Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
+  version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
 
 - You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.0.
   CASHOCS does not necessarily need this to function properly,
@@ -58,11 +59,13 @@ Installation
 
         pip3 install .
 
+  from the source / repository root directory.
+
 - Alternatively, you can install CASHOCS via the `PYPI <https://pypi.org/>`_::
 
         pip3 install cashocs
 
- You can install the newest (development) version of CASHOCS with::
+  You can install the newest (development) version of CASHOCS with::
 
         pip3 install git+https://temp-url.com/
 
@@ -116,9 +119,12 @@ along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 Contact / About
 ===============
 
-I'm Sebastian Blauth, a PhD student at Fraunhofer ITWM and TU Kaiserslautern,
-and I developed this project as part of my work. If you have any questions /
-suggestions / feedback, etc., you can contact me via `sebastian.blauth@itwm.fraunhofer.de
-<mailto:sebastian.blauth@itwm.fraunhofer.de>`_.
+I'm Sebastian Blauth, a PhD student at `Fraunhofer ITWM
+<https://www.itwm.fraunhofer.de/en.html>`_ and `TU Kaiserslautern
+<https://www.mathematik.uni-kl.de/en/>`_, and I developed this project as part of my work.
+If you have any questions / suggestions / feedback, etc., you can contact me
+via `sebastian.blauth@itwm.fraunhofer.de
+<mailto:sebastian.blauth@itwm.fraunhofer.de>`_ or `sebastianblauth@web.de
+<mailto:sebastianblauth@web.de>`_.
 
 .. readme_end_about

@@ -34,7 +34,8 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 						damped=True, verbose=True, ksp=None):
 	r"""A damped Newton method for solving nonlinear equations.
 
-	The Newton method is based on the natural monotonicity test from `Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
+	The damped Newton method is based on the natural monotonicity test from
+	`Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
 	It also allows fine tuning via a direct interface, and absolute, relative,
 	and combined stopping criteria. Can also be used to specify the solver for
 	the inner (linear) subproblems via petsc ksps.
@@ -44,15 +45,15 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 	- a relative one in case ``convergence_type = 'rel'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
 	- an absolute one in case ``convergence_type = 'abs'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}.
 
 	- a combination of both in case ``convergence_type = 'combined'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert
+	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
 	The norm chosen for the termination criterion is specified via ``norm_type``.
 
@@ -87,8 +88,8 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 		is ``True``).
 	ksp : petsc4py.PETSc.KSP, optional
 		The PETSc ksp object used to solve the inner (linear) problem
-		if this is None it uses the direct solver MUMPS (default is
-		None).
+		if this is ``None`` it uses the direct solver MUMPS (default is
+		``None``).
 
 	Returns
 	-------

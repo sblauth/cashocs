@@ -28,6 +28,7 @@ import configparser
 import fenics
 import numpy as np
 from petsc4py import PETSc
+from ufl.measure import Measure
 
 from ._exceptions import InputError, PETScKSPError
 
@@ -41,12 +42,12 @@ def summation(x):
 
 	Parameters
 	----------
-	x : list[ufl.form.Form] or list[int] or list[float]
+	x : list[ufl.core.expr.Expr] or list[int] or list[float]
 		The list of entries that shall be summed.
 
 	Returns
 	-------
-	y : ufl.form.Form or int or float
+	ufl.form.Form or int or float
 		Sum of input (same type as entries of input).
 
 	See Also
@@ -57,7 +58,7 @@ def summation(x):
 	-----
 	For "usual" summation of integers or floats, the built-in sum function
 	of python or the numpy variant are recommended. Still, they are
-	incompatible with fenics objects, so this function should be used for
+	incompatible with FEniCS objects, so this function should be used for
 	the latter.
 
 	Examples
@@ -99,7 +100,7 @@ def multiplication(x):
 
 	Returns
 	-------
-	y : ufl.core.expr.Expr or int or float
+	ufl.core.expr.Expr or int or float
 		The result of the multiplication.
 
 	See Also
@@ -134,7 +135,7 @@ def multiplication(x):
 
 
 
-class EmptyMeasure:
+class EmptyMeasure(Measure):
 	"""Implements an empty measure (e.g. of a null set).
 
 	This is used for automatic measure generation, e.g., if
@@ -143,14 +144,16 @@ class EmptyMeasure:
 
 	Examples
 	--------
+	The code ::
+	
 	    dm = EmptyMeasure(dx)
 	    u*dm
 
-	is equivalent to
+	is equivalent to ::
 
 	    Constant(0)*u*dm
 
-	so that this generates zeros when assembled over.
+	so that ``fenics.assemble(u*dm)`` generates zeros.
 	"""
 
 	def __init__(self, measure):
@@ -161,7 +164,9 @@ class EmptyMeasure:
 		measure : ufl.measure.Measure
 			The underlying UFL measure.
 		"""
-
+		
+		Measure.__init__(self, measure.integral_type())
+		
 		self.measure = measure
 
 
@@ -189,16 +194,16 @@ class EmptyMeasure:
 def generate_measure(idx, measure):
 	"""Generates a measure based on indices.
 
-	Generates a MeasureSum or EmptyMeasure object corresponding to
-	measure and the subdomains / boundaries specified in idx. This
-	is a convenient shortcut to writing dx(1) + dx(2) + dx(3) + ...
+	Generates a :py:class:`fenics.MeasureSum` or :py:class:`EmptyMeasure <cashocs.utils.EmptyMeasure>`
+	object corresponding to ``measure`` and the subdomains / boundaries specified in idx. This
+	is a convenient shortcut to writing ``dx(1) + dx(2) + dx(3)``
 	in case many measures are involved.
 
 	Parameters
 	----------
 	idx : list[int]
 		A list of indices for the boundary / volume markers that
-		shall define the new measure.
+		define the (new) measure.
 	measure : ufl.measure.Measure
 		The corresponding UFL measure.
 
@@ -241,7 +246,7 @@ def create_config(path):
 	Parameters
 	----------
 	path : str
-		The path to the config .ini file.
+		The path to the .ini file storing the configuration.
 
 	Returns
 	-------
@@ -271,9 +276,9 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 		The function space onto which the BCs should be imposed on.
 	value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
 		The value of the boundary condition. Has to be compatible with the function_space,
-		so that it could also be used as ``DirichletBC(function_space, value, ...)``.
+		so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
 	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
-		The MeshFunction object representing the boundaries.
+		The :py:class:`fenics.MeshFunction` object representing the boundaries.
 	idcs : list[int] or int
 		A list of indices / boundary markers that determine the boundaries
 		onto which the Dirichlet boundary conditions should be applied to.
@@ -317,7 +322,14 @@ class Interpolator:
 	carried out between the same spaces, which is made significantly
 	faster by computing the corresponding matrix.
 	The function spaces can even be defined on different meshes.
-
+	
+	Notes
+	-----
+	
+	This class only works properly for continuous Lagrange elements and
+	constant, discontinuous Lagrange elements. All other elements raise
+	an Exception.
+	
 	Examples
 	--------
 	Here, we consider interpolating from CG1 elements to CG2 elements ::
@@ -523,18 +535,18 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 	"""Writes out the current mesh as .msh file.
 
 	This method updates the vertex positions in the ``original_gmsh_file``, the
-	topology of the mesh and its connections are the same. The original gmsh
+	topology of the mesh and its connections are the same. The original GMSH
 	file is kept, and a new one is generated under ``out_mesh_file``.
 
 	Parameters
 	----------
 	mesh : dolfin.cpp.mesh.Mesh
-		The mesh object in fenics that should be saved as gmsh file.
+		The mesh object in fenics that should be saved as GMSH file.
 	original_msh_file : str
-		Path to the original gmsh mesh file of the mesh object, has to
-		end with '.msh'.
+		Path to the original GMSH mesh file of the mesh object, has to
+		end with .msh.
 	out_msh_file : str
-		Path (and name) of the output mesh file, has to end with '.msh'.
+		Path (and name) of the output mesh file, has to end with .msh.
 
 	Returns
 	-------
@@ -542,7 +554,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 
 	Notes
 	-----
-	The method only works with gmsh mesh 4.1 file format. Others might also work,
+	The method only works with GMSH 4.1 file format. Others might also work,
 	but this is not tested or ensured in any way.
 	"""
 

@@ -63,24 +63,24 @@ print('Relative error between y_max and y_bar: ' + str(error) + ' %')
 
 
 ### Post Processing
-#
-# import matplotlib.pyplot as plt
-# plt.figure(figsize=(15,5))
-#
-# plt.subplot(1, 3, 1)
-# fig = plot(u)
-# plt.colorbar(fig, fraction=0.046, pad=0.04)
-# plt.title('Control variable u')
-#
-# plt.subplot(1,3,2)
-# fig = plot(y)
-# plt.colorbar(fig, fraction=0.046, pad=0.04)
-# plt.title('State variable y')
-#
-# plt.subplot(1,3,3)
-# fig = plot(y_d, mesh=mesh)
-# plt.colorbar(fig, fraction=0.046, pad=0.04)
-# plt.title('Desired state y_d')
-#
-# plt.tight_layout()
+
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,5))
+
+plt.subplot(1, 3, 1)
+fig = plot(u)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Control variable u')
+
+plt.subplot(1,3,2)
+fig = plot(y)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('State variable y')
+
+plt.subplot(1,3,3)
+fig = plot(y_d, mesh=mesh)
+plt.colorbar(fig, fraction=0.046, pad=0.04)
+plt.title('Desired state y_d')
+
+plt.tight_layout()
 # plt.savefig('./img_state_constraints.png', dpi=150, bbox_inches='tight')

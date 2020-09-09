@@ -1,0 +1,74 @@
+Optimal Control
+---------------
+
+[Mesh]
+mesh_file
+
+
+
+[StateEquation]
+
+is_linear			(False)
+picard_iteration	(False)
+picard_rtol			(1e-10)
+picard_atol			(1e-12)
+picard_iter			(50)
+picard_verbose		(False)
+newton_rtol			(1e-11)
+newton_atol			(1e-13)
+newton_damped		(True)
+newton_verbose		(False)
+newton_iter			(50)
+
+
+
+[OptimizationRoutine]
+
+algorithm
+beta_armijo			(2)
+step_initial		(1.0)
+epsilon_armijo		(1e-4)
+rtol				(1e-3)
+atol				(0.0)
+maximum_iterations	(100)
+soft_exit			(False)
+
+
+
+[AlgoLBFGS]
+
+memory_vectors		(5)
+use_bfgs_scaling	(True)
+
+
+
+[AlgoCG]
+
+cg_method				(FR)
+cg_periodic_restart		(False)
+cg_periodic_its			(10)
+cg_relative_restart		(False)
+cg_restart_tol			(0.25)
+
+
+[AlgoTNM]
+inner_newton			(cr)
+max_it_inner_newton		(50)
+inner_newton_tolerance	(1e-15)
+
+
+
+[AlgoPDAS]
+
+inner_pdas
+pdas_inner_tolerance			(1e-2)
+pdas_shift_mult
+maximum_iterations_inner_pdas	(50)
+
+
+
+[Output]
+
+save_pvd		(False)
+verbose			(True)
+save_results	(True)

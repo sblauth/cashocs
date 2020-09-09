@@ -9,9 +9,11 @@ problems.
 The corresponding config file is :download:`config.ini
 </../../demos/documented/optimal_control/poisson/config.ini>`.
 
-First of all, the config is divided into three sections: :ref:`Mesh
+First of all, the config is divided into the sections: :ref:`Mesh
 <config_ocp_mesh>`, :ref:`StateEquation <config_ocp_state_equation>`,
-and :ref:`OptimizationRoutine <config_ocp_optimization_routine>`.
+:ref:`OptimizationRoutine <config_ocp_optimization_routine>`, :ref:`AlgoLBFGS
+<config_ocp_algolbfgs>`, :ref:`AlgoCG <config_ocp_algocg>`, :ref:`AlgoTNM
+<config_ocp_algonewton>`, :ref:`AlgoPDAS <config_ocp_algopdas>`, and :ref:`Output <config_ocp_output>`.
 These manage the settings for the mesh, the state equation of the optimization
 problem, and for the solution algorithm, respectively.
 
@@ -59,7 +61,7 @@ is linear. This is used to speed up some computations. Note, that the program
 will always work when this is set to False, as it treats the linear problem in a
 nonlinear fashion and converges in one iteration. However, using
 ``is_linear = True``
-on a nonlinear state system throws a fenics error.
+on a nonlinear state system throws an error related to FEniCS.
 
 The next parameter is defined via ::
 
@@ -215,34 +217,15 @@ to still have the subsequent code be processed, which happens in case ``soft_exi
 Note, however, that in this case the returned results are **NOT** optimal,
 as defined by the user input parameters.
 
-The next line reads ::
-
-    verbose = True
-
-The parameter ``verbose`` determines, whether the solution algorithm generates a verbose
-output in the console, useful for monitoring its convergence.
-
-Next up, we define the paramter ``save_results`` ::
-
-    save_results = False
-
-If this parameter is set to True, the history of the optimization is saved in
-a .json file located in the same folder as the optimization script. This is
-very useful for postprocessing the results.
-
-Afterwards, we define the parameter ``save_pvd`` in the line ::
-
-    save_pvd = False
-
-If ``save_pvd`` is set to True, the state variables are saved to .pvd files
-in a folder named "pvd", located in the same directory as the optimization script.
-
 
 The following sections describe parameters that belong to the certain solution
-algorithms, and are also specified under the OptimizationRoutine section.
+algorithms.
 
-Limited memory BFGS method
-**************************
+
+.. _config_ocp_algolbfgs:
+
+Section AlgoLBFGS
+-----------------
 
 
 For the L-BFGS method we have the following parameters. First, we have
@@ -264,8 +247,11 @@ This determines, whether one should use a scaling of the initial Hessian approxi
 (see `Nocedal and Wright, Numerical Optimization <https://doi.org/10.1007/978-0-387-40065-5>`_).
 This is usually very beneficial and should be kept enabled.
 
-Nonlinear conjugate gradient methods
-************************************
+.. _config_ocp_algocg:
+
+Section AlgoCG
+--------------
+
 
 The parameter ::
 
@@ -311,9 +297,10 @@ and the corresponding relative tolerance (which should lie in :math:`(0,1)`) is 
 Note, that this relative restart reinitializes the iteration with a gradient
 step in case subsequent gradients are not "sufficiently" orthogonal anymore.
 
+.. _config_ocp_algonewton:
 
-Truncated Newton method
-***********************
+Section AlgoTNM
+------------------
 
 The parameters for the truncated Newton method are determined in the following.
 
@@ -351,8 +338,10 @@ Finally, we have the following line ::
 This determines the relative tolerance of the iterative Krylov solver for the
 Hessian problem.
 
-Primal-Dual-Active-Set Method
-*****************************
+.. _config_ocp_algopdas:
+
+Section AlgoPDAS
+----------------
 
 
 Finally, we take a look at the parameters for the primal dual active set method.
@@ -402,6 +391,33 @@ Finally, we have the parameter ::
 
 This parameter determines the relative tolerance used for the inner
 solution algorithms.
+
+.. _config_ocp_output:
+
+Section Output
+--------------
+
+The next line reads ::
+
+    verbose = True
+
+The parameter ``verbose`` determines, whether the solution algorithm generates a verbose
+output in the console, useful for monitoring its convergence.
+
+Next up, we define the paramter ``save_results`` ::
+
+    save_results = False
+
+If this parameter is set to True, the history of the optimization is saved in
+a .json file located in the same folder as the optimization script. This is
+very useful for postprocessing the results.
+
+Afterwards, we define the parameter ``save_pvd`` in the line ::
+
+    save_pvd = False
+
+If ``save_pvd`` is set to True, the state variables are saved to .pvd files
+in a folder named "pvd", located in the same directory as the optimization script.
 
 This concludes the documentation of the config files for optimal control problems.
 For the corresponding documentation for shape optimization problems, see :ref:`config_shape_optimization`.

@@ -139,7 +139,7 @@ def test_control_bfgs_multiple():
 
 
 def test_control_newton_cg_multiple():
-	config.set('AlgoNEWTON', 'inner_newton', 'cg')
+	config.set('AlgoTNM', 'inner_newton', 'cg')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()
@@ -149,7 +149,7 @@ def test_control_newton_cg_multiple():
 
 
 def test_control_newton_cr_multiple():
-	config.set('AlgoNEWTON', 'inner_newton', 'cr')
+	config.set('AlgoTNM', 'inner_newton', 'cr')
 	u.vector()[:] = 0.0
 	v.vector()[:] = 0.0
 	ocp._erase_pde_memory()

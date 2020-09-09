@@ -172,3 +172,16 @@ def test_write_mesh():
 	os.system('rm ./mesh/mesh_subdomains.h5')
 	os.system('rm ./mesh/mesh_boundaries.xdmf')
 	os.system('rm ./mesh/mesh_boundaries.h5')
+
+
+def test_empty_measure():
+	mesh, _, _, dx, ds, dS = cashocs.regular_mesh(5)
+	V = fenics.FunctionSpace(mesh, 'CG', 1)
+	dm = cashocs.utils.EmptyMeasure(dx)
+	
+	trial = fenics.TrialFunction(V)
+	test = fenics.TestFunction(V)
+	
+	assert fenics.assemble(1*dm) == 0.0
+	assert (fenics.assemble(test*dm).norm('linf')) == 0.0
+	assert (fenics.assemble(trial*test*dm).norm('linf')) == 0.0

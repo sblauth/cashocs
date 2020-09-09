@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""This module includes finite difference Taylor tests to verify the computed gradients.
+"""This module includes finite difference Taylor tests to verify the correctness of computed gradients.
 
 """
 
@@ -29,7 +29,7 @@ from ._exceptions import InputError
 
 
 def control_gradient_test(ocp, u=None, h=None):
-	"""Taylor test to verify that the computed gradient is correct.
+	"""Taylor test to verify that the computed gradient is correct for optimal control problems.
 
 	Parameters
 	----------
@@ -37,17 +37,18 @@ def control_gradient_test(ocp, u=None, h=None):
 		The underlying optimal control problem, for which the gradient
 		of the reduced cost function shall be verified.
 	u : list[dolfin.function.function.Function], optional
-		The point, at which the gradient shall be verified. If this is None,
-		then the current controls of the optimization problem are used.
+		The point, at which the gradient shall be verified. If this is ``None``,
+		then the current controls of the optimization problem are used. Default is
+		``None``.
 	h : list[dolfin.function.function.Function], optional
-		The direction(s) for the directional (Gateaux) derivative. If this is None,
-		one random direction is chosen.
+		The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
+		one random direction is chosen. Default is ``None``.
 
 	Returns
 	-------
 	float
-		The convergence order from the Taylor test. If this is (close to) 2, everything works
-		as expected.
+		The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+		 everything works as expected.
 	"""
 
 	initial_state = []
@@ -130,13 +131,13 @@ def shape_gradient_test(sop, h=None):
 		The underlying shape optimization problem.
 	h : dolfin.function.function.Function, optional
 		The direction used to compute the directional derivative. If this is
-		None, then a random direction is used (default is None).
+		``None``, then a random direction is used (default is ``None``).
 
 	Returns
 	-------
 	float
-		The computed convergence rate. The computed gradient is correct, if
-		this quanitity is (about) 2.
+		The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+		 everything works as expected.
 	"""
 
 	if h is None:

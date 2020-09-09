@@ -114,29 +114,29 @@ sop.solve()
 
 
 ### Post Processing
-#
-# import matplotlib.pyplot as plt
-# DG0 = FunctionSpace(mesh, 'DG', 0)
-# plt.figure(figsize=(10,5))
-#
-# result = Function(DG0)
-# a_post = TrialFunction(DG0)*TestFunction(DG0)*dx
-# L_post = Constant(1)*TestFunction(DG0)*dx(1) + Constant(2)*TestFunction(DG0)*dx(2)
-# solve(a_post==L_post, result)
-#
-# ax_result = plt.subplot(1,2,2)
-# fig_result = plot(result)
-# plt.title('Optimized Geometry')
-#
-# mesh_initial, _, _, _, _, _ = cashocs.import_mesh('./mesh/mesh.xdmf')
-# mesh.coordinates()[:, :] = mesh_initial.coordinates()[:, :]
-# mesh.bounding_box_tree().build(mesh)
-# initial = Function(DG0)
-# solve(a_post==L_post, initial)
-#
-# ax_initial = plt.subplot(1,2,1)
-# fig_initial = plot(initial)
-# plt.title('Initial Geometry')
-#
-# plt.tight_layout()
+
+import matplotlib.pyplot as plt
+DG0 = FunctionSpace(mesh, 'DG', 0)
+plt.figure(figsize=(10,5))
+
+result = Function(DG0)
+a_post = TrialFunction(DG0)*TestFunction(DG0)*dx
+L_post = Constant(1)*TestFunction(DG0)*dx(1) + Constant(2)*TestFunction(DG0)*dx(2)
+solve(a_post==L_post, result)
+
+ax_result = plt.subplot(1,2,2)
+fig_result = plot(result)
+plt.title('Optimized Geometry')
+
+mesh_initial, _, _, _, _, _ = cashocs.import_mesh('./mesh/mesh.xdmf')
+mesh.coordinates()[:, :] = mesh_initial.coordinates()[:, :]
+mesh.bounding_box_tree().build(mesh)
+initial = Function(DG0)
+solve(a_post==L_post, initial)
+
+ax_initial = plt.subplot(1,2,1)
+fig_initial = plot(initial)
+plt.title('Initial Geometry')
+
+plt.tight_layout()
 # plt.savefig('./img_inverse_tomography.png', dpi=150, bbox_inches='tight')

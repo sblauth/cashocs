@@ -77,6 +77,9 @@ ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, 
 ocp.solve()
 
 
+
+### Post processing
+
 u_file = File('./visualization/u.pvd')
 y_file = File('./visualization/y.pvd')
 temp_u = Function(V)

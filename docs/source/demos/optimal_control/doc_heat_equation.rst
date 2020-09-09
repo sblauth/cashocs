@@ -23,13 +23,13 @@ It reads
     \end{alignedat} \right.
 
 
-Since fenics does not have any direct built-in support for time dependent problems,
+Since FEniCS does not have any direct built-in support for time dependent problems,
 CASHOCS also does not have one. Hence, one first has to perform a semi-discretization
 of the PDE system in the temporal component (e.g. via finite differences), and then
 solve the resulting sequence of PDEs.
 
 In particular, for the use with CASHOCS, we have to create not a single weak form and
-fenics Function, that can be re-used, like one would in classical fenics programs, but
+:py:class:`fenics.Function` Function, that can be re-used, like one would in classical FEniCS programs, but
 we have to create the corresponding objects a-priori for each time step.
 
 For the domain of this problem, we once again consider the space time cylinder given by :math:`(0,T) \times \Omega = (0,1) \times (0,1)^2`.

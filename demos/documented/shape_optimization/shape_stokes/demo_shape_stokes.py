@@ -53,28 +53,28 @@ sop.solve()
 
 
 ### Post Processing
-#
-# import matplotlib.pyplot as plt
-# plt.figure(figsize=(15,3))
-#
-# ax_mesh = plt.subplot(1, 3, 1)
-# fig_mesh = plot(mesh)
-# plt.title('Discretization of the optimized geometry')
-#
-# ax_u = plt.subplot(1, 3, 2)
-# ax_u.set_xlim(ax_mesh.get_xlim())
-# ax_u.set_ylim(ax_mesh.get_ylim())
-# fig_u = plot(u)
-# plt.colorbar(fig_u, fraction=0.046, pad=0.04)
-# plt.title('State variable u')
-#
-#
-# ax_p = plt.subplot(1, 3, 3)
-# ax_p.set_xlim(ax_mesh.get_xlim())
-# ax_p.set_ylim(ax_mesh.get_ylim())
-# fig_p = plot(p)
-# plt.colorbar(fig_p, fraction=0.046, pad=0.04)
-# plt.title('State variable p')
-#
-# plt.tight_layout()
+
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,3))
+
+ax_mesh = plt.subplot(1, 3, 1)
+fig_mesh = plot(mesh)
+plt.title('Discretization of the optimized geometry')
+
+ax_u = plt.subplot(1, 3, 2)
+ax_u.set_xlim(ax_mesh.get_xlim())
+ax_u.set_ylim(ax_mesh.get_ylim())
+fig_u = plot(u)
+plt.colorbar(fig_u, fraction=0.046, pad=0.04)
+plt.title('State variable u')
+
+
+ax_p = plt.subplot(1, 3, 3)
+ax_p.set_xlim(ax_mesh.get_xlim())
+ax_p.set_ylim(ax_mesh.get_ylim())
+fig_p = plot(p)
+plt.colorbar(fig_p, fraction=0.046, pad=0.04)
+plt.title('State variable p')
+
+plt.tight_layout()
 # plt.savefig('./img_shape_stokes.png', dpi=150, bbox_inches='tight')

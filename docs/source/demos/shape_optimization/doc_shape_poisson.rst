@@ -8,7 +8,7 @@ Problem Formulation
 
 In this demo, we investigate the basics of CASHOCS for shape optimization problems.
 As a model problem, we investigate the following one from
-`Etling et al., First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
+`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
 
 .. math::
 

@@ -22,4 +22,4 @@ cashocs.egg-info/
 ### bash
 build_docs.sh
 build_pypi.sh
-test.sh
+test_cashocs.sh

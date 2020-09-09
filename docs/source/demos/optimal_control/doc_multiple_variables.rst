@@ -86,7 +86,7 @@ Defintion of the state system
 
 
 Now, we can define the PDE constraints corresponding to ``y`` and ``z``, which
-read in fenics syntax ::
+read in FEniCS syntax ::
 
     e_y = inner(grad(y), grad(p))*dx - u*p*dx
     e_z = inner(grad(z), grad(q))*dx - (y + v)*q*dx

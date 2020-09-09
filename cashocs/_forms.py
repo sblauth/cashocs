@@ -771,13 +771,13 @@ class ShapeFormHandler(FormHandler):
 		None
 		"""
 
-		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def'))
+		self.shape_bdry_def = json.loads(self.config.get('ShapeGradient', 'shape_bdry_def', fallback='[]'))
 		if not type(self.shape_bdry_def) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_def', 'The input has to be a list.')
 		# if not len(self.shape_bdry_def) > 0:
 		# 	raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
 
-		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix'))
+		self.shape_bdry_fix = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix', fallback='[]'))
 		if not type(self.shape_bdry_def) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix', 'The input has to be a list.')
 
@@ -798,8 +798,8 @@ class ShapeFormHandler(FormHandler):
 		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
 
 		self.mu_lame = fenics.Function(self.CG1)
-		self.lambda_lame = self.config.getfloat('ShapeGradient', 'lambda_lame')
-		self.damping_factor = self.config.getfloat('ShapeGradient', 'damping_factor')
+		self.lambda_lame = self.config.getfloat('ShapeGradient', 'lambda_lame', fallback=0.0)
+		self.damping_factor = self.config.getfloat('ShapeGradient', 'damping_factor', fallback=0.0)
 
 		if self.config.getboolean('ShapeGradient', 'inhomogeneous', fallback = False):
 			self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
@@ -828,8 +828,8 @@ class ShapeFormHandler(FormHandler):
 
 
 	def __setup_mu_computation(self):
-		self.mu_def = self.config.getfloat('ShapeGradient', 'mu_def')
-		self.mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix')
+		self.mu_def = self.config.getfloat('ShapeGradient', 'mu_def', fallback=1.0)
+		self.mu_fix = self.config.getfloat('ShapeGradient', 'mu_fix', fallback=1.0)
 
 		if np.abs(self.mu_def - self.mu_fix)/self.mu_fix > 1e-2:
 
@@ -862,17 +862,14 @@ class ShapeFormHandler(FormHandler):
 
 
 	def __compute_mu_elas(self):
-		"""Computes the second lame parameter mu_elas, based on Siebenborn et al. [1]
+		"""Computes the second lame parameter mu_elas, based on `Schulz and
+		Siebenborn, Computational Comparison of Surface Metrics for
+		PDE Constrained Shape Optimization
+		<https://doi.org/10.1515/cmam-2016-0009>`_
 
 		Returns
 		-------
 		None
-
-		References
-		----------
-		[1] Schulz, V., Siebenborn, M., "Computational Comparison of Surface Metrics for
-			PDE Constrained Shape Optimization, Computational Methods in Applied Mathematics",
-			2016, Vol. 16, Iss. 3, https://doi.org/10.1515/cmam-2016-0009
 		"""
 
 		if self.inhomogeneous_mu:
