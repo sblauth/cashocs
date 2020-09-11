@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 24/02/2020, 08.44
+"""Implementation of a reduced shape cost functional
 
-@author: blauths
 """
 
 import fenics

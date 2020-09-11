@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Line search methods for optimization.
+"""Line search for optimal control problems.
 
 """
 
@@ -47,7 +47,7 @@ class ArmijoLineSearch:
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
 		self.form_handler = self.optimization_problem.form_handler
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'step_initial', fallback=1.0)
+		self.stepsize = self.config.getfloat('OptimizationRoutine', 'initial_stepsize', fallback=1.0)
 		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2.0)
 		self.armijo_stepsize_initial = self.stepsize

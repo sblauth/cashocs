@@ -55,10 +55,10 @@ class AdjointProblem:
 		self.adjoints = self.form_handler.adjoints
 		self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-12)
-		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
-		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
+		self.rtol = self.config.getfloat('StateSystem', 'picard_rtol', fallback=1e-10)
+		self.atol = self.config.getfloat('StateSystem', 'picard_atol', fallback=1e-12)
+		self.maxiter = self.config.getint('StateSystem', 'picard_iter', fallback=50)
+		self.picard_verbose = self.config.getboolean('StateSystem', 'picard_verbose', fallback=False)
 
 		self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
 		_setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)

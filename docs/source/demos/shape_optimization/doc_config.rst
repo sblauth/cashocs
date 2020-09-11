@@ -13,13 +13,19 @@ However, the most important parameters are shared between both types of optimiza
 problems.
 
 A general config file for shape optimization has the following sections
-:ref:`Mesh <config_shape_mesh>`, :ref:`StateEquation <config_shape_state_equation>`,
+:ref:`Mesh <config_shape_mesh>`, :ref:`StateSystem <config_shape_state_equation>`,
 :ref:`OptimizationRoutine <config_shape_optimization_routine>`, :ref:`AlgoLBFGS <config_shape_algolbfgs>`,
 :ref:`AlgoCG <config_shape_algocg>`,
 :ref:`ShapeGradient <config_shape_shape_gradient>`,
 :ref:`Regularization <config_shape_regularization>`, :ref:`MeshQuality <config_shape_mesh_quality>`
 and :ref:`Output <config_shape_output>`. We go over these
 sections and each parameter in them in the following.
+
+As in :ref:`config_optimal_control`, we refer to the `documentation of the
+configparser module <https://docs.python.org/3/library/configparser.html>`_ for
+a detailed description of how these config files can be structured. Moreover, we
+also summarize all parameters as well as their default values
+at :ref:`the end of this page <config_shape_summary>`.
 
 
 
@@ -81,10 +87,10 @@ and only really required for remeshing. You can safely leave them out of your co
 
 .. _config_shape_state_equation:
 
-Section StateEquation
+Section StateSystem
 ---------------------
 
-The StateEquation section is in complete analogy to :ref:`the corresponding one for optimal control problems <config_ocp_state_equation>`. For the
+The StateSystem section is in complete analogy to :ref:`the corresponding one for optimal control problems <config_ocp_state_system>`. For the
 sake of completeness, we briefly recall the parameters here, anyway.
 
 The first parameter is ``is_linear``, and can be set as ::
@@ -187,7 +193,7 @@ Again, ``rtol`` denotes the relative, and ``atol`` the absolute tolerance.
 
 Next up, we have the initial guess for the step size, which can be determined via ::
 
-    step_initial = 1.0
+    initial_stepsize = 1.0
 
 The upcoming parameters are used for the Armijo rule ::
 
@@ -249,9 +255,9 @@ Next, we discuss the parameters relevant for the limited memory BFGS method. For
 regarding this method, we refer to `Schulz, Siebenborn, and Welker, Efficient PDE Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics
 <https://doi.org/10.1137/15M1029369>`_, where the methods are introduced.
 
-The first parameter, ``memory_vectors``, determines how large the storage of the BFGS method is. It is set via ::
+The first parameter, ``bfgs_memory_size``, determines how large the storage of the BFGS method is. It is set via ::
 
-    memory_vectors = 3
+    bfgs_memory_size = 3
 
 Usually, a higher storage leads to a better Hessian approximation, and thus to faster
 convergence. However, this also leads to an increased memory usage. Typically, values
@@ -416,3 +422,314 @@ Section MeshQuality
 
 Section Output
 --------------
+
+
+.. _config_shape_summary:
+
+Summary
+-------
+
+Finally, an overview over all parameters and their default values can be found
+in the following.
+
+
+[Mesh]
+******
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameters
+      - Default value
+      - Remarks
+    * - mesh_file
+      -
+      - Only needed for remeshing
+    * - gmsh_file
+      -
+      - Only needed for remeshing
+    * - geo_file
+      -
+      - Only needed for remeshing
+    * - remesh
+      - ``False``
+      - if ``True``, remeshing is enabled; this feature is experimental, use with care
+    * - show_gmsh_output
+      - ``False``
+      - if ``True``, shows the output of GMSH during remeshing in the console
+
+
+
+[StateSystem]
+*************
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter
+      - Default value
+      - Remarks
+    * - is_linear
+      - ``False``
+      - using ``True`` gives an error for nonlinear problems
+    * - newton_rtol
+      - ``1e-11``
+      - relative tolerance for Newton's method
+    * - newton_atol
+      - ``1e-13``
+      - absolute tolerance for Newton's method
+    * - newton_iter
+      - ``50``
+      - maximum iterations for Newton's method
+    * - newton_damped
+      - ``True``
+      -
+    * - newton_verbose
+      - ``False``
+      - ``True`` enables verbose output of Newton's method
+    * - picard_iteration
+      - ``False``
+      - ``True`` enables Picard iteration; only has an effect for multiple
+        variables
+    * - picard_rtol
+      - ``1e-10``
+      - relative tolerance for Picard iteration
+    * - picard_atol
+      - ``1e-12``
+      - absolute tolerance for Picard iteration
+    * - picard_iter
+      - ``50``
+      - maximum iterations for Picard iteration
+    * - picard_verbose
+      - ``False``
+      - ``True`` enables verbose output of Picard iteration
+
+
+
+[OptimizationRoutine]
+*********************
+
+.. list-table::
+  :header-rows: 1
+
+  * - Parameter
+    - Default value
+    - Remarks
+  * - algorithm
+    -
+    - has to be specified by the user; see :py:meth:`solve <cashocs.OptimalControlProblem.solve>`
+  * - rtol
+    - ``1e-3``
+    - relative tolerance for the optimization algorithm
+  * - atol
+    - ``0.0``
+    - absolute tolerance for the optimization algorithm
+  * - maximum iterations
+    - ``100``
+    - maximum iterations for the optimization algorithm
+  * - initial_stepsize
+    - ``1.0``
+    - initial stepsize for the first iteration in the Armijo rule
+  * - epsilon_armijo
+    - ``1e-4``
+    -
+  * - beta_armijo
+    - ``2.0``
+    -
+  * - soft_exit
+    - ``False``
+    - if ``true``, the optimization algorithm does not raise an exception if
+      it did not converge
+
+
+[AlgoLBFGS]
+***********
+
+.. list-table::
+  :header-rows: 1
+
+  * - Parameter
+    - Default value
+    - Remarks
+  * - bfgs_memory_size
+    - ``5``
+    - memory size of the LBFGS method
+  * - use_bfgs_scaling
+    - ``True``
+    - if ``True``, uses a scaled identity mapping as initial guess for the inverse Hessian
+
+
+[AlgoCG]
+********
+
+.. list-table::
+  :header-rows: 1
+
+  * - Parameter
+    - Default value
+    - Remarks
+  * - cg_method
+    - ``FR``
+    - specifies which nonlinear CG method is used
+  * - cg_periodic_restart
+    - ``False``
+    - if ``True``, enables periodic restart of NCG method
+  * - cg_periodic_its
+    - ``10``
+    - specifies, after how many iterations the NCG method is restarted, if applicable
+  * - cg_relative_restart
+    - ``False``
+    - if ``True``, enables restart of NCG method based on a relative criterion
+  * - cg_restart_tol
+    - ``0.25``
+    - the tolerance of the relative restart criterion, if applicable
+
+
+
+[ShapeGradient]
+***************
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter
+      - Default value
+      - Remarks
+    * - shape_bdry_def
+      - ``[]``
+      - list of indices for the deformable boundaries; only needed if inhomogeneous ``mu_lame`` is used
+    * - shape_bdry_fix
+      - ``[]``
+      - list of indices for the fixed boundaries
+    * - shape_bdry_fix_x
+      - ``[]``
+      - list of indices for boundaries with fixed x values
+    * - shape_bdry_fix_y
+      - ``[]``
+      - list of indices for boundaries with fixed y values
+    * - shape_bdry_fix_z
+      - ``[]``
+      - list of indices for boundaries with fixed z values
+    * - use_pull_back
+      - ``True``
+      - if ``False``, shape derivative might be wrong; no pull-back for the material derivative is performed;
+        only use with caution
+    * - lambda_lame
+      - ``0.0``
+      - value of the first Lame parameter for the elasticity equations
+    * - damping_factor
+      - ``0.0``
+      - value of the damping parameter for the elasticity equations
+    * - mu_def
+      - ``1.0``
+      - value of the second Lame parameter on the deformable boundaries
+    * - mu_fix
+      - ``1.0``
+      - value of the second Lame parameter on the fixed boundaries
+    * - use_sqrt_mu
+      - ``False``
+      - if ``True``, uses the square root of the computed ``mu_lame``; might be good for 3D problems
+    * - inhomogeneous
+      - ``False``
+      - if ``True``, uses inhomogeneous elasticity equations, weighted by the local mesh size
+    * - degree_estimation
+      - ``False``
+      - if ``True``, performs a manual estimation of the quadrature degree for
+        the shape derivative; should not need to be enabled
+
+
+[Regularization]
+****************
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter
+      - Default value
+      - Remarks
+    * - factor_volume
+      - ``0.0``
+      - value of the regularization parameter for volume regularization; needs to be non-negative
+    * - target_volume
+      - ``0.0``
+      - prescribed volume for the volume regularization
+    * - use_initial_volume
+      - ``False``
+      - if ``True`` uses the volume of the initial geometry as prescribed volume
+    * - factor_surface
+      - ``0.0``
+      - value of the regularization parameter for surface regularization; needs to be non-negative
+    * - target_surface
+      - ``0.0``
+      - prescribed surface for the surface regularization
+    * - use_initial_surface
+      - ``False``
+      - if ``True`` uses the surface of the initial geometry as prescribed surface
+    * - factor_barycenter
+      - ``0.0``
+      - value of the regularization parameter for barycenter regularization; needs to be non-negative
+    * - target_barycenter
+      - ``[0.0, 0.0, 0.0]``
+      - prescribed barycenter for the barycenter regularization
+    * - use_initial_barycenter
+      - ``False``
+      - if ``True`` uses the barycenter of the initial geometry as prescribed barycenter
+
+
+
+[MeshQuality]
+*************
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter
+      - Default value
+      - Remarks
+    * - volume_change
+      - ``inf``
+      - determines by what factor the volume of a cell is allowed to change within a single deformation
+    * - angle_change
+      - ``inf``
+      - determines how much the angles of a cell are allowed to change within a single deformation
+    * - tol_lower
+      - ``0.0``
+      - if the mesh quality is lower than this tolerance, the state system is not solved
+        for the Armijo rule, instead step size is decreased
+    * - tol_upper
+      - ``1e-15``
+      - if the mesh quality is between ``tol_lower`` and ``tol_upper``, the state
+        system will still be solved for the Armijo rule. If the accepted step yields a quality
+        lower than this, algorithm is terminated (or remeshing is initiated)
+    * - measure
+      - ``skewness``
+      - determines which quality measure is used
+    * - type
+      - ``min``
+      - determines if minimal or average quality is considered
+
+
+
+
+[Output]
+********
+
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter
+      - Default value
+      - Remarks
+    * - verbose
+      - ``True``
+      - if ``True``, the history of the optimization is printed to the console
+    * - save_results
+      - ``True``
+      - if ``True``, the history of the optimization is saved to a .json file
+    * - save_pvd
+      - ``False``
+      - if ``True``, the history of the state variables over the optimization is
+        saved in .pvd files.
+    * - save_mesh
+      - ``False``
+      - if ``True``, saves the mesh for the optimized geometry; only available for GMSH input

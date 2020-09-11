@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 25/08/2020, 16.33
+"""Tests for shape optimization problems.
 
-@author: blauths
 """
 
 import numpy as np

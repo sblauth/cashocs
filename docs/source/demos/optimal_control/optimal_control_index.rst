@@ -1,9 +1,12 @@
 Optimal Control Problems
 ========================
 
+In this part of the tutorial, we investigate how optimal control problems can
+be treated with CASHOCS. 
+
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: List of all  optimal control demos:
 
    doc_poisson
    doc_config

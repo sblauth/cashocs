@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 15/06/2020, 08.00
+"""Implementation of a shape optimization problem.
 
-@author: blauths
 """
 
 import json
@@ -39,7 +37,7 @@ from ..utils import _optimization_algorithm_configuration
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
-	"""A shape optimization problem.
+	r"""A shape optimization problem.
 
 	This class is used to define a shape optimization problem, and to solve
 	it subsequently. For a detailed documentation, we refer to the `tutorial <https://temp-url.com/>`.
@@ -47,7 +45,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	these do not have to be wrapped into a list.
 	Note, that in the case of multiple variables these have to be grouped into
 	ordered lists, where state_forms, bcs_list, states, adjoints have to have
-	the same order (i.e. [y1, y2,...] and [p1, p2, ...], where p1 is the adjoint of y1 and so on.
+	the same order (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1``
+	and so on.
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,

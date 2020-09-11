@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 27/08/2020, 08.01
+"""Tests for the Picard iteration.
 
-@author: blauths
 """
 
 import numpy as np

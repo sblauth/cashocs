@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 07/09/2020, 10.46
+"""For the documentation of this demo see https://temp-url.com/.
 
-@author: blauths
 """
 
 from fenics import *

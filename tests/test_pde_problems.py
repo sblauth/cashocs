@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 01/09/2020, 17.10
+"""Tests for the module PDE problems.
 
-@author: blauths
 """
 
 import numpy as np

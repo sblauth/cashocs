@@ -49,7 +49,7 @@ class PDAS(OptimizationAlgorithm):
 		self.initialized = False
 		self.converged = False
 		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
-		self.shift_mult = self.config.getfloat('AlgoPDAS', 'pdas_shift_mult')
+		self.shift_mult = self.config.getfloat('AlgoPDAS', 'pdas_regularization_parameter')
 		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
 
 		self.inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')

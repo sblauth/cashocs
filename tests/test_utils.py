@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 02/09/2020, 07.41
+"""Tests for the utils module.
 
-@author: blauths
 """
 
 import fenics

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Class representing an abstract optimal control problem.
+"""Class representing an optimal control problem.
 
 """
 
@@ -41,7 +41,8 @@ class OptimalControlProblem(OptimizationProblem):
 	these do not have to be wrapped into a list.
 	Note, that in the case of multiple variables these have to be grouped into
 	ordered lists, where state_forms, bcs_list, states, adjoints have to have
-	the same order (i.e. [y1, y2, ...] and [p1, p2, ...], where p1 is the adjoint of y1 and so on.
+	the same order (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1``
+	and so on.
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,

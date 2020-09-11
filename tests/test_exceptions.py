@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 03/09/2020, 13.58
+"""Tests if CASHOCS exceptions are being raised properly.
 
-@author: blauths
 """
 
 from fenics import *

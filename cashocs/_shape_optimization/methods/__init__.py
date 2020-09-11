@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Solution algorithms for shape optimization problems
+"""Solution algorithms for shape optimization problems.
 
 """
 

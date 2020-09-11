@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 15/06/2020, 08.01
+"""Gradient descent methods for shape optimization.
 
-@author: blauths
 """
 
 import numpy as np

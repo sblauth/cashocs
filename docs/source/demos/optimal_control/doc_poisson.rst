@@ -1,7 +1,7 @@
 .. _demo_poisson:
 
-Distributed Control for a Poisson Problem
-=========================================
+Distributed Control of a Poisson Problem
+========================================
 
 
 Problem Formulation
@@ -25,16 +25,15 @@ problem" of PDE constrained optimization, i.e.,
 (see, e.g., `Tröltzsch, Optimal Control of Partial Differential Equations
 <https://doi.org/10.1090/gsm/112>`_
 or `Hinze, Pinnau, Ulbrich, and Ulbrich, Optimization with PDE constraints
-<https://doi.org/10.1007/978-1-4020-8839-1>`_.
+<https://doi.org/10.1007/978-1-4020-8839-1>`_).
 
 For this first example, we do not consider control constraints,
 but search for an optimal control u in the entire space :math:`L^2(\Omega)`,
-for the sake of simplicitiy.
-For the domain under consideration, we use the unit square
+for the sake of simplicitiy. For the domain under consideration, we use the unit square
 :math:`\Omega = (0, 1)^2`, since this is built into CASHOCS.
 
 In the following, we will describe how to solve this problem
-using CASHOCS, using as much of the package as possible. Moreover,
+using CASHOCS. Moreover,
 we also detail alternative / equivalent FEniCS code which could
 be used to define the problem instead.
 
@@ -47,7 +46,7 @@ Initialization
 **************
 
 We begin by importing FEniCS and CASHOCS. For the sake of
-better readability we import everyting from the FEniCS package ::
+better readability we use a wildcard import for FEniCS ::
 
     from fenics import *
     import cashocs
@@ -63,8 +62,7 @@ Note, that the corresponding file is :download:`config.ini </../../demos/documen
 
 .. hint::
 
-    An alternative way of loading the config file (usually found
-    in previous iterations of the software) would be to load
+    An alternative way of loading the config file would be to load
     the config file manually, via ::
 
         import configparser
@@ -111,28 +109,28 @@ elements.
 Definition of the state equation
 ********************************
 
-To describe the state system in CASHOCS, we use nearly standard
+To describe the state system in CASHOCS, we use (almost) standard
 FEniCS syntax, and the differences will be highlighted in the
-following. First, we define a Function ``y`` that models our
-state variable :math:`y`, and a Function ``p`` that models the corresponding
-adjoint variable :math:`p` via ::
+following. First, we define a :py:class:`fenics.Function` ``y`` that models our
+state variable :math:`y`, and a :py:class:`fenics.Function` ``p`` that models
+the corresponding adjoint variable :math:`p` via ::
 
     y = Function(V)
     p = Function(V)
 
-Next up, we analogously define the control variable as Function ``u`` ::
+Next up, we analogously define the control variable as :py:class:`fenics.Function` ``u`` ::
 
     u = Function(V)
 
 This enables us to define the weak form of the state equation,
-which is tested not with a TestFunction but with the adjoint
-variable via the classical FEniCS / UFL syntax ::
+which is tested not with a :py:class:`fenics.TestFunction` but with the adjoint
+variable ``p`` via the classical FEniCS / UFL syntax ::
 
     e = inner(grad(y), grad(p))*dx - u*p*dx
 
 .. note::
     For the clasical definition of this weak form with FEniCS
-    one would do the following ::
+    one would write the following code ::
 
         y = TrialFunction(V)
         p = TestFunction(V)
@@ -150,13 +148,14 @@ variable via the classical FEniCS / UFL syntax ::
         u = Function(V)
         F = inner(grad(y), grad(p))*dx -u*p*dx
 
-    which could then be solved via the "solve" interface. The
+    which could then be solved via the :py:func:`fenics.solve` interface. This
     formulation, which comes more naturally for nonlinear
-    variational problems (see the `FEniCS examples <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_). However,
+    variational problems (see the `FEniCS examples <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_)
+    is closer to the one in CASHOCS. However,
     for the use with CASHOCS, the state variable y **must not**
-    be a TrialFunction, and the adjoint variable p **must not**
-    be a TestFunction. They **have to** be defined as regular
-    Functions, otherwise the code will not work properly.
+    be a :py:class:`fenics.TrialFunction`, and the adjoint variable p **must not**
+    be a :py:class:`fenics.TestFunction`. They **have to** be defined as regular
+    :py:class:`fenics.Function` objects, otherwise the code will not work properly.
 
 After defining the weak form of the state equation, we now
 specify the corresponding (homogeneous) Dirichlet boundary
@@ -184,8 +183,8 @@ boundaries 1,2,3, and 4, i.e., everywhere.
 With the above description, we see that defining the state system
 for CASHOCS is nearly identical to defining it with FEniCS,
 the only major difference lies in the definition of the state
-and adjoint variables as Function objects, instead of Trial- and
-TestFunctions.
+and adjoint variables as :py:class:`fenics.Function` objects, instead of :py:class:`fenics.TrialFunction`
+and :py:class:`fenics.TestFunction`.
 
 Definition of the cost functional
 *********************************
@@ -193,12 +192,12 @@ Definition of the cost functional
 
 Now, we have to define the optimal control problem which we do
 by first specifying the cost functional. To do so, we define the
-desired state :math:`y_d` as an UFL expression ``y_d``, i.e., ::
+desired state :math:`y_d` as an :py:class:`fenics.Expression` ``y_d``, i.e., ::
 
     y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 
-Alternatively, ``y_d`` could also be a function or any other object
-that is usable in an UFL form (e.g. generated with SpatialCoordinate).
+Alternatively, ``y_d`` could also be a :py:class:`fenics.Function` or any other object
+that is usable in an UFL form (e.g. generated with :py:func:`fenics.SpatialCoordinate`).
 
 Then, we define the regularization parameter :math:`\alpha` and the tracking-type
 cost functional via the commands ::
@@ -206,8 +205,8 @@ cost functional via the commands ::
     alpha = 1e-6
     J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
 
-The cost functional has to be a UFL form, which returns the
-value when evaluated with the assemble command from FEniCS.
+The cost functional has to be a UFL form, which returns a scalar value
+when evaluated with the assemble command from FEniCS.
 These definitions are also classical in the sense that they
 would have to be performed in this (or a similar) way in FEniCS
 when one would want to evaluate the (reduced) cost functional,
@@ -216,8 +215,8 @@ so that we have only very little overhead.
 Definition of the optimization problem and its solution
 *******************************************************
 
-Finally, we set up an optimal control problem ``ocp`` and then
-directly solve it via CASHOCS with the the method :py:meth:`ocp.solve()
+Finally, we set up an :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` ``ocp`` and then
+directly solve it with the the method :py:meth:`ocp.solve()
 <cashocs.OptimalControlProblem.solve>` ::
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
@@ -238,11 +237,11 @@ directly solve it via CASHOCS with the the method :py:meth:`ocp.solve()
 
         ocp.solve('lbfgs', 1e-3, 0.0, 100)
 
-    to solve the optimization problem with the L-BFGS method, an relative tolerance
+    to solve the optimization problem with the L-BFGS method, a relative tolerance
     of 1e-3, no absolute tolerance, and a maximum of 100 iterations.
 
-    The possible values for these are the same as the corresponding ones in the config file.
-    This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
+    The possible values for these arguments are the same as :ref:`the corresponding ones in the config file
+    <config_ocp_optimization_routine>`. This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
 
 
 Finally, we visualize the results using matplotlib and the following code ::

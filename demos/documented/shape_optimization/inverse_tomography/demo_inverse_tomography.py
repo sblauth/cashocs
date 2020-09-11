@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 08/09/2020, 09.27
+"""For the documentation of this demo see https://temp-url.com/.
 
-@author: blauths
 """
 
 from fenics import *
@@ -103,13 +101,13 @@ J3 = Constant(0.5)*pow(u3 - references[2], 2)*ds
 J = J1 + J2 + J3
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-sop.compute_state_variables()
+# sop.compute_state_variables()
 
 mu1.val = 1/assemble(J1)
 mu2.val = 1/assemble(J2)
 mu3.val = 1/assemble(J3)
 
-sop.solve()
+# sop.solve()
 
 
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For a documentation of this demo see demo_03_neumann_boundary_control.md
+"""For the documentation of this demo see https://temp-url.com/.
 
 """
 

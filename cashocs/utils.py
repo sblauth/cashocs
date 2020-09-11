@@ -17,9 +17,9 @@
 
 """Module including utility and helper functions.
 
-These module includes utility and helper functions used in CASHOCS. They
+This module includes utility and helper functions used in CASHOCS. They
 might also be interesting for users, so they are part of the public API.
-They include wrappers that allow to shorten the coding for often recurring
+Includes wrappers that allow to shorten the coding for often recurring
 actions.
 """
 

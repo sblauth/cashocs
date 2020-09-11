@@ -57,10 +57,10 @@ class InnerLBFGS(OptimizationAlgorithm):
 		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.storage_s = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 
-		self.memory_vectors = self.config.getint('AlgoLBFGS', 'memory_vectors', fallback=5)
+		self.bfgs_memory_size = self.config.getint('AlgoLBFGS', 'bfgs_memory_size', fallback=5)
 		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
 
-		if self.memory_vectors > 0:
+		if self.bfgs_memory_size > 0:
 			self.history_s = deque()
 			self.history_y = deque()
 			self.history_rho = deque()
@@ -83,7 +83,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 			the search direction
 		"""
 
-		if self.memory_vectors > 0 and len(self.history_s) > 0:
+		if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
 			history_alpha = deque()
 			for j in range(len(self.controls)):
 				self.search_directions[j].vector()[:] = grad[j].vector()[:]
@@ -172,7 +172,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 				else:
 					raise NotConvergedError('Armijo line search')
 
-			if self.memory_vectors > 0:
+			if self.bfgs_memory_size > 0:
 				for i in range(len(self.controls)):
 					self.gradients_prev[i].vector()[:] = self.reduced_gradient[i].vector()[:]
 
@@ -188,7 +188,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-			if self.memory_vectors > 0:
+			if self.bfgs_memory_size > 0:
 				for i in range(len(self.controls)):
 					self.storage_y[i].vector()[:] = self.reduced_gradient[i].vector()[:] - self.gradients_prev[i].vector()[:]
 					self.storage_s[i].vector()[:] = self.stepsize*self.search_directions[i].vector()[:]
@@ -203,7 +203,7 @@ class InnerLBFGS(OptimizationAlgorithm):
 					self.history_y = deque()
 					self.history_rho = deque()
 
-				if len(self.history_s) > self.memory_vectors:
+				if len(self.history_s) > self.bfgs_memory_size:
 					self.history_s.pop()
 					self.history_y.pop()
 					self.history_rho.pop()

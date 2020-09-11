@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 15/06/2020, 08.10
+"""Abstract implementation of a shape gradient problem.
 
-@author: blauths
+This class uses the linear elasticity equations to project the
+shape derivative to the shape gradient with a Riesz projection.
 """
 
 import fenics

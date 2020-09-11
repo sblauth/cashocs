@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""This demo shows the interface for specifying the linear solvers. The documentation
-can be found in doc_iterative_solvers.md
+"""For the documentation of this demo see https://temp-url.com/.
 
 """
 

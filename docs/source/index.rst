@@ -15,6 +15,7 @@ CASHOCS Documentation
    tutorial_index
    api_doc
    contributing
+   code_of_conduct
    change_log
    license
    about

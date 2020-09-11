@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 15/06/2020, 14.37
+r"""Regularization for shape optimization problems.
 
-@author: blauths
+This includes a (target) volume, surface, and barycenter regularization,
+which are the :math:`L^2` distances between current volume, surface,
+and barycenter, and desired ones.
 """
 
 import json

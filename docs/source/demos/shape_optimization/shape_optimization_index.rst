@@ -1,6 +1,8 @@
 Shape Optimization Problems
 ===========================
 
+In this part of the tutorial, we investigate how shape optimization problems can
+be treated with CASHOCS.
 
 .. toctree::
    :maxdepth: 1

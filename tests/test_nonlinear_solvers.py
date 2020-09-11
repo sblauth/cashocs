@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 02/09/2020, 08.33
+"""Tests for the nonlinear_solvers module.
 
-@author: blauths
 """
 
 import numpy as np

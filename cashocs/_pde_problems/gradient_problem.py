@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 24/02/2020, 09.26
+"""Abstract implementation of a gradient problem.
 
-@author: blauths
+This class is used to solve the Riesz projection to obtain
+the gradient of the reduced cost functional.
+
 """
 
 import fenics

@@ -17,10 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 02/09/2020, 12.03
+"""Mesh conversion from GMSH .msh to .xdmf.
 
-@author: blauths
 """
 
 import argparse

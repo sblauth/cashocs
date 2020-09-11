@@ -20,7 +20,7 @@ problems. As a model problem, we consider
 
 
 As this problem has a nonlinear PDE as state constraint, we have to modify the config
-file slightly. In particular, in the Section :ref:`[State Equation] <config_ocp_state_equation>`
+file slightly. In particular, in the Section :ref:`StateSystem <config_ocp_state_system>`
 we have to write ::
 
     is_linear = False

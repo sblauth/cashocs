@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 02/09/2020, 09.13
+"""Tests for optimal control with multiple PDE constraints.
 
-@author: blauths
 """
 
 from fenics import *

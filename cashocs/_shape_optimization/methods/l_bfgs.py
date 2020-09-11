@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 15/06/2020, 08.01
+"""Limited memory BFGS methods for shape optimization.
 
-@author: blauths
 """
 
 from _collections import deque
@@ -49,12 +47,12 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		self.temp = fenics.Function(self.shape_form_handler.deformation_space)
 
-		self.memory_vectors = self.config.getint('AlgoLBFGS', 'memory_vectors', fallback=5)
+		self.bfgs_memory_size = self.config.getint('AlgoLBFGS', 'bfgs_memory_size', fallback=5)
 		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
 
 		self.has_curvature_info = False
 
-		if self.memory_vectors > 0:
+		if self.bfgs_memory_size > 0:
 			self.history_s = deque()
 			self.history_y = deque()
 			self.history_rho = deque()
@@ -79,7 +77,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		"""
 
-		if self.memory_vectors > 0 and len(self.history_s) > 0:
+		if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
 			history_alpha = deque()
 			self.search_direction.vector()[:] = grad.vector()[:]
 
@@ -167,7 +165,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 				else:
 					raise NotConvergedError('L-BFGS method', 'Maximum number of iterations were exceeded.')
 
-			if self.memory_vectors > 0:
+			if self.bfgs_memory_size > 0:
 				self.gradient_prev.vector()[:] = self.gradient.vector()[:]
 
 			self.adjoint_problem.has_solution = False
@@ -181,7 +179,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 				self.print_results()
 				break
 
-			if self.memory_vectors > 0:
+			if self.bfgs_memory_size > 0:
 				self.y_k.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 				self.s_k.vector()[:] = self.stepsize*self.search_direction.vector()[:]
 
@@ -204,7 +202,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 					rho = 1/self.curvature_condition
 					self.history_rho.appendleft(rho)
 
-				if len(self.history_s) > self.memory_vectors:
+				if len(self.history_s) > self.bfgs_memory_size:
 					self.history_s.pop()
 					self.history_y.pop()
 					self.history_rho.pop()

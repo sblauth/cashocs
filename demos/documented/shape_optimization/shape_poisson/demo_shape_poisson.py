@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The documentation of this program is found under ./doc_shape_poisson.md
+"""For the documentation of this demo see https://temp-url.com/.
 
 """
 

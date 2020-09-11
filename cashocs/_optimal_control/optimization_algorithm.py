@@ -22,6 +22,7 @@
 import json
 
 import fenics
+import numpy as np
 
 
 
@@ -109,14 +110,22 @@ class OptimizationAlgorithm:
 		-------
 		None
 		"""
-
-		if self.iteration == 0:
-			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '
+		if not np.any(self.optimization_problem.require_control_constraints):
+			if self.iteration == 0:
+				output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
+						 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '
+			else:
+				output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
+						 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')
+				
 		else:
-			output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
-					 '    Gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')
-
+			if self.iteration == 0:
+				output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
+						 '    Stationarity measure:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '
+			else:
+				output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
+						 '    Stationarity measure:  ' + format(self.relative_norm, '.3e') + ' (rel)    Step size:  ' + format(self.stepsize, '.3e')
+		
 		self.output_dict['cost_function_value'].append(self.objective_value)
 		self.output_dict['gradient_norm'].append(self.relative_norm)
 		self.output_dict['stepsize'].append(self.stepsize)

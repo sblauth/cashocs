@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For a documentation of this demo see demo_06_coupled_problems_iteratively.md
+"""For the documentation of this demo see https://temp-url.com/.
 
 """
 

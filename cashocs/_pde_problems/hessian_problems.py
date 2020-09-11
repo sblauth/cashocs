@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 25/08/2020, 08.28
+"""Abstract implementation of the Hessian problem.
 
-@author: blauths
+This uses Krylov subspace methods to iteratively solve
+the "Hessian problems" occurring in the truncated Newton
+method.
 """
 
 import fenics
@@ -83,10 +84,10 @@ class BaseHessianProblem:
 
 		self.controls = self.form_handler.controls
 
-		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-12)
-		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
-		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
+		self.rtol = self.config.getfloat('StateSystem', 'picard_rtol', fallback=1e-10)
+		self.atol = self.config.getfloat('StateSystem', 'picard_atol', fallback=1e-12)
+		self.maxiter = self.config.getint('StateSystem', 'picard_iter', fallback=50)
+		self.picard_verbose = self.config.getboolean('StateSystem', 'picard_verbose', fallback=False)
 
 		self.no_sensitivity_solves = 0
 		self.state_ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]

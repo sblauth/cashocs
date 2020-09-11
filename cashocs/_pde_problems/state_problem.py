@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Created on 24/02/2020, 09.19
+"""Abstract implementation of a state equation.
 
-@author: blauths
 """
 
 import fenics
@@ -57,15 +55,15 @@ class StateProblem:
 		self.bcs_list = self.form_handler.bcs_list
 		self.states = self.form_handler.states
 
-		self.rtol = self.config.getfloat('StateEquation', 'picard_rtol', fallback=1e-10)
-		self.atol = self.config.getfloat('StateEquation', 'picard_atol', fallback=1e-20)
-		self.maxiter = self.config.getint('StateEquation', 'picard_iter', fallback=50)
-		self.picard_verbose = self.config.getboolean('StateEquation', 'picard_verbose', fallback=False)
-		self.newton_rtol = self.config.getfloat('StateEquation', 'newton_rtol', fallback=1e-11)
-		self.newton_atol = self.config.getfloat('StateEquation', 'newton_atol', fallback=1e-13)
-		self.newton_damped = self.config.getboolean('StateEquation', 'newton_damped', fallback=True)
-		self.newton_verbose = self.config.getboolean('StateEquation', 'newton_verbose', fallback=False)
-		self.newton_iter = self.config.getint('StateEquation', 'newton_iter', fallback=50)
+		self.rtol = self.config.getfloat('StateSystem', 'picard_rtol', fallback=1e-10)
+		self.atol = self.config.getfloat('StateSystem', 'picard_atol', fallback=1e-20)
+		self.maxiter = self.config.getint('StateSystem', 'picard_iter', fallback=50)
+		self.picard_verbose = self.config.getboolean('StateSystem', 'picard_verbose', fallback=False)
+		self.newton_rtol = self.config.getfloat('StateSystem', 'newton_rtol', fallback=1e-11)
+		self.newton_atol = self.config.getfloat('StateSystem', 'newton_atol', fallback=1e-13)
+		self.newton_damped = self.config.getboolean('StateSystem', 'newton_damped', fallback=True)
+		self.newton_verbose = self.config.getboolean('StateSystem', 'newton_verbose', fallback=False)
+		self.newton_iter = self.config.getint('StateSystem', 'newton_iter', fallback=50)
 
 		self.newton_atols = [1 for i in range(self.form_handler.state_dim)]
 

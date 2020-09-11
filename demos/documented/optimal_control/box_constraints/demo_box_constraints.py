@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For the documentation of this demo see demo_02_control_constraints.md
+"""For the documentation of this demo see https://temp-url.com/.
 
 """
 

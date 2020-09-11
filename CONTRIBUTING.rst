@@ -1,32 +1,59 @@
-Contributing
-============
+Contributing Guidelines
+=======================
 
-When contributing to this repository, please first discuss the change you wish
-to make via issue, email, or any other method with the owners of this repository
-before making a change.
+First off, thanks a lot for taking the time to contribute to CASHOCS.
 
-
-Code of Conduct
+Code of conduct
 ---------------
 
-To keep it simple: please be considerate and respectful, behave mannerly and
-use your common sense.
+The project and everyone that participates in it is governed by the :ref:`CASHOCS
+Code of Conduct <code_of_conduct>`. In particular, this also applies to all
+interactions with the project, including issues and pull requests.
 
-Guidelines
-----------
 
-Reporting Issues
-****************
 
-- **Search for existing issues.** Please check to see if this problem is already reported by someone else.
+Reporting a bug
+---------------
 
-- **Share as much information as possible**. Which operating system are you using, how did you install CASHOCS and its prerequisites? Also, please include a steps to reproduce the bug or a minimal working example.
+- Ensure that the bug was not already reported by searching on GitHub under
+  `Issues <https://temp-url.com/>`_.
 
-Pull Requests
-*************
+- If you do not find an open issue that adresses the problem, open a new one.
+  Please include a clear title and description, and include as much relevant
+  information as possible, and also a minimal working example that reproduces
+  the bug.
 
-- Keep pull requests simple and small, do not pollute them with unintended changes.
 
-- Make sure that the tests function correctly.
 
-- If your pull request resolves an issue, include closes #ISSUE_NUMBER in your commit message.
+Fixing a bug
+------------
+
+- Use the same coding conventions as established in the project.
+
+- Make sure that all tests still pass with your fix.
+
+- Open a new pull request with the fix. Ensure that the PR description clearly
+  describes the problem and its solution. Include the corresponding issue number (if applicable).
+
+
+
+Adding or modifying a feature
+-----------------------------
+
+- Please suggest your changes / additions by opening a new issue on GitHub under
+  `Issues <https://temp-url.com/>`_, and start writing code (using the conventions
+  established in the project).
+
+- If you receive positive feedback for your suggestion, you can open a new pull
+  request with the changes / additions. Ensure that the PR description clearly
+  describes your modifications / additions, also reference the corresponding
+  issue number where you suggested your idea.
+
+
+License
+-------
+
+By submitting a pull request, you are licensing your code under the project
+:ref:`license <license>` and affirming that you either own copyright (automatic
+for most individuals) or are authorized to distribute under the project license
+(e.g., in case your employer retains copyright on your work).

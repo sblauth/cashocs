@@ -9,6 +9,8 @@ CASHOCS is based on the finite element package `FEniCS
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
 
+.. readme_start_disclaimer
+
 Note, that we assume that you are (at least somewhat) familiar with PDE
 constrained optimization and FEniCS. For a introduction to these topics,
 we can recommend the textbooks
@@ -23,6 +25,7 @@ we can recommend the textbooks
     - `Logg, Mardal, and Wells, Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
     - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
 
+.. readme_end_disclaimer
 
 However, the `CASHOCS tutorial <https://temp-url.com/>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
@@ -93,6 +96,7 @@ for the demo programs is located inside the "demos" folder.
 
 
 .. readme_start_license
+.. _license:
 
 License
 =======
