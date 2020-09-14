@@ -9,7 +9,7 @@ for this demo is given by
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} \lvert u \rvert \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} \lvert u \rvert \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\

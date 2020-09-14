@@ -548,7 +548,7 @@ in the following.
       -
     * - soft_exit
       - ``False``
-      - if ``true``, the optimization algorithm does not raise an exception if
+      - if ``True``, the optimization algorithm does not raise an exception if
         it did not converge
 
 

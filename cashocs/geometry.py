@@ -764,11 +764,14 @@ class _MeshHandler:
 			geo_file = self.temp_dict['geo_file']
 			with open(geo_file, 'r') as f:
 				for line in f:
-					if line[:2] == 'lc':
+					if line[0].islower():
+					# if line[:2] == 'lc':
 						file.write(line)
 					if line[:5] == 'Field':
 						file.write(line)
 					if line[:16] == 'Background Field':
+						file.write(line)
+					if line[:19] == 'BoundaryLayer Field':
 						file.write(line)
 
 

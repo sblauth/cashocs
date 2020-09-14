@@ -7,28 +7,34 @@ Problem Formulation
 -------------------
 
 In this demo we show how CASHOCS can be used with a coupled PDE constraint.
-For this demo, we consider a iterative approach, whereas we investigated
-a monolithic approach in the previous demo.
+For this, we consider a iterative approach, whereas we investigated
+a monolithic approach in :ref:`demo_monolithic_problems`.
 
 As model example, we consider the
 following problem
 
 .. math::
 
-    &\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+    &\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{ d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x + \frac{\beta}{2} \int_\Omega v^2 \text{ d}x \\
     &\text{ subject to }\quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y + z &= u \quad &&\text{ in } \Omega, \\
-    -\Delta z + y &= v \quad &&\text{ in } \Omega,\\
     y &= 0 \quad &&\text{ on } \Gamma,\\
+    -\Delta z + y &= v \quad &&\text{ in } \Omega,\\
     z &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
 Again, the system is two-way coupled. To solve it, we now employ a Picard iteration. Therefore,
 the two PDEs are solved subsequently, where the variables are frozen in between: At the beginning
-the first PDE is solved, with the second state variable being fixed. Then, the second PDE is solved
-with the value of the first variable fixed (to the one obtained by the prior solve). This is then repeated
-until convergence is reached (but of course this does not have to occur).
+the first PDE is solved for :math:`y`, with :math:`z` being fixed. Afterwards, the second PDE is solved for :math:`z`
+with :math:`y` fixed. This is then repeated
+until convergence is reached.
+
+.. note::
+
+    There is, however, no a-priori guarantee that the Picard iteration converges
+    for a particular problem, unless a careful analysis is carried out by the user.
+    Still, it is an important tool, which also often works well in practice.
 
 Implementation
 --------------
@@ -54,50 +60,51 @@ the Picard iteration as solver for the state PDEs, we now specify ::
 
     picard_iteration = True
 
-in the config file.
+see :download:`config.ini </../../demos/documented/optimal_control/picard_iteration/config.ini>`.
 
 
 Definition of the state system
 ******************************
 
-As we solve both PDEs decoupled (or seperately), we now only need a single :py:class:`fenics.FunctionSpace`. The
-corresponding state and adjoint variables are defined via ::
+The definition of the state system follows the same ideas as introduced in
+:ref:`demo_multiple_variables`: We define both state equations through their components,
+and then gather them in lists, which are passed to the :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>`.
+The state and adjoint variables are defined via ::
 
     y = Function(V)
-    z = Function(V)
     p = Function(V)
+    z = Function(V)
     q = Function(V)
-    states = [y, z]
-    adjoints = [p, q]
-
-which basically reverses the idea of the monolithic approach. Here, we first define the "components" as
-single, decoupled functions, and only identify them as the state variables later by putting them
-into a joint list. The same is true for the adjoint variables. Of course these lists have to be ordered as explained in
-:ref:`demo_multiple_variables`.
 
 The control variables are defined as ::
 
     u = Function(V)
     v = Function(V)
+
+Next, we define the state system, using the weak forms from
+:ref:`demo_monolithic_problems` ::
+
+    e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+    bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+    bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+Finally, we use the same procedure as in :ref:`demo_multiple_variables`, and
+put everything into (ordered) lists
+
+    states = [y, z]
+    adjoints = [p, q]
     controls = [u, v]
 
-Similarly to :ref:`demo_monolithic_problems`, we define the state equations, but instead of adding them, we also put them
-into a joint list, since we solve them in a decoupled fashion ::
+    e = [e_y, e_z]
+    bcs = [bcs_y, bcs_z]
 
-    e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
-    e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
-    e = [e1, e2]
-
-The boundary conditions are treated analogously ::
-
-    bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
-    bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
-    bcs = [bcs1, bcs2]
 
 Definition of the optimization problem
 **************************************
 
-The cost functional is then defined as in :ref:`demo_monolithic_problems`, the only
+The cost functional is defined as in :ref:`demo_monolithic_problems`, the only
 difference is that ``y`` and ``z`` now are :py:class:`fenics.Function` objects, whereas they
 were generated with the :py:func:`fenics.split` command previously ::
 
@@ -128,4 +135,4 @@ The result should look like this
     times, whereas in the monolithic approach the state system is (slightly) larger, but has to be solved
     less often. However, the monolithic approach needs significantly more memory, so that the Picard
     iteration becomes feasible for very large problems. Further, the convergence properties of the
-    Picard iteration are better, so that it can converge even when the monolithic approach fails.
+    Picard iteration are better, so that it may converge even when the monolithic approach fails.

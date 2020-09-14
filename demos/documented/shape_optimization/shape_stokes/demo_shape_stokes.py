@@ -31,17 +31,17 @@ v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
 p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
 
-v_in = Expression(('-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)', '0.0'), degree=2)
-bc_in = DirichletBC(V.sub(0), v_in, boundaries, 1)
-bc_no_slip = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [2,4])
-bcs = [bc_in] + bc_no_slip
-
 up = Function(V)
 u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
 e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx
+
+u_in = Expression(('-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)', '0.0'), degree=2)
+bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
+bc_no_slip = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [2,4])
+bcs = [bc_in] + bc_no_slip
 
 J = inner(grad(u), grad(u))*dx
 

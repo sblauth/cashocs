@@ -8,11 +8,11 @@ Problem Formulation
 
 In this demo, we investigate the basics of CASHOCS for shape optimization problems.
 As a model problem, we investigate the following one from
-`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
+`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_.
 
 .. math::
 
-    &\min_\Omega J(u, \Omega) = \int_\Omega u \text{d}x \\
+    &\min_\Omega J(u, \Omega) = \int_\Omega u \text{ d}x \\
     &\text{subject to} \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta u &= f \quad &&\text{ in } \Omega,\\
@@ -24,6 +24,7 @@ For the initial domain, we use the unit disc :math:`\Omega = \{ x \in \mathbb{R}
 
 .. math:: f(x) = 2.5 \left( x_1 + 0.4 - x_2^2 \right)^2 + x_1^2 + x_2^2 - 1.
 
+
 Implementation
 --------------
 
@@ -34,17 +35,15 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Initialization
 **************
 
-Similarly to the optimal control case, we also require config files for shape
-optimization problems in CASHOCS. A detailed discussion of the config files
-for shape optimization is given in :ref:`config_shape_optimization`.
-
-As before, we start the problem by importing everything from FEniCS,
-and importing CASHOCS ::
+We start the problem by using a wildcard import for FEniCS, and by importing CASHOCS ::
 
     from fenics import *
     import cashocs
 
-Thereafter, we read the config file with the :py:func:`create_config <cashocs.create_config>` command ::
+Similarly to the optimal control case, we also require config files for shape
+optimization problems in CASHOCS. A detailed discussion of the config files
+for shape optimization is given in :ref:`config_shape_optimization`.
+We read the config file with the :py:func:`create_config <cashocs.create_config>` command ::
 
     config = cashocs.create_config('./config.ini')
 
@@ -65,9 +64,8 @@ the problem. For the volume measure, we can simply invoke ::
 However, for the surface measure, we need to mark the boundary. This is required since
 CASHOCS distinguishes between three types of boundaries: The deformable boundary, the
 fixed boundary, and boundaries that can only be deformed perpendicular to a certain
-coordinate axis (see :ref:`config_shape_shape_gradient`). Most importantly, for this example,
-one of the deformable boundaries must not be empty, so that we can actually optimize something.
-Here, we investigate the case of a completely deformable boundary, which makes things slightly
+coordinate axis (see :ref:`config_shape_shape_gradient`). Here, we investigate the
+case of a completely deformable boundary, which makes things slightly
 easier. We mark this boundary with the marker 1 with the following piece of code ::
 
     boundary = CompiledSubDomain('on_boundary')
@@ -155,4 +153,5 @@ The result of the optimization looks like this
       - ``atol`` : The absolute tolerance for the optimization algorithm.
       - ``max_iter`` : The maximum amount of iterations that can be carried out.
 
-    The choices for these parameters are discussed in detail in :ref:`config_shape_optimization_routine`.
+    The possible choices for these parameters are discussed in detail in
+    :ref:`config_shape_optimization_routine`.

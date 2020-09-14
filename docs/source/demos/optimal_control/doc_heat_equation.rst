@@ -7,58 +7,61 @@ Problem Formulation
 -------------------
 
 In this demo  we take a look at how time dependent problems can be treated with CASHOCS.
-To do so, we investigate a problem considered in
-`Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model
+To do so, we investigate a problem with a heat equation as PDE constraint, which
+was considered in `Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model
 <https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727>`_.
 It reads
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{d}x \text{d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{d}x \text{d}t \\
+    &\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2 \text{ d}x \text{ d}t + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{ d}x \text{ d}t \\
     &\text{ subject to }\quad \left\lbrace \quad
     \begin{alignedat}{2}
     \partial_t y - \Delta y &= u \quad &&\text{ in } (0,T) \times \Omega,\\
     y &= 0 \quad &&\text{ on } (0,T) \times \Gamma, \\
-    y(0, \cdot) &= y_0 \quad &&\text{ in } \Omega.
+    y(0, \cdot) &= y^{(0)} \quad &&\text{ in } \Omega.
     \end{alignedat} \right.
 
 
 Since FEniCS does not have any direct built-in support for time dependent problems,
-CASHOCS also does not have one. Hence, one first has to perform a semi-discretization
-of the PDE system in the temporal component (e.g. via finite differences), and then
-solve the resulting sequence of PDEs.
+we first have to perform a semi-discretization of the PDE system in the temporal
+component (e.g. via finite differences), and then solve the resulting sequence of PDEs.
 
 In particular, for the use with CASHOCS, we have to create not a single weak form and
-:py:class:`fenics.Function` Function, that can be re-used, like one would in classical FEniCS programs, but
+:py:class:`fenics.Function`, that can be re-used, like one would in classical FEniCS programs, but
 we have to create the corresponding objects a-priori for each time step.
 
 For the domain of this problem, we once again consider the space time cylinder given by :math:`(0,T) \times \Omega = (0,1) \times (0,1)^2`.
-And for the initial condition we use :math:`y_0 = 0`.
+And for the initial condition we use :math:`y^{(0)} = 0`.
 
 Temporal discretization
 ***********************
 
 For the temporal discretization, we use the implicit Euler scheme as this is unconditionally stable for the parabolic heat equation. This means, we discretize the
-interval :math:`[0,T]` by a grid with nodes :math:`t_k, k=1,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T`. Then, we approximate the time derivative
-:math:`\partial_t y(t_k)` at some time :math:`t_k` by the backward difference
+interval :math:`[0,T]` by a grid with nodes :math:`t_k, k=0,\dots, n,\; \text{ with }\; t_0 := 0\; \text{ and }\; t_n := T`. Then, we approximate the time derivative
+:math:`\partial_t y(t_{k+1})` at some time :math:`t_{k+1}` by the backward difference
 
-.. math:: \partial_t y(t_k) \approx \frac{y(t_k) - y(t_{k-1})}{\Delta t},
+.. math:: \partial_t y(t_{k+1}) \approx \frac{y(t_{k+1}) - y(t_{k})}{\Delta t},
 
-where :math:`\Delta t = t_k - t_{k-1}`, and thus get the sequence of PDEs
+where :math:`\Delta t = t_{k+1} - t_{k}`, and thus get the sequence of PDEs
 
 .. math::
-
-    \frac{y_k - y_{k-1}}{\Delta t} - \Delta y_k = u_k \quad \text{ in }\; \Omega\; \text{for}\; k=1,\dots,n,\\
-    y_k = 0 \quad \text{on}\; \Gamma\; \text{for}\; k=1,\dots,n,
+    \begin{alignedat}{2}
+        \frac{y_{k+1} - y_{k}}{\Delta t} - \Delta y_{k+1} &= u_{k+1} \quad &&\text{ in } \Omega \quad \text{ for } k=0,\dots,n-1,\\
+        y_{k+1} &= 0 \quad &&\text{ on } \Gamma \quad \text{ for } k=0,\dots,n-1,
+    \end{alignedat}
 
 
 Note, that :math:`y_k \approx y(t_k), \text {and }\; u_k \approx u(t_k)` are approximations of the
-continuous functions. The initial condition is included by definition of :math:`y_0`.
+continuous functions. The initial condition is included via
 
-Moreover, for the cost functionals, we can discretize the temporal integrals using
-rectangle rules. This means we approximate the cost functional via
+.. math::
+    y_0 = y^{(0)}
 
-.. math:: J(y, u) \approx \frac{1}{2} \sum_{k=1}^n \Delta t \left( \int_\Omega \left( y_k - (y_d)_k \right)^2 \text{d}x  + \alpha \int_\Omega u_k^2 \text{d}x \right).
+Moreover, for the cost functionals, we can discretize the temporal integrals using a
+rectangle rule. This means we approximate the cost functional via
+
+.. math:: J(y, u) \approx \frac{1}{2} \sum_{k=0}^{n-1} \Delta t \left( \int_\Omega \left( y_{k+1} - (y_d)_{k+1} \right)^2 \text{ d}x  + \alpha \int_\Omega u_{k+1}^2 \text{ d}x \right).
 
 
 Here, :math:`(y_d)_k` is an approximation of the desired state at time :math:`t_k`.
@@ -104,11 +107,8 @@ one :py:class:`fenics.Function` for each time step. Hence, we initialize these
     controls = [Function(V) for i in range(len(t_array))]
     adjoints = [Function(V) for i in range(len(t_array))]
 
-Note, that ``states[k]`` corresponds to :math:`y_{k+1}` (due to the differences in indexing between computer scientists and
-mathematicians), and analogously for ``controls[k]``. Note, that in the following there
-will  be made no such distinctions anymore, it should be obvious from the context
-what and where to apply the index shift between the semi-continuous and the discretized
-versions of the functions.
+Note, that ``states[k]`` corresponds to :math:`y_{k+1}` since indices start at
+0 in most programming languages (as it is the case in python).
 
 As the boundary conditions are not time dependent, we can initialize them now, and
 repeat them in a list, since they are the same for every state ::
@@ -162,15 +162,16 @@ Next, we have the following for loop, which we describe in detail after stating 
 
         y = states[k]
 
-    sets the object ``y`` to :math:`y_k`. For the backward difference in the implicit Euler method, we also need
-    :math:`y_{k-1}` which we define by the if condition ::
+    sets the object ``y`` to :math:`y_{k+1}`. For the backward difference in the implicit Euler method, we also need
+    :math:`y_{k}` which we define by the if condition ::
 
         if k == 0:
             y_prev = Function(V)
         else:
             y_prev = states[k - 1]
 
-    which ensures that :math:`y_0 = 0`. Hence, ``y_prev`` indeed corresponds to :math:`y_{k-1}`.
+    which ensures that :math:`y_0 = 0`, which corresponds to the initial condition
+    :math:`y^{(0)} = 0`. Hence, ``y_prev`` indeed corresponds to :math:`y_{k}`.
     Moreover, we get the current control and adjoint state via ::
 
         p = adjoints[k]
@@ -199,7 +200,7 @@ this list, CASHOCS includes the function :py:func:`cashocs.utils.summation`, whi
 
     J = cashocs.utils.summation(J_list)
 
-Finally, we can define an optimal control as always, and solve it as in the previous demos (see, e.g., :ref:`demo_poisson`) ::
+Finally, we can define an optimal control problem as before, and solve it as in the previous demos (see, e.g., :ref:`demo_poisson`) ::
 
     ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
     ocp.solve()
@@ -221,4 +222,4 @@ the following lines are added at the end ::
     	temp_y.vector()[:] = states[k].vector()[:]
     	y_file << temp_y, t
 
-which saves the result in the folder visualization as paraview .pvd files.
+which saves the result in the directory ``./visualization/`` as paraview .pvd files.

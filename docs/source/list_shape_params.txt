@@ -72,7 +72,6 @@ mu_def				(1.0)
 mu_fix				(1.0)
 use_sqrt_mu			(False)
 inhomogeneous		(False)
-degree_estimation	(False)
 
 
 

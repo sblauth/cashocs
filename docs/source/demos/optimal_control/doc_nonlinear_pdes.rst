@@ -11,7 +11,7 @@ problems. As a model problem, we consider
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y + c y^3 &= u \quad &&\text{ in } \Omega,\\
@@ -26,9 +26,11 @@ we have to write ::
     is_linear = False
 
 Note, that ``is_linear = False`` works for any problem, as linear equations are just a special case
-of nonlinear ones, and the Newton method converges in a single iteration for these.
-However, in the opposite case, FEniCS will raise an error, and a real nonlinear
-equation cannot be solved using ``is_linear = False``.
+of nonlinear ones, and the corresponding nonlinear solver converges in a single iteration for these.
+However, in the opposite case, FEniCS will raise an error, so that an actually nonlinear
+equation cannot be solved using ``is_linear = True``. Also, we briefly recall from
+:ref:`config_optimal_control`, that the default behavior is ``is_linear = False``,
+so that this is not an issue.
 
 Implementation
 --------------

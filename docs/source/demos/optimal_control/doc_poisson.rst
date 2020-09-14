@@ -14,7 +14,7 @@ problem" of PDE constrained optimization, i.e.,
 .. math::
 
     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
-    \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\

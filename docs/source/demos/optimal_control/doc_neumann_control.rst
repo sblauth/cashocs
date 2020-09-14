@@ -12,10 +12,10 @@ a Neumann type boundary control. This problem reads
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{d}s \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{ d}s \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
-    -\Delta y &= 0 \quad &&\text{ in } \Omega,\\
+    -\Delta y + y &= 0 \quad &&\text{ in } \Omega,\\
     n\cdot \nabla y &= u \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
@@ -55,7 +55,7 @@ Definition of the state equation
 ********************************
 
 Now, the definition of the state problem obviously differs from the
-previous two examples, and we now use ::
+previous two examples, and we use ::
 
     e = inner(grad(y), grad(p))*dx + y*p*dx - u*p*ds
 
@@ -75,7 +75,7 @@ use ::
 Definition of the cost functional
 *********************************
 
-The definition of the cost functional is now nearly identical to before,
+The definition of the cost functional is nearly identical to before,
 only the integration measure for the regularization term changes, so that we have ::
 
     y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
@@ -93,6 +93,16 @@ product of the corresponding Hilbert space, which we do with ::
 The scalar_product always has to be a symmetric, coercive and continuous
 bilinear form, so that it induces an actual scalar product on the
 corresponding space.
+
+.. note::
+
+    This means, that we could also define an alternative scalar product for
+    :ref:`demo_poisson`, using the space :math:`H^1(\Omega)` instead of
+    :math:`L^2(\Omega)` with the following ::
+
+        scalar_product = inner(grad(TrialFunction(V)), grad(TestFunction(V)))*dx + TrialFunction(V)*TestFunction(V)*dx
+
+    This allows a great amount of flexibility in the choice of the control space.
 
 Setup of the optimization problem and its solution
 **************************************************

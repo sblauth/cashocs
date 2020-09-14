@@ -7,13 +7,15 @@ Control Constraints
 Problem Formulation
 -------------------
 
-In this demo we investigate the basics of CASHOCS for
-optimal control problems. To do so, we investigate the "mother
-problem" of PDE constrained optimization, i.e.,
+In this demo, we take a deeper look at how control constraints can be treated in
+CASHOCS. To do so, we investigate the same problem as in :ref:`demo_poisson`, but
+now with the addition of box constraints for the control variable. This problem
+reads
+
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\
@@ -25,8 +27,6 @@ problem" of PDE constrained optimization, i.e.,
 (see, e.g., `Tröltzsch, Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
 or `Hinze, Pinnau, Ulbrich, and Ulbrich, Optimization with PDE constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_.
 
-This example differs from the first one only in the fact that
-we now also consider box constraints on the control variables
 Here, the functions :math:`u_a` and :math:`u_b` are :math:`L^\infty(\Omega)`
 functions. As before, we consider
 as domain the unit square, i.e., :math:`\Omega = (0, 1)^2`.
@@ -73,14 +73,14 @@ Here, we have nearly everything at hand to define the optimal
 control problem, the only missing ingredient are the box constraints,
 which we define now. For the purposes of this example, we
 consider a linear (in the x-direction) corridor for these
-constraints, as it highlights the capabilities of the code.
+constraints, as it highlights the capabilities of CASHOCS.
 Hence, we define the lower and upper bounds via ::
 
     u_a = interpolate(Expression('50*(x[0]-1)', degree=1), V)
     u_b = interpolate(Expression('50*x[0]', degree=1), V)
 
 which just corresponds to two functions, generated from
-Expression objects via interpolation. These are then put
+:py:class:`fenics.Expression` objects via :py:func:`fenics.interpolate`. These are then put
 into the list ``cc``, which models the control constraints, i.e., ::
 
     cc = [u_a, u_b]
@@ -95,17 +95,20 @@ into the list ``cc``, which models the control constraints, i.e., ::
     be realized via ::
 
         u_a = 0
-        u_b = float(inf)
+        u_b = float('inf')
         cc = [u_a, u_b]
 
-    and completely analogous with float(-inf) for no constraint
-    on the lower bound.
+    and completely analogous with ``float('-inf')`` for no constraint
+    on the lower bound. Moreover, note that the specification of using either
+    constant ``float`` values and :py:class:`fenics.Function` objects
+    can be mixed arbitrarily, so that one can, e.g., specify a constant value for
+    the upper boundary and use a :py:class:`fenics.Function` on the lower one.
 
 Setup of the optimization problem and its solution
 **************************************************
 
 Now, we can set up the optimal control problem as we did before,
-using the additional keyword argument control_constraints into which
+using the additional keyword argument ``control_constraints`` into which
 we put the list ``cc``, and then solve it via the :py:meth:`ocp.solve() <cashocs.OptimalControlProblem.solve>`
 method ::
 

@@ -14,7 +14,7 @@ following one
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\
@@ -31,7 +31,7 @@ Moreau-Yosida regularization
 Instead of solving this problem directly, the Moreau-Yosida regularization instead solves
 a sequence of problems without state constraints which are of the form
 
-.. math:: \min J_\gamma(y, u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x + \frac{1}{2\gamma} \int_\Omega \lvert \max\left( 0, \hat{\mu} + \gamma (y - \bar{y}) \right) \rvert^2 \text{d}x
+.. math:: \min J_\gamma(y, u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x + \frac{1}{2\gamma} \int_\Omega \lvert \max\left( 0, \hat{\mu} + \gamma (y - \bar{y}) \right) \rvert^2 \text{ d}x
 
 for :math:`\gamma \to +\infty`. We employ a simple homotopy method, and solve the problem for one value of :math:`\gamma`, and then use this solution as initial guess for the next
 higher value of :math:`\gamma`. As initial guess we use the solution of the unconstrained
@@ -79,7 +79,8 @@ guess for the homotopy method. This is done in complete analogy to :ref:`demo_po
 .. note::
 
     Cashocs automatically updates the user input during the runtime of the optimization
-    algorithm. Hence, after the solve command has returned, the solution is already stored in ``u``.
+    algorithm. Hence, after the :py:meth:`ocp_init.solve() <cashocs.OptimalControlProblem.solve>`
+    command has returned, the solution is already stored in ``u``.
 
 The regularized problems
 ************************
@@ -90,7 +91,7 @@ bound for the state :math:`\bar{y}` and select a sequence of values for :math:`\
     y_bar = 1e-1
     gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
-Solving the regularized problems is then as simple as writing a for loop ::
+Solving the regularized problems is then as simple as writing a ``for`` loop ::
 
     for gamma in gammas:
 
@@ -99,12 +100,13 @@ Solving the regularized problems is then as simple as writing a for loop ::
     	ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     	ocp_gamma.solve()
 
-Here, we use a for loop, define the new cost functional (with the new value of :math:`\gamma`),
+Here, we use a ``for`` loop, define the new cost functional (with the new value of :math:`\gamma`),
 set up the optimal control problem and solve it, as previously.
 
 .. hint::
 
-    Note, that we could have also defined ``y_bar`` as a FEniCS Function or Expression, and
+    Note, that we could have also defined ``y_bar`` as a :py:class:`fenics.Function`
+    or :py:class:`fenics.Expression`, and
     the method would have worked exactly the same, the corresponding object just has to
     be a valid input for an UFL form.
 
@@ -121,7 +123,7 @@ and compute the relative error between this and ``y_bar`` ::
     print('Relative error between y_max and y_bar: ' + str(error) + ' %')
 
 As the error is about 0.01 %, we observe that the regularization indeed works
-as expected, and of course this tolerance is sufficiently low for all applications.
+as expected, and this tolerance is sufficiently low for practical applications.
 
 The visualization of the solution looks as follows
 

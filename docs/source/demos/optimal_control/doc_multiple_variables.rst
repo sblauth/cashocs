@@ -9,17 +9,17 @@ Problem Formulation
 
 In this demo we show how CASHOCS can be used to treat multiple
 state equations as constraint. Additionally, this also highlights
-how multiple controls can be treated. As model example, we consider the
+how the case of multiple controls can be treated. As model example, we consider the
 following problem
 
 .. math::
 
-    &\min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+    &\min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{ d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{ d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x + \frac{\beta}{2} \int_\Omega v^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega, \\
-    -\Delta z - y &= v \quad &&\text{ in } \Omega, \\
     y &= 0 \quad &&\text{ on } \Gamma,\\
+    -\Delta z - y &= v \quad &&\text{ in } \Omega, \\
     z &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
@@ -32,7 +32,7 @@ difficult couplings) are straightforward to implement.
 In contrast to the previous examples, in the case where we have multiple state equations, which are
 either decoupled or only one-way coupled, the corresponding state equations are solved one after the other
 so that every input related to the state and adjoint variables has to be put into a ordered list, so
-that they can be treated subsequently.
+that they can be treated properly, as is explained in the following.
 
 Implementation
 --------------
@@ -58,24 +58,53 @@ which defines the geometry and the function space.
 Defintion of the Functions
 **************************
 
-Next, we have to define the state, adjoint, and control variables, which
-we do with ::
+We now first define the state equation corresponding to the state :math:`y`. This
+is done in analogy to :ref:`demo_poisson` ::
 
     y = Function(V)
-    z = Function(V)
     p = Function(V)
-    q = Function(V)
     u = Function(V)
-    v = Function(V)
+    e_y = inner(grad(y), grad(p)) * dx - u * p * dx
+    bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-Here ``p`` is the adjoint state corresponding to ``y``, and ``q`` is the adjoint
-state belonging to ``z``. For the treatment with CASHOCS these have to
-be put in (ordered) lists, so that the states and adjoints obey the
-same order. This means, we define ::
+Similarly to before, ``p`` is the adjoint state corresponding to ``y``.
+
+Next, we define the second state equation (which is for the state :math:`z`) via ::
+
+    z = Function(V)
+    q = Function(V)
+    v = Function(V)
+    e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
+    bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+Here, ``q`` is the adjoint state corresponding to ``z``.
+
+In order to treat this one-way coupled with CASHOCS, we now have to specify what
+the state, adjoint, and control variables are. This is done by putting the
+corresponding :py:class:`fenics.Function` objects into ordered lists ::
 
     states = [y, z]
     adjoints = [p, q]
     controls = [u, v]
+
+To define the corresponding state system, the state equations and Dirichlet boundary
+conditions also have to be put into an ordered list, i.e., ::
+
+    e = [e_y, e_z]
+    bcs_list = [bcs_y, bcs_z]
+
+.. note::
+
+    It is important, that the ordering of the state and adjoint variables, as well
+    as the state equations and boundary conditions is in the same way. This means,
+    that ``e[i]`` is the state equation for ``state[i]``, which is supplemented
+    with Dirichlet boundary conditions defined in ``bcs_list[i]``, and has a corresponding
+    adjoint state ``adjoints[i]``, for all ``i``. In analogy, the same holds true
+    for the control variables, the scalar product of the control space, and the
+    control constraints, i.e., ``controls[j]``, ``riesz_scalar_products[j]``, and
+    ``control_constraints[j]`` all have to belong to the same control variable.
+
+
 
 Note, that the control variables are completely independent of the state
 and adjoint ones, so that the relative ordering between these objects does
@@ -150,7 +179,7 @@ The result should look like this
         cc_v = [v_a, v_b]
         cc = [cc_u, cc_v]
 
-    and the corresponding scalar products are treated analogously, i.e., ::
+    and the corresponding scalar products have to be treated analogously, i.e., ::
 
         scalar_product_u = TrialFunction(V)*TestFunction(V)*dx
         scalar_product_v = TrialFunction(V)*TestFunction(V)*dx
@@ -159,7 +188,7 @@ The result should look like this
 
 In summary, to treat multiple (control or state) variables, the
 corresponding objects simply have to placed into ordered lists which
-are then given to the :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>`
+are then passed to the :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>`
 instead of the "single" objects as in the previous examples. Note, that each
 individual object of these lists is allowed to be from a different function space,
 and hence, this enables different discretizations of state and adjoint systems.

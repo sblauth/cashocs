@@ -20,7 +20,6 @@
 """
 
 from fenics import *
-
 import cashocs
 
 
@@ -30,25 +29,23 @@ mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
-z = Function(V)
 p = Function(V)
-q = Function(V)
 u = Function(V)
+e_y = inner(grad(y), grad(p)) * dx - u * p * dx
+bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+z = Function(V)
+q = Function(V)
 v = Function(V)
+e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
+bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 states = [y, z]
 adjoints = [p, q]
 controls = [u, v]
 
-e_y = inner(grad(y), grad(p)) * dx - u * p * dx
-e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
-
 e = [e_y, e_z]
-
-bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-
-bcs_list = [bcs1, bcs2]
+bcs_list = [bcs_y, bcs_z]
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)

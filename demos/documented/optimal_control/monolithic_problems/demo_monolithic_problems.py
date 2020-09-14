@@ -20,7 +20,6 @@
 """
 
 from fenics import *
-
 import cashocs
 
 
@@ -43,13 +42,14 @@ u = Function(U)
 v = Function(U)
 controls = [u, v]
 
-e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
-e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
-e = e1 + e2
+e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+bcs_y = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
 
-bcs1 = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
-bcs = bcs1 + bcs2
+e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+bcs_z = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
+
+e = e_y + e_z
+bcs = bcs_y + bcs_z
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)

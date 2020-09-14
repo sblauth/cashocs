@@ -24,10 +24,10 @@ import cashocs
 
 
 
-sigma_out = 1e0
-sigma_in = 1e1
+kappa_out = 1e0
+kappa_in = 1e1
 
-def generate_references():
+def generate_measurements():
 	mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/reference.xdmf')
 
 	cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
@@ -37,51 +37,53 @@ def generate_references():
 	u, c = TrialFunctions(V)
 	v, d = TestFunctions(V)
 
-	a = sigma_out*inner(grad(u), grad(v))*dx(1) + sigma_in*inner(grad(u), grad(v))*dx(2) + u*d*ds + v*c*ds
+	a = kappa_out*inner(grad(u), grad(v))*dx(1) + kappa_in*inner(grad(u), grad(v))*dx(2) + u*d*ds + v*c*ds
 	L1  = Constant(1)*v*(ds(3) + ds(4)) + Constant(-1)*v*(ds(1) + ds(2))
 	L2  = Constant(1)*v*(ds(3) + ds(2)) + Constant(-1)*v*(ds(1) + ds(4))
 	L3  = Constant(1)*v*(ds(3) + ds(1)) + Constant(-1)*v*(ds(2) + ds(4))
 
-	reference1 = Function(V)
-	reference2 = Function(V)
-	reference3 = Function(V)
-	solve(a==L1, reference1)
-	solve(a==L2, reference2)
-	solve(a==L3, reference3)
+	meas1 = Function(V)
+	meas2 = Function(V)
+	meas3 = Function(V)
+	solve(a==L1, meas1)
+	solve(a==L2, meas2)
+	solve(a==L3, meas3)
 
-	ref1, _ = reference1.split(True)
-	ref2, _ = reference2.split(True)
-	ref3, _ = reference3.split(True)
+	m1, _ = meas1.split(True)
+	m2, _ = meas2.split(True)
+	m3, _ = meas3.split(True)
 
-	return [ref1, ref2, ref3]
+	return [m1, m2, m3]
 
 
 config = cashocs.create_config('./config.ini')
-# mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
 cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 r_elem = FiniteElement('R', mesh.ufl_cell(), 0)
 V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
 
-references = generate_references()
+measurements = generate_measurements()
 
 uc1 = Function(V)
 u1, c1 = split(uc1)
 pd1 = Function(V)
 p1, d1 = split(pd1)
-e1 = sigma_out*inner(grad(u1), grad(p1))*dx(1) + sigma_in*inner(grad(u1), grad(p1))*dx(2) + u1*d1*ds + p1*c1*ds - Constant(1)*p1*(ds(3) + ds(4)) - Constant(-1)*p1*(ds(1) + ds(2))
+e1 = kappa_out*inner(grad(u1), grad(p1))*dx(1) + kappa_in*inner(grad(u1), grad(p1))*dx(2) + u1*d1*ds + p1*c1*ds \
+	 - Constant(1)*p1*(ds(3) + ds(4)) - Constant(-1)*p1*(ds(1) + ds(2))
 
 uc2 = Function(V)
 u2, c2 = split(uc2)
 pd2 = Function(V)
 p2, d2 = split(pd2)
-e2 = sigma_out*inner(grad(u2), grad(p2))*dx(1) + sigma_in*inner(grad(u2), grad(p2))*dx(2) + u2*d2*ds + p2*c2*ds - Constant(1)*p2*(ds(3) + ds(2)) - Constant(-1)*p2*(ds(1) + ds(4))
+e2 = kappa_out*inner(grad(u2), grad(p2))*dx(1) + kappa_in*inner(grad(u2), grad(p2))*dx(2) + u2*d2*ds + p2*c2*ds \
+	 - Constant(1)*p2*(ds(3) + ds(2)) - Constant(-1)*p2*(ds(1) + ds(4))
 
 uc3 = Function(V)
 u3, c3 = split(uc3)
 pd3 = Function(V)
 p3, d3 = split(pd3)
-e3 = sigma_out*inner(grad(u3), grad(p3))*dx(1) + sigma_in*inner(grad(u3), grad(p3))*dx(2) + u3*d3*ds + p3*c3*ds - Constant(1)*p3*(ds(3) + ds(1)) - Constant(-1)*p3*(ds(2) + ds(4))
+e3 = kappa_out*inner(grad(u3), grad(p3))*dx(1) + kappa_in*inner(grad(u3), grad(p3))*dx(2) + u3*d3*ds + p3*c3*ds \
+	 - Constant(1)*p3*(ds(3) + ds(1)) - Constant(-1)*p3*(ds(2) + ds(4))
 
 e = [e1, e2, e3]
 u = [uc1, uc2, uc3]
@@ -89,25 +91,14 @@ p = [pd1, pd2, pd3]
 
 bcs = None
 
-mu1 = Expression('val', degree=0, val=1.0, domain=mesh)
-mu2 = Expression('val', degree=0, val=1.0, domain=mesh)
-mu3 = Expression('val', degree=0, val=1.0, domain=mesh)
-
-J1 = Constant(0.5)*pow(u1 - references[0], 2)*ds
-J2 = Constant(0.5)*pow(u2 - references[1], 2)*ds
-J3 = Constant(0.5)*pow(u3 - references[2], 2)*ds
-
+J1 = Constant(0.5)*pow(u1 - measurements[0], 2)*ds
+J2 = Constant(0.5)*pow(u2 - measurements[1], 2)*ds
+J3 = Constant(0.5)*pow(u3 - measurements[2], 2)*ds
 
 J = J1 + J2 + J3
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-# sop.compute_state_variables()
-
-mu1.val = 1/assemble(J1)
-mu2.val = 1/assemble(J2)
-mu3.val = 1/assemble(J3)
-
-# sop.solve()
+sop.solve()
 
 
 

@@ -12,7 +12,7 @@ briefly recall in the following. Our model problem for this example is given by
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{ d}s \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= 0 \quad &&\text{ in } \Omega,\\
@@ -20,7 +20,7 @@ briefly recall in the following. Our model problem for this example is given by
     \end{alignedat} \right.
 
 
-In contrast to our previous problems, the control now enters the problem as a
+In contrast to our previous problems, the control now enters the problem via a
 Dirichlet boundary condition. However, we cannot apply these via a :py:class:`fenics.DirichletBC`,
 because for CASHOCS to work properly, the controls,
 states, and adjoints are only allowed to appear in UFL forms. Nitsche's Method
@@ -42,20 +42,20 @@ We can derive a weak form for this equation in :math:`H^1(\Omega)`
 (not :math:`H^1_0(\Omega)`) by multiplying the equation by a test function
 :math:`p \in H^1(\Omega)` and applying the divergence theorem
 
-.. math:: \int_\Omega - \Delta y p \text{d}x = \int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s.
+.. math:: \int_\Omega - \Delta y p \text{ d}x = \int_\Omega \nabla y \cdot \nabla p \text{ d}x - \int_\Gamma (\nabla y \cdot n) p \text{ d}s.
 
 This weak form is the starting point for Nitsche's method. First of all, observe that
 this weak form is not symmetric anymore. To restore symmetry of the problem, we can
-use the Dirichlet boundary condition and "add a zero" by adding :math:`\int_\Gamma \nabla p \cdot n (y - u) \text{d}s`. This gives the weak form
+use the Dirichlet boundary condition and "add a zero" by adding :math:`\int_\Gamma \nabla p \cdot n (y - u) \text{ d}s`. This gives the weak form
 
-.. math:: \int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s.
+.. math:: \int_\Omega \nabla y \cdot \nabla p \text{ d}x - \int_\Gamma (\nabla y \cdot n) p \text{ d}s - \int_\Gamma (\nabla p \cdot n) y \text{ d}s = \int_\Gamma (\nabla p \cdot n) u \text{ d}s.
 
 However, one can show that this weak form is not coercive. Hence, Nitsche's method
-adds another zero to this weak form, namely :math:`\int_\Gamma \eta (y - u) p \text{d}s`,
+adds another zero to this weak form, namely :math:`\int_\Gamma \eta (y - u) p \text{ d}s`,
 which yields the coercivity of the problem if :math:`\eta` is sufficiently large. Hence,
 we consider the following weak form
 
-.. math:: \int_\Omega \nabla y \cdot \nabla p \text{d}x - \int_\Gamma (\nabla y \cdot n) p \text{d}s - \int_\Gamma (\nabla p \cdot n) y \text{d}s + \eta \int_\Gamma y p \text{d}s = \int_\Gamma (\nabla p \cdot n) u \text{d}s + \eta \int_\Gamma u p \text{d}s,
+.. math:: \int_\Omega \nabla y \cdot \nabla p \text{ d}x - \int_\Gamma (\nabla y \cdot n) p \text{ d}s - \int_\Gamma (\nabla p \cdot n) y \text{ d}s + \eta \int_\Gamma y p \text{ d}s = \int_\Gamma (\nabla p \cdot n) u \text{ d}s + \eta \int_\Gamma u p \text{ d}s,
 
 and this is the form we implement for this problem.
 
@@ -64,6 +64,17 @@ For a detailed introduction to Nitsche's method, we refer to
 transmission conditions in some linear partial differential equations
 <https://doi.org/10.1016/j.procs.2012.04.045>`_.
 
+.. note::
+
+    To ensure convergence of the method when the mesh is refined, the parameter
+    :math:`\eta` is scaled in dependence with the mesh size. In particular, we use
+    a scaling of the form
+
+    .. math::
+
+        \eta = \frac{\bar{\eta}}{h},
+
+    where :math:`h` is the diameter of the current mesh element.
 
 Implementation
 --------------
@@ -74,7 +85,7 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Initialization
 **************
 
-The beginning of the program is exactly the same as for :ref:`demo_poisson` ::
+The beginning of the program is nearly the same as for :ref:`demo_poisson` ::
 
     from fenics import *
     import cashocs
@@ -91,11 +102,24 @@ The beginning of the program is exactly the same as for :ref:`demo_poisson` ::
     p = Function(V)
     u = Function(V)
 
+The only difference is, that we now also define ``n``, which is the outer unit
+normal vector on :math:`\Gamma`, and ``h``, which is the maximum length of an
+edge of the respective finite element (during assemly).
 
-Then, we define the Dirichlet boundary conditions. As we use Nitsche's method, there
-are none, which we define by an empty list ::
+Then, we define the Dirichlet boundary conditions, which are enforced strongly.
+As we use Nitsche's method to implement the boundary conditions on the entire
+boundary, there are no strongly enforced ones left, and we define ::
 
     bcs = []
+
+.. hint::
+
+    Alternatively, we could have also written ::
+
+        bcs = None
+
+    which yields exactly the same result, i.e., no strongly enforced Dirichlet
+    boundary conditions.
 
 
 Definition of the PDE and optimization problem via Nitsche's method
@@ -159,5 +183,6 @@ The result should look like this
         print('Error L^\infty: ' + format(error_inf, '.3e') + ' %')
         print('Error L^2: ' + format(error_l2, '.3e') + ' %')
 
-    We see, that with ``eta = 1e4`` we get a relative error of under 5e-3 %, which is
-    more than sufficient for any application.
+    We see, that with ``eta = 1e4`` we get a relative error of under 5e-3 % in the
+    :math:`L^\infty(\Omega)` norm, and under 5e-4 in the :math:`L^2(\Omega)` norm, which is
+    sufficient for applications.

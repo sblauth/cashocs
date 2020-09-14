@@ -30,23 +30,26 @@ mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 V = FunctionSpace(mesh, 'CG', 1)
 
 y = Function(V)
-z = Function(V)
 p = Function(V)
+z = Function(V)
 q = Function(V)
-states = [y, z]
-adjoints = [p, q]
 
 u = Function(V)
 v = Function(V)
+
+e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+states = [y, z]
+adjoints = [p, q]
 controls = [u, v]
 
-e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
-e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
-e = [e1, e2]
+e = [e_y, e_z]
+bcs = [bcs_y, bcs_z]
 
-bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs = [bcs1, bcs2]
 
 y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
 z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)

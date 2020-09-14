@@ -9,19 +9,19 @@ Problem Formulation
 
 In this demo we show how CASHOCS can be used with a coupled PDE constraint.
 For this demo, we consider a monolithic approach, whereas we investigate
-an approach based on a Picard iteration in the following demo.
+an approach based on a Picard iteration in :ref:`demo_picard_iteration`.
 
 As model example, we consider the
 following problem
 
 .. math::
 
-    &\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{d}x + \frac{\beta}{2} \int_\Omega v^2 \text{d}x \\
+    &\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{ d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x + \frac{\beta}{2} \int_\Omega v^2 \text{ d}x \\
     &\text{ subject to }\quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y + z &= u \quad &&\text{ in } \Omega, \\
-    -\Delta z + y &= v \quad &&\text{ in } \Omega,\\
     y &= 0 \quad &&\text{ on } \Gamma,\\
+    -\Delta z + y &= v \quad &&\text{ in } \Omega,\\
     z &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
@@ -57,15 +57,19 @@ The control variables get their own :py:class:`fenics.FunctionSpace` ::
 
     U = FunctionSpace(mesh, 'CG', 1)
 
-Then, the state and adjoint variables are defined ::
+Then, the state and adjoint variables ``state`` and ``adjoint`` are defined ::
 
     state = Function(V)
     adjoint = Function(V)
+
+As these are part of a :py:class:`fenics.MixedFunctionSpace`, we can access their
+individual components by ::
+
     y, z = split(state)
     p, q = split(adjoint)
 
-Here, the :py:func:`fenics.split` command allows us to acces the individual components of the elements, which is very
-helpful for defining the mixed weak form in the following.
+Similarly to :ref:`demo_multiple_variables`, ``p`` is the adjoint state corresponding
+to ``y``, and ``q`` is the one corresponding to ``z``.
 
 We then define the control variables as ::
 
@@ -73,7 +77,9 @@ We then define the control variables as ::
     v = Function(U)
     controls = [u, v]
 
-and group them to the list ``controls``.
+Note, that we directly put the control variables ``u`` and ``v`` into a list
+``controls``, which implies that ``u`` is the first component of the control
+variable, and ``v`` the second one.
 
 .. hint::
 
@@ -89,24 +95,27 @@ and group them to the list ``controls``.
 Definition of the mixed weak form
 *********************************
 
+Next, we define the mixed weak form. To do so, we first define the first equation
+and its Dirichlet boundary conditions ::
 
-Next, we define the mixed weak form, by specifying the components individually and then summing them up ::
+    e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+    bcs_y = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
 
-    e1 = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
-    e2 = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
-    e = e1 + e2
+and, in analogy, the second state equation ::
+
+    e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+    bcs_z = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
+
+To arrive at the mixed weak form of the entire syste, we have to add the state equations
+and Dirichlet boundary conditions ::
+
+    e = e_y + e_z
+    bcs = bcs_y + bcs_z
 
 Note, that we can only have one state equation as we also have only a single state variable ``state``,
-and the number of state variables and state equations has to coincide.
+and the number of state variables and state equations has to coincide, and the same
+is true for the boundary conditions, where also just a single list is required.
 
-Moreover, we define the boundary conditions for the components as ::
-
-    bcs1 = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1,2,3,4])
-    bcs2 = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1,2,3,4])
-    bcs = bcs1 + bcs2
-
-Again, note that we now return a list of :py:class:`fenics.DirichletBC` objects, since both lists specify the boundary
-conditions for the components of ``state``.
 
 Defintion of the optimization problem
 *************************************

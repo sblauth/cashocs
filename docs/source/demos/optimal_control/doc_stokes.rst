@@ -6,13 +6,13 @@ Distributed Control of a Stokes Problem
 Problem Formulation
 -------------------
 
-In this demo we investigate how CASHOCS can be used to tackle a different class
+In this demo we investigate how CASHOCS can be used to treat a different kind
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
 problem reads as follows
 
 .. math::
 
-    &\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{d}x \\
+    &\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2 \text{ d}x + \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta u + \nabla p &= c \quad &&\text{ in } \Omega, \\
@@ -23,8 +23,8 @@ problem reads as follows
     \end{alignedat} \right.
 
 
-In contrast to the other demos, here we denote by u the velocity of a fluid and by
-p its pressure, which are the two state variables. The control is now denoted by c and
+In contrast to the other demos, here we denote by :math:`u` the velocity of a fluid and by
+:math:`p` its pressure, which are the two state variables. The control is now denoted by c and
 acts as a volume source for the system. The tracking type cost functional again
 aims at getting the velocity u close to some desired velocity :math:`u_d`.
 
@@ -36,8 +36,10 @@ Note, that since this problem has Dirichlet conditions on the entire boundary, t
 pressure is only determined up to a constant, and hence we have to specify another
 condition to ensure uniqueness. For this demo we choose another Dirichlet condition,
 specifying the value of the pressure at a single point in the domain. Alternatively,
-we could have also required that, e.g., the integral of the velocity u over :math:`Omega`
+we could have also required that, e.g., the integral of the velocity :math:`u` over :math:`\Omega`
 vanishes (the implementation would then only be slightly longer, but not as intuitive).
+An example of how to treat such an additional constraint in FEniCS and CASHOCS
+can be found in :ref:`demo_inverse_tomography`.
 
 Implementation
 --------------
@@ -59,11 +61,11 @@ The initialization is the same as in :ref:`demo_poisson`, i.e., ::
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
 
 For the solution of the Stokes (and adjoint Stokes) system, which have a saddle point
-structure, we have to choose LBB stable elements or stabilization, see e.g. `Ern and Guermond,
+structure, we have to choose LBB stable elements or a suitable stabilization, see e.g. `Ern and Guermond,
 Theory and Practice of Finite Elements <https://doi.org/10.1007/978-1-4757-4355-5>`_.
 For this demo, we use the classical Taylor-Hood elements of piecewise
-quadratic Lagrange elements for the velocity, and piecewise linear ones for the pressure.
-These are defined as ::
+quadratic Lagrange elements for the velocity, and piecewise linear ones for the pressure,
+which are LBB-stable. These are defined as ::
 
     v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
     p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
@@ -83,7 +85,7 @@ Next, we set up the corresponding function objects, as follows ::
 
 Here, ``up`` plays the role of the state variable, having components ``u`` and ``p``, which
 are extracted using the :py:func:`fenics.split` command. The adjoint state ``vq``  is structured in
-exactly the same fashion. See :ref:`demo_multiple_variables` for more details.
+exactly the same fashion. See :ref:`demo_monolithic_problems` for more details.
 Similarly to there, ``v`` will play the role of the adjoint
 velocity, and ``q`` the one of the adjoint pressure.
 
@@ -126,8 +128,8 @@ to multiply the vector valued functions ``u``, ``u_d`` and ``c`` ::
     u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
     J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*dx
 
-As in :ref:`demo_multiple_variables`, we then set up the optimization problem ``ocp`` and solve it
-with the command :py:meth:`ocp.solve <cashocs.OptimalControlProblem.solve>` ::
+As in :ref:`demo_monolithic_problems`, we then set up the optimization problem ``ocp`` and solve it
+with the command :py:meth:`ocp.solve() <cashocs.OptimalControlProblem.solve>` ::
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
     ocp.solve()

@@ -6,13 +6,13 @@ Iterative Solvers for State and Adjoint Systems
 Problem Formulation
 -------------------
 
-Cashocs is also capable of using iterative solvers through the linear algebra
+CASHOCS is also capable of using iterative solvers through the linear algebra
 backend PETSc. In this demo we show how this can be used. For the sake of simplicitiy,
 we consider the same setting as in :ref:`demo_poisson`, i.e.
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{d}x \\
+    &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\
@@ -22,7 +22,8 @@ we consider the same setting as in :ref:`demo_poisson`, i.e.
 (see, e.g., `Tröltzsch, Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
 or `Hinze, Pinnau, Ulbrich, and Ulbrich, Optimization with PDE constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_.
 
-It is well-known, that the state problem, when discretized using a classical Ritz-Galerkin method, gives rise to a linear system with a symmetric and positive definite
+It is well-known, that the state problem, when discretized using a classical, conforming
+Ritz-Galerkin method, gives rise to a linear system with a symmetric and positive definite
 Matrix. We use these properties in this demo by solving the state system with the
 conjugate gradient method. Moreover, the adjoint system is also a Poisson problem with
 right-hand side :math:`y - y_d`, and so also gives rise to a symmetric and positive definite system,
@@ -71,7 +72,7 @@ system we have ::
     	['ksp_max_it', 100],
     ]
 
-This corresponds to a list of lists, where the inner ones have either 1 or 2 entries,
+This is a list of lists, where the inner ones have either 1 or 2 entries,
 which correspond to the command line options for PETSc. For a detailed documentation
 of the possibilities, we refer to the `PETSc documentation <https://www.mcs.anl.gov/petsc/documentation/index.html>`_. Of particular interest are the pages for the
 `Krylov solvers <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/index.html>`_ and `Preconditioners
@@ -116,9 +117,11 @@ can also define PETSc options for the adjoint system, which we do with ::
     	['ksp_atol', 1e-15],
     ]
 
-As can be seen, we now use a completely different solver, namely MINRES (the minimal residual method) with an ICC (incomplete Cholesky factorization) preconditioner, which
-has zero levels of fill, i.e., it uses the sparsity pattern of the system matrix. Finally, the tolerances for the adjoint solver can also be drastically different from
-the ones of the state system, as is shown here.
+As can be seen, we now use a completely different solver, namely MINRES
+(the minimal residual method) with an ICC (incomplete Cholesky factorization)
+preconditioner with zero levels of fill, i.e., it uses the sparsity pattern of
+the system matrix. Finally, the tolerances for the adjoint solver can also be
+rather different from the ones of the state system, as is shown here.
 
 .. hint::
 
@@ -146,11 +149,12 @@ With these definitions, we can now proceed as in :ref:`demo_poisson` and solve t
 
 .. note::
 
-    Note, that if the ksp_options and adjoint_ksp_options are not defined or None (which)
+    Note, that if the ``ksp_options`` and ``adjoint_ksp_options`` are not passed
+    to the :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` or ``None``, which
     is the default value of these keyword parameters, then the direct solver MUMPS is used.
     Moreover, if one wants to use identical options for state and adjoint systems, then only
-    the ksp_options have to be passed. This is because of the fact that adjoint_ksp_options
-    always mirrors the ksp_options in case that the input is None.
+    the ``ksp_options`` have to be passed. This is because of the fact that ``adjoint_ksp_options``
+    always mirrors the ksp_options in case that the input is ``None`` for ``adjoint_ksp_options``.
 
 The result of the optimization looks very much like that of :ref:`demo_poisson`
 
