@@ -5,7 +5,7 @@ CASHOCS is a computational adjoint-based shape optimization and optimal control
 software for python.
 
 CASHOCS is based on the finite element package `FEniCS
-<https://fenicsproject.org>`_ and uses its high-level unified form language UFL
+<https://fenicsproject.org>`__ and uses its high-level unified form language UFL
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
 
@@ -39,7 +39,7 @@ Note, that the full CASHOCS documentation is available at `<https://temp-url.com
 Installation
 ============
 
-- First, install `FEniCS <https://fenicsproject.org/download/>`_, version 2019.1.
+- First, install `FEniCS <https://fenicsproject.org/download/>`__, version 2019.1.
   Note, that FEniCS should be compiled with PETSc and petsc4py.
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
