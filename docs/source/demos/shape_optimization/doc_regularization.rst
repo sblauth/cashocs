@@ -7,10 +7,8 @@ Problem Formulation
 -------------------
 
 In this demo, we investigate how we can use regularizations for shape optimization
-problems in CASHOCS. For our model problem, we use one similar to the one in
-`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization
-Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_, which
-we previously used in :ref:`demo_shape_poisson`, i.e.,
+problems in CASHOCS. For our model problem, we use one similar to the one in :ref:`demo_shape_poisson`,
+but which has additional regularization terms, i.e.,
 
 .. math::
 
@@ -97,15 +95,15 @@ the following lines are relevant ::
 
     [Regularization]
     factor_volume = 1.0
-    target_volume = 1.7671458676442586
+    target_volume = 1.5
     use_initial_volume = False
     factor_surface = 1.0
-    target_surface = 4.71238898038469
+    target_surface = 4.5
     use_initial_surface = False
 
 This sets the factor :math:`\mu_\text{vol}` to ``1.0``, :math:`\text{vol}_\text{des}`
-to ``1.7671458676442586``, :math:`\mu_\text{surf}` to ``1.0``, and :math:`\text{surf}_\text{des}`
-to ``4.71238898038469``. Note, that ``use_initial_volume`` and ``use_initial_surface``
+to ``1.5``, :math:`\mu_\text{surf}` to ``1.0``, and :math:`\text{surf}_\text{des}`
+to ``4.5``. Note, that ``use_initial_volume`` and ``use_initial_surface``
 have to be set to ``False``, otherwise the corresponding quantities of the initial
 geometry would be used instead of the ones prescribed in the config file.
 The resulting regularization terms are then treated by CASHOCS, but are, except

@@ -18,8 +18,13 @@ These manage the settings for the mesh, the state equation of the optimization
 problem, the solution algorithms, and the output, respectively. Note, that the
 structure of such config files is explained in-depth in the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_.
-Also note that a summary of all parameters as well as their default values
-can be found at :ref:`the end of this page <config_ocp_summary>`
+In particular, the order of the entries in each section is arbitrary.
+
+Moreover, we remark that CASHOCS has a default behavior for almost all of these
+parameters, which is triggered when they are **NOT** specified in the config file,
+and we will discuss this behavior for each parameter in this tutorial.
+A summary of all parameters as well as their default values
+can be found at :ref:`the end of this page <config_ocp_summary>`.
 
 
 
@@ -495,7 +500,7 @@ in the following.
       - maximum iterations for Newton's method
     * - newton_damped
       - ``True``
-      -
+      - if ``True``, damping is enabled
     * - newton_verbose
       - ``False``
       - ``True`` enables verbose output of Newton's method
@@ -563,7 +568,7 @@ in the following.
       - Remarks
     * - bfgs_memory_size
       - ``5``
-      - memory size of the LBFGS method
+      - memory size of the L-BFGS method
     * - use_bfgs_scaling
       - ``True``
       - if ``True``, uses a scaled identity mapping as initial guess for the inverse Hessian

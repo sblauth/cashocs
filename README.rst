@@ -44,8 +44,10 @@ Installation
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
+  The version of meshio should be at least 4, but for compatibility it is recommended to use
+  either meshio 4.1 or 4.2.
 
-- You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.0.
+- You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.
   CASHOCS does not necessarily need this to function properly,
   but it is required for the remeshing functionality.
 
@@ -54,7 +56,7 @@ Installation
     If you want to use `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_,
     you can simply create a new environment with::
 
-        conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
+        conda create -n NAME -c conda-forge fenics=2019 meshio=4.2 matplotlib gmsh=4.6
 
     which automatically installs all prerequisites (including the optional ones of gmsh and matplotlib) to get started.
 
@@ -81,7 +83,11 @@ Installation
         cd tests
         pytest
 
-    from the source / repository root directory.
+    from the source / repository root directory. Note, that it might take some
+    time to perform all of these tests for the very first time, as FEniCS
+    compiles the necessary code. However, on subsequent iterations the
+    compiled code is retrieved from a cache, so that the tests are singificantly
+    faster.
 
 
 .. readme_end_installation

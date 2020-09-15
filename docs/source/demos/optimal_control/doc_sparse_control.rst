@@ -59,11 +59,11 @@ the one of :ref:`demo_poisson` is in line 18, and is highlighted here.
     ocp.solve()
 
 Note, that for the regularization term we now do not use ``Constant(0.5*alpha)*u*u*dx``,
-which corresponds to the :math:`L^2` norm squared, but rather ::
+which corresponds to the :math:`L^2(\Omega)` norm squared, but rather ::
 
     Constant(0.5*alpha)*abs(u)*dx
 
-which corresponds to the :math:`L^1` norm. Other than that, the code is identical.
+which corresponds to the :math:`L^1(\Omega)` norm. Other than that, the code is identical.
 The visualization of the code also shows, that we have indeed a sparse control
 
 .. image:: /../../demos/documented/optimal_control/sparse_control/img_sparse_control.png

@@ -4,10 +4,11 @@ Documentation of the Config Files for Shape Optimization Problems
 =================================================================
 
 Let us take a detailed look at the config files for shape optimization problems and
-discusss the corresponding parameters and the possible choices. The corresponding
-config file used for this discussion is :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`.
+discusss the corresponding parameters. The corresponding
+config file used for this discussion is :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`,
+which is the config file used for :ref:`demo_shape_poisson`.
 
-For the shape optimization, the config file is a lot larger compared to the :ref:`config files
+For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
 However, several important parameters are shared between both types of optimization
 problems.
@@ -23,9 +24,12 @@ sections and each parameter in them in the following.
 
 As in :ref:`config_optimal_control`, we refer to the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_ for
-a detailed description of how these config files can be structured. Moreover, we
-also summarize all parameters as well as their default values
-at :ref:`the end of this page <config_shape_summary>`.
+a detailed description of how these config files can be structured. Moreover,
+we remark that CASHOCS has a default behavior for almost all of these
+parameters, which is triggered when they are **NOT** specified in the config file,
+and we will discuss this behavior for each parameter in this tutorial. For a
+summary over all parameters and their default values look at
+:ref:`the end of this page <config_shape_summary>`.
 
 
 
@@ -54,7 +58,7 @@ The second parameter in the Mesh section, ``gmsh_file``, is defined via ::
 
     gmsh_file = ./mesh/mesh.msh
 
-This defines the path to the GMSH .msh file which was used to create the .xdmf_file
+This defines the path to the GMSH .msh file which was used to create the .xdmf file
 specified in ``mesh_file``. As before, this parameter is only relevant for remeshing
 purposes, and not needed otherwise.
 
@@ -68,7 +72,7 @@ file used to generate the ``gmsh_file``. It is specified, .e.g., as ::
 
     For a detailed discussion of how to use these parameters we refer to :ref:`demo_remeshing`.
 
-Next up is a boolean flag that is used to indicate, whether remeshing shall be performed ::
+Next up is a boolean flag that is used to indicate whether remeshing shall be performed ::
 
     remesh = False
 
@@ -80,12 +84,12 @@ Finally, we have the boolean flag ``show_gmsh_output``, specified via ::
 
     show_gmsh_output = False
 
-This is used to toggle on / off the command line output of GMSH when it performs a
+This is used to toggle on / off the terminal output of GMSH when it performs a
 remeshing operation. This can be helpful for debugging purposes. By default, this
 is set to ``False``.
 
 As stated throughout the Mesh section, these parameters are optional most of the time,
-and only really required for remeshing. You can safely leave them out of your config file, and you should not need them, unless you want to perform remeshing.
+and are only really required for remeshing. You can safely leave them out of your config file, and you should not need them, unless you want to perform remeshing.
 
 
 .. _config_shape_state_equation:
@@ -111,7 +115,7 @@ case a nonlinear state system has to be solved ::
     newton_atol = 1e-13
 
 
-Here, ``newton_rtol`` sets the absolute, and ``newton_atol`` the relative tolerance
+Here, ``newton_rtol`` sets the relative, and ``newton_atol`` the absolute tolerance
 for Newton's method. Their default values are ``newton_rtol = 1e-11`` and
 ``newton_atol = 1e-13``.
 
@@ -154,7 +158,7 @@ First, we have a boolean flag, set via ::
     picard_iteration = False
 
 which determines whether the Picard iteration is enabled or not. This defaults
-to ``picard_iteration = False``, so that the Picard solver is disabled.
+to ``picard_iteration = False``, so that the Picard solver is disabled by default.
 The following two parameters determine, analogously to above, the tolerances for the
 Picard iteration ::
 
@@ -162,8 +166,8 @@ Picard iteration ::
     picard_atol = 1e-12
 
 The default values for these parameters are ``picard_rtol = 1e-10`` and
-``picard_atol = 1e-12``. Moreover, note that the tolerances of the Newton solver are automatically adjusted in case
-a Picard iteration is performed as to enable a faster, inexact Picard iteration.
+``picard_atol = 1e-12``. Moreover, note that the tolerances of the Newton solver are adjusted automatically in case
+a Picard iteration is performedm, so that an inexact Picard iteration is used.
 
 The maximum amout of iterations for the Picard iteration are set with ::
 
@@ -227,11 +231,11 @@ The upcoming parameters are used for the Armijo rule ::
     epsilon_armijo = 1e-4
     beta_armijo = 2
 
-and are used to verify that the condition
+They are used to verify that the condition
 
-.. math:: J((I + t \mathcal{V})\Omega) \leq J(\Omega) + \varepsilon_{\text{Armijo}}\ t\ dJ(\Omega)[\mathcal{V}],
+.. math:: J((I + t \mathcal{V})\Omega) \leq J(\Omega) + \varepsilon_{\text{Armijo}}\ t\ dJ(\Omega)[\mathcal{V}]
 
-and if this is not satisfied, the stepsize is updated via :math:`t = \frac{t}{\beta_{\text{Armijo}}}`.
+holds, and if this is not satisfied, the stepsize is updated via :math:`t = \frac{t}{\beta_{\text{Armijo}}}`.
 As default values for these parameters we use ``epsilon_armijo = 1e-4`` as well
 as ``beta_armijo = 2``.
 
@@ -239,11 +243,11 @@ The following parameter, ``soft_exit``, is a boolean flag which determines how
 the optimization algorithm is terminated in case it does not converge. If ``soft_exit = True``, then an
 error message is printed, but code after the :py:meth:`solve <cashocs.ShapeOptimizationProblem.solve>` call of the
 optimization problem will still be executed. However, when ``soft_exit = False``, CASHOCS
-raises an exception and stops python. This is set via ::
+raises an exception and terminates. This is set via ::
 
     soft_exit = False
 
-and is disabled by default.
+and is set to ``False`` by default.
 
 
 .. _config_shape_algolbfgs:
@@ -323,7 +327,7 @@ and the corresponding restart tolerance is set in ::
 
 Note, that ``cg_restart_tol`` should be in :math:`(0, 1)`. If two subsequent
 gradients generated by the nonlinear CG method are not "sufficiently
-orthogonal", then the method is restarted with a gradient step. The default behavior
+orthogonal", the method is restarted with a gradient step. The default behavior
 is given by ``cg_relative_restart = False`` and ``cg_restart_tol = 0.25``.
 
 .. _config_shape_shape_gradient:
@@ -353,7 +357,10 @@ For PDE constrained shape optimization, it is common to use a bilinear form base
 the linear elasticity equations, which enables smooth mesh deformations. This bilinear
 form is given as follows, in a general form, that is also implemented in CASHOCS
 
-.. math:: a \colon H \times H; \quad a(\mathcal{W}, \mathcal{V}) = \int_\Omega \mu D\mathcal{W} : D\mathcal{V} + \lambda \text{div}(\mathcal{W}) \text{div}(\mathcal{V}) + \delta V \cdot W \text{ d}x,
+.. math::
+
+    a \colon H \times H; \quad a(\mathcal{W}, \mathcal{V}) = \int_\Omega
+    \mu \left( D\mathcal{W} : D\mathcal{V} \right) + \lambda \left( \text{div}(\mathcal{W}) \text{div}(\mathcal{V}) \right) + \delta \left( V \cdot W \right) \text{ d}x,
 
 where :math:`H` is some suitable subspace of :math:`H^1(\Omega)^d`. The subspace property is needed
 to include certain geometrical constraints of the shape optimization problem, which fix
@@ -369,7 +376,7 @@ as the solution of the Laplace problem
     \begin{alignedat}{2}
         - \Delta \mu &= 0 \quad &&\text{ in } \Omega, \\
         \mu &= \mu_\text{def} \quad &&\text{ on } \Gamma^\text{def},\\
-        \mu &= \mu_\text{fix} \quad &&\text{ on } \Gamma^\text{fix},\\
+        \mu &= \mu_\text{fix} \quad &&\text{ on } \Gamma^\text{fix}.\\
     \end{alignedat}
 
 This allows to give the deformable and fixed boundaries a different stiffness,
@@ -377,8 +384,9 @@ which is then smoothly extended into the interior of the domain. Moreover, they
 propose to use the solution of this Laplace equation directly for 2D problems,
 and to use :math:`\sqrt{\mu}` for 3D problems.
 
-First of all, we define what kind of boundaries there are. In principle, there exist
-two types, the deformable boundaries and fixed boundaries. On fixed boundaries, we
+Moreover, let us take a look at the possible types of boundaries that can be used
+with CASHOCS. In principle, there exist
+two types: deformable and fixed boundaries. On fixed boundaries, we
 impose homogeneous Dirichlet boundary conditions for the shape gradient, so that
 these are not moved under the corresponding deformation. In CASHOCS, we define what boundaries
 are fixed and deformable via their markers, which are either defined in the
@@ -391,14 +399,14 @@ with the command ::
 
 .. note::
 
-    Remember, that in the demo, we defined ``boundaries`` with the commands ::
+    Remember, that in :ref:`demo_shape_poisson`, we defined ``boundaries`` with the commands ::
 
         boundary = CompiledSubDomain('on_boundary')
         boundaries = MeshFunction('size_t', mesh, dim=1)
         boundary.mark(boundaries, 1)
 
-    Hence, we see that the marker ``1`` corresponds to the entire boundary, and this
-    is set to being variable / deformable.
+    Hence, we see that the marker ``1`` corresponds to the entire boundary, so that this
+    is set to being deformable through the config.
 
 As we do not have a fixed boundary for this problem, the corresponding list
 for the fixed boundaries is empty ::
@@ -523,7 +531,7 @@ The next line, i.e., ::
     use_initial_volume = True
 
 determines the boolean flag ``use_initial_volume``. If this is set to ``True``,
-then the not the value given in ``target_volume`` is used, but instead the
+then not the value given in ``target_volume`` is used, but instead the
 volume of the initial geometry is used for :math:`\text{vol}_\text{des}`.
 
 For the next two types of regularization, namely the (target) surface and (target)
@@ -571,7 +579,7 @@ Finally, the flag ::
     use_initial_barycenter = True
 
 again determines, whether :math:`\text{bary}_\text{des}` is determined via ``target_barycenter``
-or if the barycenter of the initial geometry should be used. The default behavior
+or if the barycenter of the initial geometry should be used instead. The default behavior
 is given by ``use_initial_barycenter = False``.
 
 .. hint::
@@ -621,21 +629,21 @@ in :math:`[0,1]`):
 
 - If the mesh quality is in :math:`[\texttt{tol upper}, 1]`, the mesh is assumed
   to be "good", so that finite element solutions of the corresponding PDEs are
-  sensible and not influenced by the mesh quality or some discretization artifacts.
+  sensible and not influenced by the mesh quality or discretization artifacts.
 
 - If the mesh quality is in :math:`[\texttt{tol lower}, \texttt{tol upper}]`, a
   kind of breaking point is reached. Here, it is assumed that the mesh is sufficiently
   good so that the solution of the state system is still possible. However, a mesh
   whose quality is in this interval should not be used anymore to compute the solution
   of the adjoint system or to compute the shape gradient, as the quality is too poor
-  for this. Usually, this means that the algorithm is terminated, unless remeshing
-  is enabled. In the latter case, the remeshing is performed.
+  for this purpose. Usually, this means that the algorithm is terminated, unless remeshing
+  is enabled. In the latter case, remeshing is performed.
 
 - If the mesh quality is in the interval :math:`[0, \texttt{tol lower}]`, the mesh
   quality is assumed to be so poor, that even the solution of the state system
   is not possible anymore. In practice, this can only happen during the Armijo line
   search. Thanks to our previous considerations, we also know that the mesh, that is
-  to be deformed, has at least a quality of ``tol_lower``, so that this quality
+  to be deformed, has at least a quality of ``tol_lupper``, so that this quality
   might be reached again, if the step size is just decreased sufficiently often.
   This way, it is ensured that the state system is only solved when the mesh quality
   is larger than ``tol_lower``, so that the corresponding cost functional value is
@@ -680,7 +688,7 @@ optimization algorithm. It defaults to ``True`` and is controlled via ::
     verbose = True
 
 The parameter ``save_results`` is a boolean flag, which determines whether a history
-of the optimization algorithm, including cost function value, gradient norm, accepted
+of the optimization algorithm, including cost functional value, gradient norm, accepted
 step sizes, and mesh quality, shall be saved to a .json file. This defaults to ``True``,
 and can be set with ::
 
@@ -701,8 +709,8 @@ Moreover, we also have the parameter ``save_mesh`` that is set via ::
 
 This is used to save the optimized geometry to a GMSH file. The default behavior
 is given by ``save_mesh = False``. Note, that this is only
-possible if the input mesh was already generated by GMSH, and specified in the Mesh
-section of the config file. For any other meshes, the underlying mesh is also saved in
+possible if the input mesh was already generated by GMSH, and specified in :ref:`the Mesh
+section of the config file <config_shape_mesh>`. For any other meshes, the underlying mesh is also saved in
 the .pvd files, so that you can at least always visualize the optimized geometry.
 
 
@@ -765,7 +773,7 @@ in the following.
       - maximum iterations for Newton's method
     * - newton_damped
       - ``True``
-      -
+      - if ``True``, damping is enabled
     * - newton_verbose
       - ``False``
       - ``True`` enables verbose output of Newton's method
@@ -835,7 +843,7 @@ in the following.
     - Remarks
   * - bfgs_memory_size
     - ``5``
-    - memory size of the LBFGS method
+    - memory size of the L-BFGS method
   * - use_bfgs_scaling
     - ``True``
     - if ``True``, uses a scaled identity mapping as initial guess for the inverse Hessian
@@ -879,7 +887,7 @@ in the following.
       - Remarks
     * - shape_bdry_def
       - ``[]``
-      - list of indices for the deformable boundaries; only needed if inhomogeneous ``mu_lame`` is used
+      - list of indices for the deformable boundaries
     * - shape_bdry_fix
       - ``[]``
       - list of indices for the fixed boundaries
@@ -942,7 +950,7 @@ in the following.
       - prescribed surface for the surface regularization
     * - use_initial_surface
       - ``False``
-      - if ``True`` uses the surface of the initial geometry as prescribed surface
+      - if ``True`` uses the surface area of the initial geometry as prescribed surface
     * - factor_barycenter
       - ``0.0``
       - value of the regularization parameter for barycenter regularization; needs to be non-negative

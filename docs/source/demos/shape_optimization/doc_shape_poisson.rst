@@ -8,7 +8,7 @@ Problem Formulation
 
 In this demo, we investigate the basics of CASHOCS for shape optimization problems.
 As a model problem, we investigate the following one from
-`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_.
+`Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
 
 .. math::
 
@@ -64,9 +64,9 @@ the problem. For the volume measure, we can simply invoke ::
 However, for the surface measure, we need to mark the boundary. This is required since
 CASHOCS distinguishes between three types of boundaries: The deformable boundary, the
 fixed boundary, and boundaries that can only be deformed perpendicular to a certain
-coordinate axis (see :ref:`config_shape_shape_gradient`). Here, we investigate the
-case of a completely deformable boundary, which makes things slightly
-easier. We mark this boundary with the marker 1 with the following piece of code ::
+coordinate axis (see :ref:`the relevant documentation of the config files <config_shape_shape_gradient>`). Here, we investigate the
+case of a completely deformable boundary, which makes things rather
+easy. We mark this boundary with the marker ``1`` with the following piece of code ::
 
     boundary = CompiledSubDomain('on_boundary')
     boundaries = MeshFunction('size_t', mesh, dim=1)
@@ -99,7 +99,7 @@ piecewise linear Lagrange elements via ::
     u = Function(V)
     p = Function(V)
 
-This also defines our state variable :math:`u` as ``u``, and the adjoint state is given by
+This also defines our state variable :math:`u` as ``u``, and the adjoint state :math:`p` is given by
 ``p``.
 
 .. note::
@@ -154,4 +154,5 @@ The result of the optimization looks like this
       - ``max_iter`` : The maximum amount of iterations that can be carried out.
 
     The possible choices for these parameters are discussed in detail in
-    :ref:`config_shape_optimization_routine`.
+    :ref:`config_shape_optimization_routine` and the documentation of the :py:func:`solve <cashocs.ShapeOptimizationProblem.solve>`
+    method.
