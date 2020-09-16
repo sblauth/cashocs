@@ -60,6 +60,13 @@ Installation
 
     which automatically installs all prerequisites (including the optional ones of gmsh and matplotlib) to get started.
 
+.. note::
+
+    If you are having trouble with using the conversion tool cashocs-convert from
+    the command line, then you most likely encountered a problem with hdf5 and h5py.
+    This can (hopefully) be resolved by following the suggestions from `this thread
+    <https://fenicsproject.discourse.group/t/meshio-convert-to-xdmf-from-abaqus-raises-version-error-for-h5py/1480>`_.
+
 - Clone this repository with git, and run::
 
         pip3 install .
