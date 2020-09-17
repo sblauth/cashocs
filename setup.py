@@ -31,7 +31,9 @@ setuptools.setup(
     ],
     keywords="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
     install_requires=[
-		'pytest>=6.0.0'
+		'pytest>=6.0.0',
+        'meshio>=4.1.0',
+        'matplotlib'
     ],
     entry_points={
         "console_scripts" : [

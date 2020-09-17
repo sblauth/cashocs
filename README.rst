@@ -65,7 +65,11 @@ Installation
     If you are having trouble with using the conversion tool cashocs-convert from
     the command line, then you most likely encountered a problem with hdf5 and h5py.
     This can (hopefully) be resolved by following the suggestions from `this thread
-    <https://fenicsproject.discourse.group/t/meshio-convert-to-xdmf-from-abaqus-raises-version-error-for-h5py/1480>`_.
+    <https://fenicsproject.discourse.group/t/meshio-convert-to-xdmf-from-abaqus-raises-version-error-for-h5py/1480>`_,
+    i.e., you should try to install `meshio <https://github.com/nschloe/meshio>`_
+    using the command ::
+
+        pip3 install meshio[all] --no-binary=h5py
 
 - Clone this repository with git, and run::
 
