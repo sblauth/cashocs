@@ -36,7 +36,7 @@ class OptimalControlProblem(OptimizationProblem):
 	"""Implements an optimal control problem.
 
 	This class is used to define an optimal control problem, and also to solve
-	it subsequently. For a detailed documentation, see the examples in the `tutorial <https://temp-url.com/>`.
+	it subsequently. For a detailed documentation, see the examples in the :ref:`tutorial <tutorial_index>`.
 	For easier input, when considering single (state or control) variables,
 	these do not have to be wrapped into a list.
 	Note, that in the case of multiple variables these have to be grouped into
@@ -91,7 +91,7 @@ class OptimalControlProblem(OptimizationProblem):
 
 		Examples
 		--------
-		Examples how to use this class can be found in the `tutorial <https://temp-url.com/>`.
+		Examples how to use this class can be found in the :ref:`tutorial <tutorial_index>`.
 		"""
 
 		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)

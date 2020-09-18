@@ -11,12 +11,12 @@ setuptools.setup(
     description="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    url="https://github.com/pypa/sampleproject",
-    # project_urls={'Source' : 'https://github.com/plugged/cashocs',
-    #               'Documentation' : 'https://plugged.github.io/cashocs/docs/',
-    #               'Tutorial' : 'https://github.com/plugged/cashocs/issues',
-    #               'Tracker' : 'https://github.com/plugged/cashocs/issues'
-    #               },
+    url="https://github.com/sblauth/cashocs",
+    project_urls={'Source' : 'https://github.com/sblauth/cashocs',
+                  'Documentation' : 'https://cashocs.readthedocs.io/en/latest/index.html',
+                  'Tutorial' : 'https://cashocs.readthedocs.io/en/latest/tutorial_index.html',
+                  'Tracker' : 'https://github.com/sblauth/cashocs/issues'
+                  },
     packages=setuptools.find_packages(),
     classifiers=[
         "Topic :: Scientific/Engineering",

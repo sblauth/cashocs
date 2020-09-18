@@ -27,11 +27,11 @@ we can recommend the textbooks
 
 .. readme_end_disclaimer
 
-However, the `CASHOCS tutorial <https://temp-url.com/>`_ also gives many references either
+However, the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
-Note, that the full CASHOCS documentation is available at `<https://temp-url.com/>`_.
+Note, that the full CASHOCS documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
 
 
 .. readme_start_installation
@@ -83,7 +83,7 @@ Installation
 
   You can install the newest (development) version of CASHOCS with::
 
-        pip3 install git+https://temp-url.com/
+        pip3 install git+https://github.com/sblauth/cashocs.git
 
 
 .. note::
@@ -107,8 +107,8 @@ Installation
 Usage
 =====
 
-The complete CASHOCS documentation is available here `<https://temp-url.com/>`_. For a detailed
-introduction, see the `CASHOCS tutorial <https://temp-url.com/>`_. The python source code
+The complete CASHOCS documentation is available here `<https://cashocs.readthedocs.io/en/latest/index.html>`_. For a detailed
+introduction, see the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 

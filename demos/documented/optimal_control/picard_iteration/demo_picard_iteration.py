@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For the documentation of this demo see https://temp-url.com/.
+"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_picard_iteration.html.
 
 """
 

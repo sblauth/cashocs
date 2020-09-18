@@ -40,7 +40,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	r"""A shape optimization problem.
 
 	This class is used to define a shape optimization problem, and to solve
-	it subsequently. For a detailed documentation, we refer to the `tutorial <https://temp-url.com/>`.
+	it subsequently. For a detailed documentation, we refer to the :ref:`tutorial <tutorial_index>`.
 	For easier input, when consider single (state or control) variables,
 	these do not have to be wrapped into a list.
 	Note, that in the case of multiple variables these have to be grouped into

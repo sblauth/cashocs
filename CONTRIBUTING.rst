@@ -16,7 +16,7 @@ Reporting a bug
 ---------------
 
 - Ensure that the bug was not already reported by searching on GitHub under
-  `Issues <https://temp-url.com/>`_.
+  `Issues <https://github.com/sblauth/cashocs/issues>`_.
 
 - If you do not find an open issue that adresses the problem, open a new one.
   Please include a clear title and description, and include as much relevant
@@ -41,7 +41,7 @@ Adding or modifying a feature
 -----------------------------
 
 - Please suggest your changes / additions by opening a new issue on GitHub under
-  `Issues <https://temp-url.com/>`_, and start writing code (using the conventions
+  `Issues <https://github.com/sblauth/cashocs/issues>`_, and start writing code (using the conventions
   established in the project).
 
 - If you receive positive feedback for your suggestion, you can open a new pull
