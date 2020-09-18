@@ -33,8 +33,7 @@ setuptools.setup(
     install_requires=[
 		'pytest>=6.0.0',
         'meshio>=4.1.0',
-        'matplotlib',
-        'fenics=2019.1.0'
+        'matplotlib'
     ],
     entry_points={
         "console_scripts" : [
