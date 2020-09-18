@@ -62,7 +62,7 @@ Installation
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
   The version of meshio should be at least 4, but for compatibility it is recommended to use
-  either meshio 4.1 or 4.2.
+  either use meshio 4.1 or 4.2.
 
 - You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.
   CASHOCS does not necessarily need this to function properly,
@@ -73,7 +73,7 @@ Installation
     If you want to use `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_,
     you can simply create a new environment with::
 
-        conda create -n NAME -c conda-forge fenics=2019 meshio=4.2 matplotlib gmsh=4.6
+        conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
 
     which automatically installs all prerequisites (including the optional ones of gmsh and matplotlib) to get started.
 
@@ -88,19 +88,21 @@ Installation
 
         pip3 install meshio[all] --no-binary=h5py
 
-- To get the latest (development) version of CASHOCS, clone this repository with git and install it with pip ::
-
-        git clone https://github.com/sblauth/cashocs.git
-        cd cashocs
-        pip3 install .
-
-- Alternatively, you can install CASHOCS via the `PYPI <https://pypi.org/>`_::
+- You can install CASHOCS via the `PYPI <https://pypi.org/>`_::
 
         pip3 install cashocs
 
   You can install the newest (development) version of CASHOCS with::
 
         pip3 install git+https://github.com/sblauth/cashocs.git
+
+- To get the latest (development) version of CASHOCS, clone this repository with git and install it with pip ::
+
+        git clone https://github.com/sblauth/cashocs.git
+        cd cashocs
+        pip3 install .
+
+
 
 
 .. note::
@@ -109,7 +111,7 @@ Installation
     with ::
 
         cd tests
-        pytest
+        python3 -m pytest
 
     from the source / repository root directory. Note, that it might take some
     time to perform all of these tests for the very first time, as FEniCS
