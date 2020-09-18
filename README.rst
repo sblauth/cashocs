@@ -1,6 +1,10 @@
 CASHOCS
 =======
 
+.. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
+:target: https://cashocs.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 CASHOCS is a computational adjoint-based shape optimization and optimal control
 software for python.
 
@@ -74,7 +78,7 @@ Installation
 - To get the latest (development) version of CASHOCS, clone this repository with git and install it with pip ::
 
         git clone https://github.com/sblauth/cashocs.git
-        cd cashocs.git
+        cd cashocs
         pip3 install .
 
 - Alternatively, you can install CASHOCS via the `PYPI <https://pypi.org/>`_::
