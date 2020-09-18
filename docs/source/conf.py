@@ -47,7 +47,7 @@ napoleon_use_keyword = True
 napoleon_use_rtype = True
 
 autodoc_member_order = 'alphabetical' #'bysource'
-autodoc_mock_imports = ['fenics']
+autodoc_mock_imports = ['fenics', 'numpy']
 autoclass_content = 'both'
 
 # Add any paths that contain templates here, relative to this directory.
