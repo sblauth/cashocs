@@ -7,8 +7,8 @@ API Reference
 Here, we detail the (public) API of cashocs.
 
 For a more hands-on approach, we recommend the :ref:`tutorial <tutorial_index>`, which
- shows many examples from PDE constrained optimization that can be efficiently
- solved with CASHOCS.
+shows many examples from PDE constrained optimization that can be efficiently
+solved with CASHOCS.
 
 
 PDE Constrained Optimization Problems
