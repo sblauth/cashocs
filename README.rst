@@ -1,9 +1,21 @@
 CASHOCS
 =======
 
+.. image:: https://img.shields.io/pypi/v/cashocs
+    :target: https://pypi.org/project/cashocs/
+    :alt: pypi
+
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
-:target: https://cashocs.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
+    :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+
+.. image:: https://img.shields.io/pypi/l/cashocs
+    :target: https://pypi.org/project/cashocs/
+    :alt: license
+
+
+
 
 CASHOCS is a computational adjoint-based shape optimization and optimal control
 software for python.
