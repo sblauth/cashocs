@@ -71,11 +71,11 @@ Installation
 
         pip3 install meshio[all] --no-binary=h5py
 
-- Clone this repository with git, and run::
+- To get the latest (development) version of CASHOCS, clone this repository with git and install it with pip ::
 
+        git clone https://github.com/sblauth/cashocs.git
+        cd cashocs.git
         pip3 install .
-
-  from the source / repository root directory.
 
 - Alternatively, you can install CASHOCS via the `PYPI <https://pypi.org/>`_::
 
