@@ -211,9 +211,25 @@ class OptimalControlProblem(OptimizationProblem):
 				pass
 			else:
 				self.require_control_constraints[idx] = True
-				if not (self.controls[idx].ufl_element().family() == 'Lagrange' and self.controls[idx].ufl_element().degree() == 1):
-					raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls',
-									 'Control constraints are only implemented for linear Lagrange elements')
+				
+				control_element = self.controls[idx].ufl_element()
+				if control_element.family() == 'Mixed':
+					for j in range(control_element.value_size()):
+						sub_elem = control_element.extract_component(j)[1]
+						if sub_elem.family() == 'Real' or (sub_elem.family() == 'Lagrange' and sub_elem.degree() == 1) \
+								or (sub_elem.family() == 'Discontinuous Lagrange' and sub_elem.degree() == 0):
+							pass
+						else:
+							raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls',
+									 'Control constraints are only implemented for linear Lagrange, constant Discontinuous Lagrange, and Real elements.')
+
+				else:
+					if control_element.family() == 'Real' or (control_element.family() == 'Lagrange' and control_element.degree() == 1) \
+							or (control_element.family() == 'Discontinuous Lagrange' and control_element.degree() == 0):
+						pass
+					else:
+						raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'controls',
+									 'Control constraints are only implemented for linear Lagrange, constant Discontinuous Lagrange, and Real elements.')
 
 		if not len(self.riesz_scalar_products) == self.control_dim:
 			raise InputError('cashocs._optimization.optimal_control_problem.OptimalControlProblem', 'riesz_scalar_products', 'Length of controls does not match')

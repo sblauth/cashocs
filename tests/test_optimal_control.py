@@ -19,10 +19,12 @@
 
 """
 
+import pytest
 import numpy as np
 from fenics import *
 
 import cashocs
+from cashocs._exceptions import InputError
 
 
 
@@ -46,6 +48,42 @@ ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 cc = [0, 100]
 
 ocp_cc = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, control_constraints=cc)
+
+
+def test_control_constraints_handling():
+	cg1_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+	vcg1_elem = VectorElement('CG', mesh.ufl_cell(), 1)
+	vcg2_elem = VectorElement('CG', mesh.ufl_cell(), 2)
+	real_elem = FiniteElement('R', mesh.ufl_cell(), 0)
+	dg0_elem = FiniteElement('DG', mesh.ufl_cell(), 0)
+	vdg0_elem = VectorElement('DG', mesh.ufl_cell(), 0)
+	dg1_elem = FiniteElement('DG', mesh.ufl_cell(), 1)
+	rt_elem = FiniteElement('RT', mesh.ufl_cell(), 1)
+	
+	mixed_elem = MixedElement([cg1_elem, dg0_elem, vdg0_elem])
+	pass_elem = MixedElement([cg1_elem, real_elem, dg0_elem, vcg1_elem, mixed_elem])
+	fail_elem1 = MixedElement([mixed_elem, cg1_elem, vdg0_elem, real_elem, rt_elem])
+	fail_elem2 = MixedElement([dg1_elem, mixed_elem, cg1_elem, vdg0_elem, real_elem])
+	fail_elem3 = MixedElement([mixed_elem, cg1_elem, vcg2_elem, vdg0_elem, real_elem])
+	
+	pass_space = FunctionSpace(mesh, pass_elem)
+	pass_control = Function(pass_space)
+	
+	fail_space1 = FunctionSpace(mesh, fail_elem1)
+	fail_space2 = FunctionSpace(mesh, fail_elem2)
+	fail_space3 = FunctionSpace(mesh, fail_elem3)
+	fail_control1 = Function(fail_space1)
+	fail_control2 = Function(fail_space2)
+	fail_control3 = Function(fail_space3)
+	
+	ocp_cc_pass = cashocs.OptimalControlProblem(F, bcs, J, y, pass_control, p, config, control_constraints=cc)
+	
+	with pytest.raises(InputError):
+		ocp_cc_fail1 = cashocs.OptimalControlProblem(F, bcs, J, y, fail_control1, p, config, control_constraints=cc)
+	with pytest.raises(InputError):
+		ocp_cc_fail2 = cashocs.OptimalControlProblem(F, bcs, J, y, fail_control2, p, config, control_constraints=cc)
+	with pytest.raises(InputError):
+		ocp_cc_fail3 = cashocs.OptimalControlProblem(F, bcs, J, y, fail_control3, p, config, control_constraints=cc)
 
 
 
@@ -321,3 +359,5 @@ def test_control_pdas_newton():
 	assert ocp_cc.solver.converged
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
