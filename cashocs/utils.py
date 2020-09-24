@@ -257,7 +257,13 @@ def create_config(path):
 
 	config = configparser.ConfigParser()
 	config.read(path)
-
+	
+	try:
+		config.get('OptimizationRoutine', 'algorithm')
+	except:
+		config.add_section('OptimizationRoutine')
+		config.set('OptimizationRoutine', 'algorithm', 'none')
+	
 	return config
 
 
@@ -656,6 +662,8 @@ def _optimization_algorithm_configuration(config, algorithm=None):
 		internal_algorithm = 'newton'
 	elif algorithm in ['pdas', 'primal_dual_active_set']:
 		internal_algorithm = 'pdas'
+	elif algorithm == 'none':
+		internal_algorithm = 'none'
 	else:
 		raise InputError('cashocs.utils._optimization_algorithm_configuration', 'algorithm', 'Not a valid choice for the optimization algorithm.\n'
 						 '	For a gradient descent method, use \'gradient_descent\' or \'gd\'.\n'

@@ -240,8 +240,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			self.solver = LBFGS(self)
 		elif self.algorithm == 'conjugate_gradient':
 			self.solver = CG(self)
+		elif self.algorithm == 'none':
+			raise InputError('cashocs.OptimalControlProblem.solve', 'algorithm', 'You did not specify a solution algorithm in your config file. You have to specify one in the solve '
+																				 'method. Needs to be one of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), '
+																				 'or \'conjugate_gradient\' (\'cg\').')
 		else:
-			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), or \'conjugate_gradient\' (\'cg\').')
+			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one '
+																  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), or \'conjugate_gradient\' (\'cg\').')
 
 		self.solver.run()
 		self.solver.finalize()

@@ -394,6 +394,11 @@ class OptimalControlProblem(OptimizationProblem):
 			self.solver = Newton(self)
 		elif self.algorithm == 'pdas':
 			self.solver = PDAS(self)
+		elif self.algorithm == 'none':
+			raise InputError('cashocs.OptimalControlProblem.solve', 'algorithm', 'You did not specify a solution algorithm in your config file. You have to specify one in the solve '
+																				 'method. Needs to be one of'
+																				 '\'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), \'conjugate_gradient\' (\'cg\'), '
+																				 '\'newton\', or \'primal_dual_active_set\' (\'pdas\').')
 		else:
 			raise ConfigError('OptimizationRoutine', 'algorithm', 'Not a valid input. Needs to be one '
 							  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), \'conjugate_gradient\' (\'cg\'), \'newton\', or \'primal_dual_active_set\' (\'pdas\').')
