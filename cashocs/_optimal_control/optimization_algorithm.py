@@ -161,7 +161,8 @@ class OptimizationAlgorithm:
 			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
 				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
 			print('')
-
+		
+		self.output_dict['initial_gradient_norm'] = self.gradient_norm_initial
 		self.output_dict['state_solves'] = self.state_problem.number_of_solves
 		self.output_dict['adjoint_solves'] = self.adjoint_problem.number_of_solves
 		self.output_dict['iterations'] = self.iteration

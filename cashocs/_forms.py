@@ -148,7 +148,7 @@ class FormHandler:
 		self.state_is_linear = self.config.getboolean('StateSystem', 'is_linear', fallback = False)
 		self.state_is_picard = self.config.getboolean('StateSystem', 'picard_iteration', fallback=False)
 		self.opt_algo = _optimization_algorithm_configuration(config)
-		
+
 		if self.opt_algo == 'pdas':
 			self.inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
 

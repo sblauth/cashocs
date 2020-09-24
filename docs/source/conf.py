@@ -25,6 +25,7 @@ author = 'Sebastian Blauth'
 release = '1.0.2'
 
 
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
