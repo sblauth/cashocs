@@ -24,6 +24,7 @@ actions.
 """
 
 import configparser
+import os
 
 import fenics
 import numpy as np
@@ -256,13 +257,10 @@ def create_config(path):
 	"""
 
 	config = configparser.ConfigParser()
-	config.read(path)
-	
-	try:
-		config.get('OptimizationRoutine', 'algorithm')
-	except:
-		config.add_section('OptimizationRoutine')
-		config.set('OptimizationRoutine', 'algorithm', 'none')
+	if os.path.isfile(path):
+		config.read(path)
+	else:
+		raise InputError('cashocs.utils.create_config', 'path', 'The file you specified does not exist.')
 	
 	return config
 
@@ -645,9 +643,8 @@ def _optimization_algorithm_configuration(config, algorithm=None):
 		overwrite = True
 	else:
 		overwrite = False
-
-	if algorithm is None:
-		algorithm = config.get('OptimizationRoutine', 'algorithm')
+		algorithm = config.get('OptimizationRoutine', 'algorithm', fallback='none')
+		
 
 	if not type(algorithm) == str:
 		raise InputError('cashocs.utils._optimization_algorithm_configuration', 'algorithm', 'Not a valid input type for algorithm. Has to be a string.')

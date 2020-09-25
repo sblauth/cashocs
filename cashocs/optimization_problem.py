@@ -22,6 +22,8 @@ as many parameters and variables are common for optimal control and shape
 optimization problems.
 """
 
+import configparser
+
 import fenics
 
 from ._exceptions import InputError
@@ -38,7 +40,7 @@ class OptimizationProblem:
 	optimization problems.
 	"""
 
-	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
+	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config=None,
 				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
 		r"""Initializes the optimization problem.
 
@@ -56,8 +58,12 @@ class OptimizationProblem:
 			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-		config : configparser.ConfigParser
+		config : configparser.ConfigParser or None
 			The config file for the problem, generated via :py:func:`cashocs.create_config`.
+			Alternatively, this can also be ``None``, in which case the default configurations
+			are used, except for the optimization algorithm. This has then to be specified
+			in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+			default is ``None``.
 		initial_guess : list[dolfin.function.function.Function], optional
 			List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
 			Defaults to ``None``, which means a zero initial guess.
@@ -178,10 +184,15 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'adjoints', 'Type of adjoints is wrong.')
 
 		### config
-		if config.__module__ == 'configparser' and type(config).__name__ == 'ConfigParser':
-			self.config = config
+		if config is None:
+			self.config = configparser.ConfigParser()
+			self.config.add_section('OptimizationRoutine')
+			self.config.set('OptimizationRoutine', 'algorithm', 'none')
 		else:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'config', 'config has to be of configparser.ConfigParser type')
+			if config.__module__ == 'configparser' and type(config).__name__ == 'ConfigParser':
+				self.config = config
+			else:
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'config', 'config has to be of configparser.ConfigParser type')
 
 		### initial guess
 		if initial_guess is None:

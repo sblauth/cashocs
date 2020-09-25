@@ -60,7 +60,7 @@ class ArmijoLineSearch:
 		self.gradients = self.optimization_algorithm.gradients
 
 		self.is_newton_like = (_optimization_algorithm_configuration(self.config) == 'lbfgs')
-		self.is_newton = _optimization_algorithm_configuration(self.config) in ['newton']
+		self.is_newton = (_optimization_algorithm_configuration(self.config) == 'newton')
 		self.is_steepest_descent = (_optimization_algorithm_configuration(self.config) == 'gradient_descent')
 		if self.is_newton:
 			self.stepsize = 1.0

@@ -122,11 +122,11 @@ def import_mesh(arg):
 	subdomains_mvc = fenics.MeshValueCollection('size_t', mesh, mesh.geometric_dimension())
 	boundaries_mvc = fenics.MeshValueCollection('size_t', mesh, mesh.geometric_dimension() - 1)
 
-	if os.path.exists(file_string + '_subdomains.xdmf'):
+	if os.path.isfile(file_string + '_subdomains.xdmf'):
 		xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_subdomains.xdmf')
 		xdmf_subdomains.read(subdomains_mvc, 'subdomains')
 		xdmf_subdomains.close()
-	if os.path.exists(file_string + '_boundaries.xdmf'):
+	if os.path.isfile(file_string + '_boundaries.xdmf'):
 		xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), file_string + '_boundaries.xdmf')
 		xdmf_boundaries.read(boundaries_mvc, 'boundaries')
 		xdmf_boundaries.close()
@@ -456,7 +456,7 @@ class _MeshHandler:
 				raise ConfigError('Mesh', 'gmsh_file', 'Not a valid gmsh file. Has to end in .msh')
 
 			self.remesh_directory = self.mesh_directory + '/cashocs_remesh'
-			if not os.path.exists(self.remesh_directory):
+			if not os.path.isdir(os.path.realpath(self.remesh_directory)):
 				os.mkdir(self.remesh_directory)
 			if not ('_cashocs_remesh_flag' in sys.argv):
 				os.system('rm -r ' + self.remesh_directory + '/*')
