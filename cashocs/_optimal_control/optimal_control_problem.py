@@ -45,7 +45,7 @@ class OptimalControlProblem(OptimizationProblem):
 	and so on.
 	"""
 
-	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config,
+	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config=None,
 				 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
 				 adjoint_ksp_options=None):
 		r"""This is used to generate all classes and functionalities. First ensures
@@ -67,8 +67,12 @@ class OptimalControlProblem(OptimizationProblem):
 			The control variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-		config : configparser.ConfigParser
+		config : configparser.ConfigParser or None
 			The config file for the problem, generated via :py:func:`cashocs.create_config`.
+			Alternatively, this can also be ``None``, in which case the default configurations
+			are used, except for the optimization algorithm. This has then to be specified
+			in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+			default is ``None``.
 		riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
 			The scalar products of the control space. Can either be None, a single UFL form, or a
 			(ordered) list of UFL forms. If ``None``, the :math:`L^2(\Omega)` product is used.

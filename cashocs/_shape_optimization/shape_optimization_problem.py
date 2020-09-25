@@ -50,7 +50,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
-				 adjoints, boundaries, config, initial_guess=None,
+				 adjoints, boundaries, config=None, initial_guess=None,
 				 ksp_options=None, adjoint_ksp_options=None):
 		"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
@@ -71,8 +71,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
 		boundaries : dolfin.cpp.mesh.MeshFunctionSizet
 			:py:class:`fenics.MeshFunction` that indicates the boundary markers.
-		config : configparser.ConfigParser
+		config : configparser.ConfigParser or None
 			The config file for the problem, generated via :py:func:`cashocs.create_config`.
+			Alternatively, this can also be ``None``, in which case the default configurations
+			are used, except for the optimization algorithm. This has then to be specified
+			in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+			default is ``None``.
 		initial_guess : list[dolfin.function.function.Function], optional
 			List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
 			Defaults to ``None``, which means a zero initial guess.
@@ -89,7 +93,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
 
 		### Initialize the remeshing behavior, and a temp file
-		self.do_remesh = config.getboolean('Mesh', 'remesh', fallback=False)
+		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
 		if self.do_remesh:
 
