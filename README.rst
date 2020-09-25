@@ -5,13 +5,12 @@ CASHOCS
     :target: https://pypi.org/project/cashocs/
     :alt: pypi
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4035940.svg
-   :target: https://doi.org/10.5281/zenodo.4035940
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4049436.svg
+   :target: https://doi.org/10.5281/zenodo.4049436
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-
 
 .. image:: https://img.shields.io/pypi/l/cashocs
     :target: https://pypi.org/project/cashocs/
