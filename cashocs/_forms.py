@@ -881,7 +881,7 @@ class ShapeFormHandler(FormHandler):
 		if self.inhomogeneous_mu:
 
 			A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
-			x = _solve_linear_problem(self.ksp_mu, A, b, self.mu_lame.vector())
+			x = _solve_linear_problem(self.ksp_mu, A, b)
 
 			if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
 				self.mu_lame.vector()[:] = np.sqrt(x[:])
