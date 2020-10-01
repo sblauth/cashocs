@@ -197,6 +197,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 		# Solve the inner problem
 		_solve_linear_problem(ksp, A, b, du.vector().vec())
+		du.vector().apply('')
 
 		# perform backtracking in case damping is used
 		if damped:
@@ -205,6 +206,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 				assembler.assemble(residuum)
 				b = fenics.as_backend_type(residuum).vec()
 				_solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec())
+				ddu.vector().apply('')
 
 				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) <= 1:
 					break

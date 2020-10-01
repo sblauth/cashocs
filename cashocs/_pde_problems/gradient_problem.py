@@ -101,6 +101,7 @@ class GradientProblem:
 			for i in range(self.form_handler.control_dim):
 				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()
 				_solve_linear_problem(ksp=self.ksps[i], b=b, x=self.gradients[i].vector().vec())
+				self.gradients[i].vector().apply('')
 
 			self.has_solution = True
 

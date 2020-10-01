@@ -588,6 +588,7 @@ class _MeshHandler:
 			x = _solve_linear_problem(self.ksp_frobenius, A, b)
 
 			frobenius_norm = np.max(x[:])
+			print('DEBUG: frobenius_norm ' + str(frobenius_norm))
 			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2)
 
 			return np.maximum(np.ceil(np.log(self.angle_change/stepsize/frobenius_norm)/np.log(1/beta_armijo)), 0.0)
@@ -1278,6 +1279,7 @@ class MeshQuality:
 
 		A, b = _assemble_petsc_system(a, L)
 		_solve_linear_problem(ksp, A, b, cond.vector().vec())
+		cond.vector().apply('')
 
 		return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
 
@@ -1325,5 +1327,6 @@ class MeshQuality:
 
 		A, b = _assemble_petsc_system(a, L)
 		_solve_linear_problem(ksp, A, b, cond.vector().vec())
+		cond.vector().apply('')
 
 		return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])

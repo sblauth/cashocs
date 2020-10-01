@@ -102,6 +102,7 @@ class StateProblem:
 					for i in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[i], self.form_handler.state_eq_forms_rhs[i], self.bcs_list[i])
 						_solve_linear_problem(self.ksps[i], A, b, self.states[i].vector().vec())
+						self.states[i].vector().apply('')
 
 				else:
 					for i in range(self.form_handler.state_dim):
@@ -154,6 +155,7 @@ class StateProblem:
 						else:
 							A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[j], self.form_handler.state_eq_forms_rhs[j], self.bcs_list[j])
 							_solve_linear_problem(self.ksps[j], A, b, self.states[j].vector().vec())
+							self.states[j].vector().apply('')
 
 			if self.picard_verbose and self.form_handler.state_is_picard:
 				print('')

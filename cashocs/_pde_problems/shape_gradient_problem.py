@@ -90,6 +90,7 @@ class ShapeGradientProblem:
 			self.shape_form_handler.assembler.assemble(self.shape_form_handler.fe_shape_derivative_vector)
 			b = fenics.as_backend_type(self.shape_form_handler.fe_shape_derivative_vector).vec()
 			_solve_linear_problem(self.ksp, self.shape_form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
+			self.gradient.vector().apply('')
 
 			self.has_solution = True
 
