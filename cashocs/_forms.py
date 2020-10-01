@@ -31,8 +31,9 @@ from petsc4py import PETSc
 from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
+from ufl.log import UFLException
 
-from ._exceptions import ConfigError, InputError
+from ._exceptions import ConfigError, InputError, CashocsException
 from ._shape_optimization import Regularization
 from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration, _setup_petsc_options, _solve_linear_problem, create_bcs_list, summation)
 
@@ -182,7 +183,12 @@ class FormHandler:
 			self.state_eq_forms_lhs = []
 			self.state_eq_forms_rhs = []
 			for i in range(self.state_dim):
-				a, L = fenics.system(self.state_eq_forms[i])
+				try:
+					a, L = fenics.system(self.state_eq_forms[i])
+				except UFLException:
+					raise CashocsException('The state system could not be transferred to a linear system.\n'
+										   'Perhaps you specified that the system is linear, allthough it is not.\n'
+										   'In your config, in the StateEquation section, try using is_linear = False.')
 				self.state_eq_forms_lhs.append(a)
 				if L.empty():
 					zero_form = fenics.inner(fenics.Constant(np.zeros(self.test_functions_state[i].ufl_shape)), self.test_functions_state[i])*self.dx
