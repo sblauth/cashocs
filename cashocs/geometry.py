@@ -602,26 +602,25 @@ class _MeshHandler:
 		None
 		"""
 
-		if self.volume_change < float('inf'):
-			options = [[
-				['ksp_type', 'preonly'],
-				['pc_type', 'jacobi'],
-				['pc_jacobi_type', 'diagonal'],
-				['ksp_rtol', 1e-16],
-				['ksp_atol', 1e-20],
-				['ksp_max_it', 1000]
-			]]
-			self.ksp_prior = PETSc.KSP().create()
-			_setup_petsc_options([self.ksp_prior], options)
+		options = [[
+			['ksp_type', 'preonly'],
+			['pc_type', 'jacobi'],
+			['pc_jacobi_type', 'diagonal'],
+			['ksp_rtol', 1e-16],
+			['ksp_atol', 1e-20],
+			['ksp_max_it', 1000]
+		]]
+		self.ksp_prior = PETSc.KSP().create()
+		_setup_petsc_options([self.ksp_prior], options)
 
-			self.transformation_container = fenics.Function(self.shape_form_handler.deformation_space)
-			dim = self.mesh.geometric_dimension()
+		self.transformation_container = fenics.Function(self.shape_form_handler.deformation_space)
+		dim = self.mesh.geometric_dimension()
 
-			if not self.volume_change > 1:
-				raise ConfigError('MeshQuality', 'volume_change', 'This parameter has to be larger than 1.')
+		if not self.volume_change > 1:
+			raise ConfigError('MeshQuality', 'volume_change', 'This parameter has to be larger than 1.')
 
-			self.a_prior = self.trial_dg0*self.test_dg0*self.dx
-			self.L_prior = fenics.det(fenics.Identity(dim) + fenics.grad(self.transformation_container))*self.test_dg0*self.dx
+		self.a_prior = self.trial_dg0*self.test_dg0*self.dx
+		self.L_prior = fenics.det(fenics.Identity(dim) + fenics.grad(self.transformation_container))*self.test_dg0*self.dx
 
 
 
@@ -646,19 +645,15 @@ class _MeshHandler:
 			A boolean that indicates whether the desired transformation is feasible
 		"""
 
-		if self.volume_change < float('inf'):
 
-			self.transformation_container.vector()[:] = transformation.vector()[:]
-			A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
-			x = _solve_linear_problem(self.ksp_prior, A, b)
+		self.transformation_container.vector()[:] = transformation.vector()[:]
+		A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
+		x = _solve_linear_problem(self.ksp_prior, A, b)
 
-			min_det = np.min(x[:])
-			max_det = np.max(x[:])
-
-			return (min_det >= 1/self.volume_change) and (max_det <= self.volume_change)
-
-		else:
-			return True
+		min_det = np.min(x[:])
+		max_det = np.max(x[:])
+		
+		return (min_det >= 1/self.volume_change) and (max_det <= self.volume_change)
 
 
 

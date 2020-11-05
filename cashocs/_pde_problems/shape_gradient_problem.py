@@ -64,7 +64,7 @@ class ShapeGradientProblem:
 			['pc_hypre_boomeramg_strong_threshold', 0.7],
 			['ksp_rtol', 1e-20],
 			['ksp_atol', 1e-50],
-			['ksp_max_it', 250]
+			['ksp_max_it', 1000]
 		]]
 		_setup_petsc_options([self.ksp], options)
 
