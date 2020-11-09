@@ -102,7 +102,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 			try:
 				if __IPYTHON__:
-					warnings.warn('You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command')
+					warnings.warn('You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command.')
 			except NameError:
 				pass
 
@@ -269,7 +269,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		"""
 
 		def custom_except_hook(exctype, value, traceback):
-			print('DEBUG: Caught the exception, deleting temp files')
+			# print('DEBUG: Caught the exception, deleting temp files')
 			os.system('rm -r ' + self.temp_dir)
 			sys.__excepthook__(exctype, value, traceback)
 

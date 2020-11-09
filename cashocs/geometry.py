@@ -768,6 +768,8 @@ class _MeshHandler:
 						file.write(line)
 					if line[:19] == 'BoundaryLayer Field':
 						file.write(line)
+					if line[:5] == 'Mesh.':
+						file.write(line)
 
 
 
@@ -792,12 +794,12 @@ class _MeshHandler:
 			self.temp_dict['output_dict'] = {}
 			self.temp_dict['output_dict']['state_solves'] = self.shape_optimization_problem.state_problem.number_of_solves
 			self.temp_dict['output_dict']['adjoint_solves'] = self.shape_optimization_problem.adjoint_problem.number_of_solves
-			self.temp_dict['output_dict']['iterations'] = self.shape_optimization_problem.solver.iteration
+			self.temp_dict['output_dict']['iterations'] = self.shape_optimization_problem.solver.iteration + 1
 
-			self.temp_dict['output_dict']['cost_function_value'] = self.shape_optimization_problem.solver.output_dict['cost_function_value'][:-1]
-			self.temp_dict['output_dict']['gradient_norm'] = self.shape_optimization_problem.solver.output_dict['gradient_norm'][:-1]
-			self.temp_dict['output_dict']['stepsize'] = self.shape_optimization_problem.solver.output_dict['stepsize'][:-1]
-			self.temp_dict['output_dict']['MeshQuality'] = self.shape_optimization_problem.solver.output_dict['MeshQuality'][:-1]
+			self.temp_dict['output_dict']['cost_function_value'] = self.shape_optimization_problem.solver.output_dict['cost_function_value'][:]
+			self.temp_dict['output_dict']['gradient_norm'] = self.shape_optimization_problem.solver.output_dict['gradient_norm'][:]
+			self.temp_dict['output_dict']['stepsize'] = self.shape_optimization_problem.solver.output_dict['stepsize'][:]
+			self.temp_dict['output_dict']['MeshQuality'] = self.shape_optimization_problem.solver.output_dict['MeshQuality'][:]
 
 			dim = self.mesh.geometric_dimension()
 
@@ -825,7 +827,7 @@ class _MeshHandler:
 			if self.temp_dict['OptimizationRoutine']['iteration_counter'] == self.shape_optimization_problem.solver.iteration:
 				raise Exception('Remeshing the geometry failed. Exiting.')
 
-			self.temp_dict['OptimizationRoutine']['iteration_counter'] = self.shape_optimization_problem.solver.iteration
+			self.temp_dict['OptimizationRoutine']['iteration_counter'] = self.shape_optimization_problem.solver.iteration + 1
 			self.temp_dict['OptimizationRoutine']['gradient_norm_initial'] = self.shape_optimization_problem.solver.gradient_norm_initial
 
 			self.temp_dir = self.temp_dict['temp_dir']
