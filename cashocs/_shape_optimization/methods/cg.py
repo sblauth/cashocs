@@ -50,6 +50,9 @@ class CG(ShapeOptimizationAlgorithm):
 		self.temp_HZ = fenics.Function(self.shape_form_handler.deformation_space)
 
 		self.cg_method = self.config.get('AlgoCG', 'cg_method', fallback='FR')
+		if not self.cg_method in ['FR', 'PR', 'HS', 'DY', 'HZ']:
+			raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
+									  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
 		self.cg_periodic_restart = self.config.getboolean('AlgoCG', 'cg_periodic_restart', fallback=False)
 		self.cg_periodic_its = self.config.getint('AlgoCG', 'cg_periodic_its', fallback=10)
 		self.cg_relative_restart = self.config.getboolean('AlgoCG', 'cg_relative_restart', fallback=False)
@@ -125,20 +128,24 @@ class CG(ShapeOptimizationAlgorithm):
 
 					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
 
-				else:
-					raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
-									  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
+				# else:
+				# 	raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
+				# 					  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
 					self.print_results()
+					self.print_summary()
+					self.finalize()
 					break
 				self.beta = 0.0
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.print_results()
+				self.print_summary()
+				self.finalize()
 				break
 
 			self.search_direction.vector()[:] = -self.gradient.vector()[:] + self.beta*self.search_direction.vector()[:]
@@ -162,8 +169,10 @@ class CG(ShapeOptimizationAlgorithm):
 			if self.line_search_broken:
 				if self.soft_exit:
 					print('Armijo rule failed.')
+					self.finalize()
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
@@ -171,6 +180,8 @@ class CG(ShapeOptimizationAlgorithm):
 				self.print_results()
 				if self.soft_exit:
 					print('Maximum number of iterations exceeded.')
+					self.finalize()
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('nonlinear CG method', 'Maximum number of iterations were exceeded.')

@@ -145,8 +145,10 @@ class PDAS(OptimizationAlgorithm):
 				# self.print_results()
 				if self.soft_exit:
 					print('Maximum number of iterations exceeded.')
+					self.finalize()
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('primal dual active set method', 'Maximum number of iterations were exceeded.')
 
 			self.compute_active_inactive_sets()
@@ -154,6 +156,8 @@ class PDAS(OptimizationAlgorithm):
 			if self.converged:
 				print('')
 				print('Primal Dual Active Set Method Converged.')
+				self.finalize()
 				break
 
 			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')
+			

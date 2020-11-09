@@ -253,7 +253,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
 																  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), or \'conjugate_gradient\' (\'cg\').')
 
 		self.solver.run()
-		self.solver.finalize()
 
 
 

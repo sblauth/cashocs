@@ -140,8 +140,26 @@ class ShapeOptimizationAlgorithm:
 
 		if self.verbose:
 			print(output)
-
-
+	
+	
+	
+	def print_summary(self):
+		"""Prints a summary of the (successful) optimization to console
+		
+		Returns
+		-------
+		None
+		"""
+		
+		if self.verbose:
+			print('')
+			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
+			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
+			print('')
+	
+	
 
 	def finalize(self):
 		"""Saves the history of the optimization algorithm
@@ -150,14 +168,6 @@ class ShapeOptimizationAlgorithm:
 		-------
 		None
 		"""
-
-		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
-				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
-			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')
 		
 		self.output_dict['initial_gradient_norm'] = self.gradient_norm_initial
 		self.output_dict['state_solves'] = self.state_problem.number_of_solves
@@ -172,7 +182,9 @@ class ShapeOptimizationAlgorithm:
 
 		if self.optimization_problem.mesh_handler.save_optimized_mesh:
 			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.optimization_problem.mesh_handler.mesh_directory + '/optimized_mesh.msh')
-
+	
+	
+			
 
 
 	def run(self):

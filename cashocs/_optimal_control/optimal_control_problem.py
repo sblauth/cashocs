@@ -408,7 +408,6 @@ class OptimalControlProblem(OptimizationProblem):
 							  'of \'gradient_descent\' (\'gd\'), \'lbfgs\' (\'bfgs\'), \'conjugate_gradient\' (\'cg\'), \'newton\', or \'primal_dual_active_set\' (\'pdas\').')
 
 		self.solver.run()
-		self.solver.finalize()
 
 
 

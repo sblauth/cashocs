@@ -69,6 +69,8 @@ class GradientDescent(OptimizationAlgorithm):
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
 					self.print_results()
+					self.print_summary()
+					self.finalize()
 					break
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
@@ -76,6 +78,8 @@ class GradientDescent(OptimizationAlgorithm):
 				if self.iteration == 0:
 					self.objective_value = self.cost_functional.evaluate()
 				self.print_results()
+				self.print_summary()
+				self.finalize()
 				break
 
 			for i in range(len(self.controls)):
@@ -85,8 +89,10 @@ class GradientDescent(OptimizationAlgorithm):
 			if self.line_search_broken:
 				if self.soft_exit:
 					print('Armijo rule failed.')
+					self.finalize()
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
@@ -95,6 +101,8 @@ class GradientDescent(OptimizationAlgorithm):
 				if self.soft_exit:
 					print('')
 					print('Maximum number of iterations exceeded.')
+					self.finalize()
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('gradient descent method', 'Maximum number of iterations were exceeded.')

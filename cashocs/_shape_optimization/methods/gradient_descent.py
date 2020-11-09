@@ -82,6 +82,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				self.print_results()
+				self.print_summary()
+				self.finalize()
 				break
 
 			self.search_direction.vector()[:] = - self.gradient.vector()[:]
@@ -92,6 +94,7 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 					print('Armijo rule failed.')
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('Armijo line search')
 
 			self.iteration += 1
@@ -102,4 +105,5 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 					print('Maximum number of iterations exceeded.')
 					break
 				else:
+					self.finalize()
 					raise NotConvergedError('gradient descent method', 'Maximum number of iterations were exceeded.')
