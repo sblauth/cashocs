@@ -80,7 +80,7 @@ def t_div(u, n):
 
 	return div(u) - inner(grad(u)*n, n)
 
-config = cashocs.create_config('./config_sop.ini')
+config = cashocs.load_config('./config_sop.ini')
 
 meshlevel = 10
 degree = 1

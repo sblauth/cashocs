@@ -26,6 +26,7 @@ actions.
 import configparser
 import os
 
+from deprecated import deprecated
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -237,11 +238,39 @@ def generate_measure(idx, measure):
 	return out_measure
 
 
-
+@deprecated(version='1.0.5', reason='This is replaced by cashocs.load_config and will be removed in the future.')
 def create_config(path):
-	"""Generates a config object from a config file.
+	"""Loads a config object from a config file.
+	
+	Loads the config from a .ini file via the
+	configparser package.
+	
+	Parameters
+	----------
+	path : str
+		The path to the .ini file storing the configuration.
+	
+	Returns
+	-------
+	configparser.ConfigParser
+		The output config file, which includes the path
+		to the .ini file.
+	
+	
+	.. deprecated:: 1.0.5
+		This is replaced by :py:func:`load_config <cashocs.load_config>` and will be removed in the future.
+	"""
+	
+	config = load_config(path)
+	
+	return config
+	
 
-	Creates the config from a .ini file via the
+
+def load_config(path):
+	"""Loads a config object from a config file.
+
+	Loads the config from a .ini file via the
 	configparser package.
 
 	Parameters
@@ -260,7 +289,7 @@ def create_config(path):
 	if os.path.isfile(path):
 		config.read(path)
 	else:
-		raise InputError('cashocs.utils.create_config', 'path', 'The file you specified does not exist.')
+		raise InputError('cashocs.utils.load_config', 'path', 'The file you specified does not exist.')
 	
 	return config
 

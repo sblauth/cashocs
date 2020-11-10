@@ -112,8 +112,8 @@ def test_create_measure():
 
 
 
-def test_create_config():
-	config = cashocs.create_config('./test_config.ini')
+def test_load_config():
+	config = cashocs.load_config('./test_config.ini')
 
 	assert config.getint('A', 'a') == 1
 	assert config.getfloat('A', 'b') == 3.14

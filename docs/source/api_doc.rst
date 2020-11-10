@@ -92,6 +92,11 @@ create_config
 *************
 .. autofunction:: cashocs.create_config
 
+
+load_config
+***********
+.. autofunction:: cashocs.load_config
+
 create_bcs_list
 ***************
 .. autofunction:: cashocs.create_bcs_list

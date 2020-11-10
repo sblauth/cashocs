@@ -27,7 +27,7 @@ import cashocs
 
 
 set_log_level(LogLevel.CRITICAL)
-config = cashocs.create_config('config_picard.ini')
+config = cashocs.load_config('config_picard.ini')
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, 'CG', 1)

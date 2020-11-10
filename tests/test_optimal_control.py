@@ -28,7 +28,7 @@ from cashocs._exceptions import InputError
 
 
 
-config = cashocs.create_config('./config_ocp.ini')
+config = cashocs.load_config('./config_ocp.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, 'CG', 1)
 
