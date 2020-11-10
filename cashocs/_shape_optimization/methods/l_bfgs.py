@@ -24,7 +24,6 @@ from _collections import deque
 import fenics
 import numpy as np
 
-from ..._exceptions import NotConvergedError
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
@@ -43,7 +42,6 @@ class LBFGS(ShapeOptimizationAlgorithm):
 		ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
-		self.converged = False
 
 		self.temp = fenics.Function(self.shape_form_handler.deformation_space)
 
@@ -136,11 +134,8 @@ class LBFGS(ShapeOptimizationAlgorithm):
 			self.gradient_norm_initial = self.gradient_norm
 			self.relative_norm = 1.0
 
-		# if self.gradient_norm_initial == 0:
-		# 	self.converged = True
-		# 	self.print_results()
 
-		while not self.converged:
+		while True:
 			self.search_direction = self.compute_search_direction(self.gradient)
 
 			self.directional_derivative = self.shape_form_handler.scalar_product(self.search_direction, self.gradient)
@@ -150,24 +145,13 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 			self.line_search.search(self.search_direction, self.has_curvature_info)
 			if self.line_search_broken:
-				if self.soft_exit:
-					print('Armijo rule failed.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('Armijo line search')
+				self.converged_reason = -2
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('L-BFGS method', 'Maximum number of iterations were exceeded.')
+				self.converged_reason = -1
+				break
 
 			if self.bfgs_memory_size > 0:
 				self.gradient_prev.vector()[:] = self.gradient.vector()[:]
@@ -180,9 +164,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.print_results()
-				self.print_summary()
-				self.finalize()
+				self.converged = True
 				break
 
 			if self.bfgs_memory_size > 0:

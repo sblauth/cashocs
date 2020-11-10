@@ -22,7 +22,7 @@
 import fenics
 import numpy as np
 
-from ..._exceptions import ConfigError, NotConvergedError
+from ..._exceptions import ConfigError
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
@@ -128,24 +128,16 @@ class CG(ShapeOptimizationAlgorithm):
 
 					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
 
-				# else:
-				# 	raise ConfigError('AlgoCG', 'cg_method', 'Not a valid input. Choose either \'FR\' (Fletcher Reeves), \'PR\' (Polak Ribiere), '
-				# 					  '\'HS\' (Hestenes Stiefel), \'DY\' (Dai Yuan), or \'HZ\' (Hager Zhang).')
-
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
-					self.print_results()
-					self.print_summary()
-					self.finalize()
+					self.converged = True
 					break
 				self.beta = 0.0
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.print_results()
-				self.print_summary()
-				self.finalize()
+				self.converged = True
 				break
 
 			self.search_direction.vector()[:] = -self.gradient.vector()[:] + self.beta*self.search_direction.vector()[:]
@@ -167,21 +159,10 @@ class CG(ShapeOptimizationAlgorithm):
 
 			self.line_search.search(self.search_direction, self.has_curvature_info)
 			if self.line_search_broken:
-				if self.soft_exit:
-					print('Armijo rule failed.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('Armijo line search')
+				self.converged_reason = -2
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('nonlinear CG method', 'Maximum number of iterations were exceeded.')
+				self.converged_reason = -1
+				break
