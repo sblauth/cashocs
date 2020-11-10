@@ -24,7 +24,6 @@ from _collections import deque
 import fenics
 import numpy as np
 
-from ..._exceptions import NotConvergedError
 from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
 
 
@@ -46,7 +45,6 @@ class LBFGS(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
-		self.converged = False
 
 		self.temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
 		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
@@ -143,7 +141,6 @@ class LBFGS(OptimizationAlgorithm):
 		self.gradient_norm_initial = self.gradient_norm
 		if self.gradient_norm_initial == 0:
 			self.converged = True
-			self.print_results()
 		self.form_handler.compute_active_sets()
 
 		while not self.converged:
@@ -157,24 +154,13 @@ class LBFGS(OptimizationAlgorithm):
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
-				if self.soft_exit:
-					print('Armijo rule failed.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('Armijo line search')
+				self.converged_reason = -2
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('L-BFGS method', 'Maximum number of iterations were exceeded.')
+				self.converged_reason = -1
+				break
 
 			if self.bfgs_memory_size > 0:
 				for i in range(len(self.gradients)):
@@ -189,9 +175,7 @@ class LBFGS(OptimizationAlgorithm):
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.print_results()
-				self.print_summary()
-				self.finalize()
+				self.converged = True
 				break
 
 			if self.bfgs_memory_size > 0:

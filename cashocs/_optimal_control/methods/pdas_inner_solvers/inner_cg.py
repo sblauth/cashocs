@@ -63,6 +63,8 @@ class InnerCG(OptimizationAlgorithm):
 		self.cg_periodic_its = self.config.getint('AlgoCG', 'cg_periodic_its', fallback=10)
 		self.cg_relative_restart = self.config.getboolean('AlgoCG', 'cg_relative_restart', fallback=False)
 		self.cg_restart_tol = self.config.getfloat('AlgoCG', 'cg_restart_tol', fallback=0.25)
+		
+		self.pdas_solver = True
 
 
 

@@ -24,6 +24,8 @@ import json
 import fenics
 import numpy as np
 
+from .._exceptions import NotConvergedError
+
 
 
 class OptimizationAlgorithm:
@@ -75,6 +77,10 @@ class OptimizationAlgorithm:
 		self.gradient_norm_initial = 1.0
 		self.relative_norm = 1.0
 		self.stepsize = 1.0
+		
+		self.converged = False
+		self.converged_reason = 0
+		self.pdas_solver = False
 
 		self.output_dict = dict()
 		self.output_dict['cost_function_value'] = []
@@ -193,3 +199,41 @@ class OptimizationAlgorithm:
 		"""
 
 		pass
+
+	
+	
+	def post_processing(self):
+		"""Post processing of the solution algorithm
+		
+		Makes sure that the finalize method is called and that the output is written
+		to files.
+		
+		Returns
+		-------
+		None
+		"""
+		
+		if self.converged:
+			self.print_results()
+			self.print_summary()
+			self.finalize()
+			
+		else:
+			# maximum iterations reached
+			if self.converged_reason == -1:
+				self.print_results()
+				if self.soft_exit:
+					print('Maximum number of iterations exceeded.')
+					self.finalize()
+				else:
+					self.finalize()
+					raise NotConvergedError('Optimization Algorithm', 'Maximum number of iterations were exceeded.')
+			
+			# Armijo line search failed
+			elif self.converged_reason == -2:
+				if self.soft_exit:
+					print('Armijo rule failed.')
+					self.finalize()
+				else:
+					self.finalize()
+					raise NotConvergedError('Armijo line search', 'Failed to compute a feasible Armijo step.')

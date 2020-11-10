@@ -49,7 +49,7 @@ u_b = interpolate(Expression('50*x[0]', degree=1), V)
 cc = [u_a, u_b]
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, control_constraints=cc)
-ocp.solve('pdas')
+ocp.solve()
 
 import numpy as np
 assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(u.vector()[:] <= u_b.vector()[:])

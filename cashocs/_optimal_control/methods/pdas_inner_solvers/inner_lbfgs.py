@@ -65,6 +65,8 @@ class InnerLBFGS(OptimizationAlgorithm):
 			self.history_y = deque()
 			self.history_rho = deque()
 			self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		
+		self.pdas_solver = True
 
 
 

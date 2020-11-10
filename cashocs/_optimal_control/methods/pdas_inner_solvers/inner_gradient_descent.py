@@ -50,6 +50,9 @@ class InnerGradientDescent(OptimizationAlgorithm):
 		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
+		
+		self.pdas_solver = True
+
 
 
 	def run(self, idx_active):
@@ -110,7 +113,6 @@ class InnerGradientDescent(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				# self.print_results()
 				if self.soft_exit:
 					print('Maximum number of iterations exceeded.')
 					break

@@ -23,7 +23,7 @@ import fenics
 import numpy as np
 
 from .pdas_inner_solvers import InnerCG, InnerGradientDescent, InnerLBFGS, InnerNewton
-from ..._exceptions import ConfigError, NotConvergedError
+from ..._exceptions import ConfigError
 from ..._optimal_control import OptimizationAlgorithm
 
 
@@ -47,7 +47,6 @@ class PDAS(OptimizationAlgorithm):
 		self.idx_active_upper_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
 		self.idx_active_lower_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
 		self.initialized = False
-		self.converged = False
 		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
 		self.shift_mult = self.config.getfloat('AlgoPDAS', 'pdas_regularization_parameter')
 		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
@@ -113,14 +112,14 @@ class PDAS(OptimizationAlgorithm):
 		self.state_problem.has_solution = False
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
-		func_value = self.optimization_problem.reduced_cost_functional.evaluate()
+		self.objective_value = self.optimization_problem.reduced_cost_functional.evaluate()
 		self.optimization_problem.state_problem.has_solution = True
 		self.optimization_problem.gradient_problem.solve()
 		norm_init = np.sqrt(self.optimization_problem._stationary_measure_squared())
 		self.optimization_problem.adjoint_problem.has_solution = True
 
-		print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value,'.3e') + ' - Gradient norm: ' + format(norm_init, '.3e'))
-
+		self.print_results()
+		
 		while True:
 
 			for j in range(len(self.controls)):
@@ -134,30 +133,24 @@ class PDAS(OptimizationAlgorithm):
 				self.mu[j].vector()[:] = -self.optimization_problem.gradients[j].vector()[:]
 				self.mu[j].vector()[self.idx_inactive[j]] = 0.0
 
-			self.iteration += 1
+			
 
-			func_value = self.inner_solver.line_search.objective_step
+			self.objective_value = self.inner_solver.line_search.objective_step
 			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
 
 			self.relative_norm = norm / norm_init
 
-			if self.iteration >= self.maximum_iterations:
-				# self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('primal dual active set method', 'Maximum number of iterations were exceeded.')
-
 			self.compute_active_inactive_sets()
-
+			
+			self.iteration += 1
+			
 			if self.converged:
-				print('')
-				print('Primal Dual Active Set Method Converged.')
-				self.finalize()
 				break
-
-			print('Iteration: ' + str(self.iteration) + ' - Objective value: ' + format(func_value, '.3e') + ' - Gradient norm: ' + format(norm / norm_init, '.3e') + ' (rel)')
+			
+			if self.iteration >= self.maximum_iterations:
+				self.converged_reason = -1
+				break
+			
+			self.print_results()
+			
 			

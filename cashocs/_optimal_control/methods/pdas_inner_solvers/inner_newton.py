@@ -55,6 +55,10 @@ class InnerNewton(OptimizationAlgorithm):
 		self.armijo_stepsize_initial = self.stepsize
 
 		self.armijo_broken = False
+		
+		self.pdas_solver = True
+
+
 
 	def run(self, idx_active):
 		"""Solves the inner PDAS optimization problem

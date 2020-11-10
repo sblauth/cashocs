@@ -22,7 +22,7 @@
 import fenics
 import numpy as np
 
-from ..._exceptions import ConfigError, NotConvergedError
+from ..._exceptions import ConfigError
 from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
 
 
@@ -157,9 +157,7 @@ class CG(OptimizationAlgorithm):
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
 					self.objective_value = self.cost_functional.evaluate()
-					self.print_results()
-					self.print_summary()
-					self.finalize()
+					self.converged = True
 					break
 				self.beta = 0.0
 
@@ -167,9 +165,7 @@ class CG(OptimizationAlgorithm):
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				if self.iteration == 0:
 					self.objective_value = self.cost_functional.evaluate()
-				self.print_results()
-				self.print_summary()
-				self.finalize()
+				self.converged = True
 				break
 
 			for i in range(self.form_handler.control_dim):
@@ -195,22 +191,11 @@ class CG(OptimizationAlgorithm):
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
-				if self.soft_exit:
-					print('Armijo rule failed.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('Armijo line search')
+				self.converged_reason = -2
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('nonlinear CG method', 'Maximum number of iterations were exceeded.')
+				self.converged_reason = -1
+				break
 					

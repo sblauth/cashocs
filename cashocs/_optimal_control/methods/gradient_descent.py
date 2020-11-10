@@ -21,7 +21,6 @@
 
 import numpy as np
 
-from ..._exceptions import NotConvergedError
 from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
 
 
@@ -68,18 +67,14 @@ class GradientDescent(OptimizationAlgorithm):
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
-					self.print_results()
-					self.print_summary()
-					self.finalize()
+					self.converged = True
 					break
 
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
 				if self.iteration == 0:
 					self.objective_value = self.cost_functional.evaluate()
-				self.print_results()
-				self.print_summary()
-				self.finalize()
+				self.converged = True
 				break
 
 			for i in range(len(self.controls)):
@@ -87,22 +82,10 @@ class GradientDescent(OptimizationAlgorithm):
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
 			if self.line_search_broken:
-				if self.soft_exit:
-					print('Armijo rule failed.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('Armijo line search')
+				self.converged_reason = -2
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				self.print_results()
-				if self.soft_exit:
-					print('')
-					print('Maximum number of iterations exceeded.')
-					self.finalize()
-					break
-				else:
-					self.finalize()
-					raise NotConvergedError('gradient descent method', 'Maximum number of iterations were exceeded.')
+				self.converged_reason = -1
+				break
