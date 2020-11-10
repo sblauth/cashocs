@@ -186,7 +186,7 @@ class ShapeOptimizationAlgorithm:
 			os.system('rm -r ' + self.optimization_problem.temp_dir)
 
 		if self.optimization_problem.mesh_handler.save_optimized_mesh:
-			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.optimization_problem.mesh_handler.mesh_directory + '/optimized_mesh.msh')
+			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.result_dir + '/optimized_mesh.msh')
 	
 	
 	
