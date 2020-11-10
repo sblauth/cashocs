@@ -88,6 +88,7 @@ class ShapeOptimizationAlgorithm:
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
+		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
 
 		if self.save_pvd:
 			self.state_pvd_list = []
@@ -96,16 +97,16 @@ class ShapeOptimizationAlgorithm:
 					self.state_pvd_list.append([])
 					for j in range(self.shape_form_handler.state_spaces[i].num_sub_spaces()):
 						if self.optimization_problem.mesh_handler.do_remesh:
-							self.state_pvd_list[i].append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
+							self.state_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 																	  + '_state_' + str(i) + '_' + str(j) + '.pvd'))
 						else:
-							self.state_pvd_list[i].append(fenics.File('./pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
+							self.state_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
 				else:
 					if self.optimization_problem.mesh_handler.do_remesh:
-						self.state_pvd_list.append(fenics.File('./pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
+						self.state_pvd_list.append(fenics.File(self.result_dir + '/pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 															   + '_state_' + str(i) + '.pvd'))
 					else:
-						self.state_pvd_list.append(fenics.File('./pvd/state_' + str(i) + '.pvd'))
+						self.state_pvd_list.append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '.pvd'))
 
 
 
@@ -164,7 +165,7 @@ class ShapeOptimizationAlgorithm:
 			print('')
 	
 	
-
+	
 	def finalize(self):
 		"""Saves the history of the optimization algorithm
 
@@ -178,7 +179,7 @@ class ShapeOptimizationAlgorithm:
 		self.output_dict['adjoint_solves'] = self.adjoint_problem.number_of_solves
 		self.output_dict['iterations'] = self.iteration
 		if self.save_results:
-			with open('./history.json', 'w') as file:
+			with open(self.result_dir + '/history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
 		if self.optimization_problem.mesh_handler.do_remesh:

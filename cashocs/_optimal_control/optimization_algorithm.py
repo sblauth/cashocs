@@ -20,6 +20,8 @@
 """
 
 import json
+import os
+from pathlib import Path
 
 import fenics
 import numpy as np
@@ -94,18 +96,20 @@ class OptimizationAlgorithm:
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
-
-
-
+		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
+		
+		if not os.path.isdir(self.result_dir):
+			Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+		
 		if self.save_pvd:
 			self.state_pvd_list = []
 			for i in range(self.form_handler.state_dim):
 				if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
 					self.state_pvd_list.append([])
 					for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
-						self.state_pvd_list[i].append(fenics.File('./pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
+						self.state_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '_' + str(j) + '.pvd'))
 				else:
-					self.state_pvd_list.append(fenics.File('./pvd/state_' + str(i) + '.pvd'))
+					self.state_pvd_list.append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '.pvd'))
 
 
 
@@ -183,7 +187,7 @@ class OptimizationAlgorithm:
 		self.output_dict['adjoint_solves'] = self.adjoint_problem.number_of_solves
 		self.output_dict['iterations'] = self.iteration
 		if self.save_results:
-			with open('./history.json', 'w') as file:
+			with open(self.result_dir + '/history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
 
