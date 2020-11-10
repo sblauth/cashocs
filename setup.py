@@ -33,6 +33,7 @@ setuptools.setup(
     install_requires=[
 		'pytest>=6.0.0',
         'meshio>=4.1.0',
+		'deprecated>=1.2.10',
         'matplotlib'
     ],
     entry_points={

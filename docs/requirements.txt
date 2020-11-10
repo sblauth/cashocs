@@ -2,3 +2,4 @@ Sphinx==3.2.1
 sphinxcontrib-napoleon==0.7
 sphinx-argparse==0.2.5
 meshio==4.2.0
+deprecated==1.2.10
