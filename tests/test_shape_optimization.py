@@ -147,13 +147,13 @@ def test_shape_derivative_unconstrained():
 	sop1 = cashocs.ShapeOptimizationProblem(e, bcs, J1, u, p, boundaries, config)
 	sop1.state_problem.has_solution = True
 	sop1.adjoint_problem.has_solution = True
-	cashocs_sd_1 = assemble(sop1.shape_form_handler.shape_derivative)[:]
+	cashocs_sd_1 = assemble(sop1.form_handler.shape_derivative)[:]
 	exact_sd_1 = assemble(div(defo)*dx)[:]
 
 	sop2 = cashocs.ShapeOptimizationProblem(e, bcs, J2, u, p, boundaries, config)
 	sop2.state_problem.has_solution = True
 	sop2.adjoint_problem.has_solution = True
-	cashocs_sd_2 = assemble(sop2.shape_form_handler.shape_derivative)[:]
+	cashocs_sd_2 = assemble(sop2.form_handler.shape_derivative)[:]
 	exact_sd_2 = assemble(t_div(defo, n)*ds)[:]
 
 	assert np.allclose(cashocs_sd_1, exact_sd_1)
@@ -190,12 +190,12 @@ def test_shape_derivative_constrained():
 
 	sop_coord = cashocs.ShapeOptimizationProblem(e, bcs, J_coord, u, p, boundaries, config)
 	sop_coord.compute_adjoint_variables()
-	cashocs_sd_coord = assemble(sop_coord.shape_form_handler.shape_derivative)[:]
+	cashocs_sd_coord = assemble(sop_coord.form_handler.shape_derivative)[:]
 
 	config.set('ShapeGradient', 'degree_estimation', 'True')
 	sop_expr = cashocs.ShapeOptimizationProblem(e, bcs, J_expr, u, p, boundaries, config)
 	sop_expr.compute_adjoint_variables()
-	cashocs_sd_expr = assemble(sop_expr.shape_form_handler.shape_derivative, form_compiler_parameters={'quadrature_degree' : 10})[:]
+	cashocs_sd_expr = assemble(sop_expr.form_handler.shape_derivative, form_compiler_parameters={'quadrature_degree' : 10})[:]
 	config.set('ShapeGradient', 'degree_estimation', 'False')
 	### degree estimation is only needed to avoid pytest warnings regarding numpy. This is only a fenics problem.
 
@@ -210,7 +210,7 @@ def test_shape_derivative_constrained():
 
 	sop_func = cashocs.ShapeOptimizationProblem(e, bcs, J_func, u, p, boundaries, config)
 	sop_func.compute_adjoint_variables()
-	cashocs_sd_func = assemble(sop_func.shape_form_handler.shape_derivative)[:]
+	cashocs_sd_func = assemble(sop_func.form_handler.shape_derivative)[:]
 
 	exact_sd_func = assemble(exact_shape_derivative_func)[:]
 	assert np.allclose(exact_sd_func, cashocs_sd_func)
@@ -378,3 +378,21 @@ def test_shape_barycenter_regularization():
 	config.set('MeshQuality', 'volume_change', 'inf')
 	config.set('Regularization', 'factor_volume', '0.0')
 	config.set('Regularization', 'use_initial_volume', 'False')
+
+
+
+def test_custom_supply_shape():
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	vfield = user_sop.get_vector_field()
+	I = Identity(2)
+	
+	adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - TestFunction(V)*dx
+	dJ = u*div(vfield)*dx - inner((div(vfield)*I - 2*sym(grad(vfield)))*grad(u), grad(p))*dx + div(f*vfield)*p*dx
+	
+	user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+	
+	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9

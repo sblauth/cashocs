@@ -242,7 +242,6 @@ class OptimalControlProblem(OptimizationProblem):
 			raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem', 'control_constraints', 'Length of controls does not match')
 		### end overloading
 
-		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
 											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options,
 											   self.require_control_constraints)
@@ -428,109 +427,6 @@ class OptimalControlProblem(OptimizationProblem):
 		self.gradient_problem.solve()
 
 		return self.gradients
-	
-	
-	
-	def supply_adjoint_forms(self, adjoint_forms, adjoint_bcs_list):
-		"""Overrides the computed weak forms of the adjoint system.
-		
-		This allows the user to specify their own weak forms of the problems and to use cashocs merely as
-		a solver for solving the optimization problems.
-		
-		Parameters
-		----------
-		adjoint_forms : ufl.form.Form or list[ufl.form.Form]
-			The UFL forms of the adjoint system(s).
-		adjoint_bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
-			The list of Dirichlet boundary conditions for the adjoint system(s).
-
-		Returns
-		-------
-		None
-		"""
-		
-		try:
-			if type(adjoint_forms) == list and len(adjoint_forms) > 0:
-				for i in range(len(adjoint_forms)):
-					if adjoint_forms[i].__module__=='ufl.form' and type(adjoint_forms[i]).__name__=='Form':
-						pass
-					else:
-						raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-										 'adjoint_forms', 'adjoint_forms have to be ufl forms')
-				mod_forms = adjoint_forms
-			elif adjoint_forms.__module__ == 'ufl.form' and type(adjoint_forms).__name__ == 'Form':
-				mod_forms = [adjoint_forms]
-			else:
-				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-								 'adjoint_forms', 'adjoint_forms have to be ufl forms')
-		except:
-			raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-							 'adjoint_forms', 'adjoint_forms have to be ufl forms')
-		
-		try:
-			if adjoint_bcs_list == [] or adjoint_bcs_list is None:
-				mod_bcs_list = []
-				for i in range(self.state_dim):
-					mod_bcs_list.append([])
-			elif type(adjoint_bcs_list) == list and len(adjoint_bcs_list) > 0:
-				if type(adjoint_bcs_list[0]) == list:
-					for i in range(len(adjoint_bcs_list)):
-						if type(adjoint_bcs_list[i]) == list:
-							pass
-						else:
-							raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-											 'adjoint_bcs_list', 'adjoint_bcs_list has inconsistent types.')
-					mod_bcs_list = adjoint_bcs_list
-
-				elif adjoint_bcs_list[0].__module__ == 'dolfin.fem.dirichletbc' and type(adjoint_bcs_list[0]).__name__ == 'DirichletBC':
-					for i in range(len(adjoint_bcs_list)):
-						if adjoint_bcs_list[i].__module__=='dolfin.fem.dirichletbc' and type(adjoint_bcs_list[i]).__name__=='DirichletBC':
-							pass
-						else:
-							raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply adjoint_forms',
-											 'adjoint_bcs_list', 'adjoint_bcs_list has inconsistent types.')
-					mod_bcs_list = [adjoint_bcs_list]
-			elif adjoint_bcs_list.__module__ == 'dolfin.fem.dirichletbc' and type(adjoint_bcs_list).__name__ == 'DirichletBC':
-				mod_bcs_list = [[adjoint_bcs_list]]
-			else:
-				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-								 'adjoint_bcs_list', 'Type of adjoint_bcs_list is wrong.')
-		except:
-			raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-							 'adjoint_bcs_list', 'Type of adjoint_bcs_list is wrong.')
-			
-	
-		for idx, form in enumerate(mod_forms):
-			if len(form.arguments()) == 2:
-				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-								 'adjoint_forms', 'Do not use TrialFunction for the adjoints, but the actual Function you passed to th OptimalControlProblem.')
-			elif len(form.arguments()) == 0:
-				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-								 'adjoint_forms', 'The specified forms must include a TestFunction object.')
-			
-			if not form.arguments()[0].ufl_function_space() == self.form_handler.adjoint_spaces[idx]:
-				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_adjoint_forms',
-								 'adjoint_forms', 'The TestFunction has to be chosen from the same space as the corresponding adjoint.')
-		
-		self.form_handler.adjoint_picard_forms = mod_forms
-		self.form_handler.bcs_list_ad = mod_bcs_list
-		
-		# replace the adjoint function by a TrialFunction for internal use
-		repl_forms = [replace(mod_forms[i], {self.adjoints[i] : self.form_handler.trial_functions_adjoint[i]}) for i in range(self.state_dim)]
-		self.form_handler.adjoint_eq_forms = repl_forms
-		
-		self.form_handler.adjoint_eq_lhs = []
-		self.form_handler.adjoint_eq_rhs = []
-
-		for i in range(self.state_dim):
-			a, L = fenics.system(self.form_handler.adjoint_eq_forms[i])
-			self.form_handler.adjoint_eq_lhs.append(a)
-			if L.empty():
-				zero_form = fenics.inner(fenics.Constant(np.zeros(self.form_handler.test_functions_adjoint[i].ufl_shape)),
-										 self.form_handler.test_functions_adjoint[i])*self.form_handler.dx
-				self.form_handler.adjoint_eq_rhs.append(zero_form)
-			else:
-				self.form_handler.adjoint_eq_rhs.append(L)
 	
 	
 	

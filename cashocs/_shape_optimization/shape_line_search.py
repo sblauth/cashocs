@@ -40,9 +40,9 @@ class ArmijoLineSearch:
 		self.optimization_algorithm = optimization_algorithm
 		self.config = self.optimization_algorithm.config
 		self.optimization_problem = self.optimization_algorithm.optimization_problem
-		self.shape_form_handler = self.optimization_problem.shape_form_handler
+		self.form_handler = self.optimization_problem.form_handler
 		self.mesh_handler = self.optimization_problem.mesh_handler
-		self.deformation = fenics.Function(self.shape_form_handler.deformation_space)
+		self.deformation = fenics.Function(self.form_handler.deformation_space)
 
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'initial_stepsize', fallback=1.0)
 		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
@@ -76,7 +76,7 @@ class ArmijoLineSearch:
 			the decrease measure for the Armijo rule
 		"""
 
-		return self.stepsize*self.shape_form_handler.scalar_product(self.gradient, search_direction)
+		return self.stepsize*self.form_handler.scalar_product(self.gradient, search_direction)
 
 
 
@@ -139,7 +139,7 @@ class ArmijoLineSearch:
 
 					if self.optimization_algorithm.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
-					self.shape_form_handler.update_scalar_product()
+					self.form_handler.update_scalar_product()
 					break
 
 				else:

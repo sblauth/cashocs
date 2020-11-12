@@ -43,7 +43,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		self.line_search = ArmijoLineSearch(self)
 
-		self.temp = fenics.Function(self.shape_form_handler.deformation_space)
+		self.temp = fenics.Function(self.form_handler.deformation_space)
 
 		self.bfgs_memory_size = self.config.getint('AlgoLBFGS', 'bfgs_memory_size', fallback=5)
 		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
@@ -54,9 +54,9 @@ class LBFGS(ShapeOptimizationAlgorithm):
 			self.history_s = deque()
 			self.history_y = deque()
 			self.history_rho = deque()
-			self.gradient_prev = fenics.Function(self.shape_form_handler.deformation_space)
-			self.y_k = fenics.Function(self.shape_form_handler.deformation_space)
-			self.s_k = fenics.Function(self.shape_form_handler.deformation_space)
+			self.gradient_prev = fenics.Function(self.form_handler.deformation_space)
+			self.y_k = fenics.Function(self.form_handler.deformation_space)
+			self.s_k = fenics.Function(self.form_handler.deformation_space)
 
 
 
@@ -80,19 +80,19 @@ class LBFGS(ShapeOptimizationAlgorithm):
 			self.search_direction.vector()[:] = grad.vector()[:]
 
 			for i, _ in enumerate(self.history_s):
-				alpha = self.history_rho[i]*self.shape_form_handler.scalar_product(self.history_s[i], self.search_direction)
+				alpha = self.history_rho[i]*self.form_handler.scalar_product(self.history_s[i], self.search_direction)
 				history_alpha.append(alpha)
 				self.search_direction.vector()[:] -= alpha * self.history_y[i].vector()[:]
 
 			if self.use_bfgs_scaling and self.iteration > 0:
-				factor = self.shape_form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.shape_form_handler.scalar_product(self.history_y[0], self.history_y[0])
+				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
 			else:
 				factor = 1.0
 
 			self.search_direction.vector()[:] *= factor
 
 			for i, _ in enumerate(self.history_s):
-				beta = self.history_rho[-1 - i]*self.shape_form_handler.scalar_product(self.history_y[-1 - i], self.search_direction)
+				beta = self.history_rho[-1 - i]*self.form_handler.scalar_product(self.history_y[-1 - i], self.search_direction)
 
 				self.search_direction.vector()[:] += self.history_s[-1 - i].vector()[:] * (history_alpha[-1 -i] - beta)
 
@@ -138,7 +138,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 		while True:
 			self.search_direction = self.compute_search_direction(self.gradient)
 
-			self.directional_derivative = self.shape_form_handler.scalar_product(self.search_direction, self.gradient)
+			self.directional_derivative = self.form_handler.scalar_product(self.search_direction, self.gradient)
 			if self.directional_derivative > 0:
 				# print('No descent direction found')
 				self.search_direction.vector()[:] = - self.gradient.vector()[:]
@@ -174,7 +174,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 				self.history_y.appendleft(self.y_k.copy(True))
 				self.history_s.appendleft(self.s_k.copy(True))
 
-				self.curvature_condition = self.shape_form_handler.scalar_product(self.y_k, self.s_k)
+				self.curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
 
 				# if self.curvature_condition <= 1e-14:
 				if self.curvature_condition <= 0.0:

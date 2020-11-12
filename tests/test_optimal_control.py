@@ -50,6 +50,10 @@ cc = [0, 100]
 ocp_cc = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, control_constraints=cc)
 
 
+
+	
+	
+
 def test_control_constraints_handling():
 	cg1_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 	vcg1_elem = VectorElement('CG', mesh.ufl_cell(), 1)
@@ -361,3 +365,13 @@ def test_control_pdas_newton():
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
+def test_custom_supply_control():
+	adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - (y - y_d)*TestFunction(V)*dx
+	dJ = Constant(alpha)*u*TestFunction(V)*dx + TestFunction(V)*p*dx
+	
+	user_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+	user_ocp.supply_custom_forms(dJ, adjoint_form, bcs)
+	
+	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9

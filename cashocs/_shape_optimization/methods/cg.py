@@ -45,9 +45,9 @@ class CG(ShapeOptimizationAlgorithm):
 
 		self.line_search = ArmijoLineSearch(self)
 
-		self.gradient_prev = fenics.Function(self.shape_form_handler.deformation_space)
-		self.difference = fenics.Function(self.shape_form_handler.deformation_space)
-		self.temp_HZ = fenics.Function(self.shape_form_handler.deformation_space)
+		self.gradient_prev = fenics.Function(self.form_handler.deformation_space)
+		self.difference = fenics.Function(self.form_handler.deformation_space)
+		self.temp_HZ = fenics.Function(self.form_handler.deformation_space)
 
 		self.cg_method = self.config.get('AlgoCG', 'cg_method', fallback='FR')
 		if not self.cg_method in ['FR', 'PR', 'HS', 'DY', 'HZ']:
@@ -92,41 +92,41 @@ class CG(ShapeOptimizationAlgorithm):
 			self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
 			if self.iteration > 0:
 				if self.cg_method == 'FR':
-					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.gradient)
-					self.beta_denominator = self.shape_form_handler.scalar_product(self.gradient_prev, self.gradient_prev)
+					self.beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
+					self.beta_denominator = self.form_handler.scalar_product(self.gradient_prev, self.gradient_prev)
 					self.beta = self.beta_numerator / self.beta_denominator
 
 				elif self.cg_method == 'PR':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 
-					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.difference)
-					self.beta_denominator = self.shape_form_handler.scalar_product(self.gradient_prev, self.gradient_prev)
+					self.beta_numerator = self.form_handler.scalar_product(self.gradient, self.difference)
+					self.beta_denominator = self.form_handler.scalar_product(self.gradient_prev, self.gradient_prev)
 					self.beta = self.beta_numerator / self.beta_denominator
 					# self.beta = np.maximum(self.beta, 0.0)
 
 				elif self.cg_method == 'HS':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 
-					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.difference)
-					self.beta_denominator = self.shape_form_handler.scalar_product(self.difference, self.search_direction)
+					self.beta_numerator = self.form_handler.scalar_product(self.gradient, self.difference)
+					self.beta_denominator = self.form_handler.scalar_product(self.difference, self.search_direction)
 					self.beta = self.beta_numerator / self.beta_denominator
 
 				elif self.cg_method == 'DY':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 
-					self.beta_numerator = self.shape_form_handler.scalar_product(self.gradient, self.gradient)
-					self.beta_denominator = self.shape_form_handler.scalar_product(self.search_direction, self.difference)
+					self.beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
+					self.beta_denominator = self.form_handler.scalar_product(self.search_direction, self.difference)
 					self.beta = self.beta_numerator / self.beta_denominator
 
 				elif self.cg_method == 'HZ':
 					self.difference.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 
-					dy = self.shape_form_handler.scalar_product(self.search_direction, self.difference)
-					y2 = self.shape_form_handler.scalar_product(self.difference, self.difference)
+					dy = self.form_handler.scalar_product(self.search_direction, self.difference)
+					y2 = self.form_handler.scalar_product(self.difference, self.difference)
 
 					self.difference.vector()[:] = self.difference.vector()[:] - 2*y2/dy*self.search_direction.vector()[:]
 
-					self.beta = self.shape_form_handler.scalar_product(self.difference, self.gradient) / dy
+					self.beta = self.form_handler.scalar_product(self.difference, self.gradient) / dy
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
@@ -148,11 +148,11 @@ class CG(ShapeOptimizationAlgorithm):
 					self.search_direction.vector()[:] = -self.gradient.vector()[:]
 					self.memory = 0
 			if self.cg_relative_restart:
-				if abs(self.shape_form_handler.scalar_product(self.gradient, self.gradient_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
+				if abs(self.form_handler.scalar_product(self.gradient, self.gradient_prev)) / pow(self.gradient_norm, 2) >= self.cg_restart_tol:
 					self.search_direction.vector()[:] = -self.gradient.vector()[:]
 					self.memory = 0
 
-			self.directional_derivative = self.shape_form_handler.scalar_product(self.gradient, self.search_direction)
+			self.directional_derivative = self.form_handler.scalar_product(self.gradient, self.search_direction)
 
 			if self.directional_derivative >= 0:
 				self.search_direction.vector()[:] = -self.gradient.vector()[:]

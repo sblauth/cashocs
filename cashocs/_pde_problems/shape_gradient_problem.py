@@ -33,12 +33,12 @@ class ShapeGradientProblem:
 
 	"""
 
-	def __init__(self, shape_form_handler, state_problem, adjoint_problem):
+	def __init__(self, form_handler, state_problem, adjoint_problem):
 		"""Initialize the ShapeGradientProblem.
 
 		Parameters
 		----------
-		shape_form_handler : cashocs._forms.ShapeFormHandler
+		form_handler : cashocs._forms.ShapeFormHandler
 			The ShapeFormHandler object corresponding to the shape optimization problem.
 		state_problem : cashocs._pde_problems.StateProblem
 			The corresponding state problem.
@@ -46,14 +46,14 @@ class ShapeGradientProblem:
 			The corresponding adjoint problem.
 		"""
 
-		self.shape_form_handler = shape_form_handler
+		self.form_handler = form_handler
 		self.state_problem = state_problem
 		self.adjoint_problem = adjoint_problem
 
-		self.gradient = fenics.Function(self.shape_form_handler.deformation_space)
+		self.gradient = fenics.Function(self.form_handler.deformation_space)
 		self.gradient_norm_squared = 1.0
 
-		self.config = self.shape_form_handler.config
+		self.config = self.form_handler.config
 
 		# Generate the Krylov solver for the shape gradient problem
 		self.ksp = PETSc.KSP().create()
@@ -86,14 +86,14 @@ class ShapeGradientProblem:
 
 		if not self.has_solution:
 
-			self.shape_form_handler.regularization.update_geometric_quantities()
-			self.shape_form_handler.assembler.assemble(self.shape_form_handler.fe_shape_derivative_vector)
-			b = fenics.as_backend_type(self.shape_form_handler.fe_shape_derivative_vector).vec()
-			_solve_linear_problem(self.ksp, self.shape_form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
+			self.form_handler.regularization.update_geometric_quantities()
+			self.form_handler.assembler.assemble(self.form_handler.fe_shape_derivative_vector)
+			b = fenics.as_backend_type(self.form_handler.fe_shape_derivative_vector).vec()
+			_solve_linear_problem(self.ksp, self.form_handler.scalar_product_matrix, b, self.gradient.vector().vec())
 			self.gradient.vector().apply('')
 
 			self.has_solution = True
 
-			self.gradient_norm_squared = self.shape_form_handler.scalar_product(self.gradient, self.gradient)
+			self.gradient_norm_squared = self.form_handler.scalar_product(self.gradient, self.gradient)
 
 		return self.gradient

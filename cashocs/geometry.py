@@ -400,12 +400,12 @@ class _MeshHandler:
 		"""
 
 		self.shape_optimization_problem = shape_optimization_problem
-		self.shape_form_handler = self.shape_optimization_problem.shape_form_handler
+		self.form_handler = self.shape_optimization_problem.form_handler
 		# Namespacing
-		self.mesh = self.shape_form_handler.mesh
-		self.dx = self.shape_form_handler.dx
+		self.mesh = self.form_handler.mesh
+		self.dx = self.form_handler.dx
 		self.bbtree = self.mesh.bounding_box_tree()
-		self.config = self.shape_form_handler.config
+		self.config = self.form_handler.config
 
 		# setup from config
 		self.volume_change = float(self.config.get('MeshQuality', 'volume_change', fallback='inf'))
@@ -543,11 +543,11 @@ class _MeshHandler:
 		self.ksp_frobenius = PETSc.KSP().create()
 		_setup_petsc_options([self.ksp_frobenius], options)
 
-		self.trial_dg0 = fenics.TrialFunction(self.shape_form_handler.DG0)
-		self.test_dg0 = fenics.TestFunction(self.shape_form_handler.DG0)
+		self.trial_dg0 = fenics.TrialFunction(self.form_handler.DG0)
+		self.test_dg0 = fenics.TestFunction(self.form_handler.DG0)
 
 		if not (self.angle_change == float('inf')):
-			self.search_direction_container = fenics.Function(self.shape_form_handler.deformation_space)
+			self.search_direction_container = fenics.Function(self.form_handler.deformation_space)
 
 			self.a_frobenius = self.trial_dg0*self.test_dg0*self.dx
 			self.L_frobenius = fenics.sqrt(fenics.inner(fenics.grad(self.search_direction_container), fenics.grad(self.search_direction_container)))*self.test_dg0*self.dx
@@ -613,7 +613,7 @@ class _MeshHandler:
 		self.ksp_prior = PETSc.KSP().create()
 		_setup_petsc_options([self.ksp_prior], options)
 
-		self.transformation_container = fenics.Function(self.shape_form_handler.deformation_space)
+		self.transformation_container = fenics.Function(self.form_handler.deformation_space)
 		dim = self.mesh.geometric_dimension()
 
 		if not self.volume_change > 1:

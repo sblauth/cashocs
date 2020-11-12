@@ -47,7 +47,7 @@ class ShapeOptimizationAlgorithm:
 		self.has_curvature_info = False
 
 		self.optimization_problem = optimization_problem
-		self.shape_form_handler = self.optimization_problem.shape_form_handler
+		self.form_handler = self.optimization_problem.form_handler
 		self.state_problem = self.optimization_problem.state_problem
 		self.config = self.state_problem.config
 		self.adjoint_problem = self.optimization_problem.adjoint_problem
@@ -55,7 +55,7 @@ class ShapeOptimizationAlgorithm:
 		self.shape_gradient_problem = self.optimization_problem.shape_gradient_problem
 		self.gradient = self.shape_gradient_problem.gradient
 		self.cost_functional = self.optimization_problem.reduced_cost_functional
-		self.search_direction = fenics.Function(self.shape_form_handler.deformation_space)
+		self.search_direction = fenics.Function(self.form_handler.deformation_space)
 
 		if self.config.getboolean('Mesh', 'remesh', fallback=False):
 			self.iteration = self.optimization_problem.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
@@ -92,10 +92,10 @@ class ShapeOptimizationAlgorithm:
 
 		if self.save_pvd:
 			self.state_pvd_list = []
-			for i in range(self.shape_form_handler.state_dim):
-				if self.shape_form_handler.state_spaces[i].num_sub_spaces() > 0:
+			for i in range(self.form_handler.state_dim):
+				if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
 					self.state_pvd_list.append([])
-					for j in range(self.shape_form_handler.state_spaces[i].num_sub_spaces()):
+					for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
 						if self.optimization_problem.mesh_handler.do_remesh:
 							self.state_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 																	  + '_state_' + str(i) + '_' + str(j) + '.pvd'))
@@ -136,12 +136,12 @@ class ShapeOptimizationAlgorithm:
 		self.output_dict['MeshQuality'].append(self.optimization_problem.mesh_handler.current_mesh_quality)
 
 		if self.save_pvd:
-			for i in range(self.shape_form_handler.state_dim):
-				if self.shape_form_handler.state_spaces[i].num_sub_spaces() > 0:
-					for j in range(self.shape_form_handler.state_spaces[i].num_sub_spaces()):
-						self.state_pvd_list[i][j] << (self.shape_form_handler.states[i].sub(j, True), float(self.iteration))
+			for i in range(self.form_handler.state_dim):
+				if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+					for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
+						self.state_pvd_list[i][j] << (self.form_handler.states[i].sub(j, True), float(self.iteration))
 				else:
-					self.state_pvd_list[i] << (self.shape_form_handler.states[i], float(self.iteration))
+					self.state_pvd_list[i] << (self.form_handler.states[i], float(self.iteration))
 
 		if self.verbose:
 			print(output)

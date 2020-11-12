@@ -28,20 +28,20 @@ class ReducedShapeCostFunctional:
 
 	"""
 
-	def __init__(self, shape_form_handler, state_problem):
+	def __init__(self, form_handler, state_problem):
 		"""Initializes the reduced cost functional
 
 		Parameters
 		----------
-		shape_form_handler : cashocs._forms.ShapeFormHandler
+		form_handler : cashocs._forms.ShapeFormHandler
 			the ControlFormHandler object for the optimization problem
 		state_problem : cashocs._pde_problems.StateProblem
 			the StateProblem object corresponding to the state system
 		"""
 
-		self.shape_form_handler = shape_form_handler
+		self.form_handler = form_handler
 		self.state_problem = state_problem
-		self.regularization = self.shape_form_handler.regularization
+		self.regularization = self.form_handler.regularization
 
 
 
@@ -58,4 +58,4 @@ class ReducedShapeCostFunctional:
 		self.state_problem.solve()
 		# self.regularization.update_geometric_quantities()
 
-		return fenics.assemble(self.shape_form_handler.cost_functional_form) + self.regularization.compute_objective()
+		return fenics.assemble(self.form_handler.cost_functional_form) + self.regularization.compute_objective()
