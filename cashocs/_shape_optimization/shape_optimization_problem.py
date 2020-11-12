@@ -143,6 +143,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
 												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
 		self.mesh_handler = _MeshHandler(self)
+		
+		### adding this notation to be consistent for user supplied weak forms
+		self.form_handler = self.shape_form_handler
 
 		self.state_spaces = self.shape_form_handler.state_spaces
 		self.adjoint_spaces = self.shape_form_handler.adjoint_spaces
@@ -308,7 +311,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	
 	
 	def supply_adjoint_forms(self, adjoint_forms, adjoint_bcs_list):
-		"""Overrides the computed weak forms of the adjoint system
+		"""Overrides the computed weak forms of the adjoint system.
 		
 		This allows the user to specify their own weak forms of the problems and to use cashocs merely as
 		a solver for solving the optimization problems.
@@ -316,9 +319,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		Parameters
 		----------
 		adjoint_forms : ufl.form.Form or list[ufl.form.Form]
-			The UFL forms of the adjoint system(s)
+			The UFL forms of the adjoint system(s).
 		adjoint_bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
-			The list of Dirichlet boundary conditions for the adjoint system(s)
+			The list of Dirichlet boundary conditions for the adjoint system(s).
 
 		Returns
 		-------
@@ -411,7 +414,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	
 	
 	def supply_shape_derivative(self, shape_derivative):
-		"""Overrides the shape derivative of the reduced cost functional
+		"""Overrides the shape derivative of the reduced cost functional.
 		
 		This allows users to implement their own shape derivative and use cashocs as a
 		solver library only.
@@ -419,12 +422,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		Parameters
 		----------
 		shape_derivative : ufl.form.Form
-			The shape_derivative of the reduced (!) cost functional w.r.t. controls
+			The shape_derivative of the reduced (!) cost functional w.r.t. controls.
 
 		Returns
 		-------
 		None
 		"""
+		
 		try:
 			if not shape_derivative.__module__ == 'ufl.form' and type(shape_derivative).__name__ == 'Form':
 				raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
@@ -477,11 +481,11 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		Parameters
 		----------
 		shape_derivative : ufl.form.Form
-			The shape derivative of the reduced (!) cost functional
+			The shape derivative of the reduced (!) cost functional.
 		adjoint_forms : ufl.form.Form or list[ufl.form.Form]
-			The UFL forms of the adjoint system(s)
+			The UFL forms of the adjoint system(s).
 		adjoint_bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
-			The list of Dirichlet boundary conditions for the adjoint system(s)
+			The list of Dirichlet boundary conditions for the adjoint system(s).
 
 		Returns
 		-------
@@ -494,7 +498,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	
 	
 	def get_vector_field(self):
-		"""Returns the TestFunction for defining shape derivatives
+		"""Returns the TestFunction for defining shape derivatives.
 		
 		See Also
 		--------
@@ -503,7 +507,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		Returns
 		-------
 		 : dolfin.function.argument.Argument
-		The TestFunction object
+			The TestFunction object.
 		"""
 		
 		return self.shape_form_handler.test_vector_field
