@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="cashocs",
-    version="1.0.4",
+    version="1.1.0",
     author="Sebastian Blauth",
     author_email="sebastian.blauth@itwm.fraunhofer.de",
     description="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
