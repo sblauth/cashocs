@@ -85,7 +85,7 @@ This section is the same as for all previous problems and is done via ::
     import numpy as np
 
 
-    config = cashocs.create_config('config.ini')
+    config = cashocs.load_config('config.ini')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
     V = FunctionSpace(mesh, 'CG', 1)
 

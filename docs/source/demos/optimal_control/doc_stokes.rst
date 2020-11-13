@@ -57,7 +57,7 @@ The initialization is the same as in :ref:`demo_poisson`, i.e., ::
     import cashocs
 
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
 
 For the solution of the Stokes (and adjoint Stokes) system, which have a saddle point

@@ -43,9 +43,9 @@ We start the problem by using a wildcard import for FEniCS, and by importing CAS
 Similarly to the optimal control case, we also require config files for shape
 optimization problems in CASHOCS. A detailed discussion of the config files
 for shape optimization is given in :ref:`config_shape_optimization`.
-We read the config file with the :py:func:`create_config <cashocs.create_config>` command ::
+We read the config file with the :py:func:`load_config <cashocs.load_config>` command ::
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
 
 Next, we have to define the mesh. As the above problem is posed on the unit disc
 initially, we define this via FEniCS commands (CASHOCS only has rectangular meshes built
@@ -156,3 +156,8 @@ The result of the optimization looks like this
     The possible choices for these parameters are discussed in detail in
     :ref:`config_shape_optimization_routine` and the documentation of the :py:func:`solve <cashocs.ShapeOptimizationProblem.solve>`
     method.
+
+    As before, it is not strictly necessary to supply config files to CASHOCS, but
+    it is very strongly recommended to do so. In case one does not supply a config
+    file, one has to at least specify the solution algorithm in the call to
+    the :py:meth:`solve <cashocs.ShapeOptimizationProblem.solve>` method.

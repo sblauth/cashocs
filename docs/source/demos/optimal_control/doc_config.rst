@@ -447,7 +447,7 @@ If this parameter is set to True, the history of the optimization is saved in
 a .json file located in the same folder as the optimization script. This is
 very useful for postprocessing the results. This defaults to ``save_results = True``.
 
-Finally, we define the parameter ``save_pvd`` in the line ::
+We define the parameter ``save_pvd`` in the line ::
 
     save_pvd = False
 
@@ -455,6 +455,15 @@ If ``save_pvd`` is set to True, the state variables are saved to .pvd files
 in a folder named "pvd", located in the same directory as the optimization script.
 These can be visualized with `Paraview <https://www.paraview.org/>`_. This parameter
 defaults to ``save_pvd = False``.
+
+Finally, we can specify in which directory the results should be stored with the
+parameter ``result_dir``, which is given in this config file by ::
+
+    result_dir = ./
+
+The path given there can be either relative or absolute. In this example, the
+working directory of the python script is chosen.
+
 
 .. _config_ocp_summary:
 
@@ -660,7 +669,10 @@ in the following.
     * - save_pvd
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
-        saved in .pvd files.
+        saved in .pvd files
+    * - result_dir
+      - ``./``
+      - path to the directory, where the output should be placed
 
 
 This concludes the documentation of the config files for optimal control problems.

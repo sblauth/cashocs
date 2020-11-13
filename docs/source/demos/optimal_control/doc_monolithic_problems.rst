@@ -44,7 +44,7 @@ The initialization for this example works as before, i.e., we use ::
     import cashocs
 
 
-    config = cashocs.create_config('config.ini')
+    config = cashocs.load_config('config.ini')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 
 For the mixed finite element method we have to define a :py:class:`fenics.MixedFunctionSpace`, via ::

@@ -238,7 +238,7 @@ def generate_measure(idx, measure):
 	return out_measure
 
 
-@deprecated(version='1.0.5', reason='This is replaced by cashocs.load_config and will be removed in the future.')
+@deprecated(version='1.1.0', reason='This is replaced by cashocs.load_config and will be removed in the future.')
 def create_config(path):
 	"""Loads a config object from a config file.
 	
@@ -257,7 +257,7 @@ def create_config(path):
 		to the .ini file.
 	
 	
-	.. deprecated:: 1.0.5
+	.. deprecated:: 1.1.0
 		This is replaced by :py:func:`load_config <cashocs.load_config>` and will be removed in the future.
 	"""
 	

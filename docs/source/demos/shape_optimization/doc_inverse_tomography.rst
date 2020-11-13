@@ -138,7 +138,7 @@ To do this, we define a function :py:func:`generate_measurements()` as follows :
 
 As usual, we load the config into CASHOCS with the line ::
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
 
 Afterwards, we import the mesh into CASHOCS ::
 

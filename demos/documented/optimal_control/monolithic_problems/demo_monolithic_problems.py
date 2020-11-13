@@ -24,7 +24,7 @@ import cashocs
 
 
 
-config = cashocs.create_config('config.ini')
+config = cashocs.load_config('config.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 
 elem_1 = FiniteElement('CG', mesh.ufl_cell(), 1)

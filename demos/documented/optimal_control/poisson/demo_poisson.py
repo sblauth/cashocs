@@ -25,7 +25,7 @@ import cashocs
 
 
 
-config = cashocs.create_config('config.ini')
+config = cashocs.load_config('config.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
 

@@ -29,7 +29,7 @@ suitable function space is chosen. This can, e.g., be achieved via ::
     from fenics import *
     import cashocs
 
-    config = cashocs.create_config('path_to_config')
+    config = cashocs.load_config('path_to_config')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
     V = FunctionSpace(mesh, 'CG', 1)
 

@@ -120,7 +120,7 @@ The program starts as :ref:`demo_shape_poisson`, with the following lines ::
     import cashocs
 
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
 
 with which we import FEniCS and CASHOCS, and read the config file. The mesh and
 all other related objects are created with the command ::

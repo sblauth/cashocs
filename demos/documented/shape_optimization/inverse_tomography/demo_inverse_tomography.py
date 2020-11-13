@@ -56,7 +56,7 @@ def generate_measurements():
 	return [m1, m2, m3]
 
 
-config = cashocs.create_config('./config.ini')
+config = cashocs.load_config('./config.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
 cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
 r_elem = FiniteElement('R', mesh.ufl_cell(), 0)

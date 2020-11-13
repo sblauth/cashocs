@@ -58,7 +58,7 @@ of the config files and the parameters within, we refer to :ref:`config_optimal_
 Note, that the corresponding file is :download:`config.ini </../../demos/documented/optimal_control/poisson/config.ini>`
 . The config is then loaded via ::
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
 
 .. hint::
 
@@ -242,6 +242,12 @@ directly solve it with the the method :py:meth:`ocp.solve()
 
     The possible values for these arguments are the same as :ref:`the corresponding ones in the config file
     <config_ocp_optimization_routine>`. This just allows for some shortcuts, e.g., when one wants to quickly use a different solver.
+
+    Note, that it is not strictly necessary to supply config files in CASHOCS. In this
+    case, the user has to follow the above example and specify at least the solution
+    algorithm via the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method.
+    However, it is very strongly recommended to use config files with CASHOCS as
+    they allow a detailed tuning of its behavior.
 
 
 Finally, we visualize the results using matplotlib and the following code ::

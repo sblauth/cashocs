@@ -49,7 +49,7 @@ The initial setup is identical to the previous cases (see, :ref:`demo_poisson`),
     import cashocs
 
 
-    config = cashocs.create_config('config.ini')
+    config = cashocs.load_config('config.ini')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
     V = FunctionSpace(mesh, 'CG', 1)
 

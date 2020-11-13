@@ -88,7 +88,7 @@ Initialization
 
 As for the previous tutorial problems, we start by importing FEniCS and CASHOCS::
 
-    config = cashocs.create_config('./config.ini')
+    config = cashocs.load_config('./config.ini')
 
 Afterwards we import the (initial) geometry with the :py:func:`import_mesh <cashocs.import_mesh>`
 command ::

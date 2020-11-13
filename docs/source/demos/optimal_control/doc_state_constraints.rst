@@ -58,7 +58,7 @@ guess for the homotopy method. This is done in complete analogy to :ref:`demo_po
     from ufl import Max
 
 
-    config = cashocs.create_config('config.ini')
+    config = cashocs.load_config('config.ini')
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
     V = FunctionSpace(mesh, 'CG', 1)
 
