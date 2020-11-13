@@ -13,13 +13,15 @@ of the maintenance releases, please take a look at
   their custom adjoint equations and (shape) derivatives for the optimization
   problems. This is documented at `https://cashocs.readthedocs.io/en/latest/demos/cashocs_as_solver/solver_index.html`_.
 
-  - Using ``cashocs.create_config`` is deprecated and replaced by ``cashocs.load_config``,
-    but the former will still be supported.
+- Using ``cashocs.create_config`` is deprecated and replaced by ``cashocs.load_config``,
+  but the former will still be supported.
 
 - Configuration files are now not strictly necessary, but still very strongly recommended.
 
 - New configuration file parameters:
+
   - Section Output:
+
     - ``result_dir`` can be used to specify where CASHOCS' output files should be placed.
 
 
