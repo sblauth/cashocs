@@ -93,22 +93,22 @@ class Regularization:
 
 	"""
 
-	def __init__(self, shape_form_handler):
+	def __init__(self, form_handler):
 		"""Initializes the regularization
 
 		Parameters
 		----------
-		shape_form_handler : cashocs._forms.ShapeFormHandler
+		form_handler : cashocs._forms.ShapeFormHandler
 			the corresponding shape form handler object
 		"""
 
-		self.shape_form_handler = shape_form_handler
-		self.config = self.shape_form_handler.config
+		self.form_handler = form_handler
+		self.config = self.form_handler.config
 
-		self.dx = fenics.Measure('dx', self.shape_form_handler.mesh)
-		self.ds = fenics.Measure('ds', self.shape_form_handler.mesh)
+		self.dx = fenics.Measure('dx', self.form_handler.mesh)
+		self.ds = fenics.Measure('ds', self.form_handler.mesh)
 
-		self.spatial_coordinate = fenics.SpatialCoordinate(self.shape_form_handler.mesh)
+		self.spatial_coordinate = fenics.SpatialCoordinate(self.form_handler.mesh)
 
 		self.measure_hole = self.config.getboolean('Regularization', 'measure_hole', fallback=False)
 		if self.measure_hole:
@@ -129,7 +129,7 @@ class Regularization:
 			if not self.z_end >= self.z_start:
 				raise ConfigError('Regularization', 'z_end', 'z_end must not be smaller than z_start.')
 			self.delta_z = self.z_end - self.z_start
-			if self.shape_form_handler.mesh.geometric_dimension() == 2:
+			if self.form_handler.mesh.geometric_dimension() == 2:
 				self.delta_z = 1.0
 
 		self.mu_volume = self.config.getfloat('Regularization', 'factor_volume', fallback=0.0)
@@ -151,7 +151,7 @@ class Regularization:
 		if not type(self.target_barycenter_list) == list:
 			raise ConfigError('Regularization', 'target_barycenter', 'This has to be a list.')
 		
-		if self.shape_form_handler.mesh.geometric_dimension() == 2 and len(self.target_barycenter_list) == 2:
+		if self.form_handler.mesh.geometric_dimension() == 2 and len(self.target_barycenter_list) == 2:
 			self.target_barycenter_list.append(0.0)
 		
 		if self.config.getboolean('Regularization', 'use_initial_barycenter', fallback=False):
@@ -160,7 +160,7 @@ class Regularization:
 				volume = fenics.assemble(Constant(1)*self.dx)
 				self.target_barycenter_list[0] = fenics.assemble(self.spatial_coordinate[0]*self.dx) / volume
 				self.target_barycenter_list[1] = fenics.assemble(self.spatial_coordinate[1]*self.dx) / volume
-				if self.shape_form_handler.mesh.geometric_dimension() == 3:
+				if self.form_handler.mesh.geometric_dimension() == 3:
 					self.target_barycenter_list[2] = fenics.assemble(self.spatial_coordinate[2]*self.dx) / volume
 				else:
 					self.target_barycenter_list[2] = 0.0
@@ -169,7 +169,7 @@ class Regularization:
 				volume = self.delta_x*self.delta_y*self.delta_z - fenics.assemble(Constant(1)*self.dx)
 				self.target_barycenter_list[0] = (0.5*(pow(self.x_end, 2) - pow(self.x_start, 2))*self.delta_y*self.delta_z - fenics.assemble(self.spatial_coordinate[0]*self.dx)) / volume
 				self.target_barycenter_list[1] = (0.5*(pow(self.y_end, 2) - pow(self.y_start, 2))*self.delta_x*self.delta_z - fenics.assemble(self.spatial_coordinate[1]*self.dx)) / volume
-				if self.shape_form_handler.mesh.geometric_dimension() == 3:
+				if self.form_handler.mesh.geometric_dimension() == 3:
 					self.target_barycenter_list[2] = (0.5*(pow(self.z_end, 2) - pow(self.z_start, 2))*self.delta_x*self.delta_y - fenics.assemble(self.spatial_coordinate[2]*self.dx)) / volume
 				else:
 					self.target_barycenter_list[2] = 0.0
@@ -209,7 +209,7 @@ class Regularization:
 			volume = fenics.assemble(Constant(1)*self.dx)
 			barycenter_x = fenics.assemble(self.spatial_coordinate[0]*self.dx) / volume
 			barycenter_y = fenics.assemble(self.spatial_coordinate[1]*self.dx) / volume
-			if self.shape_form_handler.mesh.geometric_dimension() == 3:
+			if self.form_handler.mesh.geometric_dimension() == 3:
 				barycenter_z = fenics.assemble(self.spatial_coordinate[2]*self.dx) / volume
 			else:
 				barycenter_z = 0.0
@@ -218,7 +218,7 @@ class Regularization:
 			volume = self.delta_x*self.delta_y*self.delta_z - fenics.assemble(Constant(1)*self.dx)
 			barycenter_x = (0.5*(pow(self.x_end, 2) - pow(self.x_start, 2))*self.delta_y*self.delta_z - fenics.assemble(self.spatial_coordinate[0]*self.dx)) / volume
 			barycenter_y = (0.5*(pow(self.y_end, 2) - pow(self.y_start, 2))*self.delta_x*self.delta_z - fenics.assemble(self.spatial_coordinate[1]*self.dx)) / volume
-			if self.shape_form_handler.mesh.geometric_dimension() == 3:
+			if self.form_handler.mesh.geometric_dimension() == 3:
 				barycenter_z = (0.5*(pow(self.z_end, 2) - pow(self.z_start, 2))*self.delta_x*self.delta_y - fenics.assemble(self.spatial_coordinate[2]*self.dx)) / volume
 			else:
 				barycenter_z = 0.0
@@ -266,7 +266,7 @@ class Regularization:
 
 					barycenter_x = fenics.assemble(self.spatial_coordinate[0]*self.dx) / volume
 					barycenter_y = fenics.assemble(self.spatial_coordinate[1]*self.dx) / volume
-					if self.shape_form_handler.mesh.geometric_dimension() == 3:
+					if self.form_handler.mesh.geometric_dimension() == 3:
 						barycenter_z = fenics.assemble(self.spatial_coordinate[2]*self.dx) / volume
 					else:
 						barycenter_z = 0.0
@@ -276,7 +276,7 @@ class Regularization:
 
 					barycenter_x = (0.5*(pow(self.x_end, 2) - pow(self.x_start, 2))*self.delta_y*self.delta_z - fenics.assemble(self.spatial_coordinate[0]*self.dx)) / volume
 					barycenter_y = (0.5*(pow(self.y_end, 2) - pow(self.y_start, 2))*self.delta_x*self.delta_z - fenics.assemble(self.spatial_coordinate[1]*self.dx)) / volume
-					if self.shape_form_handler.mesh.geometric_dimension() == 3:
+					if self.form_handler.mesh.geometric_dimension() == 3:
 						barycenter_z = (0.5*(pow(self.z_end, 2) - pow(self.z_start, 2))*self.delta_x*self.delta_y - fenics.assemble(self.spatial_coordinate[2]*self.dx)) / volume
 					else:
 						barycenter_z = 0.0
@@ -301,11 +301,11 @@ class Regularization:
 
 		"""
 
-		V = self.shape_form_handler.test_vector_field
+		V = self.form_handler.test_vector_field
 		if self.has_regularization:
 
-			n = fenics.FacetNormal(self.shape_form_handler.mesh)
-			I = fenics.Identity(self.shape_form_handler.mesh.geometric_dimension())
+			n = fenics.FacetNormal(self.form_handler.mesh)
+			I = fenics.Identity(self.form_handler.mesh.geometric_dimension())
 
 			self.shape_form = Constant(self.mu_surface)*(self.current_surface - Constant(self.target_surface))*t_div(V, n)*self.ds
 
@@ -316,7 +316,7 @@ class Regularization:
 								   + Constant(self.mu_barycenter)*(self.current_barycenter_y - Constant(self.target_barycenter_list[1]))\
 								   		*(self.current_barycenter_y/self.current_volume*div(V) + 1/self.current_volume*(V[1] + self.spatial_coordinate[1]*div(V)))*self.dx
 
-				if self.shape_form_handler.mesh.geometric_dimension() == 3:
+				if self.form_handler.mesh.geometric_dimension() == 3:
 					self.shape_form += Constant(self.mu_barycenter)*(self.current_barycenter_z - Constant(self.target_barycenter_list[2]))\
 									   *(self.current_barycenter_z/self.current_volume*div(V) + 1/self.current_volume*(V[2] + self.spatial_coordinate[2]*div(V)))*self.dx
 
@@ -328,7 +328,7 @@ class Regularization:
 								   + Constant(self.mu_barycenter)*(self.current_barycenter_y - Constant(self.target_barycenter_list[1]))\
 								   		*(self.current_barycenter_y/self.current_volume*div(V) - 1/self.current_volume*(V[1] + self.spatial_coordinate[1]*div(V)))*self.dx
 
-				if self.shape_form_handler.mesh.geometric_dimension() == 3:
+				if self.form_handler.mesh.geometric_dimension() == 3:
 					self.shape_form += Constant(self.mu_barycenter)*(self.current_barycenter_z - Constant(self.target_barycenter_list[2]))\
 									   		*(self.current_barycenter_z/self.current_volume*div(V) - 1/self.current_volume*(V[2] + self.spatial_coordinate[2]*div(V)))*self.dx
 
@@ -336,7 +336,7 @@ class Regularization:
 			return self.shape_form
 
 		else:
-			dim = self.shape_form_handler.mesh.geometric_dimension()
+			dim = self.form_handler.mesh.geometric_dimension()
 			return inner(fenics.Constant([0]*dim), V)*self.dx
 
 

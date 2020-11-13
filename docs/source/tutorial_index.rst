@@ -22,6 +22,7 @@ tutorial.
 
    demos/optimal_control/optimal_control_index
    demos/shape_optimization/shape_optimization_index
+   demos/cashocs_as_solver/solver_index
 
 
 .. note::

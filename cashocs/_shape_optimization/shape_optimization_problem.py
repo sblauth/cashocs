@@ -25,6 +25,11 @@ import sys
 import tempfile
 import warnings
 
+import fenics
+import numpy as np
+from ufl import replace
+from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
+
 from .methods import CG, GradientDescent, LBFGS
 from .._exceptions import ConfigError, InputError, CashocsException
 from .._forms import Lagrangian, ShapeFormHandler
@@ -134,19 +139,18 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		else:
 			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'boundaries', 'Not a valid type for boundaries.')
 
-		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-		self.shape_form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
+		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
 												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
 		self.mesh_handler = _MeshHandler(self)
+		
+		self.state_spaces = self.form_handler.state_spaces
+		self.adjoint_spaces = self.form_handler.adjoint_spaces
 
-		self.state_spaces = self.shape_form_handler.state_spaces
-		self.adjoint_spaces = self.shape_form_handler.adjoint_spaces
+		self.state_problem = StateProblem(self.form_handler, self.initial_guess, self.temp_dict)
+		self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem, self.temp_dict)
+		self.shape_gradient_problem = ShapeGradientProblem(self.form_handler, self.state_problem, self.adjoint_problem)
 
-		self.state_problem = StateProblem(self.shape_form_handler, self.initial_guess, self.temp_dict)
-		self.adjoint_problem = AdjointProblem(self.shape_form_handler, self.state_problem, self.temp_dict)
-		self.shape_gradient_problem = ShapeGradientProblem(self.shape_form_handler, self.state_problem, self.adjoint_problem)
-
-		self.reduced_cost_functional = ReducedShapeCostFunctional(self.shape_form_handler, self.state_problem)
+		self.reduced_cost_functional = ReducedShapeCostFunctional(self.form_handler, self.state_problem)
 
 		self.gradient = self.shape_gradient_problem.gradient
 		self.objective_value = 1.0
@@ -165,7 +169,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		"""
 
 		self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
-		self.shape_form_handler.update_scalar_product()
+		self.form_handler.update_scalar_product()
 		self.state_problem.has_solution = False
 		self.adjoint_problem.has_solution = False
 		self.shape_gradient_problem.has_solution = False
@@ -222,7 +226,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
 		"""
-
+		
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if (rtol is not None) and (atol is None):
@@ -237,6 +241,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		if max_iter is not None:
 			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
+			
+		self._check_for_custom_forms()
 
 		if self.algorithm == 'gradient_descent':
 			self.solver = GradientDescent(self)
@@ -300,3 +306,106 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.shape_gradient_problem.solve()
 
 		return self.gradient
+	
+	
+	
+	def supply_shape_derivative(self, shape_derivative):
+		"""Overrides the shape derivative of the reduced cost functional.
+		
+		This allows users to implement their own shape derivative and use cashocs as a
+		solver library only.
+		
+		Parameters
+		----------
+		shape_derivative : ufl.form.Form
+			The shape_derivative of the reduced (!) cost functional w.r.t. controls.
+
+		Returns
+		-------
+		None
+		"""
+		
+		try:
+			if not shape_derivative.__module__ == 'ufl.form' and type(shape_derivative).__name__ == 'Form':
+				raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
+								 'shape_derivative', 'shape_derivative have to be a ufl form')
+		except:
+			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
+							 'shape_derivative', 'shape_derivative has to be a ufl form')
+		
+		if len(shape_derivative.arguments()) == 2:
+			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
+							 'shape_derivative', 'Do not use TrialFunction for the shape_derivative.')
+		elif len(shape_derivative.arguments()) == 0:
+			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
+							 'shape_derivative', 'The specified shape_derivative must include a TestFunction object.')
+		
+		if not shape_derivative.arguments()[0].ufl_function_space().ufl_element() == self.form_handler.deformation_space.ufl_element():
+			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative',
+							 'shape_derivative', 'The TestFunction has to be chosen from the same space as the corresponding adjoint.')
+		
+		if not shape_derivative.arguments()[0].ufl_function_space() == self.form_handler.deformation_space:
+			shape_derivative = replace(shape_derivative, {shape_derivative.arguments()[0] : self.form_handler.test_vector_field})
+		
+		if self.form_handler.degree_estimation:
+			estimated_degree = np.maximum(estimate_total_polynomial_degree(self.form_handler.riesz_scalar_product),
+											   estimate_total_polynomial_degree(shape_derivative))
+			self.form_handler.assembler = fenics.SystemAssembler(self.form_handler.riesz_scalar_product, shape_derivative, self.form_handler.bcs_shape,
+													form_compiler_parameters={'quadrature_degree' : estimated_degree})
+		else:
+			try:
+				self.form_handler.assembler = fenics.SystemAssembler(self.form_handler.riesz_scalar_product, shape_derivative, self.form_handler.bcs_shape)
+			except (AssertionError, ValueError):
+				estimated_degree = np.maximum(estimate_total_polynomial_degree(self.form_handler.riesz_scalar_product),
+											   estimate_total_polynomial_degree(shape_derivative))
+				self.form_handler.assembler = fenics.SystemAssembler(self.form_handler.riesz_scalar_product, shape_derivative, self.form_handler.bcs_shape,
+													form_compiler_parameters={'quadrature_degree' : estimated_degree})
+		
+		self.has_custom_derivative = True
+	
+	
+	
+	def supply_custom_forms(self, shape_derivative, adjoint_forms, adjoint_bcs_list):
+		"""Overrides both adjoint system and shape derivative with user input.
+		
+		This allows the user to specify both the shape_derivative of the reduced cost functional
+		and the corresponding adjoint system, and allows them to use cashocs as a solver.
+		
+		See Also
+		--------
+		supply_shape_derivative
+		supply_adjoint_forms
+		
+		Parameters
+		----------
+		shape_derivative : ufl.form.Form
+			The shape derivative of the reduced (!) cost functional.
+		adjoint_forms : ufl.form.Form or list[ufl.form.Form]
+			The UFL forms of the adjoint system(s).
+		adjoint_bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
+			The list of Dirichlet boundary conditions for the adjoint system(s).
+
+		Returns
+		-------
+		None
+		"""
+		
+		self.supply_shape_derivative(shape_derivative)
+		self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
+		
+	
+	
+	def get_vector_field(self):
+		"""Returns the TestFunction for defining shape derivatives.
+		
+		See Also
+		--------
+		supply_shape_derivative
+		
+		Returns
+		-------
+		 : dolfin.function.argument.Argument
+			The TestFunction object.
+		"""
+		
+		return self.form_handler.test_vector_field
