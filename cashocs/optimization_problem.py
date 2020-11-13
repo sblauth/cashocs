@@ -23,8 +23,10 @@ optimization problems.
 """
 
 import configparser
+import warnings
 
 import fenics
+import numpy as np
 from ufl import replace
 
 from ._exceptions import InputError
@@ -270,7 +272,8 @@ class OptimizationProblem:
 		
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 		self.form_handler = None
-
+		self.has_custom_adjoint = False
+		self.has_custom_derivative = False
 
 
 	def compute_state_variables(self):
@@ -342,6 +345,8 @@ class OptimizationProblem:
 			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_adjoint_forms',
 							 'adjoint_forms', 'adjoint_forms have to be ufl forms')
 		
+		
+		
 		try:
 			if adjoint_bcs_list == [] or adjoint_bcs_list is None:
 				mod_bcs_list = []
@@ -373,6 +378,12 @@ class OptimizationProblem:
 		except:
 			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_adjoint_forms',
 							 'adjoint_bcs_list', 'Type of adjoint_bcs_list is wrong.')
+		
+		if not len(mod_forms) == self.form_handler.state_dim:
+			raise InputError('cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms', 'adjoint_forms', 'Length of adjoint_forms does not match')
+		if not len(mod_bcs_list) == self.form_handler.state_dim:
+			raise InputError('cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms', 'adjoint_bcs_list', 'Length of adjoint_bcs_list does not match')
+		
 			
 		
 		for idx, form in enumerate(mod_forms):
@@ -406,3 +417,29 @@ class OptimizationProblem:
 				self.form_handler.adjoint_eq_rhs.append(zero_form)
 			else:
 				self.form_handler.adjoint_eq_rhs.append(L)
+		
+		self.has_custom_adjoint = True
+	
+	
+	
+	def _check_for_custom_forms(self):
+		"""Checks whether custom user forms are used and if they are compatible with the settings.
+		
+		Returns
+		-------
+		None
+		"""
+		
+		if self.has_custom_adjoint and not self.has_custom_derivative:
+			warnings.warn('You only supplied the adjoint system. This might lead to unexpected results.'
+						  'Consider also supplying the (shape) derivative of the reduced cost functional,'
+						  'or check your approach with the cashocs.verification module.')
+		
+		elif not self.has_custom_adjoint and self.has_custom_derivative:
+			warnings.warn('You only supplied the derivative of the reduced cost functional. This might lead to unexpected results.'
+						  'Consider also supplying the adjoint system, '
+						  'or check your approach with the cashocs.verification module.')
+		
+		if self.algorithm == 'newton' and (self.has_custom_adjoint or self.has_custom_derivative):
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'solve', 'The usage of custom forms is not compatible with the Newton solver.'
+																						  'Please do not supply custom forms if you want to use the Newton solver.')

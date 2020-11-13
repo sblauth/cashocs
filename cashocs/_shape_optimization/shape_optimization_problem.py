@@ -226,7 +226,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
 		"""
-
+		
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if (rtol is not None) and (atol is None):
@@ -241,6 +241,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		if max_iter is not None:
 			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
+			
+		self._check_for_custom_forms()
 
 		if self.algorithm == 'gradient_descent':
 			self.solver = GradientDescent(self)
@@ -358,6 +360,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 											   estimate_total_polynomial_degree(shape_derivative))
 				self.form_handler.assembler = fenics.SystemAssembler(self.form_handler.riesz_scalar_product, shape_derivative, self.form_handler.bcs_shape,
 													form_compiler_parameters={'quadrature_degree' : estimated_degree})
+		
+		self.has_custom_derivative = True
 	
 	
 	
@@ -388,7 +392,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		
 		self.supply_shape_derivative(shape_derivative)
 		self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
-	
+		
 	
 	
 	def get_vector_field(self):

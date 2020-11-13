@@ -19,6 +19,8 @@
 
 """
 
+import warnings
+
 import fenics
 import numpy as np
 from ufl import replace
@@ -363,7 +365,7 @@ class OptimalControlProblem(OptimizationProblem):
 
 		  .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||.
 		"""
-
+		
 		self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
 
 		if self.algorithm == 'newton' or \
@@ -387,7 +389,9 @@ class OptimalControlProblem(OptimizationProblem):
 
 		if max_iter is not None:
 			self.config.set('OptimizationRoutine', 'maximum_iterations', str(max_iter))
-
+		
+		self._check_for_custom_forms()
+		
 		if self.algorithm == 'gradient_descent':
 			self.solver = GradientDescent(self)
 		elif self.algorithm == 'lbfgs':
@@ -475,9 +479,15 @@ class OptimalControlProblem(OptimizationProblem):
 			if not form.arguments()[0].ufl_function_space() == self.form_handler.control_spaces[idx]:
 				raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives',
 								 'derivatives', 'The TestFunction has to be chosen from the same space as the corresponding adjoint.')
-			
+		
+		if not len(mod_derivatives) == self.form_handler.control_dim:
+			raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives',
+								 'derivatives', 'Length of derivatives does not match number of controls.')
+		
 		self.form_handler.gradient_forms_rhs = mod_derivatives
-	
+		self.has_custom_derivative = True
+
+		
 	
 	
 	def supply_custom_forms(self, derivatives, adjoint_forms, adjoint_bcs_list):
