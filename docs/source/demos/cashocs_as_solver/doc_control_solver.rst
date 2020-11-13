@@ -150,3 +150,12 @@ as in :ref:`demo_poisson`. The results are, of course, identical to :ref:`demo_p
 follows
 
 .. image:: /../../demos/documented/cashocs_as_solver/control_solver/img_control_solver.png
+
+.. note::
+
+    In case we have multiple state equations as in :ref:`demo_multiple_variables`,
+    one has to supply ordered lists of adjoint equations and boundary conditions,
+    analogously to the usual procedure for CASHOCS.
+
+    In the case of multiple control variables, the derivatives of the reduced cost functional
+    w.r.t. each of these have to be specified, again using an ordered list.

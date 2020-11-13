@@ -42,7 +42,6 @@ p = Function(V)
 
 x = SpatialCoordinate(mesh)
 f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-# f = Expression('2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1', degree=4, domain=mesh)
 
 e = inner(grad(u), grad(p))*dx - f*p*dx
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
@@ -50,6 +49,15 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 J = u*dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+vector_field = sop.get_vector_field()
+dJ = div(vector_field)*u*dx - inner((div(vector_field)*Identity(2) - 2*sym(grad(vector_field)))*grad(u), grad(p))*dx + div(f*vector_field)*p*dx
+
+adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - TestFunction(V)*dx
+adjoint_bcs = bcs
+
+sop.supply_custom_forms(dJ, adjoint_form, adjoint_bcs)
+
 sop.solve()
 
 
@@ -71,4 +79,4 @@ plt.colorbar(fig_u, fraction=0.046, pad=0.04)
 plt.title('State variable u')
 
 plt.tight_layout()
-# plt.savefig('./img_shape_poisson.png', dpi=150, bbox_inches='tight')
+# plt.savefig('./img_shape_solver.png', dpi=150, bbox_inches='tight')
