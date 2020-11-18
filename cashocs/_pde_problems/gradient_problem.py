@@ -73,11 +73,11 @@ class GradientProblem:
 			['ksp_atol', 1e-50],
 			['ksp_max_it', 100]
 		]
-		riesz_ksp_options = []
+		self.riesz_ksp_options = []
 		for i in range(self.form_handler.control_dim):
-			riesz_ksp_options.append(option)
+			self.riesz_ksp_options.append(option)
 
-		_setup_petsc_options(self.ksps, riesz_ksp_options)
+		_setup_petsc_options(self.ksps, self.riesz_ksp_options)
 		for i, ksp in enumerate(self.ksps):
 			ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -100,7 +100,7 @@ class GradientProblem:
 		if not self.has_solution:
 			for i in range(self.form_handler.control_dim):
 				b = fenics.as_backend_type(fenics.assemble(self.form_handler.gradient_forms_rhs[i])).vec()
-				_solve_linear_problem(ksp=self.ksps[i], b=b, x=self.gradients[i].vector().vec())
+				_solve_linear_problem(ksp=self.ksps[i], b=b, x=self.gradients[i].vector().vec(), ksp_options=self.riesz_ksp_options[i])
 				self.gradients[i].vector().apply('')
 
 			self.has_solution = True

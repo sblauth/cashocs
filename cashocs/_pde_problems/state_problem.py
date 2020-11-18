@@ -101,7 +101,7 @@ class StateProblem:
 				if self.form_handler.state_is_linear:
 					for i in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[i], self.form_handler.state_eq_forms_rhs[i], self.bcs_list[i])
-						_solve_linear_problem(self.ksps[i], A, b, self.states[i].vector().vec())
+						_solve_linear_problem(self.ksps[i], A, b, self.states[i].vector().vec(), self.form_handler.state_ksp_options[i])
 						self.states[i].vector().apply('')
 
 				else:
@@ -111,7 +111,8 @@ class StateProblem:
 
 						self.states[i] = damped_newton_solve(self.form_handler.state_eq_forms[i], self.states[i], self.bcs_list[i],
 															 rtol=self.newton_rtol, atol=self.newton_atol, max_iter=self.newton_iter,
-															 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[i])
+															 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[i],
+															 ksp_options=self.form_handler.state_ksp_options[i])
 
 			else:
 				for i in range(self.maxiter + 1):
@@ -151,10 +152,11 @@ class StateProblem:
 
 							self.states[j] = damped_newton_solve(self.form_handler.state_eq_forms[j], self.states[j], self.bcs_list[j],
 																 rtol=np.minimum(0.9*res, 0.9), atol=self.newton_atols[j], max_iter=self.newton_iter,
-																 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[j])
+																 damped=self.newton_damped, verbose=self.newton_verbose, ksp=self.ksps[j],
+																 ksp_options=self.form_handler.state_ksp_options[j])
 						else:
 							A, b = _assemble_petsc_system(self.form_handler.state_eq_forms_lhs[j], self.form_handler.state_eq_forms_rhs[j], self.bcs_list[j])
-							_solve_linear_problem(self.ksps[j], A, b, self.states[j].vector().vec())
+							_solve_linear_problem(self.ksps[j], A, b, self.states[j].vector().vec(), self.form_handler.state_ksp_options[j])
 							self.states[j].vector().apply('')
 
 			if self.picard_verbose and self.form_handler.state_is_picard:

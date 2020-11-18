@@ -86,7 +86,7 @@ class AdjointProblem:
 			if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 				for i in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - i], self.form_handler.adjoint_eq_rhs[-1 - i], self.bcs_list_ad[-1 - i])
-					_solve_linear_problem(self.ksps[-1 - i], A, b, self.adjoints[-1 - i].vector().vec())
+					_solve_linear_problem(self.ksps[-1 - i], A, b, self.adjoints[-1 - i].vector().vec(), self.form_handler.adjoint_ksp_options[-1 - i])
 					self.adjoints[-1 - i].vector().apply('')
 
 			else:
@@ -116,7 +116,7 @@ class AdjointProblem:
 
 					for j in range(self.form_handler.state_dim):
 						A, b = _assemble_petsc_system(self.form_handler.adjoint_eq_lhs[-1 - j], self.form_handler.adjoint_eq_rhs[-1 - j], self.bcs_list_ad[-1 - j])
-						_solve_linear_problem(self.ksps[-1 - j], A, b, self.adjoints[-1 - j].vector().vec())
+						_solve_linear_problem(self.ksps[-1 - j], A, b, self.adjoints[-1 - j].vector().vec(), self.form_handler.adjoint_ksp_options[-1 - j])
 						self.adjoints[-1 - j].vector().apply('')
 						
 			if self.picard_verbose and self.form_handler.state_is_picard:

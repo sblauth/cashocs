@@ -532,16 +532,16 @@ class _MeshHandler:
 		if not self.angle_change > 0:
 			raise ConfigError('MeshQuality', 'angle_change', 'This parameter has to be positive.')
 
-		options = [[
+		self.options_frobenius = [
 				['ksp_type', 'preonly'],
 				['pc_type', 'jacobi'],
 				['pc_jacobi_type', 'diagonal'],
 				['ksp_rtol', 1e-16],
 				['ksp_atol', 1e-20],
 				['ksp_max_it', 1000]
-		]]
+		]
 		self.ksp_frobenius = PETSc.KSP().create()
-		_setup_petsc_options([self.ksp_frobenius], options)
+		_setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
 		self.trial_dg0 = fenics.TrialFunction(self.form_handler.DG0)
 		self.test_dg0 = fenics.TestFunction(self.form_handler.DG0)
@@ -585,7 +585,7 @@ class _MeshHandler:
 		else:
 			self.search_direction_container.vector()[:] = search_direction.vector()[:]
 			A, b = _assemble_petsc_system(self.a_frobenius, self.L_frobenius)
-			x = _solve_linear_problem(self.ksp_frobenius, A, b)
+			x = _solve_linear_problem(self.ksp_frobenius, A, b, ksp_options=self.options_frobenius)
 
 			frobenius_norm = np.max(x[:])
 			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2)
@@ -602,16 +602,16 @@ class _MeshHandler:
 		None
 		"""
 
-		options = [[
+		self.options_prior = [
 			['ksp_type', 'preonly'],
 			['pc_type', 'jacobi'],
 			['pc_jacobi_type', 'diagonal'],
 			['ksp_rtol', 1e-16],
 			['ksp_atol', 1e-20],
 			['ksp_max_it', 1000]
-		]]
+		]
 		self.ksp_prior = PETSc.KSP().create()
-		_setup_petsc_options([self.ksp_prior], options)
+		_setup_petsc_options([self.ksp_prior], [self.options_prior])
 
 		self.transformation_container = fenics.Function(self.form_handler.deformation_space)
 		dim = self.mesh.geometric_dimension()
@@ -648,7 +648,7 @@ class _MeshHandler:
 
 		self.transformation_container.vector()[:] = transformation.vector()[:]
 		A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
-		x = _solve_linear_problem(self.ksp_prior, A, b)
+		x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
 
 		min_det = np.min(x[:])
 		max_det = np.max(x[:])
@@ -1256,16 +1256,16 @@ class MeshQuality:
 		jac = Jacobian(mesh)
 		inv = JacobianInverse(mesh)
 
-		options = [[
+		options = [
 				['ksp_type', 'preonly'],
 				['pc_type', 'jacobi'],
 				['pc_jacobi_type', 'diagonal'],
 				['ksp_rtol', 1e-16],
 				['ksp_atol', 1e-20],
 				['ksp_max_it', 1000]
-			]]
+			]
 		ksp = PETSc.KSP().create()
-		_setup_petsc_options([ksp], options)
+		_setup_petsc_options([ksp], [options])
 
 		dx = fenics.Measure('dx', mesh)
 		a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
@@ -1274,7 +1274,7 @@ class MeshQuality:
 		cond = fenics.Function(DG0)
 
 		A, b = _assemble_petsc_system(a, L)
-		_solve_linear_problem(ksp, A, b, cond.vector().vec())
+		_solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
 		cond.vector().apply('')
 
 		return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
@@ -1304,16 +1304,16 @@ class MeshQuality:
 		jac = Jacobian(mesh)
 		inv = JacobianInverse(mesh)
 
-		options = [[
+		options = [
 				['ksp_type', 'preonly'],
 				['pc_type', 'jacobi'],
 				['pc_jacobi_type', 'diagonal'],
 				['ksp_rtol', 1e-16],
 				['ksp_atol', 1e-20],
 				['ksp_max_it', 1000]
-			]]
+			]
 		ksp = PETSc.KSP().create()
-		_setup_petsc_options([ksp], options)
+		_setup_petsc_options([ksp], [options])
 
 		dx = fenics.Measure('dx', mesh)
 		a = fenics.TrialFunction(DG0)*fenics.TestFunction(DG0)*dx
@@ -1322,7 +1322,7 @@ class MeshQuality:
 		cond = fenics.Function(DG0)
 
 		A, b = _assemble_petsc_system(a, L)
-		_solve_linear_problem(ksp, A, b, cond.vector().vec())
+		_solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
 		cond.vector().apply('')
 
 		return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])

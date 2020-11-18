@@ -107,11 +107,11 @@ class BaseHessianProblem:
 			['ksp_atol', 1e-50],
 			['ksp_max_it', 100]
 		]
-		riesz_ksp_options = []
+		self.riesz_ksp_options = []
 		for i in range(self.control_dim):
-			riesz_ksp_options.append(option)
+			self.riesz_ksp_options.append(option)
 
-		_setup_petsc_options(self.ksps, riesz_ksp_options)
+		_setup_petsc_options(self.ksps, self.riesz_ksp_options)
 		for i, ksp in enumerate(self.ksps):
 			ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -149,12 +149,12 @@ class BaseHessianProblem:
 
 			for i in range(self.state_dim):
 				A, b = _assemble_petsc_system(self.form_handler.sensitivity_eqs_lhs[i], self.form_handler.sensitivity_eqs_rhs[i], self.bcs_list_ad[i])
-				_solve_linear_problem(self.state_ksps[i], A, b, self.states_prime[i].vector().vec())
+				_solve_linear_problem(self.state_ksps[i], A, b, self.states_prime[i].vector().vec(), self.form_handler.state_ksp_options[i])
 				self.states_prime[i].vector().apply('')
 
 			for i in range(self.state_dim):
 				A, b = _assemble_petsc_system(self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i], self.form_handler.w_1[-1 - i], self.bcs_list_ad[-1 - i])
-				_solve_linear_problem(self.adjoint_ksps[-1 - i], A, b, self.adjoints_prime[-1 - i].vector().vec())
+				_solve_linear_problem(self.adjoint_ksps[-1 - i], A, b, self.adjoints_prime[-1 - i].vector().vec(), self.form_handler.adjoint_ksp_options[-1 - i])
 				self.adjoints_prime[-1 - i].vector().apply('')
 
 		else:
@@ -184,7 +184,7 @@ class BaseHessianProblem:
 
 				for j in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.sensitivity_eqs_lhs[j], self.form_handler.sensitivity_eqs_rhs[j], self.bcs_list_ad[j])
-					_solve_linear_problem(self.state_ksps[j], A, b, self.states_prime[j].vector().vec())
+					_solve_linear_problem(self.state_ksps[j], A, b, self.states_prime[j].vector().vec(), self.form_handler.state_ksp_options[j])
 					self.states_prime[j].vector().apply('')
 
 			if self.picard_verbose:
@@ -216,7 +216,7 @@ class BaseHessianProblem:
 
 				for j in range(self.form_handler.state_dim):
 					A, b = _assemble_petsc_system(self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - j], self.form_handler.w_1[-1 - j], self.bcs_list_ad[-1 - j])
-					_solve_linear_problem(self.adjoint_ksps[-1 - j], A, b, self.adjoints_prime[-1 - j].vector().vec())
+					_solve_linear_problem(self.adjoint_ksps[-1 - j], A, b, self.adjoints_prime[-1 - j].vector().vec(), self.form_handler.adjoint_ksp_options[-1 - j])
 					self.adjoints_prime[-1 - j].vector().apply('')
 
 			if self.picard_verbose:
@@ -225,7 +225,7 @@ class BaseHessianProblem:
 		for i in range(self.control_dim):
 			b = fenics.as_backend_type(fenics.assemble(self.form_handler.hessian_rhs[i])).vec()
 
-			_solve_linear_problem(self.ksps[i], b=b, x=out[i].vector().vec())
+			_solve_linear_problem(self.ksps[i], b=b, x=out[i].vector().vec(), ksp_options=self.riesz_ksp_options[i])
 			out[i].vector().apply('')
 
 		self.no_sensitivity_solves += 2

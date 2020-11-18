@@ -31,7 +31,7 @@ from .utils import _setup_petsc_options, _solve_linear_problem
 
 
 def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2',
-						damped=True, verbose=True, ksp=None):
+						damped=True, verbose=True, ksp=None, ksp_options=None):
 	r"""A damped Newton method for solving nonlinear equations.
 
 	The damped Newton method is based on the natural monotonicity test from
@@ -90,6 +90,9 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 		The PETSc ksp object used to solve the inner (linear) problem
 		if this is ``None`` it uses the direct solver MUMPS (default is
 		``None``).
+	ksp_options : list[list[str]]
+		The list of options for the linear solver.
+
 
 	Returns
 	-------
@@ -131,15 +134,16 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 	# create the PETSc ksp
 	if ksp is None:
-		options = [[
-			['ksp_type', 'preonly'],
-			['pc_type', 'lu'],
-			['pc_factor_mat_solver_type', 'mumps'],
-			['mat_mumps_icntl_24', 1]
-		]]
+		if ksp_options is None:
+			ksp_options = [
+				['ksp_type', 'preonly'],
+				['pc_type', 'lu'],
+				['pc_factor_mat_solver_type', 'mumps'],
+				['mat_mumps_icntl_24', 1]
+			]
 
 		ksp = PETSc.KSP().create()
-		_setup_petsc_options([ksp], options)
+		_setup_petsc_options([ksp], [ksp_options])
 		ksp.setFromOptions()
 
 	# Calculate the Jacobian.
@@ -196,7 +200,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 		u_save.vector()[:] = u.vector()[:]
 
 		# Solve the inner problem
-		_solve_linear_problem(ksp, A, b, du.vector().vec())
+		_solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options)
 		du.vector().apply('')
 
 		# perform backtracking in case damping is used
@@ -205,7 +209,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 				u.vector()[:] += lmbd*du.vector()[:]
 				assembler.assemble(residuum)
 				b = fenics.as_backend_type(residuum).vec()
-				_solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec())
+				_solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options)
 				ddu.vector().apply('')
 
 				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) <= 1:
@@ -245,6 +249,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 			if verbose:
 				print('')
 				print('Newton Solver converged after ' + str(iterations) + ' iterations.')
+				print('')
 			break
 
 	return u

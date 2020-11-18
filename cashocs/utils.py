@@ -496,15 +496,15 @@ def _setup_petsc_options(ksps, ksp_options):
 
 	for i in range(len(ksps)):
 		opts.clear()
-
+		
 		for option in ksp_options[i]:
 			opts.set(*option)
-
+		
 		ksps[i].setFromOptions()
 
 
 
-def _solve_linear_problem(ksp=None, A=None, b=None, x=None):
+def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
 	"""Solves a finite dimensional linear problem.
 
 	Parameters
@@ -554,7 +554,15 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None):
 
 	if x is None:
 		x, _ = A.getVecs()
-
+	
+	if ksp_options is not None:
+		opts = fenics.PETScOptions
+		opts.clear()
+		
+		for option in ksp_options:
+			opts.set(*option)
+	
+	
 	ksp.solve(b, x)
 
 	if ksp.getConvergedReason() < 0:

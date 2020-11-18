@@ -843,16 +843,16 @@ class ShapeFormHandler(FormHandler):
 
 			# dx = self.dx
 
-			options = [[
+			self.options_mu = [
 				['ksp_type', 'cg'],
 				['pc_type', 'hypre'],
 				['pc_hypre_type', 'boomeramg'],
 				['ksp_rtol', 1e-16],
 				['ksp_atol', 1e-50],
 				['ksp_max_it', 100]
-			]]
+			]
 			self.ksp_mu = PETSc.KSP().create()
-			_setup_petsc_options([self.ksp_mu], options)
+			_setup_petsc_options([self.ksp_mu], [self.options_mu])
 
 			phi = fenics.TrialFunction(self.CG1)
 			psi = fenics.TestFunction(self.CG1)
@@ -881,7 +881,7 @@ class ShapeFormHandler(FormHandler):
 		if self.inhomogeneous_mu:
 
 			A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
-			x = _solve_linear_problem(self.ksp_mu, A, b)
+			x = _solve_linear_problem(self.ksp_mu, A, b, self.options_mu)
 
 			if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
 				self.mu_lame.vector()[:] = np.sqrt(x[:])

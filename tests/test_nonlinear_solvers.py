@@ -41,6 +41,6 @@ def test_newton_solver():
 	u_fen.vector()[:] = u.vector()[:]
 	u.vector()[:] = 0.0
 	cashocs.damped_newton_solve(F, u, bcs, rtol=1e-9, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2',
-							damped=False, verbose=True, ksp=None)
+							damped=False, verbose=True)
 
 	assert np.allclose(u.vector()[:], u_fen.vector()[:])
