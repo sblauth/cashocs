@@ -5,8 +5,14 @@ CASHOCS
     :target: https://pypi.org/project/cashocs/
     :alt: pypi
 
+.. image:: https://anaconda.org/conda-forge/cashocs/badges/version.svg
+    :target: https://anaconda.org/conda-forge/cashocs
+
+.. image:: https://anaconda.org/conda-forge/cashocs/badges/installer/conda.svg
+    :target: https://conda.anaconda.org/conda-forge
+
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4271392.svg
-   :target: https://doi.org/10.5281/zenodo.4271392
+    :target: https://doi.org/10.5281/zenodo.4271392
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
@@ -55,26 +61,43 @@ Note, that the full CASHOCS documentation is available at `<https://cashocs.read
 Installation
 ============
 
+Via conda-forge
+---------------
+
+CASHOCS is available via the anaconda package manager, and you can install it
+with ::
+
+    conda install -c conda-forge cashocs
+
+Alternatively, you might want to create a new, clean conda environment with the
+command ::
+
+    conda create -n <ENV_NAME> -c conda-forge cashocs
+
+where <ENV_NAME> is the desired name of the new environment.
+
+.. note::
+
+    `Gmsh <https://gmsh.info/>`_ is not automatically installed with anaconda, as this is not intrinsically
+    linked to CASHOCS. Instead, cashocs only provides an interface for importing meshes
+    generated with Gmsh. If you want to use Gmsh with cashocs, please use Gmsh 4.6 or higher.
+    See `https://gmsh.info/`_ for possibilities to install Gmsh.
+
+
+
+Manual Installation
+-------------------
+
 - First, install `FEniCS <https://fenicsproject.org/download/>`__, version 2019.1.
   Note, that FEniCS should be compiled with PETSc and petsc4py.
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
-  The version of meshio should be at least 4, but for compatibility it is recommended to use
-  either use meshio 4.1 or 4.2.
+  The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.2.
 
-- You might also want to install `GMSH <https://gmsh.info/>`_, version 4.6.
+- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.6.
   CASHOCS does not necessarily need this to function properly,
   but it is required for the remeshing functionality.
-
-.. note::
-
-    If you want to use `anaconda / miniconda <https://docs.conda.io/en/latest/index.html>`_,
-    you can simply create a new environment with::
-
-        conda create -n NAME -c conda-forge fenics=2019 meshio matplotlib gmsh=4.6
-
-    which automatically installs all prerequisites (including the optional ones of gmsh and matplotlib) to get started.
 
 .. note::
 
@@ -100,8 +123,6 @@ Installation
         git clone https://github.com/sblauth/cashocs.git
         cd cashocs
         pip3 install .
-
-
 
 
 .. note::
