@@ -81,7 +81,7 @@ where <ENV_NAME> is the desired name of the new environment.
     `Gmsh <https://gmsh.info/>`_ is not automatically installed with anaconda, as this is not intrinsically
     linked to CASHOCS. Instead, cashocs only provides an interface for importing meshes
     generated with Gmsh. If you want to use Gmsh with cashocs, please use Gmsh 4.6 or higher.
-    See `https://gmsh.info/`_ for possibilities to install Gmsh.
+    See `<https://gmsh.info/>`_ for possibilities to install Gmsh.
 
 
 
@@ -168,7 +168,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+along with CASHOCS.  If not, see '<https://www.gnu.org/licenses/>'_.
 
 
 .. readme_end_license
