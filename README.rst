@@ -11,8 +11,8 @@ CASHOCS
 .. image:: https://anaconda.org/conda-forge/cashocs/badges/installer/conda.svg
     :target: https://conda.anaconda.org/conda-forge
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4271392.svg
-    :target: https://doi.org/10.5281/zenodo.4271392
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4282513.svg
+    :target: https://doi.org/10.5281/zenodo.4282513
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
