@@ -415,6 +415,7 @@ class OptimalControlProblem(OptimizationProblem):
 		self.solver.post_processing()
 
 
+
 	def compute_gradient(self):
 		"""Solves the Riesz problem to determine the gradient.
 

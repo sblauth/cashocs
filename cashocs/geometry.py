@@ -770,7 +770,50 @@ class _MeshHandler:
 						file.write(line)
 					if line[:5] == 'Mesh.':
 						file.write(line)
+		
+	
+	
+	def __remove_gmsh_parametrizations(self, mesh_file):
+		"""Removes the parametrizations section from a Gmsh file.
+		
+		This is needed in case several remeshing iterations have to be
+		executed.
+		
+		Parameters
+		----------
+		mesh_file : str
+			Path to the Gmsh file.
 
+		Returns
+		-------
+		None
+		"""
+		
+		if not mesh_file[-4:] == '.msh':
+			raise InputError('cashocs.geometry.__remove_gmsh_parametrizations', 'mesh_file', 'Format for mesh_file is wrong, has to end in .msh')
+		
+		temp_location = mesh_file[:-4] + '_temp.msh'
+		
+		with open(mesh_file, 'r') as in_file, open(temp_location, 'w') as temp_file:
+			
+			parametrizations_section = False
+	
+			for line in in_file:
+				
+				if line == '$Parametrizations\n':
+					parametrizations_section = True
+	
+				if not parametrizations_section:
+					temp_file.write(line)
+				else:
+					pass
+				
+				if line == '$EndParametrizations\n':
+					parametrizations_section = False
+		
+		rename_command = 'mv ' + temp_location + ' ' + mesh_file
+		os.system(rename_command)
+		
 
 
 	def remesh(self):
@@ -809,7 +852,8 @@ class _MeshHandler:
 				os.system(gmsh_command + ' >/dev/null 2>&1')
 			else:
 				os.system(gmsh_command)
-
+			
+			self.__remove_gmsh_parametrizations(self.new_gmsh_file)
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
 
