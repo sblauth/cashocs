@@ -130,12 +130,8 @@ class ArmijoLineSearch:
 				if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
 
 					if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_upper:
-						if self.mesh_handler.do_remesh:
-							print('\nMesh Quality too low. Perform a remeshing operation.')
-							self.mesh_handler.remesh()
-						else:
-							print('Mesh Quality is too low.')
-							self.optimization_algorithm.line_search_broken = True
+						self.optimization_algorithm.requires_remeshing = True
+						break
 
 					if self.optimization_algorithm.iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
@@ -149,7 +145,7 @@ class ArmijoLineSearch:
 			else:
 				self.stepsize /= self.beta_armijo
 
-		if not self.optimization_algorithm.line_search_broken:
+		if not (self.optimization_algorithm.line_search_broken or self.optimization_algorithm.requires_remeshing):
 			self.optimization_algorithm.stepsize = self.stepsize
 			self.optimization_algorithm.objective_value = self.objective_step
 

@@ -89,6 +89,9 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 			if self.line_search_broken:
 				self.converged_reason = -2
 				break
+			if self.requires_remeshing:
+				self.converged_reason = -3
+				break
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:

@@ -44,6 +44,7 @@ class ShapeOptimizationAlgorithm:
 		"""
 
 		self.line_search_broken = False
+		self.requires_remeshing = False
 		self.has_curvature_info = False
 
 		self.optimization_problem = optimization_problem
@@ -182,7 +183,7 @@ class ShapeOptimizationAlgorithm:
 			with open(self.result_dir + '/history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
-		if self.optimization_problem.mesh_handler.do_remesh:
+		if self.converged and self.optimization_problem.mesh_handler.do_remesh:
 			os.system('rm -r ' + self.optimization_problem.temp_dir)
 
 		if self.optimization_problem.mesh_handler.save_optimized_mesh:
@@ -237,3 +238,17 @@ class ShapeOptimizationAlgorithm:
 				else:
 					self.finalize()
 					raise NotConvergedError('Armijo line search', 'Failed to compute a feasible Armijo step.')
+			
+			# Mesh Quality is too low
+			elif self.converged_reason == -3:
+				if self.optimization_problem.mesh_handler.do_remesh:
+					self.finalize()
+					print('\nMesh Quality too low. Perform a remeshing operation.')
+					self.optimization_problem.mesh_handler.remesh()
+				else:
+					if self.soft_exit:
+						print('Mesh Quality is too low.')
+						self.finalize()
+					else:
+						self.finalize()
+						raise NotConvergedError('Optimization Algorithm', 'Mesh Quality is too low.')

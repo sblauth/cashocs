@@ -86,7 +86,8 @@ def import_mesh(arg):
 	"""
 
 	start_time = time.time()
-	print('Importing mesh to FEniCS')
+	if not ('_cashocs_remesh_flag' in sys.argv):
+		print('Importing mesh to FEniCS')
 	# Check for the file format
 
 	if type(arg) == str:
@@ -105,7 +106,8 @@ def import_mesh(arg):
 				with open(temp_dir + '/temp_dict.json', 'r') as file:
 					temp_dict = json.load(file)
 				mesh_file = temp_dict['mesh_file']
-
+				
+				
 	else:
 		raise InputError('cashocs.geometry.import_mesh', 'arg', 'Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.')
 
@@ -139,12 +141,76 @@ def import_mesh(arg):
 	dS = fenics.Measure('dS', domain=mesh, subdomain_data=boundaries)
 
 	end_time = time.time()
-	print('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s')
-	print('')
+	if not ('_cashocs_remesh_flag' in sys.argv):
+		print('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s')
+		print('')
 
 	# Add an attribute to the mesh to show with what procedure it was generated
 	mesh._cashocs_generator = mesh_attribute
 
+	# Check the mesh quality of the imported mesh in case a config file is passed
+	if type(arg) == configparser.ConfigParser:
+		mesh_quality_tol_lower = arg.getfloat('MeshQuality', 'tol_lower', fallback=0.0)
+		mesh_quality_tol_upper =  arg.getfloat('MeshQuality', 'tol_upper', fallback=1e-15)
+		
+		if not mesh_quality_tol_lower < mesh_quality_tol_upper:
+			raise ConfigError('MeshQuality', 'tol_lower', 'The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance')
+	
+		if mesh_quality_tol_lower > 0.9*mesh_quality_tol_upper:
+			warnings.warn('You are using a lower remesh tolerance close to the upper one. This may slow down the optimization considerably.')
+		
+		mesh_quality_measure = arg.get('MeshQuality', 'measure', fallback='skewness')
+		if not mesh_quality_measure in ['skewness', 'maximum_angle', 'radius_ratios', 'condition_number']:
+			raise ConfigError('MeshQuality', 'measure', 'Has to be one of \'skewness\', \'maximum_angle\', \'condition_number\', or \'radius_ratios\'.')
+	
+		mesh_quality_type = arg.get('MeshQuality', 'type', fallback='min')
+		if not mesh_quality_type in ['min', 'minimum', 'avg', 'average']:
+			raise ConfigError('MeshQuality', 'type', 'Has to be one of \'min\', \'minimum\', \'avg\', or \'average\'.')
+		
+		if mesh_quality_type in ['min', 'minimum']:
+			if mesh_quality_measure == 'skewness':
+				current_mesh_quality = MeshQuality.min_skewness(mesh)
+			elif mesh_quality_measure == 'maximum_angle':
+				current_mesh_quality = MeshQuality.min_maximum_angle(mesh)
+			elif mesh_quality_measure == 'radius_ratios':
+				current_mesh_quality = MeshQuality.min_radius_ratios(mesh)
+			elif mesh_quality_measure == 'condition_number':
+				current_mesh_quality = MeshQuality.min_condition_number(mesh)
+	
+		else:
+			if mesh_quality_measure == 'skewness':
+				current_mesh_quality = MeshQuality.avg_skewness(mesh)
+			elif mesh_quality_measure == 'maximum_angle':
+				current_mesh_quality = MeshQuality.avg_maximum_angle(mesh)
+			elif mesh_quality_measure == 'radius_ratios':
+				current_mesh_quality = MeshQuality.avg_radius_ratios(mesh)
+			elif mesh_quality_measure == 'condition_number':
+				current_mesh_quality = MeshQuality.avg_condition_number(mesh)
+		
+		if not ('_cashocs_remesh_flag' in sys.argv):
+			if current_mesh_quality < mesh_quality_tol_lower:
+				raise InputError('cashocs.geometry.import_mesh', 'arg',
+								 'The quality of the mesh file you have specified is not sufficient for evaluating the cost functional.\n'
+								 'It currently is ' + format(current_mesh_quality, '.3e') + ' but has to be at least ' + format(mesh_quality_tol_lower, '.3e') + '.')
+			
+			if current_mesh_quality < mesh_quality_tol_upper:
+				raise InputError('cashocs.geometry.import_mesh', 'arg',
+								 'The quality of the mesh file you have specified is not sufficient for computing the shape gradient.\n '
+								 'It currently is ' + format(current_mesh_quality, '.3e') + ' but has to be at least ' + format(mesh_quality_tol_upper, '.3e') + '.')
+		
+		else:
+			if current_mesh_quality < mesh_quality_tol_lower:
+				raise InputError('cashocs.geometry.import_mesh', 'arg',
+								 'Remeshing failed.\n'
+								 'The quality of the mesh file generated through remeshing is not sufficient for evaluating the cost functional.\n'
+								 'It currently is ' + format(current_mesh_quality, '.3e') + ' but has to be at least ' + format(mesh_quality_tol_lower, '.3e') + '.')
+			
+			if current_mesh_quality < mesh_quality_tol_upper:
+				raise InputError('cashocs.geometry.import_mesh', 'arg',
+								 'Remeshing failed.\n'
+								 'The quality of the mesh file generated through remeshing is not sufficient for computing the shape gradient.\n '
+								 'It currently is ' + format(current_mesh_quality, '.3e') + ' but has to be at least ' + format(mesh_quality_tol_upper, '.3e') + '.')
+		
 	return mesh, subdomains, boundaries, dx, ds, dS
 
 
@@ -857,19 +923,12 @@ class _MeshHandler:
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
 
-			# rename_command = 'mv ' + self.temp_file + ' ' + self.new_gmsh_file
-			# os.system(rename_command)
-
 			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.xdmf'
 			convert_command = 'cashocs-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file
 			os.system(convert_command)
 
 			self.temp_dict['mesh_file'] = self.new_xdmf_file
 			self.temp_dict['gmsh_file'] = self.new_gmsh_file
-
-			# test, whether the same geometry is remeshed again
-			if self.temp_dict['OptimizationRoutine']['iteration_counter'] == self.shape_optimization_problem.solver.iteration:
-				raise Exception('Remeshing the geometry failed. Exiting.')
 
 			self.temp_dict['OptimizationRoutine']['iteration_counter'] = self.shape_optimization_problem.solver.iteration + 1
 			self.temp_dict['OptimizationRoutine']['gradient_norm_initial'] = self.shape_optimization_problem.solver.gradient_norm_initial
