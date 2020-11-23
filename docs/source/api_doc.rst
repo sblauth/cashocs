@@ -107,6 +107,11 @@ damped_newton_solve
 .. autofunction:: cashocs.damped_newton_solve
 
 
+set_log_level
+*************
+.. autofunction:: cashocs.set_log_level
+
+
 .. _sub_modules:
 
 Sub-Modules

@@ -11,7 +11,7 @@ of the maintenance releases, please take a look at
 
 - Added the functionality for cashocs to be used as a solver only, where users can specify
   their custom adjoint equations and (shape) derivatives for the optimization
-  problems. This is documented at `https://cashocs.readthedocs.io/en/latest/demos/cashocs_as_solver/solver_index.html`_.
+  problems. This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/cashocs_as_solver/solver_index.html>`_.
 
 - Using ``cashocs.create_config`` is deprecated and replaced by ``cashocs.load_config``,
   but the former will still be supported.
