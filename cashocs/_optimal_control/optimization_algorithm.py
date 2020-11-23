@@ -162,12 +162,10 @@ class OptimizationAlgorithm:
 		"""
 		
 		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+			print('\nStatistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
 			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
 	
 	
 	
@@ -227,7 +225,8 @@ class OptimizationAlgorithm:
 			if self.converged_reason == -1:
 				self.print_results()
 				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
+					if self.verbose:
+						print('Maximum number of iterations exceeded.')
 					self.finalize()
 				else:
 					self.finalize()
@@ -236,7 +235,8 @@ class OptimizationAlgorithm:
 			# Armijo line search failed
 			elif self.converged_reason == -2:
 				if self.soft_exit:
-					print('Armijo rule failed.')
+					if self.verbose:
+						print('Armijo rule failed.')
 					self.finalize()
 				else:
 					self.finalize()

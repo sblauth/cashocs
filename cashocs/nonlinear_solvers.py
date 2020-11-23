@@ -247,9 +247,7 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 		if res < tol:
 			if verbose:
-				print('')
-				print('Newton Solver converged after ' + str(iterations) + ' iterations.')
-				print('')
+				print('\nNewton Solver converged after ' + str(iterations) + ' iterations.\n')
 			break
 
 	return u

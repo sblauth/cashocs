@@ -187,7 +187,8 @@ class InnerCG(OptimizationAlgorithm):
 			self.line_search.search(self.search_directions)
 			if self.armijo_broken:
 				if self.soft_exit:
-					print('Armijo rule failed.')
+					if self.verbose:
+						print('Armijo rule failed.')
 					break
 				else:
 					raise NotConvergedError('Armijo line search')
@@ -196,7 +197,8 @@ class InnerCG(OptimizationAlgorithm):
 			if self.iteration >= self.maximum_iterations:
 				# self.print_results()
 				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
+					if self.verbose:
+						print('Maximum number of iterations exceeded.')
 					break
 				else:
 					raise NotConvergedError('nonlinear CG method for the primal dual active set method', 'Maximum number of iterations were exceeded.')

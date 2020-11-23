@@ -33,6 +33,7 @@ from petsc4py import PETSc
 from ufl.measure import Measure
 
 from ._exceptions import InputError, PETScKSPError
+from ._loggers import warning
 
 
 
@@ -78,7 +79,7 @@ def summation(x):
 
 	if len(x) == 0:
 		y = fenics.Constant(0.0)
-		print('Careful, empty list handed to summ')
+		warning('Empty list handed to summ, returning 0.')
 	else:
 		y = x[0]
 
@@ -124,7 +125,7 @@ def multiplication(x):
 
 	if len(x) == 0:
 		y = fenics.Constant(1.0)
-		print('Careful, empty list handed to multiplication')
+		warning('Empty list handed to multiplication, returning 1.')
 	else:
 		y = x[0]
 

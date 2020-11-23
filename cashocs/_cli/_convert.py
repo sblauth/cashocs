@@ -46,9 +46,7 @@ def convert(argv=None):
 	outputfile = args.outfile
 	# Check that the inputfile has .msh file format
 	if not (inputfile[-4:] == '.msh'):
-		print('Error: Cannot use the current file format as input')
-		print('')
-		# usage()
+		print('Error: Cannot use the current file format as input.')
 		sys.exit(2)
 
 	# Check that the outputfile has .xdmf format
@@ -56,9 +54,7 @@ def convert(argv=None):
 		oformat = '.xdmf'
 		ostring = outputfile[:-5]
 	else:
-		print('Error: Cannot use the current file format as output')
-		print('')
-		# usage()
+		print('Error: Cannot use the current file format as output.')
 		sys.exit(2)
 
 	mesh_collection = meshio.read(inputfile)
@@ -75,8 +71,6 @@ def convert(argv=None):
 		meshdim = 2
 	else:
 		print('Error: This is not a valid input mesh.')
-		print('')
-		# usage()
 		sys.exit(2)
 
 	if meshdim == 2:

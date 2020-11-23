@@ -24,6 +24,7 @@ import os
 
 import fenics
 
+from .._loggers import info, error
 from ..utils import write_out_mesh
 from .._exceptions import NotConvergedError
 
@@ -158,12 +159,10 @@ class ShapeOptimizationAlgorithm:
 		"""
 		
 		if self.verbose:
-			print('')
-			print('Statistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+			print('\nStatistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
 			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
-				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves))
-			print('')
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
 	
 	
 	
@@ -224,7 +223,8 @@ class ShapeOptimizationAlgorithm:
 			if self.converged_reason == -1:
 				self.print_results()
 				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
+					if self.verbose:
+						print('Maximum number of iterations exceeded.')
 					self.finalize()
 				else:
 					self.finalize()
@@ -233,7 +233,8 @@ class ShapeOptimizationAlgorithm:
 			# Armijo line search failed
 			elif self.converged_reason == -2:
 				if self.soft_exit:
-					print('Armijo rule failed.')
+					if self.verbose:
+						print('Armijo rule failed.')
 					self.finalize()
 				else:
 					self.finalize()
@@ -243,11 +244,11 @@ class ShapeOptimizationAlgorithm:
 			elif self.converged_reason == -3:
 				if self.optimization_problem.mesh_handler.do_remesh:
 					self.finalize()
-					print('\nMesh Quality too low. Perform a remeshing operation.')
+					info('Mesh Quality too low. Perform a remeshing operation.')
 					self.optimization_problem.mesh_handler.remesh()
 				else:
 					if self.soft_exit:
-						print('Mesh Quality is too low.')
+						error('Mesh Quality is too low.')
 						self.finalize()
 					else:
 						self.finalize()

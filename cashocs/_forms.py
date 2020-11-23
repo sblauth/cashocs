@@ -23,7 +23,6 @@ problems.
 """
 
 import json
-import warnings
 
 import fenics
 import numpy as np
@@ -34,6 +33,7 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from ufl.log import UFLException
 
 from ._exceptions import ConfigError, InputError, CashocsException
+from ._loggers import warning
 from ._shape_optimization import Regularization
 from .utils import (_assemble_petsc_system, _optimization_algorithm_configuration, _setup_petsc_options, _solve_linear_problem, create_bcs_list, summation)
 
@@ -749,8 +749,8 @@ class ShapeFormHandler(FormHandler):
 						self.material_derivative_coeffs.append(coeff)
 	
 			if len(self.material_derivative_coeffs) > 0:
-				warnings.warn('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n '
-							  'You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test ')
+				warning('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n'
+							  'You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test\n')
 	
 			for coeff in self.material_derivative_coeffs:
 				# temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())

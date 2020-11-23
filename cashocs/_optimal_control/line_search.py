@@ -22,6 +22,8 @@
 import fenics
 import numpy as np
 
+
+from .._loggers import error
 from ..utils import _optimization_algorithm_configuration
 
 
@@ -115,14 +117,14 @@ class ArmijoLineSearch:
 
 		while True:
 			if self.stepsize*self.search_direction_inf <= 1e-8:
-				print('\nStepsize too small.')
+				error('Stepsize too small.')
 				self.optimization_algorithm.line_search_broken = True
 				for j in range(self.form_handler.control_dim):
 					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
 				self.optimization_algorithm.line_search_broken = True
-				print('\nStepsize too small.')
+				error('Stepsize too small.')
 				for j in range(self.form_handler.control_dim):
 					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
 				break

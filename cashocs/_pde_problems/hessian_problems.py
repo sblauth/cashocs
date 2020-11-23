@@ -26,6 +26,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._loggers import debug
 from .._exceptions import ConfigError, NotConvergedError, CashocsException
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
@@ -336,7 +337,7 @@ class HessianProblem(BaseHessianProblem):
 
 			self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
 			self.eps = np.sqrt(self.rsnew)
-			# print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
+			debug('Residual of the CG method: ' + format(self.eps / self.eps_0, '.3e') + ' (relative)')
 			if self.eps / self.eps_0 < self.inner_newton_tolerance:
 				break
 
@@ -386,7 +387,7 @@ class HessianProblem(BaseHessianProblem):
 				self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
 
 			self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-			# print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
+			debug('Residual of the CR method: ' + format(self.eps / self.eps_0, '.3e') + ' (relative)')
 			if self.eps / self.eps_0 < self.inner_newton_tolerance or i == self.max_it_inner_newton - 1:
 				break
 
@@ -483,7 +484,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
 			self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
 			self.eps = np.sqrt(self.rsnew)
-			# print('Eps (CG): ' + str(self.eps / self.eps_0) + ' (rel)')
+			debug('Residual of the CG method: ' + format(self.eps / self.eps_0, '.3e') + ' (relative)')
 			if self.eps/self.eps_0 < self.inner_newton_tolerance:
 				break
 
@@ -519,7 +520,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 				self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
 
 			self.eps = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
-			# print('Eps (cr): ' + str(self.eps / self.eps_0) + ' (relative)')
+			debug('Residual of the CR method: ' + format(self.eps / self.eps_0, '.3e') + ' (relative)')
 			if self.eps/self.eps_0 < self.inner_newton_tolerance or i==self.max_it_inner_newton - 1:
 				break
 

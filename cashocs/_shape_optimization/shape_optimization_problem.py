@@ -23,7 +23,6 @@ import json
 import os
 import sys
 import tempfile
-import warnings
 
 import fenics
 import numpy as np
@@ -31,6 +30,7 @@ from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .methods import CG, GradientDescent, LBFGS
+from .._loggers import debug, warning
 from .._exceptions import ConfigError, InputError, CashocsException
 from .._forms import Lagrangian, ShapeFormHandler
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
@@ -107,7 +107,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 			try:
 				if __IPYTHON__:
-					warnings.warn('You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command.')
+					warning('You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command.')
 			except NameError:
 				pass
 
@@ -274,7 +274,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		"""
 
 		def custom_except_hook(exctype, value, traceback):
-			# print('DEBUG: Caught the exception, deleting temp files')
+			debug('An exception was raised by cashocs, deleting the created temporary files.')
 			os.system('rm -r ' + self.temp_dir)
 			sys.__excepthook__(exctype, value, traceback)
 

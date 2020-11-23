@@ -24,6 +24,7 @@ from _collections import deque
 import fenics
 import numpy as np
 
+from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
@@ -140,7 +141,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_direction, self.gradient)
 			if self.directional_derivative > 0:
-				# print('No descent direction found')
+				debug('No descent direction found with L-BFGS')
 				self.search_direction.vector()[:] = - self.gradient.vector()[:]
 
 			self.line_search.search(self.search_direction, self.has_curvature_info)

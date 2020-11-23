@@ -19,11 +19,8 @@
 
 """
 
-import warnings
-
 import fenics
 import numpy as np
-from ufl import replace
 
 from .methods import CG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError

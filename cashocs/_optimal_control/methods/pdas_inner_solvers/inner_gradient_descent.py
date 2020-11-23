@@ -106,7 +106,8 @@ class InnerGradientDescent(OptimizationAlgorithm):
 			self.line_search.search(self.search_directions)
 			if self.line_search_broken:
 				if self.soft_exit:
-					print('Armijo rule failed.')
+					if self.verbose:
+						print('Armijo rule failed.')
 					break
 				else:
 					raise NotConvergedError('Armijo line search')
@@ -114,7 +115,8 @@ class InnerGradientDescent(OptimizationAlgorithm):
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
 				if self.soft_exit:
-					print('Maximum number of iterations exceeded.')
+					if self.verbose:
+						print('Maximum number of iterations exceeded.')
 					break
 				else:
 					raise NotConvergedError('gradient descent method for the primal dual active set method', 'Maximum number of iterations were exceeded.')

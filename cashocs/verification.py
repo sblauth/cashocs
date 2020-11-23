@@ -19,13 +19,12 @@
 
 """
 
-import warnings
 
 import fenics
 import numpy as np
 
 from ._exceptions import InputError
-
+from ._loggers import warning
 
 
 def control_gradient_test(ocp, u=None, h=None):
@@ -111,7 +110,7 @@ def control_gradient_test(ocp, u=None, h=None):
 		residuals.append(res)
 
 	if np.min(residuals) < 1e-14:
-		warnings.warn('The Taylor remainder is close to 0, results may be inaccurate.')
+		warning('The Taylor remainder is close to 0, results may be inaccurate.')
 
 	rates = compute_convergence_rates(epsilons, residuals)
 
@@ -171,11 +170,11 @@ def shape_gradient_test(sop, h=None):
 			residuals.append(res)
 			sop.mesh_handler.revert_transformation()
 		else:
-			warnings.warn('Deformation did not yield a valid finite element mesh. Results of the test are probably not accurate.')
+			warning('Deformation did not yield a valid finite element mesh. Results of the test are probably not accurate.')
 			residuals.append(float('inf'))
 
 	if np.min(residuals) < 1e-14:
-		warnings.warn('The Taylor remainder is close to 0, results may be inaccurate.')
+		warning('The Taylor remainder is close to 0, results may be inaccurate.')
 
 	rates = compute_convergence_rates(epsilons, residuals)
 

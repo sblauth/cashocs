@@ -23,7 +23,6 @@ optimization problems.
 """
 
 import configparser
-import warnings
 
 import fenics
 import numpy as np
@@ -31,6 +30,7 @@ from ufl import replace
 
 from ._exceptions import InputError
 from ._forms import Lagrangian
+from ._loggers import warning
 
 
 
@@ -431,14 +431,14 @@ class OptimizationProblem:
 		"""
 		
 		if self.has_custom_adjoint and not self.has_custom_derivative:
-			warnings.warn('You only supplied the adjoint system. This might lead to unexpected results.'
-						  'Consider also supplying the (shape) derivative of the reduced cost functional,'
-						  'or check your approach with the cashocs.verification module.')
+			warning('You only supplied the adjoint system. This might lead to unexpected results.\n'
+					'Consider also supplying the (shape) derivative of the reduced cost functional,'
+					'or check your approach with the cashocs.verification module.')
 		
 		elif not self.has_custom_adjoint and self.has_custom_derivative:
-			warnings.warn('You only supplied the derivative of the reduced cost functional. This might lead to unexpected results.'
-						  'Consider also supplying the adjoint system, '
-						  'or check your approach with the cashocs.verification module.')
+			warning('You only supplied the derivative of the reduced cost functional. This might lead to unexpected results.\n'
+					'Consider also supplying the adjoint system, '
+					'or check your approach with the cashocs.verification module.')
 		
 		if self.algorithm == 'newton' and (self.has_custom_adjoint or self.has_custom_derivative):
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'solve', 'The usage of custom forms is not compatible with the Newton solver.'

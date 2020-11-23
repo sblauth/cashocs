@@ -21,6 +21,7 @@
 
 import numpy as np
 
+from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
 
 
@@ -87,7 +88,7 @@ class Newton(OptimizationAlgorithm):
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
 			if self.directional_derivative > 0:
 				self.has_curvature_info = False
-				# print('No descent direction')
+				debug('Did not compute a descent direction with Newton\'s method.')
 				for i in range(len(self.gradients)):
 					self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 			else:

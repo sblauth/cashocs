@@ -23,6 +23,7 @@ optimization problems, in particular, shape optimization and optimal control pro
 """
 
 from . import verification
+from ._loggers import LogLevel, set_log_level
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .geometry import import_mesh, regular_box_mesh, regular_mesh, MeshQuality

@@ -29,7 +29,6 @@ import json
 import os
 import sys
 import time
-import warnings
 
 import fenics
 import numpy as np
@@ -37,6 +36,7 @@ from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
 from ._exceptions import ConfigError, InputError, CashocsException
+from ._loggers import info, warning
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
 					_solve_linear_problem, write_out_mesh)
 
@@ -87,9 +87,9 @@ def import_mesh(arg):
 
 	start_time = time.time()
 	if not ('_cashocs_remesh_flag' in sys.argv):
-		print('Importing mesh to FEniCS')
+		info('Importing mesh.')
+		
 	# Check for the file format
-
 	if type(arg) == str:
 		mesh_file = arg
 		mesh_attribute = 'str'
@@ -142,8 +142,7 @@ def import_mesh(arg):
 
 	end_time = time.time()
 	if not ('_cashocs_remesh_flag' in sys.argv):
-		print('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s')
-		print('')
+		info('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s\n')
 
 	# Add an attribute to the mesh to show with what procedure it was generated
 	mesh._cashocs_generator = mesh_attribute
@@ -157,7 +156,7 @@ def import_mesh(arg):
 			raise ConfigError('MeshQuality', 'tol_lower', 'The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance')
 	
 		if mesh_quality_tol_lower > 0.9*mesh_quality_tol_upper:
-			warnings.warn('You are using a lower remesh tolerance close to the upper one. This may slow down the optimization considerably.')
+			warning('You are using a lower remesh tolerance (tol_lower) close to the upper one (tol_upper). This may slow down the optimization considerably.')
 		
 		mesh_quality_measure = arg.get('MeshQuality', 'measure', fallback='skewness')
 		if not mesh_quality_measure in ['skewness', 'maximum_angle', 'radius_ratios', 'condition_number']:
@@ -483,7 +482,7 @@ class _MeshHandler:
 			raise ConfigError('MeshQuality', 'tol_lower', 'The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance')
 
 		if self.mesh_quality_tol_lower > 0.9*self.mesh_quality_tol_upper:
-			warnings.warn('You are using a lower remesh tolerance close to the upper one. This may slow down the optimization considerably.')
+			warning('You are using a lower remesh tolerance (tol_lower) close to the upper one (tol_upper). This may slow down the optimization considerably.')
 
 		self.mesh_quality_measure = self.config.get('MeshQuality', 'measure', fallback='skewness')
 		if not self.mesh_quality_measure in ['skewness', 'maximum_angle', 'radius_ratios', 'condition_number']:
