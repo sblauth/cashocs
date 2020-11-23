@@ -43,8 +43,11 @@ class LogLevel:
 
 
 
-logging.basicConfig(format='%(name)s - %(levelname)s : %(message)s')
 _cashocs_logger = logging.getLogger('cashocs')
+_cashocs_handler = logging.StreamHandler()
+_cashocs_formatter = logging.Formatter('%(name)s - %(levelname)s : %(message)s')
+_cashocs_handler.setFormatter(_cashocs_formatter)
+_cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
 
