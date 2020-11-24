@@ -28,6 +28,7 @@ import fenics
 from fenics import Constant, div, inner
 
 from .._exceptions import ConfigError
+from ..utils import _assemble_petsc_system, _solve_linear_problem
 
 
 
@@ -144,7 +145,15 @@ class Regularization:
 		self.target_surface = self.config.getfloat('Regularization', 'target_surface', fallback=0.0)
 		if self.config.getboolean('Regularization', 'use_initial_surface', fallback=False):
 			self.target_surface = fenics.assemble(Constant(1)*self.ds)
-
+		
+		self.mu_curvature = self.config.getfloat('Regularization', 'factor_curvature', fallback=0.0)
+		if self.mu_curvature > 0.0:
+			self.kappa_curvature = fenics.Function(self.form_handler.deformation_space)
+			n = fenics.FacetNormal(self.form_handler.mesh)
+			x = fenics.SpatialCoordinate(self.form_handler.mesh)
+			self.a_curvature = inner(fenics.TrialFunction(self.form_handler.deformation_space), fenics.TestFunction(self.form_handler.deformation_space))*self.ds
+			self.L_curvature = inner(t_grad(x, n), t_grad(fenics.TestFunction(self.form_handler.deformation_space), n))*self.ds
+		
 		self.mu_barycenter = self.config.getfloat('Regularization', 'factor_barycenter', fallback=0.0)
 		self.target_barycenter_list = json.loads(self.config.get('Regularization', 'target_barycenter', fallback='[0,0,0]'))
 		
@@ -173,18 +182,15 @@ class Regularization:
 					self.target_barycenter_list[2] = (0.5*(pow(self.z_end, 2) - pow(self.z_start, 2))*self.delta_x*self.delta_y - fenics.assemble(self.spatial_coordinate[2]*self.dx)) / volume
 				else:
 					self.target_barycenter_list[2] = 0.0
-
-		if not (self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_barycenter >= 0.0):
+		
+				
+		if not (self.mu_volume >= 0.0 and self.mu_surface >= 0.0 and self.mu_curvature >= 0 and self.mu_barycenter >= 0.0):
 			raise ConfigError('Regularization', 'mu_volume, mu_surface, or mu_barycenter', 'All regularization constants have to be nonnegative.')
 
-		if self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_barycenter > 0.0:
+		if self.mu_volume > 0.0 or self.mu_surface > 0.0 or self.mu_curvature > 0.0 or self.mu_barycenter > 0.0:
 			self.has_regularization = True
 		else:
 			self.has_regularization = False
-
-		# self.relative_scaling = self.config.getboolean('Regularization', 'relative_scaling')
-		# if self.relative_scaling and self.has_regularization:
-		# 	self.scale_weights()
 
 		self.current_volume = fenics.Expression('val', degree=0, val=1.0)
 		self.current_surface = fenics.Expression('val', degree=0, val=1.0)
@@ -230,6 +236,31 @@ class Regularization:
 		self.current_barycenter_x.val = barycenter_x
 		self.current_barycenter_y.val = barycenter_y
 		self.current_barycenter_z.val = barycenter_z
+		
+		self.compute_curvature()
+	
+	
+	
+	def compute_curvature(self):
+		"""Computes the mean curvature vector of the geometry.
+		
+		Returns
+		-------
+		None
+		"""
+		
+		if self.mu_curvature > 0.0:
+			A = fenics.assemble(self.a_curvature, keep_diagonal=True)
+			A.ident_zeros()
+			A = fenics.as_backend_type(A).mat()
+			
+			b = fenics.assemble(self.L_curvature)
+			b = fenics.as_backend_type(b).vec()
+			
+			_solve_linear_problem(A=A, b=b, x=self.kappa_curvature.vector().vec())
+			
+		else:
+			pass
 
 
 
@@ -259,7 +290,12 @@ class Regularization:
 				surface = fenics.assemble(Constant(1.0)*self.ds)
 				# self.current_surface.val = surface
 				value += 0.5*self.mu_surface*pow(surface - self.target_surface, 2)
-
+			
+			if self.mu_curvature > 0.0:
+				self.compute_curvature()
+				curvature_val = fenics.assemble(fenics.inner(self.kappa_curvature, self.kappa_curvature)*self.ds)
+				value += 0.5*curvature_val
+			
 			if self.mu_barycenter > 0.0:
 				if not self.measure_hole:
 					volume = fenics.assemble(Constant(1)*self.dx)
@@ -303,12 +339,16 @@ class Regularization:
 
 		V = self.form_handler.test_vector_field
 		if self.has_regularization:
-
+			
+			x = fenics.SpatialCoordinate(self.form_handler.mesh)
 			n = fenics.FacetNormal(self.form_handler.mesh)
 			I = fenics.Identity(self.form_handler.mesh.geometric_dimension())
 
 			self.shape_form = Constant(self.mu_surface)*(self.current_surface - Constant(self.target_surface))*t_div(V, n)*self.ds
-
+			
+			self.shape_form += inner((I - (t_grad(x, n) + (t_grad(x, n)).T))*t_grad(V, n), t_grad(self.kappa_curvature, n))*self.ds \
+						+ Constant(0.5)*t_div(V, n)*t_div(self.kappa_curvature, n)*self.ds
+			
 			if not self.measure_hole:
 				self.shape_form += Constant(self.mu_volume)*(self.current_volume - Constant(self.target_volume))*div(V)*self.dx
 				self.shape_form += Constant(self.mu_barycenter)*(self.current_barycenter_x - Constant(self.target_barycenter_list[0]))\
