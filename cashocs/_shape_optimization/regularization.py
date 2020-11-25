@@ -150,8 +150,8 @@ class Regularization:
 			self.target_surface = fenics.assemble(Constant(1)*self.ds)
 		
 		self.mu_curvature = self.config.getfloat('Regularization', 'factor_curvature', fallback=0.0)
+		self.kappa_curvature = fenics.Function(self.form_handler.deformation_space)
 		if self.mu_curvature > 0.0:
-			self.kappa_curvature = fenics.Function(self.form_handler.deformation_space)
 			n = fenics.FacetNormal(self.form_handler.mesh)
 			x = fenics.SpatialCoordinate(self.form_handler.mesh)
 			self.a_curvature = inner(fenics.TrialFunction(self.form_handler.deformation_space), fenics.TestFunction(self.form_handler.deformation_space))*self.ds
@@ -351,7 +351,7 @@ class Regularization:
 
 			self.shape_form = Constant(self.mu_surface)*(self.current_surface - Constant(self.target_surface))*t_div(V, n)*self.ds
 			
-			self.shape_form += inner((I - (t_grad(x, n) + (t_grad(x, n)).T))*t_grad(V, n), t_grad(self.kappa_curvature, n))*self.ds \
+			self.shape_form += Constant(self.mu_curvature)*inner((I - (t_grad(x, n) + (t_grad(x, n)).T))*t_grad(V, n), t_grad(self.kappa_curvature, n))*self.ds \
 						+ Constant(0.5)*t_div(V, n)*t_div(self.kappa_curvature, n)*self.ds
 			
 			if not self.measure_hole:
