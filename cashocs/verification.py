@@ -153,8 +153,8 @@ def shape_gradient_test(sop, h=None):
 	shape_grad = sop.compute_shape_gradient()
 	shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
-	box_lower = np.max(sop.mesh_handler.mesh.coordinates())
-	box_upper = np.min(sop.mesh_handler.mesh.coordinates())
+	box_lower = np.min(sop.mesh_handler.mesh.coordinates())
+	box_upper = np.max(sop.mesh_handler.mesh.coordinates())
 	length = box_upper - box_lower
 
 	epsilons = [length*1e-4 / 2**i for i in range(4)]

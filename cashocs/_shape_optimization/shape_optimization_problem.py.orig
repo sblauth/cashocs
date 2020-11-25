@@ -55,8 +55,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
+<<<<<<< HEAD
 				 adjoints, boundaries, config=None, shape_scalar_product=None, initial_guess=None,
+				 ksp_options=None, adjoint_ksp_options=None):
+=======
+				 adjoints, boundaries, config=None, initial_guess=None,
 				 ksp_options=None, adjoint_ksp_options=None, desired_weights=None):
+>>>>>>> Scaling
 		"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
 
@@ -101,9 +106,14 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			as for the state systems are used (default is ``None``).
 		"""
 
+<<<<<<< HEAD
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
+		
+=======
 		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints,
 									 config, initial_guess, ksp_options, adjoint_ksp_options, desired_weights)
 
+>>>>>>> Scaling
 		### Initialize the remeshing behavior, and a temp file
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
@@ -171,6 +181,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
 				raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'shape_scalar_product', 'Not a valid type for shape_scalar_product.')
 		
 		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
+<<<<<<< HEAD
+											 self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
+											 self.shape_scalar_product, self.deformation_space)
+=======
 												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
 		
 		if self.do_remesh and not ('_cashocs_remesh_flag' in sys.argv):
@@ -181,6 +195,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 				'mu_barycenter' : self.form_handler.regularization.mu_barycenter
 			}
 		
+>>>>>>> Scaling
 		self.mesh_handler = _MeshHandler(self)
 		
 		self.state_spaces = self.form_handler.state_spaces
