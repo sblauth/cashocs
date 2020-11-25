@@ -23,6 +23,47 @@ import logging
 
 
 
+class ColorFormatter(logging.Formatter):
+	"""Logging Formatter for colored output.
+	
+	"""
+	
+	black = "\x1b[0;30m"
+	grey = "\x1b[0;37m"
+	green = "\x1b[0;32m"
+	yellow = "\x1b[0;33m"
+	red = "\x1b[0;31m"
+	bold_red = "\x1b[1;31m"
+	purple = "\x1b[0;35m"
+	blue = "\x1b[0;34m"
+	light_blue = "\x1b[0;36m"
+	reset = "\x1b[0m"
+	
+	format = "%(name)s - %(levelname)s - %(message)s"
+	
+	FORMATS = {
+		logging.DEBUG: green + format + reset,
+		logging.INFO: light_blue + format + reset,
+		logging.WARNING: yellow + format + reset,
+		logging.ERROR: red + format + reset,
+		logging.CRITICAL: bold_red + format + reset
+    }
+	
+	
+	
+	def __init__(self, *args, **kwargs):
+		logging.Formatter.__init__(self, *args, **kwargs)
+	
+	
+	
+	def format(self, record):
+		log_fmt = self.FORMATS.get(record.levelno)
+		formatter = logging.Formatter(log_fmt)
+		
+		return formatter.format(record)
+
+
+
 class LogLevel:
 	"""Stores the various log levels of cashocs.
 	
@@ -45,7 +86,7 @@ class LogLevel:
 
 _cashocs_logger = logging.getLogger('cashocs')
 _cashocs_handler = logging.StreamHandler()
-_cashocs_formatter = logging.Formatter('%(name)s - %(levelname)s : %(message)s')
+_cashocs_formatter = ColorFormatter()
 _cashocs_handler.setFormatter(_cashocs_formatter)
 _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
@@ -160,7 +201,7 @@ def error(message):
 	None
 	"""
 	
-	_cashocs_logger.error(message, exc_info=True)
+	_cashocs_logger.error(message)
 
 
 
@@ -177,4 +218,4 @@ def critical(message):
 	None
 	"""
 	
-	_cashocs_logger.critical(message, exc_info=True)
+	_cashocs_logger.critical(message)
