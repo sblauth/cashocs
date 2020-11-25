@@ -127,6 +127,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 								  'geo_file' : self.config.get('Mesh', 'geo_file'),
 								  'OptimizationRoutine' : {'iteration_counter' : 0, 'gradient_norm_initial' : 0.0},
 								  'output_dict' : {}}
+				
+				if self.use_cost_functional_list:
+					self.temp_dict['initial_function_values'] = self.initial_function_values
 
 			else:
 				self.temp_dir = sys.argv[-1]

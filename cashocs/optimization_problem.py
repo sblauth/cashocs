@@ -23,6 +23,8 @@ optimization problems.
 """
 
 import configparser
+import json
+import sys
 
 import fenics
 import numpy as np
@@ -488,22 +490,32 @@ class OptimizationProblem:
 	def _scale_cost_functional(self):
 		
 		if self.use_cost_functional_list:
-			# Create dummy objects for adjoints, so that we can actually solve the state problem
-			temp_form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.config, self.ksp_options, self.adjoint_ksp_options)
-			temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
 			
 			if self.desired_weights is not None:
-				temp_state_problem.solve()
-				self.initial_function_values = []
-				for i in range(len(self.cost_functional_list)):
-					val = fenics.assemble(self.cost_functional_list[i])
+				
+				if not ('_cashocs_remesh_flag' in sys.argv):
+					# Create dummy objects for adjoints, so that we can actually solve the state problem
+					temp_form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.config, self.ksp_options, self.adjoint_ksp_options)
+					temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
 					
-					if abs(val) <= 1e-15:
-						val = 1.0
-						warning('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+					temp_state_problem.solve()
+					self.initial_function_values = []
+					for i in range(len(self.cost_functional_list)):
+						val = fenics.assemble(self.cost_functional_list[i])
 						
-					self.initial_function_values.append(val)
-					
+						if abs(val) <= 1e-15:
+							val = 1.0
+							warning('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+							
+						self.initial_function_values.append(val)
+				
+				else:
+					temp_dir = sys.argv[-1]
+					with open(temp_dir + '/temp_dict.json', 'r') as file:
+						temp_dict = json.load(file)
+					self.initial_function_values = temp_dict['initial_function_values']
+				
+				
 				self.cost_functional_form = summation([fenics.Constant(self.desired_weights[i] / self.initial_function_values[i])*self.cost_functional_list[i]
 													   for i in range(len(self.cost_functional_list))])
 				self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
