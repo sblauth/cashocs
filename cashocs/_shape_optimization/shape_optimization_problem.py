@@ -145,6 +145,14 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
 												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
+		
+		if self.do_remesh and not ('_cashocs_remesh_flag' in sys.argv):
+			self.temp_dict['Regularization'] = {
+				'mu_volume' : self.form_handler.regularization.mu_volume,
+				'mu_surface' : self.form_handler.regularization.mu_surface,
+				'mu_barycenter' : self.form_handler.regularization.mu_barycenter
+			}
+		
 		self.mesh_handler = _MeshHandler(self)
 		
 		self.state_spaces = self.form_handler.state_spaces
