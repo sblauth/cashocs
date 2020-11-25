@@ -171,7 +171,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 				raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'shape_scalar_product', 'Not a valid type for shape_scalar_product.')
 		
 		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
-												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
+											 self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
+											 self.shape_scalar_product, self.deformation_space)
 		
 		if self.do_remesh and not ('_cashocs_remesh_flag' in sys.argv):
 			self.temp_dict['Regularization'] = {
