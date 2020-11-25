@@ -86,9 +86,8 @@ def import_mesh(arg):
 	"""
 
 	start_time = time.time()
-	if not ('_cashocs_remesh_flag' in sys.argv):
-		info('Importing mesh.')
-		
+	info('Importing mesh.')
+	
 	# Check for the file format
 	if type(arg) == str:
 		mesh_file = arg
@@ -141,8 +140,7 @@ def import_mesh(arg):
 	dS = fenics.Measure('dS', domain=mesh, subdomain_data=boundaries)
 
 	end_time = time.time()
-	if not ('_cashocs_remesh_flag' in sys.argv):
-		info('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s\n')
+	info('Done Importing Mesh. Elapsed Time: ' + format(end_time - start_time, '.3e') + ' s\n')
 
 	# Add an attribute to the mesh to show with what procedure it was generated
 	mesh._cashocs_generator = mesh_attribute
