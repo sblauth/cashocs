@@ -650,7 +650,7 @@ class ShapeFormHandler(FormHandler):
 	ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options):
+	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options, shape_scalar_product=None, deformation_space=None):
 		"""Initializes the ShapeFormHandler object.
 
 		Parameters
@@ -673,16 +673,24 @@ class ShapeFormHandler(FormHandler):
 		adjoint_ksp_options : list[list[list[str]]]
 			The list of command line options for the KSP for the
 			adjoint systems.
+		shape_scalar_product : ufl.form.Form
+			The weak form of the scalar product used to determine the
+			shape gradient.
 		"""
 
 		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
 
 		self.boundaries = boundaries
+		self.shape_scalar_product = shape_scalar_product
 
 		self.degree_estimation = self.config.getboolean('ShapeGradient', 'degree_estimation', fallback=False)
 		self.use_pull_back = self.config.getboolean('ShapeGradient', 'use_pull_back', fallback=True)
-
-		self.deformation_space = fenics.VectorFunctionSpace(self.mesh, 'CG', 1)
+		
+		if deformation_space is None:
+			self.deformation_space = fenics.VectorFunctionSpace(self.mesh, 'CG', 1)
+		else:
+			self.deformation_space = deformation_space
+			
 		self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
 		self.regularization = Regularization(self)
@@ -712,6 +720,11 @@ class ShapeFormHandler(FormHandler):
 		self.fe_shape_derivative_vector = fenics.PETScVector()
 
 		self.update_scalar_product()
+		
+		# test for symmetry
+		if not self.scalar_product_matrix.isSymmetric():
+			if not self.scalar_product_matrix.isSymmetric(1e-12):
+				raise InputError('cashocs._forms.ShapeFormHandler', 'shape_scalar_product', 'Supplied scalar product form is not symmetric.')
 
 		if self.opt_algo == 'newton' \
 				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
@@ -798,38 +811,47 @@ class ShapeFormHandler(FormHandler):
 		self.shape_bdry_fix_z = json.loads(self.config.get('ShapeGradient', 'shape_bdry_fix_z', fallback='[]'))
 		if not type(self.shape_bdry_fix_z) == list:
 			raise ConfigError('ShapeGradient', 'shape_bdry_fix_z', 'The input has to be a list.')
-
-
-		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
-		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
-
-		self.mu_lame = fenics.Function(self.CG1)
-		self.lambda_lame = self.config.getfloat('ShapeGradient', 'lambda_lame', fallback=0.0)
-		self.damping_factor = self.config.getfloat('ShapeGradient', 'damping_factor', fallback=0.0)
-
-		if self.config.getboolean('ShapeGradient', 'inhomogeneous', fallback = False):
-			self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
-			vol_max = np.max(np.abs(self.volumes.vector()[:]))
-			self.volumes.vector()[:] /= vol_max
-
-		else:
-			self.volumes = fenics.Constant(1.0)
-
-		def eps(u):
-			return fenics.Constant(0.5)*(fenics.grad(u) + fenics.grad(u).T)
-
-		trial = fenics.TrialFunction(self.deformation_space)
-		test = fenics.TestFunction(self.deformation_space)
-
-		self.riesz_scalar_product = fenics.Constant(2)*self.mu_lame/self.volumes*fenics.inner(eps(trial), eps(test))*self.dx \
-									+ fenics.Constant(self.lambda_lame)/self.volumes*fenics.div(trial)*fenics.div(test)*self.dx \
-									+ fenics.Constant(self.damping_factor)/self.volumes*fenics.inner(trial, test)*self.dx
-
+		
 		self.bcs_shape = create_bcs_list(self.deformation_space, fenics.Constant([0]*self.deformation_space.ufl_element().value_size()), self.boundaries, self.shape_bdry_fix)
 		self.bcs_shape += create_bcs_list(self.deformation_space.sub(0), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_x)
 		self.bcs_shape += create_bcs_list(self.deformation_space.sub(1), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_y)
 		if self.deformation_space.num_sub_spaces() == 3:
 			self.bcs_shape += create_bcs_list(self.deformation_space.sub(2), fenics.Constant(0.0), self.boundaries, self.shape_bdry_fix_z)
+		
+		
+		self.CG1 = fenics.FunctionSpace(self.mesh, 'CG', 1)
+		self.DG0 = fenics.FunctionSpace(self.mesh, 'DG', 0)
+		
+		if self.shape_scalar_product is None:
+			# Use the default linear elasticity approach
+	
+			self.mu_lame = fenics.Function(self.CG1)
+			self.lambda_lame = self.config.getfloat('ShapeGradient', 'lambda_lame', fallback=0.0)
+			self.damping_factor = self.config.getfloat('ShapeGradient', 'damping_factor', fallback=0.0)
+	
+			if self.config.getboolean('ShapeGradient', 'inhomogeneous', fallback = False):
+				self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
+				vol_max = np.max(np.abs(self.volumes.vector()[:]))
+				self.volumes.vector()[:] /= vol_max
+	
+			else:
+				self.volumes = fenics.Constant(1.0)
+	
+			def eps(u):
+				return fenics.Constant(0.5)*(fenics.grad(u) + fenics.grad(u).T)
+	
+			trial = fenics.TrialFunction(self.deformation_space)
+			test = fenics.TestFunction(self.deformation_space)
+	
+			self.riesz_scalar_product = fenics.Constant(2)*self.mu_lame/self.volumes*fenics.inner(eps(trial), eps(test))*self.dx \
+										+ fenics.Constant(self.lambda_lame)/self.volumes*fenics.div(trial)*fenics.div(test)*self.dx \
+										+ fenics.Constant(self.damping_factor)/self.volumes*fenics.inner(trial, test)*self.dx
+			
+		else:
+			# Use the scalar product supplied by the user
+			
+			self.riesz_scalar_product = self.shape_scalar_product
+		
 
 
 
@@ -877,22 +899,24 @@ class ShapeFormHandler(FormHandler):
 		-------
 		None
 		"""
-
-		if self.inhomogeneous_mu:
-
-			A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
-			x = _solve_linear_problem(self.ksp_mu, A, b, ksp_options=self.options_mu)
-
-			if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
-				self.mu_lame.vector()[:] = np.sqrt(x[:])
-			else:
-				self.mu_lame.vector()[:] = x[:]
-
-		else:
-			self.mu_lame.vector()[:] = self.mu_fix
 		
-		# for mpi compatibility
-		self.mu_lame.vector().apply('')
+		if self.shape_scalar_product is None:
+			if self.inhomogeneous_mu:
+	
+				A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
+				x = _solve_linear_problem(self.ksp_mu, A, b, ksp_options=self.options_mu)
+	
+				if self.config.getboolean('ShapeGradient', 'use_sqrt_mu', fallback=False):
+					self.mu_lame.vector()[:] = np.sqrt(x[:])
+				else:
+					self.mu_lame.vector()[:] = x[:]
+	
+			else:
+				self.mu_lame.vector()[:] = self.mu_fix
+			
+			# for mpi compatibility
+			self.mu_lame.vector().apply('')
+
 
 
 	def update_scalar_product(self):
@@ -905,7 +929,7 @@ class ShapeFormHandler(FormHandler):
 		-------
 		None
 		"""
-
+		
 		self.__compute_mu_elas()
 
 		self.assembler.assemble(self.fe_scalar_product_matrix)

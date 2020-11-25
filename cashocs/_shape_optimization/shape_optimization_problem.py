@@ -55,7 +55,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
-				 adjoints, boundaries, config=None, initial_guess=None,
+				 adjoints, boundaries, config=None, shape_scalar_product=None, initial_guess=None,
 				 ksp_options=None, adjoint_ksp_options=None):
 		"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
@@ -82,6 +82,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			are used, except for the optimization algorithm. This has then to be specified
 			in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
 			default is ``None``.
+		shape_scalar_product : ufl.form.Form
+			The bilinear form for computing the shape gradient (or gradient deformation).
+			This has to use :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
+			objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
+			of continuous, linear Lagrange finite elements. Moreover, this form is required to be
+			symmetric.
 		initial_guess : list[dolfin.function.function.Function], optional
 			List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
 			Defaults to ``None``, which means a zero initial guess.
@@ -96,7 +102,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		"""
 
 		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
-
+		
 		### Initialize the remeshing behavior, and a temp file
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
 		self.temp_dict = None
@@ -138,9 +144,31 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			self.boundaries = boundaries
 		else:
 			raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'boundaries', 'Not a valid type for boundaries.')
-
+		
+		# shape_scalar_product
+		if shape_scalar_product is None:
+			self.shape_scalar_product = shape_scalar_product
+			self.deformation_space = None
+			
+		else:
+			if shape_scalar_product.__module__ == 'ufl.form' and type(shape_scalar_product).__name__ == 'Form':
+				if len(shape_scalar_product.arguments()) == 2:
+					family = shape_scalar_product.arguments()[0].ufl_function_space().ufl_element().family()
+					degree = shape_scalar_product.arguments()[0].ufl_function_space().ufl_element().degree()
+					space_0 = shape_scalar_product.arguments()[0].ufl_function_space()
+					space_1 = shape_scalar_product.arguments()[1].ufl_function_space()
+					
+					if family == 'Lagrange' and degree == 1 and space_0 == space_1:
+						self.shape_scalar_product = shape_scalar_product
+						self.deformation_space = space_0
+				else:
+					raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'shape_scalar_product', 'The supplied form must be a bilinear one.')
+			else:
+				raise InputError('cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem', 'shape_scalar_product', 'Not a valid type for shape_scalar_product.')
+		
 		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
-												   self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options)
+											 self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
+											 self.shape_scalar_product, self.deformation_space)
 		self.mesh_handler = _MeshHandler(self)
 		
 		self.state_spaces = self.form_handler.state_spaces
