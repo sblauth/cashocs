@@ -299,7 +299,7 @@ class Regularization:
 			if self.mu_curvature > 0.0:
 				self.compute_curvature()
 				curvature_val = fenics.assemble(fenics.inner(self.kappa_curvature, self.kappa_curvature)*self.ds)
-				value += 0.5*curvature_val
+				value += 0.5*self.mu_curvature*curvature_val
 			
 			if self.mu_barycenter > 0.0:
 				if not self.measure_hole:
@@ -351,8 +351,8 @@ class Regularization:
 
 			self.shape_form = Constant(self.mu_surface)*(self.current_surface - Constant(self.target_surface))*t_div(V, n)*self.ds
 			
-			self.shape_form += Constant(self.mu_curvature)*inner((I - (t_grad(x, n) + (t_grad(x, n)).T))*t_grad(V, n), t_grad(self.kappa_curvature, n))*self.ds \
-						+ Constant(0.5)*t_div(V, n)*t_div(self.kappa_curvature, n)*self.ds
+			self.shape_form += Constant(self.mu_curvature)*(inner((I - (t_grad(x, n) + (t_grad(x, n)).T))*t_grad(V, n), t_grad(self.kappa_curvature, n))*self.ds \
+						+ Constant(0.5)*t_div(V, n)*t_div(self.kappa_curvature, n)*self.ds)
 			
 			if not self.measure_hole:
 				self.shape_form += Constant(self.mu_volume)*(self.current_volume - Constant(self.target_volume))*div(V)*self.dx
@@ -414,8 +414,16 @@ class Regularization:
 						pass
 					else:
 						self.mu_surface /= abs(value)
-	
-	
+				
+				if self.mu_curvature > 0.0:
+					self.compute_curvature()
+					value = 0.5*fenics.assemble(fenics.inner(self.kappa_curvature, self.kappa_curvature)*self.ds)
+				
+					if abs(value) < 1e-15:
+						pass
+					else:
+						self.mu_curvature /= abs(value)
+				
 				if self.mu_barycenter > 0.0:
 					if not self.measure_hole:
 						volume = fenics.assemble(Constant(1)*self.dx)
@@ -453,4 +461,5 @@ class Regularization:
 				
 				self.mu_volume = temp_dict['Regularization']['mu_volume']
 				self.mu_surface = temp_dict['Regularization']['mu_surface']
+				self.mu_curvature = temp_dict['Regularization']['mu_curvature']
 				self.mu_barycenter = temp_dict['Regularization']['mu_barycenter']

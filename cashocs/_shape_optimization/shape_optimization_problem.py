@@ -150,6 +150,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			self.temp_dict['Regularization'] = {
 				'mu_volume' : self.form_handler.regularization.mu_volume,
 				'mu_surface' : self.form_handler.regularization.mu_surface,
+				'mu_curvature' : self.form_handler.regularization.mu_curvature,
 				'mu_barycenter' : self.form_handler.regularization.mu_barycenter
 			}
 		
