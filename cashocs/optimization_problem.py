@@ -300,9 +300,12 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match.')
 		
 		if self.desired_weights is not None:
-			if not len(self.cost_functional_list) == len(self.desired_weights):
+			try:
+				if not len(self.cost_functional_list) == len(self.desired_weights):
+					raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
+			except:
 				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
-
+			
 		fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
 		self.state_problem = None
@@ -516,7 +519,7 @@ class OptimizationProblem:
 					self.initial_function_values = temp_dict['initial_function_values']
 				
 				
-				self.cost_functional_form = summation([fenics.Constant(self.desired_weights[i] / self.initial_function_values[i])*self.cost_functional_list[i]
+				self.cost_functional_form = summation([fenics.Constant(abs(self.desired_weights[i] / self.initial_function_values[i]))*self.cost_functional_list[i]
 													   for i in range(len(self.cost_functional_list))])
 				self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 				

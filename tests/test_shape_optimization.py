@@ -221,6 +221,7 @@ def test_shape_gradient():
 	mesh.coordinates()[:, :] = initial_coordinates
 	mesh.bounding_box_tree().build(mesh)
 	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	
 	assert cashocs.verification.shape_gradient_test(sop) > 1.9
 	assert cashocs.verification.shape_gradient_test(sop) > 1.9
 	assert cashocs.verification.shape_gradient_test(sop) > 1.9
@@ -396,3 +397,103 @@ def test_custom_supply_shape():
 	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
 	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
 	assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+
+
+
+def test_custom_shape_scalar_product():
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	
+	config.set('ShapeGradient', 'damping_factor', '0.0')
+	
+	space = VectorFunctionSpace(mesh, 'CG', 1)
+	shape_scalar_product = Constant(1)*inner((grad(TrialFunction(space))), (grad(TestFunction(space))))*dx + inner(TrialFunction(space), TestFunction(space))*dx
+	
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product)
+	sop.solve('lbfgs', rtol=1e-2, atol=0.0, max_iter=8)
+	
+	config.set('ShapeGradient', 'damping_factor', '0.2')
+	
+	assert sop.solver.relative_norm < sop.solver.rtol
+	
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(sop) > 1.9
+
+
+
+def test_scaling_shape():
+	
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	
+	J1 = u*dx
+	J2 = u*u*dx
+	J_list = [J1, J2]
+	
+	desired_weights = np.random.rand(2).tolist()
+	diff = desired_weights[1] - desired_weights[0]
+	
+	test_sop = cashocs.ShapeOptimizationProblem(e, bcs, J_list, u, p, boundaries, config, desired_weights=desired_weights)
+	val = test_sop.reduced_cost_functional.evaluate()
+	
+	assert abs(val - diff) < 1e-14
+	
+	assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+	assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+
+
+
+def test_scaling_shape_regularization():
+
+	no_iterations = 5
+	test_weights = np.random.rand(no_iterations, 4)
+	config.set('Regularization', 'use_relative_scaling', 'True')
+	config.set('Regularization', 'target_barycenter', '[1.0, 1.0, 0.0]')
+	
+	for iteration in range(no_iterations):
+	
+		mesh.coordinates()[:, :] = initial_coordinates
+		mesh.bounding_box_tree().build(mesh)
+		
+		J = Constant(0)*dx
+		
+		config.set('Regularization', 'factor_volume', str(test_weights[iteration, 0]))
+		config.set('Regularization', 'factor_surface', str(test_weights[iteration, 1]))
+		config.set('Regularization', 'factor_curvature', str(test_weights[iteration, 2]))
+		config.set('Regularization', 'factor_barycenter', str(test_weights[iteration, 3]))
+		
+		test_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+		
+		summ = np.sum(test_weights[iteration, :])
+		val = test_sop.reduced_cost_functional.evaluate()
+		
+		assert abs(val - summ) < 1e-15
+	
+	config.set('Regularization', 'factor_volume', '0.0')
+	config.set('Regularization', 'factor_surface', '0.0')
+	config.set('Regularization', 'factor_curvature', '0.0')
+	config.set('Regularization', 'factor_barycenter', '0.0')
+	config.set('Regularization', 'use_relative_scaling', 'False')
+	config.set('Regularization', 'target_barycenter', '[0.0, 0.0, 0.0]')
+
+
+
+def test_curvature_computation():
+
+	mesh.coordinates()[:, :] = initial_coordinates
+	mesh.bounding_box_tree().build(mesh)
+	
+	config.set('Regularization', 'factor_curvature', '1.0')
+	
+	sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+	
+	sop.form_handler.regularization.compute_curvature()
+	
+	kappa = sop.form_handler.regularization.kappa_curvature
+	mean_curvature = assemble(sqrt(inner(kappa, kappa))*ds) / assemble(1*ds)
+	
+	config.set('Regularization', 'factor_curvature', '1.0')
+	
+	assert abs(mean_curvature - 1) < 1e-3

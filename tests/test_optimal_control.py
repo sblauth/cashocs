@@ -351,6 +351,7 @@ def test_control_pdas_bfgs_cc():
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
+
 def test_control_pdas_newton():
 	config.set('AlgoPDAS', 'inner_pdas', 'newton')
 	config.set('OptimizationRoutine', 'soft_exit', 'True')
@@ -365,7 +366,10 @@ def test_control_pdas_newton():
 	assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
+
 def test_custom_supply_control():
+	
+	u.vector()[:] = 0.0
 	adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - (y - y_d)*TestFunction(V)*dx
 	dJ = Constant(alpha)*u*TestFunction(V)*dx + TestFunction(V)*p*dx
 	
@@ -375,3 +379,25 @@ def test_custom_supply_control():
 	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
 	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
 	assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+
+
+
+def test_scaling_control():
+	
+	u.vector()[:] = 1e-2
+	
+	J1 = Constant(0.5)*(y - y_d)*(y - y_d)*dx
+	J2 = Constant(0.5)*u*u*dx
+	J_list = [J1, J2]
+	
+	desired_weights = np.random.rand(2).tolist()
+	summ = sum(desired_weights)
+	
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J_list, y, u, p, config, desired_weights=desired_weights)
+	val = test_ocp.reduced_cost_functional.evaluate()
+	
+	assert abs(val - summ) < 1e-14
+	
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
