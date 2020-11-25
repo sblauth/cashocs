@@ -47,7 +47,7 @@ class OptimalControlProblem(OptimizationProblem):
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config=None,
 				 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
-				 adjoint_ksp_options=None):
+				 adjoint_ksp_options=None, desired_weights=None):
 		r"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
 
@@ -59,7 +59,7 @@ class OptimalControlProblem(OptimizationProblem):
 		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
 			If this is ``None``, then no Dirichlet boundary conditions are imposed.
-		cost_functional_form : ufl.form.Form
+		cost_functional_form : ufl.form.Form or list[ufl.form.Form]
 			UFL form of the cost functional.
 		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
@@ -98,7 +98,7 @@ class OptimalControlProblem(OptimizationProblem):
 		Examples how to use this class can be found in the :ref:`tutorial <tutorial_index>`.
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options, desired_weights)
 		### Overloading, such that we do not have to use lists for a single state and a single control
 		### controls
 		try:
@@ -240,7 +240,7 @@ class OptimalControlProblem(OptimizationProblem):
 		if not len(self.control_constraints) == self.control_dim:
 			raise InputError('cashocs._optimal_control.optimal_control_problem.OptimalControlProblem', 'control_constraints', 'Length of controls does not match')
 		### end overloading
-
+		
 		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
 											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options,
 											   self.require_control_constraints)

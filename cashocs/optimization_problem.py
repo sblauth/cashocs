@@ -29,8 +29,10 @@ import numpy as np
 from ufl import replace
 
 from ._exceptions import InputError
-from ._forms import Lagrangian
+from ._forms import Lagrangian, FormHandler
+from ._pde_problems import StateProblem
 from ._loggers import warning
+from .utils import summation
 
 
 
@@ -45,7 +47,7 @@ class OptimizationProblem:
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config=None,
-				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None):
+				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None, desired_weights=None):
 		r"""Initializes the optimization problem.
 
 		Parameters
@@ -56,8 +58,9 @@ class OptimizationProblem:
 		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet (essential) boundary conditions.
 			If this is ``None``, then no Dirichlet boundary conditions are imposed.
-		cost_functional_form : ufl.form.Form
-			UFL form of the cost functional.
+		cost_functional_form : ufl.form.Form or list[ufl.form.Form]
+			UFL form of the cost functional. Can also be a list of individual terms of the cost functional,
+			which are scaled according to desired_weights.
 		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
 		adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
@@ -79,6 +82,10 @@ class OptimizationProblem:
 			A list of strings corresponding to command line options for PETSc,
 			used to solve the adjoint systems. If this is ``None``, then the same options
 			as for the state systems are used (default is ``None``).
+		desired_weights : list[int] or list[float] or None:
+			A list which indicates the value of the associated term in the cost functional on
+			the initial geometry in case a list of cost functions is supplied. If this is None,
+			this defaults to multiplying all terms and adding them.
 
 		Notes
 		-----
@@ -143,11 +150,22 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'bcs_list', 'Type of bcs_list is wrong.')
 
 		### cost_functional_form
+		self.use_cost_functional_list = False
 		try:
-			if cost_functional_form.__module__ == 'ufl.form' and type(cost_functional_form).__name__ == 'Form':
+			if type(cost_functional_form) == list:
+				for term in cost_functional_form:
+					if not term.__module__ == 'ufl.form' and type(term).__name__ == 'Form':
+						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'cost_functional_form has to be a ufl form or a list of ufl forms.')
+					
+				self.use_cost_functional_list = True
+				self.cost_functional_list = cost_functional_form
+				# generate a dummy cost_functional_form, which is overwritten in _scale_cost_functional
+				self.cost_functional_form = summation([term for term in self.cost_functional_list])
+					
+			elif cost_functional_form.__module__ == 'ufl.form' and type(cost_functional_form).__name__ == 'Form':
 				self.cost_functional_form = cost_functional_form
 			else:
-				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'cost_functional_form has to be a ufl form')
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'cost_functional_form has to be a ufl form.')
 		except:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'Type of cost_functional_form is wrong.')
 
@@ -248,22 +266,40 @@ class OptimizationProblem:
 		else:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'adjoint_ksp_options', 'Wrong input format for adjoint_ksp_options.')
 
+		### desired_weights
+		if desired_weights is not None:
+			if type(desired_weights) == list:
+				for weight in desired_weights:
+					if not (type(weight) == int or type(weight) == float):
+						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'desired_weights needs to be a list of numbers (int or float).')
+				
+				self.desired_weights = desired_weights
+				
+			else:
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'desired_weights needs to be a list of numbers (int or float).')
+		else:
+			self.desired_weights = None
+
+
 		if not len(self.bcs_list) == self.state_dim:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'bcs_list', 'Length of states does not match')
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'bcs_list', 'Length of states does not match.')
 		if not len(self.states) == self.state_dim:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'states', 'Length of states does not match')
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'states', 'Length of states does not match.')
 		if not len(self.adjoints) == self.state_dim:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'adjoints', 'Length of states does not match')
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'adjoints', 'Length of states does not match.')
 
 		if self.initial_guess is not None:
 			if not len(self.initial_guess) == self.state_dim:
-				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'initial_guess', 'Length of states does not match')
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'initial_guess', 'Length of states does not match.')
 
 		if not len(self.ksp_options) == self.state_dim:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match')
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match.')
 		if not len(self.adjoint_ksp_options) == self.state_dim:
-			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match')
-
+			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match.')
+		
+		if self.desired_weights is not None:
+			if not len(self.cost_functional_list) == len(self.desired_weights):
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
 
 		fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
@@ -274,6 +310,9 @@ class OptimizationProblem:
 		self.form_handler = None
 		self.has_custom_adjoint = False
 		self.has_custom_derivative = False
+		
+		self._scale_cost_functional()
+
 
 
 	def compute_state_variables(self):
@@ -443,3 +482,31 @@ class OptimizationProblem:
 		if self.algorithm == 'newton' and (self.has_custom_adjoint or self.has_custom_derivative):
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'solve', 'The usage of custom forms is not compatible with the Newton solver.'
 																						  'Please do not supply custom forms if you want to use the Newton solver.')
+	
+	
+	
+	def _scale_cost_functional(self):
+		
+		if self.use_cost_functional_list:
+			# Create dummy objects for adjoints, so that we can actually solve the state problem
+			temp_form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.config, self.ksp_options, self.adjoint_ksp_options)
+			temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
+			
+			if self.desired_weights is not None:
+				temp_state_problem.solve()
+				self.initial_function_values = []
+				for i in range(len(self.cost_functional_list)):
+					val = fenics.assemble(self.cost_functional_list[i])
+					
+					if abs(val) <= 1e-15:
+						val = 1.0
+						warning('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+						
+					self.initial_function_values.append(val)
+					
+				self.cost_functional_form = summation([fenics.Constant(self.desired_weights[i] / self.initial_function_values[i])*self.cost_functional_list[i]
+													   for i in range(len(self.cost_functional_list))])
+				self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
+				
+			else:
+				self.cost_functional_form = summation([term for term in self.cost_functional_list])

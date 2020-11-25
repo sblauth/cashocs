@@ -56,7 +56,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
 				 adjoints, boundaries, config=None, initial_guess=None,
-				 ksp_options=None, adjoint_ksp_options=None):
+				 ksp_options=None, adjoint_ksp_options=None, desired_weights=None):
 		"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
 
@@ -68,7 +68,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
 			The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
 			If this is ``None``, then no Dirichlet boundary conditions are imposed.
-		cost_functional_form : ufl.form.Form
+		cost_functional_form : ufl.form.Form or list[ufl.form.Form]
 			UFL form of the cost functional.
 		states : dolfin.function.function.Function or list[dolfin.function.function.Function]
 			The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
@@ -95,7 +95,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			as for the state systems are used (default is ``None``).
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints,
+									 config, initial_guess, ksp_options, adjoint_ksp_options, desired_weights)
 
 		### Initialize the remeshing behavior, and a temp file
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
