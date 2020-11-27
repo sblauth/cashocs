@@ -36,7 +36,7 @@ from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
 from ._exceptions import ConfigError, InputError, CashocsException
-from ._loggers import info, warning
+from ._loggers import info, warning, debug
 from .utils import (_assemble_petsc_system, _setup_petsc_options,
 					_solve_linear_problem, write_out_mesh)
 
@@ -557,6 +557,7 @@ class _MeshHandler:
 			raise CashocsException('Not a valid mesh transformation')
 
 		if not self.__test_a_priori(transformation):
+			debug('Mesh transformation rejected due to a priori check.')
 			return False
 		else:
 			self.old_coordinates = self.mesh.coordinates().copy()
@@ -755,6 +756,7 @@ class _MeshHandler:
 
 		if self_intersections:
 			self.revert_transformation()
+			debug('Mesh transformation rejected due to a posteriori check.')
 			return False
 		else:
 			self.compute_mesh_quality()

@@ -353,8 +353,9 @@ class ControlFormHandler(FormHandler):
 		# Test for symmetry of the scalar products
 		for i in range(self.control_dim):
 			if not self.riesz_projection_matrices[i].isSymmetric():
-				if not self.riesz_projection_matrices[i].isSymmetric(1e-12):
-					raise InputError('cashocs._forms.ControlFormHandler', 'riesz_scalar_products', 'Supplied scalar product form is not symmetric.')
+				if not self.riesz_projection_matrices[i].isSymmetric(1e-15):
+					if not (self.riesz_projection_matrices[i] - self.riesz_projection_matrices[i].copy().transpose()).norm() / self.riesz_projection_matrices[i].norm() < 1e-15:
+						raise InputError('cashocs._forms.ControlFormHandler', 'riesz_scalar_products', 'Supplied scalar product form is not symmetric.')
 
 
 
@@ -723,8 +724,9 @@ class ShapeFormHandler(FormHandler):
 		
 		# test for symmetry
 		if not self.scalar_product_matrix.isSymmetric():
-			if not self.scalar_product_matrix.isSymmetric(1e-12):
-				raise InputError('cashocs._forms.ShapeFormHandler', 'shape_scalar_product', 'Supplied scalar product form is not symmetric.')
+			if not self.scalar_product_matrix.isSymmetric(1e-15):
+				if not (self.scalar_product_matrix - self.scalar_product_matrix.copy().transpose()).norm() / self.scalar_product_matrix.norm() < 1e-15:
+					raise InputError('cashocs._forms.ShapeFormHandler', 'shape_scalar_product', 'Supplied scalar product form is not symmetric.')
 
 		if self.opt_algo == 'newton' \
 				or (self.opt_algo == 'pdas' and self.inner_pdas == 'newton'):
