@@ -29,7 +29,8 @@ import fenics
 from fenics import Constant, div, inner
 
 from .._exceptions import ConfigError
-from ..utils import _assemble_petsc_system, _solve_linear_problem
+from .._loggers import info
+from ..utils import _solve_linear_problem
 
 
 
@@ -401,7 +402,7 @@ class Regularization:
 					value = 0.5*pow(volume - self.target_volume, 2)
 					
 					if abs(value) < 1e-15:
-						pass
+						info('The volume regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight.')
 					else:
 						self.mu_volume /= abs(value)
 	
@@ -411,7 +412,7 @@ class Regularization:
 					value = 0.5*pow(surface - self.target_surface, 2)
 					
 					if abs(value) < 1e-15:
-						pass
+						info('The surface regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight.')
 					else:
 						self.mu_surface /= abs(value)
 				
@@ -420,7 +421,7 @@ class Regularization:
 					value = 0.5*fenics.assemble(fenics.inner(self.kappa_curvature, self.kappa_curvature)*self.ds)
 				
 					if abs(value) < 1e-15:
-						pass
+						info('The curvature regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight.')
 					else:
 						self.mu_curvature /= abs(value)
 				
@@ -449,7 +450,7 @@ class Regularization:
 													 + pow(barycenter_z - self.target_barycenter_list[2], 2))
 					
 					if abs(value) < 1e-15:
-						pass
+						info('The barycenter regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight.')
 					else:
 						self.mu_barycenter /= abs(value)
 						

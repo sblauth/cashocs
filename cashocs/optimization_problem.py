@@ -33,7 +33,7 @@ from ufl import replace
 from ._exceptions import InputError
 from ._forms import Lagrangian, FormHandler
 from ._pde_problems import StateProblem
-from ._loggers import warning
+from ._loggers import warning, info
 from .utils import summation
 
 
@@ -508,7 +508,7 @@ class OptimizationProblem:
 						
 						if abs(val) <= 1e-15:
 							val = 1.0
-							warning('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+							info('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
 							
 						self.initial_function_values.append(val)
 				
