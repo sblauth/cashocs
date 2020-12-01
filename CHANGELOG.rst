@@ -12,7 +12,7 @@ of the maintenance releases, please take a look at
 
 - Users can now supply their own bilinear form (or scalar product) for the computation
   of the shape gradient, which is then used instead of the linear elasticity formulation.
-  This is documented at `<temp-url.com>`_.
+  This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_custom_scalar_product.html>`_.
 
 - Added a curvature regularization term for shape optimization, which can be enabled
   via the config files, similarly to already implemented regularizations. This is
@@ -22,7 +22,7 @@ of the maintenance releases, please take a look at
   This allows for a more granular handling of problems with cost functionals
   consisting of multiple terms. This also extends to the regularizations for shape optimization,
   see `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_regularization.html>`_.
-  This feature is documented at `<temp-url.com>`_.
+  This feature is documented at `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_scaling.html>`_.
 
 - cashocs now uses the logging module to issue messages for the user. The level of
   verbosity can be controlled via :py:func:`cashocs.set_log_level`.
