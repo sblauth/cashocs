@@ -559,6 +559,20 @@ determines whether the target surface area is specified via ``target_surface``
 or if the surface area of the initial geometry should be used instead. The default
 behavior is given by ``use_initial_surface = False``.
 
+Next, we have the curvature regularization, which is controlled by the parameter ::
+
+    factor_curvature = 0.0
+
+This is used to determine the size of :math:`\mu_\text{curv}` in the regularization
+term
+
+.. math::
+
+    \frac{\mu_\text{curv}}{2} \int_{\Gamma} \kappa^2 \text{ d}s,
+
+where :math:`\kappa` denotes the mean curvature. This regularization term can be
+used to generate more smooth boundaries and to prevent kinks from occurring.
+
 Finally, we have the (target) barycenter regularization. This is specified via
 the parameters ::
 
@@ -574,7 +588,7 @@ and implements the term
 The default behavior is given by ``factor_barycenter = 0.0`` and ``target_barycenter = [0,0,0]``,
 so that we do not have a barycenter regularization.
 
-Finally, the flag ::
+The flag ::
 
     use_initial_barycenter = True
 
@@ -587,6 +601,21 @@ is given by ``use_initial_barycenter = False``.
     The object ``target_barycenter`` has to be a list. For 2D problems it is also
     sufficient, if the list only has two entries, for the :math:`x` and :math:`y`
     barycenters.
+
+Finally, we have the parameter ``use_relative_scaling`` which is set in the line
+
+    use_relative_scaling = False
+
+This boolean flag does the following. For some regularization term :math:`J_\text{reg}(\Omega)` with corresponding
+factor :math:`\mu` (as defined above), the default behavior is given by ``use_relative_scaling = False``
+adds the term :math:`\mu J_\text{reg}(\Omega)` to the cost functional, so that the
+factor specified in the configuration file is actually used as the factor for the regularization term.
+In case ``use_relative_scaling = True``, the behavior is different, and the following term is
+added to the cost functional: :math:`\frac{\mu}{\left\lvert J_\text{reg}(\Omega_0) \right\rvert} J_\text{reg}(\Omega)`,
+where :math:`\Omega_0` is the initial guess for the geometry. In particular, this means
+that the magnitude of the regularization term is equal to :math:`\mu` on the initial geometry.
+This allows a detailed weighting of multiple regularization terms, which is particularly
+useful in case the cost functional is also scaled (see :ref:`demo_scaling`).
 
 .. _config_shape_mesh_quality:
 
@@ -960,6 +989,9 @@ in the following.
     * - use_initial_surface
       - ``False``
       - if ``True`` uses the surface area of the initial geometry as prescribed surface
+    * - factor_curvature
+      - ``0.0``
+      - value of the regularization parameter for curvature regularization; needs to be non-negative
     * - factor_barycenter
       - ``0.0``
       - value of the regularization parameter for barycenter regularization; needs to be non-negative
@@ -969,6 +1001,11 @@ in the following.
     * - use_initial_barycenter
       - ``False``
       - if ``True`` uses the barycenter of the initial geometry as prescribed barycenter
+    * - use_relative_scaling
+      - ``False``
+      - if ``True``, then the regularization terms are scaled in such a way, that
+        their magnitude on the initial geometry is equal to the quantity specified in
+        ``factor_volume``, ``factor_surface``, ``factor_curvature``, and ``factor_barycenter``.
 
 
 

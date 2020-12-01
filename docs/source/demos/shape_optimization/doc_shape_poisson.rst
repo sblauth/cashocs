@@ -40,6 +40,13 @@ We start the problem by using a wildcard import for FEniCS, and by importing CAS
     from fenics import *
     import cashocs
 
+As for the case of optimal control problems, we can specify the verbosity of CASHOCS with
+the line ::
+
+    cashocs.set_log_level(cashocs.LogLevel.INFO)
+
+which is documented at :py:func:`cashocs.set_log_level` (cf. :ref:`demo_poisson`).
+
 Similarly to the optimal control case, we also require config files for shape
 optimization problems in CASHOCS. A detailed discussion of the config files
 for shape optimization is given in :ref:`config_shape_optimization`.

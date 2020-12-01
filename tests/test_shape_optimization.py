@@ -494,6 +494,6 @@ def test_curvature_computation():
 	kappa = sop.form_handler.regularization.kappa_curvature
 	mean_curvature = assemble(sqrt(inner(kappa, kappa))*ds) / assemble(1*ds)
 	
-	config.set('Regularization', 'factor_curvature', '1.0')
+	config.set('Regularization', 'factor_curvature', '0.0')
 	
 	assert abs(mean_curvature - 1) < 1e-3

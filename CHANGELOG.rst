@@ -6,6 +6,39 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+
+1.2.0 (December 01, 2020)
+-------------------------
+
+- Users can now supply their own bilinear form (or scalar product) for the computation
+  of the shape gradient, which is then used instead of the linear elasticity formulation.
+  This is documented at `<temp-url.com>`_.
+
+- Added a curvature regularization term for shape optimization, which can be enabled
+  via the config files, similarly to already implemented regularizations. This is
+  documented at `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_regularization.html>`_.
+
+- cashocs can now scale individual terms of the cost functional if this is desired.
+  This allows for a more granular handling of problems with cost functionals
+  consisting of multiple terms. This also extends to the regularizations for shape optimization,
+  see `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_regularization.html>`_.
+  This feature is documented at `<temp-url.com>`_.
+
+- cashocs now uses the logging module to issue messages for the user. The level of
+  verbosity can be controlled via :py:func:`cashocs.set_log_level`.
+
+- New configuration file parameters:
+
+  - Section Regularization:
+
+    - ``factor_curvature`` can be used to specify the weight for the curvature regularization term.
+
+    - ``use_relative_weights`` is a boolean which specifies, whether the weights
+      should be used as scaling factor in front of the regularization terms (if this is ``False``),
+      or whether they should be used to scale the regularization terms so that they
+      have the prescribed value on the initial iteration (if this is ``True``).
+
+
 1.1.0 (November 13, 2020)
 -------------------------
 

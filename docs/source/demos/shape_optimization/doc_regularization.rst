@@ -18,6 +18,7 @@ but which has additional regularization terms, i.e.,
     &+
     \frac{\mu_\text{vol}}{2} \left( \int_\Omega 1 \text{ d}x - \text{vol}_\text{des} \right)^2 +
     \frac{\mu_\text{surf}}{2} \left( \int_\Gamma 1 \text{ d}s - \text{surf}_\text{des} \right)^2 \\
+    &+ \frac{\mu_\text{curv}}{2} \int_\Gamma \kappa^2 \text{ d}s \\
     &\text{subject to} \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta u &= f \quad &&\text{ in } \Omega,\\
@@ -25,6 +26,7 @@ but which has additional regularization terms, i.e.,
     \end{alignedat} \right.
 
 
+Here, :math:`\kappa` is the mean curvature.
 For the initial domain, we use the unit disc :math:`\Omega = \{ x \in \mathbb{R}^2 \,\mid\, \lvert\lvert x \rvert\rvert_2 < 1 \}`, and the right-hand side :math:`f` is given by
 
 .. math:: f(x) = 2.5 \left( x_1 + 0.4 - x_2^2 \right)^2 + x_1^2 + x_2^2 - 1,
@@ -100,10 +102,11 @@ the following lines are relevant ::
     factor_surface = 1.0
     target_surface = 4.5
     use_initial_surface = False
+    factor_curvature = 1e-4
 
 This sets the factor :math:`\mu_\text{vol}` to ``1.0``, :math:`\text{vol}_\text{des}`
-to ``1.5``, :math:`\mu_\text{surf}` to ``1.0``, and :math:`\text{surf}_\text{des}`
-to ``4.5``. Note, that ``use_initial_volume`` and ``use_initial_surface``
+to ``1.5``, :math:`\mu_\text{surf}` to ``1.0``, :math:`\text{surf}_\text{des}`
+to ``4.5``, and :math:`\mu_\text{curv}` to ``1e-4``. Note, that ``use_initial_volume`` and ``use_initial_surface``
 have to be set to ``False``, otherwise the corresponding quantities of the initial
 geometry would be used instead of the ones prescribed in the config file.
 The resulting regularization terms are then treated by CASHOCS, but are, except

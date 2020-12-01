@@ -487,6 +487,10 @@ class OptimizationProblem:
 		if self.algorithm == 'newton' and (self.has_custom_adjoint or self.has_custom_derivative):
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'solve', 'The usage of custom forms is not compatible with the Newton solver.'
 																						  'Please do not supply custom forms if you want to use the Newton solver.')
+		
+		if self.use_cost_functional_list:
+			warning('You use the automatic scaling functionality of cashocs in combination with supplying custom forms. This might lead to unexpected results.\n'
+					'You can check your approach with the cashocs.verification module.')
 	
 	
 	
@@ -521,6 +525,7 @@ class OptimizationProblem:
 				
 				self.cost_functional_form = summation([fenics.Constant(abs(self.desired_weights[i] / self.initial_function_values[i]))*self.cost_functional_list[i]
 													   for i in range(len(self.cost_functional_list))])
+				
 				self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
 				
 			else:

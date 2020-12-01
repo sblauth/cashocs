@@ -14,3 +14,5 @@ be treated with CASHOCS.
    doc_inverse_tomography
    doc_shape_stokes
    doc_remeshing
+   doc_custom_scalar_product
+   doc_scaling

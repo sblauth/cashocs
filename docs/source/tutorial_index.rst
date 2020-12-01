@@ -40,3 +40,7 @@ tutorial.
     of the state system, its (numerical) solution, or the definition of suitable
     cost functionals. Therefore, they are straightforward to adapt to the case of
     shape optimization.
+
+    On the contrary, the possibility to scale individual terms of a cost functional
+    is only explained in :ref:`demo_scaling` for shape optimization problems, but
+    works completely analogous for optimal control problems.

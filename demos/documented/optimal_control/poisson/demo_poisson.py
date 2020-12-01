@@ -25,6 +25,7 @@ import cashocs
 
 
 
+cashocs.set_log_level(cashocs.LogLevel.INFO)
 config = cashocs.load_config('config.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, 'CG', 1)
