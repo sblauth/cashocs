@@ -360,9 +360,11 @@ form is given as follows, in a general form, that is also implemented in CASHOCS
 .. math::
 
     a \colon H \times H; \quad a(\mathcal{W}, \mathcal{V}) = \int_\Omega
-    \mu \left( D\mathcal{W} : D\mathcal{V} \right) + \lambda \left( \text{div}(\mathcal{W}) \text{div}(\mathcal{V}) \right) + \delta \left( V \cdot W \right) \text{ d}x,
+    2 \mu \left( \varepsilon(\mathcal{W}) : \varepsilon(\mathcal{V}) \right) + \lambda \left( \text{div}(\mathcal{W}) \text{div}(\mathcal{V}) \right) + \delta \left( V \cdot W \right) \text{ d}x,
 
-where :math:`H` is some suitable subspace of :math:`H^1(\Omega)^d`. The subspace property is needed
+where :math:`H` is some suitable subspace of :math:`H^1(\Omega)^d` and :math:`\varepsilon(\mathcal{V}) = \frac{1}{2}(D\mathcal{V} + D\mathcal{V}^\top)`
+is the symmetric part of the Jacobian.
+The subspace property is needed
 to include certain geometrical constraints of the shape optimization problem, which fix
 certain boundaries, into the shape gradient. For a detailed description of this
 setting we refer to the preprint `Blauth, Nonlinear Conjugate Gradient Methods for PDE
