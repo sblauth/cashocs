@@ -53,7 +53,9 @@ However, the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/latest/tutoria
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
-Note, that the full CASHOCS documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
+An overview over CASHOCS and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
+Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
+the full CASHOCS documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
 
 
 .. readme_start_installation

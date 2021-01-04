@@ -15,6 +15,9 @@ However, we will also provide links to either the underlying theory of PDE
 constrained optimization or to the relevant documentation of FEniCS in this
 tutorial.
 
+Note, that an overview over CASHOCS and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
+Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_.
+
 
 .. toctree::
    :maxdepth: 2

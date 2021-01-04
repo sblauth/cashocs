@@ -1,7 +1,11 @@
 Getting Started
 ===============
 
-As newcomer to CASHOCS, we recommend reading the :ref:`tutorial <tutorial_index>`.
+As newcomer to CASHOCS, we recommend the paper `Blauth, cashocs: A Computational, Adjoint-Based
+Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_, which
+gives an overview over CASHOCS and its capabilities. Moreover, for a
+comprehensive description of CASHOCS, we refer to its :ref:`tutorial <tutorial_index>`.
+
 In the following, we briefly showcase how CASHOCS can be used to solve a
 distributed optimal control problem with a Poisson equation as PDE constaint.
 
