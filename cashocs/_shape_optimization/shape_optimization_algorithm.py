@@ -21,6 +21,7 @@
 
 import json
 import os
+from pathlib import Path
 
 import fenics
 
@@ -91,7 +92,10 @@ class ShapeOptimizationAlgorithm:
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
 		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
-
+		
+		if not os.path.isdir(self.result_dir):
+			Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+		
 		if self.save_pvd:
 			self.state_pvd_list = []
 			for i in range(self.form_handler.state_dim):

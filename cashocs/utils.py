@@ -562,7 +562,8 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
 		
 		for option in ksp_options:
 			opts.set(*option)
-	
+		
+		ksp.setFromOptions()
 	
 	ksp.solve(b, x)
 
