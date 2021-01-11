@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Sebastian Blauth
+# Copyright (C) 2020-2021 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -174,7 +174,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 			if self.bfgs_memory_size > 0:
 				self.y_k.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
 				self.s_k.vector()[:] = self.stepsize*self.search_direction.vector()[:]
-
+				
 				self.history_y.appendleft(self.y_k.copy(True))
 				self.history_s.appendleft(self.s_k.copy(True))
 

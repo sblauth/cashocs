@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Sebastian Blauth
+# Copyright (C) 2020-2021 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -649,7 +649,8 @@ class _MeshHandler:
 		else:
 			self.search_direction_container.vector()[:] = search_direction.vector()[:]
 			A, b = _assemble_petsc_system(self.a_frobenius, self.L_frobenius)
-			x = _solve_linear_problem(self.ksp_frobenius, A, b, ksp_options=self.options_frobenius)
+			# x = _solve_linear_problem(self.ksp_frobenius, A, b, ksp_options=self.options_frobenius)
+			x = _solve_linear_problem(None, A=A, b=b)
 
 			frobenius_norm = np.max(x[:])
 			beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2)
@@ -712,7 +713,8 @@ class _MeshHandler:
 
 		self.transformation_container.vector()[:] = transformation.vector()[:]
 		A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
-		x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
+		# x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
+		x = _solve_linear_problem(None, A=A, b=b)
 
 		min_det = np.min(x[:])
 		max_det = np.max(x[:])
@@ -1376,7 +1378,8 @@ class MeshQuality:
 		cond = fenics.Function(DG0)
 
 		A, b = _assemble_petsc_system(a, L)
-		_solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+		# _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+		_solve_linear_problem(None, A=A, b=b, x=cond.vector().vec())
 		cond.vector().apply('')
 
 		return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
@@ -1424,7 +1427,8 @@ class MeshQuality:
 		cond = fenics.Function(DG0)
 
 		A, b = _assemble_petsc_system(a, L)
-		_solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+		# _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+		_solve_linear_problem(None, A=A, b=b, x=cond.vector().vec())
 		cond.vector().apply('')
 
 		return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])

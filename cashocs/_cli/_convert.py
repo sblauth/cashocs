@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2020 Sebastian Blauth
+# Copyright (C) 2020-2021 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Sebastian Blauth
+# Copyright (C) 2020-2021 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -263,7 +263,8 @@ class Regularization:
 			b = fenics.assemble(self.L_curvature)
 			b = fenics.as_backend_type(b).vec()
 			
-			_solve_linear_problem(A=A, b=b, x=self.kappa_curvature.vector().vec())
+			# _solve_linear_problem(A=A, b=b, x=self.kappa_curvature.vector().vec())
+			_solve_linear_problem(ksp=None, A=A, b=b, x=self.kappa_curvature.vector().vec())
 			
 		else:
 			pass
