@@ -171,7 +171,7 @@ If you are using BibTeX, you can use the following entry::
 	@Article{Blauth2021cashocs,
 	  author   = {Sebastian Blauth},
 	  journal  = {SoftwareX},
-	  title    = {cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software},
+	  title    = {{cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
 	  year     = {2021},
 	  issn     = {2352-7110},
 	  pages    = {100646},
