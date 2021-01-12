@@ -17,6 +17,7 @@ CASHOCS Documentation
    contributing
    code_of_conduct
    change_log
+   citing
    license
    about
 

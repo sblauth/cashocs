@@ -153,6 +153,36 @@ introduction, see the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/lates
 for the demo programs is located inside the "demos" folder.
 
 
+.. readme_start_citing
+.. _citing:
+
+Citing
+======
+
+If you use cashocs for your research, I would be grateful if you would cite the following paper ::
+
+	cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
+	Sebastian Blauth
+	SoftwareX, Volume 13, 2021
+	https://doi.org/10.1016/j.softx.2020.100646
+	
+If you are using BibTeX, you can use the following entry::
+
+	@Article{Blauth2021cashocs,
+	  author   = {Sebastian Blauth},
+	  journal  = {SoftwareX},
+	  title    = {cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software},
+	  year     = {2021},
+	  issn     = {2352-7110},
+	  pages    = {100646},
+	  volume   = {13},
+	  doi      = {https://doi.org/10.1016/j.softx.2020.100646},
+	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
+	}
+
+.. readme_end_citing
+
+
 .. readme_start_license
 .. _license:
 
