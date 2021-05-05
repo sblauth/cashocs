@@ -27,6 +27,7 @@ which are great for testing.
 import configparser
 import json
 import os
+import subprocess
 import sys
 import time
 
@@ -532,7 +533,7 @@ class _MeshHandler:
 		if self.do_remesh and self.remesh_counter == 0:
 			self.gmsh_file_init = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.msh'
 			copy_mesh = 'cp ' + self.gmsh_file + ' ' + self.gmsh_file_init
-			os.system(copy_mesh)
+			subprocess.run(copy_mesh, shell=True, check=True)
 			self.gmsh_file = self.gmsh_file_init
 
 
@@ -877,8 +878,8 @@ class _MeshHandler:
 					parametrizations_section = False
 		
 		rename_command = 'mv ' + temp_location + ' ' + mesh_file
-		os.system(rename_command)
-		
+		subprocess.run(rename_command, shell=True, check=True)
+
 
 
 	def remesh(self):
@@ -914,17 +915,17 @@ class _MeshHandler:
 			self.new_gmsh_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.msh'
 			gmsh_command = 'gmsh ' + self.remesh_geo_file + ' -' + str(int(dim)) + ' -o ' + self.new_gmsh_file
 			if not self.config.getboolean('Mesh', 'show_gmsh_output', fallback=False):
-				os.system(gmsh_command + ' >/dev/null 2>&1')
+				subprocess.run(gmsh_command, shell=True, check=True, stdout=subprocess.DEVNULL)
 			else:
-				os.system(gmsh_command)
-			
+				subprocess.run(gmsh_command, shell=True, check=True)
+
 			self.__remove_gmsh_parametrizations(self.new_gmsh_file)
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
 
 			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.xdmf'
 			convert_command = 'cashocs-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file
-			os.system(convert_command)
+			subprocess.run(convert_command, shell=True, check=True)
 
 			self.temp_dict['mesh_file'] = self.new_xdmf_file
 			self.temp_dict['gmsh_file'] = self.new_gmsh_file
