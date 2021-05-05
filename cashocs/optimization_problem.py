@@ -489,7 +489,7 @@ class OptimizationProblem:
 																						  'Please do not supply custom forms if you want to use the Newton solver.')
 		
 		if self.use_cost_functional_list:
-			warning('You use the automatic scaling functionality of cashocs in combination with supplying custom forms. This might lead to unexpected results.\n'
+			info('You use the automatic scaling functionality of cashocs. This might lead to unexpected results if you try to scale the cost functional yourself.\n'
 					'You can check your approach with the cashocs.verification module.')
 	
 	
