@@ -165,15 +165,15 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 	assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
 	assembler.keep_diagonal = True
 	A_fenics = fenics.PETScMatrix()
-	residuum = fenics.PETScVector()
+	residual = fenics.PETScVector()
 
 	# Compute the initial residual
-	assembler.assemble(A_fenics, residuum)
+	assembler.assemble(A_fenics, residual)
 	A_fenics.ident_zeros()
 	A = fenics.as_backend_type(A_fenics).mat()
-	b = fenics.as_backend_type(residuum).vec()
+	b = fenics.as_backend_type(residual).vec()
 
-	res_0 = residuum.norm(norm_type)
+	res_0 = residual.norm(norm_type)
 	if res_0 == 0.0:
 		if verbose:
 			print('Residual vanishes, input is already a solution.')
@@ -181,8 +181,8 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 
 	res = res_0
 	if verbose:
-		print('Newton Iteration ' + format(iterations, '2d') + ' - residuum (abs):  '
-			  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residuum (rel): '
+		print('Newton Iteration ' + format(iterations, '2d') + ' - residual (abs):  '
+			  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residual (rel): '
 			  + format(res/res_0, '.3e') + ' (tol = ' + format(rtol, '.3e') + ')')
 
 	if convergence_type == 'abs':
@@ -207,8 +207,8 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 		if damped:
 			while True:
 				u.vector()[:] += lmbd*du.vector()[:]
-				assembler.assemble(residuum)
-				b = fenics.as_backend_type(residuum).vec()
+				assembler.assemble(residual)
+				b = fenics.as_backend_type(residual).vec()
 				_solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options)
 				ddu.vector().apply('')
 
@@ -232,17 +232,17 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 			raise NotConvergedError('Newton solver (state system)', 'Maximum number of iterations were exceeded.')
 
 		# compute the new residual
-		assembler.assemble(A_fenics, residuum)
+		assembler.assemble(A_fenics, residual)
 		A_fenics.ident_zeros()
 		A = fenics.as_backend_type(A_fenics).mat()
-		b = fenics.as_backend_type(residuum).vec()
+		b = fenics.as_backend_type(residual).vec()
 
-		[bc.apply(residuum) for bc in bcs_hom]
+		[bc.apply(residual) for bc in bcs_hom]
 
-		res = residuum.norm(norm_type)
+		res = residual.norm(norm_type)
 		if verbose:
-			print('Newton Iteration ' + format(iterations, '2d') + ' - residuum (abs):  '
-				  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residuum (rel): '
+			print('Newton Iteration ' + format(iterations, '2d') + ' - residual (abs):  '
+				  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residual (rel): '
 				  + format(res/res_0, '.3e') + ' (tol = ' + format(rtol, '.3e') + ')')
 
 		if res < tol:
