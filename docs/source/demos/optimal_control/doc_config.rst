@@ -456,6 +456,13 @@ in a folder named "pvd", located in the same directory as the optimization scrip
 These can be visualized with `Paraview <https://www.paraview.org/>`_. This parameter
 defaults to ``save_pvd = False``.
 
+The next parameter is ``save_pvd_adjoint``, which is given in the line ::
+
+    save_pvd_adjoint = False
+
+Analogously to the previous parameter, if ``save_pvd_adjoint`` is True, the adjoint
+variables are saved to .pvd files. The default value is ``save_pvd_adjoint = False``.
+
 Finally, we can specify in which directory the results should be stored with the
 parameter ``result_dir``, which is given in this config file by ::
 
@@ -669,6 +676,10 @@ in the following.
     * - save_pvd
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
+        saved in .pvd files
+    * - save_pvd_adjoint
+      - ``False``
+      - if ``True``, the history of the adjoint variables over the optimization is
         saved in .pvd files
     * - result_dir
       - ``./``

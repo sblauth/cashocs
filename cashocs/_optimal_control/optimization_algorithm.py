@@ -96,6 +96,7 @@ class OptimizationAlgorithm:
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
+		self.save_pvd_adjoint = self.config.getboolean('Output', 'save_pvd_adjoint', fallback=False)
 		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
 		
 		if not os.path.isdir(self.result_dir):
@@ -111,6 +112,15 @@ class OptimizationAlgorithm:
 				else:
 					self.state_pvd_list.append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '.pvd'))
 
+		if self.save_pvd_adjoint:
+			self.adjoint_pvd_list = []
+			for i in range(self.form_handler.state_dim):
+				if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+					self.adjoint_pvd_list.append([])
+					for j in range(self.form_handler.adjoint_spaces[i].num_sub_spaces()):
+						self.adjoint_pvd_list[i].append(fenics.File(self.result_dir + 'pvd/adjoint_' + str(i) + '_' + str(j) + '.pvd'))
+				else:
+					self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/adjoint_' + str(i) + '.pvd'))
 
 
 	def print_results(self):
@@ -147,6 +157,14 @@ class OptimizationAlgorithm:
 						self.state_pvd_list[i][j] << self.form_handler.states[i].sub(j, True), self.iteration
 				else:
 					self.state_pvd_list[i] << self.form_handler.states[i], self.iteration
+
+		if self.save_pvd_adjoint:
+			for i in range(self.form_handler.state_dim):
+				if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+					for j in range(self.form_handler.adjoint_spaces[i].num_sub_spaces()):
+						self.adjoint_pvd_list[i][j] << self.form_handler.adjoints[i].sub(j, True), self.iteration
+				else:
+					self.adjoint_pvd_list[i] << self.form_handler.adjoints[i], self.iteration
 
 		if self.verbose:
 			print(output)

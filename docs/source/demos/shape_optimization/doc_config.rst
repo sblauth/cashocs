@@ -734,6 +734,13 @@ Here, the parameter ``save_pvd`` is set. This is a boolean flag, which can be se
 steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
 Note, that for visualizing these files, you need `Paraview <https://www.paraview.org/>`_.
 
+The next parameter, ``save_pvd_adjoint`` works analogously, and is given in the line ::
+
+    save_pvd_adjoint = False
+
+If this is set to True, CASHOCS generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
+Its main purpose is for debugging.
+
 Moreover, we also have the parameter ``save_mesh`` that is set via ::
 
     save_mesh = False
@@ -1063,7 +1070,11 @@ in the following.
     * - save_pvd
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
-        saved in .pvd files.
+        saved in .pvd files
+    * - save_pvd_adjoint
+      - ``False``
+      - if ``True``, the history of the adjoint variables over the optimization is
+        saved in .pvd files
     * - save_mesh
       - ``False``
       - if ``True``, saves the mesh for the optimized geometry; only available for GMSH input
