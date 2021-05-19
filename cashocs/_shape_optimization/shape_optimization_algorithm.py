@@ -92,6 +92,7 @@ class ShapeOptimizationAlgorithm:
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
 		self.save_pvd_adjoint = self.config.getboolean('Output', 'save_pvd_adjoint', fallback=False)
+		self.save_pvd_gradient = self.config.getboolean('Output', 'save_pvd_gradient', fallback=False)
 		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
 		
 		if not os.path.isdir(self.result_dir):
@@ -132,6 +133,14 @@ class ShapeOptimizationAlgorithm:
 															   + '_adjoint_' + str(i) + '.pvd'))
 					else:
 						self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/adjoint_' + str(i) + '.pvd'))
+
+		if self.save_pvd_gradient:
+			if self.optimization_problem.mesh_handler.do_remesh:
+				self.shape_gradient_pvd_file = fenics.File(self.result_dir + '/pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
+														   + '_shape_gradient.pvd' )
+
+			else:
+				self.shape_gradient_pvd_file = fenics.File(self.result_dir + '/pvd/shape_gradient.pvd')
 
 
 
@@ -175,6 +184,9 @@ class ShapeOptimizationAlgorithm:
 						self.adjoint_pvd_list[i][j] << (self.form_handler.adjoints[i].sub(j, True), float(self.iteration))
 				else:
 					self.adjoint_pvd_list[i] << (self.form_handler.adjoints[i], float(self.iteration))
+
+		if self.save_pvd_gradient:
+			self.shape_gradient_pvd_file << self.gradient, float(self.iteration)
 
 		if self.verbose:
 			print(output)

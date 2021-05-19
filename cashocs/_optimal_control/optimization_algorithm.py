@@ -97,6 +97,7 @@ class OptimizationAlgorithm:
 		self.soft_exit = self.config.getboolean('OptimizationRoutine', 'soft_exit', fallback=False)
 		self.save_pvd = self.config.getboolean('Output', 'save_pvd', fallback=False)
 		self.save_pvd_adjoint = self.config.getboolean('Output', 'save_pvd_adjoint', fallback=False)
+		self.save_pvd_gradient = self.config.getboolean('Output', 'save_pvd_gradient', fallback=False)
 		self.result_dir = self.config.get('Output', 'result_dir', fallback='./')
 		
 		if not os.path.isdir(self.result_dir):
@@ -118,10 +119,19 @@ class OptimizationAlgorithm:
 				if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
 					self.adjoint_pvd_list.append([])
 					for j in range(self.form_handler.adjoint_spaces[i].num_sub_spaces()):
-						self.adjoint_pvd_list[i].append(fenics.File(self.result_dir + 'pvd/adjoint_' + str(i) + '_' + str(j) + '.pvd'))
+						self.adjoint_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/adjoint_' + str(i) + '_' + str(j) + '.pvd'))
 				else:
 					self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/adjoint_' + str(i) + '.pvd'))
 
+		if self.save_pvd_gradient:
+			self.gradient_pvd_list = []
+			for i in range(self.form_handler.control_dim):
+				if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+					self.gradient_pvd_list.append([])
+					for j in range(self.form_handler.control_spaces[i].num_sub_spaces()):
+						self.gradient_pvd_list[i].append(fenics.File(self.result_dir + '/pvd/gradient_' + str(i) + '_' + str(j) + '.pvd'))
+				else:
+					self.gradient_pvd_list.append(fenics.File(self.result_dir + '/pvd/gradient_' + str(i) + '.pvd'))
 
 	def print_results(self):
 		"""Prints the current state of the optimization algorithm to the console.
@@ -165,6 +175,14 @@ class OptimizationAlgorithm:
 						self.adjoint_pvd_list[i][j] << self.form_handler.adjoints[i].sub(j, True), self.iteration
 				else:
 					self.adjoint_pvd_list[i] << self.form_handler.adjoints[i], self.iteration
+
+		if self.save_pvd_gradient:
+			for i in range(self.form_handler.control_dim):
+				if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+					for j in range(self.form_handler.control_spaces[i].num_sub_spaces()):
+						self.gradient_pvd_list[i][j] << self.gradients[i].sub(j, True), self.iteration
+				else:
+					self.gradient_pvd_list[i] << self.gradients[i], self.iteration
 
 		if self.verbose:
 			print(output)

@@ -463,6 +463,12 @@ The next parameter is ``save_pvd_adjoint``, which is given in the line ::
 Analogously to the previous parameter, if ``save_pvd_adjoint`` is True, the adjoint
 variables are saved to .pvd files. The default value is ``save_pvd_adjoint = False``.
 
+The next parameter is given by ``save_pvd_gradient``, which is given in the line ::
+
+    save_pvd_gradient = False
+
+This boolean flag ensures that a paraview with the computed gradients is saved in ``result_dir/pvd``. The main purpose of this is for debugging.
+
 Finally, we can specify in which directory the results should be stored with the
 parameter ``result_dir``, which is given in this config file by ::
 
@@ -681,6 +687,9 @@ in the following.
       - ``False``
       - if ``True``, the history of the adjoint variables over the optimization is
         saved in .pvd files
+    * - save_pvd_gradient
+      - ``False``
+      - if ``True``, the history of the gradient(s) over the optimization is saved in .pvd files
     * - result_dir
       - ``./``
       - path to the directory, where the output should be placed

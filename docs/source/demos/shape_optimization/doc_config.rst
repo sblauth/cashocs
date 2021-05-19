@@ -741,6 +741,12 @@ The next parameter, ``save_pvd_adjoint`` works analogously, and is given in the 
 If this is set to True, CASHOCS generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
 Its main purpose is for debugging.
 
+The next parameter is given by ``save_pvd_gradient``, which is given in the line ::
+
+    save_pvd_gradient = False
+
+This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/pvd``. The main purpose of this is for debugging.
+
 Moreover, we also have the parameter ``save_mesh`` that is set via ::
 
     save_mesh = False
@@ -1075,6 +1081,9 @@ in the following.
       - ``False``
       - if ``True``, the history of the adjoint variables over the optimization is
         saved in .pvd files
+    * - save_pvd_gradient
+      - ``False``
+      - if ``True``, the history of the shape gradient over the optimization is saved in .pvd files
     * - save_mesh
       - ``False``
       - if ``True``, saves the mesh for the optimized geometry; only available for GMSH input
