@@ -131,7 +131,7 @@ class ShapeOptimizationAlgorithm:
 						self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/remesh_' + format(self.optimization_problem.temp_dict.get('remesh_counter', 0), 'd')
 															   + '_adjoint_' + str(i) + '.pvd'))
 					else:
-						self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/state_' + str(i) + '.pvd'))
+						self.adjoint_pvd_list.append(fenics.File(self.result_dir + '/pvd/adjoint_' + str(i) + '.pvd'))
 
 
 
