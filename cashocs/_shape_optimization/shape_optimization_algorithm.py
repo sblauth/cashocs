@@ -225,13 +225,15 @@ class ShapeOptimizationAlgorithm:
 			with open(self.result_dir + '/history.json', 'w') as file:
 				json.dump(self.output_dict, file)
 
-		if self.converged and self.optimization_problem.mesh_handler.do_remesh:
-			os.system('rm -r ' + self.optimization_problem.temp_dir)
-
 		if self.optimization_problem.mesh_handler.save_optimized_mesh:
 			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.result_dir + '/optimized_mesh.msh')
-	
-	
+
+		if self.converged and self.optimization_problem.mesh_handler.do_remesh:
+			if not self.config.getboolean('Debug', 'remeshing', fallback=False):
+				os.system('rm -r ' + self.optimization_problem.temp_dir)
+				os.system('rm -r ' + self.optimization_problem.mesh_handler.remesh_directory)
+
+
 	
 	def run(self):
 		"""Blueprint run method, overriden by the actual solution algorithms

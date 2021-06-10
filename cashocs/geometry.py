@@ -29,6 +29,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 import fenics
@@ -519,11 +520,13 @@ class _MeshHandler:
 			if not self.gmsh_file[-4:] == '.msh':
 				raise ConfigError('Mesh', 'gmsh_file', 'Not a valid gmsh file. Has to end in .msh')
 
-			self.remesh_directory = self.mesh_directory + '/cashocs_remesh'
+			if not ('_cashocs_remesh_flag' in sys.argv):
+				self.remesh_directory = tempfile.mkdtemp(prefix='cashocs_remesh_', dir=self.mesh_directory)
+			else:
+				self.remesh_directory = self.temp_dict['remesh_directory']
+			# self.remesh_directory = self.mesh_directory + '/cashocs_remesh'
 			if not os.path.isdir(os.path.realpath(self.remesh_directory)):
 				os.mkdir(self.remesh_directory)
-			if not ('_cashocs_remesh_flag' in sys.argv):
-				os.system('rm -r ' + self.remesh_directory + '/*')
 			self.remesh_geo_file = self.remesh_directory + '/remesh.geo'
 
 		elif self.save_optimized_mesh:
@@ -922,6 +925,7 @@ class _MeshHandler:
 			self.__remove_gmsh_parametrizations(self.new_gmsh_file)
 
 			self.temp_dict['remesh_counter'] = self.remesh_counter
+			self.temp_dict['remesh_directory'] = self.remesh_directory
 
 			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.xdmf'
 			convert_command = 'cashocs-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file

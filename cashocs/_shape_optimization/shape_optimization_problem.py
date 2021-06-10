@@ -126,7 +126,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 			if not ('_cashocs_remesh_flag' in sys.argv):
 				self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-				self.__clean_previous_temp_files()
 				self.temp_dir = tempfile.mkdtemp(prefix='._cashocs_remesh_temp_', dir=self.directory)
 				self.__change_except_hook()
 				self.temp_dict = {'temp_dir' : self.temp_dir, 'gmsh_file' : self.config.get('Mesh', 'gmsh_file'),
@@ -316,18 +315,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 		def custom_except_hook(exctype, value, traceback):
 			debug('An exception was raised by cashocs, deleting the created temporary files.')
-			os.system('rm -r ' + self.temp_dir)
+			if not self.config.getboolean('Debug', 'remeshing', fallback=False):
+				os.system('rm -r ' + self.temp_dir)
+				os.system('rm -r ' + self.mesh_handler.remesh_directory)
 			sys.__excepthook__(exctype, value, traceback)
 
 		sys.excepthook = custom_except_hook
-
-
-
-	def __clean_previous_temp_files(self):
-
-		for file in os.listdir(self.directory):
-			if file.startswith('._cashocs_remesh_temp_'):
-				os.system('rm -r ' + file)
 
 
 
