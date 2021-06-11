@@ -21,6 +21,7 @@
 
 import fenics
 import numpy as np
+import os
 
 import cashocs
 
@@ -113,7 +114,8 @@ def test_create_measure():
 
 
 def test_load_config():
-	config = cashocs.load_config('./test_config.ini')
+	dir_path = os.path.dirname(os.path.realpath(__file__))
+	config = cashocs.load_config(dir_path + '/test_config.ini')
 
 	assert config.getint('A', 'a') == 1
 	assert config.getfloat('A', 'b') == 3.14

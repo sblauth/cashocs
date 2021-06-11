@@ -22,6 +22,7 @@
 import numpy as np
 import pytest
 from fenics import *
+import os
 
 import cashocs
 
@@ -80,7 +81,8 @@ def t_div(u, n):
 
 	return div(u) - inner(grad(u)*n, n)
 
-config = cashocs.load_config('./config_sop.ini')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config = cashocs.load_config(dir_path + '/config_sop.ini')
 
 meshlevel = 10
 degree = 1

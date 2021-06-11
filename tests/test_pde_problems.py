@@ -21,12 +21,13 @@
 
 import numpy as np
 from fenics import *
+import os
 
 import cashocs
 
 
-
-config = cashocs.load_config('./config_ocp.ini')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config = cashocs.load_config(dir_path + '/config_ocp.ini')
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, 'CG', 1)
 

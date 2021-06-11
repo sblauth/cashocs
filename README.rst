@@ -132,8 +132,11 @@ Manual Installation
     To verify that the installation was successful, run the tests for CASHOCS
     with ::
 
-        cd tests
         python3 -m pytest
+	
+	or simply ::
+	
+		pytest
 
     from the source / repository root directory. Note, that it might take some
     time to perform all of these tests for the very first time, as FEniCS

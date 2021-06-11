@@ -24,10 +24,12 @@ import cashocs
 from cashocs._exceptions import CashocsException, NotConvergedError, InputError, PETScKSPError, ConfigError
 import numpy as np
 import pytest
+import os
 
 
 
-config = cashocs.load_config('./config_ocp.ini')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+config = cashocs.load_config(dir_path + '/config_ocp.ini')
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(6)
 V = FunctionSpace(mesh, 'CG', 1)
 
