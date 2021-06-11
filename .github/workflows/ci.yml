@@ -22,7 +22,7 @@ jobs:
       run: |
         conda create -n fenics -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base python">=3.6" flake8
         conda init bash
-        source ~/.bashrc
+        source /home/runner/.bashrc
         conda activate fenics
         pip3 install .
     - name: Lint with flake8
