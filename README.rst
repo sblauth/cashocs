@@ -14,8 +14,8 @@ CASHOCS
 .. image:: https://github.com/sblauth/cashocs/actions/workflows/ci.yml/badge.svg
 	:target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4431558.svg
-   :target: https://doi.org/10.5281/zenodo.4431558
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4926078.svg
+   :target: https://doi.org/10.5281/zenodo.4926078
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
