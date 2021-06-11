@@ -289,7 +289,7 @@ class ShapeOptimizationAlgorithm:
 			# Mesh Quality is too low
 			elif self.converged_reason == -3:
 				if self.optimization_problem.mesh_handler.do_remesh:
-					# self.finalize()
+					self.iteration -= 1
 					info('Mesh Quality too low. Perform a remeshing operation.')
 					self.optimization_problem.mesh_handler.remesh()
 				else:
@@ -302,7 +302,6 @@ class ShapeOptimizationAlgorithm:
 
 			# Iteration for remeshing is the one exceeding the maximum number of iterations
 			elif self.converged_reason == -4:
-				# self.print_results()
 				if self.soft_exit:
 					if self.verbose:
 						print('Maximum number of iterations exceeded.')

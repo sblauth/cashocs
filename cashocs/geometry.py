@@ -885,6 +885,57 @@ class _MeshHandler:
 
 
 
+	def clean_previous_gmsh_files(self):
+		"""Removes the gmsh files from the previous remeshing iterations to save disk space
+
+		Returns
+		-------
+		None
+		"""
+
+		gmsh_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '.msh'
+		if os.path.isfile(gmsh_file):
+			rm_command = 'rm ' + gmsh_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		gmsh_pre_remesh_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter -1, 'd') + '_pre_remesh' + '.msh'
+		if os.path.isfile(gmsh_pre_remesh_file):
+			rm_command = 'rm ' + gmsh_pre_remesh_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		mesh_h5_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '.h5'
+		if os.path.isfile(mesh_h5_file):
+			rm_command = 'rm ' + mesh_h5_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		mesh_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '.xdmf'
+		if os.path.isfile(mesh_xdmf_file):
+			rm_command = 'rm ' + mesh_xdmf_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		boundaries_h5_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '_boundaries.h5'
+		if os.path.isfile(boundaries_h5_file):
+			rm_command = 'rm ' + boundaries_h5_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		boundaries_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '_boundaries.xdmf'
+		if os.path.isfile(boundaries_xdmf_file):
+			rm_command = 'rm ' + boundaries_xdmf_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		subdomains_h5_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '_subdomains.h5'
+		if os.path.isfile(subdomains_h5_file):
+			rm_command = 'rm ' + subdomains_h5_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+		subdomains_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter - 1, 'd') + '_subdomains.xdmf'
+		if os.path.isfile(subdomains_xdmf_file):
+			rm_command = 'rm ' + subdomains_xdmf_file
+			subprocess.run(rm_command, shell=True, check=True)
+
+
+
+
 	def remesh(self):
 		"""Remeshes the current geometry with GMSH.
 
@@ -930,6 +981,8 @@ class _MeshHandler:
 			self.new_xdmf_file = self.remesh_directory + '/mesh_' + format(self.remesh_counter, 'd') + '.xdmf'
 			convert_command = 'cashocs-convert ' + self.new_gmsh_file + ' ' + self.new_xdmf_file
 			subprocess.run(convert_command, shell=True, check=True)
+
+			self.clean_previous_gmsh_files()
 
 			self.temp_dict['mesh_file'] = self.new_xdmf_file
 			self.temp_dict['gmsh_file'] = self.new_gmsh_file

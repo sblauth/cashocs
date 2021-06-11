@@ -17,9 +17,3 @@ cashocs.egg-info/
 
 ### sphinx
 /docs/build
-
-
-### bash
-build_docs.sh
-build_pypi.sh
-test_cashocs.sh
