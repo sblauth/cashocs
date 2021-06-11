@@ -87,6 +87,7 @@ class ShapeOptimizationAlgorithm:
 
 		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
 		self.save_results = self.config.getboolean('Output', 'save_results', fallback=True)
+		self.save_txt = self.config.getboolean('Output', 'save_txt', fallback=True)
 		self.rtol = self.config.getfloat('OptimizationRoutine', 'rtol', fallback=1e-3)
 		self.atol = self.config.getfloat('OptimizationRoutine', 'atol', fallback=0.0)
 		self.maximum_iterations = self.config.getint('OptimizationRoutine', 'maximum_iterations', fallback=100)
@@ -191,9 +192,17 @@ class ShapeOptimizationAlgorithm:
 
 		if self.verbose:
 			print(output)
+
+		if self.save_txt:
+			if self.iteration == 0:
+				with open(self.result_dir + 'history.txt', 'w') as file:
+					file.write(output + '\n')
+			else:
+				with open(self.result_dir + 'history.txt', 'a') as file:
+					file.write(output + '\n')
 	
-	
-	
+
+
 	def print_summary(self):
 		"""Prints a summary of the (successful) optimization to console
 		
@@ -207,8 +216,15 @@ class ShapeOptimizationAlgorithm:
 				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)')
 			print('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
 				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
-	
-	
+
+		if self.save_txt:
+			with open(self.result_dir + 'history.txt', 'a') as file:
+				file.write('\nStatistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
+				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)\n')
+				file.write('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
+				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
+
+
 	
 	def finalize(self):
 		"""Saves the history of the optimization algorithm
@@ -278,6 +294,7 @@ class ShapeOptimizationAlgorithm:
 			
 			# Armijo line search failed
 			elif self.converged_reason == -2:
+				self.iteration -= 1
 				if self.soft_exit:
 					if self.verbose:
 						print('Armijo rule failed.')
@@ -288,8 +305,8 @@ class ShapeOptimizationAlgorithm:
 			
 			# Mesh Quality is too low
 			elif self.converged_reason == -3:
+				self.iteration -= 1
 				if self.optimization_problem.mesh_handler.do_remesh:
-					self.iteration -= 1
 					info('Mesh Quality too low. Perform a remeshing operation.')
 					self.optimization_problem.mesh_handler.remesh()
 				else:

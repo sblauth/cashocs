@@ -439,13 +439,20 @@ The parameter ``verbose`` determines, whether the solution algorithm generates a
 output in the console, useful for monitoring its convergence. This is set to
 ``verbose = True`` by default.
 
-Next up, we define the paramter ``save_results`` ::
+Next up, we define the parameter ``save_results`` ::
 
     save_results = True
 
 If this parameter is set to True, the history of the optimization is saved in
 a .json file located in the same folder as the optimization script. This is
 very useful for postprocessing the results. This defaults to ``save_results = True``.
+
+Moreover, we define the parameter ``save_txt`` ::
+	
+	save_txt = True
+
+This saves the output of the optimization, which is usually shown in the terminal,
+to a .txt file, which is human-readable.
 
 We define the parameter ``save_pvd`` in the line ::
 
@@ -679,6 +686,9 @@ in the following.
     * - save_results
       - ``True``
       - if ``True``, the history of the optimization is saved to a .json file
+    * - save_txt
+      - ``True``
+      - if ``True``, the history of the optimization is saved to a human readable .txt file
     * - save_pvd
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
