@@ -1,4 +1,4 @@
-name: Installing and testing cashocs
+name: build
 
 on:
   push:
