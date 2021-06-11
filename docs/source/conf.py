@@ -22,7 +22,7 @@ copyright = '2020 - 2021, Sebastian Blauth'
 author = 'Sebastian Blauth'
 
 # The full version, including alpha/beta/rc tags
-release = '1.2.1'
+release = '1.3.0'
 
 
 
