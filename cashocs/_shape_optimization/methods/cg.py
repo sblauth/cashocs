@@ -158,14 +158,7 @@ class CG(ShapeOptimizationAlgorithm):
 				self.search_direction.vector()[:] = -self.gradient.vector()[:]
 
 			self.line_search.search(self.search_direction, self.has_curvature_info)
-			if self.line_search_broken:
-				self.converged_reason = -2
-				break
-			if self.requires_remeshing:
-				self.converged_reason = -3
-				break
 
 			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
-				self.converged_reason = -1
+			if self.nonconvergence():
 				break

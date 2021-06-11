@@ -47,6 +47,7 @@ class ShapeOptimizationAlgorithm:
 
 		self.line_search_broken = False
 		self.requires_remeshing = False
+		self.remeshing_its = False
 		self.has_curvature_info = False
 
 		self.optimization_problem = optimization_problem
@@ -228,7 +229,7 @@ class ShapeOptimizationAlgorithm:
 		if self.optimization_problem.mesh_handler.save_optimized_mesh:
 			write_out_mesh(self.optimization_problem.mesh_handler.mesh, self.optimization_problem.mesh_handler.gmsh_file, self.result_dir + '/optimized_mesh.msh')
 
-		if self.converged and self.optimization_problem.mesh_handler.do_remesh:
+		if self.optimization_problem.mesh_handler.do_remesh:
 			if not self.config.getboolean('Debug', 'remeshing', fallback=False):
 				os.system('rm -r ' + self.optimization_problem.temp_dir)
 				os.system('rm -r ' + self.optimization_problem.mesh_handler.remesh_directory)
@@ -288,7 +289,7 @@ class ShapeOptimizationAlgorithm:
 			# Mesh Quality is too low
 			elif self.converged_reason == -3:
 				if self.optimization_problem.mesh_handler.do_remesh:
-					self.finalize()
+					# self.finalize()
 					info('Mesh Quality too low. Perform a remeshing operation.')
 					self.optimization_problem.mesh_handler.remesh()
 				else:
@@ -298,3 +299,39 @@ class ShapeOptimizationAlgorithm:
 					else:
 						self.finalize()
 						raise NotConvergedError('Optimization Algorithm', 'Mesh Quality is too low.')
+
+			# Iteration for remeshing is the one exceeding the maximum number of iterations
+			elif self.converged_reason == -4:
+				# self.print_results()
+				if self.soft_exit:
+					if self.verbose:
+						print('Maximum number of iterations exceeded.')
+					self.finalize()
+				else:
+					self.finalize()
+					raise NotConvergedError('Optimization Algorithm', 'Maximum number of iterations were exceeded.')
+
+
+
+	def nonconvergence(self):
+		"""Checks for nonconvergence of the solution algorithm
+
+		Returns
+		-------
+		 : boolean
+			A flag which is True, when the algorithm did not converge
+		"""
+
+		if self.iteration >= self.maximum_iterations:
+			self.converged_reason = -1
+		if self.line_search_broken:
+			self.converged_reason = -2
+		if self.requires_remeshing:
+			self.converged_reason = -3
+		if self.remeshing_its:
+			self.converged_reason = -4
+
+		if self.converged_reason < 0:
+			return True
+		else:
+			return False

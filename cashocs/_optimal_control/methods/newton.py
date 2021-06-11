@@ -112,7 +112,6 @@ class Newton(OptimizationAlgorithm):
 				break
 
 			self.iteration += 1
-
 			if self.iteration >= self.maximum_iterations:
 				self.converged_reason = -1
 				break

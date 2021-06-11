@@ -20,6 +20,7 @@
 """
 
 import numpy as np
+import sys
 
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
@@ -62,6 +63,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 		except TypeError:
 			self.iteration = 0
 			self.gradient_norm_initial = 0.0
+
+
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False
 
@@ -86,15 +89,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 			self.search_direction.vector()[:] = - self.gradient.vector()[:]
 
 			self.line_search.search(self.search_direction, self.has_curvature_info)
-			if self.line_search_broken:
-				self.converged_reason = -2
-				break
-			if self.requires_remeshing:
-				self.converged_reason = -3
-				break
 
 			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
-				self.converged_reason = -1
+			if self.nonconvergence():
 				break
 

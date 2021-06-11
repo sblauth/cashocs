@@ -195,7 +195,6 @@ class InnerCG(OptimizationAlgorithm):
 
 			self.iteration += 1
 			if self.iteration >= self.maximum_iterations:
-				# self.print_results()
 				if self.soft_exit:
 					if self.verbose:
 						print('Maximum number of iterations exceeded.')

@@ -108,6 +108,10 @@ class ArmijoLineSearch:
 		self.stepsize /= pow(self.beta_armijo, num_decreases)
 
 		while True:
+			if self.optimization_algorithm.iteration >= self.optimization_algorithm.maximum_iterations:
+				self.optimization_algorithm.remeshing_its = True
+				break
+
 			if self.stepsize*self.search_direction_inf <= 1e-8:
 				error('Stepsize too small.')
 				self.optimization_algorithm.line_search_broken = True
@@ -146,9 +150,9 @@ class ArmijoLineSearch:
 			else:
 				self.stepsize /= self.beta_armijo
 
-		if not (self.optimization_algorithm.line_search_broken or self.optimization_algorithm.requires_remeshing):
-			self.optimization_algorithm.stepsize = self.stepsize
-			self.optimization_algorithm.objective_value = self.objective_step
+		if not (self.optimization_algorithm.line_search_broken or self.optimization_algorithm.requires_remeshing or self.optimization_algorithm.remeshing_its):
+				self.optimization_algorithm.stepsize = self.stepsize
+				self.optimization_algorithm.objective_value = self.objective_step
 
 		if not has_curvature_info:
 			self.stepsize *= self.beta_armijo

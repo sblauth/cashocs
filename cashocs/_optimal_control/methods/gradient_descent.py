@@ -81,11 +81,7 @@ class GradientDescent(OptimizationAlgorithm):
 				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
 			self.line_search.search(self.search_directions, self.has_curvature_info)
-			if self.line_search_broken:
-				self.converged_reason = -2
-				break
 
 			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
-				self.converged_reason = -1
+			if self.nonconvergence():
 				break

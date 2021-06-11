@@ -277,3 +277,24 @@ class OptimizationAlgorithm:
 				else:
 					self.finalize()
 					raise NotConvergedError('Armijo line search', 'Failed to compute a feasible Armijo step.')
+
+
+
+	def nonconvergence(self):
+		"""Checks for nonconvergence of the solution algorithm
+
+		Returns
+		-------
+		 : boolean
+			A flag which is True, when the algorithm did not converge
+		"""
+
+		if self.iteration >= self.maximum_iterations:
+			self.converged_reason = -1
+		if self.line_search_broken:
+			self.converged_reason = -2
+
+		if self.converged_reason < 0:
+			return True
+		else:
+			return False
