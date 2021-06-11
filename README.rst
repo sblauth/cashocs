@@ -136,10 +136,10 @@ Manual Installation
     with ::
 
         python3 -m pytest
-	
-	or simply ::
-	
-		pytest
+
+    or simply ::
+
+        pytest
 
     from the source / repository root directory. Note, that it might take some
     time to perform all of these tests for the very first time, as FEniCS
