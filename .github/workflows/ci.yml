@@ -38,7 +38,8 @@ jobs:
         source $CONDA/bin/activate fenics
         pytest
     - name: Generate report
-    - run: |
+      run: |
+        source $CONDA/bin/activate fenics
         coverage run --source=cashocs -m pytest
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v1
