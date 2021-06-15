@@ -14,10 +14,9 @@ CASHOCS
 .. image:: https://github.com/sblauth/cashocs/actions/workflows/ci.yml/badge.svg
 	:target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
 
-
-.. image:: https://codecov.io/gh/sblauth/cashocs/branch/master/graph/badge.svg?token=X2255ZTXOF
-      :target: https://codecov.io/gh/sblauth/cashocs
-    
+.. image:: https://img.shields.io/codecov/c/github/sblauth/cashocs
+    :target: https://codecov.io/gh/sblauth/cashocs
+    :alt: CodeCov
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4926078.svg
    :target: https://doi.org/10.5281/zenodo.4926078
