@@ -188,7 +188,7 @@ class FormHandler:
 				except UFLException:
 					raise CashocsException('The state system could not be transferred to a linear system.\n'
 										   'Perhaps you specified that the system is linear, allthough it is not.\n'
-										   'In your config, in the StateEquation section, try using is_linear = False.')
+										   'In your config, in the StateSystem section, try using is_linear = False.')
 				self.state_eq_forms_lhs.append(a)
 				if L.empty():
 					zero_form = fenics.inner(fenics.Constant(np.zeros(self.test_functions_state[i].ufl_shape)), self.test_functions_state[i])*self.dx

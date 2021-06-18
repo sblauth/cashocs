@@ -131,6 +131,8 @@ class LBFGS(OptimizationAlgorithm):
 		None
 		"""
 
+		self.converged = False
+
 		self.iteration = 0
 		self.relative_norm = 1.0
 		self.state_problem.has_solution = False

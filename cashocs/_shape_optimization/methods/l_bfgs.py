@@ -116,12 +116,15 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
 		"""
 
+		self.converged = False
+
 		try:
 			self.iteration = self.optimization_problem.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
 			self.gradient_norm_initial = self.optimization_problem.temp_dict['OptimizationRoutine'].get('gradient_norm_initial', 0.0)
 		except TypeError:
 			self.iteration = 0
 			self.gradient_norm_initial = 0.0
+			self.relative_norm = 1.0
 		self.state_problem.has_solution = False
 
 		self.adjoint_problem.has_solution = False
@@ -129,14 +132,20 @@ class LBFGS(ShapeOptimizationAlgorithm):
 		self.shape_gradient_problem.solve()
 		self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
 
-		if self.gradient_norm_initial > 0.0:
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-		else:
+		if self.iteration == 0:
 			self.gradient_norm_initial = self.gradient_norm
-			self.relative_norm = 1.0
 
+		if self.gradient_norm_initial == 0.0:
+			self.converged = True
+		else:
+			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-		while True:
+		if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
+				self.converged = True
+
+		self.objective_value = self.cost_functional.evaluate()
+
+		while not self.converged:
 			self.search_direction = self.compute_search_direction(self.gradient)
 
 			self.directional_derivative = self.form_handler.scalar_product(self.search_direction, self.gradient)
