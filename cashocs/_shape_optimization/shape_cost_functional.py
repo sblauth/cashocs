@@ -56,6 +56,14 @@ class ReducedShapeCostFunctional:
 		"""
 
 		self.state_problem.solve()
-		# self.regularization.update_geometric_quantities()
 
-		return fenics.assemble(self.form_handler.cost_functional_form) + self.regularization.compute_objective()
+		val = fenics.assemble(self.form_handler.cost_functional_form) + self.regularization.compute_objective()
+
+		if self.form_handler.use_scalar_tracking:
+			for j in range(self.form_handler.no_scalar_tracking_terms):
+				scalar_integral_value = fenics.assemble(self.form_handler.scalar_cost_functional_integrands[j])
+				self.form_handler.scalar_cost_functional_integrand_values[j].vector()[:] = scalar_integral_value
+
+				val += self.form_handler.scalar_weights[j].vector()[0]/2*pow(scalar_integral_value - self.form_handler.scalar_tracking_goals[j], 2)
+
+		return val

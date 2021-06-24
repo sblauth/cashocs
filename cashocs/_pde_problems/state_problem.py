@@ -93,6 +93,7 @@ class StateProblem:
 		"""
 
 		if not self.has_solution:
+
 			if self.initial_guess is not None:
 				for j in range(self.form_handler.state_dim):
 					fenics.assign(self.states[j], self.initial_guess[j])
@@ -163,5 +164,10 @@ class StateProblem:
 				print('')
 			self.has_solution = True
 			self.number_of_solves += 1
+
+			if self.form_handler.use_scalar_tracking:
+				for j in range(self.form_handler.no_scalar_tracking_terms):
+					scalar_integral_value = fenics.assemble(self.form_handler.scalar_cost_functional_integrands[j])
+					self.form_handler.scalar_cost_functional_integrand_values[j].vector()[:] = scalar_integral_value
 
 		return self.states

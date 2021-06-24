@@ -24,7 +24,7 @@ import numpy as np
 
 from .methods import CG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
-from .._forms import ControlFormHandler, Lagrangian
+from .._forms import ControlFormHandler
 from .._optimal_control import ReducedCostFunctional
 from .._pde_problems import (AdjointProblem, GradientProblem, HessianProblem, StateProblem, UnconstrainedHessianProblem)
 from ..optimization_problem import OptimizationProblem
@@ -47,7 +47,7 @@ class OptimalControlProblem(OptimizationProblem):
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, controls, adjoints, config=None,
 				 riesz_scalar_products=None, control_constraints=None, initial_guess=None, ksp_options=None,
-				 adjoint_ksp_options=None, desired_weights=None):
+				 adjoint_ksp_options=None, desired_weights=None, scalar_tracking_forms=None):
 		r"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
 
@@ -92,13 +92,19 @@ class OptimalControlProblem(OptimizationProblem):
 			A list of strings corresponding to command line options for PETSc,
 			used to solve the adjoint systems. If this is ``None``, then the same options
 			as for the state systems are used (default is ``None``).
+		scalar_tracking_forms : dict or list[dict]
+			A list of dictionaries that define scalar tracking type cost functionals,
+			where an integral value should be brought to a desired value. Each dict needs
+			to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
+			i.e., no scalar tracking terms are considered.
 
 		Examples
 		--------
 		Examples how to use this class can be found in the :ref:`tutorial <tutorial_index>`.
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess, ksp_options, adjoint_ksp_options, desired_weights)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config, initial_guess,
+									 ksp_options, adjoint_ksp_options, desired_weights, scalar_tracking_forms)
 		### Overloading, such that we do not have to use lists for a single state and a single control
 		### controls
 		try:
@@ -243,7 +249,7 @@ class OptimalControlProblem(OptimizationProblem):
 		
 		self.form_handler = ControlFormHandler(self.lagrangian, self.bcs_list, self.states, self.controls, self.adjoints, self.config,
 											   self.riesz_scalar_products, self.control_constraints, self.ksp_options, self.adjoint_ksp_options,
-											   self.require_control_constraints)
+											   self.require_control_constraints, use_scalar_tracking=self.use_scalar_tracking)
 
 		self.state_spaces = self.form_handler.state_spaces
 		self.control_spaces = self.form_handler.control_spaces

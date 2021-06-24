@@ -61,4 +61,13 @@ class ReducedCostFunctional:
 
 		self.state_problem.solve()
 
-		return fenics.assemble(self.form_handler.cost_functional_form)
+		val = fenics.assemble(self.form_handler.cost_functional_form)
+
+		if self.form_handler.use_scalar_tracking:
+			for j in range(self.form_handler.no_scalar_tracking_terms):
+				scalar_integral_value = fenics.assemble(self.form_handler.scalar_cost_functional_integrands[j])
+				self.form_handler.scalar_cost_functional_integrand_values[j].vector()[:] = scalar_integral_value
+
+				val += self.form_handler.scalar_weights[j].vector()[0]/2*pow(scalar_integral_value - self.form_handler.scalar_tracking_goals[j], 2)
+
+		return val

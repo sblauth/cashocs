@@ -386,19 +386,152 @@ def test_custom_supply_control():
 def test_scaling_control():
 	
 	u.vector()[:] = 1e-2
-	
+
 	J1 = Constant(0.5)*(y - y_d)*(y - y_d)*dx
 	J2 = Constant(0.5)*u*u*dx
 	J_list = [J1, J2]
-	
+
 	desired_weights = np.random.rand(2).tolist()
 	summ = sum(desired_weights)
-	
+
 	test_ocp = cashocs.OptimalControlProblem(F, bcs, J_list, y, u, p, config, desired_weights=desired_weights)
 	val = test_ocp.reduced_cost_functional.evaluate()
-	
+
 	assert abs(val - summ) < 1e-14
-	
+
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+
+
+
+def test_scalar_norm_optimization():
+	config = cashocs.load_config(dir_path + '/config_ocp.ini')
+
+	u.vector()[:] = 1e-3
+
+	J = Constant(0)*dx
+	norm_y = y*y*dx
+	tracking_goal = np.random.uniform(0.25, 0.75)
+	J_norm = {'integrand' : norm_y, 'tracking_goal' : tracking_goal}
+	config.set('OptimizationRoutine', 'initial_stepsize', '4e3')
+
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm)
+	test_ocp.solve(algorithm='bfgs', rtol=1e-3)
+
+	assert 0.5*pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
+
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	config.set('OptimizationRoutine', 'initial_stepsize', '1.0')
+
+
+
+def test_scalar_multiple_norms():
+	config = cashocs.load_config(dir_path + '/config_ocp.ini')
+
+	u.vector()[:] = 40
+
+	J = Constant(0)*dx
+	norm_y = y*y*dx
+	norm_u = u*u*dx
+	tracking_goals = [0.24154615814336944, 1554.0246268346273]
+	J_y = {'integrand' : norm_y, 'tracking_goal' : tracking_goals[0]}
+	J_u = {'integrand' : norm_u, 'tracking_goal' : tracking_goals[1]}
+	J_scalar = [J_y, J_u]
+	config.set('OptimizationRoutine', 'initial_stepsize', '1e-4')
+
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, scalar_tracking_forms=J_scalar)
+	test_ocp.solve(algorithm='bfgs', rtol=1e-5, max_iter=250)
+
+	assert 0.5*pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-4
+	assert 0.5*pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-7
+
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	config.set('OptimizationRoutine', 'initial_stepsize', '1.0')
+
+
+
+def test_scaling_scalar_only():
+	config = cashocs.load_config(dir_path + '/config_ocp.ini')
+
+	u.vector()[:] = 40
+
+	J = Constant(0)*dx
+	norm_y = y*y*dx
+	norm_u = u*u*dx
+	tracking_goals = [0.24154615814336944, 1554.0246268346273]
+	J_y = {'integrand' : norm_y, 'tracking_goal' : tracking_goals[0]}
+	J_u = {'integrand' : norm_u, 'tracking_goal' : tracking_goals[1]}
+	J_scalar = [J_y, J_u]
+
+	desired_weights = np.random.rand(3).tolist()
+	summ = sum(desired_weights[1:])
+
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, desired_weights=desired_weights, scalar_tracking_forms=J_scalar)
+	val = test_ocp.reduced_cost_functional.evaluate()
+
+	assert abs(val - summ) < 1e-14
+
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+
+
+
+def test_scaling_scalar_and_single_cost():
+	config = cashocs.load_config(dir_path + '/config_ocp.ini')
+
+	u.vector()[:] = 40
+
+	norm_y = y*y*dx
+	norm_u = u*u*dx
+	tracking_goals = [0.24154615814336944, 1554.0246268346273]
+	J_y = {'integrand' : norm_y, 'tracking_goal' : tracking_goals[0]}
+	J_u = {'integrand' : norm_u, 'tracking_goal' : tracking_goals[1]}
+	J_scalar = [J_y, J_u]
+
+	desired_weights = np.random.rand(3).tolist()
+	summ = sum(desired_weights)
+
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, desired_weights=desired_weights, scalar_tracking_forms=J_scalar)
+	val = test_ocp.reduced_cost_functional.evaluate()
+
+	assert abs(val - summ) < 1e-14
+
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+	assert cashocs.verification.control_gradient_test(ocp) > 1.9
+
+
+
+def test_scaling_all():
+	config = cashocs.load_config(dir_path + '/config_ocp.ini')
+
+	u.vector()[:] = 40
+
+	norm_y = y*y*dx
+	norm_u = u*u*dx
+	tracking_goals = [0.24154615814336944, 1554.0246268346273]
+	J_y = {'integrand' : norm_y, 'tracking_goal' : tracking_goals[0]}
+	J_u = {'integrand' : norm_u, 'tracking_goal' : tracking_goals[1]}
+	J_scalar = [J_y, J_u]
+
+	J1 = Constant(0.5)*(y - y_d)*(y - y_d)*dx
+	J2 = Constant(0.5)*u*u*dx
+	J_list = [J1, J2]
+
+	desired_weights = np.random.rand(4).tolist()
+	summ = sum(desired_weights)
+
+	test_ocp = cashocs.OptimalControlProblem(F, bcs, J_list, y, u, p, config, desired_weights=desired_weights, scalar_tracking_forms=J_scalar)
+	val = test_ocp.reduced_cost_functional.evaluate()
+
+	assert abs(val - summ) < 1e-14
+
 	assert cashocs.verification.control_gradient_test(ocp) > 1.9
 	assert cashocs.verification.control_gradient_test(ocp) > 1.9
 	assert cashocs.verification.control_gradient_test(ocp) > 1.9

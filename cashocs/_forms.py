@@ -56,7 +56,7 @@ class Lagrangian:
 	FormHandler : Derives necessary adjoint and gradient / shape derivative equations.
 	"""
 
-	def __init__(self, state_forms, cost_functional_form):
+	def __init__(self, state_forms, cost_functional_form, scalar_tracking_forms):
 		"""Initializes the Lagrangian.
 
 		Parameters
@@ -65,10 +65,14 @@ class Lagrangian:
 			The weak forms of the state equation, as implemented by the user.
 		cost_functional_form : ufl.form.Form
 			The cost functional, as implemented by the user.
+		scalar_tracking_forms : list[dict]
+			The list of cost functional forms for scalar (i.e. after
+			integration) tracking type terms.
 		"""
 
 		self.state_forms = state_forms
 		self.cost_functional_form = cost_functional_form
+		self.scalar_tracking_forms = scalar_tracking_forms
 
 		self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
 
@@ -90,7 +94,7 @@ class FormHandler:
 	ShapeFormHandler : FormHandler for shape optimization problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options):
+	def __init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options, use_scalar_tracking=False):
 		"""Initializes the form handler.
 
 		Parameters
@@ -121,10 +125,28 @@ class FormHandler:
 		self.config = config
 		self.state_ksp_options = ksp_options
 		self.adjoint_ksp_options = adjoint_ksp_options
+		self.use_scalar_tracking = use_scalar_tracking
 
 		# Further initializations
 		self.cost_functional_form = self.lagrangian.cost_functional_form
 		self.state_forms = self.lagrangian.state_forms
+
+		if self.use_scalar_tracking:
+			self.scalar_cost_functional_integrands = [d['integrand'] for d in self.lagrangian.scalar_tracking_forms]
+			self.scalar_tracking_goals = [d['tracking_goal'] for d in self.lagrangian.scalar_tracking_forms]
+
+			dummy_meshes = [integrand.integrals()[0].ufl_domain().ufl_cargo() for integrand in self.scalar_cost_functional_integrands]
+			self.scalar_cost_functional_integrand_values = [fenics.Function(fenics.FunctionSpace(mesh, 'R', 0)) for mesh in dummy_meshes]
+			self.scalar_weights = [fenics.Function(fenics.FunctionSpace(mesh, 'R', 0)) for mesh in dummy_meshes]
+
+			self.no_scalar_tracking_terms = len(self.scalar_tracking_goals)
+			try:
+				for j in range(self.no_scalar_tracking_terms):
+					self.scalar_weights[j].vector()[:] = self.lagrangian.scalar_tracking_forms[j]['weights']
+			except KeyError:
+				for j in range(self.no_scalar_tracking_terms):
+					self.scalar_weights[j].vector()[:] = 1.0
+
 
 		self.state_dim = len(self.states)
 
@@ -214,7 +236,19 @@ class FormHandler:
 		if self.state_is_picard:
 			self.adjoint_picard_forms = [fenics.derivative(self.lagrangian.lagrangian_form, self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
 
+			if self.use_scalar_tracking:
+				for i in range(self.state_dim):
+					for j in range(self.no_scalar_tracking_terms):
+						self.adjoint_picard_forms[i] += self.scalar_weights[j](self.scalar_cost_functional_integrand_values[j] - fenics.Constant(self.scalar_tracking_goals[j]))\
+														*fenics.derivative(self.scalar_cost_functional_integrands[j], self.states[i], self.test_functions_adjoint[i])
+
 		self.adjoint_eq_forms = [fenics.derivative(self.lagrangian_temp_forms[i], self.states[i], self.test_functions_adjoint[i]) for i in range(self.state_dim)]
+		if self.use_scalar_tracking:
+			for i in range(self.state_dim):
+				for j in range(self.no_scalar_tracking_terms):
+					self.temp_form = replace(self.scalar_cost_functional_integrands[j], {self.adjoints[i] : self.trial_functions_adjoint[i]})
+					self.adjoint_eq_forms[i] += self.scalar_weights[j]*(self.scalar_cost_functional_integrand_values[j] - fenics.Constant(self.scalar_tracking_goals[j]))\
+														*fenics.derivative(self.temp_form, self.states[i], self.test_functions_adjoint[i])
 		self.adjoint_eq_lhs = []
 		self.adjoint_eq_rhs = []
 
@@ -281,7 +315,8 @@ class ControlFormHandler(FormHandler):
 	ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints, ksp_options, adjoint_ksp_options, require_control_constraints):
+	def __init__(self, lagrangian, bcs_list, states, controls, adjoints, config, riesz_scalar_products, control_constraints, ksp_options,
+				 adjoint_ksp_options, require_control_constraints, use_scalar_tracking=False):
 		"""Initializes the ControlFormHandler class.
 
 		Parameters
@@ -313,7 +348,7 @@ class ControlFormHandler(FormHandler):
 			has actual control constraints present.
 		"""
 
-		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options, use_scalar_tracking)
 
 		# Initialize the attributes from the arguments
 		self.controls = controls
@@ -548,6 +583,12 @@ class ControlFormHandler(FormHandler):
 
 		self.gradient_forms_rhs = [fenics.derivative(self.lagrangian.lagrangian_form, self.controls[i], self.test_functions_control[i]) for i in range(self.control_dim)]
 
+		if self.use_scalar_tracking:
+			for i in range(self.control_dim):
+				for j in range(self.no_scalar_tracking_terms):
+					self.gradient_forms_rhs[i] += self.scalar_weights[j]*(self.scalar_cost_functional_integrand_values[j] - fenics.Constant(self.scalar_tracking_goals[j]))\
+												  *fenics.derivative(self.scalar_cost_functional_integrands[j], self.controls[i], self.test_functions_control[i])
+
 
 
 	def __compute_newton_forms(self):
@@ -557,6 +598,9 @@ class ControlFormHandler(FormHandler):
 		-------
 		None
 		"""
+
+		if self.use_scalar_tracking:
+			raise InputError('cashocs._forms.ShapeFormHandler', '__compute_newton_forms', 'Newton\'s method is not available with scalar tracking.')
 
 		# Use replace -> derivative to speed up the computations
 		self.sensitivity_eqs_temp = [replace(self.state_forms[i],
@@ -651,7 +695,7 @@ class ShapeFormHandler(FormHandler):
 	ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
 	"""
 
-	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options, shape_scalar_product=None, deformation_space=None):
+	def __init__(self, lagrangian, bcs_list, states, adjoints, boundaries, config, ksp_options, adjoint_ksp_options, shape_scalar_product=None, deformation_space=None, use_scalar_tracking=False):
 		"""Initializes the ShapeFormHandler object.
 
 		Parameters
@@ -679,7 +723,7 @@ class ShapeFormHandler(FormHandler):
 			shape gradient.
 		"""
 
-		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options)
+		FormHandler.__init__(self, lagrangian, bcs_list, states, adjoints, config, ksp_options, adjoint_ksp_options, use_scalar_tracking)
 
 		self.boundaries = boundaries
 		self.shape_scalar_product = shape_scalar_product
@@ -751,6 +795,12 @@ class ShapeFormHandler(FormHandler):
 		# Shape derivative of Lagrangian w/o regularization and pull-backs
 		self.shape_derivative = fenics.derivative(self.lagrangian.lagrangian_form, fenics.SpatialCoordinate(self.mesh), self.test_vector_field)
 
+		if self.use_scalar_tracking:
+			for j in range(self.no_scalar_tracking_terms):
+				self.shape_derivative += fenics.derivative(self.scalar_weights[j]*(self.scalar_cost_functional_integrand_values[j] - fenics.Constant(self.scalar_tracking_goals[j]))
+														   *self.scalar_cost_functional_integrands[j],
+														   fenics.SpatialCoordinate(self.mesh), self.test_vector_field)
+
 		# Add pull-backs
 		if self.use_pull_back:
 			self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [coeff.id() for coeff in self.adjoints]
@@ -762,6 +812,15 @@ class ShapeFormHandler(FormHandler):
 				else:
 					if not (coeff.ufl_element().family() == 'Real'):
 						self.material_derivative_coeffs.append(coeff)
+
+			if self.use_scalar_tracking:
+				for j in range(self.no_scalar_tracking_terms):
+					for coeff in self.scalar_cost_functional_integrands[j].coefficients():
+						if coeff.id() in self.state_adjoint_ids:
+							pass
+						else:
+							if not (coeff.ufl_element().family() == 'Real'):
+								self.material_derivative_coeffs.append(coeff)
 	
 			if len(self.material_derivative_coeffs) > 0:
 				warning('Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n'
@@ -775,6 +834,11 @@ class ShapeFormHandler(FormHandler):
 	
 				material_derivative = fenics.derivative(self.lagrangian.lagrangian_form, coeff,
 														fenics.dot(fenics.grad(coeff), self.test_vector_field))
+				if self.use_scalar_tracking:
+					for j in range(self.no_scalar_tracking_terms):
+						material_derivative += fenics.derivative(self.scalar_weights[j]*(self.scalar_cost_functional_integrand_values[j] - fenics.Constant(self.scalar_tracking_goals[j]))
+																 *self.scalar_cost_functional_integrands[j],
+																 coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field))
 				material_derivative = expand_derivatives(material_derivative)
 	
 				self.shape_derivative += material_derivative
@@ -854,7 +918,6 @@ class ShapeFormHandler(FormHandler):
 			
 			self.riesz_scalar_product = self.shape_scalar_product
 		
-
 
 
 	def __setup_mu_computation(self):

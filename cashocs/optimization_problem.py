@@ -49,7 +49,8 @@ class OptimizationProblem:
 	"""
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config=None,
-				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None, desired_weights=None):
+				 initial_guess=None, ksp_options=None, adjoint_ksp_options=None, desired_weights=None,
+				 scalar_tracking_forms=None):
 		r"""Initializes the optimization problem.
 
 		Parameters
@@ -86,8 +87,13 @@ class OptimizationProblem:
 			as for the state systems are used (default is ``None``).
 		desired_weights : list[int] or list[float] or None:
 			A list which indicates the value of the associated term in the cost functional on
-			the initial geometry in case a list of cost functions is supplied. If this is None,
+			the initial geometry in case a list of cost functions is supplied. If this is ``None``,
 			this defaults to multiplying all terms and adding them.
+		scalar_tracking_forms : dict or list[dict] or None
+			A list of dictionaries that define scalar tracking type cost functionals,
+			where an integral value should be brought to a desired value. Each dict needs
+			to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
+			i.e., no scalar tracking terms are considered.
 
 		Notes
 		-----
@@ -156,16 +162,19 @@ class OptimizationProblem:
 		try:
 			if type(cost_functional_form) == list:
 				for term in cost_functional_form:
-					if not term.__module__ == 'ufl.form' and type(term).__name__ == 'Form':
+					if term.__module__ == 'ufl.form' and type(term).__name__ == 'Form':
+						pass
+					else:
 						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'cost_functional_form has to be a ufl form or a list of ufl forms.')
-					
+
 				self.use_cost_functional_list = True
 				self.cost_functional_list = cost_functional_form
 				# generate a dummy cost_functional_form, which is overwritten in _scale_cost_functional
 				self.cost_functional_form = summation([term for term in self.cost_functional_list])
-					
+
 			elif cost_functional_form.__module__ == 'ufl.form' and type(cost_functional_form).__name__ == 'Form':
 				self.cost_functional_form = cost_functional_form
+
 			else:
 				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'cost_functional_form', 'cost_functional_form has to be a ufl form.')
 		except:
@@ -283,6 +292,43 @@ class OptimizationProblem:
 			self.desired_weights = None
 
 
+		### scalar_tracking_forms
+		self.use_scalar_tracking = False
+		self.scalar_cost_functional_integrands = None
+		self.scalar_tracking_goals = None
+
+		if scalar_tracking_forms is None:
+			self.scalar_tracking_forms = scalar_tracking_forms
+		else:
+			try:
+				if type(scalar_tracking_forms) == list:
+					for term in scalar_tracking_forms:
+						if type(term) == dict:
+							if ('integrand' in  term.keys()) and ('tracking_goal' in term.keys()):
+								pass
+							else:
+								raise InputError('cashocs.optimization_problem.OptimizationProblem', 'scalar_tracking_forms', 'each dict in scalar_tracking_forms has to have the keys \'integrand\' and \'tracking_goal\'')
+						else:
+							raise InputError('cashocs.optimization_problem.OptimizationProblem', 'scalar_tracking_forms', 'scalar_tracking_forms has to be a dict or a list of dicts.')
+
+					self.scalar_tracking_forms = scalar_tracking_forms
+					self.use_scalar_tracking = True
+
+				elif type(scalar_tracking_forms) == dict:
+					if ('integrand' in scalar_tracking_forms.keys()) and ('tracking_goal' in scalar_tracking_forms.keys()):
+						pass
+					else:
+						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'scalar_tracking_forms', 'each dict in scalar_tracking_forms has to have the keys \'integrand\' and \'tracking_goal\'')
+
+					self.scalar_tracking_forms = [scalar_tracking_forms]
+					self.use_scalar_tracking = True
+
+				else:
+					raise InputError('cashocs.optimization_problem.OptimizationProblem', 'scalar_tracking_forms', 'scalar_tracking_forms has to be a dict or list of dicts.')
+			except:
+				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'scalar_tracking_forms', 'Type of scalar_tracking_forms is wrong.')
+
+
 		if not len(self.bcs_list) == self.state_dim:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'bcs_list', 'Length of states does not match.')
 		if not len(self.states) == self.state_dim:
@@ -301,17 +347,29 @@ class OptimizationProblem:
 		
 		if self.desired_weights is not None:
 			try:
-				if not len(self.cost_functional_list) == len(self.desired_weights):
-					raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
+				if not self.use_scalar_tracking:
+					if not len(self.cost_functional_list) == len(self.desired_weights):
+						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
+				else:
+					if self.use_cost_functional_list:
+						if not len(self.desired_weights) == (len(self.cost_functional_list) + len(self.scalar_tracking_forms)):
+							raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional and scalar_tracking_forms does not match.')
+					else:
+						if not len(self.desired_weights) == len(self.scalar_tracking_forms) + 1:
+							raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional and scalar_tracking_forms does not match.')
 			except:
 				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'Length of desired_weights and cost_functional does not match.')
-			
+
+		self.bool_scaling = False
+		if self.desired_weights is not None:
+			self.bool_scaling = True
+
 		fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
 		self.state_problem = None
 		self.adjoint_problem = None
 		
-		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
+		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form, self.scalar_tracking_forms)
 		self.form_handler = None
 		self.has_custom_adjoint = False
 		self.has_custom_derivative = False
@@ -488,45 +546,71 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'solve', 'The usage of custom forms is not compatible with the Newton solver.'
 																						  'Please do not supply custom forms if you want to use the Newton solver.')
 		
-		if self.use_cost_functional_list:
+		if self.bool_scaling:
 			info('You use the automatic scaling functionality of cashocs. This might lead to unexpected results if you try to scale the cost functional yourself.\n'
 					'You can check your approach with the cashocs.verification module.')
 	
 	
 	
 	def _scale_cost_functional(self):
-		
-		if self.use_cost_functional_list:
-			
-			if self.desired_weights is not None:
-				
-				if not ('_cashocs_remesh_flag' in sys.argv):
-					# Create dummy objects for adjoints, so that we can actually solve the state problem
-					temp_form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.config, self.ksp_options, self.adjoint_ksp_options)
-					temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
-					
-					temp_state_problem.solve()
-					self.initial_function_values = []
+
+		if self.bool_scaling:
+
+			if not ('_cashocs_remesh_flag' in sys.argv):
+				# Create dummy objects for adjoints, so that we can actually solve the state problem
+				temp_form_handler = FormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints, self.config, self.ksp_options, self.adjoint_ksp_options, use_scalar_tracking=self.use_scalar_tracking)
+				temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
+
+				temp_state_problem.solve()
+				self.initial_function_values = []
+				if self.use_cost_functional_list:
 					for i in range(len(self.cost_functional_list)):
 						val = fenics.assemble(self.cost_functional_list[i])
-						
+
 						if abs(val) <= 1e-15:
 							val = 1.0
 							info('Term ' + str(i) + ' of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
-							
+
 						self.initial_function_values.append(val)
-				
+
 				else:
-					temp_dir = sys.argv[-1]
-					with open(temp_dir + '/temp_dict.json', 'r') as file:
-						temp_dict = json.load(file)
-					self.initial_function_values = temp_dict['initial_function_values']
-				
-				
+					val = fenics.assemble(self.cost_functional_form)
+					if abs(val) <= 1e-15:
+						val = 1.0
+						info('The cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+
+					self.initial_function_values.append(val)
+
+				if self.use_scalar_tracking:
+					self.initial_scalar_tracking_values = []
+					for i in range(len(self.scalar_tracking_forms)):
+						val = 0.5*pow(fenics.assemble(temp_form_handler.scalar_cost_functional_integrands[i]) - temp_form_handler.scalar_tracking_goals[i], 2)
+
+						if abs(val) <= 1e-15:
+							val = 1.0
+							info('Term ' + str(i) + ' of the scalar tracking cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights.')
+
+						self.initial_scalar_tracking_values.append(val)
+
+			else:
+				temp_dir = sys.argv[-1]
+				with open(temp_dir + '/temp_dict.json', 'r') as file:
+					temp_dict = json.load(file)
+				self.initial_function_values = temp_dict['initial_function_values']
+				self.initial_scalar_tracking_values = temp_dict['initial_scalar_tracking_values']
+
+			if self.use_cost_functional_list:
 				self.cost_functional_form = summation([fenics.Constant(abs(self.desired_weights[i] / self.initial_function_values[i]))*self.cost_functional_list[i]
 													   for i in range(len(self.cost_functional_list))])
-				
-				self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form)
-				
 			else:
+				self.cost_functional_form = fenics.Constant(abs(self.desired_weights[0] / self.initial_function_values[0]))*self.cost_functional_form
+
+			if self.use_scalar_tracking:
+				for i in range(len(self.scalar_tracking_forms)):
+					self.scalar_tracking_forms[-1-i]['weights'] = abs(self.desired_weights[-1-i] / self.initial_scalar_tracking_values[-1-i])
+
+			self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form, self.scalar_tracking_forms)
+
+		else:
+			if self.use_cost_functional_list:
 				self.cost_functional_form = summation([term for term in self.cost_functional_list])

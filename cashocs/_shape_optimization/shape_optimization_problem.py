@@ -32,7 +32,7 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from .methods import CG, GradientDescent, LBFGS
 from .._loggers import debug, warning
 from .._exceptions import ConfigError, InputError, CashocsException
-from .._forms import Lagrangian, ShapeFormHandler
+from .._forms import ShapeFormHandler
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
@@ -56,7 +56,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
 	def __init__(self, state_forms, bcs_list, cost_functional_form, states,
 				 adjoints, boundaries, config=None, shape_scalar_product=None, initial_guess=None,
-				 ksp_options=None, adjoint_ksp_options=None, desired_weights=None):
+				 ksp_options=None, adjoint_ksp_options=None, desired_weights=None, scalar_tracking_forms=None):
 		"""This is used to generate all classes and functionalities. First ensures
 		consistent input, afterwards, the solution algorithm is initialized.
 
@@ -99,10 +99,15 @@ class ShapeOptimizationProblem(OptimizationProblem):
 			A list of strings corresponding to command line options for PETSc,
 			used to solve the adjoint systems. If this is ``None``, then the same options
 			as for the state systems are used (default is ``None``).
+		scalar_tracking_forms : dict or list[dict]
+			A list of dictionaries that define scalar tracking type cost functionals,
+			where an integral value should be brought to a desired value. Each dict needs
+			to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
+			i.e., no scalar tracking terms are considered.
 		"""
 
-		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints,
-									 config, initial_guess, ksp_options, adjoint_ksp_options, desired_weights)
+		OptimizationProblem.__init__(self, state_forms, bcs_list, cost_functional_form, states, adjoints, config,
+									 initial_guess, ksp_options, adjoint_ksp_options, desired_weights, scalar_tracking_forms)
 
 		### Initialize the remeshing behavior, and a temp file
 		self.do_remesh = self.config.getboolean('Mesh', 'remesh', fallback=False)
@@ -133,8 +138,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 								  'OptimizationRoutine' : {'iteration_counter' : 0, 'gradient_norm_initial' : 0.0},
 								  'output_dict' : {}}
 				
-				if self.use_cost_functional_list:
+				if self.bool_scaling:
 					self.temp_dict['initial_function_values'] = self.initial_function_values
+					self.temp_dict['intitial_scalar_tracking_values'] = self.initial_scalar_tracking_values
 
 			else:
 				self.temp_dir = sys.argv[-1]
@@ -171,7 +177,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		
 		self.form_handler = ShapeFormHandler(self.lagrangian, self.bcs_list, self.states, self.adjoints,
 											 self.boundaries, self.config, self.ksp_options, self.adjoint_ksp_options,
-											 self.shape_scalar_product, self.deformation_space)
+											 self.shape_scalar_product, self.deformation_space, use_scalar_tracking=self.use_scalar_tracking)
 		
 		if self.do_remesh and not ('_cashocs_remesh_flag' in sys.argv):
 			self.temp_dict['Regularization'] = {
