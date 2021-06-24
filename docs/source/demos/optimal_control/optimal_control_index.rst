@@ -2,7 +2,7 @@ Optimal Control Problems
 ========================
 
 In this part of the tutorial, we investigate how optimal control problems can
-be treated with CASHOCS. 
+be treated with CASHOCS.
 
 .. toctree::
    :maxdepth: 1
@@ -22,3 +22,4 @@ be treated with CASHOCS.
    doc_iterative_solvers
    doc_state_constraints
    doc_sparse_control
+   doc_scalar_control_tracking
