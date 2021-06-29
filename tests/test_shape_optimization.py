@@ -543,7 +543,7 @@ def test_scalar_tracking_norm():
 	assert cashocs.verification.shape_gradient_test(sop) > 1.9
 
 	sop.solve('lbfgs', rtol=1e-5, max_iter=50)
-	assert 0.5*pow(assemble(norm_u) - tracking_goal, 2) < 1e-15
+	assert 0.5*pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
 
 
 
