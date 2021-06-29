@@ -24,9 +24,7 @@ CASHOCS
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
 
-
-
-
+|
 
 CASHOCS is a computational adjoint-based shape optimization and optimal control
 software for python.

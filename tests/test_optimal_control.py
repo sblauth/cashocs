@@ -443,7 +443,7 @@ def test_scalar_multiple_norms():
 	config.set('OptimizationRoutine', 'initial_stepsize', '1e-4')
 
 	test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config, scalar_tracking_forms=J_scalar)
-	test_ocp.solve(algorithm='bfgs', rtol=1e-6, max_iter=250)
+	test_ocp.solve(algorithm='bfgs', rtol=1e-6, max_iter=500)
 
 	assert 0.5*pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-3
 	assert 0.5*pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-5
