@@ -597,7 +597,8 @@ class OptimizationProblem:
 				with open(temp_dir + '/temp_dict.json', 'r') as file:
 					temp_dict = json.load(file)
 				self.initial_function_values = temp_dict['initial_function_values']
-				self.initial_scalar_tracking_values = temp_dict['initial_scalar_tracking_values']
+				if self.use_scalar_tracking:
+					self.initial_scalar_tracking_values = temp_dict['initial_scalar_tracking_values']
 
 			if self.use_cost_functional_list:
 				self.cost_functional_form = summation([fenics.Constant(abs(self.desired_weights[i] / self.initial_function_values[i]))*self.cost_functional_list[i]

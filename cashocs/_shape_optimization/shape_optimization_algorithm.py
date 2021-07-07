@@ -195,10 +195,10 @@ class ShapeOptimizationAlgorithm:
 
 		if self.save_txt:
 			if self.iteration == 0:
-				with open(self.result_dir + 'history.txt', 'w') as file:
+				with open(self.result_dir + '/history.txt', 'w') as file:
 					file.write(output + '\n')
 			else:
-				with open(self.result_dir + 'history.txt', 'a') as file:
+				with open(self.result_dir + '/history.txt', 'a') as file:
 					file.write(output + '\n')
 	
 
@@ -218,7 +218,7 @@ class ShapeOptimizationAlgorithm:
 				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
 
 		if self.save_txt:
-			with open(self.result_dir + 'history.txt', 'a') as file:
+			with open(self.result_dir + '/history.txt', 'a') as file:
 				file.write('\nStatistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)\n')
 				file.write('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
@@ -307,15 +307,15 @@ class ShapeOptimizationAlgorithm:
 			elif self.converged_reason == -3:
 				self.iteration -= 1
 				if self.optimization_problem.mesh_handler.do_remesh:
-					info('Mesh Quality too low. Perform a remeshing operation.')
+					info('Mesh quality too low. Performing a remeshing operation.\n')
 					self.optimization_problem.mesh_handler.remesh()
 				else:
 					if self.soft_exit:
-						error('Mesh Quality is too low.')
+						error('Mesh quality is too low.')
 						self.finalize()
 					else:
 						self.finalize()
-						raise NotConvergedError('Optimization Algorithm', 'Mesh Quality is too low.')
+						raise NotConvergedError('Optimization Algorithm', 'Mesh quality is too low.')
 
 			# Iteration for remeshing is the one exceeding the maximum number of iterations
 			elif self.converged_reason == -4:

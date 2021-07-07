@@ -140,7 +140,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 				
 				if self.bool_scaling:
 					self.temp_dict['initial_function_values'] = self.initial_function_values
-					self.temp_dict['intitial_scalar_tracking_values'] = self.initial_scalar_tracking_values
+					if self.use_scalar_tracking:
+						self.temp_dict['intitial_scalar_tracking_values'] = self.initial_scalar_tracking_values
 
 			else:
 				self.temp_dir = sys.argv[-1]

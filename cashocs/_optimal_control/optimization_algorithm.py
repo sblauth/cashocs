@@ -190,10 +190,10 @@ class OptimizationAlgorithm:
 
 		if self.save_txt:
 			if self.iteration == 0:
-				with open(self.result_dir + 'history.txt', 'w') as file:
+				with open(self.result_dir + '/history.txt', 'w') as file:
 					file.write(output + '\n')
 			else:
-				with open(self.result_dir + 'history.txt', 'a') as file:
+				with open(self.result_dir + '/history.txt', 'a') as file:
 					file.write(output + '\n')
 
 
@@ -213,7 +213,7 @@ class OptimizationAlgorithm:
 				  ' --- Adjoint equations solved: ' + str(self.adjoint_problem.number_of_solves) + '\n')
 
 		if self.save_txt:
-			with open(self.result_dir + 'history.txt', 'a') as file:
+			with open(self.result_dir + '/history.txt', 'a') as file:
 				file.write('\nStatistics --- Total iterations: ' + format(self.iteration, '4d') + ' --- Final objective value:  ' + format(self.objective_value, '.3e') +
 				  ' --- Final gradient norm:  ' + format(self.relative_norm, '.3e') + ' (rel)\n')
 				file.write('           --- State equations solved: ' + str(self.state_problem.number_of_solves) +
