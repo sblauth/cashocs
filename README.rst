@@ -198,14 +198,14 @@ as well as ::
 
 	@Article{Blauth2020Nonlinear,
 		author   = {Sebastian Blauth},
-	    journal  = {SIAM J. Optim.},
-	    title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
-	    year     = {2021},
-	    number   = {3},
-	    pages    = {1658--1689},
-	    volume   = {31},
-	    doi      = {10.1137/20M1367738},
-	    fjournal = {SIAM Journal on Optimization},
+		journal  = {SIAM J. Optim.},
+		title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
+		year     = {2021},
+		number   = {3},
+		pages    = {1658--1689},
+		volume   = {31},
+		doi      = {10.1137/20M1367738},
+		fjournal = {SIAM Journal on Optimization},
 	}
 
 .. readme_end_citing
