@@ -171,9 +171,17 @@ If you use cashocs for your research, I would be grateful if you would cite the 
 	Sebastian Blauth
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
-	
-If you are using BibTeX, you can use the following entry::
 
+Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper ::
+	
+	Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov--Poincaré-Type Metrics
+	Sebastian Blauth
+	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
+	https://doi.org/10.1137/20M1367738
+
+	
+If you are using BibTeX, you can use the following entries::
+	
 	@Article{Blauth2021cashocs,
 	  author   = {Sebastian Blauth},
 	  journal  = {SoftwareX},
@@ -184,6 +192,20 @@ If you are using BibTeX, you can use the following entry::
 	  volume   = {13},
 	  doi      = {https://doi.org/10.1016/j.softx.2020.100646},
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
+	}
+
+as well as ::	
+
+	@Article{Blauth2020Nonlinear,
+		author   = {Sebastian Blauth},
+	    journal  = {SIAM J. Optim.},
+	    title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
+	    year     = {2021},
+	    number   = {3},
+	    pages    = {1658--1689},
+	    volume   = {31},
+	    doi      = {10.1137/20M1367738},
+	    fjournal = {SIAM Journal on Optimization},
 	}
 
 .. readme_end_citing
@@ -217,9 +239,8 @@ along with CASHOCS.  If not, see `<https://www.gnu.org/licenses/>`_.
 Contact / About
 ===============
 
-I'm Sebastian Blauth, a PhD student at `Fraunhofer ITWM
-<https://www.itwm.fraunhofer.de/en.html>`_ and `TU Kaiserslautern
-<https://www.mathematik.uni-kl.de/en/>`_, and I developed this project as part of my work.
+I'm `Sebastian Blauth <https://www.itwm.fraunhofer.de/en/departments/tv/staff/sebastian-blauth.html>`_, a scientific employee at `Fraunhofer ITWM
+<https://www.itwm.fraunhofer.de/en.html>`_. I have developed this project as part of my PhD thesis.
 If you have any questions / suggestions / feedback, etc., you can contact me
 via `sebastian.blauth@itwm.fraunhofer.de
 <mailto:sebastian.blauth@itwm.fraunhofer.de>`_ or `sebastianblauth@web.de

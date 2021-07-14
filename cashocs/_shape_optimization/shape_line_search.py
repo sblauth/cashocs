@@ -132,6 +132,7 @@ class ArmijoLineSearch:
 				self.optimization_algorithm.state_problem.has_solution = False
 				self.objective_step = self.cost_functional.evaluate()
 
+
 				if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
 
 					if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_upper:
