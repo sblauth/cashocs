@@ -43,6 +43,7 @@ class Newton(OptimizationAlgorithm):
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
 		self.line_search = ArmijoLineSearch(self)
+		self.hessian_problem = optimization_problem.hessian_problem
 
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
@@ -69,7 +70,7 @@ class Newton(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm
 				if self.gradient_norm_initial == 0:
@@ -84,7 +85,7 @@ class Newton(OptimizationAlgorithm):
 				self.converged = True
 				break
 
-			self.search_directions = self.optimization_problem.hessian_problem.newton_solve()
+			self.search_directions = self.hessian_problem.newton_solve()
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.gradients)
 			if self.directional_derivative > 0:
 				self.has_curvature_info = False

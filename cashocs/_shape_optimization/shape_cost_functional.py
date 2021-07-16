@@ -41,7 +41,6 @@ class ReducedShapeCostFunctional:
 
 		self.form_handler = form_handler
 		self.state_problem = state_problem
-		self.regularization = self.form_handler.regularization
 
 
 
@@ -57,7 +56,7 @@ class ReducedShapeCostFunctional:
 
 		self.state_problem.solve()
 
-		val = fenics.assemble(self.form_handler.cost_functional_form) + self.regularization.compute_objective()
+		val = fenics.assemble(self.form_handler.cost_functional_form) + self.form_handler.regularization.compute_objective()
 
 		if self.form_handler.use_scalar_tracking:
 			for j in range(self.form_handler.no_scalar_tracking_terms):

@@ -283,9 +283,9 @@ class OptimizationProblem:
 				for weight in desired_weights:
 					if not (type(weight) == int or type(weight) == float):
 						raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'desired_weights needs to be a list of numbers (int or float).')
-				
+
 				self.desired_weights = desired_weights
-				
+
 			else:
 				raise InputError('cashocs.optimization_problem.OptimizationProblem', 'desired_weights', 'desired_weights needs to be a list of numbers (int or float).')
 		else:
@@ -344,7 +344,7 @@ class OptimizationProblem:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match.')
 		if not len(self.adjoint_ksp_options) == self.state_dim:
 			raise InputError('cashocs.optimization_problem.OptimizationProblem', 'ksp_options', 'Length of states does not match.')
-		
+
 		if self.desired_weights is not None:
 			try:
 				if not self.use_scalar_tracking:
@@ -368,12 +368,12 @@ class OptimizationProblem:
 
 		self.state_problem = None
 		self.adjoint_problem = None
-		
+
 		self.lagrangian = Lagrangian(self.state_forms, self.cost_functional_form, self.scalar_tracking_forms)
 		self.form_handler = None
 		self.has_custom_adjoint = False
 		self.has_custom_derivative = False
-		
+
 		self._scale_cost_functional()
 
 

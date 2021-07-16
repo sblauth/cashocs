@@ -59,20 +59,20 @@ class OptimizationAlgorithm:
 		self.line_search_broken = False
 		self.has_curvature_info = False
 
-		self.optimization_problem = optimization_problem
-		self.form_handler = self.optimization_problem.form_handler
-		self.state_problem = self.optimization_problem.state_problem
-		self.config = self.optimization_problem.config
+		self.form_handler = optimization_problem.form_handler
+		self.state_problem = optimization_problem.state_problem
+		self.config = optimization_problem.config
+		self.adjoint_problem = optimization_problem.adjoint_problem
 
-		self.adjoint_problem = self.optimization_problem.adjoint_problem
+		self.gradient_problem = optimization_problem.gradient_problem
+		self.gradients = optimization_problem.gradients
+		self.controls = optimization_problem.controls
+		self.controls_temp = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.cost_functional = optimization_problem.reduced_cost_functional
+		self.projected_difference = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.search_directions = [fenics.Function(V) for V in optimization_problem.control_spaces]
 
-		self.gradient_problem = self.optimization_problem.gradient_problem
-		self.gradients = self.optimization_problem.gradients
-		self.controls = self.optimization_problem.controls
-		self.controls_temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.cost_functional = self.optimization_problem.reduced_cost_functional
-		self.projected_difference = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.search_directions = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.require_control_constraints = optimization_problem.require_control_constraints
 
 		self.iteration = 0
 		self.objective_value = 1.0
@@ -134,6 +134,33 @@ class OptimizationAlgorithm:
 				else:
 					self.gradient_pvd_list.append(fenics.File(self.result_dir + '/pvd/gradient_' + str(i) + '.pvd'))
 
+
+
+	def _stationary_measure_squared(self):
+		"""Computes the stationary measure (squared) corresponding to box-constraints
+
+		In case there are no box constraints this reduces to the classical gradient
+		norm.
+
+		Returns
+		-------
+		 float
+			The square of the stationary measure
+
+		"""
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+
+		self.form_handler.project_to_admissible_set(self.projected_difference)
+
+		for j in range(self.form_handler.control_dim):
+			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+
+		return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
+
+
+
 	def print_results(self):
 		"""Prints the current state of the optimization algorithm to the console.
 
@@ -141,7 +168,7 @@ class OptimizationAlgorithm:
 		-------
 		None
 		"""
-		if not np.any(self.optimization_problem.require_control_constraints):
+		if not np.any(self.require_control_constraints):
 			if self.iteration == 0:
 				output = 'Iteration ' + format(self.iteration, '4d') + ' - Objective value:  ' + format(self.objective_value, '.3e') + \
 						 '    Gradient norm:  ' + format(self.gradient_norm_initial, '.3e') + ' (abs) \n '

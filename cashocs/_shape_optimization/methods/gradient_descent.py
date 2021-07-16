@@ -58,8 +58,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
 		"""
 
 		try:
-			self.iteration = self.optimization_problem.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
-			self.gradient_norm_initial = self.optimization_problem.temp_dict['OptimizationRoutine'].get('gradient_norm_initial', 0.0)
+			self.iteration = self.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
+			self.gradient_norm_initial = self.temp_dict['OptimizationRoutine'].get('gradient_norm_initial', 0.0)
 		except TypeError:
 			self.iteration = 0
 			self.gradient_norm_initial = 0.0

@@ -44,12 +44,14 @@ class PDAS(OptimizationAlgorithm):
 
 		OptimizationAlgorithm.__init__(self, optimization_problem)
 
-		self.idx_active_upper_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
-		self.idx_active_lower_prev = [np.array([]) for j in range(self.optimization_problem.control_dim)]
+		self.idx_active_upper_prev = [np.array([]) for j in range(optimization_problem.control_dim)]
+		self.idx_active_lower_prev = [np.array([]) for j in range(optimization_problem.control_dim)]
 		self.initialized = False
-		self.mu = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(self.optimization_problem.control_dim)]
+		self.mu = [fenics.Function(optimization_problem.control_spaces[j]) for j in range(optimization_problem.control_dim)]
 		self.shift_mult = self.config.getfloat('AlgoPDAS', 'pdas_regularization_parameter')
 		self.verbose = self.config.getboolean('Output', 'verbose', fallback=True)
+
+		self.control_constraints = optimization_problem.control_constraints
 
 		self.inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
 		if self.inner_pdas in ['gradient_descent', 'gd']:
@@ -76,22 +78,22 @@ class PDAS(OptimizationAlgorithm):
 		None
 		"""
 
-		self.idx_active_lower = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][0].vector()[:]) < 0).nonzero()[0]
-								 for j in range(self.optimization_problem.control_dim)]
-		self.idx_active_upper = [(self.mu[j].vector()[:] + self.shift_mult*(self.optimization_problem.controls[j].vector()[:] - self.optimization_problem.control_constraints[j][1].vector()[:]) > 0).nonzero()[0]
-								 for j in range(self.optimization_problem.state_dim)]
+		self.idx_active_lower = [(self.mu[j].vector()[:] + self.shift_mult*(self.controls[j].vector()[:] - self.control_constraints[j][0].vector()[:]) < 0).nonzero()[0]
+								 for j in range(self.form_handler.control_dim)]
+		self.idx_active_upper = [(self.mu[j].vector()[:] + self.shift_mult*(self.controls[j].vector()[:] - self.control_constraints[j][1].vector()[:]) > 0).nonzero()[0]
+								 for j in range(self.form_handler.state_dim)]
 
-		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.optimization_problem.control_dim)]
-		[self.idx_active[j].sort() for j in range(self.optimization_problem.control_dim)]
+		self.idx_active = [np.concatenate((self.idx_active_lower[j], self.idx_active_upper[j])) for j in range(self.form_handler.control_dim)]
+		[self.idx_active[j].sort() for j in range(self.form_handler.control_dim)]
 
-		self.idx_inactive = [np.setdiff1d(np.arange(self.optimization_problem.control_spaces[j].dim()), self.idx_active[j]) for j in range(self.optimization_problem.control_dim)]
+		self.idx_inactive = [np.setdiff1d(np.arange(self.form_handler.control_spaces[j].dim()), self.idx_active[j]) for j in range(self.form_handler.control_dim)]
 
 		if self.initialized:
-			if all([np.array_equal(self.idx_active_upper[j], self.idx_active_upper_prev[j]) and np.array_equal(self.idx_active_lower[j], self.idx_active_lower_prev[j]) for j in range(self.optimization_problem.control_dim)]):
+			if all([np.array_equal(self.idx_active_upper[j], self.idx_active_upper_prev[j]) and np.array_equal(self.idx_active_lower[j], self.idx_active_lower_prev[j]) for j in range(self.form_handler.control_dim)]):
 				self.converged = True
 
-		self.idx_active_upper_prev = [self.idx_active_upper[j] for j in range(self.optimization_problem.control_dim)]
-		self.idx_active_lower_prev = [self.idx_active_lower[j] for j in range(self.optimization_problem.control_dim)]
+		self.idx_active_upper_prev = [self.idx_active_upper[j] for j in range(self.form_handler.control_dim)]
+		self.idx_active_lower_prev = [self.idx_active_lower[j] for j in range(self.form_handler.control_dim)]
 		self.initialized = True
 
 
@@ -112,31 +114,31 @@ class PDAS(OptimizationAlgorithm):
 		self.state_problem.has_solution = False
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
-		self.objective_value = self.optimization_problem.reduced_cost_functional.evaluate()
-		self.optimization_problem.state_problem.has_solution = True
-		self.optimization_problem.gradient_problem.solve()
-		norm_init = np.sqrt(self.optimization_problem._stationary_measure_squared())
-		self.optimization_problem.adjoint_problem.has_solution = True
+		self.objective_value = self.cost_functional.evaluate()
+		self.state_problem.has_solution = True
+		self.gradient_problem.solve()
+		norm_init = np.sqrt(self._stationary_measure_squared())
+		self.adjoint_problem.has_solution = True
 
 		self.print_results()
 		
 		while True:
 
 			for j in range(len(self.controls)):
-				self.controls[j].vector()[self.idx_active_lower[j]] = self.optimization_problem.control_constraints[j][0].vector()[self.idx_active_lower[j]]
-				self.controls[j].vector()[self.idx_active_upper[j]] = self.optimization_problem.control_constraints[j][1].vector()[self.idx_active_upper[j]]
+				self.controls[j].vector()[self.idx_active_lower[j]] = self.control_constraints[j][0].vector()[self.idx_active_lower[j]]
+				self.controls[j].vector()[self.idx_active_upper[j]] = self.control_constraints[j][1].vector()[self.idx_active_upper[j]]
 
 
 			self.inner_solver.run(self.idx_active)
 
 			for j in range(len(self.controls)):
-				self.mu[j].vector()[:] = -self.optimization_problem.gradients[j].vector()[:]
+				self.mu[j].vector()[:] = -self.gradients[j].vector()[:]
 				self.mu[j].vector()[self.idx_inactive[j]] = 0.0
 
 			
 
 			self.objective_value = self.inner_solver.line_search.objective_step
-			norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+			norm = np.sqrt(self._stationary_measure_squared())
 
 			self.relative_norm = norm / norm_init
 

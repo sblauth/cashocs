@@ -45,9 +45,10 @@ class CG(OptimizationAlgorithm):
 
 		self.line_search = ArmijoLineSearch(self)
 
-		self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.gradients_prev = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.differences = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.temp_HZ = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.control_constraints = optimization_problem.control_constraints
 
 		self.cg_method = self.config.get('AlgoCG', 'cg_method', fallback='FR')
 		if not self.cg_method in ['FR', 'PR', 'HS', 'DY', 'HZ']:
@@ -72,8 +73,6 @@ class CG(OptimizationAlgorithm):
 		-------
 		None
 		"""
-
-		self.control_constraints = self.optimization_problem.control_constraints
 
 		for j in range(self.form_handler.control_dim):
 			idx = np.asarray(np.logical_or(np.logical_and(self.controls[j].vector()[:] <= self.control_constraints[j][0].vector()[:], a[j].vector()[:] < 0.0),
@@ -108,7 +107,7 @@ class CG(OptimizationAlgorithm):
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
 
-			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 			if self.iteration > 0:
 				if self.cg_method == 'FR':
 					self.beta_numerator = self.form_handler.scalar_product(self.gradients, self.gradients)

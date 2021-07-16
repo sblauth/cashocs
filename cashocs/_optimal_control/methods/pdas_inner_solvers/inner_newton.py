@@ -47,9 +47,11 @@ class InnerNewton(OptimizationAlgorithm):
 		self.line_search = UnconstrainedLineSearch(self)
 		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
 		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
-		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
+		self.reduced_gradient = [fenics.Function(optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
+
+		self.unconstrained_hessian = optimization_problem.unconstrained_hessian
 
 		self.stepsize = 1.0
 		self.armijo_stepsize_initial = self.stepsize
@@ -99,7 +101,7 @@ class InnerNewton(OptimizationAlgorithm):
 				# self.print_results()
 				break
 
-			self.search_directions = self.optimization_problem.unconstrained_hessian.newton_solve(idx_active)
+			self.search_directions = self.unconstrained_hessian.newton_solve(idx_active)
 			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.reduced_gradient)
 			if self.directional_derivative > 0:
 				# print('No descent direction')

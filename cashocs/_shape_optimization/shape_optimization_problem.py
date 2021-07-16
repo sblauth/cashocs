@@ -309,6 +309,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 		self.solver.post_processing()
 
 
+
 	def __change_except_hook(self):
 		"""Ensures that temp files are deleted when an exception occurs.
 

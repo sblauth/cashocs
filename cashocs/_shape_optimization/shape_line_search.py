@@ -21,6 +21,7 @@
 
 import fenics
 import numpy as np
+import weakref
 
 from .._loggers import error
 from ..utils import _optimization_algorithm_configuration
@@ -38,11 +39,10 @@ class ArmijoLineSearch:
 			the optimization problem of interest
 		"""
 
-		self.optimization_algorithm = optimization_algorithm
-		self.config = self.optimization_algorithm.config
-		self.optimization_problem = self.optimization_algorithm.optimization_problem
-		self.form_handler = self.optimization_problem.form_handler
-		self.mesh_handler = self.optimization_problem.mesh_handler
+		self.ref_algo = weakref.ref(optimization_algorithm)
+		self.config = optimization_algorithm.config
+		self.form_handler = optimization_algorithm.form_handler
+		self.mesh_handler = optimization_algorithm.mesh_handler
 		self.deformation = fenics.Function(self.form_handler.deformation_space)
 
 		self.stepsize = self.config.getfloat('OptimizationRoutine', 'initial_stepsize', fallback=1.0)
@@ -50,9 +50,9 @@ class ArmijoLineSearch:
 		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2.0)
 		self.armijo_stepsize_initial = self.stepsize
 
-		self.cost_functional = self.optimization_problem.reduced_cost_functional
+		self.cost_functional = optimization_algorithm.cost_functional
 
-		self.gradient = self.optimization_algorithm.gradient
+		self.gradient = optimization_algorithm.gradient
 
 		self.algorithm = _optimization_algorithm_configuration(self.config)
 		self.is_newton_like = (self.algorithm == 'lbfgs')
@@ -97,28 +97,28 @@ class ArmijoLineSearch:
 		"""
 
 		self.search_direction_inf = np.max(np.abs(search_direction.vector()[:]))
-		self.optimization_algorithm.objective_value = self.cost_functional.evaluate()
+		self.ref_algo().objective_value = self.cost_functional.evaluate()
 
 		if has_curvature_info:
 			self.stepsize = 1.0
 
-		self.optimization_algorithm.print_results()
+		self.ref_algo().print_results()
 
 		num_decreases = self.mesh_handler.compute_decreases(search_direction, self.stepsize)
 		self.stepsize /= pow(self.beta_armijo, num_decreases)
 
 		while True:
-			if self.optimization_algorithm.iteration >= self.optimization_algorithm.maximum_iterations:
-				self.optimization_algorithm.remeshing_its = True
+			if self.ref_algo().iteration >= self.ref_algo().maximum_iterations:
+				self.ref_algo().remeshing_its = True
 				break
 
 			if self.stepsize*self.search_direction_inf <= 1e-8:
 				error('Stepsize too small.')
-				self.optimization_algorithm.line_search_broken = True
+				self.ref_algo().line_search_broken = True
 				break
 			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
 				error('Stepsize too small.')
-				self.optimization_algorithm.line_search_broken = True
+				self.ref_algo().line_search_broken = True
 				break
 
 			self.deformation.vector()[:] = self.stepsize*search_direction.vector()[:]
@@ -129,17 +129,17 @@ class ArmijoLineSearch:
 					self.mesh_handler.revert_transformation()
 					continue
 
-				self.optimization_algorithm.state_problem.has_solution = False
+				self.ref_algo().state_problem.has_solution = False
 				self.objective_step = self.cost_functional.evaluate()
 
 
-				if self.objective_step < self.optimization_algorithm.objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
+				if self.objective_step < self.ref_algo().objective_value + self.epsilon_armijo*self.decrease_measure(search_direction):
 
 					if self.mesh_handler.current_mesh_quality < self.mesh_handler.mesh_quality_tol_upper:
-						self.optimization_algorithm.requires_remeshing = True
+						self.ref_algo().requires_remeshing = True
 						break
 
-					if self.optimization_algorithm.iteration == 0:
+					if self.ref_algo().iteration == 0:
 						self.armijo_stepsize_initial = self.stepsize
 					self.form_handler.update_scalar_product()
 					break
@@ -151,9 +151,9 @@ class ArmijoLineSearch:
 			else:
 				self.stepsize /= self.beta_armijo
 
-		if not (self.optimization_algorithm.line_search_broken or self.optimization_algorithm.requires_remeshing or self.optimization_algorithm.remeshing_its):
-				self.optimization_algorithm.stepsize = self.stepsize
-				self.optimization_algorithm.objective_value = self.objective_step
+		if not (self.ref_algo().line_search_broken or self.ref_algo().requires_remeshing or self.ref_algo().remeshing_its):
+				self.ref_algo().stepsize = self.stepsize
+				self.ref_algo().objective_value = self.objective_step
 
 		if not has_curvature_info:
 			self.stepsize *= self.beta_armijo

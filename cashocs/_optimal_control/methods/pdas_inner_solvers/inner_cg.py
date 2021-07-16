@@ -48,13 +48,13 @@ class InnerCG(OptimizationAlgorithm):
 
 		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
 		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
-		self.reduced_gradient = [fenics.Function(self.optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
+		self.reduced_gradient = [fenics.Function(optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
 		self.first_iteration = True
 		self.first_gradient_norm = 1.0
 
-		self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.differences = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.temp_HZ = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.gradients_prev = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.differences = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.temp_HZ = [fenics.Function(V) for V in optimization_problem.control_spaces]
 
 		self.armijo_broken = False
 

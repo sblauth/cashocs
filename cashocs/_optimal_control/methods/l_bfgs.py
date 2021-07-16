@@ -47,22 +47,22 @@ class LBFGS(OptimizationAlgorithm):
 
 		self.line_search = ArmijoLineSearch(self)
 
-		self.temp = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.storage_y = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-		self.storage_s = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+		self.temp = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.storage_y = [fenics.Function(V) for V in optimization_problem.control_spaces]
+		self.storage_s = [fenics.Function(V) for V in optimization_problem.control_spaces]
 
 		self.bfgs_memory_size = self.config.getint('AlgoLBFGS', 'bfgs_memory_size', fallback=5)
 		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
 
 		self.has_curvature_info = False
-
+		
 		if self.bfgs_memory_size > 0:
 			self.history_s = deque()
 			self.history_y = deque()
 			self.history_rho = deque()
-			self.gradients_prev = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-			self.y_k = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
-			self.s_k = [fenics.Function(V) for V in self.optimization_problem.control_spaces]
+			self.gradients_prev = [fenics.Function(V) for V in optimization_problem.control_spaces]
+			self.y_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
+			self.s_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
 
 
 
@@ -140,7 +140,7 @@ class LBFGS(OptimizationAlgorithm):
 		self.adjoint_problem.has_solution = False
 		self.gradient_problem.has_solution = False
 		self.gradient_problem.solve()
-		self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+		self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 		self.gradient_norm_initial = self.gradient_norm
 		if self.gradient_norm_initial == 0:
 			self.converged = True
@@ -170,7 +170,7 @@ class LBFGS(OptimizationAlgorithm):
 			self.gradient_problem.solve()
 			self.form_handler.compute_active_sets()
 
-			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
 			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:

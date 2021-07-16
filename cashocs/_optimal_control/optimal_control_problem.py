@@ -270,30 +270,6 @@ class OptimalControlProblem(OptimizationProblem):
 
 
 
-	def _stationary_measure_squared(self):
-		"""Computes the stationary measure (squared) corresponding to box-constraints
-
-		In case there are no box constraints this reduces to the classical gradient
-		norm.
-
-		Returns
-		-------
-		 float
-			The square of the stationary measure
-
-		"""
-
-		for j in range(self.control_dim):
-			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.gradients[j].vector()[:]
-
-		self.form_handler.project_to_admissible_set(self.projected_difference)
-
-		for j in range(self.control_dim):
-			self.projected_difference[j].vector()[:] = self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
-
-		return self.form_handler.scalar_product(self.projected_difference, self.projected_difference)
-
-
 
 	def _erase_pde_memory(self):
 		"""Resets the memory of the PDE problems so that new solutions are computed.

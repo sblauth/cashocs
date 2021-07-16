@@ -62,7 +62,7 @@ class GradientDescent(OptimizationAlgorithm):
 			self.adjoint_problem.has_solution = False
 			self.gradient_problem.has_solution = False
 			self.gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self.optimization_problem._stationary_measure_squared())
+			self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 
 			if self.iteration == 0:
 				self.gradient_norm_initial = self.gradient_norm

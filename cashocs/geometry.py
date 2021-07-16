@@ -463,8 +463,7 @@ class _MeshHandler:
 			The corresponding shape optimization problem.
 		"""
 
-		self.shape_optimization_problem = shape_optimization_problem
-		self.form_handler = self.shape_optimization_problem.form_handler
+		self.form_handler = shape_optimization_problem.form_handler
 		# Namespacing
 		self.mesh = self.form_handler.mesh
 		self.dx = self.form_handler.dx
@@ -512,7 +511,7 @@ class _MeshHandler:
 								  'If you already use a gmsh mesh, please specify gmsh_file.')
 
 		if self.do_remesh:
-			self.temp_dict = self.shape_optimization_problem.temp_dict
+			self.temp_dict = shape_optimization_problem.temp_dict
 			self.gmsh_file = self.temp_dict['gmsh_file']
 			self.remesh_counter = self.temp_dict.get('remesh_counter', 0)
 
@@ -583,6 +582,7 @@ class _MeshHandler:
 		"""
 
 		self.mesh.coordinates()[:, :] = self.old_coordinates
+		del self.old_coordinates
 		self.bbtree.build(self.mesh)
 
 
@@ -934,7 +934,7 @@ class _MeshHandler:
 
 
 
-	def remesh(self):
+	def remesh(self, solver):
 		"""Remeshes the current geometry with GMSH.
 
 		Performs a remeshing of the geometry, and then restarts
@@ -953,14 +953,14 @@ class _MeshHandler:
 
 			# save the output dict (without the last entries since they are "remeshed")
 			self.temp_dict['output_dict'] = {}
-			self.temp_dict['output_dict']['state_solves'] = self.shape_optimization_problem.state_problem.number_of_solves
-			self.temp_dict['output_dict']['adjoint_solves'] = self.shape_optimization_problem.adjoint_problem.number_of_solves
-			self.temp_dict['output_dict']['iterations'] = self.shape_optimization_problem.solver.iteration + 1
+			self.temp_dict['output_dict']['state_solves'] = self.form_handler.state_problem.number_of_solves
+			self.temp_dict['output_dict']['adjoint_solves'] = self.form_handler.adjoint_problem.number_of_solves
+			self.temp_dict['output_dict']['iterations'] = solver.iteration + 1
 
-			self.temp_dict['output_dict']['cost_function_value'] = self.shape_optimization_problem.solver.output_dict['cost_function_value'][:]
-			self.temp_dict['output_dict']['gradient_norm'] = self.shape_optimization_problem.solver.output_dict['gradient_norm'][:]
-			self.temp_dict['output_dict']['stepsize'] = self.shape_optimization_problem.solver.output_dict['stepsize'][:]
-			self.temp_dict['output_dict']['MeshQuality'] = self.shape_optimization_problem.solver.output_dict['MeshQuality'][:]
+			self.temp_dict['output_dict']['cost_function_value'] = solver.output_dict['cost_function_value'][:]
+			self.temp_dict['output_dict']['gradient_norm'] = solver.output_dict['gradient_norm'][:]
+			self.temp_dict['output_dict']['stepsize'] = solver.output_dict['stepsize'][:]
+			self.temp_dict['output_dict']['MeshQuality'] = solver.output_dict['MeshQuality'][:]
 
 			dim = self.mesh.geometric_dimension()
 
@@ -985,8 +985,8 @@ class _MeshHandler:
 			self.temp_dict['mesh_file'] = self.new_xdmf_file
 			self.temp_dict['gmsh_file'] = self.new_gmsh_file
 
-			self.temp_dict['OptimizationRoutine']['iteration_counter'] = self.shape_optimization_problem.solver.iteration + 1
-			self.temp_dict['OptimizationRoutine']['gradient_norm_initial'] = self.shape_optimization_problem.solver.gradient_norm_initial
+			self.temp_dict['OptimizationRoutine']['iteration_counter'] = solver.iteration + 1
+			self.temp_dict['OptimizationRoutine']['gradient_norm_initial'] = solver.gradient_norm_initial
 
 			self.temp_dir = self.temp_dict['temp_dir']
 
