@@ -12,11 +12,12 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/sblauth/cashocs",
-    project_urls={'Source' : 'https://github.com/sblauth/cashocs',
-                  'Documentation' : 'https://cashocs.readthedocs.io/en/latest/index.html',
-                  'Tutorial' : 'https://cashocs.readthedocs.io/en/latest/tutorial_index.html',
-                  'Tracker' : 'https://github.com/sblauth/cashocs/issues'
-                  },
+    project_urls={
+        "Source": "https://github.com/sblauth/cashocs",
+        "Documentation": "https://cashocs.readthedocs.io/en/latest/index.html",
+        "Tutorial": "https://cashocs.readthedocs.io/en/latest/tutorial_index.html",
+        "Tracker": "https://github.com/sblauth/cashocs/issues",
+    },
     packages=setuptools.find_packages(),
     classifiers=[
         "Topic :: Scientific/Engineering",
@@ -31,15 +32,11 @@ setuptools.setup(
     ],
     keywords="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
     install_requires=[
-		'pytest>=6.0.0',
-        'meshio>=4.1.0',
-		'deprecated>=1.2.10',
-        'matplotlib'
+        "pytest>=6.0.0",
+        "meshio>=4.1.0",
+        "deprecated>=1.2.10",
+        "matplotlib",
     ],
-    entry_points={
-        "console_scripts" : [
-            "cashocs-convert = cashocs._cli:convert"
-        ]
-    },
-    python_requires='>=3.6',
+    entry_points={"console_scripts": ["cashocs-convert = cashocs._cli:convert"]},
+    python_requires=">=3.6",
 )

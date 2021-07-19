@@ -24,10 +24,9 @@ from fenics import *
 import cashocs
 
 
-
-config = cashocs.load_config('config.ini')
+config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-V = FunctionSpace(mesh, 'CG', 1)
+V = FunctionSpace(mesh, "CG", 1)
 
 y = Function(V)
 p = Function(V)
@@ -37,10 +36,10 @@ q = Function(V)
 u = Function(V)
 v = Function(V)
 
-e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+e_y = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
 bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+e_z = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
 bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 states = [y, z]
@@ -51,52 +50,58 @@ e = [e_y, e_z]
 bcs = [bcs_y, bcs_z]
 
 
-y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
-z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
 alpha = 1e-6
 beta = 1e-6
-J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx \
-	+ Constant(0.5*alpha)*u*u*dx + Constant(0.5*beta)*v*v*dx
+J = (
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx
+    + Constant(0.5) * (z - z_d) * (z - z_d) * dx
+    + Constant(0.5 * alpha) * u * u * dx
+    + Constant(0.5 * beta) * v * v * dx
+)
 
-optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
+optimization_problem = cashocs.OptimalControlProblem(
+    e, bcs, J, states, controls, adjoints, config
+)
 optimization_problem.solve()
-
 
 
 ### Post Processing
 
 import matplotlib.pyplot as plt
-plt.figure(figsize=(15,10))
+
+plt.figure(figsize=(15, 10))
 
 plt.subplot(2, 3, 1)
 fig = plot(u)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable u')
+plt.title("Control variable u")
 
 plt.subplot(2, 3, 2)
 fig = plot(y)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable y')
+plt.title("State variable y")
 
 plt.subplot(2, 3, 3)
 fig = plot(y_d, mesh=mesh)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state y_d')
+plt.title("Desired state y_d")
 
 plt.subplot(2, 3, 4)
 fig = plot(v)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable v')
+plt.title("Control variable v")
 
 plt.subplot(2, 3, 5)
 fig = plot(z)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable z')
+plt.title("State variable z")
 
 plt.subplot(2, 3, 6)
 fig = plot(z_d, mesh=mesh)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state z_d')
+plt.title("Desired state z_d")
 
 plt.tight_layout()
 # plt.savefig('./img_picard_iteration.png', dpi=150, bbox_inches='tight')

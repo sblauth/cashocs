@@ -22,52 +22,61 @@
 import fenics
 
 
-
 class ReducedCostFunctional:
-	"""The reduced cost functional for the optimization problem
+    """The reduced cost functional for the optimization problem
 
-	A class that represents an reduced cost functional of an optimal control problem, which
-	is used to evaluate it.
-	"""
+    A class that represents an reduced cost functional of an optimal control problem, which
+    is used to evaluate it.
+    """
 
-	def __init__(self, form_handler, state_problem):
-		"""Initialize the reduced cost functional
+    def __init__(self, form_handler, state_problem):
+        """Initialize the reduced cost functional
 
-		Parameters
-		----------
-		form_handler : cashocs._forms.ControlFormHandler
-			the FormHandler object for the optimization problem
-		state_problem : cashocs._pde_problems.StateProblem
-			the StateProblem object corresponding to the state system
-		"""
+        Parameters
+        ----------
+        form_handler : cashocs._forms.ControlFormHandler
+                the FormHandler object for the optimization problem
+        state_problem : cashocs._pde_problems.StateProblem
+                the StateProblem object corresponding to the state system
+        """
 
-		self.form_handler = form_handler
-		self.state_problem = state_problem
+        self.form_handler = form_handler
+        self.state_problem = state_problem
 
+    def evaluate(self):
+        """Evaluates the reduced cost functional.
 
+        First solves the state system, so that the state variables are up-to-date,
+        and then evaluates the reduced cost functional by assembling the corresponding
+        UFL form.
 
-	def evaluate(self):
-		"""Evaluates the reduced cost functional.
+        Returns
+        -------
+        float
+                the value of the reduced cost functional
+        """
 
-		First solves the state system, so that the state variables are up-to-date,
-		and then evaluates the reduced cost functional by assembling the corresponding
-		UFL form.
+        self.state_problem.solve()
 
-		Returns
-		-------
-		float
-			the value of the reduced cost functional
-		"""
+        val = fenics.assemble(self.form_handler.cost_functional_form)
 
-		self.state_problem.solve()
+        if self.form_handler.use_scalar_tracking:
+            for j in range(self.form_handler.no_scalar_tracking_terms):
+                scalar_integral_value = fenics.assemble(
+                    self.form_handler.scalar_cost_functional_integrands[j]
+                )
+                self.form_handler.scalar_cost_functional_integrand_values[j].vector()[
+                    :
+                ] = scalar_integral_value
 
-		val = fenics.assemble(self.form_handler.cost_functional_form)
+                val += (
+                    self.form_handler.scalar_weights[j].vector()[0]
+                    / 2
+                    * pow(
+                        scalar_integral_value
+                        - self.form_handler.scalar_tracking_goals[j],
+                        2,
+                    )
+                )
 
-		if self.form_handler.use_scalar_tracking:
-			for j in range(self.form_handler.no_scalar_tracking_terms):
-				scalar_integral_value = fenics.assemble(self.form_handler.scalar_cost_functional_integrands[j])
-				self.form_handler.scalar_cost_functional_integrand_values[j].vector()[:] = scalar_integral_value
-
-				val += self.form_handler.scalar_weights[j].vector()[0]/2*pow(scalar_integral_value - self.form_handler.scalar_tracking_goals[j], 2)
-
-		return val
+        return val

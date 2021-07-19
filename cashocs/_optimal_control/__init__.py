@@ -26,4 +26,4 @@ from .cost_functional import ReducedCostFunctional
 from .line_search import ArmijoLineSearch
 from .optimization_algorithm import OptimizationAlgorithm
 
-__all__ = ['ReducedCostFunctional', 'ArmijoLineSearch', 'OptimizationAlgorithm']
+__all__ = ["ReducedCostFunctional", "ArmijoLineSearch", "OptimizationAlgorithm"]

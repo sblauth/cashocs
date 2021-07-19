@@ -26,9 +26,9 @@ import cashocs
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config = cashocs.load_config(dir_path + '/config_ocp.ini')
+config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
-V = FunctionSpace(mesh, 'CG', 1)
+V = FunctionSpace(mesh, "CG", 1)
 
 y = Function(V)
 z = Function(V)
@@ -51,106 +51,100 @@ bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 bcs_list = [bcs1, bcs2]
 
-y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
-z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
 alpha = 1e-6
 beta = 1e-4
-J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5) * (z - z_d) * (z - z_d) * dx \
-	+ Constant(0.5*alpha) * u * u * dx + Constant(0.5*beta) * v * v * dx
+J = (
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx
+    + Constant(0.5) * (z - z_d) * (z - z_d) * dx
+    + Constant(0.5 * alpha) * u * u * dx
+    + Constant(0.5 * beta) * v * v * dx
+)
 
 ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
 
 
-
 def test_control_gradient_multiple():
-	assert cashocs.verification.control_gradient_test(ocp) > 1.9
-	assert cashocs.verification.control_gradient_test(ocp) > 1.9
-	assert cashocs.verification.control_gradient_test(ocp) > 1.9
-
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
 
 
 def test_control_gd_multiple():
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('gd', rtol=1e-2, atol=0.0, max_iter=47)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=47)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_fr_multiple():
-	config.set('AlgoCG', 'cg_method', 'FR')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=21)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    config.set("AlgoCG", "cg_method", "FR")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=21)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_pr_multiple():
-	config.set('AlgoCG', 'cg_method', 'PR')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=36)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    config.set("AlgoCG", "cg_method", "PR")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=36)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_hs_multiple():
-	config.set('AlgoCG', 'cg_method', 'HS')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=30)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    config.set("AlgoCG", "cg_method", "HS")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=30)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_dy_multiple():
-	config.set('AlgoCG', 'cg_method', 'DY')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=13)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    config.set("AlgoCG", "cg_method", "DY")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=13)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_hz_multiple():
-	config.set('AlgoCG', 'cg_method', 'HZ')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('cg', rtol=1e-2, atol=0.0, max_iter=26)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    config.set("AlgoCG", "cg_method", "HZ")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=26)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_bfgs_multiple():
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('bfgs', rtol=1e-2, atol=0.0, max_iter=11)
-	assert ocp.solver.relative_norm <= ocp.solver.rtol
-
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=11)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_newton_cg_multiple():
-	config.set('AlgoTNM', 'inner_newton', 'cg')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
-	assert ocp.solver.relative_norm <= 1e-4
-
+    config.set("AlgoTNM", "inner_newton", "cg")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("newton", rtol=1e-2, atol=0.0, max_iter=2)
+    assert ocp.solver.relative_norm <= 1e-4
 
 
 def test_control_newton_cr_multiple():
-	config.set('AlgoTNM', 'inner_newton', 'cr')
-	u.vector()[:] = 0.0
-	v.vector()[:] = 0.0
-	ocp._erase_pde_memory()
-	ocp.solve('newton', rtol=1e-2, atol=0.0, max_iter=2)
-	assert ocp.solver.relative_norm <= 1e-4
+    config.set("AlgoTNM", "inner_newton", "cr")
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("newton", rtol=1e-2, atol=0.0, max_iter=2)
+    assert ocp.solver.relative_norm <= 1e-4

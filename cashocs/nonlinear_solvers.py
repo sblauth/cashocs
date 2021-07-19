@@ -29,10 +29,21 @@ from ._exceptions import NotConvergedError, InputError
 from .utils import _setup_petsc_options, _solve_linear_problem
 
 
-
-def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, convergence_type='combined', norm_type='l2',
-						damped=True, verbose=True, ksp=None, ksp_options=None):
-	r"""A damped Newton method for solving nonlinear equations.
+def damped_newton_solve(
+    F,
+    u,
+    bcs,
+    rtol=1e-10,
+    atol=1e-10,
+    max_iter=50,
+    convergence_type="combined",
+    norm_type="l2",
+    damped=True,
+    verbose=True,
+    ksp=None,
+    ksp_options=None,
+):
+    r"""A damped Newton method for solving nonlinear equations.
 
 	The damped Newton method is based on the natural monotonicity test from
 	`Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
@@ -126,128 +137,167 @@ def damped_newton_solve(F, u, bcs, rtol=1e-10, atol=1e-10, max_iter=50, converge
 		cashocs.damped_newton_solve(F, u, bcs)
 	"""
 
-	if not convergence_type in ['rel', 'abs', 'combined']:
-		raise InputError('cashocs.nonlinear_solvers.damped_newton_solve', 'convergence_type', 'Input convergence_type has to be one of \'rel\', \'abs\', or \'combined\'.')
+    if not convergence_type in ["rel", "abs", "combined"]:
+        raise InputError(
+            "cashocs.nonlinear_solvers.damped_newton_solve",
+            "convergence_type",
+            "Input convergence_type has to be one of 'rel', 'abs', or 'combined'.",
+        )
 
-	if not norm_type in ['l2', 'linf']:
-		raise InputError('cashocs.nonlinear_solvers.damped_newton_solve', 'norm_type', 'Input norm_type has to be one of \'l2\' or \'linf\'.')
+    if not norm_type in ["l2", "linf"]:
+        raise InputError(
+            "cashocs.nonlinear_solvers.damped_newton_solve",
+            "norm_type",
+            "Input norm_type has to be one of 'l2' or 'linf'.",
+        )
 
-	# create the PETSc ksp
-	if ksp is None:
-		if ksp_options is None:
-			ksp_options = [
-				['ksp_type', 'preonly'],
-				['pc_type', 'lu'],
-				['pc_factor_mat_solver_type', 'mumps'],
-				['mat_mumps_icntl_24', 1]
-			]
+    # create the PETSc ksp
+    if ksp is None:
+        if ksp_options is None:
+            ksp_options = [
+                ["ksp_type", "preonly"],
+                ["pc_type", "lu"],
+                ["pc_factor_mat_solver_type", "mumps"],
+                ["mat_mumps_icntl_24", 1],
+            ]
 
-		ksp = PETSc.KSP().create()
-		_setup_petsc_options([ksp], [ksp_options])
-		ksp.setFromOptions()
+        ksp = PETSc.KSP().create()
+        _setup_petsc_options([ksp], [ksp_options])
+        ksp.setFromOptions()
 
-	# Calculate the Jacobian.
-	dF = fenics.derivative(F, u)
+    # Calculate the Jacobian.
+    dF = fenics.derivative(F, u)
 
-	# Setup increment and function for monotonicity test
-	V = u.function_space()
-	du = fenics.Function(V)
-	ddu = fenics.Function(V)
-	u_save = fenics.Function(V)
+    # Setup increment and function for monotonicity test
+    V = u.function_space()
+    du = fenics.Function(V)
+    ddu = fenics.Function(V)
+    u_save = fenics.Function(V)
 
-	iterations = 0
+    iterations = 0
 
-	[bc.apply(u.vector()) for bc in bcs]
-	# copy the boundary conditions and homogenize them for the increment
-	bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
-	[bc.homogenize() for bc in bcs_hom]
+    [bc.apply(u.vector()) for bc in bcs]
+    # copy the boundary conditions and homogenize them for the increment
+    bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
+    [bc.homogenize() for bc in bcs_hom]
 
-	assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
-	assembler.keep_diagonal = True
-	A_fenics = fenics.PETScMatrix()
-	residual = fenics.PETScVector()
+    assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
+    assembler.keep_diagonal = True
+    A_fenics = fenics.PETScMatrix()
+    residual = fenics.PETScVector()
 
-	# Compute the initial residual
-	assembler.assemble(A_fenics, residual)
-	A_fenics.ident_zeros()
-	A = fenics.as_backend_type(A_fenics).mat()
-	b = fenics.as_backend_type(residual).vec()
+    # Compute the initial residual
+    assembler.assemble(A_fenics, residual)
+    A_fenics.ident_zeros()
+    A = fenics.as_backend_type(A_fenics).mat()
+    b = fenics.as_backend_type(residual).vec()
 
-	res_0 = residual.norm(norm_type)
-	if res_0 == 0.0:
-		if verbose:
-			print('Residual vanishes, input is already a solution.')
-		return u
+    res_0 = residual.norm(norm_type)
+    if res_0 == 0.0:
+        if verbose:
+            print("Residual vanishes, input is already a solution.")
+        return u
 
-	res = res_0
-	if verbose:
-		print('Newton Iteration ' + format(iterations, '2d') + ' - residual (abs):  '
-			  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residual (rel): '
-			  + format(res/res_0, '.3e') + ' (tol = ' + format(rtol, '.3e') + ')')
+    res = res_0
+    if verbose:
+        print(
+            "Newton Iteration "
+            + format(iterations, "2d")
+            + " - residual (abs):  "
+            + format(res, ".3e")
+            + " (tol = "
+            + format(atol, ".3e")
+            + ")    residual (rel): "
+            + format(res / res_0, ".3e")
+            + " (tol = "
+            + format(rtol, ".3e")
+            + ")"
+        )
 
-	if convergence_type == 'abs':
-		tol = atol
-	elif convergence_type == 'rel':
-		tol = rtol*res_0
-	else:
-		tol = rtol*res_0 + atol
+    if convergence_type == "abs":
+        tol = atol
+    elif convergence_type == "rel":
+        tol = rtol * res_0
+    else:
+        tol = rtol * res_0 + atol
 
-	# While loop until termination
-	while res > tol and iterations < max_iter:
-		iterations += 1
-		lmbd = 1.0
-		breakdown = False
-		u_save.vector()[:] = u.vector()[:]
+    # While loop until termination
+    while res > tol and iterations < max_iter:
+        iterations += 1
+        lmbd = 1.0
+        breakdown = False
+        u_save.vector()[:] = u.vector()[:]
 
-		# Solve the inner problem
-		_solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options)
-		du.vector().apply('')
+        # Solve the inner problem
+        _solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options)
+        du.vector().apply("")
 
-		# perform backtracking in case damping is used
-		if damped:
-			while True:
-				u.vector()[:] += lmbd*du.vector()[:]
-				assembler.assemble(residual)
-				b = fenics.as_backend_type(residual).vec()
-				_solve_linear_problem(ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options)
-				ddu.vector().apply('')
+        # perform backtracking in case damping is used
+        if damped:
+            while True:
+                u.vector()[:] += lmbd * du.vector()[:]
+                assembler.assemble(residual)
+                b = fenics.as_backend_type(residual).vec()
+                _solve_linear_problem(
+                    ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options
+                )
+                ddu.vector().apply("")
 
-				if ddu.vector().norm(norm_type)/du.vector().norm(norm_type) <= 1:
-					break
-				else:
-					u.vector()[:] = u_save.vector()[:]
-					lmbd /= 2
+                if ddu.vector().norm(norm_type) / du.vector().norm(norm_type) <= 1:
+                    break
+                else:
+                    u.vector()[:] = u_save.vector()[:]
+                    lmbd /= 2
 
-				if lmbd < 1e-6:
-					breakdown = True
-					break
+                if lmbd < 1e-6:
+                    breakdown = True
+                    break
 
-		else:
-			u.vector()[:] += du.vector()[:]
+        else:
+            u.vector()[:] += du.vector()[:]
 
-		if breakdown:
-			raise NotConvergedError('Newton solver (state system)', 'Stepsize for increment too low.')
+        if breakdown:
+            raise NotConvergedError(
+                "Newton solver (state system)", "Stepsize for increment too low."
+            )
 
-		if iterations == max_iter:
-			raise NotConvergedError('Newton solver (state system)', 'Maximum number of iterations were exceeded.')
+        if iterations == max_iter:
+            raise NotConvergedError(
+                "Newton solver (state system)",
+                "Maximum number of iterations were exceeded.",
+            )
 
-		# compute the new residual
-		assembler.assemble(A_fenics, residual)
-		A_fenics.ident_zeros()
-		A = fenics.as_backend_type(A_fenics).mat()
-		b = fenics.as_backend_type(residual).vec()
+        # compute the new residual
+        assembler.assemble(A_fenics, residual)
+        A_fenics.ident_zeros()
+        A = fenics.as_backend_type(A_fenics).mat()
+        b = fenics.as_backend_type(residual).vec()
 
-		[bc.apply(residual) for bc in bcs_hom]
+        [bc.apply(residual) for bc in bcs_hom]
 
-		res = residual.norm(norm_type)
-		if verbose:
-			print('Newton Iteration ' + format(iterations, '2d') + ' - residual (abs):  '
-				  + format(res, '.3e') + ' (tol = ' + format(atol, '.3e') + ')    residual (rel): '
-				  + format(res/res_0, '.3e') + ' (tol = ' + format(rtol, '.3e') + ')')
+        res = residual.norm(norm_type)
+        if verbose:
+            print(
+                "Newton Iteration "
+                + format(iterations, "2d")
+                + " - residual (abs):  "
+                + format(res, ".3e")
+                + " (tol = "
+                + format(atol, ".3e")
+                + ")    residual (rel): "
+                + format(res / res_0, ".3e")
+                + " (tol = "
+                + format(rtol, ".3e")
+                + ")"
+            )
 
-		if res < tol:
-			if verbose:
-				print('\nNewton Solver converged after ' + str(iterations) + ' iterations.\n')
-			break
+        if res < tol:
+            if verbose:
+                print(
+                    "\nNewton Solver converged after "
+                    + str(iterations)
+                    + " iterations.\n"
+                )
+            break
 
-	return u
+    return u

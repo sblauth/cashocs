@@ -25,5 +25,9 @@ from .shape_line_search import ArmijoLineSearch
 from .shape_optimization_algorithm import ShapeOptimizationAlgorithm
 
 
-
-__all__ = ['Regularization', 'ReducedShapeCostFunctional', 'ArmijoLineSearch', 'ShapeOptimizationAlgorithm']
+__all__ = [
+    "Regularization",
+    "ReducedShapeCostFunctional",
+    "ArmijoLineSearch",
+    "ShapeOptimizationAlgorithm",
+]

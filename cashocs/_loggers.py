@@ -22,69 +22,60 @@
 import logging
 
 
-
 class ColorFormatter(logging.Formatter):
-	"""Logging Formatter for colored output.
-	
-	"""
-	
-	black = "\x1b[0;30m"
-	grey = "\x1b[0;37m"
-	green = "\x1b[0;32m"
-	yellow = "\x1b[0;33m"
-	red = "\x1b[0;31m"
-	bold_red = "\x1b[1;31m"
-	purple = "\x1b[0;35m"
-	blue = "\x1b[0;34m"
-	light_blue = "\x1b[0;36m"
-	reset = "\x1b[0m"
-	
-	format = "%(name)s - %(levelname)s - %(message)s"
-	
-	FORMATS = {
-		logging.DEBUG: green + format + reset,
-		logging.INFO: blue + format + reset,
-		logging.WARNING: yellow + format + reset,
-		logging.ERROR: red + format + reset,
-		logging.CRITICAL: bold_red + format + reset
-    }
-	
-	
-	
-	def __init__(self, *args, **kwargs):
-		logging.Formatter.__init__(self, *args, **kwargs)
-	
-	
-	
-	def format(self, record):
-		log_fmt = self.FORMATS.get(record.levelno)
-		formatter = logging.Formatter(log_fmt)
-		
-		return formatter.format(record)
+    """Logging Formatter for colored output."""
 
+    black = "\x1b[0;30m"
+    grey = "\x1b[0;37m"
+    green = "\x1b[0;32m"
+    yellow = "\x1b[0;33m"
+    red = "\x1b[0;31m"
+    bold_red = "\x1b[1;31m"
+    purple = "\x1b[0;35m"
+    blue = "\x1b[0;34m"
+    light_blue = "\x1b[0;36m"
+    reset = "\x1b[0m"
+
+    format = "%(name)s - %(levelname)s - %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: green + format + reset,
+        logging.INFO: blue + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset,
+    }
+
+    def __init__(self, *args, **kwargs):
+        logging.Formatter.__init__(self, *args, **kwargs)
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+
+        return formatter.format(record)
 
 
 class LogLevel:
-	"""Stores the various log levels of cashocs.
-	
-	See Also
-	--------
-	cashocs.set_log_level : sets the log level of cashocs
-	
-	"""
-	
-	DEBUG = logging.DEBUG
-	INFO = logging.INFO
-	WARNING = logging.WARNING
-	ERROR = logging.ERROR
-	CRITICAL = logging.CRITICAL
-	
-	def __init__(self):
-		pass
+    """Stores the various log levels of cashocs.
+
+    See Also
+    --------
+    cashocs.set_log_level : sets the log level of cashocs
+
+    """
+
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+
+    def __init__(self):
+        pass
 
 
-
-_cashocs_logger = logging.getLogger('cashocs')
+_cashocs_logger = logging.getLogger("cashocs")
 _cashocs_handler = logging.StreamHandler()
 _cashocs_formatter = ColorFormatter()
 _cashocs_handler.setFormatter(_cashocs_formatter)
@@ -92,130 +83,123 @@ _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
 
-
-
 def set_log_level(level):
-	"""Determines the log level of cashocs.
-	
-	Can be used to show, e.g., info and warning messages or to hide them.
-	There are a total of five different levels for the logs: ``DEBUG``, ``INFO``,
-	``WARNING``, ``ERROR``, and ``CRITICAL``. The usage of this method is explained in
-	the examples section.
-	
-	Parameters
-	----------
-	level : int
-		Should be one of ``cashocs.LogLevel.DEBUG``,
-		``cashocs.LogLevel.INFO``, ``cashocs.LogLevel.WARNING``,
-		``cashocs.LogLevel.ERROR``, ``cashocs.LogLevel.CRITICAL``
+    """Determines the log level of cashocs.
 
-	Returns
-	-------
-	None
-	
-	Notes
-	-----
-	The log level setting is global, so if you use this interactively,
-	you have to restart / reload your interactive console to return to
-	the default settings.
-	
-	Examples
-	--------
-	To set the log level of cashocs, use this method as follows::
-	
-		import cashocs
-		
-		cashocs.set_log_level(cashocs.LogLevel.WARNING)
+    Can be used to show, e.g., info and warning messages or to hide them.
+    There are a total of five different levels for the logs: ``DEBUG``, ``INFO``,
+    ``WARNING``, ``ERROR``, and ``CRITICAL``. The usage of this method is explained in
+    the examples section.
 
-	which only shows messages with a level of ``WARNING`` or higher.
-	To use a different level, replace ``WARNING`` by ``DEBUG``, ``INFO``, ``ERROR``,
-	or ``CRITICAL``.
-	
-	"""
-	
-	_cashocs_logger.setLevel(level)
+    Parameters
+    ----------
+    level : int
+            Should be one of ``cashocs.LogLevel.DEBUG``,
+            ``cashocs.LogLevel.INFO``, ``cashocs.LogLevel.WARNING``,
+            ``cashocs.LogLevel.ERROR``, ``cashocs.LogLevel.CRITICAL``
 
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The log level setting is global, so if you use this interactively,
+    you have to restart / reload your interactive console to return to
+    the default settings.
+
+    Examples
+    --------
+    To set the log level of cashocs, use this method as follows::
+
+            import cashocs
+
+            cashocs.set_log_level(cashocs.LogLevel.WARNING)
+
+    which only shows messages with a level of ``WARNING`` or higher.
+    To use a different level, replace ``WARNING`` by ``DEBUG``, ``INFO``, ``ERROR``,
+    or ``CRITICAL``.
+
+    """
+
+    _cashocs_logger.setLevel(level)
 
 
 def debug(message):
-	"""Issues a debug level logging message.
-	
-	Parameters
-	----------
-	message : str
-		The message to be issued.
+    """Issues a debug level logging message.
 
-	Returns
-	-------
-	None
-	"""
-	
-	_cashocs_logger.debug(message)
+    Parameters
+    ----------
+    message : str
+            The message to be issued.
 
+    Returns
+    -------
+    None
+    """
+
+    _cashocs_logger.debug(message)
 
 
 def info(message):
-	"""Issues an info level logging message.
-	
-	Parameters
-	----------
-	message : str
-		The message to be issued.
+    """Issues an info level logging message.
 
-	Returns
-	-------
-	None
-	"""
-	
-	_cashocs_logger.info(message)
-	
-	
-	
+    Parameters
+    ----------
+    message : str
+            The message to be issued.
+
+    Returns
+    -------
+    None
+    """
+
+    _cashocs_logger.info(message)
+
+
 def warning(message):
-	"""Issues a warning level logging message.
-	
-	Parameters
-	----------
-	message : str
-		The message to be issued.
+    """Issues a warning level logging message.
 
-	Returns
-	-------
-	None
-	"""
-	
-	_cashocs_logger.warning(message)
+    Parameters
+    ----------
+    message : str
+            The message to be issued.
 
+    Returns
+    -------
+    None
+    """
+
+    _cashocs_logger.warning(message)
 
 
 def error(message):
-	"""Issues a error level logging message.
-	
-	Parameters
-	----------
-	message : str
-		The message to be issued.
+    """Issues a error level logging message.
 
-	Returns
-	-------
-	None
-	"""
-	
-	_cashocs_logger.error(message)
+    Parameters
+    ----------
+    message : str
+            The message to be issued.
 
+    Returns
+    -------
+    None
+    """
+
+    _cashocs_logger.error(message)
 
 
 def critical(message):
-	"""Issues a critical level logging message.
-	
-	Parameters
-	----------
-	message : str
-		The message to be issued.
+    """Issues a critical level logging message.
 
-	Returns
-	-------
-	None
-	"""
-	
-	_cashocs_logger.critical(message)
+    Parameters
+    ----------
+    message : str
+            The message to be issued.
+
+    Returns
+    -------
+    None
+    """
+
+    _cashocs_logger.critical(message)

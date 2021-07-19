@@ -25,72 +25,71 @@ import sys
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
-
 class GradientDescent(ShapeOptimizationAlgorithm):
-	"""A gradient descent method for shape optimization
+    """A gradient descent method for shape optimization"""
 
-	"""
+    def __init__(self, optimization_problem):
+        """A gradient descent method to solve the optimization problem
 
-	def __init__(self, optimization_problem):
-		"""A gradient descent method to solve the optimization problem
+        Parameters
+        ----------
+        optimization_problem : cashocs.optimization.optimization_problem.OptimalControlProblem
+                the OptimalControlProblem object
+        """
 
-		Parameters
-		----------
-		optimization_problem : cashocs.optimization.optimization_problem.OptimalControlProblem
-			the OptimalControlProblem object
-		"""
+        ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
 
-		ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
+        self.line_search = ArmijoLineSearch(self)
+        self.has_curvature_info = False
 
-		self.line_search = ArmijoLineSearch(self)
-		self.has_curvature_info = False
+    def run(self):
+        """Performs the optimization via the gradient descent method
 
+        Returns
+        -------
+        None
+                the result can be found in the control (user defined)
 
+        """
 
-	def run(self):
-		"""Performs the optimization via the gradient descent method
+        try:
+            self.iteration = self.temp_dict["OptimizationRoutine"].get(
+                "iteration_counter", 0
+            )
+            self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
+                "gradient_norm_initial", 0.0
+            )
+        except TypeError:
+            self.iteration = 0
+            self.gradient_norm_initial = 0.0
 
-		Returns
-		-------
-		None
-			the result can be found in the control (user defined)
+        self.relative_norm = 1.0
+        self.state_problem.has_solution = False
 
-		"""
+        while True:
 
-		try:
-			self.iteration = self.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
-			self.gradient_norm_initial = self.temp_dict['OptimizationRoutine'].get('gradient_norm_initial', 0.0)
-		except TypeError:
-			self.iteration = 0
-			self.gradient_norm_initial = 0.0
+            self.adjoint_problem.has_solution = False
+            self.shape_gradient_problem.has_solution = False
+            self.shape_gradient_problem.solve()
+            self.gradient_norm = np.sqrt(
+                self.shape_gradient_problem.gradient_norm_squared
+            )
 
+            if self.iteration == 0:
+                self.gradient_norm_initial = self.gradient_norm
+                if self.gradient_norm_initial == 0:
+                    self.converged = True
+                    break
 
-		self.relative_norm = 1.0
-		self.state_problem.has_solution = False
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
+                self.converged = True
+                break
 
-		while True:
+            self.search_direction.vector()[:] = -self.gradient.vector()[:]
 
-			self.adjoint_problem.has_solution = False
-			self.shape_gradient_problem.has_solution = False
-			self.shape_gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
+            self.line_search.search(self.search_direction, self.has_curvature_info)
 
-			if self.iteration == 0:
-				self.gradient_norm_initial = self.gradient_norm
-				if self.gradient_norm_initial == 0:
-					self.converged = True
-					break
-
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.converged = True
-				break
-
-			self.search_direction.vector()[:] = - self.gradient.vector()[:]
-
-			self.line_search.search(self.search_direction, self.has_curvature_info)
-
-			self.iteration += 1
-			if self.nonconvergence():
-				break
-
+            self.iteration += 1
+            if self.nonconvergence():
+                break

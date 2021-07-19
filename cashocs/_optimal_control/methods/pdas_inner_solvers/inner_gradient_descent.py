@@ -27,96 +27,114 @@ from ...optimization_algorithm import OptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerGradientDescent(OptimizationAlgorithm):
-	"""A unconstrained gradient descent method.
+    """A unconstrained gradient descent method."""
 
-	"""
+    def __init__(self, optimization_problem):
+        """Initializes the gradient descent method.
 
-	def __init__(self, optimization_problem):
-		"""Initializes the gradient descent method.
+        Parameters
+        ----------
+        optimization_problem : cashocs.OptimalControlProblem
+                the corresponding optimal control problem to be solved
+        """
 
-		Parameters
-		----------
-		optimization_problem : cashocs.OptimalControlProblem
-			the corresponding optimal control problem to be solved
-		"""
+        OptimizationAlgorithm.__init__(self, optimization_problem)
 
-		OptimizationAlgorithm.__init__(self, optimization_problem)
+        self.line_search = UnconstrainedLineSearch(self)
+        self.maximum_iterations = self.config.getint(
+            "AlgoPDAS", "maximum_iterations_inner_pdas", fallback=50
+        )
+        self.tolerance = self.config.getfloat(
+            "AlgoPDAS", "pdas_inner_tolerance", fallback=1e-2
+        )
+        self.reduced_gradient = [
+            fenics.Function(optimization_problem.control_spaces[j])
+            for j in range(len(self.controls))
+        ]
+        self.first_iteration = True
+        self.first_gradient_norm = 1.0
 
-		self.line_search = UnconstrainedLineSearch(self)
-		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
-		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
-		self.reduced_gradient = [fenics.Function(optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
-		self.first_iteration = True
-		self.first_gradient_norm = 1.0
-		
-		self.pdas_solver = True
+        self.pdas_solver = True
 
+    def run(self, idx_active):
+        """Solves the inner PDAS optimization problem with the gradient descent method
 
+        Parameters
+        ----------
+        idx_active : list[numpy.ndarray]
+                list of indices for the active set
 
-	def run(self, idx_active):
-		"""Solves the inner PDAS optimization problem with the gradient descent method
+        Returns
+        -------
+        None
+        """
 
-		Parameters
-		----------
-		idx_active : list[numpy.ndarray]
-			list of indices for the active set
+        self.iteration = 0
+        self.relative_norm = 1.0
+        self.state_problem.has_solution = False
 
-		Returns
-		-------
-		None
-		"""
+        self.line_search.stepsize = 1.0
 
-		self.iteration = 0
-		self.relative_norm = 1.0
-		self.state_problem.has_solution = False
+        while True:
 
-		self.line_search.stepsize = 1.0
+            self.adjoint_problem.has_solution = False
+            self.gradient_problem.has_solution = False
+            self.gradient_problem.solve()
 
-		while True:
+            for j in range(len(self.controls)):
+                self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+                self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-			self.adjoint_problem.has_solution = False
-			self.gradient_problem.has_solution = False
-			self.gradient_problem.solve()
+            self.gradient_norm = np.sqrt(
+                self.form_handler.scalar_product(
+                    self.reduced_gradient, self.reduced_gradient
+                )
+            )
 
-			for j in range(len(self.controls)):
-				self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
-				self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
+            if self.iteration == 0:
+                self.gradient_norm_initial = self.gradient_norm
+                if self.gradient_norm_initial == 0.0:
+                    # self.print_results()
+                    break
+                if self.first_iteration:
+                    self.first_gradient_norm = self.gradient_norm_initial
+                    self.first_iteration = False
 
-			self.gradient_norm = np.sqrt(self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient))
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            if (
+                self.gradient_norm
+                <= self.atol + self.tolerance * self.gradient_norm_initial
+                or self.relative_norm
+                * self.gradient_norm_initial
+                / self.first_gradient_norm
+                <= self.tolerance / 2
+            ):
+                # self.print_results()
+                break
 
-			if self.iteration==0:
-				self.gradient_norm_initial = self.gradient_norm
-				if self.gradient_norm_initial == 0.0:
-					# self.print_results()
-					break
-				if self.first_iteration:
-					self.first_gradient_norm = self.gradient_norm_initial
-					self.first_iteration = False
+            for i in range(len(self.controls)):
+                self.search_directions[i].vector()[:] = -self.reduced_gradient[
+                    i
+                ].vector()[:]
 
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.atol + self.tolerance*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial/self.first_gradient_norm <= self.tolerance/2:
-				# self.print_results()
-				break
+            self.line_search.search(self.search_directions)
+            if self.line_search_broken:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Armijo rule failed.")
+                    break
+                else:
+                    raise NotConvergedError("Armijo line search")
 
-			for i in range(len(self.controls)):
-				self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
-
-			self.line_search.search(self.search_directions)
-			if self.line_search_broken:
-				if self.soft_exit:
-					if self.verbose:
-						print('Armijo rule failed.')
-					break
-				else:
-					raise NotConvergedError('Armijo line search')
-
-			self.iteration += 1
-			if self.iteration >= self.maximum_iterations:
-				if self.soft_exit:
-					if self.verbose:
-						print('Maximum number of iterations exceeded.')
-					break
-				else:
-					raise NotConvergedError('gradient descent method for the primal dual active set method', 'Maximum number of iterations were exceeded.')
+            self.iteration += 1
+            if self.iteration >= self.maximum_iterations:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Maximum number of iterations exceeded.")
+                    break
+                else:
+                    raise NotConvergedError(
+                        "gradient descent method for the primal dual active set method",
+                        "Maximum number of iterations were exceeded.",
+                    )

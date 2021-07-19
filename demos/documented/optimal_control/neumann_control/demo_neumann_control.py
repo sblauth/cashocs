@@ -24,51 +24,51 @@ from fenics import *
 import cashocs
 
 
-
-config = cashocs.load_config('config.ini')
+config = cashocs.load_config("config.ini")
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-V = FunctionSpace(mesh, 'CG', 1)
+V = FunctionSpace(mesh, "CG", 1)
 
 y = Function(V)
 p = Function(V)
 u = Function(V)
 
-e = inner(grad(y), grad(p))*dx + y*p*dx - u*p*ds
+e = inner(grad(y), grad(p)) * dx + y * p * dx - u * p * ds
 
 bcs = None
 
-y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 alpha = 1e-6
-J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
+J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
 
-scalar_product = TrialFunction(V)*TestFunction(V)*ds
+scalar_product = TrialFunction(V) * TestFunction(V) * ds
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+ocp = cashocs.OptimalControlProblem(
+    e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product
+)
 ocp.solve()
-
-
 
 
 ### Post Processing
 
 import matplotlib.pyplot as plt
-plt.figure(figsize=(15,5))
+
+plt.figure(figsize=(15, 5))
 
 plt.subplot(1, 3, 1)
 fig = plot(u)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable u')
+plt.title("Control variable u")
 
-plt.subplot(1,3,2)
+plt.subplot(1, 3, 2)
 fig = plot(y)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable y')
+plt.title("State variable y")
 
-plt.subplot(1,3,3)
+plt.subplot(1, 3, 3)
 fig = plot(y_d, mesh=mesh)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state y_d')
+plt.title("Desired state y_d")
 
 plt.tight_layout()
 # plt.savefig('./img_neumann_control.png', dpi=150, bbox_inches='tight')

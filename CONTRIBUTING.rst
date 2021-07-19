@@ -28,7 +28,7 @@ Reporting a bug
 Fixing a bug
 ------------
 
-- Use the same coding conventions as established in the project.
+- CASHOCS uses the `black coding style <https://github.com/psf/black>`_, so please also use that for your suggested fix.
 
 - Make sure that all tests still pass with your fix.
 

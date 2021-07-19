@@ -24,14 +24,13 @@ from fenics import *
 import cashocs
 
 
-
-config = cashocs.load_config('./config.ini')
+config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
 
-v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
-p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
 V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
-U = VectorFunctionSpace(mesh, 'CG', 1)
+U = VectorFunctionSpace(mesh, "CG", 1)
 
 up = Function(V)
 u, p = split(up)
@@ -39,45 +38,57 @@ vq = Function(V)
 v, q = split(vq)
 c = Function(U)
 
-e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx - inner(c, v)*dx
+e = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx - inner(c, v) * dx
+
 
 def pressure_point(x, on_boundary):
-	return near(x[0], 0) and near(x[1], 0)
-no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
-lid_velocity = Expression(('4*x[0]*(1-x[0])', '0.0'), degree=2)
+    return near(x[0], 0) and near(x[1], 0)
+
+
+no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0, 0)), boundaries, [1, 2, 3])
+lid_velocity = Expression(("4*x[0]*(1-x[0])", "0.0"), degree=2)
 bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
-bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
+bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")
 bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
 alpha = 1e-5
-u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
-J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*dx
+u_d = Expression(
+    (
+        "sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])",
+        "-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])",
+    ),
+    degree=2,
+)
+J = (
+    Constant(0.5) * inner(u - u_d, u - u_d) * dx
+    + Constant(0.5 * alpha) * inner(c, c) * dx
+)
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
 ocp.solve()
-
 
 
 ### Post Processing
 
 u, p = up.split(True)
 import matplotlib.pyplot as plt
-plt.figure(figsize=(15,5))
+
+plt.figure(figsize=(15, 5))
 
 plt.subplot(1, 3, 1)
 fig = plot(c)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable c')
+plt.title("Control variable c")
 
-plt.subplot(1,3,2)
+plt.subplot(1, 3, 2)
 fig = plot(u)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable u')
+plt.title("State variable u")
 
-plt.subplot(1,3,3)
+plt.subplot(1, 3, 3)
 fig = plot(u_d, mesh=mesh)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Desired state u_d')
+plt.title("Desired state u_d")
 
 plt.tight_layout()
 # plt.savefig('./img_stokes.png', dpi=150, bbox_inches='tight')

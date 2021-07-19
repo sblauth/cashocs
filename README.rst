@@ -24,6 +24,9 @@ CASHOCS
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+
 |
 
 CASHOCS is a computational adjoint-based shape optimization and optimal control

@@ -27,103 +27,121 @@ from ...optimization_algorithm import OptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerNewton(OptimizationAlgorithm):
-	"""Unconstrained truncated Newton method
+    """Unconstrained truncated Newton method"""
 
-	"""
+    def __init__(self, optimization_problem):
+        """Initializes the Newton method.
 
-	def __init__(self, optimization_problem):
-		"""Initializes the Newton method.
+        Parameters
+        ----------
+        optimization_problem : cashocs.OptimalControlProblem
+                the corresponding optimization problem to be solved
+        """
 
-		Parameters
-		----------
-		optimization_problem : cashocs.OptimalControlProblem
-			the corresponding optimization problem to be solved
-		"""
+        OptimizationAlgorithm.__init__(self, optimization_problem)
 
-		OptimizationAlgorithm.__init__(self, optimization_problem)
+        self.line_search = UnconstrainedLineSearch(self)
+        self.maximum_iterations = self.config.getint(
+            "AlgoPDAS", "maximum_iterations_inner_pdas", fallback=50
+        )
+        self.tolerance = self.config.getfloat(
+            "AlgoPDAS", "pdas_inner_tolerance", fallback=1e-2
+        )
+        self.reduced_gradient = [
+            fenics.Function(optimization_problem.control_spaces[j])
+            for j in range(len(self.controls))
+        ]
+        self.first_iteration = True
+        self.first_gradient_norm = 1.0
 
-		self.line_search = UnconstrainedLineSearch(self)
-		self.maximum_iterations = self.config.getint('AlgoPDAS', 'maximum_iterations_inner_pdas', fallback=50)
-		self.tolerance = self.config.getfloat('AlgoPDAS', 'pdas_inner_tolerance', fallback=1e-2)
-		self.reduced_gradient = [fenics.Function(optimization_problem.control_spaces[j]) for j in range(len(self.controls))]
-		self.first_iteration = True
-		self.first_gradient_norm = 1.0
+        self.unconstrained_hessian = optimization_problem.unconstrained_hessian
 
-		self.unconstrained_hessian = optimization_problem.unconstrained_hessian
+        self.stepsize = 1.0
+        self.armijo_stepsize_initial = self.stepsize
 
-		self.stepsize = 1.0
-		self.armijo_stepsize_initial = self.stepsize
+        self.armijo_broken = False
 
-		self.armijo_broken = False
-		
-		self.pdas_solver = True
+        self.pdas_solver = True
 
+    def run(self, idx_active):
+        """Solves the inner PDAS optimization problem
 
+        Parameters
+        ----------
+        idx_active : list[numpy.ndarray]
+                list of indicies corresponding to the active set
 
-	def run(self, idx_active):
-		"""Solves the inner PDAS optimization problem
+        Returns
+        -------
+        None
+        """
 
-		Parameters
-		----------
-		idx_active : list[numpy.ndarray]
-			list of indicies corresponding to the active set
+        self.iteration = 0
+        self.relative_norm = 1.0
+        self.state_problem.has_solution = False
 
-		Returns
-		-------
-		None
-		"""
+        while True:
+            self.adjoint_problem.has_solution = False
+            self.gradient_problem.has_solution = False
+            self.gradient_problem.solve()
 
-		self.iteration = 0
-		self.relative_norm = 1.0
-		self.state_problem.has_solution = False
+            for j in range(len(self.controls)):
+                self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+                self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-		while True:
-			self.adjoint_problem.has_solution = False
-			self.gradient_problem.has_solution = False
-			self.gradient_problem.solve()
+            self.gradient_norm = np.sqrt(
+                self.form_handler.scalar_product(
+                    self.reduced_gradient, self.reduced_gradient
+                )
+            )
 
-			for j in range(len(self.controls)):
-				self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
-				self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
+            if self.iteration == 0:
+                self.gradient_norm_initial = self.gradient_norm
+                if self.first_iteration:
+                    self.first_gradient_norm = self.gradient_norm_initial
+                    self.first_iteration = False
 
-			self.gradient_norm = np.sqrt(self.form_handler.scalar_product(self.reduced_gradient, self.reduced_gradient))
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            if (
+                self.gradient_norm <= self.tolerance * self.gradient_norm_initial
+                or self.relative_norm
+                * self.gradient_norm_initial
+                / self.first_gradient_norm
+                <= self.tolerance / 2
+            ):
+                # self.print_results()
+                break
 
-			if self.iteration==0:
-				self.gradient_norm_initial = self.gradient_norm
-				if self.first_iteration:
-					self.first_gradient_norm = self.gradient_norm_initial
-					self.first_iteration = False
+            self.search_directions = self.unconstrained_hessian.newton_solve(idx_active)
+            self.directional_derivative = self.form_handler.scalar_product(
+                self.search_directions, self.reduced_gradient
+            )
+            if self.directional_derivative > 0:
+                # print('No descent direction')
+                for i in range(len(self.controls)):
+                    self.search_directions[i].vector()[:] = -self.reduced_gradient[
+                        i
+                    ].vector()[:]
 
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.tolerance*self.gradient_norm_initial or self.relative_norm*self.gradient_norm_initial / self.first_gradient_norm <= self.tolerance/2:
-				# self.print_results()
-				break
+            self.line_search.search(self.search_directions)
+            if self.armijo_broken:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Armijo rule failed.")
+                    break
+                else:
+                    raise NotConvergedError("Armijo line search")
 
-			self.search_directions = self.unconstrained_hessian.newton_solve(idx_active)
-			self.directional_derivative = self.form_handler.scalar_product(self.search_directions, self.reduced_gradient)
-			if self.directional_derivative > 0:
-				# print('No descent direction')
-				for i in range(len(self.controls)):
-					self.search_directions[i].vector()[:] = -self.reduced_gradient[i].vector()[:]
+            self.iteration += 1
 
-			self.line_search.search(self.search_directions)
-			if self.armijo_broken:
-				if self.soft_exit:
-					if self.verbose:
-						print('Armijo rule failed.')
-					break
-				else:
-					raise NotConvergedError('Armijo line search')
-
-
-			self.iteration += 1
-
-			if self.iteration >= self.maximum_iterations:
-				if self.soft_exit:
-					if self.verbose:
-						print('Maximum number of iterations exceeded.')
-					break
-				else:
-					raise NotConvergedError('Newton method for the primal dual active set method', 'Maximum number of iterations were exceeded.')
+            if self.iteration >= self.maximum_iterations:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Maximum number of iterations exceeded.")
+                    break
+                else:
+                    raise NotConvergedError(
+                        "Newton method for the primal dual active set method",
+                        "Maximum number of iterations were exceeded.",
+                    )

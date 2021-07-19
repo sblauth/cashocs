@@ -22,47 +22,57 @@
 import fenics
 
 
-
 class ReducedShapeCostFunctional:
-	"""Reduced cost functional for a shape optimization problem
+    """Reduced cost functional for a shape optimization problem"""
 
-	"""
+    def __init__(self, form_handler, state_problem):
+        """Initializes the reduced cost functional
 
-	def __init__(self, form_handler, state_problem):
-		"""Initializes the reduced cost functional
+        Parameters
+        ----------
+        form_handler : cashocs._forms.ShapeFormHandler
+                the ControlFormHandler object for the optimization problem
+        state_problem : cashocs._pde_problems.StateProblem
+                the StateProblem object corresponding to the state system
+        """
 
-		Parameters
-		----------
-		form_handler : cashocs._forms.ShapeFormHandler
-			the ControlFormHandler object for the optimization problem
-		state_problem : cashocs._pde_problems.StateProblem
-			the StateProblem object corresponding to the state system
-		"""
+        self.form_handler = form_handler
+        self.state_problem = state_problem
 
-		self.form_handler = form_handler
-		self.state_problem = state_problem
+    def evaluate(self):
+        """Evaluates the reduced cost functional
 
+        Returns
+        -------
+        float
+                the value of the reduced cost functional at the current control
 
+        """
 
-	def evaluate(self):
-		"""Evaluates the reduced cost functional
+        self.state_problem.solve()
 
-		Returns
-		-------
-		float
-			the value of the reduced cost functional at the current control
+        val = (
+            fenics.assemble(self.form_handler.cost_functional_form)
+            + self.form_handler.regularization.compute_objective()
+        )
 
-		"""
+        if self.form_handler.use_scalar_tracking:
+            for j in range(self.form_handler.no_scalar_tracking_terms):
+                scalar_integral_value = fenics.assemble(
+                    self.form_handler.scalar_cost_functional_integrands[j]
+                )
+                self.form_handler.scalar_cost_functional_integrand_values[j].vector()[
+                    :
+                ] = scalar_integral_value
 
-		self.state_problem.solve()
+                val += (
+                    self.form_handler.scalar_weights[j].vector()[0]
+                    / 2
+                    * pow(
+                        scalar_integral_value
+                        - self.form_handler.scalar_tracking_goals[j],
+                        2,
+                    )
+                )
 
-		val = fenics.assemble(self.form_handler.cost_functional_form) + self.form_handler.regularization.compute_objective()
-
-		if self.form_handler.use_scalar_tracking:
-			for j in range(self.form_handler.no_scalar_tracking_terms):
-				scalar_integral_value = fenics.assemble(self.form_handler.scalar_cost_functional_integrands[j])
-				self.form_handler.scalar_cost_functional_integrand_values[j].vector()[:] = scalar_integral_value
-
-				val += self.form_handler.scalar_weights[j].vector()[0]/2*pow(scalar_integral_value - self.form_handler.scalar_tracking_goals[j], 2)
-
-		return val
+        return val

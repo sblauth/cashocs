@@ -20,114 +20,97 @@
 """
 
 
-
 class CashocsException(Exception):
-	"""Base class for exceptions raised by CASHOCS.
+    """Base class for exceptions raised by CASHOCS."""
 
-	"""
-
-	pass
-
+    pass
 
 
 class NotConvergedError(CashocsException):
-	"""This exception is raised when a solver does not converge.
+    """This exception is raised when a solver does not converge.
 
-	This includes any type of iterative method used to solve a problem,
-	whether it is a linear or nonlinear system of equations, or an
-	optimization problem.
-	"""
+    This includes any type of iterative method used to solve a problem,
+    whether it is a linear or nonlinear system of equations, or an
+    optimization problem.
+    """
 
-	def __init__(self, solver, message=None):
-		self.solver = solver
-		self.message = message
+    def __init__(self, solver, message=None):
+        self.solver = solver
+        self.message = message
 
-
-
-	def __str__(self):
-		if self.message is None:
-			return f'The {self.solver} failed to converge.'
-		else:
-			return f'The {self.solver} failed to converge.\n{self.message}'
-
+    def __str__(self):
+        if self.message is None:
+            return f"The {self.solver} failed to converge."
+        else:
+            return f"The {self.solver} failed to converge.\n{self.message}"
 
 
 class PETScKSPError(CashocsException):
-	"""This exception is raised when the solution of a linear problem with PETSc fails.
+    """This exception is raised when the solution of a linear problem with PETSc fails.
 
-	Also returns the PETSc error code and reason.
-	"""
+    Also returns the PETSc error code and reason.
+    """
 
-	def __init__(self, error_code, message='PETSc linear solver did not converge.'):
-		self.message = message
-		self.error_code = error_code
+    def __init__(self, error_code, message="PETSc linear solver did not converge."):
+        self.message = message
+        self.error_code = error_code
 
-		if self.error_code == -2:
-			self.error_reason = ' (ksp_diverged_null)'
-		elif self.error_code == -3:
-			self.error_reason = ' (ksp_diverged_its, reached maximum iterations)'
-		elif self.error_code == -4:
-			self.error_reason = ' (ksp_diverged_dtol, reached divergence tolerance)'
-		elif self.error_code == -5:
-			self.error_reason = ' (ksp_diverged_breakdown, krylov method breakdown)'
-		elif self.error_code == -6:
-			self.error_reason = ' (ksp_diverged_breakdown_bicg)'
-		elif self.error_code == -7:
-			self.error_reason = ' (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)'
-		elif self.error_code == -8:
-			self.error_reason = ' (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)'
-		elif self.error_code == -9:
-			self.error_reason = ' (ksp_diverged_nanorinf)'
-		elif self.error_code == -10:
-			self.error_reason = ' (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)'
-		elif self.error_code == -11:
-			self.error_reason = ' (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)'
-		else:
-			self.error_reason = ' (unknown)'
+        if self.error_code == -2:
+            self.error_reason = " (ksp_diverged_null)"
+        elif self.error_code == -3:
+            self.error_reason = " (ksp_diverged_its, reached maximum iterations)"
+        elif self.error_code == -4:
+            self.error_reason = " (ksp_diverged_dtol, reached divergence tolerance)"
+        elif self.error_code == -5:
+            self.error_reason = " (ksp_diverged_breakdown, krylov method breakdown)"
+        elif self.error_code == -6:
+            self.error_reason = " (ksp_diverged_breakdown_bicg)"
+        elif self.error_code == -7:
+            self.error_reason = " (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)"
+        elif self.error_code == -8:
+            self.error_reason = " (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)"
+        elif self.error_code == -9:
+            self.error_reason = " (ksp_diverged_nanorinf)"
+        elif self.error_code == -10:
+            self.error_reason = " (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)"
+        elif self.error_code == -11:
+            self.error_reason = " (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)"
+        else:
+            self.error_reason = " (unknown)"
 
-
-
-	def __str__(self):
-		return f'{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}'
-
+    def __str__(self):
+        return (
+            f"{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}"
+        )
 
 
 class InputError(CashocsException):
-	"""This exception gets raised when the user input to a public API method is wrong or inconsistent.
+    """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
 
-	"""
+    def __init__(self, obj, param, message=None):
+        self.obj = obj
+        self.param = param
+        self.message = message
 
-	def __init__(self, obj, param, message=None):
-		self.obj = obj
-		self.param = param
-		self.message = message
-
-
-
-	def __str__(self):
-		if self.message is None:
-			return f'Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.'
-		else:
-			return f'Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.\n{self.message}'
-
+    def __str__(self):
+        if self.message is None:
+            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
+        else:
+            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.\n{self.message}"
 
 
 class ConfigError(CashocsException):
-	"""This exception gets raised when parameters in the config file are wrong.
+    """This exception gets raised when parameters in the config file are wrong."""
 
-	"""
+    pre_message = "You have an error in your config file.\n"
 
-	pre_message = 'You have an error in your config file.\n'
+    def __init__(self, section, key, message=None):
+        self.section = section
+        self.key = key
+        self.message = message
 
-	def __init__(self, section, key, message=None):
-		self.section = section
-		self.key = key
-		self.message = message
-
-
-
-	def __str__(self):
-		if self.message is None:
-			return f'{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.'
-		else:
-			return f'{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}'
+    def __str__(self):
+        if self.message is None:
+            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}."
+        else:
+            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}"

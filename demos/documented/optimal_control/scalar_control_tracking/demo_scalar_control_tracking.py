@@ -24,47 +24,49 @@ from fenics import *
 import cashocs
 
 
-
 cashocs.set_log_level(cashocs.LogLevel.INFO)
-config = cashocs.load_config('config.ini')
+config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-V = FunctionSpace(mesh, 'CG', 1)
+V = FunctionSpace(mesh, "CG", 1)
 
 y = Function(V)
 p = Function(V)
 u = Function(V)
 u.vector()[:] = 1.0
 
-e = inner(grad(y), grad(p))*dx - u*p*dx
+e = inner(grad(y), grad(p)) * dx - u * p * dx
 
 bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-J = Constant(0)*dx
+J = Constant(0) * dx
 
-integrand = y*y*dx
+integrand = y * y * dx
 tracking_goal = 1.0
-J_tracking = {'integrand' : integrand, 'tracking_goal' : tracking_goal}
+J_tracking = {"integrand": integrand, "tracking_goal": tracking_goal}
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, scalar_tracking_forms=J_tracking)
+ocp = cashocs.OptimalControlProblem(
+    e, bcs, J, y, u, p, config, scalar_tracking_forms=J_tracking
+)
 ocp.solve()
 
-print('L2-Norm of y squared: ' + format(assemble(y*y*dx), '.3e'))
+print("L2-Norm of y squared: " + format(assemble(y * y * dx), ".3e"))
 
 
 ### Post Processing
 
 import matplotlib.pyplot as plt
-plt.figure(figsize=(10,5))
+
+plt.figure(figsize=(10, 5))
 
 plt.subplot(1, 2, 1)
 fig = plot(u)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('Control variable u')
+plt.title("Control variable u")
 
-plt.subplot(1,2,2)
+plt.subplot(1, 2, 2)
 fig = plot(y)
 plt.colorbar(fig, fraction=0.046, pad=0.04)
-plt.title('State variable y')
+plt.title("State variable y")
 
 plt.tight_layout()
 # plt.savefig('./img_scalar_control_tracking.png', dpi=150, bbox_inches='tight')

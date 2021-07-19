@@ -23,118 +23,133 @@ import numpy as np
 import weakref
 
 
-
 class UnconstrainedLineSearch:
-	"""Armijo line search for unconstrained optimization problems
+    """Armijo line search for unconstrained optimization problems"""
 
-	"""
+    def __init__(self, optimization_algorithm):
+        """Initializes the line search
 
-	def __init__(self, optimization_algorithm):
-		"""Initializes the line search
+        Parameters
+        ----------
+        config : configparser.ConfigParser
+                the config file for the problem
+        optimization_algorithm : cashocs._optimal_control.OptimizationAlgorithm
+                the corresponding optimization algorithm
+        """
 
-		Parameters
-		----------
-		config : configparser.ConfigParser
-			the config file for the problem
-		optimization_algorithm : cashocs._optimal_control.OptimizationAlgorithm
-			the corresponding optimization algorithm
-		"""
+        self.ref_algo = weakref.ref(optimization_algorithm)
+        self.config = optimization_algorithm.config
+        self.form_handler = optimization_algorithm.form_handler
 
-		self.ref_algo = weakref.ref(optimization_algorithm)
-		self.config = optimization_algorithm.config
-		self.form_handler = optimization_algorithm.form_handler
+        self.stepsize = self.config.getfloat(
+            "OptimizationRoutine", "initial_stepsize", fallback=1.0
+        )
+        self.epsilon_armijo = self.config.getfloat(
+            "OptimizationRoutine", "epsilon_armijo", fallback=1e-4
+        )
+        self.beta_armijo = self.config.getfloat(
+            "OptimizationRoutine", "beta_armijo", fallback=2.0
+        )
+        self.armijo_stepsize_initial = self.stepsize
 
-		self.stepsize = self.config.getfloat('OptimizationRoutine', 'initial_stepsize', fallback=1.0)
-		self.epsilon_armijo = self.config.getfloat('OptimizationRoutine', 'epsilon_armijo', fallback=1e-4)
-		self.beta_armijo = self.config.getfloat('OptimizationRoutine', 'beta_armijo', fallback=2.0)
-		self.armijo_stepsize_initial = self.stepsize
+        self.controls_temp = optimization_algorithm.controls_temp
+        self.cost_functional = optimization_algorithm.cost_functional
 
-		self.controls_temp = optimization_algorithm.controls_temp
-		self.cost_functional = optimization_algorithm.cost_functional
+        self.controls = optimization_algorithm.controls
+        self.gradients = optimization_algorithm.gradients
 
-		self.controls = optimization_algorithm.controls
-		self.gradients = optimization_algorithm.gradients
+        inner_pdas = self.config.get("AlgoPDAS", "inner_pdas")
+        self.is_newton_like = inner_pdas in ["lbfgs", "bfgs"]
+        self.is_newton = inner_pdas in ["newton"]
+        self.is_steepest_descent = inner_pdas in ["gradient_descent", "gd"]
+        if self.is_newton:
+            self.stepsize = 1.0
 
-		inner_pdas = self.config.get('AlgoPDAS', 'inner_pdas')
-		self.is_newton_like = inner_pdas in ['lbfgs', 'bfgs']
-		self.is_newton = inner_pdas in ['newton']
-		self.is_steepest_descent = inner_pdas in ['gradient_descent', 'gd']
-		if self.is_newton:
-			self.stepsize = 1.0
+    def decrease_measure(self, search_directions):
+        """Computes the decrease measure for the Armijo rule
 
+        Parameters
+        ----------
+        search_directions : list[dolfin.function.function.Function]
+                the search direction computed by optimization_algorithm
 
+        Returns
+        -------
+        float
+                the decrease measure for the Armijo rule
+        """
 
-	def decrease_measure(self, search_directions):
-		"""Computes the decrease measure for the Armijo rule
+        return self.stepsize * self.form_handler.scalar_product(
+            self.gradients, search_directions
+        )
 
-		Parameters
-		----------
-		search_directions : list[dolfin.function.function.Function]
-			the search direction computed by optimization_algorithm
+    def search(self, search_directions):
+        """Performs an Armijo line search
 
-		Returns
-		-------
-		float
-			the decrease measure for the Armijo rule
-		"""
+        Parameters
+        ----------
+        search_directions : list[dolfin.function.function.Function]
+                the search direction computed by the optimization_algorithm
 
-		return self.stepsize*self.form_handler.scalar_product(self.gradients, search_directions)
+        Returns
+        -------
+        None
+        """
 
+        self.search_direction_inf = np.max(
+            [
+                np.max(np.abs(search_directions[i].vector()[:]))
+                for i in range(len(self.gradients))
+            ]
+        )
+        self.ref_algo().objective_value = self.cost_functional.evaluate()
 
+        # self.ref_algo().print_results()
 
-	def search(self, search_directions):
-		"""Performs an Armijo line search
+        for j in range(self.form_handler.control_dim):
+            self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
 
-		Parameters
-		----------
-		search_directions : list[dolfin.function.function.Function]
-			the search direction computed by the optimization_algorithm
+        while True:
+            if self.stepsize * self.search_direction_inf <= 1e-8:
+                self.ref_algo().line_search_broken = True
+                for j in range(self.form_handler.control_dim):
+                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                break
+            elif (
+                not self.is_newton_like
+                and not self.is_newton
+                and self.stepsize / self.armijo_stepsize_initial <= 1e-8
+            ):
+                self.ref_algo().line_search_broken = True
+                for j in range(self.form_handler.control_dim):
+                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                break
 
-		Returns
-		-------
-		None
-		"""
+            for j in range(len(self.controls)):
+                self.controls[j].vector()[:] += (
+                    self.stepsize * search_directions[j].vector()[:]
+                )
 
-		self.search_direction_inf = np.max([np.max(np.abs(search_directions[i].vector()[:])) for i in range(len(self.gradients))])
-		self.ref_algo().objective_value = self.cost_functional.evaluate()
+            self.ref_algo().state_problem.has_solution = False
+            self.objective_step = self.cost_functional.evaluate()
 
-		# self.ref_algo().print_results()
+            if (
+                self.objective_step
+                < self.ref_algo().objective_value
+                + self.epsilon_armijo * self.decrease_measure(search_directions)
+            ):
+                if self.ref_algo().iteration == 0:
+                    self.armijo_stepsize_initial = self.stepsize
+                break
 
-		for j in range(self.form_handler.control_dim):
-			self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
+            else:
+                self.stepsize /= self.beta_armijo
+                for i in range(len(self.controls)):
+                    self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
 
-		while True:
-			if self.stepsize*self.search_direction_inf <= 1e-8:
-				self.ref_algo().line_search_broken = True
-				for j in range(self.form_handler.control_dim):
-					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
-				break
-			elif not self.is_newton_like and not self.is_newton and self.stepsize/self.armijo_stepsize_initial <= 1e-8:
-				self.ref_algo().line_search_broken = True
-				for j in range(self.form_handler.control_dim):
-					self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
-				break
-
-			for j in range(len(self.controls)):
-				self.controls[j].vector()[:] += self.stepsize*search_directions[j].vector()[:]
-
-
-			self.ref_algo().state_problem.has_solution = False
-			self.objective_step = self.cost_functional.evaluate()
-
-			if self.objective_step < self.ref_algo().objective_value + self.epsilon_armijo*self.decrease_measure(search_directions):
-				if self.ref_algo().iteration == 0:
-					self.armijo_stepsize_initial = self.stepsize
-				break
-
-			else:
-				self.stepsize /= self.beta_armijo
-				for i in range(len(self.controls)):
-					self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
-
-		self.ref_algo().stepsize = self.stepsize
-		self.ref_algo().objective_value = self.objective_step
-		if not self.is_newton_like and not self.is_newton:
-			self.stepsize *= self.beta_armijo
-		else:
-			self.stepsize = 1.0
+        self.ref_algo().stepsize = self.stepsize
+        self.ref_algo().objective_value = self.objective_step
+        if not self.is_newton_like and not self.is_newton:
+            self.stepsize *= self.beta_armijo
+        else:
+            self.stepsize = 1.0

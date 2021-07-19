@@ -28,175 +28,197 @@ from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
-
 class LBFGS(ShapeOptimizationAlgorithm):
+    def __init__(self, optimization_problem):
+        """Implements the L-BFGS method for solving the optimization problem
 
-	def __init__(self, optimization_problem):
-		"""Implements the L-BFGS method for solving the optimization problem
+        Parameters
+        ----------
+        optimization_problem : cashocs.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+                instance of the OptimalControlProblem (user defined)
+        """
 
-		Parameters
-		----------
-		optimization_problem : cashocs.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
-			instance of the OptimalControlProblem (user defined)
-		"""
+        ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
 
-		ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
+        self.line_search = ArmijoLineSearch(self)
 
-		self.line_search = ArmijoLineSearch(self)
+        self.temp = fenics.Function(self.form_handler.deformation_space)
 
-		self.temp = fenics.Function(self.form_handler.deformation_space)
+        self.bfgs_memory_size = self.config.getint(
+            "AlgoLBFGS", "bfgs_memory_size", fallback=5
+        )
+        self.use_bfgs_scaling = self.config.getboolean(
+            "AlgoLBFGS", "use_bfgs_scaling", fallback=True
+        )
 
-		self.bfgs_memory_size = self.config.getint('AlgoLBFGS', 'bfgs_memory_size', fallback=5)
-		self.use_bfgs_scaling = self.config.getboolean('AlgoLBFGS', 'use_bfgs_scaling', fallback=True)
+        self.has_curvature_info = False
 
-		self.has_curvature_info = False
+        if self.bfgs_memory_size > 0:
+            self.history_s = deque()
+            self.history_y = deque()
+            self.history_rho = deque()
+            self.gradient_prev = fenics.Function(self.form_handler.deformation_space)
+            self.y_k = fenics.Function(self.form_handler.deformation_space)
+            self.s_k = fenics.Function(self.form_handler.deformation_space)
 
-		if self.bfgs_memory_size > 0:
-			self.history_s = deque()
-			self.history_y = deque()
-			self.history_rho = deque()
-			self.gradient_prev = fenics.Function(self.form_handler.deformation_space)
-			self.y_k = fenics.Function(self.form_handler.deformation_space)
-			self.s_k = fenics.Function(self.form_handler.deformation_space)
+    def compute_search_direction(self, grad):
+        """Computes the search direction for the BFGS method with the so-called double loop
 
+        Parameters
+        ----------
+        grad : dolfin.function.function.Function
+                the current gradient
 
+        Returns
+        -------
+        self.search_direction : dolfin.function.function.Function
+                a function corresponding to the current / next search direction
 
-	def compute_search_direction(self, grad):
-		"""Computes the search direction for the BFGS method with the so-called double loop
+        """
 
-		Parameters
-		----------
-		grad : dolfin.function.function.Function
-			the current gradient
+        if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
+            history_alpha = deque()
+            self.search_direction.vector()[:] = grad.vector()[:]
 
-		Returns
-		-------
-		self.search_direction : dolfin.function.function.Function
-			a function corresponding to the current / next search direction
+            for i, _ in enumerate(self.history_s):
+                alpha = self.history_rho[i] * self.form_handler.scalar_product(
+                    self.history_s[i], self.search_direction
+                )
+                history_alpha.append(alpha)
+                self.search_direction.vector()[:] -= (
+                    alpha * self.history_y[i].vector()[:]
+                )
 
-		"""
+            if self.use_bfgs_scaling and self.iteration > 0:
+                factor = self.form_handler.scalar_product(
+                    self.history_y[0], self.history_s[0]
+                ) / self.form_handler.scalar_product(
+                    self.history_y[0], self.history_y[0]
+                )
+            else:
+                factor = 1.0
 
-		if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
-			history_alpha = deque()
-			self.search_direction.vector()[:] = grad.vector()[:]
+            self.search_direction.vector()[:] *= factor
 
-			for i, _ in enumerate(self.history_s):
-				alpha = self.history_rho[i]*self.form_handler.scalar_product(self.history_s[i], self.search_direction)
-				history_alpha.append(alpha)
-				self.search_direction.vector()[:] -= alpha * self.history_y[i].vector()[:]
+            for i, _ in enumerate(self.history_s):
+                beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
+                    self.history_y[-1 - i], self.search_direction
+                )
 
-			if self.use_bfgs_scaling and self.iteration > 0:
-				factor = self.form_handler.scalar_product(self.history_y[0], self.history_s[0]) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
-			else:
-				factor = 1.0
+                self.search_direction.vector()[:] += self.history_s[-1 - i].vector()[
+                    :
+                ] * (history_alpha[-1 - i] - beta)
 
-			self.search_direction.vector()[:] *= factor
+            self.search_direction.vector()[:] *= -1
 
-			for i, _ in enumerate(self.history_s):
-				beta = self.history_rho[-1 - i]*self.form_handler.scalar_product(self.history_y[-1 - i], self.search_direction)
+        else:
+            self.search_direction.vector()[:] = -grad.vector()[:]
 
-				self.search_direction.vector()[:] += self.history_s[-1 - i].vector()[:] * (history_alpha[-1 -i] - beta)
+        return self.search_direction
 
-			self.search_direction.vector()[:] *= -1
+    def run(self):
+        """Performs the optimization via the limited memory BFGS method
 
-		else:
-			self.search_direction.vector()[:] = -grad.vector()[:]
+        Returns
+        -------
+        None
+                the result can be found in the control (user defined)
 
-		return self.search_direction
+        """
 
+        self.converged = False
 
+        try:
+            self.iteration = self.temp_dict["OptimizationRoutine"].get(
+                "iteration_counter", 0
+            )
+            self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
+                "gradient_norm_initial", 0.0
+            )
+        except TypeError:
+            self.iteration = 0
+            self.gradient_norm_initial = 0.0
+            self.relative_norm = 1.0
+        self.state_problem.has_solution = False
 
-	def run(self):
-		"""Performs the optimization via the limited memory BFGS method
+        self.adjoint_problem.has_solution = False
+        self.shape_gradient_problem.has_solution = False
+        self.shape_gradient_problem.solve()
+        self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
 
-		Returns
-		-------
-		None
-			the result can be found in the control (user defined)
+        if self.iteration == 0:
+            self.gradient_norm_initial = self.gradient_norm
 
-		"""
+        if self.gradient_norm_initial == 0.0:
+            self.converged = True
+        else:
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-		self.converged = False
+        if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
+            self.converged = True
 
-		try:
-			self.iteration = self.temp_dict['OptimizationRoutine'].get('iteration_counter', 0)
-			self.gradient_norm_initial = self.temp_dict['OptimizationRoutine'].get('gradient_norm_initial', 0.0)
-		except TypeError:
-			self.iteration = 0
-			self.gradient_norm_initial = 0.0
-			self.relative_norm = 1.0
-		self.state_problem.has_solution = False
+        self.objective_value = self.cost_functional.evaluate()
 
-		self.adjoint_problem.has_solution = False
-		self.shape_gradient_problem.has_solution = False
-		self.shape_gradient_problem.solve()
-		self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
+        while not self.converged:
+            self.search_direction = self.compute_search_direction(self.gradient)
 
-		if self.iteration == 0:
-			self.gradient_norm_initial = self.gradient_norm
+            self.directional_derivative = self.form_handler.scalar_product(
+                self.search_direction, self.gradient
+            )
+            if self.directional_derivative > 0:
+                debug("No descent direction found with L-BFGS")
+                self.search_direction.vector()[:] = -self.gradient.vector()[:]
 
-		if self.gradient_norm_initial == 0.0:
-			self.converged = True
-		else:
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            self.line_search.search(self.search_direction, self.has_curvature_info)
 
-		if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.converged = True
+            self.iteration += 1
+            if self.nonconvergence():
+                break
 
-		self.objective_value = self.cost_functional.evaluate()
+            if self.bfgs_memory_size > 0:
+                self.gradient_prev.vector()[:] = self.gradient.vector()[:]
 
-		while not self.converged:
-			self.search_direction = self.compute_search_direction(self.gradient)
+            self.adjoint_problem.has_solution = False
+            self.shape_gradient_problem.has_solution = False
+            self.shape_gradient_problem.solve()
 
-			self.directional_derivative = self.form_handler.scalar_product(self.search_direction, self.gradient)
-			if self.directional_derivative > 0:
-				debug('No descent direction found with L-BFGS')
-				self.search_direction.vector()[:] = - self.gradient.vector()[:]
+            self.gradient_norm = np.sqrt(
+                self.shape_gradient_problem.gradient_norm_squared
+            )
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-			self.line_search.search(self.search_direction, self.has_curvature_info)
+            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
+                self.converged = True
+                break
 
-			self.iteration += 1
-			if self.nonconvergence():
-				break
+            if self.bfgs_memory_size > 0:
+                self.y_k.vector()[:] = (
+                    self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                )
+                self.s_k.vector()[:] = self.stepsize * self.search_direction.vector()[:]
 
-			if self.bfgs_memory_size > 0:
-				self.gradient_prev.vector()[:] = self.gradient.vector()[:]
+                self.history_y.appendleft(self.y_k.copy(True))
+                self.history_s.appendleft(self.s_k.copy(True))
 
-			self.adjoint_problem.has_solution = False
-			self.shape_gradient_problem.has_solution = False
-			self.shape_gradient_problem.solve()
+                self.curvature_condition = self.form_handler.scalar_product(
+                    self.y_k, self.s_k
+                )
 
-			self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+                # if self.curvature_condition <= 1e-14:
+                if self.curvature_condition <= 0.0:
+                    # if self.curvature_condition / self.form_handler.scalar_product(self.s_k, self.s_k) < 1e-7 * self.gradient_problem.return_norm_squared():
+                    self.has_curvature_info = False
 
-			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				self.converged = True
-				break
+                    self.history_s = deque()
+                    self.history_y = deque()
+                    self.history_rho = deque()
 
-			if self.bfgs_memory_size > 0:
-				self.y_k.vector()[:] = self.gradient.vector()[:] - self.gradient_prev.vector()[:]
-				self.s_k.vector()[:] = self.stepsize*self.search_direction.vector()[:]
-				
-				self.history_y.appendleft(self.y_k.copy(True))
-				self.history_s.appendleft(self.s_k.copy(True))
+                else:
+                    self.has_curvature_info = True
+                    rho = 1 / self.curvature_condition
+                    self.history_rho.appendleft(rho)
 
-				self.curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
-
-				# if self.curvature_condition <= 1e-14:
-				if self.curvature_condition <= 0.0:
-				# if self.curvature_condition / self.form_handler.scalar_product(self.s_k, self.s_k) < 1e-7 * self.gradient_problem.return_norm_squared():
-					self.has_curvature_info = False
-
-					self.history_s = deque()
-					self.history_y = deque()
-					self.history_rho = deque()
-
-				else:
-					self.has_curvature_info = True
-					rho = 1/self.curvature_condition
-					self.history_rho.appendleft(rho)
-
-				if len(self.history_s) > self.bfgs_memory_size:
-					self.history_s.pop()
-					self.history_y.pop()
-					self.history_rho.pop()
+                if len(self.history_s) > self.bfgs_memory_size:
+                    self.history_s.pop()
+                    self.history_y.pop()
+                    self.history_rho.pop()

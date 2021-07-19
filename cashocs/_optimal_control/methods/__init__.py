@@ -28,5 +28,4 @@ from .newton import Newton
 from .pdas import PDAS
 
 
-
-__all__ = ['GradientDescent', 'CG', 'LBFGS', 'Newton', 'PDAS']
+__all__ = ["GradientDescent", "CG", "LBFGS", "Newton", "PDAS"]

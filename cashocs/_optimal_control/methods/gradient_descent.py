@@ -24,64 +24,59 @@ import numpy as np
 from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
 
 
-
 class GradientDescent(OptimizationAlgorithm):
-	"""A gradient descent method
+    """A gradient descent method"""
 
-	"""
+    def __init__(self, optimization_problem):
+        """Initializes the method.
 
-	def __init__(self, optimization_problem):
-		"""Initializes the method.
+        Parameters
+        ----------
+        optimization_problem : cashocs.OptimalControlProblem
+                the OptimalControlProblem object
+        """
 
-		Parameters
-		----------
-		optimization_problem : cashocs.OptimalControlProblem
-			the OptimalControlProblem object
-		"""
+        OptimizationAlgorithm.__init__(self, optimization_problem)
 
-		OptimizationAlgorithm.__init__(self, optimization_problem)
+        self.line_search = ArmijoLineSearch(self)
 
-		self.line_search = ArmijoLineSearch(self)
+    def run(self):
+        """Performs the optimization via the gradient descent method
 
+        Returns
+        -------
+        None
+        """
 
+        self.iteration = 0
+        self.relative_norm = 1.0
+        self.state_problem.has_solution = False
 
-	def run(self):
-		"""Performs the optimization via the gradient descent method
+        while True:
 
-		Returns
-		-------
-		None
-		"""
+            self.adjoint_problem.has_solution = False
+            self.gradient_problem.has_solution = False
+            self.gradient_problem.solve()
+            self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 
-		self.iteration = 0
-		self.relative_norm = 1.0
-		self.state_problem.has_solution = False
+            if self.iteration == 0:
+                self.gradient_norm_initial = self.gradient_norm
+                if self.gradient_norm_initial == 0:
+                    self.converged = True
+                    break
 
-		while True:
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
+                if self.iteration == 0:
+                    self.objective_value = self.cost_functional.evaluate()
+                self.converged = True
+                break
 
-			self.adjoint_problem.has_solution = False
-			self.gradient_problem.has_solution = False
-			self.gradient_problem.solve()
-			self.gradient_norm = np.sqrt(self._stationary_measure_squared())
+            for i in range(len(self.controls)):
+                self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
 
-			if self.iteration == 0:
-				self.gradient_norm_initial = self.gradient_norm
-				if self.gradient_norm_initial == 0:
-					self.converged = True
-					break
+            self.line_search.search(self.search_directions, self.has_curvature_info)
 
-			self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-			if self.gradient_norm <= self.atol + self.rtol*self.gradient_norm_initial:
-				if self.iteration == 0:
-					self.objective_value = self.cost_functional.evaluate()
-				self.converged = True
-				break
-
-			for i in range(len(self.controls)):
-				self.search_directions[i].vector()[:] = -self.gradients[i].vector()[:]
-
-			self.line_search.search(self.search_directions, self.has_curvature_info)
-
-			self.iteration += 1
-			if self.nonconvergence():
-				break
+            self.iteration += 1
+            if self.nonconvergence():
+                break
