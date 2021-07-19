@@ -430,8 +430,8 @@ def test_scalar_multiple_norms():
     )
     test_ocp.solve(algorithm="bfgs", rtol=1e-6, max_iter=500)
 
-    assert 0.5 * pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-3
-    assert 0.5 * pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-5
+    assert 0.5 * pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-2
+    assert 0.5 * pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-4
 
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
