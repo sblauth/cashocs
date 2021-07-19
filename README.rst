@@ -7,8 +7,8 @@ CASHOCS
 .. image:: https://img.shields.io/conda/vn/conda-forge/cashocs
    :target: https://anaconda.org/conda-forge/cashocs
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4926078.svg
-   :target: https://doi.org/10.5281/zenodo.4926078
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5113019.svg
+   :target: https://doi.org/10.5281/zenodo.5113019
 
 .. image:: https://img.shields.io/pypi/l/cashocs
     :target: https://pypi.org/project/cashocs/
