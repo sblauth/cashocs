@@ -352,6 +352,12 @@ class OptimizationProblem:
                     and type(initial_guess).__name__ == "Function"
                 ):
                     self.initial_guess = [initial_guess]
+                else:
+                    raise InputError(
+                        "cashocs.optimization_problem.OptimizationProblem",
+                        "initial_guess",
+                        "initial guess has to be a list of functions",
+                    )
             except:
                 raise InputError(
                     "cashocs.optimization_problem.OptimizationProblem",
