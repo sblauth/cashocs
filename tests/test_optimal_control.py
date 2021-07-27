@@ -151,6 +151,28 @@ def test_control_cg_hz():
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
+def test_control_cg_restart_periodic():
+    config.set("AlgoCG", "cg_method", "DY")
+    config.set("AlgoCG", "cg_periodic_restart", "True")
+    config.set("AlgoCG", "cg_periodic_its", "5")
+    u.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=10)
+    config.set("AlgoCG", "cg_periodic_restart", "False")
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_control_cg_restart_relative():
+    config.set("AlgoCG", "cg_method", "DY")
+    config.set("AlgoCG", "cg_relative_restart", "True")
+    config.set("AlgoCG", "cg_restart_tol", "1.0")
+    u.vector()[:] = 0.0
+    ocp._erase_pde_memory()
+    ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=24)
+    config.set("AlgoCG", "cg_relative_restart", "False")
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
 def test_control_bfgs():
     u.vector()[:] = 0.0
     ocp._erase_pde_memory()
@@ -306,6 +328,24 @@ def test_control_pdas_cg_pr_cc():
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
+def test_control_pdas_cg_hs_cc():
+    config.set("AlgoPDAS", "inner_pdas", "cg")
+    config.set("AlgoCG", "cg_method", "HS")
+    config.set("AlgoCG", "cg_periodic_restart", "True")
+    config.set("AlgoCG", "cg_periodic_its", "0")
+    config.set("OptimizationRoutine", "soft_exit", "True")
+    u.vector()[:] = 0.0
+    ocp_cc._erase_pde_memory()
+    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=9)
+
+    config.set("OptimizationRoutine", "soft_exit", "False")
+    config.set("AlgoCG", "cg_periodic_restart", "False")
+
+    assert ocp_cc.solver.converged
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
 def test_control_pdas_cg_dy_cc():
     config.set("AlgoPDAS", "inner_pdas", "cg")
     config.set("AlgoCG", "cg_method", "DY")
@@ -315,6 +355,24 @@ def test_control_pdas_cg_dy_cc():
     ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=10)
 
     config.set("OptimizationRoutine", "soft_exit", "False")
+
+    assert ocp_cc.solver.converged
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+def test_control_pdas_cg_hz_cc():
+    config.set("AlgoPDAS", "inner_pdas", "cg")
+    config.set("AlgoCG", "cg_method", "HZ")
+    config.set("AlgoCG", "cg_periodic_restart", "True")
+    config.set("AlgoCG", "cg_periodic_its", "1")
+    config.set("OptimizationRoutine", "soft_exit", "True")
+    u.vector()[:] = 0.0
+    ocp_cc._erase_pde_memory()
+    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=9)
+
+    config.set("OptimizationRoutine", "soft_exit", "False")
+    config.set("AlgoCG", "cg_periodic_restart", "False")
 
     assert ocp_cc.solver.converged
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
@@ -375,6 +433,13 @@ def test_custom_supply_control():
 
     user_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     user_ocp.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+
+    user_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    user_ocp.supply_custom_forms([dJ], [adjoint_form], [bcs])
 
     assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
     assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
@@ -613,3 +678,50 @@ def test_nonlinear_state_eq():
     cashocs.verification.control_gradient_test(ocp)
     cashocs.verification.control_gradient_test(ocp)
     config.set("StateSystem", "is_linear", "True")
+
+
+def test_save_pvd_files():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_results", "True")
+    config.set("Output", "save_pvd_adjoint", "True")
+    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "result_dir", dir_path + "/out")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve(algorithm="bfgs", rtol=1e-1)
+    assert os.path.isdir(dir_path + "/out")
+    assert os.path.isdir(dir_path + "/out/pvd")
+    assert os.path.isfile(dir_path + "/out/history.txt")
+    assert os.path.isfile(dir_path + "/out/history.json")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
+
+    os.system(f"rm -r {dir_path}/out")
+
+    config.set("Output", "save_results", "False")
+    config.set("Output", "save_pvd", "False")
+    config.set("Output", "save_pvd_adjoint", "False")
+    config.set("Output", "save_pvd_gradient", "False")
+
+
+def test_riesz_scalar_products():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    u.vector()[:] = 0.0
+    riesz_scalar_product = TrialFunction(V) * TestFunction(V) * dx
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, riesz_scalar_products=riesz_scalar_product
+    )
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, riesz_scalar_products=[riesz_scalar_product]
+    )
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp) > 1.9

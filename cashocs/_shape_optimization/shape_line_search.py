@@ -60,10 +60,7 @@ class ArmijoLineSearch:
 
         self.algorithm = _optimization_algorithm_configuration(self.config)
         self.is_newton_like = self.algorithm == "lbfgs"
-        self.is_newton = self.algorithm in ["newton"]
         self.is_steepest_descent = self.algorithm == "gradient_descent"
-        if self.is_newton:
-            self.stepsize = 1.0
 
     def decrease_measure(self, search_direction):
         """Computes the measure of decrease needed for the Armijo test
@@ -122,7 +119,6 @@ class ArmijoLineSearch:
                 break
             elif (
                 not self.is_newton_like
-                and not self.is_newton
                 and self.stepsize / self.armijo_stepsize_initial <= 1e-8
             ):
                 error("Stepsize too small.")

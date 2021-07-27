@@ -389,11 +389,79 @@ def test_shape_barycenter_regularization():
     config.set("Regularization", "use_initial_volume", "False")
 
 
+def test_shape_barycenter_regularization_hole():
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        dir_path + "/mesh/barycenter_hole/mesh.xdmf"
+    )
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    V = FunctionSpace(mesh, "CG", 1)
+    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    u = Function(V)
+    p = Function(V)
+
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+
+    J = u * dx
+    config.set("Regularization", "factor_volume", "1e2")
+    config.set("Regularization", "use_initial_volume", "True")
+    config.set("Regularization", "factor_barycenter", "1.0")
+    config.set("Regularization", "measure_hole", "True")
+    pos_x = np.random.uniform(0.2, 0.4)
+    pos_y = np.random.uniform(-0.4, -0.2)
+    config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
+    config.set("MeshQuality", "volume_change", "10")
+    # config.set("MeshQuality", "angle_change", "0.3")
+    initial_volume = assemble(1 * dx)
+    J_vol = Constant(0) * dx
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
+
+    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+
+    config.set("Regularization", "factor_barycenter", "0.0")
+    config.set("MeshQuality", "volume_change", "inf")
+    config.set("Regularization", "factor_volume", "0.0")
+    config.set("Regularization", "use_initial_volume", "False")
+    config.set("Regularization", "measure_hole", "False")
+
+
 def test_custom_supply_shape():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     vfield = user_sop.get_vector_field()
+    I = Identity(2)
+
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
+    dJ = (
+        u * div(vfield) * dx
+        - inner((div(vfield) * I - 2 * sym(grad(vfield))) * grad(u), grad(p)) * dx
+        + div(f * vfield) * p * dx
+    )
+
+    user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+
+    user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
+
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+
+
+def test_supply_from_custom_fspace():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    VCG = VectorFunctionSpace(mesh, "CG", 1)
+    vfield = TestFunction(VCG)
     I = Identity(2)
 
     adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
@@ -436,6 +504,30 @@ def test_custom_shape_scalar_product():
     assert cashocs.verification.shape_gradient_test(sop) > 1.9
     assert cashocs.verification.shape_gradient_test(sop) > 1.9
     assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    vfield = user_sop.get_vector_field()
+    I = Identity(2)
+
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
+    dJ = (
+        u * div(vfield) * dx
+        - inner((div(vfield) * I - 2 * sym(grad(vfield))) * grad(u), grad(p)) * dx
+        + div(f * vfield) * p * dx
+    )
+
+    user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+
+    user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
+
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
 
 
 def test_scaling_shape():
@@ -732,3 +824,36 @@ def test_inhomogeneous_mu():
     config.set("ShapeGradient", "mu_fix", "0.35714285714285715")
     config.set("ShapeGradient", "mu_def", "0.35714285714285715")
     config.set("ShapeGradient", "inhomogeneous", "False")
+
+
+def test_save_pvd_files():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_results", "True")
+    config.set("Output", "save_mesh", "True")
+    config.set("Output", "save_pvd_adjoint", "True")
+    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "result_dir", dir_path + "/out")
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=8)
+    assert os.path.isdir(dir_path + "/out")
+    assert os.path.isdir(dir_path + "/out/pvd")
+    assert os.path.isfile(dir_path + "/out/history.txt")
+    assert os.path.isfile(dir_path + "/out/history.json")
+    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0000007.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000007.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient000007.vtu")
+
+    os.system(f"rm -r {dir_path}/out")
+
+    config.set("Output", "save_pvd", "False")
+    config.set("Output", "save_results", "False")
+    config.set("Output", "save_mesh", "False")
+    config.set("Output", "save_pvd_adjoint", "False")
+    config.set("Output", "save_pvd_gradient", "False")

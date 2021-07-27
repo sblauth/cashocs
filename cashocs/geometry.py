@@ -1143,10 +1143,10 @@ class _MeshHandler:
             self.temp_dict["output_dict"] = {}
             self.temp_dict["output_dict"][
                 "state_solves"
-            ] = self.form_handler.state_problem.number_of_solves
+            ] = solver.state_problem.number_of_solves
             self.temp_dict["output_dict"][
                 "adjoint_solves"
-            ] = self.form_handler.adjoint_problem.number_of_solves
+            ] = solver.adjoint_problem.number_of_solves
             self.temp_dict["output_dict"]["iterations"] = solver.iteration + 1
 
             self.temp_dict["output_dict"]["cost_function_value"] = solver.output_dict[

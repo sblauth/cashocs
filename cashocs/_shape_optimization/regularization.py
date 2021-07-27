@@ -33,22 +33,6 @@ from .._loggers import info
 from ..utils import _solve_linear_problem
 
 
-def eps(u):
-    """Computes the symmetric gradient of u
-
-    Parameters
-    ----------
-    u : dolfin.function.function.Function
-
-    Returns
-    -------
-    ufl.core.expr.Expr
-            the symmetric gradient of u
-    """
-
-    return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
-
-
 def t_grad(u, n):
     """Computes the tangential gradient of u
 
