@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda create -n fenics -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base python">=3.6" coverage
+        conda create -n fenics -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base gmsh">=4.8" python">=3.6" coverage
         conda init bash
     - name: Install cashocs
       shell: bash -l {0}

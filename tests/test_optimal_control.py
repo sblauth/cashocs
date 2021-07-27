@@ -684,6 +684,7 @@ def test_save_pvd_files():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
     config.set("Output", "save_pvd", "True")
     config.set("Output", "save_results", "True")
+    config.set("Output", "save_txt", "True")
     config.set("Output", "save_pvd_adjoint", "True")
     config.set("Output", "save_pvd_gradient", "True")
     config.set("Output", "result_dir", dir_path + "/out")
@@ -707,6 +708,7 @@ def test_save_pvd_files():
     config.set("Output", "save_pvd", "False")
     config.set("Output", "save_pvd_adjoint", "False")
     config.set("Output", "save_pvd_gradient", "False")
+    config.set("Output", "save_txt", "False")
 
 
 def test_riesz_scalar_products():
