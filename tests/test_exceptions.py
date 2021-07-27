@@ -66,28 +66,31 @@ ocp_ksp = cashocs.OptimalControlProblem(
 
 
 def test_not_converged_error():
-    with pytest.raises(NotConvergedError):
+    with pytest.raises(NotConvergedError) as e_info:
         u.vector()[:] = 0.0
         ocp._erase_pde_memory()
         ocp.solve("gd", 1e-10, 0.0, 1)
+    assert "failed to converge" in str(e_info.value)
 
     with pytest.raises(CashocsException):
         ocp.solve("gd", 1e-10, 0.0, 0)
 
 
 def test_input_error():
-    with pytest.raises(InputError):
+    with pytest.raises(InputError) as e_info:
         cashocs.regular_mesh(-1)
+    assert "Not a valid input for object" in str(e_info.value)
 
     with pytest.raises(CashocsException):
         cashocs.regular_mesh(0)
 
 
 def test_petsc_error():
-    with pytest.raises(PETScKSPError):
+    with pytest.raises(PETScKSPError) as e_info:
         u.vector()[:] = np.random.rand(V.dim())
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
+    assert "PETSc linear solver did not converge." in str(e_info.value)
 
     with pytest.raises(CashocsException):
         u.vector()[:] = np.random.rand(V.dim())
@@ -96,13 +99,14 @@ def test_petsc_error():
 
 
 def test_config_error():
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError) as e_info:
         config.set("AlgoCG", "cg_method", "nonexistent")
         config.set("OptimizationRoutine", "algorithm", "cg")
         config.set("OptimizationRoutine", "maximum_iterations", "2")
         u.vector()[:] = np.random.rand(V.dim())
         ocp_conf = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
         ocp_conf.solve(max_iter=10)
+    assert "You have an error in your config file." in str(e_info.value)
 
     with pytest.raises(CashocsException):
         ocp_conf._erase_pde_memory()

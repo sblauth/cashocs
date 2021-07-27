@@ -201,17 +201,7 @@ def damped_newton_solve(
     res = res_0
     if verbose:
         print(
-            "Newton Iteration "
-            + format(iterations, "2d")
-            + " - residual (abs):  "
-            + format(res, ".3e")
-            + " (tol = "
-            + format(atol, ".3e")
-            + ")    residual (rel): "
-            + format(res / res_0, ".3e")
-            + " (tol = "
-            + format(rtol, ".3e")
-            + ")"
+            f"Newton Iteration {iterations:2d} - residual (abs):  {res:.3e} (tol = {atol:.3e})    residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
         )
 
     if convergence_type == "abs":
@@ -278,26 +268,12 @@ def damped_newton_solve(
         res = residual.norm(norm_type)
         if verbose:
             print(
-                "Newton Iteration "
-                + format(iterations, "2d")
-                + " - residual (abs):  "
-                + format(res, ".3e")
-                + " (tol = "
-                + format(atol, ".3e")
-                + ")    residual (rel): "
-                + format(res / res_0, ".3e")
-                + " (tol = "
-                + format(rtol, ".3e")
-                + ")"
+                f"Newton Iteration {iterations:2d} - residual (abs):  {res:.3e} (tol = {atol:.3e})    residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
             )
 
         if res < tol:
             if verbose:
-                print(
-                    "\nNewton Solver converged after "
-                    + str(iterations)
-                    + " iterations.\n"
-                )
+                print(f"\nNewton Solver converged after {iterations:d} iterations.\n")
             break
 
     return u

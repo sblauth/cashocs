@@ -82,7 +82,7 @@ def convert(argv=None):
         xdmf_mesh = meshio.Mesh(
             points=points, cells={"triangle": cells_dict["triangle"]}
         )
-        meshio.write(ostring + ".xdmf", xdmf_mesh)
+        meshio.write(f"{ostring}.xdmf", xdmf_mesh)
 
         if "gmsh:physical" in cell_data_dict.keys():
             if "triangle" in cell_data_dict["gmsh:physical"].keys():
@@ -93,7 +93,7 @@ def convert(argv=None):
                         "subdomains": [cell_data_dict["gmsh:physical"]["triangle"]]
                     },
                 )
-                meshio.write(ostring + "_subdomains.xdmf", subdomains)
+                meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
 
             if "line" in cell_data_dict["gmsh:physical"].keys():
                 xdmf_boundaries = meshio.Mesh(
@@ -101,11 +101,11 @@ def convert(argv=None):
                     cells={"line": cells_dict["line"]},
                     cell_data={"boundaries": [cell_data_dict["gmsh:physical"]["line"]]},
                 )
-                meshio.write(ostring + "_boundaries.xdmf", xdmf_boundaries)
+                meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
 
     elif meshdim == 3:
         xdmf_mesh = meshio.Mesh(points=points, cells={"tetra": cells_dict["tetra"]})
-        meshio.write(ostring + ".xdmf", xdmf_mesh)
+        meshio.write(f"{ostring}.xdmf", xdmf_mesh)
 
         if "gmsh:physical" in cell_data_dict.keys():
             if "tetra" in cell_data_dict["gmsh:physical"].keys():
@@ -116,7 +116,7 @@ def convert(argv=None):
                         "subdomains": [cell_data_dict["gmsh:physical"]["tetra"]]
                     },
                 )
-                meshio.write(ostring + "_subdomains.xdmf", subdomains)
+                meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
 
             if "triangle" in cell_data_dict["gmsh:physical"].keys():
                 xdmf_boundaries = meshio.Mesh(
@@ -126,7 +126,7 @@ def convert(argv=None):
                         "boundaries": [cell_data_dict["gmsh:physical"]["triangle"]]
                     },
                 )
-                meshio.write(ostring + "_boundaries.xdmf", xdmf_boundaries)
+                meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
 
 
 if __name__ == "__main__":

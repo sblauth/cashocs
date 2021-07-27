@@ -76,6 +76,50 @@ def test_mesh_import():
     os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
 
 
+def test_mesh_import_from_config():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.system(
+        "cashocs-convert " + dir_path + "/mesh/mesh.msh " + dir_path + "/mesh/mesh.xdmf"
+    )
+    cfg = cashocs.load_config(dir_path + "/config_sop.ini")
+    cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(cfg)
+
+    gmsh_coords = np.array(
+        [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [0.499999999998694, 0],
+            [1, 0.499999999998694],
+            [0.5000000000020591, 1],
+            [0, 0.5000000000020591],
+            [0.2500000000010297, 0.7500000000010296],
+            [0.3749999970924328, 0.3750000029075671],
+            [0.7187499979760099, 0.2812500030636815],
+            [0.6542968741702071, 0.6542968818888233],
+        ]
+    )
+
+    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
+
+    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+
+    assert np.allclose(mesh.coordinates(), gmsh_coords)
+
+    os.system("rm " + dir_path + "/mesh/mesh.xdmf")
+    os.system("rm " + dir_path + "/mesh/mesh.h5")
+    os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")
+    os.system("rm " + dir_path + "/mesh/mesh_subdomains.h5")
+    os.system("rm " + dir_path + "/mesh/mesh_boundaries.xdmf")
+    os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
+
+
 def test_regular_mesh():
     lens = np.random.uniform(0.5, 2, 2)
     r_mesh, _, _, _, _, _ = cashocs.regular_mesh(2, lens[0], lens[1])

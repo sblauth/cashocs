@@ -197,7 +197,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             else:
                 self.temp_dir = sys.argv[-1]
                 self.__change_except_hook()
-                with open(self.temp_dir + "/temp_dict.json", "r") as file:
+                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     self.temp_dict = json.load(file)
 
         ### boundaries
@@ -425,8 +425,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 "An exception was raised by cashocs, deleting the created temporary files."
             )
             if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                os.system("rm -r " + self.temp_dir)
-                os.system("rm -r " + self.mesh_handler.remesh_directory)
+                os.system(f"rm -r {self.temp_dir}")
+                os.system(f"rm -r {self.mesh_handler.remesh_directory}")
             sys.__excepthook__(exctype, value, traceback)
 
         sys.excepthook = custom_except_hook

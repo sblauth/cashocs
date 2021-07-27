@@ -105,7 +105,7 @@ def import_mesh(arg):
                 mesh_file = arg.get("Mesh", "mesh_file")
             else:
                 temp_dir = sys.argv[-1]
-                with open(temp_dir + "/temp_dict.json", "r") as file:
+                with open(f"{temp_dir}/temp_dict.json", "r") as file:
                     temp_dict = json.load(file)
                 mesh_file = temp_dict["mesh_file"]
 
@@ -137,15 +137,15 @@ def import_mesh(arg):
         "size_t", mesh, mesh.geometric_dimension() - 1
     )
 
-    if os.path.isfile(file_string + "_subdomains.xdmf"):
+    if os.path.isfile(f"{file_string}_subdomains.xdmf"):
         xdmf_subdomains = fenics.XDMFFile(
-            mesh.mpi_comm(), file_string + "_subdomains.xdmf"
+            mesh.mpi_comm(), f"{file_string}_subdomains.xdmf"
         )
         xdmf_subdomains.read(subdomains_mvc, "subdomains")
         xdmf_subdomains.close()
-    if os.path.isfile(file_string + "_boundaries.xdmf"):
+    if os.path.isfile(f"{file_string}_boundaries.xdmf"):
         xdmf_boundaries = fenics.XDMFFile(
-            mesh.mpi_comm(), file_string + "_boundaries.xdmf"
+            mesh.mpi_comm(), f"{file_string}_boundaries.xdmf"
         )
         xdmf_boundaries.read(boundaries_mvc, "boundaries")
         xdmf_boundaries.close()
@@ -158,19 +158,9 @@ def import_mesh(arg):
     dS = fenics.Measure("dS", domain=mesh, subdomain_data=boundaries)
 
     end_time = time.time()
+    info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")
     info(
-        "Done importing mesh. Elapsed time: "
-        + format(end_time - start_time, ".2f")
-        + " s"
-    )
-    info(
-        "Mesh contains "
-        + format(mesh.num_vertices(), ",")
-        + " vertices and "
-        + format(mesh.num_cells(), ",")
-        + " cells of type "
-        + mesh.ufl_cell().cellname()
-        + "\n"
+        f"Mesh contains {mesh.num_vertices():,} vertices and {mesh.num_cells():,} cells of type {mesh.ufl_cell().cellname()}.\n"
     )
 
     # Add an attribute to the mesh to show with what procedure it was generated
@@ -242,11 +232,7 @@ def import_mesh(arg):
                     "cashocs.geometry.import_mesh",
                     "arg",
                     "The quality of the mesh file you have specified is not sufficient for evaluating the cost functional.\n"
-                    "It currently is "
-                    + format(current_mesh_quality, ".3e")
-                    + " but has to be at least "
-                    + format(mesh_quality_tol_lower, ".3e")
-                    + ".",
+                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
@@ -254,11 +240,7 @@ def import_mesh(arg):
                     "cashocs.geometry.import_mesh",
                     "arg",
                     "The quality of the mesh file you have specified is not sufficient for computing the shape gradient.\n "
-                    "It currently is "
-                    + format(current_mesh_quality, ".3e")
-                    + " but has to be at least "
-                    + format(mesh_quality_tol_upper, ".3e")
-                    + ".",
+                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
         else:
@@ -268,11 +250,7 @@ def import_mesh(arg):
                     "arg",
                     "Remeshing failed.\n"
                     "The quality of the mesh file generated through remeshing is not sufficient for evaluating the cost functional.\n"
-                    "It currently is "
-                    + format(current_mesh_quality, ".3e")
-                    + " but has to be at least "
-                    + format(mesh_quality_tol_lower, ".3e")
-                    + ".",
+                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
@@ -281,11 +259,7 @@ def import_mesh(arg):
                     "arg",
                     "Remeshing failed.\n"
                     "The quality of the mesh file generated through remeshing is not sufficient for computing the shape gradient.\n "
-                    "It currently is "
-                    + format(current_mesh_quality, ".3e")
-                    + " but has to be at least "
-                    + format(mesh_quality_tol_upper, ".3e")
-                    + ".",
+                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_upper:.3e}.",
                 )
 
     return mesh, subdomains, boundaries, dx, ds, dS
@@ -709,7 +683,7 @@ class _MeshHandler:
                 self.remesh_directory = self.temp_dict["remesh_directory"]
             if not os.path.isdir(os.path.realpath(self.remesh_directory)):
                 os.mkdir(self.remesh_directory)
-            self.remesh_geo_file = self.remesh_directory + "/remesh.geo"
+            self.remesh_geo_file = f"{self.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
             self.gmsh_file = self.config.get("Mesh", "gmsh_file")
@@ -717,12 +691,9 @@ class _MeshHandler:
         # create a copy of the initial mesh file
         if self.do_remesh and self.remesh_counter == 0:
             self.gmsh_file_init = (
-                self.remesh_directory
-                + "/mesh_"
-                + format(self.remesh_counter, "d")
-                + ".msh"
+                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
             )
-            copy_mesh = "cp " + self.gmsh_file + " " + self.gmsh_file_init
+            copy_mesh = f"cp {self.gmsh_file} {self.gmsh_file_init}"
             subprocess.run(copy_mesh, shell=True, check=True)
             self.gmsh_file = self.gmsh_file_init
 
@@ -1027,7 +998,7 @@ class _MeshHandler:
         with open(self.remesh_geo_file, "w") as file:
             temp_name = os.path.split(input_mesh_file)[1]
 
-            file.write("Merge '" + temp_name + "';\n")
+            file.write(f"Merge '{temp_name}';\n")
             file.write("CreateGeometry;\n")
             file.write("\n")
 
@@ -1069,7 +1040,7 @@ class _MeshHandler:
                 "Format for mesh_file is wrong, has to end in .msh",
             )
 
-        temp_location = mesh_file[:-4] + "_temp.msh"
+        temp_location = f"{mesh_file[:-4]}_temp.msh"
 
         with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
 
@@ -1088,7 +1059,7 @@ class _MeshHandler:
                 if line == "$EndParametrizations\n":
                     parametrizations_section = False
 
-        rename_command = "mv " + temp_location + " " + mesh_file
+        rename_command = f"mv {temp_location} {mesh_file}"
         subprocess.run(rename_command, shell=True, check=True)
 
     def clean_previous_gmsh_files(self):
@@ -1099,85 +1070,54 @@ class _MeshHandler:
         None
         """
 
-        gmsh_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + ".msh"
-        )
+        gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file):
-            rm_command = "rm " + gmsh_file
+            rm_command = f"rm {gmsh_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
         gmsh_pre_remesh_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + "_pre_remesh"
-            + ".msh"
+            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if os.path.isfile(gmsh_pre_remesh_file):
-            rm_command = "rm " + gmsh_pre_remesh_file
+            rm_command = f"rm {gmsh_pre_remesh_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
-        mesh_h5_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + ".h5"
-        )
+        mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         if os.path.isfile(mesh_h5_file):
-            rm_command = "rm " + mesh_h5_file
+            rm_command = f"rm {mesh_h5_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
-        mesh_xdmf_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + ".xdmf"
-        )
+        mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
         if os.path.isfile(mesh_xdmf_file):
-            rm_command = "rm " + mesh_xdmf_file
+            rm_command = f"rm {mesh_xdmf_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
         boundaries_h5_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + "_boundaries.h5"
+            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if os.path.isfile(boundaries_h5_file):
-            rm_command = "rm " + boundaries_h5_file
+            rm_command = f"rm {boundaries_h5_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
         boundaries_xdmf_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + "_boundaries.xdmf"
+            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if os.path.isfile(boundaries_xdmf_file):
-            rm_command = "rm " + boundaries_xdmf_file
+            rm_command = f"rm {boundaries_xdmf_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
         subdomains_h5_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + "_subdomains.h5"
+            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if os.path.isfile(subdomains_h5_file):
-            rm_command = "rm " + subdomains_h5_file
+            rm_command = f"rm {subdomains_h5_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
         subdomains_xdmf_file = (
-            self.remesh_directory
-            + "/mesh_"
-            + format(self.remesh_counter - 1, "d")
-            + "_subdomains.xdmf"
+            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if os.path.isfile(subdomains_xdmf_file):
-            rm_command = "rm " + subdomains_xdmf_file
+            rm_command = f"rm {subdomains_xdmf_file}"
             subprocess.run(rm_command, shell=True, check=True)
 
     def remesh(self, solver):
@@ -1194,11 +1134,7 @@ class _MeshHandler:
         if self.do_remesh:
             self.remesh_counter += 1
             self.temp_file = (
-                self.remesh_directory
-                + "/mesh_"
-                + format(self.remesh_counter, "d")
-                + "_pre_remesh"
-                + ".msh"
+                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
             write_out_mesh(self.mesh, self.gmsh_file, self.temp_file)
             self.__generate_remesh_geo(self.temp_file)
@@ -1229,18 +1165,10 @@ class _MeshHandler:
             dim = self.mesh.geometric_dimension()
 
             self.new_gmsh_file = (
-                self.remesh_directory
-                + "/mesh_"
-                + format(self.remesh_counter, "d")
-                + ".msh"
+                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
             )
             gmsh_command = (
-                "gmsh "
-                + self.remesh_geo_file
-                + " -"
-                + str(int(dim))
-                + " -o "
-                + self.new_gmsh_file
+                f"gmsh {self.remesh_geo_file} -{int(dim):d} -o {self.new_gmsh_file}"
             )
             if not self.config.getboolean("Mesh", "show_gmsh_output", fallback=False):
                 subprocess.run(
@@ -1255,13 +1183,10 @@ class _MeshHandler:
             self.temp_dict["remesh_directory"] = self.remesh_directory
 
             self.new_xdmf_file = (
-                self.remesh_directory
-                + "/mesh_"
-                + format(self.remesh_counter, "d")
-                + ".xdmf"
+                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
             )
             convert_command = (
-                "cashocs-convert " + self.new_gmsh_file + " " + self.new_xdmf_file
+                f"cashocs-convert {self.new_gmsh_file} {self.new_xdmf_file}"
             )
             subprocess.run(convert_command, shell=True, check=True)
 
@@ -1279,7 +1204,7 @@ class _MeshHandler:
 
             self.temp_dir = self.temp_dict["temp_dir"]
 
-            with open(self.temp_dir + "/temp_dict.json", "w") as file:
+            with open(f"{self.temp_dir}/temp_dict.json", "w") as file:
                 json.dump(self.temp_dict, file)
 
             if not ("_cashocs_remesh_flag" in sys.argv):

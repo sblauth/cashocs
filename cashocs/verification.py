@@ -195,6 +195,6 @@ def compute_convergence_rates(epsilons, residuals, verbose=True):
         )
 
     if verbose:
-        print("Taylor test convergence rate: " + str(rates))
+        print(f"Taylor test convergence rate: {rates}")
 
     return rates

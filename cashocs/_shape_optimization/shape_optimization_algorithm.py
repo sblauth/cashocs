@@ -128,46 +128,25 @@ class ShapeOptimizationAlgorithm:
                         if self.mesh_handler.do_remesh:
                             self.state_pvd_list[i].append(
                                 fenics.File(
-                                    self.result_dir
-                                    + "/pvd/remesh_"
-                                    + format(
-                                        self.temp_dict.get("remesh_counter", 0), "d"
-                                    )
-                                    + "_state_"
-                                    + str(i)
-                                    + "_"
-                                    + str(j)
-                                    + ".pvd"
+                                    f"{self.result_dir}/pvd/remesh_{self.temp_dict.get('remesh_counter', 0):d}_state_{i:d}_{j:d}.pvd"
                                 )
                             )
                         else:
                             self.state_pvd_list[i].append(
                                 fenics.File(
-                                    self.result_dir
-                                    + "/pvd/state_"
-                                    + str(i)
-                                    + "_"
-                                    + str(j)
-                                    + ".pvd"
+                                    f"{self.result_dir}/pvd/state_{i:d}_{j:d}.pvd"
                                 )
                             )
                 else:
                     if self.mesh_handler.do_remesh:
                         self.state_pvd_list.append(
                             fenics.File(
-                                self.result_dir
-                                + "/pvd/remesh_"
-                                + format(self.temp_dict.get("remesh_counter", 0), "d")
-                                + "_state_"
-                                + str(i)
-                                + ".pvd"
+                                f"{self.result_dir}/pvd/remesh_{self.temp_dict.get('remesh_counter', 0):d}_state_{i:d}.pvd"
                             )
                         )
                     else:
                         self.state_pvd_list.append(
-                            fenics.File(
-                                self.result_dir + "/pvd/state_" + str(i) + ".pvd"
-                            )
+                            fenics.File(f"{self.result_dir}/pvd/state_{i:d}.pvd")
                         )
 
         if self.save_pvd_adjoint:
@@ -181,60 +160,36 @@ class ShapeOptimizationAlgorithm:
                         if self.mesh_handler.do_remesh:
                             self.adjoint_pvd_list[i].append(
                                 fenics.File(
-                                    self.result_dir
-                                    + "/pvd/remesh_"
-                                    + format(
-                                        self.temp_dict.get("remesh_counter", 0), "d"
-                                    )
-                                    + "_adjoint_"
-                                    + str(i)
-                                    + "_"
-                                    + str(j)
-                                    + ".pvd"
+                                    f"{self.result_dir}/pvd/remesh_{self.temp_dict.get('remesh_counter', 0):d}_adjoint_{i:d}_{j:d}.pvd"
                                 )
                             )
                         else:
                             self.adjoint_pvd_list[i].append(
                                 fenics.File(
-                                    self.result_dir
-                                    + "/pvd/adjoint_"
-                                    + str(i)
-                                    + "_"
-                                    + str(j)
-                                    + ".pvd"
+                                    f"{self.result_dir}/pvd/adjoint_{i:d}_{j:d}.pvd"
                                 )
                             )
                 else:
                     if self.mesh_handler.do_remesh:
                         self.adjoint_pvd_list.append(
                             fenics.File(
-                                self.result_dir
-                                + "/pvd/remesh_"
-                                + format(self.temp_dict.get("remesh_counter", 0), "d")
-                                + "_adjoint_"
-                                + str(i)
-                                + ".pvd"
+                                f"{self.result_dir}/pvd/remesh_{self.temp_dict.get('remesh_counter', 0):d}_adjoint_{i:d}.pvd"
                             )
                         )
                     else:
                         self.adjoint_pvd_list.append(
-                            fenics.File(
-                                self.result_dir + "/pvd/adjoint_" + str(i) + ".pvd"
-                            )
+                            fenics.File(f"{self.result_dir}/pvd/adjoint_{i:d}.pvd")
                         )
 
         if self.save_pvd_gradient:
             if self.mesh_handler.do_remesh:
                 self.shape_gradient_pvd_file = fenics.File(
-                    self.result_dir
-                    + "/pvd/remesh_"
-                    + format(self.temp_dict.get("remesh_counter", 0), "d")
-                    + "_shape_gradient.pvd"
+                    f"{self.result_dir}/pvd/remesh_{self.temp_dict.get('remesh_counter', 0):d}_shape_gradient.pvd"
                 )
 
             else:
                 self.shape_gradient_pvd_file = fenics.File(
-                    self.result_dir + "/pvd/shape_gradient.pvd"
+                    f"{self.result_dir}/pvd/shape_gradient.pvd"
                 )
 
     def print_results(self):
@@ -247,35 +202,14 @@ class ShapeOptimizationAlgorithm:
 
         if self.iteration == 0:
             output = (
-                "Iteration "
-                + format(self.iteration, "4d")
-                + " - Objective value:  "
-                + format(self.objective_value, ".3e")
-                + "    Gradient norm:  "
-                + format(self.gradient_norm_initial, ".3e")
-                + " (abs)    Mesh Quality: "
-                + format(self.mesh_handler.current_mesh_quality, ".2f")
-                + " ("
-                + str(self.mesh_handler.mesh_quality_measure)
-                + ")"
-                + " \n "
+                f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.gradient_norm_initial:.3e} (abs)"
+                + f"Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})\n"
             )
 
         else:
             output = (
-                "Iteration "
-                + format(self.iteration, "4d")
-                + " - Objective value:  "
-                + format(self.objective_value, ".3e")
-                + "    Gradient norm:  "
-                + format(self.relative_norm, ".3e")
-                + " (rel)    Mesh Quality: "
-                + format(self.mesh_handler.current_mesh_quality, ".2f")
-                + " ("
-                + str(self.mesh_handler.mesh_quality_measure)
-                + ")"
-                + "    Step size:  "
-                + format(self.stepsize, ".3e")
+                f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.relative_norm:.3e} (rel)"
+                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})    Step size:  {self.stepsize:.3e}"
             )
 
         self.output_dict["cost_function_value"].append(self.objective_value)
@@ -321,11 +255,11 @@ class ShapeOptimizationAlgorithm:
 
         if self.save_txt:
             if self.iteration == 0:
-                with open(self.result_dir + "/history.txt", "w") as file:
-                    file.write(output + "\n")
+                with open(f"{self.result_dir}/history.txt", "w") as file:
+                    file.write(f"{output}\n")
             else:
-                with open(self.result_dir + "/history.txt", "a") as file:
-                    file.write(output + "\n")
+                with open(f"{self.result_dir}/history.txt", "a") as file:
+                    file.write(f"{output}\n")
 
     def print_summary(self):
         """Prints a summary of the (successful) optimization to console
@@ -335,42 +269,16 @@ class ShapeOptimizationAlgorithm:
         None
         """
 
+        output = (
+            f"\nStatistics --- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)"
+            + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves}\n"
+        )
         if self.verbose:
-            print(
-                "\nStatistics --- Total iterations: "
-                + format(self.iteration, "4d")
-                + " --- Final objective value:  "
-                + format(self.objective_value, ".3e")
-                + " --- Final gradient norm:  "
-                + format(self.relative_norm, ".3e")
-                + " (rel)"
-            )
-            print(
-                "           --- State equations solved: "
-                + str(self.state_problem.number_of_solves)
-                + " --- Adjoint equations solved: "
-                + str(self.adjoint_problem.number_of_solves)
-                + "\n"
-            )
+            print(output)
 
         if self.save_txt:
-            with open(self.result_dir + "/history.txt", "a") as file:
-                file.write(
-                    "\nStatistics --- Total iterations: "
-                    + format(self.iteration, "4d")
-                    + " --- Final objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + " --- Final gradient norm:  "
-                    + format(self.relative_norm, ".3e")
-                    + " (rel)\n"
-                )
-                file.write(
-                    "           --- State equations solved: "
-                    + str(self.state_problem.number_of_solves)
-                    + " --- Adjoint equations solved: "
-                    + str(self.adjoint_problem.number_of_solves)
-                    + "\n"
-                )
+            with open(f"{self.result_dir}/history.txt", "a") as file:
+                file.write(output)
 
     def finalize(self):
         """Saves the history of the optimization algorithm
@@ -385,20 +293,20 @@ class ShapeOptimizationAlgorithm:
         self.output_dict["adjoint_solves"] = self.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = self.iteration
         if self.save_results:
-            with open(self.result_dir + "/history.json", "w") as file:
+            with open(f"{self.result_dir}/history.json", "w") as file:
                 json.dump(self.output_dict, file)
 
         if self.mesh_handler.save_optimized_mesh:
             write_out_mesh(
                 self.mesh_handler.mesh,
                 self.mesh_handler.gmsh_file,
-                self.result_dir + "/optimized_mesh.msh",
+                f"{self.result_dir}/optimized_mesh.msh",
             )
 
         if self.mesh_handler.do_remesh:
             if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                os.system("rm -r " + self.temp_dir)
-                os.system("rm -r " + self.mesh_handler.remesh_directory)
+                os.system(f"rm -r {self.temp_dir}")
+                os.system(f"rm -r {self.mesh_handler.remesh_directory}")
 
     def run(self):
         """Blueprint run method, overriden by the actual solution algorithms

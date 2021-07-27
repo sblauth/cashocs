@@ -734,7 +734,7 @@ class Regularization:
             else:
 
                 temp_dir = sys.argv[-1]
-                with open(temp_dir + "/temp_dict.json", "r") as file:
+                with open(f"{temp_dir}/temp_dict.json", "r") as file:
                     temp_dict = json.load(file)
 
                 self.mu_volume = temp_dict["Regularization"]["mu_volume"]

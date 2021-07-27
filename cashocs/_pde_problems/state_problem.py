@@ -165,12 +165,7 @@ class StateProblem:
                         res_0 = res
                     if self.picard_verbose:
                         print(
-                            "Iteration "
-                            + str(i)
-                            + ": ||res|| (abs): "
-                            + format(res, ".3e")
-                            + "   ||res|| (rel): "
-                            + format(res / res_0, ".3e")
+                            f"Iteration {i:d}: ||res|| (abs): {res:.3e}   ||res|| (rel): {res/res_0:.3e}"
                         )
                     if res / res_0 < self.rtol or res < self.atol:
                         break

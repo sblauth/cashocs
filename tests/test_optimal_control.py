@@ -101,6 +101,7 @@ def test_control_gradient():
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, [u]) > 1.9
 
 
 def test_control_gd():
@@ -334,12 +335,28 @@ def test_control_pdas_bfgs_cc():
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
-def test_control_pdas_newton():
+def test_control_pdas_newton_cr():
+    config.set("AlgoTNM", "inner_newton", "cr")
     config.set("AlgoPDAS", "inner_pdas", "newton")
     config.set("OptimizationRoutine", "soft_exit", "True")
     u.vector()[:] = 0.0
     ocp_cc._erase_pde_memory()
     ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=10)
+
+    config.set("OptimizationRoutine", "soft_exit", "False")
+
+    assert ocp_cc.solver.converged
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+
+
+def test_control_pdas_newton_cg():
+    config.set("AlgoTNM", "inner_newton", "cg")
+    config.set("AlgoPDAS", "inner_pdas", "newton")
+    config.set("OptimizationRoutine", "soft_exit", "True")
+    u.vector()[:] = 0.0
+    ocp_cc._erase_pde_memory()
+    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=16)
 
     config.set("OptimizationRoutine", "soft_exit", "False")
 
@@ -547,3 +564,52 @@ def test_scaling_all():
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
     assert cashocs.verification.control_gradient_test(ocp) > 1.9
+
+
+def test_different_spaces():
+    W = FunctionSpace(mesh, "DG", 1)
+
+    y = Function(V)
+    p = Function(W)
+    u = Function(V)
+
+    n = FacetNormal(mesh)
+    h = CellDiameter(mesh)
+    h_avg = (h("+") + h("-")) / 2
+    flux = 1 / 2 * (inner(grad(u)("+") + grad(u)("-"), n("+")))
+    alpha = 1e3
+    gamma = 1e3
+    e = (
+        dot(grad(p), grad(y)) * dx
+        - dot(avg(grad(p)), jump(y, n)) * dS
+        - dot(jump(p, n), avg(grad(y))) * dS
+        + Constant(alpha) / h_avg * dot(jump(p, n), jump(y, n)) * dS
+        - dot(grad(p), y * n) * ds
+        - dot(p * n, grad(y)) * ds
+        + (Constant(gamma) / h) * p * y * ds
+        - u * p * dx
+    )
+
+    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    lambd = 1e-6
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * lambd) * u * u * dx
+
+    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+    ocp.solve(algorithm="bfgs")
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_nonlinear_state_eq():
+    initial_guess = Function(V)
+    F = inner(grad(y), grad(p)) * dx + pow(y, 3) * p * dx - u * p * dx
+    config.set("StateSystem", "is_linear", "False")
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, initial_guess=[initial_guess]
+    )
+    cashocs.verification.control_gradient_test(ocp)
+    cashocs.verification.control_gradient_test(ocp)
+    cashocs.verification.control_gradient_test(ocp)
+    config.set("StateSystem", "is_linear", "True")

@@ -128,18 +128,11 @@ class OptimizationAlgorithm:
                     self.state_pvd_list.append([])
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i].append(
-                            fenics.File(
-                                self.result_dir
-                                + "/pvd/state_"
-                                + str(i)
-                                + "_"
-                                + str(j)
-                                + ".pvd"
-                            )
+                            fenics.File(f"{self.result_dir}/pvd/state_{i:d}_{j:d}.pvd")
                         )
                 else:
                     self.state_pvd_list.append(
-                        fenics.File(self.result_dir + "/pvd/state_" + str(i) + ".pvd")
+                        fenics.File(f"{self.result_dir}/pvd/state_{i:d}.pvd")
                     )
 
         if self.save_pvd_adjoint:
@@ -152,17 +145,12 @@ class OptimizationAlgorithm:
                     ):
                         self.adjoint_pvd_list[i].append(
                             fenics.File(
-                                self.result_dir
-                                + "/pvd/adjoint_"
-                                + str(i)
-                                + "_"
-                                + str(j)
-                                + ".pvd"
+                                f"{self.result_dir}/pvd/adjoint_{i:d}_{j:d}.pvd"
                             )
                         )
                 else:
                     self.adjoint_pvd_list.append(
-                        fenics.File(self.result_dir + "/pvd/adjoint_" + str(i) + ".pvd")
+                        fenics.File(f"{self.result_dir}/pvd/adjoint_{i:d}.pvd")
                     )
 
         if self.save_pvd_gradient:
@@ -175,19 +163,12 @@ class OptimizationAlgorithm:
                     ):
                         self.gradient_pvd_list[i].append(
                             fenics.File(
-                                self.result_dir
-                                + "/pvd/gradient_"
-                                + str(i)
-                                + "_"
-                                + str(j)
-                                + ".pvd"
+                                f"{self.result_dir}/pvd/gradient_{i:d}_{j:d}.pvd"
                             )
                         )
                 else:
                     self.gradient_pvd_list.append(
-                        fenics.File(
-                            self.result_dir + "/pvd/gradient_" + str(i) + ".pvd"
-                        )
+                        fenics.File(f"{self.result_dir}/pvd/gradient_{i:d}.pvd")
                     )
 
     def _stationary_measure_squared(self):
@@ -228,49 +209,15 @@ class OptimizationAlgorithm:
         """
         if not np.any(self.require_control_constraints):
             if self.iteration == 0:
-                output = (
-                    "Iteration "
-                    + format(self.iteration, "4d")
-                    + " - Objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + "    Gradient norm:  "
-                    + format(self.gradient_norm_initial, ".3e")
-                    + " (abs) \n "
-                )
+                output = f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.gradient_norm_initial:.3e} (abs) \n"
             else:
-                output = (
-                    "Iteration "
-                    + format(self.iteration, "4d")
-                    + " - Objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + "    Gradient norm:  "
-                    + format(self.relative_norm, ".3e")
-                    + " (rel)    Step size:  "
-                    + format(self.stepsize, ".3e")
-                )
+                output = f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.relative_norm:.3e} (rel)    Step size:  {self.stepsize:.3e}"
 
         else:
             if self.iteration == 0:
-                output = (
-                    "Iteration "
-                    + format(self.iteration, "4d")
-                    + " - Objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + "    Stationarity measure:  "
-                    + format(self.gradient_norm_initial, ".3e")
-                    + " (abs) \n "
-                )
+                output = f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Stationarity measure:  {self.gradient_norm_initial:.3e} (abs) \n"
             else:
-                output = (
-                    "Iteration "
-                    + format(self.iteration, "4d")
-                    + " - Objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + "    Stationarity measure:  "
-                    + format(self.relative_norm, ".3e")
-                    + " (rel)    Step size:  "
-                    + format(self.stepsize, ".3e")
-                )
+                output = f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Stationarity measure:  {self.relative_norm:.3e} (rel)    Step size:  {self.stepsize:.3e}"
 
         self.output_dict["cost_function_value"].append(self.objective_value)
         self.output_dict["gradient_norm"].append(self.relative_norm)
@@ -319,11 +266,11 @@ class OptimizationAlgorithm:
 
         if self.save_txt:
             if self.iteration == 0:
-                with open(self.result_dir + "/history.txt", "w") as file:
-                    file.write(output + "\n")
+                with open(f"{self.result_dir}/history.txt", "w") as file:
+                    file.write(f"{output}\n")
             else:
-                with open(self.result_dir + "/history.txt", "a") as file:
-                    file.write(output + "\n")
+                with open(f"{self.result_dir}/history.txt", "a") as file:
+                    file.write(f"{output}\n")
 
     def print_summary(self):
         """Prints a summary of the optimization to console.
@@ -335,39 +282,15 @@ class OptimizationAlgorithm:
 
         if self.verbose:
             print(
-                "\nStatistics --- Total iterations: "
-                + format(self.iteration, "4d")
-                + " --- Final objective value:  "
-                + format(self.objective_value, ".3e")
-                + " --- Final gradient norm:  "
-                + format(self.relative_norm, ".3e")
-                + " (rel)"
-            )
-            print(
-                "           --- State equations solved: "
-                + str(self.state_problem.number_of_solves)
-                + " --- Adjoint equations solved: "
-                + str(self.adjoint_problem.number_of_solves)
-                + "\n"
+                f"\nStatistics -- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
+                + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves:d}\n"
             )
 
         if self.save_txt:
-            with open(self.result_dir + "/history.txt", "a") as file:
+            with open(f"{self.result_dir}/history.txt", "a") as file:
                 file.write(
-                    "\nStatistics --- Total iterations: "
-                    + format(self.iteration, "4d")
-                    + " --- Final objective value:  "
-                    + format(self.objective_value, ".3e")
-                    + " --- Final gradient norm:  "
-                    + format(self.relative_norm, ".3e")
-                    + " (rel)\n"
-                )
-                file.write(
-                    "           --- State equations solved: "
-                    + str(self.state_problem.number_of_solves)
-                    + " --- Adjoint equations solved: "
-                    + str(self.adjoint_problem.number_of_solves)
-                    + "\n"
+                    f"\nStatistics -- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
+                    + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves:d}\n"
                 )
 
     def finalize(self):
@@ -386,7 +309,7 @@ class OptimizationAlgorithm:
         self.output_dict["adjoint_solves"] = self.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = self.iteration
         if self.save_results:
-            with open(self.result_dir + "/history.json", "w") as file:
+            with open(f"{self.result_dir}/history.json", "w") as file:
                 json.dump(self.output_dict, file)
 
     def run(self):

@@ -209,12 +209,7 @@ class BaseHessianProblem:
 
                 if self.picard_verbose:
                     print(
-                        "Picard Sensitivity 1 Iteration "
-                        + str(i)
-                        + ": ||res|| (abs): "
-                        + format(res, ".3e")
-                        + "   ||res|| (rel): "
-                        + format(res / res_0, ".3e")
+                        f"Picard Sensitivity 1 Iteration {i:d}: ||res|| (abs) = {res:.3e}   ||res|| (rel) = {res/res_0:.3e}"
                     )
 
                 if res / res_0 < self.rtol or res < self.atol:
@@ -263,12 +258,7 @@ class BaseHessianProblem:
 
                 if self.picard_verbose:
                     print(
-                        "Picard Sensitivity 2 Iteration "
-                        + str(i)
-                        + ": ||res|| (abs): "
-                        + format(res, ".3e")
-                        + "   ||res|| (rel): "
-                        + format(res / res_0, ".3e")
+                        f"Picard Sensitivity 2 Iteration {i:d}: ||res|| (abs) = {res:.3e}   ||res|| (rel) = {res/res_0:.3e}"
                     )
 
                 if res / res_0 < self.rtol or res < self.atol:
@@ -410,11 +400,7 @@ class HessianProblem(BaseHessianProblem):
 
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
-            debug(
-                "Residual of the CG method: "
-                + format(self.eps / self.eps_0, ".3e")
-                + " (relative)"
-            )
+            debug(f"Residual of the CG method: {self.eps/self.eps_0:.3e} (relative)")
             if self.eps / self.eps_0 < self.inner_newton_tolerance:
                 break
 
@@ -468,11 +454,7 @@ class HessianProblem(BaseHessianProblem):
             self.eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            debug(
-                "Residual of the CR method: "
-                + format(self.eps / self.eps_0, ".3e")
-                + " (relative)"
-            )
+            debug(f"Residual of the CR method: {self.eps/self.eps_0:.3e} (relative)")
             if (
                 self.eps / self.eps_0 < self.inner_newton_tolerance
                 or i == self.max_it_inner_newton - 1
@@ -570,11 +552,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
-            debug(
-                "Residual of the CG method: "
-                + format(self.eps / self.eps_0, ".3e")
-                + " (relative)"
-            )
+            debug(f"Residual of the CG method: {self.eps/self.eps_0:.3e} (relative)")
             if self.eps / self.eps_0 < self.inner_newton_tolerance:
                 break
 
@@ -614,11 +592,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            debug(
-                "Residual of the CR method: "
-                + format(self.eps / self.eps_0, ".3e")
-                + " (relative)"
-            )
+            debug(f"Residual of the CR method: {self.eps/self.eps_0:.3e} (relative)")
             if (
                 self.eps / self.eps_0 < self.inner_newton_tolerance
                 or i == self.max_it_inner_newton - 1

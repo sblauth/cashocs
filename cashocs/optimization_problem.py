@@ -328,12 +328,19 @@ class OptimizationProblem:
             self.config.add_section("OptimizationRoutine")
             self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
-            if (
-                config.__module__ == "configparser"
-                and type(config).__name__ == "ConfigParser"
-            ):
-                self.config = config
-            else:
+            try:
+                if (
+                    config.__module__ == "configparser"
+                    and type(config).__name__ == "ConfigParser"
+                ):
+                    self.config = config
+                else:
+                    raise InputError(
+                        "cashocs.optimization_problem.OptimizationProblem",
+                        "config",
+                        "config has to be of configparser.ConfigParser type",
+                    )
+            except AttributeError:
                 raise InputError(
                     "cashocs.optimization_problem.OptimizationProblem",
                     "config",
@@ -873,9 +880,7 @@ class OptimizationProblem:
                         if abs(val) <= 1e-15:
                             val = 1.0
                             info(
-                                "Term "
-                                + str(i)
-                                + " of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights."
+                                f"Term {i:d} of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights."
                             )
 
                         self.initial_function_values.append(val)
@@ -904,16 +909,14 @@ class OptimizationProblem:
                         if abs(val) <= 1e-15:
                             val = 1.0
                             info(
-                                "Term "
-                                + str(i)
-                                + " of the scalar tracking cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights."
+                                f"Term {i:d} of the scalar tracking cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired_weights."
                             )
 
                         self.initial_scalar_tracking_values.append(val)
 
             else:
                 temp_dir = sys.argv[-1]
-                with open(temp_dir + "/temp_dict.json", "r") as file:
+                with open(f"{temp_dir}/temp_dict.json", "r") as file:
                     temp_dict = json.load(file)
                 self.initial_function_values = temp_dict["initial_function_values"]
                 if self.use_scalar_tracking:

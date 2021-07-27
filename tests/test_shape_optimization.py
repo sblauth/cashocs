@@ -699,3 +699,36 @@ def test_scaling_all():
     assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
     assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
     assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+
+
+def test_inhomogeneous_mu():
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    u = Function(V)
+    p = Function(V)
+
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+
+    J = u * dx
+    config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
+    config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
+    config.set("ShapeGradient", "mu_fix", "1.0")
+    config.set("ShapeGradient", "mu_def", "10.0")
+    config.set("ShapeGradient", "inhomogeneous", "True")
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    assert cashocs.verification.shape_gradient_test(sop)
+    assert cashocs.verification.shape_gradient_test(sop)
+    assert cashocs.verification.shape_gradient_test(sop)
+
+    config.set("ShapeGradient", "shape_bdry_def", "[1]")
+    config.set("ShapeGradient", "shape_bdry_fix", "[]")
+    config.set("ShapeGradient", "mu_fix", "0.35714285714285715")
+    config.set("ShapeGradient", "mu_def", "0.35714285714285715")
+    config.set("ShapeGradient", "inhomogeneous", "False")
