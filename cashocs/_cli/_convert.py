@@ -28,23 +28,25 @@ import meshio
 
 
 def _generate_parser():
-    parser = argparse.ArgumentParser(description="Convert GMSH to XDMF.")
+    parser = argparse.ArgumentParser(
+        prog="cashocs-convert", description="Convert GMSH to XDMF."
+    )
     parser.add_argument(
-        "infile", type=str, help="GMSH file that shall be converted, has to end in .msh"
+        "infile", type=str, help="GMSH file to be converted, has to end in .msh"
     )
     parser.add_argument(
         "outfile",
         type=str,
-        help="XDMF file into which the mesh shall be converted, has to end in .xdmf",
+        help="XDMF file to which the mesh shall be converted, has to end in .xdmf",
     )
 
     return parser
 
 
 def convert(argv=None):
-    parser = _generate_parser()
 
-    args = argv or parser.parse_args(argv)
+    parser = _generate_parser()
+    args = parser.parse_args(argv)
 
     inputfile = args.infile
     outputfile = args.outfile
@@ -130,5 +132,4 @@ def convert(argv=None):
 
 
 if __name__ == "__main__":
-    parser = _generate_parser()
-    convert(parser.parse_args())
+    convert()

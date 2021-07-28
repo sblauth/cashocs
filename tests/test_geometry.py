@@ -68,6 +68,13 @@ def test_mesh_import():
 
     assert np.allclose(mesh.coordinates(), gmsh_coords)
 
+    assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
+
     os.system("rm " + dir_path + "/mesh/mesh.xdmf")
     os.system("rm " + dir_path + "/mesh/mesh.h5")
     os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")

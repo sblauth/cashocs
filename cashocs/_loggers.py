@@ -71,9 +71,6 @@ class LogLevel:
     ERROR = logging.ERROR
     CRITICAL = logging.CRITICAL
 
-    def __init__(self):
-        pass
-
 
 _cashocs_logger = logging.getLogger("cashocs")
 _cashocs_handler = logging.StreamHandler()
