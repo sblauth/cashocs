@@ -4,12 +4,13 @@ Created on 27/07/2021, 10.40
 @author: blauths
 """
 
-import pytest
-import cashocs
-from cashocs._exceptions import InputError
-from fenics import *
 import os
 
+import pytest
+from fenics import *
+
+import cashocs
+from cashocs._exceptions import InputError
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")

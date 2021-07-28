@@ -57,7 +57,6 @@ def convert(argv=None):
 
     # Check that the outputfile has .xdmf format
     if outputfile[-5:] == ".xdmf":
-        oformat = ".xdmf"
         ostring = outputfile[:-5]
     else:
         print("Error: Cannot use the current file format as output.")

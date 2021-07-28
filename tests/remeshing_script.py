@@ -4,9 +4,11 @@ Created on 27/07/2021, 14.43
 @author: blauths
 """
 
-import cashocs
-from fenics import *
 import os
+
+from fenics import *
+
+import cashocs
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_remesh.ini")

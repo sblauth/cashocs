@@ -27,7 +27,6 @@ import numpy as np
 import cashocs
 from cashocs.geometry import MeshQuality
 
-
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
 u_mesh = fenics.UnitSquareMesh(5, 5)
 

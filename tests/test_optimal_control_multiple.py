@@ -19,11 +19,11 @@
 
 """
 
-from fenics import *
 import os
 
-import cashocs
+from fenics import *
 
+import cashocs
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")

@@ -257,7 +257,6 @@ class OptimalControlProblem(OptimizationProblem):
                                             "control_constraints",
                                             "control_constraints has to be a list containing upper and lower bounds",
                                         )
-                                pass
                             else:
                                 raise InputError(
                                     "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",

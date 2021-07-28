@@ -37,8 +37,8 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import ConfigError, InputError, CashocsException
-from ._loggers import info, warning, debug
+from ._exceptions import CashocsException, ConfigError, InputError
+from ._loggers import debug, info, warning
 from .utils import (
     _assemble_petsc_system,
     _setup_petsc_options,

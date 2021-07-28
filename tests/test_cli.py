@@ -4,12 +4,13 @@ Created on 28/07/2021, 09.04
 @author: blauths
 """
 
-import cashocs
-import cashocs._cli
-import fenics
 import os
+
+import fenics
 import numpy as np
 
+import cashocs
+import cashocs._cli
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

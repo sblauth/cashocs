@@ -19,10 +19,11 @@
 
 """
 
+import os
+
 import numpy as np
 import pytest
 from fenics import *
-import os
 
 import cashocs
 

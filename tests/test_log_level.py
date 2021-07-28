@@ -5,7 +5,7 @@ Created on 27/07/2021, 09.59
 """
 
 import cashocs
-from cashocs._loggers import debug, info, warning, error, critical
+from cashocs._loggers import critical, debug, error, info, warning
 
 
 def test_set_log_level(caplog):

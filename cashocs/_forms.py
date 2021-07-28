@@ -32,7 +32,7 @@ from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from ufl.log import UFLException
 
-from ._exceptions import ConfigError, InputError, CashocsException
+from ._exceptions import CashocsException, ConfigError, InputError
 from ._loggers import warning
 from ._shape_optimization import Regularization
 from .utils import (
@@ -1087,7 +1087,7 @@ class ShapeFormHandler(FormHandler):
         self.shape_scalar_product = shape_scalar_product
 
         self.degree_estimation = self.config.getboolean(
-            "ShapeGradient", "degree_estimation", fallback=False
+            "ShapeGradient", "degree_estimation", fallback=True
         )
         self.use_pull_back = self.config.getboolean(
             "ShapeGradient", "use_pull_back", fallback=True

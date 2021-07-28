@@ -19,12 +19,12 @@
 
 """
 
-import numpy as np
-from fenics import *
 import os
 
-import cashocs
+import numpy as np
+from fenics import *
 
+import cashocs
 
 set_log_level(LogLevel.CRITICAL)
 dir_path = os.path.dirname(os.path.realpath(__file__))

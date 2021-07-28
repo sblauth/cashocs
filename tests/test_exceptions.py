@@ -19,19 +19,20 @@
 
 """
 
+import os
+
+import numpy as np
+import pytest
 from fenics import *
+
 import cashocs
 from cashocs._exceptions import (
     CashocsException,
-    NotConvergedError,
-    InputError,
-    PETScKSPError,
     ConfigError,
+    InputError,
+    NotConvergedError,
+    PETScKSPError,
 )
-import numpy as np
-import pytest
-import os
-
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")

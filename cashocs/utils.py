@@ -26,9 +26,9 @@ actions.
 import configparser
 import os
 
-from deprecated import deprecated
 import fenics
 import numpy as np
+from deprecated import deprecated
 from petsc4py import PETSc
 from ufl.measure import Measure
 

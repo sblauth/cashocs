@@ -25,9 +25,9 @@ from pathlib import Path
 
 import fenics
 
-from .._loggers import info, error
-from ..utils import write_out_mesh
 from .._exceptions import NotConvergedError
+from .._loggers import error, info
+from ..utils import write_out_mesh
 
 
 class ShapeOptimizationAlgorithm:

@@ -31,9 +31,9 @@ import numpy as np
 from ufl import replace
 
 from ._exceptions import InputError
-from ._forms import Lagrangian, FormHandler
+from ._forms import FormHandler, Lagrangian
+from ._loggers import info, warning
 from ._pde_problems import StateProblem
-from ._loggers import warning, info
 from .utils import summation
 
 

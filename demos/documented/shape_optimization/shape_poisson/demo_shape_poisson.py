@@ -20,8 +20,8 @@
 """
 
 from fenics import *
-import cashocs
 
+import cashocs
 
 cashocs.set_log_level(cashocs.LogLevel.INFO)
 

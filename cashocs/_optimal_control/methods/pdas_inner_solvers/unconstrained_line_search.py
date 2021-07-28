@@ -19,8 +19,9 @@
 
 """
 
-import numpy as np
 import weakref
+
+import numpy as np
 
 
 class UnconstrainedLineSearch:

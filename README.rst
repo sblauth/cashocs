@@ -18,8 +18,11 @@ CASHOCS
 .. image:: https://github.com/sblauth/cashocs/actions/workflows/ci.yml/badge.svg
 	:target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
 
-.. image:: https://img.shields.io/codecov/c/github/sblauth/cashocs
+.. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen
     :target: https://codecov.io/gh/sblauth/cashocs
+
+.. image:: https://img.shields.io/lgtm/grade/python/github/sblauth/cashocs
+    :target: https://lgtm.com/projects/g/sblauth/cashocs
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest

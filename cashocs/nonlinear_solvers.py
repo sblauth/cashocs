@@ -25,7 +25,7 @@ follow.
 import fenics
 from petsc4py import PETSc
 
-from ._exceptions import NotConvergedError, InputError
+from ._exceptions import InputError, NotConvergedError
 from .utils import _setup_petsc_options, _solve_linear_problem
 
 

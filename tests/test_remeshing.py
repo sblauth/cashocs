@@ -4,12 +4,13 @@ Created on 27/07/2021, 14.32
 @author: blauths
 """
 
-import cashocs
-from fenics import *
 import os
 import shutil
-import pytest
 
+import pytest
+from fenics import *
+
+import cashocs
 
 has_gmsh = False
 query = shutil.which("gmsh")

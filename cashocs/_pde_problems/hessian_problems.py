@@ -26,8 +26,8 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._exceptions import CashocsException, ConfigError, NotConvergedError
 from .._loggers import debug
-from .._exceptions import ConfigError, NotConvergedError, CashocsException
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 

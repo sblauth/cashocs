@@ -20,7 +20,6 @@
 """
 
 import numpy as np
-import sys
 
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 

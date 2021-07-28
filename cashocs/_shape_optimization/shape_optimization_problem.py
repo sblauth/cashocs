@@ -30,9 +30,9 @@ from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .methods import CG, GradientDescent, LBFGS
-from .._loggers import debug, warning
-from .._exceptions import ConfigError, InputError, CashocsException
+from .._exceptions import CashocsException, ConfigError, InputError
 from .._forms import ShapeFormHandler
+from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler

@@ -26,10 +26,9 @@ from . import verification
 from ._loggers import LogLevel, set_log_level
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-from .geometry import import_mesh, regular_box_mesh, regular_mesh, MeshQuality
+from .geometry import MeshQuality, import_mesh, regular_box_mesh, regular_mesh
 from .nonlinear_solvers import damped_newton_solve
 from .utils import create_bcs_list, create_config, load_config
-
 
 __all__ = [
     "import_mesh",

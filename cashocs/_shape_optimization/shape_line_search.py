@@ -19,9 +19,10 @@
 
 """
 
+import weakref
+
 import fenics
 import numpy as np
-import weakref
 
 from .._loggers import error
 from ..utils import _optimization_algorithm_configuration
