@@ -203,7 +203,7 @@ class ShapeOptimizationAlgorithm:
         if self.iteration == 0:
             output = (
                 f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.gradient_norm_initial:.3e} (abs)"
-                + f"Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})\n"
+                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})\n"
             )
 
         else:
