@@ -8,6 +8,7 @@ import os
 
 import fenics
 import numpy as np
+import subprocess
 
 import cashocs
 import cashocs._cli
@@ -55,9 +56,9 @@ def test_cli():
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
 
-    os.system("rm " + dir_path + "/mesh/mesh.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)

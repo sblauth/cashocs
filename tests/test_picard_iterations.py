@@ -114,9 +114,9 @@ F_newton = (
 
 
 def test_picard_gradient_computation():
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_picard_state_solver():

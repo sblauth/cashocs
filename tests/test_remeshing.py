@@ -6,12 +6,15 @@ Created on 27/07/2021, 14.32
 
 import os
 import shutil
+import subprocess
 
 import pytest
 from fenics import *
+import numpy as np
 
 import cashocs
 
+rng = np.random.RandomState(300696)
 has_gmsh = False
 query = shutil.which("gmsh")
 if query is not None:
@@ -46,14 +49,14 @@ def test_verification_remeshing():
     J = u * dx
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 def test_remeshing():
-    os.system(f"python {dir_path}/remeshing_script.py")
+    subprocess.run(["python", f"{dir_path}/remeshing_script.py"], check=True)
 
     assert any(
         s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")
@@ -77,6 +80,10 @@ def test_remeshing():
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu")
 
-    os.system(f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*")
-    os.system(f"rm -r {dir_path}/._cashocs_remesh_temp_*")
-    os.system("rm -r " + dir_path + "/temp")
+    subprocess.run(
+        [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+    )
+    subprocess.run(
+        [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
+    )
+    subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)

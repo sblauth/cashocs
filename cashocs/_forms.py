@@ -1043,6 +1043,8 @@ class ShapeFormHandler(FormHandler):
         shape_scalar_product=None,
         deformation_space=None,
         use_scalar_tracking=False,
+        has_cashocs_remesh_flag=False,
+        temp_dir=None,
     ):
         """Initializes the ShapeFormHandler object.
 
@@ -1083,6 +1085,8 @@ class ShapeFormHandler(FormHandler):
             use_scalar_tracking,
         )
 
+        self.has_cashocs_remesh_flag = has_cashocs_remesh_flag
+        self.temp_dir = temp_dir
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product
 
@@ -1284,7 +1288,7 @@ class ShapeFormHandler(FormHandler):
         self.shape_bdry_fix = json.loads(
             self.config.get("ShapeGradient", "shape_bdry_fix", fallback="[]")
         )
-        if not type(self.shape_bdry_def) == list:
+        if not type(self.shape_bdry_fix) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
             )

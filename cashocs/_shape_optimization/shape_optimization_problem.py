@@ -21,6 +21,7 @@
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
 
@@ -168,7 +169,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     "You must specify a config file as input for remeshing.",
                 )
 
-            if not ("_cashocs_remesh_flag" in sys.argv):
+            if not self.has_cashocs_remesh_flag:
                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
                 self.temp_dir = tempfile.mkdtemp(
                     prefix="._cashocs_remesh_temp_", dir=self.directory
@@ -195,7 +196,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
                         ] = self.initial_scalar_tracking_values
 
             else:
-                self.temp_dir = sys.argv[-1]
                 self.__change_except_hook()
                 with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     self.temp_dict = json.load(file)
@@ -267,9 +267,11 @@ class ShapeOptimizationProblem(OptimizationProblem):
             self.shape_scalar_product,
             self.deformation_space,
             use_scalar_tracking=self.use_scalar_tracking,
+            has_cashocs_remesh_flag=self.has_cashocs_remesh_flag,
+            temp_dir=self.temp_dir,
         )
 
-        if self.do_remesh and not ("_cashocs_remesh_flag" in sys.argv):
+        if self.do_remesh and not self.has_cashocs_remesh_flag:
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.regularization.mu_volume,
                 "mu_surface": self.form_handler.regularization.mu_surface,
@@ -425,8 +427,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 "An exception was raised by cashocs, deleting the created temporary files."
             )
             if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                os.system(f"rm -r {self.temp_dir}")
-                os.system(f"rm -r {self.mesh_handler.remesh_directory}")
+                subprocess.run(["rm", "-r", self.temp_dir], check=True)
+                subprocess.run(
+                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
+                )
             sys.__excepthook__(exctype, value, traceback)
 
         sys.excepthook = custom_except_hook

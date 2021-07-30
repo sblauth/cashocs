@@ -22,6 +22,7 @@
 """
 
 import argparse
+import time
 import sys
 
 import meshio
@@ -44,6 +45,8 @@ def _generate_parser():
 
 
 def convert(argv=None):
+
+    start_time = time.time()
 
     parser = _generate_parser()
     args = parser.parse_args(argv)
@@ -128,6 +131,11 @@ def convert(argv=None):
                     },
                 )
                 meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
+
+    end_time = time.time()
+    print(
+        f"cashocs - info: Successfully converted {inputfile} to {outputfile} in {end_time - start_time:.2f} s"
+    )
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ from ._exceptions import InputError
 from ._forms import FormHandler, Lagrangian
 from ._loggers import info, warning
 from ._pde_problems import StateProblem
-from .utils import summation
+from .utils import summation, _parse_remesh
 
 
 class OptimizationProblem:
@@ -119,6 +119,8 @@ class OptimizationProblem:
         cashocs.OptimalControlProblem : Represents an optimal control problem.
         cashocs.ShapeOptimizationProblem : Represents a shape optimization problem.
         """
+
+        self.has_cashocs_remesh_flag, self.temp_dir = _parse_remesh()
 
         ### Overloading, so that we do not have to use lists for a single state and a single control
         ### state_forms
@@ -857,7 +859,7 @@ class OptimizationProblem:
 
         if self.bool_scaling:
 
-            if not ("_cashocs_remesh_flag" in sys.argv):
+            if not self.has_cashocs_remesh_flag:
                 # Create dummy objects for adjoints, so that we can actually solve the state problem
                 temp_form_handler = FormHandler(
                     self.lagrangian,
@@ -915,8 +917,7 @@ class OptimizationProblem:
                         self.initial_scalar_tracking_values.append(val)
 
             else:
-                temp_dir = sys.argv[-1]
-                with open(f"{temp_dir}/temp_dict.json", "r") as file:
+                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     temp_dict = json.load(file)
                 self.initial_function_values = temp_dict["initial_function_values"]
                 if self.use_scalar_tracking:

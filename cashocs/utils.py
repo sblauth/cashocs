@@ -23,6 +23,7 @@ Includes wrappers that allow to shorten the coding for often recurring
 actions.
 """
 
+import argparse
 import configparser
 import os
 
@@ -752,3 +753,38 @@ def _optimization_algorithm_configuration(config, algorithm=None):
         config.set("OptimizationRoutine", "algorithm", internal_algorithm)
 
     return internal_algorithm
+
+
+def _parse_remesh():
+
+    temp_dir = None
+    cashocs_remesh_flag = False
+
+    parser = argparse.ArgumentParser(description="test argument parser")
+    parser.add_argument(
+        "--temp_dir", type=str, help="Location of the temp directory for remeshing"
+    )
+    parser.add_argument(
+        "--cashocs_remesh",
+        action="store_true",
+        help="Flag which indicates whether remeshing has been performed",
+    )
+    args = parser.parse_args()
+
+    if args.temp_dir is not None:
+        if os.path.isdir(os.path.realpath(args.temp_dir)):
+            temp_dir = args.temp_dir
+        else:
+            raise InputError()
+
+    if args.cashocs_remesh:
+        cashocs_remesh_flag = True
+        if args.temp_dir is None:
+            raise InputError()
+        elif not os.path.isfile(os.path.realpath(f"{temp_dir}/temp_dict.json")):
+            raise InputError
+    else:
+        if args.temp_dir is not None:
+            raise InputError()
+
+    return cashocs_remesh_flag, temp_dir

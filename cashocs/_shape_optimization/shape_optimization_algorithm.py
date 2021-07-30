@@ -22,6 +22,7 @@
 import json
 import os
 from pathlib import Path
+import subprocess
 
 import fenics
 
@@ -305,8 +306,10 @@ class ShapeOptimizationAlgorithm:
 
         if self.mesh_handler.do_remesh:
             if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                os.system(f"rm -r {self.temp_dir}")
-                os.system(f"rm -r {self.mesh_handler.remesh_directory}")
+                subprocess.run(["rm", "-r", self.temp_dir], check=True)
+                subprocess.run(
+                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
+                )
 
     def run(self):
         """Blueprint run method, overriden by the actual solution algorithms

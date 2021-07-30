@@ -27,7 +27,7 @@ from ._exceptions import InputError
 from ._loggers import warning
 
 
-def control_gradient_test(ocp, u=None, h=None):
+def control_gradient_test(ocp, u=None, h=None, rng=None):
     """Taylor test to verify that the computed gradient is correct for optimal control problems.
 
     Parameters
@@ -84,7 +84,10 @@ def control_gradient_test(ocp, u=None, h=None):
         h = []
         for V in ocp.form_handler.control_spaces:
             temp = fenics.Function(V)
-            temp.vector()[:] = np.random.rand(V.dim())
+            if rng is not None:
+                temp.vector()[:] = rng.rand(V.dim())
+            else:
+                temp.vector()[:] = np.random.rand(V.dim())
             h.append(temp)
 
     for j in range(ocp.control_dim):
@@ -123,7 +126,7 @@ def control_gradient_test(ocp, u=None, h=None):
     return np.min(rates)
 
 
-def shape_gradient_test(sop, h=None):
+def shape_gradient_test(sop, h=None, rng=None):
     """Taylor test to verify that the computed shape gradient is correct.
 
     Parameters
@@ -143,7 +146,10 @@ def shape_gradient_test(sop, h=None):
 
     if h is None:
         h = fenics.Function(sop.form_handler.deformation_space)
-        h.vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
+        if rng is not None:
+            h.vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
+        else:
+            h.vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
 
     # ensure that the shape boundary conditions are applied
     [bc.apply(h.vector()) for bc in sop.form_handler.bcs_shape]

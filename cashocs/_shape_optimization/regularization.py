@@ -87,6 +87,8 @@ class Regularization:
         self.config = form_handler.config
         self.geometric_dimension = form_handler.mesh.geometric_dimension()
         self.mesh = form_handler.mesh
+        self.has_cashocs_remesh_flag = form_handler.has_cashocs_remesh_flag
+        self.temp_dir = form_handler.temp_dir
 
         self.dx = fenics.Measure("dx", self.mesh)
         self.ds = fenics.Measure("ds", self.mesh)
@@ -606,7 +608,7 @@ class Regularization:
 
         if self.use_relative_scaling and self.has_regularization:
 
-            if not ("_cashocs_remesh_flag" in sys.argv):
+            if not self.has_cashocs_remesh_flag:
 
                 if self.mu_volume > 0.0:
                     if not self.measure_hole:
@@ -717,8 +719,7 @@ class Regularization:
 
             else:
 
-                temp_dir = sys.argv[-1]
-                with open(f"{temp_dir}/temp_dict.json", "r") as file:
+                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     temp_dict = json.load(file)
 
                 self.mu_volume = temp_dict["Regularization"]["mu_volume"]

@@ -20,6 +20,7 @@
 """
 
 import os
+import subprocess
 
 import fenics
 import numpy as np
@@ -34,9 +35,11 @@ rng = np.random.RandomState(300696)
 
 def test_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    os.system(
-        "cashocs-convert " + dir_path + "/mesh/mesh.msh " + dir_path + "/mesh/mesh.xdmf"
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf"],
+        check=True,
     )
+
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -75,18 +78,19 @@ def test_mesh_import():
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
 
-    os.system("rm " + dir_path + "/mesh/mesh.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
 
 
 def test_mesh_import_from_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    os.system(
-        "cashocs-convert " + dir_path + "/mesh/mesh.msh " + dir_path + "/mesh/mesh.xdmf"
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf"],
+        check=True,
     )
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
@@ -119,12 +123,12 @@ def test_mesh_import_from_config():
 
     assert np.allclose(mesh.coordinates(), gmsh_coords)
 
-    os.system("rm " + dir_path + "/mesh/mesh.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
 
 
 def test_regular_mesh():
@@ -229,8 +233,9 @@ def test_mesh_quality_3D():
 
 def test_write_mesh():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    os.system(
-        "cashocs-convert " + dir_path + "/mesh/mesh.msh " + dir_path + "/mesh/mesh.xdmf"
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf"],
+        check=True,
     )
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -240,27 +245,28 @@ def test_write_mesh():
         mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
     )
 
-    os.system(
-        "cashocs-convert " + dir_path + "/mesh/test.msh " + dir_path + "/mesh/test.xdmf"
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/test.msh", f"{dir_path}/mesh/test.xdmf"],
+        check=True,
     )
     test, _, _, _, _, _ = cashocs.import_mesh(dir_path + "/mesh/test.xdmf")
 
     assert np.allclose(test.coordinates()[:, :], mesh.coordinates()[:, :])
 
-    os.system("rm " + dir_path + "/mesh/test.msh")
-    os.system("rm " + dir_path + "/mesh/test.xdmf")
-    os.system("rm " + dir_path + "/mesh/test.h5")
-    os.system("rm " + dir_path + "/mesh/test_subdomains.xdmf")
-    os.system("rm " + dir_path + "/mesh/test_subdomains.h5")
-    os.system("rm " + dir_path + "/mesh/test_boundaries.xdmf")
-    os.system("rm " + dir_path + "/mesh/test_boundaries.h5")
+    subprocess.run(["rm", f"{dir_path}/mesh/test.msh"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
 
-    os.system("rm " + dir_path + "/mesh/mesh.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_subdomains.h5")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.xdmf")
-    os.system("rm " + dir_path + "/mesh/mesh_boundaries.h5")
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
 
 
 def test_empty_measure():

@@ -19,6 +19,9 @@ config.set("Output", "result_dir", dir_path + "/temp/")
 config.add_section("Debug")
 config.set("Debug", "remeshing", "True")
 
+# if "_cashocs_remesh_flag" in sys.argv:
+#     config.set("MeshQuality", "tol_upper", "0.415")
+
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
 
 V = FunctionSpace(mesh, "CG", 1)

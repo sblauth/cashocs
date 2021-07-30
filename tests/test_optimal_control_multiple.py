@@ -21,10 +21,12 @@
 
 import os
 
+import numpy as np
 from fenics import *
 
 import cashocs
 
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
@@ -66,9 +68,9 @@ ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, 
 
 
 def test_control_gradient_multiple():
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_control_gd_multiple():

@@ -20,6 +20,7 @@
 """
 
 import os
+import subprocess
 
 import numpy as np
 import pytest
@@ -242,9 +243,9 @@ def test_shape_gradient():
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
 def test_shape_gd():
@@ -318,9 +319,9 @@ def test_shape_volume_regularization():
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
     max_coordinate = np.max(mesh.coordinates())
@@ -342,9 +343,9 @@ def test_shape_surface_regularization():
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
     max_coordinate = np.max(mesh.coordinates())
@@ -370,9 +371,9 @@ def test_shape_barycenter_regularization():
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-5, max_iter=50)
 
@@ -420,9 +421,9 @@ def test_shape_barycenter_regularization_hole():
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     config.set("Regularization", "factor_barycenter", "0.0")
     config.set("MeshQuality", "volume_change", "inf")
@@ -447,15 +448,15 @@ def test_custom_supply_shape():
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
 
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
 def test_supply_from_custom_fspace():
@@ -475,9 +476,9 @@ def test_supply_from_custom_fspace():
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
 def test_custom_shape_scalar_product():
@@ -503,9 +504,9 @@ def test_custom_shape_scalar_product():
 
     assert sop.solver.relative_norm < sop.solver.rtol
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -521,15 +522,15 @@ def test_custom_shape_scalar_product():
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
 
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
 def test_scaling_shape():
@@ -551,9 +552,9 @@ def test_scaling_shape():
 
     assert abs(val - diff) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
 
 
 def test_scaling_shape_regularization():
@@ -625,9 +626,9 @@ def test_scalar_tracking_regularization():
         e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
     )
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
     max_coordinate = np.max(mesh.coordinates())
@@ -652,9 +653,9 @@ def test_scalar_tracking_norm():
         e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
     )
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-5, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
@@ -679,9 +680,9 @@ def test_scalar_tracking_multiple():
         e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
     )
 
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goals[0], 2) < 1e-13
@@ -718,9 +719,9 @@ def test_scaling_scalar_only():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
 
 
 def test_scaling_scalar_and_single_cost():
@@ -753,9 +754,9 @@ def test_scaling_scalar_and_single_cost():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
 
 
 def test_scaling_all():
@@ -790,9 +791,9 @@ def test_scaling_all():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
 
 
 def test_inhomogeneous_mu():
@@ -817,9 +818,9 @@ def test_inhomogeneous_mu():
     config.set("ShapeGradient", "mu_def", "10.0")
     config.set("ShapeGradient", "inhomogeneous", "True")
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    assert cashocs.verification.shape_gradient_test(sop)
-    assert cashocs.verification.shape_gradient_test(sop)
-    assert cashocs.verification.shape_gradient_test(sop)
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     config.set("ShapeGradient", "shape_bdry_def", "[1]")
     config.set("ShapeGradient", "shape_bdry_fix", "[]")
@@ -851,7 +852,7 @@ def test_save_pvd_files():
     assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/shape_gradient000007.vtu")
 
-    os.system(f"rm -r {dir_path}/out")
+    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
 
     config.set("Output", "save_pvd", "False")
     config.set("Output", "save_results", "False")

@@ -24,6 +24,7 @@ import os
 import numpy as np
 import pytest
 from fenics import *
+import subprocess
 
 import cashocs
 from cashocs._exceptions import InputError
@@ -99,10 +100,10 @@ def test_control_constraints_handling():
 
 
 def test_control_gradient():
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, [u]) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, [u], rng=rng) > 1.9
 
 
 def test_control_gd():
@@ -435,16 +436,16 @@ def test_custom_supply_control():
     user_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     user_ocp.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
 
     user_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     user_ocp.supply_custom_forms([dJ], [adjoint_form], [bcs])
 
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(user_ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
 
 
 def test_scaling_control():
@@ -465,9 +466,9 @@ def test_scaling_control():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_scalar_norm_optimization():
@@ -488,9 +489,9 @@ def test_scalar_norm_optimization():
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     config.set("OptimizationRoutine", "initial_stepsize", "1.0")
 
 
@@ -516,9 +517,9 @@ def test_scalar_multiple_norms():
     assert 0.5 * pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-2
     assert 0.5 * pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-4
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     config.set("OptimizationRoutine", "initial_stepsize", "1.0")
 
 
@@ -553,9 +554,9 @@ def test_scaling_scalar_only():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_scaling_scalar_and_single_cost():
@@ -588,9 +589,9 @@ def test_scaling_scalar_and_single_cost():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_scaling_all():
@@ -627,9 +628,9 @@ def test_scaling_all():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_different_spaces():
@@ -675,9 +676,9 @@ def test_nonlinear_state_eq():
     ocp = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, initial_guess=[initial_guess]
     )
-    cashocs.verification.control_gradient_test(ocp)
-    cashocs.verification.control_gradient_test(ocp)
-    cashocs.verification.control_gradient_test(ocp)
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
     config.set("StateSystem", "is_linear", "True")
 
 
@@ -703,7 +704,7 @@ def test_save_pvd_files():
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
 
-    os.system(f"rm -r {dir_path}/out")
+    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
 
     config.set("Output", "save_results", "False")
     config.set("Output", "save_pvd", "False")
@@ -719,12 +720,12 @@ def test_riesz_scalar_products():
     ocp = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, riesz_scalar_products=riesz_scalar_product
     )
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     ocp = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, riesz_scalar_products=[riesz_scalar_product]
     )
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
