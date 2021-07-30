@@ -574,7 +574,7 @@ class _MeshHandler:
         Parameters
         ----------
         shape_optimization_problem : cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
-                The corresponding shape optimization problem.
+            The corresponding shape optimization problem.
         """
 
         self.form_handler = shape_optimization_problem.form_handler
@@ -1223,6 +1223,239 @@ class _MeshHandler:
                     + ["_cashocs_remesh_flag"]
                     + [self.temp_dir],
                 )
+
+
+class DeformationHandler:
+    def __init__(self, mesh):
+        """
+
+        Parameters
+        ----------
+        mesh : dolfin.cpp.mesh.Mesh
+            The fenics mesh which is to be deformed
+        """
+        self.mesh = mesh
+        self.dx = fenics.Measure("dx", self.mesh)
+        self.old_coordinates = self.mesh.coordinates().copy()
+        self.shape_coordinates = self.old_coordinates.shape
+        self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
+        self.DG0 = fenics.FunctionSpace(mesh, "DG", 0)
+        self.bbtree = self.mesh.bounding_box_tree()
+        self.__setup_a_priori()
+        self.v2d = fenics.vertex_to_dof_map(self.VCG).reshape(
+            (-1, self.mesh.geometry().dim())
+        )
+        self.d2v = fenics.dof_to_vertex_map(self.VCG)
+
+    def __setup_a_priori(self):
+        """Sets up the attributes and petsc solver for the a priori quality check.
+
+        Returns
+        -------
+        None
+        """
+
+        self.options_prior = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.ksp_prior = PETSc.KSP().create()
+        _setup_petsc_options([self.ksp_prior], [self.options_prior])
+
+        self.transformation_container = fenics.Function(self.VCG)
+        dim = self.mesh.geometric_dimension()
+
+        self.a_prior = (
+            fenics.TrialFunction(self.DG0) * fenics.TestFunction(self.DG0) * self.dx
+        )
+        self.L_prior = (
+            fenics.det(
+                fenics.Identity(dim) + fenics.grad(self.transformation_container)
+            )
+            * fenics.TestFunction(self.DG0)
+            * self.dx
+        )
+
+    def __test_a_priori(self, transformation):
+        r"""Check the quality of the transformation before the actual mesh is moved.
+
+        Checks the quality of the transformation. The criterion is that
+
+        .. math:: \det(I + D \texttt{transformation})
+
+        should neither be too large nor too small in order to achieve the best
+        transformations.
+
+        Parameters
+        ----------
+        transformation : dolfin.function.function.Function
+            The transformation for the mesh.
+
+        Returns
+        -------
+        bool
+            A boolean that indicates whether the desired transformation is feasible
+        """
+
+        self.transformation_container.vector()[:] = transformation.vector()[:]
+        A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
+        x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
+        min_det = np.min(x[:])
+
+        return min_det > 0
+
+    def __test_a_posteriori(self):
+        """Checks the quality of the transformation after the actual mesh is moved.
+
+        Checks whether the mesh is a valid finite element mesh
+        after it has been moved, i.e., if there are no overlapping
+        or self intersecting elements.
+
+        Returns
+        -------
+        bool
+            True if the test is successful, False otherwise
+
+        Notes
+        -----
+        fenics itself does not check whether the used mesh is a valid finite
+        element mesh, so this check has to be done manually.
+        """
+
+        cells = self.mesh.cells()
+        coordinates = self.mesh.coordinates()
+        self_intersections = False
+        for i in range(coordinates.shape[0]):
+            x = fenics.Point(coordinates[i])
+            cells_idx = self.bbtree.compute_entity_collisions(x)
+            intersections = len(cells_idx)
+            M = cells[cells_idx]
+            occurences = M.flatten().tolist().count(i)
+
+            if intersections > occurences:
+                self_intersections = True
+                break
+
+        if self_intersections:
+            self.revert_transformation()
+            debug("Mesh transformation rejected due to a posteriori check.")
+            return False
+        else:
+            return True
+
+    def revert_transformation(self):
+        """Reverts the previous mesh transformation.
+
+        This is used when the mesh quality for the resulting deformed mesh
+        is not sufficient, or when the solution algorithm terminates, e.g., due
+        to lack of sufficient decrease in the Armijo rule
+
+        Returns
+        -------
+        None
+        """
+
+        self.mesh.coordinates()[:, :] = self.old_coordinates
+        del self.old_coordinates
+        self.bbtree.build(self.mesh)
+
+    def move_mesh(self, transformation):
+        r"""Transforms the mesh by perturbation of identity.
+
+        Moves the mesh according to the deformation given by
+
+        .. math:: \text{id} + \mathcal{V}(x),
+
+        where :math:`\mathcal{V}` is the transformation. This
+        represents the perturbation of identity.
+
+        Parameters
+        ----------
+        transformation : dolfin.function.function.Function or np.ndarray
+            The transformation for the mesh, a vector CG1 Function.
+        """
+
+        if type(transformation) == np.ndarray:
+            transformation = self.coordinate_to_dof(transformation)
+
+        if not (
+            transformation.ufl_element().family() == "Lagrange"
+            and transformation.ufl_element().degree() == 1
+        ):
+            raise CashocsException("Not a valid mesh transformation")
+
+        if not self.__test_a_priori(transformation):
+            debug(
+                "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
+            )
+            return False
+        else:
+            self.old_coordinates = self.mesh.coordinates().copy()
+            fenics.ALE.move(self.mesh, transformation)
+            self.bbtree.build(self.mesh)
+
+            return self.__test_a_posteriori()
+
+    def coordinate_to_dof(self, coordinate_deformation):
+        """Converts a coordinate deformation to a deformation vector field (dof based)
+
+        Parameters
+        ----------
+        coordinate_deformation : np.ndarray
+            The deformation for the mesh coordinates.
+
+        Returns
+        -------
+        dof_deformation : dolfin.function.function.Function
+            The deformation vector field.
+
+        """
+
+        if not (coordinate_deformation.shape == self.shape_coordinates):
+            raise InputError(
+                "cashocs.geometry.DeformationHandler.coordinate_to_dof",
+                "coordinate_deformation",
+                "Shape of coordinate deformation has to be the same as self.mesh.coordinates().shape",
+            )
+
+        dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
+        dof_deformation = fenics.Function(self.VCG)
+        dof_deformation.vector()[:] = dof_vector
+
+        return dof_deformation
+
+    def dof_to_coordinate(self, dof_deformation):
+        """Converts a deformation vector field (dof-based) to a coordinate based deformation.
+
+        Parameters
+        ----------
+        dof_deformation : dolfin.function.function.Function
+            The deformation vector field.
+
+        Returns
+        -------
+        coordinate_deformation : np.ndarray
+            The array which can be used to deform the mesh coordinates.
+
+        """
+
+        if not (
+            dof_deformation.ufl_element().family() == "Lagrange"
+            and dof_deformation.ufl_element().degree() == 1
+        ):
+            raise InputError(
+                "cashocs.geometry.DeformationHandler.dof_to_coordinate",
+                "dof_deformation",
+                "dof_deformation has to be a piecewise linear Lagrange vector field.",
+            )
+
+        coordinate_deformation = dof_deformation.vector()[:][self.v2d]
+
+        return coordinate_deformation
 
 
 class MeshQuality:

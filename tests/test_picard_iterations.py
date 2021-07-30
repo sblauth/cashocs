@@ -26,6 +26,7 @@ from fenics import *
 
 import cashocs
 
+rng = np.random.RandomState(300696)
 set_log_level(LogLevel.CRITICAL)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_picard.ini")
@@ -119,8 +120,8 @@ def test_picard_gradient_computation():
 
 
 def test_picard_state_solver():
-    u.vector()[:] = np.random.normal(0.0, 10.0, size=V.dim())
-    v.vector()[:] = np.random.normal(0.0, 10.0, size=V.dim())
+    u.vector()[:] = rng.normal(0.0, 10.0, size=V.dim())
+    v.vector()[:] = rng.normal(0.0, 10.0, size=V.dim())
     ocp._erase_pde_memory()
     ocp.compute_state_variables()
     ocp_mixed._erase_pde_memory()

@@ -270,7 +270,7 @@ class ShapeOptimizationAlgorithm:
         """
 
         output = (
-            f"\nStatistics --- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)"
+            f"\nStatistics --- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
             + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves}\n"
         )
         if self.verbose:

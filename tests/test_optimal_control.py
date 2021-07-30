@@ -28,6 +28,7 @@ from fenics import *
 import cashocs
 from cashocs._exceptions import InputError
 
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
@@ -454,7 +455,7 @@ def test_scaling_control():
     J2 = Constant(0.5) * u * u * dx
     J_list = [J1, J2]
 
-    desired_weights = np.random.rand(2).tolist()
+    desired_weights = rng.rand(2).tolist()
     summ = sum(desired_weights)
 
     test_ocp = cashocs.OptimalControlProblem(
@@ -476,7 +477,7 @@ def test_scalar_norm_optimization():
 
     J = Constant(0) * dx
     norm_y = y * y * dx
-    tracking_goal = np.random.uniform(0.25, 0.75)
+    tracking_goal = rng.uniform(0.25, 0.75)
     J_norm = {"integrand": norm_y, "tracking_goal": tracking_goal}
     config.set("OptimizationRoutine", "initial_stepsize", "4e3")
 
@@ -534,7 +535,7 @@ def test_scaling_scalar_only():
     J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
     J_scalar = [J_y, J_u]
 
-    desired_weights = np.random.rand(3).tolist()
+    desired_weights = rng.rand(3).tolist()
     summ = sum(desired_weights[1:])
 
     test_ocp = cashocs.OptimalControlProblem(
@@ -569,7 +570,7 @@ def test_scaling_scalar_and_single_cost():
     J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
     J_scalar = [J_y, J_u]
 
-    desired_weights = np.random.rand(3).tolist()
+    desired_weights = rng.rand(3).tolist()
     summ = sum(desired_weights)
 
     test_ocp = cashocs.OptimalControlProblem(
@@ -608,7 +609,7 @@ def test_scaling_all():
     J2 = Constant(0.5) * u * u * dx
     J_list = [J1, J2]
 
-    desired_weights = np.random.rand(4).tolist()
+    desired_weights = rng.rand(4).tolist()
     summ = sum(desired_weights)
 
     test_ocp = cashocs.OptimalControlProblem(

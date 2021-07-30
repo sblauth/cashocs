@@ -280,18 +280,17 @@ class OptimizationAlgorithm:
         None
         """
 
+        output = (
+            f"\nStatistics -- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
+            + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves:d}\n"
+        )
+
         if self.verbose:
-            print(
-                f"\nStatistics -- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
-                + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves:d}\n"
-            )
+            print(output)
 
         if self.save_txt:
             with open(f"{self.result_dir}/history.txt", "a") as file:
-                file.write(
-                    f"\nStatistics -- Total iterations: {self.iteration:4d} --- Final objective value:  {self.objective_value:.3e} --- Final gradient norm:  {self.relative_norm:.3e} (rel)\n"
-                    + f"           --- State equations solved: {self.state_problem.number_of_solves:d} --- Adjoint equations solved: {self.adjoint_problem.number_of_solves:d}\n"
-                )
+                file.write(output)
 
     def finalize(self):
         """Finalizes the solution algorithm.

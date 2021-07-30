@@ -26,6 +26,7 @@ import numpy as np
 
 import cashocs
 
+rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
 V = fenics.FunctionSpace(mesh, "CG", 1)
 
@@ -39,7 +40,7 @@ def test_summation():
 
     for i in range(dim):
         temp = fenics.Function(V)
-        temp.vector()[:] = np.random.rand(V.dim())
+        temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
     F = cashocs.utils.summation([funcs[i] * test * dx for i in range(dim)])
@@ -62,7 +63,7 @@ def test_multiplication():
 
     for i in range(dim):
         temp = fenics.Function(V)
-        temp.vector()[:] = np.random.rand(V.dim())
+        temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
     F = cashocs.utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
@@ -80,7 +81,7 @@ def test_empty_measure():
     trial = fenics.TrialFunction(V)
     test = fenics.TestFunction(V)
     fun = fenics.Function(V)
-    fun.vector()[:] = np.random.rand(V.dim())
+    fun.vector()[:] = rng.rand(V.dim())
 
     d1 = cashocs.utils.EmptyMeasure(dx)
     d2 = cashocs.utils.EmptyMeasure(ds)
@@ -128,7 +129,7 @@ def test_create_bcs():
     a = fenics.inner(fenics.grad(trial), fenics.grad(test)) * dx
     L = fenics.Constant(1) * test * dx
 
-    bc_val = np.random.rand()
+    bc_val = rng.rand()
     bc1 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 1)
     bc2 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 2)
     bc3 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 3)
@@ -154,7 +155,7 @@ def test_interpolator():
     interp_X = cashocs.utils.Interpolator(V, X)
 
     func_V = fenics.Function(V)
-    func_V.vector()[:] = np.random.rand(V.dim())
+    func_V.vector()[:] = rng.rand(V.dim())
 
     fen_W = fenics.interpolate(func_V, W)
     fen_X = fenics.interpolate(func_V, X)

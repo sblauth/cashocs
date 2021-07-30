@@ -2,16 +2,22 @@ CASHOCS
 =======
 
 .. image:: https://img.shields.io/pypi/v/cashocs
-   :target: https://pypi.org/project/cashocs/
+    :target: https://pypi.org/project/cashocs/
 
 .. image:: https://img.shields.io/conda/vn/conda-forge/cashocs
-   :target: https://anaconda.org/conda-forge/cashocs
+    :target: https://anaconda.org/conda-forge/cashocs
+
+.. image:: https://img.shields.io/pypi/pyversions/cashocs
+    :target: https://pypi.org/project/cashocs/
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5142171.svg
-   :target: https://doi.org/10.5281/zenodo.5142171
+    :target: https://doi.org/10.5281/zenodo.5142171
 
-.. image:: https://img.shields.io/pypi/l/cashocs
+.. image:: https://img.shields.io/pypi/l/cashocs?color=informational
     :target: https://pypi.org/project/cashocs/
+
+.. image:: https://img.shields.io/pypi/dm/cashocs?color=informational
+    :target: https://pypistats.org/packages/cashocs
 
 |
 
@@ -89,10 +95,7 @@ where <ENV_NAME> is the desired name of the new environment.
 
 .. note::
 
-    `Gmsh <https://gmsh.info/>`_ is not automatically installed with anaconda, as this is not intrinsically
-    linked to CASHOCS. Instead, cashocs only provides an interface for importing meshes
-    generated with Gmsh. If you want to use Gmsh with cashocs, please use Gmsh 4.6 or higher.
-    See `<https://gmsh.info/>`_ for possibilities to install Gmsh.
+    `Gmsh <https://gmsh.info/>`_ is now (starting with release 1.3.2) automatically installed with anaconda.
 
 
 
@@ -104,10 +107,10 @@ Manual Installation
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
-  The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.2.
+  The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.4.
 
-- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.6.
-  CASHOCS does not necessarily need this to function properly,
+- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8.
+  CASHOCS does not necessarily need this to work properly,
   but it is required for the remeshing functionality.
 
 .. note::

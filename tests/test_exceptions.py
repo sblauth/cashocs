@@ -34,6 +34,7 @@ from cashocs._exceptions import (
     PETScKSPError,
 )
 
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(6)
@@ -88,13 +89,13 @@ def test_input_error():
 
 def test_petsc_error():
     with pytest.raises(PETScKSPError) as e_info:
-        u.vector()[:] = np.random.rand(V.dim())
+        u.vector()[:] = rng.rand(V.dim())
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
     assert "PETSc linear solver did not converge." in str(e_info.value)
 
     with pytest.raises(CashocsException):
-        u.vector()[:] = np.random.rand(V.dim())
+        u.vector()[:] = rng.rand(V.dim())
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
 
@@ -104,7 +105,7 @@ def test_config_error():
         config.set("AlgoCG", "cg_method", "nonexistent")
         config.set("OptimizationRoutine", "algorithm", "cg")
         config.set("OptimizationRoutine", "maximum_iterations", "2")
-        u.vector()[:] = np.random.rand(V.dim())
+        u.vector()[:] = rng.rand(V.dim())
         ocp_conf = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
         ocp_conf.solve(max_iter=10)
     assert "You have an error in your config file." in str(e_info.value)

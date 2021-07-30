@@ -26,6 +26,7 @@ from fenics import *
 
 import cashocs
 
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
@@ -56,8 +57,8 @@ def test_state_adjoint_problems():
     L_state = u * test * dx
     L_adjoint = -(state - y_d) * test * dx
 
-    y_d.vector()[:] = np.random.rand(V.dim())
-    u.vector()[:] = np.random.rand(V.dim())
+    y_d.vector()[:] = rng.rand(V.dim())
+    u.vector()[:] = rng.rand(V.dim())
 
     ocp.compute_state_variables()
     ocp.compute_adjoint_variables()
@@ -78,8 +79,8 @@ def test_control_gradient():
     L = Constant(alpha) * u * test * dx - p * test * dx
 
     ocp._erase_pde_memory()
-    y_d.vector()[:] = np.random.rand(V.dim())
-    u.vector()[:] = np.random.rand(V.dim())
+    y_d.vector()[:] = rng.rand(V.dim())
+    u.vector()[:] = rng.rand(V.dim())
 
     c_gradient = ocp.compute_gradient()[0]
     solve(a == L, gradient)

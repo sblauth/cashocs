@@ -82,6 +82,7 @@ def t_div(u, n):
     return div(u) - inner(grad(u) * n, n)
 
 
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_sop.ini")
 
@@ -118,7 +119,7 @@ def test_move_mesh():
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     V = VectorFunctionSpace(mesh, "CG", 1)
-    offset = np.random.rand(2)
+    offset = rng.rand(2)
     trafo = interpolate(Constant(offset), V)
     sop.mesh_handler.move_mesh(trafo)
 
@@ -130,7 +131,7 @@ def test_move_mesh():
     sop.mesh_handler.revert_transformation()
     assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
-    trafo.vector()[:] = np.random.uniform(-1e3, 1e3, V.dim())
+    trafo.vector()[:] = rng.uniform(-1e3, 1e3, V.dim())
     sop.mesh_handler.move_mesh(trafo)
     assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
@@ -311,7 +312,7 @@ def test_shape_volume_regularization():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     config.set("Regularization", "factor_volume", "1.0")
-    radius = np.random.uniform(0.33, 0.66)
+    radius = rng.uniform(0.33, 0.66)
     config.set("Regularization", "target_volume", str(np.pi * radius ** 2))
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
@@ -335,7 +336,7 @@ def test_shape_surface_regularization():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     config.set("Regularization", "factor_surface", "1.0")
-    radius = np.random.uniform(0.33, 0.66)
+    radius = rng.uniform(0.33, 0.66)
     config.set("Regularization", "target_surface", str(2 * np.pi * radius))
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
@@ -361,8 +362,8 @@ def test_shape_barycenter_regularization():
     config.set("Regularization", "factor_volume", "1e2")
     config.set("Regularization", "use_initial_volume", "True")
     config.set("Regularization", "factor_barycenter", "1.0")
-    pos_x = np.random.uniform(0.2, 0.4)
-    pos_y = np.random.uniform(-0.4, -0.2)
+    pos_x = rng.uniform(0.2, 0.4)
+    pos_y = rng.uniform(-0.4, -0.2)
     config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
     config.set("MeshQuality", "volume_change", "10")
     initial_volume = assemble(1 * dx)
@@ -410,8 +411,8 @@ def test_shape_barycenter_regularization_hole():
     config.set("Regularization", "use_initial_volume", "True")
     config.set("Regularization", "factor_barycenter", "1.0")
     config.set("Regularization", "measure_hole", "True")
-    pos_x = np.random.uniform(0.2, 0.4)
-    pos_y = np.random.uniform(-0.4, -0.2)
+    pos_x = rng.uniform(0.2, 0.4)
+    pos_y = rng.uniform(-0.4, -0.2)
     config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
     config.set("MeshQuality", "volume_change", "10")
     # config.set("MeshQuality", "angle_change", "0.3")
@@ -540,7 +541,7 @@ def test_scaling_shape():
     J2 = u * u * dx
     J_list = [J1, J2]
 
-    desired_weights = np.random.rand(2).tolist()
+    desired_weights = rng.rand(2).tolist()
     diff = desired_weights[1] - desired_weights[0]
 
     test_sop = cashocs.ShapeOptimizationProblem(
@@ -558,7 +559,7 @@ def test_scaling_shape():
 def test_scaling_shape_regularization():
 
     no_iterations = 5
-    test_weights = np.random.rand(no_iterations, 4)
+    test_weights = rng.rand(no_iterations, 4)
     config.set("Regularization", "use_relative_scaling", "True")
     config.set("Regularization", "target_barycenter", "[1.0, 1.0, 0.0]")
 
@@ -615,7 +616,7 @@ def test_curvature_computation():
 def test_scalar_tracking_regularization():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
-    radius = np.random.uniform(0.33, 0.66)
+    radius = rng.uniform(0.33, 0.66)
     tracking_goal = np.pi * radius ** 2
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
@@ -641,7 +642,7 @@ def test_scalar_tracking_norm():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    tracking_goal = np.random.uniform(0.25, 0.75)
+    tracking_goal = rng.uniform(0.25, 0.75)
     norm_u = u * u * dx
     J_tracking = {"integrand": norm_u, "tracking_goal": tracking_goal}
 
@@ -694,12 +695,12 @@ def test_scaling_scalar_only():
     mesh.bounding_box_tree().build(mesh)
 
     J = Constant(0) * dx
-    tracking_goals = np.random.uniform(0.25, 0.75, 2)
+    tracking_goals = rng.uniform(0.25, 0.75, 2)
     J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
     J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
     J_scalar = [J_scalar1, J_scalar2]
 
-    desired_weights = np.random.rand(3).tolist()
+    desired_weights = rng.rand(3).tolist()
     summ = np.sum(desired_weights[1:])
 
     test_sop = cashocs.ShapeOptimizationProblem(
@@ -729,12 +730,12 @@ def test_scaling_scalar_and_single_cost():
     mesh.bounding_box_tree().build(mesh)
 
     J = u * dx
-    tracking_goals = np.random.uniform(0.25, 0.75, 2)
+    tracking_goals = rng.uniform(0.25, 0.75, 2)
     J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
     J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
     J_scalar = [J_scalar1, J_scalar2]
 
-    desired_weights = np.random.rand(3).tolist()
+    desired_weights = rng.rand(3).tolist()
     summ = -desired_weights[0] + np.sum(desired_weights[1:])
 
     test_sop = cashocs.ShapeOptimizationProblem(
@@ -766,12 +767,12 @@ def test_scaling_all():
     J1 = u * dx
     J2 = u * u * dx
     J_list = [J1, J2]
-    tracking_goals = np.random.uniform(0.25, 0.75, 2)
+    tracking_goals = rng.uniform(0.25, 0.75, 2)
     J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
     J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
     J_scalar = [J_scalar1, J_scalar2]
 
-    desired_weights = np.random.rand(4).tolist()
+    desired_weights = rng.rand(4).tolist()
     summ = -desired_weights[0] + np.sum(desired_weights[1:])
 
     test_sop = cashocs.ShapeOptimizationProblem(
