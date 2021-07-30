@@ -24,7 +24,6 @@ optimization problems.
 
 import configparser
 import json
-import sys
 
 import fenics
 import numpy as np
@@ -34,7 +33,7 @@ from ._exceptions import InputError
 from ._forms import FormHandler, Lagrangian
 from ._loggers import info, warning
 from ._pde_problems import StateProblem
-from .utils import summation, _parse_remesh
+from .utils import _parse_remesh, summation
 
 
 class OptimizationProblem:

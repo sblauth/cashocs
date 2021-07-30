@@ -22,8 +22,8 @@
 """
 
 import argparse
-import time
 import sys
+import time
 
 import meshio
 

@@ -20,11 +20,11 @@
 """
 
 import os
+import subprocess
 
 import numpy as np
 import pytest
 from fenics import *
-import subprocess
 
 import cashocs
 from cashocs._exceptions import InputError

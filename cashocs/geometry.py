@@ -41,10 +41,10 @@ from ._exceptions import CashocsException, ConfigError, InputError
 from ._loggers import debug, info, warning
 from .utils import (
     _assemble_petsc_system,
+    _parse_remesh,
     _setup_petsc_options,
     _solve_linear_problem,
     write_out_mesh,
-    _parse_remesh,
 )
 
 

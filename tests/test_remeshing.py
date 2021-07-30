@@ -8,9 +8,9 @@ import os
 import shutil
 import subprocess
 
+import numpy as np
 import pytest
 from fenics import *
-import numpy as np
 
 import cashocs
 

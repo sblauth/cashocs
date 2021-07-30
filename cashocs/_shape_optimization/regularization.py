@@ -23,7 +23,6 @@ and barycenter, and desired ones.
 """
 
 import json
-import sys
 
 import fenics
 from fenics import Constant, div, inner

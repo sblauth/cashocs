@@ -5,10 +5,10 @@ Created on 28/07/2021, 09.04
 """
 
 import os
+import subprocess
 
 import fenics
 import numpy as np
-import subprocess
 
 import cashocs
 import cashocs._cli
