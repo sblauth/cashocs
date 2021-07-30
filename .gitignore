@@ -20,4 +20,7 @@ cashocs.egg-info/
 
 
 ### cashocs
-*.cashocs_remesh_*
+*._cashocs_remesh_*
+/tests/temp
+/tests/out
+*cashocs_remesh_*/
