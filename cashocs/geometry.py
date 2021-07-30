@@ -580,6 +580,7 @@ class _MeshHandler:
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
         self.mesh = self.form_handler.mesh
+        self.deformation_handler = DeformationHandler(self.mesh)
         self.dx = self.form_handler.dx
         self.bbtree = self.mesh.bounding_box_tree()
         self.config = self.form_handler.config
@@ -723,11 +724,11 @@ class _MeshHandler:
             debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
-            self.old_coordinates = self.mesh.coordinates().copy()
-            fenics.ALE.move(self.mesh, transformation)
-            self.bbtree.build(self.mesh)
-
-            return self.__test_a_posteriori()
+            success_flag = self.deformation_handler.move_mesh(
+                transformation, validated_a_priori=True
+            )
+            self.compute_mesh_quality()
+            return success_flag
 
     def revert_transformation(self):
         """Reverts the previous mesh transformation.
@@ -741,9 +742,7 @@ class _MeshHandler:
         None
         """
 
-        self.mesh.coordinates()[:, :] = self.old_coordinates
-        del self.old_coordinates
-        self.bbtree.build(self.mesh)
+        self.deformation_handler.revert_transformation()
 
     def __setup_decrease_computation(self):
         """Initializes attributes and solver for the frobenius norm check.
@@ -905,47 +904,6 @@ class _MeshHandler:
         max_det = np.max(x[:])
 
         return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
-
-    def __test_a_posteriori(self):
-        """Checks the quality of the transformation after the actual mesh is moved.
-
-        Checks whether the mesh is a valid finite element mesh
-        after it has been moved, i.e., if there are no overlapping
-        or self intersecting elements.
-
-        Returns
-        -------
-        bool
-                True if the test is successful, False otherwise
-
-        Notes
-        -----
-        fenics itself does not check whether the used mesh is a valid finite
-        element mesh, so this check has to be done manually.
-        """
-
-        mesh = self.mesh
-        cells = mesh.cells()
-        coordinates = mesh.coordinates()
-        self_intersections = False
-        for i in range(coordinates.shape[0]):
-            x = fenics.Point(coordinates[i])
-            cells_idx = self.bbtree.compute_entity_collisions(x)
-            intersections = len(cells_idx)
-            M = cells[cells_idx]
-            occurences = M.flatten().tolist().count(i)
-
-            if intersections > occurences:
-                self_intersections = True
-                break
-
-        if self_intersections:
-            self.revert_transformation()
-            debug("Mesh transformation rejected due to a posteriori check.")
-            return False
-        else:
-            self.compute_mesh_quality()
-            return True
 
     def compute_mesh_quality(self):
         """This computes the current mesh quality.
@@ -1363,7 +1321,7 @@ class DeformationHandler:
         del self.old_coordinates
         self.bbtree.build(self.mesh)
 
-    def move_mesh(self, transformation):
+    def move_mesh(self, transformation, validated_a_priori=False):
         r"""Transforms the mesh by perturbation of identity.
 
         Moves the mesh according to the deformation given by
@@ -1388,11 +1346,18 @@ class DeformationHandler:
         ):
             raise CashocsException("Not a valid mesh transformation")
 
-        if not self.__test_a_priori(transformation):
-            debug(
-                "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
-            )
-            return False
+        if not validated_a_priori:
+            if not self.__test_a_priori(transformation):
+                debug(
+                    "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
+                )
+                return False
+            else:
+                self.old_coordinates = self.mesh.coordinates().copy()
+                fenics.ALE.move(self.mesh, transformation)
+                self.bbtree.build(self.mesh)
+
+                return self.__test_a_posteriori()
         else:
             self.old_coordinates = self.mesh.coordinates().copy()
             fenics.ALE.move(self.mesh, transformation)

@@ -17,3 +17,7 @@ cashocs.egg-info/
 
 ### sphinx
 /docs/build
+
+
+### cashocs
+*.cashocs_remesh_*
