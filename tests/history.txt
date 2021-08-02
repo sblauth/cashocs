@@ -1,6 +1,0 @@
-Iteration    0 - Objective value:  -1.071e-02    Gradient norm:  6.342e-01 (abs)Mesh Quality: 0.31 (condition_number)
-
-Iteration    1 - Objective value:  -5.883e-02    Gradient norm:  2.909e-01 (rel)    Mesh Quality: 0.31 (condition_number)    Step size:  2.500e-01
-Iteration    2 - Objective value:  -6.556e-02    Gradient norm:  2.458e-01 (rel)    Mesh Quality: 0.31 (condition_number)    Step size:  1.000e+00
-Iteration    3 - Objective value:  -9.209e-02    Gradient norm:  5.010e-02 (rel)    Mesh Quality: 0.26 (condition_number)    Step size:  1.000e+00
-Iteration    4 - Objective value:  -9.335e-02    Gradient norm:  1.714e-02 (rel)    Mesh Quality: 0.42 (condition_number)    Step size:  1.000e+00
