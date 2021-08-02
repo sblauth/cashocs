@@ -205,7 +205,7 @@ If you are using BibTeX, you can use the following entries::
 
 as well as ::	
 
-	@Article{Blauth2020Nonlinear,
+	@Article{Blauth2021Nonlinear,
 		author   = {Sebastian Blauth},
 		journal  = {SIAM J. Optim.},
 		title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},

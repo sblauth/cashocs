@@ -775,16 +775,28 @@ def _parse_remesh():
         if os.path.isdir(os.path.realpath(args.temp_dir)):
             temp_dir = args.temp_dir
         else:
-            raise InputError()
+            raise InputError(
+                "Command line options",
+                "--temp_dir",
+                "The temporary directory for remeshing does not exist.",
+            )
 
     if args.cashocs_remesh:
         cashocs_remesh_flag = True
         if args.temp_dir is None:
-            raise InputError()
+            raise InputError(
+                "Command line options",
+                "--temp_dir",
+                "Cannot use command line option --cashocs_remesh without specifying --temp_dir.",
+            )
         elif not os.path.isfile(os.path.realpath(f"{temp_dir}/temp_dict.json")):
             raise InputError
     else:
         if args.temp_dir is not None:
-            raise InputError()
+            raise InputError(
+                "Command line options",
+                "--temp_dir",
+                "Should not specify --temp_dir when not using --cashocs_remesh.",
+            )
 
     return cashocs_remesh_flag, temp_dir
