@@ -22,7 +22,7 @@
 import fenics
 import numpy as np
 
-from .methods import CG, GradientDescent, LBFGS, Newton, PDAS
+from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
 from .._forms import ControlFormHandler
 from .._optimal_control import ReducedCostFunctional
@@ -551,7 +551,7 @@ class OptimalControlProblem(OptimizationProblem):
         elif self.algorithm == "lbfgs":
             self.solver = LBFGS(self)
         elif self.algorithm == "conjugate_gradient":
-            self.solver = CG(self)
+            self.solver = NCG(self)
         elif self.algorithm == "newton":
             self.solver = Newton(self)
         elif self.algorithm == "pdas":

@@ -30,7 +30,7 @@ import numpy as np
 from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
-from .methods import CG, GradientDescent, LBFGS
+from .methods import NCG, GradientDescent, LBFGS
 from .._exceptions import CashocsException, ConfigError, InputError
 from .._forms import ShapeFormHandler
 from .._loggers import debug, warning
@@ -391,7 +391,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         elif self.algorithm == "lbfgs":
             self.solver = LBFGS(self)
         elif self.algorithm == "conjugate_gradient":
-            self.solver = CG(self)
+            self.solver = NCG(self)
         elif self.algorithm == "none":
             raise InputError(
                 "cashocs.OptimalControlProblem.solve",

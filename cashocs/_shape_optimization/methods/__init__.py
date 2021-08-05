@@ -19,9 +19,9 @@
 
 """
 
-from .cg import CG
+from .ncg import NCG
 from .gradient_descent import GradientDescent
 from .l_bfgs import LBFGS
 
 
-__all__ = ["CG", "GradientDescent", "LBFGS"]
+__all__ = ["NCG", "GradientDescent", "LBFGS"]

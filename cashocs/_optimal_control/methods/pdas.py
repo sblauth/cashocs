@@ -22,7 +22,7 @@
 import fenics
 import numpy as np
 
-from .pdas_inner_solvers import InnerCG, InnerGradientDescent, InnerLBFGS, InnerNewton
+from .pdas_inner_solvers import InnerNCG, InnerGradientDescent, InnerLBFGS, InnerNewton
 from ..._exceptions import ConfigError
 from ..._optimal_control import OptimizationAlgorithm
 
@@ -63,7 +63,7 @@ class PDAS(OptimizationAlgorithm):
         if self.inner_pdas in ["gradient_descent", "gd"]:
             self.inner_solver = InnerGradientDescent(optimization_problem)
         elif self.inner_pdas in ["cg", "conjugate_gradient", "ncg", "nonlinear_cg"]:
-            self.inner_solver = InnerCG(optimization_problem)
+            self.inner_solver = InnerNCG(optimization_problem)
         elif self.inner_pdas in ["lbfgs", "bfgs"]:
             self.inner_solver = InnerLBFGS(optimization_problem)
         elif self.inner_pdas == "newton":

@@ -1466,6 +1466,35 @@ class DeformationHandler:
 
         return coordinate_deformation
 
+    def assign_coordinates(self, coordinates):
+        """Assigns coordinates to self.mesh.
+
+        Parameters
+        ----------
+        coordinates : np.ndarray
+            Array of mesh coordinates, which you want to assign.
+
+        Returns
+        -------
+        None
+
+        """
+
+        if not self.mesh.geometric_dimension() == coordinates.shape[1]:
+            raise InputError(
+                "DeformationHandler.assign_coordinates",
+                "coordinates",
+                "The dimension of coordinates is wrong.",
+            )
+        if not self.mesh.num_vertices() == coordinates.shape[0]:
+            raise InputError(
+                "DeformationHandler.assign_coordinates",
+                "coordinates",
+                "The number of vertices is wrong.",
+            )
+        self.mesh.coordinates()[:, :] = coordinates[:, :]
+        self.bbtree.build(self.mesh)
+
 
 class MeshQuality:
     r"""A class used to compute the quality of a mesh.

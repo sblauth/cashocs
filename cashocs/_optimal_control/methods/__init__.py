@@ -21,11 +21,11 @@ In this module, the optimization algorithms for the optimal control
 problems are implemented.
 """
 
-from .cg import CG
+from .ncg import NCG
 from .gradient_descent import GradientDescent
 from .l_bfgs import LBFGS
 from .newton import Newton
 from .pdas import PDAS
 
 
-__all__ = ["GradientDescent", "CG", "LBFGS", "Newton", "PDAS"]
+__all__ = ["GradientDescent", "NCG", "LBFGS", "Newton", "PDAS"]

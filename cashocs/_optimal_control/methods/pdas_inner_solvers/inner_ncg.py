@@ -15,32 +15,46 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Nonlinear conjugate gradient methods.
+"""Nonlinear CG methods for the solution of PDAS problems.
 
 """
 
 import fenics
 import numpy as np
 
-from ..._exceptions import ConfigError
-from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
+from .unconstrained_line_search import UnconstrainedLineSearch
+from ...optimization_algorithm import OptimizationAlgorithm
+from ...._exceptions import ConfigError, NotConvergedError
 
 
-class CG(OptimizationAlgorithm):
-    """Nonlinear conjugate gradient method."""
+class InnerNCG(OptimizationAlgorithm):
+    """Unconstrained nonlinear conjugate gradient method."""
 
     def __init__(self, optimization_problem):
-        """Initializes the nonlinear cg method.
+        """Initializes the nonlinear CG method.
 
         Parameters
         ----------
         optimization_problem : cashocs.OptimalControlProblem
-                the OptimalControlProblem object
+                the corresponding optimization problem
         """
 
         OptimizationAlgorithm.__init__(self, optimization_problem)
 
-        self.line_search = ArmijoLineSearch(self)
+        self.line_search = UnconstrainedLineSearch(self)
+
+        self.maximum_iterations = self.config.getint(
+            "AlgoPDAS", "maximum_iterations_inner_pdas", fallback=50
+        )
+        self.tolerance = self.config.getfloat(
+            "AlgoPDAS", "pdas_inner_tolerance", fallback=1e-2
+        )
+        self.reduced_gradient = [
+            fenics.Function(optimization_problem.control_spaces[j])
+            for j in range(len(self.controls))
+        ]
+        self.first_iteration = True
+        self.first_gradient_norm = 1.0
 
         self.gradients_prev = [
             fenics.Function(V) for V in optimization_problem.control_spaces
@@ -49,16 +63,10 @@ class CG(OptimizationAlgorithm):
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
         self.temp_HZ = [fenics.Function(V) for V in optimization_problem.control_spaces]
-        self.control_constraints = optimization_problem.control_constraints
+
+        self.armijo_broken = False
 
         self.cg_method = self.config.get("AlgoCG", "cg_method", fallback="FR")
-        if not self.cg_method in ["FR", "PR", "HS", "DY", "HZ"]:
-            raise ConfigError(
-                "AlgoCG",
-                "cg_method",
-                "Not a valid input. Choose either 'FR' (Fletcher Reeves), 'PR' (Polak Ribiere), "
-                "'HS' (Hestenes Stiefel), 'DY' (Dai Yuan), or 'HZ' (Hager Zhang).",
-            )
         self.cg_periodic_restart = self.config.getboolean(
             "AlgoCG", "cg_periodic_restart", fallback=False
         )
@@ -72,40 +80,15 @@ class CG(OptimizationAlgorithm):
             "AlgoCG", "cg_restart_tol", fallback=0.25
         )
 
-    def project_direction(self, a):
-        """Restricts the search direction to the inactive set.
+        self.pdas_solver = True
+
+    def run(self, idx_active):
+        """Solves the inner optimization problem with the nonlinear CG method
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
-                A function that shall be projected / restricted (will be overwritten)
-
-        Returns
-        -------
-        None
-        """
-
-        for j in range(self.form_handler.control_dim):
-            idx = np.asarray(
-                np.logical_or(
-                    np.logical_and(
-                        self.controls[j].vector()[:]
-                        <= self.control_constraints[j][0].vector()[:],
-                        a[j].vector()[:] < 0.0,
-                    ),
-                    np.logical_and(
-                        self.controls[j].vector()[:]
-                        >= self.control_constraints[j][1].vector()[:],
-                        a[j].vector()[:] > 0.0,
-                    ),
-                )
-            ).nonzero()[0]
-
-            a[j].vector()[idx] = 0.0
-
-    def run(self):
-        """Performs the optimization via the nonlinear cg method
-
+        idx_active : list[numpy.ndarray]
+                list of the indices corresponding to the active set
         Returns
         -------
         None
@@ -117,21 +100,33 @@ class CG(OptimizationAlgorithm):
         self.state_problem.has_solution = False
         for i in range(len(self.gradients)):
             self.gradients[i].vector()[:] = 1.0
+            self.reduced_gradient[i].vector()[:] = 1.0
 
         while True:
 
             for i in range(self.form_handler.control_dim):
-                self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
+                self.gradients_prev[i].vector()[:] = self.reduced_gradient[i].vector()[
+                    :
+                ]
 
             self.adjoint_problem.has_solution = False
             self.gradient_problem.has_solution = False
             self.gradient_problem.solve()
 
-            self.gradient_norm = np.sqrt(self._stationary_measure_squared())
+            for j in range(len(self.controls)):
+                self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+                self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
+
+            self.gradient_norm = np.sqrt(
+                self.form_handler.scalar_product(
+                    self.reduced_gradient, self.reduced_gradient
+                )
+            )
+
             if self.iteration > 0:
                 if self.cg_method == "FR":
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.gradients
+                        self.reduced_gradient, self.reduced_gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.gradients_prev, self.gradients_prev
@@ -139,14 +134,14 @@ class CG(OptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "PR":
-                    for i in range(len(self.gradients)):
+                    for i in range(self.form_handler.control_dim):
                         self.differences[i].vector()[:] = (
-                            self.gradients[i].vector()[:]
+                            self.reduced_gradient[i].vector()[:]
                             - self.gradients_prev[i].vector()[:]
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.differences
+                        self.reduced_gradient, self.differences
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.gradients_prev, self.gradients_prev
@@ -154,14 +149,14 @@ class CG(OptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "HS":
-                    for i in range(len(self.gradients)):
+                    for i in range(self.form_handler.control_dim):
                         self.differences[i].vector()[:] = (
-                            self.gradients[i].vector()[:]
+                            self.reduced_gradient[i].vector()[:]
                             - self.gradients_prev[i].vector()[:]
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.differences
+                        self.reduced_gradient, self.differences
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.differences, self.search_directions
@@ -169,14 +164,14 @@ class CG(OptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "DY":
-                    for i in range(len(self.gradients)):
+                    for i in range(self.form_handler.control_dim):
                         self.differences[i].vector()[:] = (
-                            self.gradients[i].vector()[:]
+                            self.reduced_gradient[i].vector()[:]
                             - self.gradients_prev[i].vector()[:]
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.gradients
+                        self.reduced_gradient, self.reduced_gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.search_directions, self.differences
@@ -184,9 +179,9 @@ class CG(OptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "HZ":
-                    for i in range(len(self.gradients)):
+                    for i in range(self.form_handler.control_dim):
                         self.differences[i].vector()[:] = (
-                            self.gradients[i].vector()[:]
+                            self.reduced_gradient[i].vector()[:]
                             - self.gradients_prev[i].vector()[:]
                         )
 
@@ -197,7 +192,7 @@ class CG(OptimizationAlgorithm):
                         self.differences, self.differences
                     )
 
-                    for i in range(len(self.gradients)):
+                    for i in range(self.form_handler.control_dim):
                         self.differences[i].vector()[:] = (
                             self.differences[i].vector()[:]
                             - 2 * y2 / dy * self.search_directions[i].vector()[:]
@@ -205,68 +200,96 @@ class CG(OptimizationAlgorithm):
 
                     self.beta = (
                         self.form_handler.scalar_product(
-                            self.differences, self.gradients
+                            self.differences, self.reduced_gradient
                         )
                         / dy
                     )
 
+                else:
+                    raise ConfigError(
+                        "AlgoCG",
+                        "cg_method",
+                        "Not a valid input. Choose either 'FR' (Fletcher Reeves), 'PR' (Polak Ribiere), "
+                        "'HS' (Hestenes Stiefel), 'DY' (Dai Yuan), or 'HZ' (Hager Zhang).",
+                    )
+
             if self.iteration == 0:
                 self.gradient_norm_initial = self.gradient_norm
-                if self.gradient_norm_initial == 0:
-                    self.objective_value = self.cost_functional.evaluate()
-                    self.converged = True
-                    break
+                if self.first_iteration:
+                    self.first_gradient_norm = self.gradient_norm_initial
+                    self.first_iteration = False
                 self.beta = 0.0
 
             self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
-                if self.iteration == 0:
-                    self.objective_value = self.cost_functional.evaluate()
-                self.converged = True
+            if (
+                self.gradient_norm
+                <= self.atol + self.tolerance * self.gradient_norm_initial
+                or self.relative_norm
+                * self.gradient_norm_initial
+                / self.first_gradient_norm
+                <= self.tolerance / 2
+            ):
+                # self.print_results()
                 break
 
             for i in range(self.form_handler.control_dim):
                 self.search_directions[i].vector()[:] = (
-                    -self.gradients[i].vector()[:]
+                    -self.reduced_gradient[i].vector()[:]
                     + self.beta * self.search_directions[i].vector()[:]
                 )
+
             if self.cg_periodic_restart:
                 if self.memory < self.cg_periodic_its:
                     self.memory += 1
                 else:
-                    for i in range(len(self.gradients)):
-                        self.search_directions[i].vector()[:] = -self.gradients[
+                    for i in range(self.form_handler.control_dim):
+                        self.search_directions[i].vector()[:] = -self.reduced_gradient[
                             i
                         ].vector()[:]
                     self.memory = 0
+
             if self.cg_relative_restart:
                 if (
                     abs(
                         self.form_handler.scalar_product(
-                            self.gradients, self.gradients_prev
+                            self.reduced_gradient, self.gradients_prev
                         )
                     )
                     / pow(self.gradient_norm, 2)
                     >= self.cg_restart_tol
                 ):
-                    for i in range(len(self.gradients)):
-                        self.search_directions[i].vector()[:] = -self.gradients[
+                    for i in range(self.form_handler.control_dim):
+                        self.search_directions[i].vector()[:] = -self.reduced_gradient[
                             i
                         ].vector()[:]
 
-            self.project_direction(self.search_directions)
             self.directional_derivative = self.form_handler.scalar_product(
-                self.gradients, self.search_directions
+                self.reduced_gradient, self.search_directions
             )
 
             if self.directional_derivative >= 0:
-                for i in range(len(self.gradients)):
-                    self.search_directions[i].vector()[:] = -self.gradients[i].vector()[
-                        :
-                    ]
+                for i in range(self.form_handler.control_dim):
+                    self.search_directions[i].vector()[:] = -self.reduced_gradient[
+                        i
+                    ].vector()[:]
 
-            self.line_search.search(self.search_directions, self.has_curvature_info)
+            self.line_search.search(self.search_directions)
+            if self.armijo_broken:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Armijo rule failed.")
+                    break
+                else:
+                    raise NotConvergedError("Armijo line search")
 
             self.iteration += 1
-            if self.nonconvergence():
-                break
+            if self.iteration >= self.maximum_iterations:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Maximum number of iterations exceeded.")
+                    break
+                else:
+                    raise NotConvergedError(
+                        "nonlinear CG method for the primal dual active set method",
+                        "Maximum number of iterations were exceeded.",
+                    )

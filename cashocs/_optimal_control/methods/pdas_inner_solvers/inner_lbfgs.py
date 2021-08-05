@@ -253,9 +253,9 @@ class InnerLBFGS(OptimizationAlgorithm):
                 self.history_rho.appendleft(rho)
 
                 if 1 / rho <= 0:
-                    self.history_s = deque()
-                    self.history_y = deque()
-                    self.history_rho = deque()
+                    self.history_s.clear()
+                    self.history_y.clear()
+                    self.history_rho.clear()
 
                 if len(self.history_s) > self.bfgs_memory_size:
                     self.history_s.pop()

@@ -209,9 +209,9 @@ class LBFGS(ShapeOptimizationAlgorithm):
                     # if self.curvature_condition / self.form_handler.scalar_product(self.s_k, self.s_k) < 1e-7 * self.gradient_problem.return_norm_squared():
                     self.has_curvature_info = False
 
-                    self.history_s = deque()
-                    self.history_y = deque()
-                    self.history_rho = deque()
+                    self.history_s.clear()
+                    self.history_y.clear()
+                    self.history_rho.clear()
 
                 else:
                     self.has_curvature_info = True
