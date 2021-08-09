@@ -82,46 +82,66 @@ def test_control_gd_multiple():
 
 
 def test_control_cg_fr_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoCG", "cg_method", "FR")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=21)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_pr_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoCG", "cg_method", "PR")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=36)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_hs_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoCG", "cg_method", "HS")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=30)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_dy_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoCG", "cg_method", "DY")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=13)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_hz_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoCG", "cg_method", "HZ")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("cg", rtol=1e-2, atol=0.0, max_iter=26)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -135,18 +155,26 @@ def test_control_bfgs_multiple():
 
 
 def test_control_newton_cg_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoTNM", "inner_newton", "cg")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-4
 
 
 def test_control_newton_cr_multiple():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
     config.set("AlgoTNM", "inner_newton", "cr")
     u.vector()[:] = 0.0
     v.vector()[:] = 0.0
-    ocp._erase_pde_memory()
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J, states, controls, adjoints, config
+    )
     ocp.solve("newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-4

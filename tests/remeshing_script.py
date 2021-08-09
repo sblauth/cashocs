@@ -19,9 +19,6 @@ config.set("Output", "result_dir", dir_path + "/temp/")
 config.add_section("Debug")
 config.set("Debug", "remeshing", "True")
 
-# if "_cashocs_remesh_flag" in sys.argv:
-#     config.set("MeshQuality", "tol_upper", "0.415")
-
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
 
 V = FunctionSpace(mesh, "CG", 1)
@@ -38,4 +35,3 @@ J = u * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 sop.solve(max_iter=4)
-config.set("Debug", "remeshing", "False")

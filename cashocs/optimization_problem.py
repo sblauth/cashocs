@@ -23,6 +23,7 @@ optimization problems.
 """
 
 import configparser
+import copy
 import json
 
 import fenics
@@ -334,7 +335,7 @@ class OptimizationProblem:
                     config.__module__ == "configparser"
                     and type(config).__name__ == "ConfigParser"
                 ):
-                    self.config = config
+                    self.config = copy.deepcopy(config)
                 else:
                     raise InputError(
                         "cashocs.optimization_problem.OptimizationProblem",
