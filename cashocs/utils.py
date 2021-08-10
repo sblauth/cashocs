@@ -307,7 +307,7 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
     value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
             The value of the boundary condition. Has to be compatible with the function_space,
             so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
             The :py:class:`fenics.MeshFunction` object representing the boundaries.
     idcs : list[int] or int
             A list of indices / boundary markers that determine the boundaries
@@ -607,7 +607,7 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 
     Parameters
     ----------
-    mesh : dolfin.cpp.mesh.Mesh
+    mesh : dolfin.cpp.mesh.Mesh.Mesh
             The mesh object in fenics that should be saved as GMSH file.
     original_msh_file : str
             Path to the original GMSH mesh file of the mesh object, has to

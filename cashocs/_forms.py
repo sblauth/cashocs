@@ -1058,7 +1058,7 @@ class ShapeFormHandler(FormHandler):
                 list of state variables
         adjoints : list[dolfin.function.function.Function]
                 list of adjoint variables
-        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
                 a MeshFunction for the boundary markers
         config : configparser.ConfigParser
                 the configparser object storing the problems config

@@ -87,7 +87,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
         adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
                 The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+        boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
                 :py:class:`fenics.MeshFunction` that indicates the boundary markers.
         config : configparser.ConfigParser or None
                 The config file for the problem, generated via :py:func:`cashocs.create_config`.

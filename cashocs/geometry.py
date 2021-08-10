@@ -67,13 +67,13 @@ def import_mesh(input_arg):
 
     Returns
     -------
-    mesh : dolfin.cpp.mesh.Mesh
+    mesh : dolfin.cpp.mesh.Mesh.Mesh
             The imported (computational) mesh.
-    subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+    subdomains : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
             A :py:class:`fenics.MeshFunction` object containing the subdomains,
             i.e., the Physical regions marked in the GMSH
             file.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
             A MeshFunction object containing the boundaries,
             i.e., the Physical regions marked in the GMSH
             file. Can, e.g., be used to set up boundary
@@ -314,11 +314,11 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
 
 	Returns
 	-------
-	mesh : dolfin.cpp.mesh.Mesh
+	mesh : dolfin.cpp.mesh.Mesh.Mesh
 		The computational mesh.
-	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+	subdomains : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
 		A :py:class:`fenics.MeshFunction` object containing the subdomains.
-	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+	boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
 		A MeshFunction object containing the boundaries.
 	dx : ufl.measure.Measure
 		The volume measure of the mesh corresponding to subdomains.
@@ -460,11 +460,11 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
 
 	Returns
 	-------
-	mesh : dolfin.cpp.mesh.Mesh
+	mesh : dolfin.cpp.mesh.Mesh.Mesh
 		The computational mesh.
-	subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+	subdomains : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
 		A MeshFunction object containing the subdomains.
-	boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+	boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
 		A MeshFunction object containing the boundaries.
 	dx : ufl.measure.Measure
 		The volume measure of the mesh corresponding to subdomains.
@@ -1233,7 +1233,7 @@ class DeformationHandler:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
             The fenics mesh which is to be deformed
         """
         self.mesh = mesh
@@ -1717,7 +1717,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh whose quality shall be computed.
 
         Returns
@@ -1749,7 +1749,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1778,7 +1778,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1807,7 +1807,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1833,7 +1833,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1859,7 +1859,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1880,7 +1880,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
@@ -1931,7 +1931,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh
+        mesh : dolfin.cpp.mesh.Mesh.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
