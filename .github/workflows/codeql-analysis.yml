@@ -15,7 +15,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '22 0 * * 7'
+    - cron: '22 0 * * 1'
 
 jobs:
   analyze:
