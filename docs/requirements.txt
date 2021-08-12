@@ -1,6 +1,6 @@
-Sphinx==4.0.2
+Sphinx==4.1.2
 sphinxcontrib-napoleon==0.7
 sphinx-argparse==0.2.5
-sphinx-copybutton==0.3.1
-meshio==4.2.0
+sphinx-copybutton==0.4.0
+meshio==4.4.6
 deprecated==1.2.10
