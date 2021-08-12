@@ -566,6 +566,68 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
     return mesh, subdomains, boundaries, dx, ds, dS
 
 
+def compute_mesh_quality(mesh, type="min", measure="skewness"):
+    """This computes the mesh quality of a given mesh.
+
+    Parameters
+    ----------
+    mesh : dolfin.cpp.mesh.Mesh.Mesh
+        The mesh whose quality shall be computed
+    type : {'min', 'minimum', 'avg', 'average'}, optional
+        The type of measurement for the mesh quality, either minimum quality or average
+        quality over all mesh cells, default is 'min'
+    measure : {'skewness', 'maximum_angle', 'radius_ratios', 'condition_number'}, optional
+        The type of quality measure which is used to compute the quality measure, default
+        is 'skewness'
+
+    Returns
+    -------
+     : float
+        The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst, and
+        1 the best possible quality.
+    """
+
+    if type in ["min", "minimum"]:
+        if measure == "skewness":
+            quality = MeshQuality.min_skewness(mesh)
+        elif measure == "maximum_angle":
+            quality = MeshQuality.min_maximum_angle(mesh)
+        elif measure == "radius_ratios":
+            quality = MeshQuality.min_radius_ratios(mesh)
+        elif measure == "condition_number":
+            quality = MeshQuality.min_condition_number(mesh)
+        else:
+            raise InputError(
+                "cashocs.geometry.compute_mesh_quality",
+                "measure",
+                "The parameter `measure` has to be either 'min', 'minimum' or 'avg', 'average'",
+            )
+
+    elif type in ["avg", "average"]:
+        if measure == "skewness":
+            quality = MeshQuality.avg_skewness(mesh)
+        elif measure == "maximum_angle":
+            quality = MeshQuality.avg_maximum_angle(mesh)
+        elif measure == "radius_ratios":
+            quality = MeshQuality.avg_radius_ratios(mesh)
+        elif measure == "condition_number":
+            quality = MeshQuality.avg_condition_number(mesh)
+        else:
+            raise InputError(
+                "cashocs.geometry.compute_mesh_quality",
+                "measure",
+                "The parameter `measure` has to be either 'min', 'minimum' or 'avg', 'average'",
+            )
+    else:
+        raise InputError(
+            "cashocs.geometry.compute_mesh_quality",
+            "type",
+            "The parameter `type` has to be one of 'skewness', 'maximum_angle', 'radius_ratios', or 'condition_number'",
+        )
+
+    return quality
+
+
 class _MeshHandler:
     """Handles the mesh for shape optimization problems.
 
@@ -641,7 +703,9 @@ class _MeshHandler:
             )
 
         self.current_mesh_quality = 1.0
-        self.compute_mesh_quality()
+        self.current_mesh_quality = compute_mesh_quality(
+            self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+        )
 
         self.__setup_decrease_computation()
         self.__setup_a_priori()
@@ -732,7 +796,9 @@ class _MeshHandler:
             success_flag = self.deformation_handler.move_mesh(
                 transformation, validated_a_priori=True
             )
-            self.compute_mesh_quality()
+            self.current_mesh_quality = compute_mesh_quality(
+                self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+            )
             return success_flag
 
     def revert_transformation(self):
@@ -909,37 +975,6 @@ class _MeshHandler:
         max_det = np.max(x[:])
 
         return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
-
-    def compute_mesh_quality(self):
-        """This computes the current mesh quality.
-
-        Updates the attribute ``current_mesh_quality``, based on the type
-        of quality measure specified in the config file.
-
-        Returns
-        -------
-        None
-        """
-
-        if self.mesh_quality_type in ["min", "minimum"]:
-            if self.mesh_quality_measure == "skewness":
-                self.current_mesh_quality = MeshQuality.min_skewness(self.mesh)
-            elif self.mesh_quality_measure == "maximum_angle":
-                self.current_mesh_quality = MeshQuality.min_maximum_angle(self.mesh)
-            elif self.mesh_quality_measure == "radius_ratios":
-                self.current_mesh_quality = MeshQuality.min_radius_ratios(self.mesh)
-            elif self.mesh_quality_measure == "condition_number":
-                self.current_mesh_quality = MeshQuality.min_condition_number(self.mesh)
-
-        else:
-            if self.mesh_quality_measure == "skewness":
-                self.current_mesh_quality = MeshQuality.avg_skewness(self.mesh)
-            elif self.mesh_quality_measure == "maximum_angle":
-                self.current_mesh_quality = MeshQuality.avg_maximum_angle(self.mesh)
-            elif self.mesh_quality_measure == "radius_ratios":
-                self.current_mesh_quality = MeshQuality.avg_radius_ratios(self.mesh)
-            elif self.mesh_quality_measure == "condition_number":
-                self.current_mesh_quality = MeshQuality.avg_condition_number(self.mesh)
 
     def __generate_remesh_geo(self, input_mesh_file):
         """Generates a .geo file used for remeshing.

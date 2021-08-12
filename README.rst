@@ -21,8 +21,8 @@ CASHOCS
 
 |
 
-.. image:: https://github.com/sblauth/cashocs/actions/workflows/ci.yml/badge.svg
-	:target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
+.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=ci   
+    :target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
 
 .. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen
     :target: https://codecov.io/gh/sblauth/cashocs
