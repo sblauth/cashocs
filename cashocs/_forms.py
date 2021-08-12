@@ -33,6 +33,7 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from ufl.log import UFLException
 
 from ._exceptions import CashocsException, ConfigError, InputError
+from .geometry import compute_boundary_distance
 from ._loggers import warning
 from ._shape_optimization import Regularization
 from .utils import (
@@ -1096,6 +1097,9 @@ class ShapeFormHandler(FormHandler):
         self.use_pull_back = self.config.getboolean(
             "ShapeGradient", "use_pull_back", fallback=True
         )
+        self.use_distance_mu = self.config.getboolean(
+            "ShapeGradient", "use_distance_mu", fallback=False
+        )
 
         if deformation_space is None:
             self.deformation_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
@@ -1394,44 +1398,99 @@ class ShapeFormHandler(FormHandler):
             self.riesz_scalar_product = self.shape_scalar_product
 
     def __setup_mu_computation(self):
-        self.mu_def = self.config.getfloat("ShapeGradient", "mu_def", fallback=1.0)
-        self.mu_fix = self.config.getfloat("ShapeGradient", "mu_fix", fallback=1.0)
 
-        if np.abs(self.mu_def - self.mu_fix) / self.mu_fix > 1e-2:
+        if not self.use_distance_mu:
+            self.mu_def = self.config.getfloat("ShapeGradient", "mu_def", fallback=1.0)
+            self.mu_fix = self.config.getfloat("ShapeGradient", "mu_fix", fallback=1.0)
 
-            self.inhomogeneous_mu = True
+            if np.abs(self.mu_def - self.mu_fix) / self.mu_fix > 1e-2:
 
-            # dx = self.dx
+                self.inhomogeneous_mu = True
 
-            self.options_mu = [
-                ["ksp_type", "cg"],
-                ["pc_type", "hypre"],
-                ["pc_hypre_type", "boomeramg"],
-                ["ksp_rtol", 1e-16],
-                ["ksp_atol", 1e-50],
-                ["ksp_max_it", 100],
-            ]
-            self.ksp_mu = PETSc.KSP().create()
-            _setup_petsc_options([self.ksp_mu], [self.options_mu])
+                self.options_mu = [
+                    ["ksp_type", "cg"],
+                    ["pc_type", "hypre"],
+                    ["pc_hypre_type", "boomeramg"],
+                    ["ksp_rtol", 1e-16],
+                    ["ksp_atol", 1e-50],
+                    ["ksp_max_it", 100],
+                ]
+                self.ksp_mu = PETSc.KSP().create()
+                _setup_petsc_options([self.ksp_mu], [self.options_mu])
 
-            phi = fenics.TrialFunction(self.CG1)
-            psi = fenics.TestFunction(self.CG1)
+                phi = fenics.TrialFunction(self.CG1)
+                psi = fenics.TestFunction(self.CG1)
 
-            self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
-            self.L_mu = fenics.Constant(0.0) * psi * self.dx
+                self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
+                self.L_mu = fenics.Constant(0.0) * psi * self.dx
 
-            self.bcs_mu = [
-                fenics.DirichletBC(
-                    self.CG1, fenics.Constant(self.mu_fix), self.boundaries, i
+                self.bcs_mu = create_bcs_list(
+                    self.CG1,
+                    fenics.Constant(self.mu_fix),
+                    self.boundaries,
+                    self.shape_bdry_fix,
                 )
-                for i in self.shape_bdry_fix
-            ]
-            self.bcs_mu += [
-                fenics.DirichletBC(
-                    self.CG1, fenics.Constant(self.mu_def), self.boundaries, i
+                self.bcs_mu += create_bcs_list(
+                    self.CG1,
+                    fenics.Constant(self.mu_def),
+                    self.boundaries,
+                    self.shape_bdry_def,
                 )
-                for i in self.shape_bdry_def
-            ]
+
+        else:
+            self.mu_min = self.config.getfloat("ShapeGradient", "mu_min", fallback=1.0)
+            self.mu_max = self.config.getfloat("ShapeGradient", "mu_max", fallback=1.0)
+
+            if np.abs(self.mu_min - self.mu_max) / self.mu_min > 1e-2:
+                self.dist_min = self.config.getfloat(
+                    "ShapeGradient", "dist_min", fallback=1.0
+                )
+                self.dist_max = self.config.getfloat(
+                    "ShapeGradient", "dist_max", fallback=1.0
+                )
+                if self.dist_min > self.dist_max:
+                    raise ConfigError(
+                        "ShapeGradinet",
+                        "dist_max",
+                        "dist_max has to be larger than dist_min.",
+                    )
+
+                self.bdry_idcs = json.loads(
+                    self.config.get("ShapeGradient", "boundaries_dist", fallback="[]")
+                )
+                if not type(self.shape_bdry_fix) == list:
+                    raise ConfigError(
+                        "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
+                    )
+                self.smooth_mu = self.config.getboolean(
+                    "ShapeGradient", "smooth_mu", fallback=False
+                )
+                self.distance = fenics.Function(self.CG1)
+                if not self.smooth_mu:
+                    self.mu_expression = fenics.Expression(
+                        "(dist <= dist_min) ? mu_min : "
+                        + "(dist <= dist_max) ? mu_min + (dist - dist_min)/(dist_max - dist_min)*(mu_max - mu_min) : mu_max",
+                        degree=1,
+                        dist=self.distance,
+                        dist_min=self.dist_min,
+                        dist_max=self.dist_max,
+                        mu_min=self.mu_min,
+                        mu_max=self.mu_max,
+                    )
+                else:
+                    self.mu_expression = fenics.Expression(
+                        "(dist <= dist_min) ? mu_min :"
+                        + "(dist <= dist_max) ? mu_min + (mu_max - mu_min)/(dist_max - dist_min)*(dist - dist_min) "
+                        + "- (mu_max - mu_min)/pow(dist_max - dist_min, 2)*(dist - dist_min)*(dist - dist_max) "
+                        + "- 2*(mu_max - mu_min)/pow(dist_max - dist_min, 3)*(dist - dist_min)*pow(dist - dist_max, 2)"
+                        + " : mu_max",
+                        degree=3,
+                        dist=self.distance,
+                        dist_min=self.dist_min,
+                        dist_max=self.dist_max,
+                        mu_min=self.mu_min,
+                        mu_max=self.mu_max,
+                    )
 
     def __compute_mu_elas(self):
         """Computes the second lame parameter mu_elas, based on `Schulz and
@@ -1445,22 +1504,31 @@ class ShapeFormHandler(FormHandler):
         """
 
         if self.shape_scalar_product is None:
-            if self.inhomogeneous_mu:
+            if not self.use_distance_mu:
+                if self.inhomogeneous_mu:
 
-                A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
-                x = _solve_linear_problem(
-                    self.ksp_mu, A, b, ksp_options=self.options_mu
-                )
+                    A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
+                    x = _solve_linear_problem(
+                        self.ksp_mu, A, b, ksp_options=self.options_mu
+                    )
 
-                if self.config.getboolean(
-                    "ShapeGradient", "use_sqrt_mu", fallback=False
-                ):
-                    self.mu_lame.vector()[:] = np.sqrt(x[:])
+                    if self.config.getboolean(
+                        "ShapeGradient", "use_sqrt_mu", fallback=False
+                    ):
+                        self.mu_lame.vector()[:] = np.sqrt(x[:])
+                    else:
+                        self.mu_lame.vector()[:] = x[:]
+
                 else:
-                    self.mu_lame.vector()[:] = x[:]
+                    self.mu_lame.vector()[:] = self.mu_fix
 
             else:
-                self.mu_lame.vector()[:] = self.mu_fix
+                self.distance.vector()[:] = compute_boundary_distance(
+                    self.mesh, self.boundaries, self.bdry_idcs
+                ).vector()[:]
+                self.mu_lame.vector()[:] = fenics.interpolate(
+                    self.mu_expression, self.CG1
+                ).vector()[:]
 
             # for mpi compatibility
             self.mu_lame.vector().apply("")

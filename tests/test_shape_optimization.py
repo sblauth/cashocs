@@ -863,3 +863,41 @@ def test_save_pvd_files():
     assert os.path.isfile(dir_path + "/out/pvd/shape_gradient000007.vtu")
 
     subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+
+
+def test_distance_mu():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "use_distance_mu", "True")
+    config.set("ShapeGradient", "dist_min", "0.1")
+    config.set("ShapeGradient", "dist_max", "0.25")
+    config.set("ShapeGradient", "mu_min", "1.0")
+    config.set("ShapeGradient", "mu_max", "10.0")
+    config.set("ShapeGradient", "boundaries_dist", "[]")
+    config.set("ShapeGradient", "smooth_mu", "False")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(64)
+
+    V = FunctionSpace(mesh, "CG", 1)
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    u = Function(V)
+    p = Function(V)
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+    J = u * dx
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    mu = sop.form_handler.mu_lame
+
+    assert (np.abs(mu(0.5, 0.5) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(mu(0.05, 0.5) - 1.0) / 1.0) < 1e-10
+
+    assert (np.abs(mu(0.09, 0.5) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(mu(0.91, 0.5) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(mu(0.5, 0.09) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(mu(0.5, 0.91) - 1.0) / 1.0) < 1e-10
+
+    assert (np.abs(mu(0.5, 0.26) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(mu(0.5, 0.74) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(mu(0.26, 0.5) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(mu(0.74, 0.5) - 10.0) / 10.0) < 1e-10

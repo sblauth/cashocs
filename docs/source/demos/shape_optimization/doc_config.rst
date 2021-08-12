@@ -497,10 +497,44 @@ project the shape gradient. This scales the parameters :math:`\mu, \lambda` and
 volume of the current element (during assembly). This means, that smaller elements
 get a higher stiffness, so that the deformation takes place in the larger elements,
 which can handle larger deformations without reducing their quality too much. For
-more details on this approach, we refer to the preprint `Blauth, Leithäuser, and Pinnau,
+more details on this approach, we refer to the paper `Blauth, Leithäuser, and Pinnau,
 Model Hierarchy for the Shape Optimization of a Microchannel Cooling System
-<https://arxiv.org/abs/1911.06819>`_.
+<https://doi.org/10.1002/zamm.202000166>`_.
 
+
+There is also a different possibility to define the stiffness parameter :math:`\mu`
+using CASHOCS, namely to define :math:`\mu` in terms of how close a point of the
+computational domain is to a boundary. In the following we will explain this
+alternative way of defining :math:`\mu`.
+To do so, we must first set the boolean parameter ::
+
+    use_distance_mu = True
+
+which enables this formulation and deactivates the previous one. Note that by default,
+the value of ``use_distance_mu`` is ``False``. Next, we have the parameters ``dist_min``, ``dist_max``,
+``mu_min`` and ``mu_max``. These do the following: If the distance to the boundary is
+smaller than ``dist_min``, the value of :math:`\mu` is set to ``mu_min``, and if the distance
+to the boundary is larger than ``dist_max``, :math:`\mu` is set to ``mu_max``. If the distance
+to the boundary is between ``dist_min`` and ``dist_max``, the value of :math:`\mu` is
+interpolated between ``mu_min`` and ``mu_max``. The type of this interpolation is
+determined by the parameter ::
+
+    smooth_mu = True
+
+If this parameter is set to ``True``, then a smooth, cubic polynomial is used to
+interplate between ``mu_min`` and ``mu_max``, which yields a continuously differentiable
+:math:`\mu`. If this is set to ``False``, then a linear interpolation is used, which only yields
+a continuous :math:`\mu`. The default for this parameter is ``False``.
+
+Finally, we can specify which boundaries we want to incorporate when computing the
+distance. To do so, we can specify a list of indices which contain the boundary
+markers in the parameter ::
+
+    boundaries_dist = [1,2,3]
+
+This means, that only boundaries marked with 1, 2, and 3 are considered for computing
+the distance, and all others are ignored. The default behavior is that all (outer) boundaries
+are considered.
 
 
 .. _config_shape_regularization:
@@ -726,7 +760,7 @@ and can be set with ::
     save_results = False
 
 Moreover, we define the parameter ``save_txt`` ::
-	
+
 	save_txt = False
 
 This saves the output of the optimization, which is usually shown in the terminal,
@@ -982,6 +1016,27 @@ in the following.
     * - inhomogeneous
       - ``False``
       - if ``True``, uses inhomogeneous elasticity equations, weighted by the local mesh size
+    * - use_distance_mu
+      - ``False``
+      - if ``True``, the value of the second Lamé parameter is computed via the distance to the boundary
+    * - dist_min
+      - 1.0
+      - Specifies the distance to the boundary, until which :math:`\mu` is given by ``mu_min``
+    * - dist_max
+      - 1.0
+      - Specifies the distance to the boundary, until which :math:`\mu` is given by ``mu_max``
+    * - mu_min
+      - 1.0
+      - The value of :math:`\mu` for a boundary distance smaller than ``dist_min``
+    * - mu_max
+      - 1.0
+      - The value of :math:`\mu` for a boundary distance larger than ``dist_max``
+    * - boundaries_dist
+      - []
+      - The indices of the boundaries, which shall be used to compute the distance, ``[]`` means that all boundaries are considered
+    * - smooth_mu
+      - ``False``
+      - If false, a linear (continuous) interpolation between ``mu_min`` and ``mu_max`` is used, otherwise a cubic :math:`C^1` interpolant is used
 
 
 [Regularization]

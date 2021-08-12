@@ -664,6 +664,7 @@ def compute_boundary_distance(
         A fenics function representing an approximation of the distance to the boundary.
 
     """
+
     V = fenics.FunctionSpace(mesh, "CG", 1)
     dx = fenics.Measure("dx", mesh)
 
@@ -687,7 +688,12 @@ def compute_boundary_distance(
     norm_u_prev = fenics.sqrt(fenics.dot(fenics.grad(u_prev), fenics.grad(u_prev)))
 
     if (boundaries is not None) and (boundary_idcs is not None):
-        bcs = create_bcs_list(V, fenics.Constant(0.0), boundaries, boundary_idcs)
+        if len(boundary_idcs) > 0:
+            bcs = create_bcs_list(V, fenics.Constant(0.0), boundaries, boundary_idcs)
+        else:
+            bcs = fenics.DirichletBC(
+                V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
+            )
     else:
         bcs = fenics.DirichletBC(
             V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
