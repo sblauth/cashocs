@@ -29,7 +29,7 @@ from fenics import Constant, div, inner
 
 from .._exceptions import ConfigError
 from .._loggers import info
-from ..utils import _solve_linear_problem
+from ..utils import _solve_linear_problem, _check_for_config_list
 
 
 def t_grad(u, n):
@@ -187,10 +187,17 @@ class Regularization:
         self.mu_barycenter = self.config.getfloat(
             "Regularization", "factor_barycenter", fallback=0.0
         )
-        self.target_barycenter_list = json.loads(
-            self.config.get("Regularization", "target_barycenter", fallback="[0,0,0]")
-        )
 
+        target_bar = self.config.get(
+            "Regularization", "target_barycenter", fallback="[0,0,0]"
+        )
+        if not _check_for_config_list(target_bar):
+            raise ConfigError(
+                "Regularization",
+                "target_barycenter",
+                "The target_barycenter parameter has to be a list of numbers",
+            )
+        self.target_barycenter_list = json.loads(target_bar)
         if not type(self.target_barycenter_list) == list:
             raise ConfigError(
                 "Regularization", "target_barycenter", "This has to be a list."
