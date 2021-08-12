@@ -632,6 +632,38 @@ def compute_mesh_quality(mesh, type="min", measure="skewness"):
 def compute_boundary_distance(
     mesh, boundaries=None, boundary_idcs=None, tol=1e-1, max_iter=10
 ):
+    """Computes (an approximation of) the distance to the boundary.
+
+    The function iteratively solves the Eikonal equation to compute the distance to the
+    boundary.
+
+    The user can specify which boundaries are considered for the distance computation
+    by specifying the parameters `boundaries` and `boundary_idcs`. Default is to
+    consider all boundaries.
+
+    Parameters
+    ----------
+    mesh : dolfin.cpp.mesh.Mesh.Mesh
+        The dolfin mesh object, representing the computational domain
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet, optional
+        A meshfunction for the boundaries, which is needed in case specific boundaries
+        are targeted for the distance computation (while others are ignored), default
+        is `None` (all boundaries are used)
+    boundary_idcs : list[int], optional
+        A list of indices which indicate, which parts of the boundaries should be used
+        for the distance computation, default is `None` (all boundaries are used).
+    tol : float, optional
+        A tolerance for the iterative solution of the eikonal equation. Default is 1e-1.
+    max_iter : int, optional
+        Number of iterations for the iterative solution of the eikonal equation. Default
+        is 10.
+
+    Returns
+    -------
+    u_curr : dolfin.function.function.Function
+        A fenics function representing an approximation of the distance to the boundary.
+
+    """
     V = fenics.FunctionSpace(mesh, "CG", 1)
     dx = fenics.Measure("dx", mesh)
 
