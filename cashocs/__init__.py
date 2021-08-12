@@ -22,6 +22,7 @@ and uses its high-level unified form language UFL to treat general PDE constrain
 optimization problems, in particular, shape optimization and optimal control problems.
 """
 
+from . import space_mapping
 from . import verification
 from ._loggers import LogLevel, set_log_level
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
@@ -35,6 +36,7 @@ from .geometry import (
 )
 from .nonlinear_solvers import damped_newton_solve
 from .utils import create_bcs_list, create_config, load_config
+
 
 __version__ = "1.3.4"
 
