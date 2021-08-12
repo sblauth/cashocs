@@ -204,13 +204,13 @@ class ShapeOptimizationAlgorithm:
         if self.iteration == 0:
             output = (
                 f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.gradient_norm_initial:.3e} (abs)"
-                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})\n"
+                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:1.2f} ({self.mesh_handler.mesh_quality_measure})\n"
             )
 
         else:
             output = (
                 f"Iteration {self.iteration:4d} - Objective value:  {self.objective_value:.3e}    Gradient norm:  {self.relative_norm:.3e} (rel)"
-                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:.2f} ({self.mesh_handler.mesh_quality_measure})    Step size:  {self.stepsize:.3e}"
+                + f"    Mesh Quality: {self.mesh_handler.current_mesh_quality:1.2f} ({self.mesh_handler.mesh_quality_measure})    Step size:  {self.stepsize:.3e}"
             )
 
         self.output_dict["cost_function_value"].append(self.objective_value)
