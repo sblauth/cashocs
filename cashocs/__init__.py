@@ -53,4 +53,5 @@ __all__ = [
     "load_config",
     "create_bcs_list",
     "verification",
+    "space_mapping",
 ]
