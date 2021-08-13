@@ -823,6 +823,11 @@ def _check_for_config_list(string):
         if not (char.isdigit() or char.isspace() or char in ["[", "]", ".", ",", "-"]):
             return result
 
+    if string[0] != "[":
+        return result
+    if string[-1] != "]":
+        return result
+
     result = True
 
     return result
