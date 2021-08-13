@@ -800,3 +800,34 @@ def _parse_remesh():
             )
 
     return cashocs_remesh_flag, temp_dir
+
+
+def _check_for_config_list(string):
+    """Checks, whether a given string is a valid representation of a list if integers
+
+    Parameters
+    ----------
+    string : str
+        The input string.
+
+    Returns
+    -------
+    result : bool
+        ``True`` if the string is valid, ``False`` otherwise
+
+    """
+
+    result = False
+
+    for char in string:
+        if not (char.isdigit() or char.isspace() or char in ["[", "]", ".", ",", "-"]):
+            return result
+
+    if string[0] != "[":
+        return result
+    if string[-1] != "]":
+        return result
+
+    result = True
+
+    return result
