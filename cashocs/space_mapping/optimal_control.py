@@ -25,12 +25,17 @@ from ufl import replace
 from _collections import deque
 
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
-from .._exceptions import InputError
+from .._exceptions import InputError, NotConvergedError
+from ..utils import (
+    _check_and_enlist_functions,
+    _check_and_enlist_ufl_forms,
+    Interpolator,
+)
 
 
 class ParentFineModel:
     def __init__(self):
-        self.control = None
+        self.controls = None
         self.cost_functional_value = None
 
     def solve_and_evaluate(self):
@@ -126,34 +131,8 @@ class ParameterExtraction:
 
         ### states
         try:
-            if type(states) == list and len(states) > 0:
-                for i in range(len(states)):
-                    if (
-                        states[i].__module__ == "dolfin.function.function"
-                        and type(states[i]).__name__ == "Function"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                            "states",
-                            "states have to be fenics Functions.",
-                        )
-
-                self.states = states
-
-            elif (
-                states.__module__ == "dolfin.function.function"
-                and type(states).__name__ == "Function"
-            ):
-                self.states = [states]
-            else:
-                raise InputError(
-                    "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                    "states",
-                    "Type of states is wrong.",
-                )
-        except:
+            self.states = _check_and_enlist_functions(states)
+        except InputError:
             raise InputError(
                 "cashocs.space_mapping.optimal_control.ParameterExtraction",
                 "states",
@@ -162,34 +141,8 @@ class ParameterExtraction:
 
         ### controls
         try:
-            if type(controls) == list and len(controls) > 0:
-                for i in range(len(controls)):
-                    if (
-                        controls[i].__module__ == "dolfin.function.function"
-                        and type(controls[i]).__name__ == "Function"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                            "controls",
-                            "controls have to be fenics Functions.",
-                        )
-
-                self.controls = controls
-
-            elif (
-                controls.__module__ == "dolfin.function.function"
-                and type(controls).__name__ == "Function"
-            ):
-                self.controls = [controls]
-            else:
-                raise InputError(
-                    "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                    "controls",
-                    "Type of controls is wrong.",
-                )
-        except:
+            self.controls = _check_and_enlist_functions(controls)
+        except InputError:
             raise InputError(
                 "cashocs.space_mapping.optimal_control.ParameterExtraction",
                 "controls",
@@ -270,29 +223,400 @@ class ParameterExtraction:
 
 
 class SpaceMapping:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="broyden",
+        max_iter=25,
+        tol=1e-2,
+        use_backtracking_line_search=False,
+        broyden_type="good",
+        cg_type="FR",
+        memory_size=10,
+        scaling_factor=1.0,
+        verbose=True,
+    ):
+        """
+
+        Parameters
+        ----------
+        fine_model : ParentFineModel
+        coarse_model : CoarseModel
+        parameter_extraction : ParameterExtraction
+        method
+        max_iter
+        tol
+        use_backtracking_line_search
+        broyden_type
+        cg_type
+        memory_size
+        scaling_factor
+        verbose
+        """
+
+        self.fine_model = fine_model
+        self.coarse_model = coarse_model
+        self.parameter_extraction = parameter_extraction
+        self.method = method
+        if self.method == "sd":
+            self.method = "steepest_descent"
+        elif self.method == "lbfgs":
+            self.method = "bfgs"
+        self.max_iter = max_iter
+        self.tol = tol
+        self.use_backtracking_line_search = use_backtracking_line_search
+        self.broyden_type = broyden_type
+        self.cg_type = cg_type
+        self.memory_size = memory_size
+        self.scaling_factor = scaling_factor
+        self.verbose = verbose
+
+        self.eps = 1.0
+        self.converged = False
+        self.iteration = 0
+
+        self.z_star = self.coarse_model.controls
+        self.control_dim = (
+            self.coarse_model.optimal_control_problem.form_handler.control_dim
+        )
+        try:
+            self.x = _check_and_enlist_functions(self.fine_model.controls)
+        except InputError:
+            raise InputError(
+                "cashocs.space_mapping.optimal_control.ParentFineModel",
+                "self.controls",
+                "The parameter self.controls has to be defined either as a single "
+                + "fenics Function or a list of fenics Functions.",
+            )
+
+        control_spaces_fine = [xx.function_space() for xx in self.x]
+        control_spaces_coarse = (
+            self.coarse_model.optimal_control_problem.form_handler.control_spaces
+        )
+        self.ips_to_coarse = [
+            Interpolator(control_spaces_fine[i], control_spaces_coarse[i])
+            for i in range(len(self.z_star))
+        ]
+        self.ips_to_fine = [
+            Interpolator(control_spaces_coarse[i], control_spaces_fine[i])
+            for i in range(len(self.z_star))
+        ]
+
+        self.p_current = self.parameter_extraction.controls
+        self.p_prev = [fenics.Function(V) for V in control_spaces_coarse]
+        self.h = [fenics.Function(V) for V in control_spaces_coarse]
+        self.v = [fenics.Function(V) for V in control_spaces_coarse]
+        self.u = [fenics.Function(V) for V in control_spaces_coarse]
+
+        self.x_save = [fenics.Function(V) for V in control_spaces_fine]
+
+        self.diff = [fenics.Function(V) for V in control_spaces_coarse]
+        self.temp = [fenics.Function(V) for V in control_spaces_coarse]
+        self.dir_prev = [fenics.Function(V) for V in control_spaces_coarse]
+        self.difference = [fenics.Function(V) for V in control_spaces_coarse]
+
+        self.history_s = deque()
+        self.history_y = deque()
+        self.history_rho = deque()
+        self.history_alpha = deque()
 
     def solve(self):
-        pass
+        # Compute initial guess for the space mapping
+        self.coarse_model.optimize()
+        for i in range(self.control_dim):
+            self.x[i].vector()[:] = (
+                self.scaling_factor
+                * self.ips_to_fine[i].interpolate(self.z_star[i]).vector()[:]
+            )
+        self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
 
-    def _inner_product(self):
-        pass
+        self.fine_model.solve_and_evaluate()
+        self.parameter_extraction._solve(
+            initial_guesses=[
+                self.ips_to_coarse[i].interpolate(self.x[i])
+                for i in range(self.control_dim)
+            ]
+        )
+        self.eps = self._compute_eps()
 
-    def _compute_search_direction(self):
-        pass
+        if self.verbose:
+            print(
+                f"Space Mapping - Iteration {self.iteration:3d}:    Cost functional value = "
+                f"{self.fine_model.cost_functional_value:.3e}    eps = {self.eps:.3e}\n"
+            )
 
-    def _compute_steepest_descent_application(self):
-        pass
+        while not self.converged:
+            for i in range(self.control_dim):
+                self.dir_prev[i].vector()[:] = -(
+                    self.p_prev[i].vector()[:] - self.z_star[i].vector()[:]
+                )
+                self.temp[i].vector()[:] = -(
+                    self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
+                )
 
-    def _compute_broyden_application(self):
-        pass
+            self._compute_search_direction(self.temp, self.h)
 
-    def _compute_bfgs_application(self):
-        pass
+            stepsize = 1.0
+            if not self.use_backtracking_line_search:
+                for i in range(self.control_dim):
+                    self.x[i].vector()[:] += (
+                        self.scaling_factor
+                        * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
+                    )
+                    self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
 
-    def _compute_ncg_direction(self):
-        pass
+                self.fine_model.solve_and_evaluate()
+                self.parameter_extraction._solve(
+                    initial_guesses=[
+                        self.ips_to_coarse[i].interpolate(self.x[i])
+                        for i in range(self.control_dim)
+                    ]
+                )
+                self.eps = self._compute_eps()
+
+            else:
+                for i in range(self.control_dim):
+                    self.x_save[i].vector()[:] = self.x[i].vector()[:]
+                    self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
+
+                while True:
+                    for i in range(self.control_dim):
+                        self.x[i].vector()[:] = self.x_save[i].vector()[:]
+                        self.x[i].vector()[:] += (
+                            self.scaling_factor
+                            * stepsize
+                            * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
+                        )
+                    self.fine_model.solve_and_evaluate()
+                    self.parameter_extraction._solve(
+                        initial_guesses=[
+                            self.ips_to_coarse[i].interpolate(self.x[i])
+                            for i in range(self.control_dim)
+                        ]
+                    )
+                    eps_new = self._compute_eps()
+
+                    if eps_new <= self.eps:
+                        self.eps = eps_new
+                        break
+                    else:
+                        stepsize /= 2
+
+                    if stepsize <= 1e-4:
+                        raise NotConvergedError(
+                            "Space Mapping Backtracking Line Search",
+                            "The line search did not converge.",
+                        )
+
+            self.iteration += 1
+            if self.verbose:
+                print(
+                    f"Space Mapping - Iteration {self.iteration:3d}:    Cost functional value = "
+                    f"{self.fine_model.cost_functional_value:.3e}    eps = {self.eps:.3e}"
+                    f"    step size = {stepsize:.3e}"
+                )
+
+            if self.eps <= self.tol:
+                self.converged = True
+                break
+            if self.iteration >= self.max_iter:
+                break
+
+            if self.method == "broyden":
+                for i in range(self.control_dim):
+                    self.temp[i].vector()[:] = (
+                        self.p_current[i].vector()[:] - self.p_prev[i].vector()[:]
+                    )
+                self._compute_broyden_application(self.temp, self.v)
+
+                if self.memory_size > 0:
+                    if self.broyden_type == "good":
+                        divisor = self._scalar_product(self.h, self.v)
+                        for i in range(self.control_dim):
+                            self.u[i].vector()[:] = (
+                                self.h[i].vector()[:] - self.v[i].vector()[:]
+                            ) / divisor
+
+                        self.history_s.append([xx.copy(True) for xx in self.u])
+                        self.history_y.append([xx.copy(True) for xx in self.h])
+
+                    elif self.broyden_type == "bad":
+                        divisor = self._scalar_product(self.temp, self.temp)
+                        for i in range(self.control_dim):
+                            self.u[i].vector()[:] = (
+                                self.h[i].vector()[:] - self.v[i].vector()[:]
+                            ) / divisor
+
+                            self.history_s.append([xx.copy(True) for xx in self.u])
+                            self.history_y.append([xx.copy(True) for xx in self.temp])
+
+                    if len(self.history_s) > self.memory_size:
+                        self.history_s.popleft()
+                        self.history_y.popleft()
+
+            elif self.method == "bfgs":
+                if self.memory_size > 0:
+                    for i in range(self.control_dim):
+                        self.temp[i].vector()[:] = (
+                            self.p_current[i].vector()[:] - self.p_prev[i].vector()[:]
+                        )
+
+                    self.history_y.appendleft([xx.copy(True) for xx in self.temp])
+                    self.history_s.appendleft([xx.copy(True) for xx in self.h])
+                    curvature_condition = self._scalar_product(self.temp, self.h)
+
+                    if curvature_condition <= 0:
+                        self.history_s.clear()
+                        self.history_y.clear()
+                        self.history_rho.clear()
+
+                    else:
+                        rho = 1 / curvature_condition
+                        self.history_rho.appendleft(rho)
+
+                    if len(self.history_s) > self.memory_size:
+                        self.history_s.pop()
+                        self.history_y.pop()
+                        self.history_rho.pop()
+
+        if self.converged:
+            output = (
+                f"\nStatistics --- Space mapping iterations: {self.iteration:4d}"
+                + f" --- Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
+            )
+            if self.verbose:
+                print(output)
+
+    def _scalar_product(self, a, b):
+        return self.coarse_model.optimal_control_problem.form_handler.scalar_product(
+            a, b
+        )
+
+    def _compute_search_direction(self, q, out):
+        if self.method == "steepest_descent":
+            return self._compute_steepest_descent_application(q, out)
+        elif self.method == "broyden":
+            return self._compute_broyden_application(q, out)
+        elif self.method == "bfgs":
+            return self._compute_bfgs_application(q, out)
+        elif self.method == "ncg":
+            return self._compute_ncg_direction(q, out)
+
+    def _compute_steepest_descent_application(self, q, out):
+        for i in range(self.control_dim):
+            out[i].vector()[:] = q[i].vector()[:]
+
+    def _compute_broyden_application(self, q, out):
+        for j in range(self.control_dim):
+            out[j].vector()[:] = q[j].vector()[:]
+
+        for i in range(len(self.history_s)):
+            if self.broyden_type == "good":
+                alpha = self._scalar_product(self.history_y[i], out)
+            elif self.broyden_type == "bad":
+                alpha = self._scalar_product(self.history_y[i], q)
+            else:
+                raise InputError(
+                    "cashocs.space_mapping.optimal_control.SpaceMapping",
+                    "broyden_type",
+                    "broyden_type has to be either 'good' or 'bad'.",
+                )
+
+            for j in range(self.control_dim):
+                out[j].vector()[:] += alpha * self.history_s[i][j].vector()[:]
+
+    def _compute_bfgs_application(self, q, out):
+        for j in range(self.control_dim):
+            out[j].vector()[:] = q[j].vector()[:]
+
+        if len(self.history_s) > 0:
+            self.history_alpha.clear()
+
+            for i, _ in enumerate(self.history_s):
+                alpha = self.history_rho[i] * self._scalar_product(
+                    self.history_s[i], out
+                )
+                self.history_alpha.append(alpha)
+                for j in range(self.control_dim):
+                    out[j].vector()[:] -= alpha * self.history_y[i][j].vector()[:]
+
+            bfgs_factor = self._scalar_product(
+                self.history_y[0], self.history_s[0]
+            ) / self._scalar_product(self.history_y[0], self.history_y[0])
+            for j in range(self.control_dim):
+                out[j].vector()[:] *= bfgs_factor
+
+            for i, _ in enumerate(self.history_s):
+                beta = self.history_rho[-1 - i] * self._scalar_product(
+                    self.history_y[-1 - i], out
+                )
+                for j in range(self.control_dim):
+                    out[j].vector()[:] += self.history_s[-1 - i][j].vector()[:] * (
+                        self.history_alpha[-1 - i] - beta
+                    )
+
+    def _compute_ncg_direction(self, q, out):
+        if self.iteration > 0:
+            if self.cg_type == "FR":
+                beta_num = self._scalar_product(q, q)
+                beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
+                self.beta = beta_num / beta_denom
+
+            elif self.cg_type == "PR":
+                for i in range(self.control_dim):
+                    self.difference[i].vector()[:] = (
+                        q[i].vector()[:] - self.dir_prev[i].vector()[:]
+                    )
+                beta_num = self._scalar_product(q, self.difference)
+                beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
+                self.beta = beta_num / beta_denom
+
+            elif self.cg_type == "HS":
+                for i in range(self.control_dim):
+                    self.difference[i].vector()[:] = (
+                        q[i].vector()[:] - self.dir_prev[i].vector()[:]
+                    )
+                beta_num = self._scalar_product(q, self.difference)
+                beta_denom = -self._scalar_product(out, self.difference)
+                self.beta = beta_num / beta_denom
+
+            elif self.cg_type == "DY":
+                for i in range(self.control_dim):
+                    self.difference[i].vector()[:] = (
+                        q[i].vector()[:] - self.dir_prev[i].vector()[:]
+                    )
+                beta_num = self._scalar_product(q, q)
+                beta_denom = -self._scalar_product(out, self.difference)
+                self.beta = beta_num / beta_denom
+
+            elif self.cg_type == "HZ":
+                for i in range(self.control_dim):
+                    self.difference[i].vector()[:] = (
+                        q[i].vector()[:] - self.dir_prev[i].vector()[:]
+                    )
+                dy = -self._scalar_product(out, self.difference)
+                y2 = self._scalar_product(self.difference, self.difference)
+
+                for i in range(self.control_dim):
+                    self.difference[i].vector()[:] = (
+                        -self.difference[i].vector()[:]
+                        - 2 * y2 / dy * out[i].vector()[:]
+                    )
+                self.beta = -self._scalar_product(self.difference, q) / dy
+
+        else:
+            self.beta = 0.0
+
+        for i in range(self.control_dim):
+            out[i].vector()[:] = q[i].vector()[:] + self.beta * out[i].vector()[:]
 
     def _compute_eps(self):
-        pass
+        for i in range(self.control_dim):
+            self.diff[i].vector()[:] = (
+                self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
+            )
+            eps = np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
+
+            return eps
