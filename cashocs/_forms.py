@@ -42,6 +42,7 @@ from .utils import (
     _solve_linear_problem,
     create_bcs_list,
     summation,
+    _check_for_config_list,
 )
 
 
@@ -1275,43 +1276,76 @@ class ShapeFormHandler(FormHandler):
         None
         """
 
-        self.shape_bdry_def = json.loads(
-            self.config.get("ShapeGradient", "shape_bdry_def", fallback="[]")
+        shape_bdry_temp = self.config.get(
+            "ShapeGradient", "shape_bdry_def", fallback="[]"
         )
+        if not _check_for_config_list(shape_bdry_temp):
+            raise ConfigError(
+                "ShapeGradient",
+                "shape_bdry_def",
+                "shape_bdry_def has to be a list of integers.",
+            )
+        self.shape_bdry_def = json.loads(shape_bdry_temp)
         if not type(self.shape_bdry_def) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_def", "The input has to be a list."
             )
-        # if not len(self.shape_bdry_def) > 0:
-        # 	raise ConfigError('ShapeGradient', 'shape_bdry_def','The input must not be empty.')
 
-        self.shape_bdry_fix = json.loads(
-            self.config.get("ShapeGradient", "shape_bdry_fix", fallback="[]")
+        shape_bdry_temp = self.config.get(
+            "ShapeGradient", "shape_bdry_fix", fallback="[]"
         )
+        if not _check_for_config_list(shape_bdry_temp):
+            raise ConfigError(
+                "ShapeGradient",
+                "shape_bdry_fix",
+                "shape_bdry_fix has to be a list of integers.",
+            )
+        self.shape_bdry_fix = json.loads(shape_bdry_temp)
         if not type(self.shape_bdry_fix) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
             )
 
-        self.shape_bdry_fix_x = json.loads(
-            self.config.get("ShapeGradient", "shape_bdry_fix_x", fallback="[]")
+        shape_bdry_temp = self.config.get(
+            "ShapeGradient", "shape_bdry_fix_x", fallback="[]"
         )
+        if not _check_for_config_list(shape_bdry_temp):
+            raise ConfigError(
+                "ShapeGradient",
+                "shape_bdry_fix_x",
+                "shape_bdry_fix_x has to be a list of integers.",
+            )
+        self.shape_bdry_fix_x = json.loads(shape_bdry_temp)
         if not type(self.shape_bdry_fix_x) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_x", "The input has to be a list."
             )
 
-        self.shape_bdry_fix_y = json.loads(
-            self.config.get("ShapeGradient", "shape_bdry_fix_y", fallback="[]")
+        shape_bdry_temp = self.config.get(
+            "ShapeGradient", "shape_bdry_fix_y", fallback="[]"
         )
+        if not _check_for_config_list(shape_bdry_temp):
+            raise ConfigError(
+                "ShapeGradient",
+                "shape_bdry_fix_y",
+                "shape_bdry_fix_y has to be a list of integers.",
+            )
+        self.shape_bdry_fix_y = json.loads(shape_bdry_temp)
         if not type(self.shape_bdry_fix_y) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_y", "The input has to be a list."
             )
 
-        self.shape_bdry_fix_z = json.loads(
-            self.config.get("ShapeGradient", "shape_bdry_fix_z", fallback="[]")
+        shape_bdry_temp = self.config.get(
+            "ShapeGradient", "shape_bdry_fix_z", fallback="[]"
         )
+        if not _check_for_config_list(shape_bdry_temp):
+            raise ConfigError(
+                "ShapeGradient",
+                "shape_bdry_fix_z",
+                "shape_bdry_fix_z has to be a list of integers.",
+            )
+        self.shape_bdry_fix_z = json.loads(shape_bdry_temp)
         if not type(self.shape_bdry_fix_z) == list:
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_z", "The input has to be a list."
