@@ -31,6 +31,7 @@ from ..utils import (
     _check_and_enlist_ufl_forms,
     Interpolator,
 )
+from .._loggers import debug
 
 
 class ParentFineModel:
@@ -178,7 +179,7 @@ class ParameterExtraction:
             replace(form, mapping_dict)
             for form in coarse_model.optimal_control_problem.state_forms
         ]
-        self.bcs_list = coarse_model.bcs_list
+        self.bcs_list = coarse_model.optimal_control_problem.bcs_list
         self.riesz_scalar_products = (
             coarse_model.optimal_control_problem.riesz_scalar_products
         )
@@ -277,7 +278,7 @@ class SpaceMapping:
         self.converged = False
         self.iteration = 0
 
-        self.z_star = self.coarse_model.controls
+        self.z_star = self.coarse_model.optimal_control_problem.controls
         self.control_dim = (
             self.coarse_model.optimal_control_problem.form_handler.control_dim
         )
@@ -357,6 +358,13 @@ class SpaceMapping:
                 )
 
             self._compute_search_direction(self.temp, self.h)
+
+            if self._scalar_product(self.h, self.temp) <= 0.0:
+                debug(
+                    "The computed search direction for space mapping did not yield a descent direction"
+                )
+                for i in range(self.control_dim):
+                    self.h[i].vector()[:] = self.temp[i].vector()[:]
 
             stepsize = 1.0
             if not self.use_backtracking_line_search:
