@@ -367,13 +367,14 @@ class SpaceMapping:
                     self.h[i].vector()[:] = self.temp[i].vector()[:]
 
             stepsize = 1.0
+            for i in range(self.control_dim):
+                self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
             if not self.use_backtracking_line_search:
                 for i in range(self.control_dim):
                     self.x[i].vector()[:] += (
                         self.scaling_factor
                         * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
                     )
-                    self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
 
                 self.fine_model.solve_and_evaluate()
                 self.parameter_extraction._solve(
@@ -387,7 +388,6 @@ class SpaceMapping:
             else:
                 for i in range(self.control_dim):
                     self.x_save[i].vector()[:] = self.x[i].vector()[:]
-                    self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
 
                 while True:
                     for i in range(self.control_dim):
