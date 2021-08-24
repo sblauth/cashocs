@@ -416,11 +416,12 @@ class SpaceMapping:
 
                         self.history_s.append(self.u.copy(True))
                         self.history_y.append(self.h.copy(True))
+
                     elif self.broyden_type == "bad":
                         divisor = self._scalar_product(self.temp, self.temp)
                         self.u.vector()[:] = (
-                            self.h.vector()[:] - self.v.vector()[:] / divisor
-                        )
+                            self.h.vector()[:] - self.v.vector()[:]
+                        ) / divisor
 
                         self.history_s.append(self.u.copy(True))
                         self.history_y.append(self.temp.copy(True))
@@ -429,28 +430,29 @@ class SpaceMapping:
                         self.history_s.popleft()
                         self.history_y.popleft()
 
-                elif self.method == "bfgs":
-                    if self.memory_size > 0:
-                        self.temp.vector()[:] = (
-                            self.p_current.vector()[:] - self.p_prev.vector()[:]
-                        )
+            elif self.method == "bfgs":
+                if self.memory_size > 0:
+                    self.temp.vector()[:] = (
+                        self.p_current.vector()[:] - self.p_prev.vector()[:]
+                    )
 
-                        self.history_y.appendleft(self.temp.copy(True))
-                        self.history_s.appendleft(self.h.copy(True))
-                        curvature_condition = self._scalar_product(self.temp, self.h)
+                    self.history_y.appendleft(self.temp.copy(True))
+                    self.history_s.appendleft(self.h.copy(True))
+                    curvature_condition = self._scalar_product(self.temp, self.h)
 
-                        if curvature_condition <= 0.0:
-                            self.history_s.clear()
-                            self.history_y.clear()
-                            self.history_rho.clear()
-                        else:
-                            rho = 1 / curvature_condition
-                            self.history_rho.appendleft(rho)
+                    if curvature_condition <= 0.0:
+                        self.history_s.clear()
+                        self.history_y.clear()
+                        self.history_rho.clear()
+                    else:
+                        rho = 1 / curvature_condition
+                        self.history_rho.appendleft(rho)
 
-                        if len(self.history_s) > self.memory_size:
-                            self.history_s.pop()
-                            self.history_y.pop()
-                            self.history_rho.pop()
+                    if len(self.history_s) > self.memory_size:
+                        self.history_s.pop()
+                        self.history_y.pop()
+                        self.history_rho.pop()
+
         if self.converged:
             output = (
                 f"\nStatistics --- Space mapping iterations: {self.iteration:4d}"
@@ -475,7 +477,7 @@ class SpaceMapping:
             return self._compute_ncg_direction(q, out)
 
     @staticmethod
-    def _compute_steepest_descent_application(self, q, out):
+    def _compute_steepest_descent_application(q, out):
         out.vector()[:] = q.vector()[:]
 
     def _compute_broyden_application(self, q, out):
