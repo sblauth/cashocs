@@ -1290,7 +1290,7 @@ class ShapeFormHandler(FormHandler):
                 "shape_bdry_def has to be a list of integers.",
             )
         self.shape_bdry_def = json.loads(shape_bdry_temp)
-        if not type(self.shape_bdry_def) == list:
+        if not isinstance(self.shape_bdry_def, list):
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_def", "The input has to be a list."
             )
@@ -1305,7 +1305,7 @@ class ShapeFormHandler(FormHandler):
                 "shape_bdry_fix has to be a list of integers.",
             )
         self.shape_bdry_fix = json.loads(shape_bdry_temp)
-        if not type(self.shape_bdry_fix) == list:
+        if not isinstance(self.shape_bdry_fix, list):
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
             )
@@ -1320,7 +1320,7 @@ class ShapeFormHandler(FormHandler):
                 "shape_bdry_fix_x has to be a list of integers.",
             )
         self.shape_bdry_fix_x = json.loads(shape_bdry_temp)
-        if not type(self.shape_bdry_fix_x) == list:
+        if not isinstance(self.shape_bdry_fix_x, list):
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_x", "The input has to be a list."
             )
@@ -1335,7 +1335,7 @@ class ShapeFormHandler(FormHandler):
                 "shape_bdry_fix_y has to be a list of integers.",
             )
         self.shape_bdry_fix_y = json.loads(shape_bdry_temp)
-        if not type(self.shape_bdry_fix_y) == list:
+        if not isinstance(self.shape_bdry_fix_y, list):
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_y", "The input has to be a list."
             )
@@ -1350,7 +1350,7 @@ class ShapeFormHandler(FormHandler):
                 "shape_bdry_fix_z has to be a list of integers.",
             )
         self.shape_bdry_fix_z = json.loads(shape_bdry_temp)
-        if not type(self.shape_bdry_fix_z) == list:
+        if not isinstance(self.shape_bdry_fix_z, list):
             raise ConfigError(
                 "ShapeGradient", "shape_bdry_fix_z", "The input has to be a list."
             )

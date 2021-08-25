@@ -96,10 +96,10 @@ def import_mesh(input_arg):
     cashocs_remesh_flag, temp_dir = _parse_remesh()
 
     # Check for the file format
-    if type(input_arg) == str:
+    if isinstance(input_arg, str):
         mesh_file = input_arg
         mesh_attribute = "str"
-    elif type(input_arg) == configparser.ConfigParser:
+    elif isinstance(input_arg, configparser.ConfigParser):
         mesh_attribute = "config"
         ### overloading for remeshing
         if not input_arg.getboolean("Mesh", "remesh", fallback=False):
@@ -170,7 +170,7 @@ def import_mesh(input_arg):
     mesh._cashocs_generator = mesh_attribute
 
     # Check the mesh quality of the imported mesh in case a config file is passed
-    if type(input_arg) == configparser.ConfigParser:
+    if isinstance(input_arg, configparser.ConfigParser):
         mesh_quality_tol_lower = input_arg.getfloat(
             "MeshQuality", "tol_lower", fallback=0.0
         )
@@ -1518,7 +1518,7 @@ class DeformationHandler:
             The transformation for the mesh, a vector CG1 Function.
         """
 
-        if type(transformation) == np.ndarray:
+        if isinstance(transformation, np.ndarray):
             transformation = self.coordinate_to_dof(transformation)
 
         if not (

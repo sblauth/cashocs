@@ -21,6 +21,7 @@
 
 import fenics
 import numpy as np
+import ufl
 
 from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
@@ -162,14 +163,11 @@ class OptimalControlProblem(OptimizationProblem):
         else:
             try:
                 if (
-                    type(riesz_scalar_products) == list
+                    isinstance(riesz_scalar_products, list)
                     and len(riesz_scalar_products) > 0
                 ):
                     for i in range(len(riesz_scalar_products)):
-                        if (
-                            riesz_scalar_products[i].__module__ == "ufl.form"
-                            and type(riesz_scalar_products[i]).__name__ == "Form"
-                        ):
+                        if isinstance(riesz_scalar_products[i], ufl.form.Form):
                             pass
                         else:
                             raise InputError(
@@ -178,10 +176,7 @@ class OptimalControlProblem(OptimizationProblem):
                                 "riesz_scalar_products have to be ufl forms",
                             )
                     self.riesz_scalar_products = riesz_scalar_products
-                elif (
-                    riesz_scalar_products.__module__ == "ufl.form"
-                    and type(riesz_scalar_products).__name__ == "Form"
-                ):
+                elif isinstance(riesz_scalar_products, ufl.form.Form):
                     self.riesz_scalar_products = [riesz_scalar_products]
                 else:
                     raise InputError(
@@ -207,21 +202,23 @@ class OptimalControlProblem(OptimizationProblem):
                 self.control_constraints.append([u_a, u_b])
         else:
             try:
-                if type(control_constraints) == list and len(control_constraints) > 0:
-                    if type(control_constraints[0]) == list:
+                if (
+                    isinstance(control_constraints, list)
+                    and len(control_constraints) > 0
+                ):
+                    if isinstance(control_constraints[0], list):
                         for i in range(len(control_constraints)):
                             if (
-                                type(control_constraints[i]) == list
+                                isinstance(control_constraints[i], list)
                                 and len(control_constraints[i]) == 2
                             ):
                                 for j in range(2):
-                                    if type(control_constraints[i][j]) in [float, int]:
+                                    if isinstance(
+                                        control_constraints[i][j], (float, int)
+                                    ):
                                         pass
-                                    elif (
-                                        control_constraints[i][j].__module__
-                                        == "dolfin.function.function"
-                                        and type(control_constraints[i][j]).__name__
-                                        == "Function"
+                                    elif isinstance(
+                                        control_constraints[i][j], fenics.Function
                                     ):
                                         pass
                                     else:
@@ -238,19 +235,11 @@ class OptimalControlProblem(OptimizationProblem):
                                 )
                         self.control_constraints = control_constraints
                     elif (
-                        type(control_constraints[0]) in [float, int]
-                        or (
-                            control_constraints[0].__module__
-                            == "dolfin.function.function"
-                            and type(control_constraints[0]).__name__ == "Function"
-                        )
+                        isinstance(control_constraints[0], (float, int))
+                        or (isinstance(control_constraints, fenics.Function))
                     ) and (
-                        type(control_constraints[1]) in [float, int]
-                        or (
-                            control_constraints[1].__module__
-                            == "dolfin.function.function"
-                            and type(control_constraints[1]).__name__ == "Function"
-                        )
+                        isinstance(control_constraints[1], (float, int))
+                        or (isinstance(control_constraints[1], fenics.Function))
                     ):
 
                         self.control_constraints = [control_constraints]
@@ -272,13 +261,10 @@ class OptimalControlProblem(OptimizationProblem):
         temp_constraints = self.control_constraints[:]
         self.control_constraints = []
         for idx, pair in enumerate(temp_constraints):
-            if type(pair[0]) in [float, int]:
+            if isinstance(pair[0], (float, int)):
                 lower_bound = fenics.Function(self.controls[idx].function_space())
                 lower_bound.vector()[:] = pair[0]
-            elif (
-                pair[0].__module__ == "dolfin.function.function"
-                and type(pair[0]).__name__ == "Function"
-            ):
+            elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
             else:
                 raise InputError(
@@ -287,13 +273,10 @@ class OptimalControlProblem(OptimizationProblem):
                     "Wrong type for the control constraints",
                 )
 
-            if type(pair[1]) in [float, int]:
+            if isinstance(pair[1], (float, int)):
                 upper_bound = fenics.Function(self.controls[idx].function_space())
                 upper_bound.vector()[:] = pair[1]
-            elif (
-                pair[1].__module__ == "dolfin.function.function"
-                and type(pair[1]).__name__ == "Function"
-            ):
+            elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
                 raise InputError(
@@ -583,12 +566,9 @@ class OptimalControlProblem(OptimizationProblem):
         """
 
         try:
-            if type(derivatives) == list and len(derivatives) > 0:
+            if isinstance(derivatives, list) and len(derivatives) > 0:
                 for i in range(len(derivatives)):
-                    if (
-                        derivatives[i].__module__ == "ufl.form"
-                        and type(derivatives[i]).__name__ == "Form"
-                    ):
+                    if isinstance(derivatives[i], ufl.form.Form):
                         pass
                     else:
                         raise InputError(
@@ -597,10 +577,7 @@ class OptimalControlProblem(OptimizationProblem):
                             "derivatives have to be ufl forms",
                         )
                 mod_derivatives = derivatives
-            elif (
-                derivatives.__module__ == "ufl.form"
-                and type(derivatives).__name__ == "Form"
-            ):
+            elif isinstance(derivatives, ufl.form.Form):
                 mod_derivatives = [derivatives]
             else:
                 raise InputError(

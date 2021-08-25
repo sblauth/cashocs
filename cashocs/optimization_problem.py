@@ -28,6 +28,7 @@ import json
 
 import fenics
 import numpy as np
+import ufl
 from ufl import replace
 
 from ._exceptions import InputError
@@ -158,7 +159,7 @@ class OptimizationProblem:
 
         ### cost_functional_form
         self.use_cost_functional_list = False
-        if type(cost_functional_form) == list:
+        if isinstance(cost_functional_form, list):
             self.use_cost_functional_list = True
 
         try:
@@ -204,10 +205,7 @@ class OptimizationProblem:
             self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
             try:
-                if (
-                    config.__module__ == "configparser"
-                    and type(config).__name__ == "ConfigParser"
-                ):
+                if isinstance(config, configparser.ConfigParser):
                     self.config = copy.deepcopy(config)
                 else:
                     raise InputError(
@@ -275,9 +273,9 @@ class OptimizationProblem:
 
         ### desired_weights
         if desired_weights is not None:
-            if type(desired_weights) == list:
+            if isinstance(desired_weights, list):
                 for weight in desired_weights:
-                    if not (type(weight) == int or type(weight) == float):
+                    if not isinstance(weight, (float, int)):
                         raise InputError(
                             "cashocs.optimization_problem.OptimizationProblem",
                             "desired_weights",
@@ -304,9 +302,9 @@ class OptimizationProblem:
             self.scalar_tracking_forms = scalar_tracking_forms
         else:
             try:
-                if type(scalar_tracking_forms) == list:
+                if isinstance(scalar_tracking_forms, list):
                     for term in scalar_tracking_forms:
-                        if type(term) == dict:
+                        if isinstance(term, dict):
                             if ("integrand" in term.keys()) and (
                                 "tracking_goal" in term.keys()
                             ):
@@ -327,7 +325,7 @@ class OptimizationProblem:
                     self.scalar_tracking_forms = scalar_tracking_forms
                     self.use_scalar_tracking = True
 
-                elif type(scalar_tracking_forms) == dict:
+                elif isinstance(scalar_tracking_forms, dict):
                     if ("integrand" in scalar_tracking_forms.keys()) and (
                         "tracking_goal" in scalar_tracking_forms.keys()
                     ):
@@ -498,12 +496,9 @@ class OptimizationProblem:
         """
 
         try:
-            if type(adjoint_forms) == list and len(adjoint_forms) > 0:
+            if isinstance(adjoint_forms, list) and len(adjoint_forms) > 0:
                 for i in range(len(adjoint_forms)):
-                    if (
-                        adjoint_forms[i].__module__ == "ufl.form"
-                        and type(adjoint_forms[i]).__name__ == "Form"
-                    ):
+                    if isinstance(adjoint_forms[i], ufl.form.Form):
                         pass
                     else:
                         raise InputError(
@@ -512,10 +507,7 @@ class OptimizationProblem:
                             "adjoint_forms have to be ufl forms",
                         )
                 mod_forms = adjoint_forms
-            elif (
-                adjoint_forms.__module__ == "ufl.form"
-                and type(adjoint_forms).__name__ == "Form"
-            ):
+            elif isinstance(adjoint_forms, ufl.form.Form):
                 mod_forms = [adjoint_forms]
             else:
                 raise InputError(
@@ -535,10 +527,10 @@ class OptimizationProblem:
                 mod_bcs_list = []
                 for i in range(self.state_dim):
                     mod_bcs_list.append([])
-            elif type(adjoint_bcs_list) == list and len(adjoint_bcs_list) > 0:
-                if type(adjoint_bcs_list[0]) == list:
+            elif isinstance(adjoint_bcs_list, list) and len(adjoint_bcs_list) > 0:
+                if isinstance(adjoint_bcs_list[0], list):
                     for i in range(len(adjoint_bcs_list)):
-                        if type(adjoint_bcs_list[i]) == list:
+                        if isinstance(adjoint_bcs_list[i], list):
                             pass
                         else:
                             raise InputError(
@@ -548,15 +540,9 @@ class OptimizationProblem:
                             )
                     mod_bcs_list = adjoint_bcs_list
 
-                elif (
-                    adjoint_bcs_list[0].__module__ == "dolfin.fem.dirichletbc"
-                    and type(adjoint_bcs_list[0]).__name__ == "DirichletBC"
-                ):
+                elif isinstance(adjoint_bcs_list[0], fenics.DirichletBC):
                     for i in range(len(adjoint_bcs_list)):
-                        if (
-                            adjoint_bcs_list[i].__module__ == "dolfin.fem.dirichletbc"
-                            and type(adjoint_bcs_list[i]).__name__ == "DirichletBC"
-                        ):
+                        if isinstance(adjoint_bcs_list[i], fenics.DirichletBC):
                             pass
                         else:
                             raise InputError(
@@ -565,10 +551,7 @@ class OptimizationProblem:
                                 "adjoint_bcs_list has inconsistent types.",
                             )
                     mod_bcs_list = [adjoint_bcs_list]
-            elif (
-                adjoint_bcs_list.__module__ == "dolfin.fem.dirichletbc"
-                and type(adjoint_bcs_list).__name__ == "DirichletBC"
-            ):
+            elif isinstance(adjoint_bcs_list, fenics.DirichletBC):
                 mod_bcs_list = [[adjoint_bcs_list]]
             else:
                 raise InputError(
