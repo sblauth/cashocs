@@ -296,8 +296,11 @@ class SpaceMapping:
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()
-        # self.parameter_extraction._solve(initial_guess=self.x.coordinates()[:, :])
+        # self.parameter_extraction._solve()
+        self.parameter_extraction._solve(initial_guess=self.x.coordinates()[:, :])
+        # self.parameter_extraction._solve(
+        #     initial_guess=self.coarse_model.coordinates_optimal
+        # )
         self.p_current.vector()[:] = self.deformation_handler_coarse.coordinate_to_dof(
             self.parameter_extraction.mesh.coordinates()[:, :]
             - self.coordinates_initial
@@ -336,9 +339,12 @@ class SpaceMapping:
                 )
 
                 self.fine_model.solve_and_evaluate()
-                self.parameter_extraction._solve()
+                # self.parameter_extraction._solve()
+                self.parameter_extraction._solve(
+                    initial_guess=self.x.coordinates()[:, :]
+                )
                 # self.parameter_extraction._solve(
-                #     initial_guess=self.x.coordinates()[:, :]
+                #     initial_guess=self.coarse_model.coordinates_optimal
                 # )
                 self.p_current.vector()[
                     :
@@ -360,9 +366,12 @@ class SpaceMapping:
                         * self.deformation_handler_coarse.dof_to_coordinate(self.h)
                     )
                     self.fine_model.solve_and_evaluate()
-                    self.parameter_extraction._solve()
+                    # self.parameter_extraction._solve()
+                    self.parameter_extraction._solve(
+                        initial_guess=self.x.coordinates()[:, :]
+                    )
                     # self.parameter_extraction._solve(
-                    #     initial_guess=self.x.coordinates()[:, :]
+                    #     self.coarse_model.coordinates_optimal
                     # )
                     self.p_current.vector()[
                         :
@@ -475,6 +484,12 @@ class SpaceMapping:
             return self._compute_bfgs_application(q, out)
         elif self.method == "ncg":
             return self._compute_ncg_direction(q, out)
+        else:
+            raise InputError(
+                "cashocs.space_mapping.shape_optimization.SpaceMapping",
+                "method",
+                "The method is not supported.",
+            )
 
     @staticmethod
     def _compute_steepest_descent_application(q, out):
