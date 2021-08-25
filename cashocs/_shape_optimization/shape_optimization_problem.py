@@ -27,6 +27,7 @@ import tempfile
 
 import fenics
 import numpy as np
+import ufl
 from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
@@ -201,10 +202,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     self.temp_dict = json.load(file)
 
         ### boundaries
-        if (
-            boundaries.__module__ == "dolfin.cpp.mesh"
-            and type(boundaries).__name__ == "MeshFunctionSizet"
-        ):
+        if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
             self.boundaries = boundaries
         else:
             raise InputError(
@@ -219,10 +217,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             self.deformation_space = None
 
         else:
-            if (
-                shape_scalar_product.__module__ == "ufl.form"
-                and type(shape_scalar_product).__name__ == "Form"
-            ):
+            if isinstance(shape_scalar_product, ufl.form.Form):
                 if len(shape_scalar_product.arguments()) == 2:
                     family = (
                         shape_scalar_product.arguments()[0]
@@ -469,10 +464,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         try:
-            if (
-                not shape_derivative.__module__ == "ufl.form"
-                and type(shape_derivative).__name__ == "Form"
-            ):
+            if not (isinstance(shape_derivative, ufl.form.Form)):
                 raise InputError(
                     "cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
                     "shape_derivative",
