@@ -31,6 +31,7 @@ import fenics
 import numpy as np
 from deprecated import deprecated
 from petsc4py import PETSc
+import ufl
 from ufl.measure import Measure
 
 from ._exceptions import InputError, PETScKSPError
@@ -332,13 +333,13 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
     """
 
     bcs_list = []
-    if type(idcs) == list:
+    if isinstance(idcs, list):
         for i in idcs:
             bcs_list.append(
                 fenics.DirichletBC(function_space, value, boundaries, i, **kwargs)
             )
 
-    elif type(idcs) == int:
+    elif isinstance(idcs, int):
         bcs_list.append(
             fenics.DirichletBC(function_space, value, boundaries, idcs, **kwargs)
         )
@@ -718,7 +719,7 @@ def _optimization_algorithm_configuration(config, algorithm=None):
         overwrite = False
         algorithm = config.get("OptimizationRoutine", "algorithm", fallback="none")
 
-    if not type(algorithm) == str:
+    if not isinstance(algorithm, str):
         raise InputError(
             "cashocs.utils._optimization_algorithm_configuration",
             "algorithm",
@@ -835,12 +836,9 @@ def _check_for_config_list(string):
 
 def _check_and_enlist_functions(functions):
     try:
-        if type(functions) == list and len(functions) > 0:
+        if isinstance(functions, list) and len(functions) > 0:
             for i in range(len(functions)):
-                if (
-                    functions[i].__module__ == "dolfin.function.function"
-                    and type(functions[i]).__name__ == "Function"
-                ):
+                if isinstance(functions[i], fenics.Function):
                     pass
                 else:
                     raise InputError(
@@ -851,10 +849,7 @@ def _check_and_enlist_functions(functions):
 
             return functions
 
-        elif (
-            functions.__module__ == "dolfin.function.function"
-            and type(functions).__name__ == "Function"
-        ):
+        elif isinstance(functions, fenics.Function):
             return [functions]
         else:
             raise InputError(
@@ -873,12 +868,9 @@ def _check_and_enlist_functions(functions):
 
 def _check_and_enlist_ufl_forms(ufl_forms):
     try:
-        if type(ufl_forms) == list and len(ufl_forms) > 0:
+        if isinstance(ufl_forms, list) and len(ufl_forms) > 0:
             for i in range(len(ufl_forms)):
-                if (
-                    ufl_forms[i].__module__ == "ufl.form"
-                    and type(ufl_forms[i]).__name__ == "Form"
-                ):
+                if isinstance(ufl_forms[i], ufl.form.Form):
                     pass
                 else:
                     raise InputError(
@@ -889,7 +881,7 @@ def _check_and_enlist_ufl_forms(ufl_forms):
 
             return ufl_forms
 
-        elif ufl_forms.__module__ == "ufl.form" and type(ufl_forms).__name__ == "Form":
+        elif isinstance(ufl_forms, ufl.form.Form):
             return [ufl_forms]
 
         else:
@@ -909,15 +901,12 @@ def _check_and_enlist_ufl_forms(ufl_forms):
 
 def _check_and_enlist_bcs(bcs_list):
     try:
-        if type(bcs_list) == list and len(bcs_list) > 0:
-            if type(bcs_list[0]) == list:
+        if isinstance(bcs_list, list) and len(bcs_list) > 0:
+            if isinstance(bcs_list[0], list):
                 for i in range(len(bcs_list)):
-                    if type(bcs_list[i]) == list:
+                    if isinstance(bcs_list[i], list):
                         for bc in bcs_list[i]:
-                            if (
-                                bc.__module__ == "dolfin.fem.dirichletbc"
-                                and type(bc).__name__ == "DirichletBC"
-                            ):
+                            if isinstance(bc, fenics.DirichletBC):
                                 pass
                             else:
                                 raise InputError(
@@ -933,15 +922,9 @@ def _check_and_enlist_bcs(bcs_list):
                         )
                 return bcs_list
 
-            elif (
-                bcs_list[0].__module__ == "dolfin.fem.dirichletbc"
-                and type(bcs_list[0]).__name__ == "DirichletBC"
-            ):
+            elif isinstance(bcs_list[0], fenics.DirichletBC):
                 for i in range(len(bcs_list)):
-                    if (
-                        bcs_list[i].__module__ == "dolfin.fem.dirichletbc"
-                        and type(bcs_list[i]).__name__ == "DirichletBC"
-                    ):
+                    if isinstance(bcs_list[i], fenics.DirichletBC):
                         pass
                     else:
                         raise InputError(
@@ -950,10 +933,7 @@ def _check_and_enlist_bcs(bcs_list):
                             "Type of bcs_list is wrong.",
                         )
                 return [bcs_list]
-        elif (
-            bcs_list.__module__ == "dolfin.fem.dirichletbc"
-            and type(bcs_list).__name__ == "DirichletBC"
-        ):
+        elif isinstance(bcs_list, fenics.DirichletBC):
             return [[bcs_list]]
         else:
             raise InputError(
@@ -971,16 +951,16 @@ def _check_and_enlist_bcs(bcs_list):
 
 def _check_and_enlist_ksp_options(ksp_options):
     if (
-        type(ksp_options) == list
-        and type(ksp_options[0]) == list
-        and type(ksp_options[0][0]) == str
+        isinstance(ksp_options, list)
+        and isinstance(ksp_options[0], list)
+        and isinstance(ksp_options[0][0], str)
     ):
         return [ksp_options[:]]
 
     elif (
-        type(ksp_options) == list
-        and type(ksp_options[0]) == list
-        and type(ksp_options[0][0]) == list
+        isinstance(ksp_options, list)
+        and isinstance(ksp_options[0], list)
+        and isinstance(ksp_options[0][0], list)
     ):
         return ksp_options[:]
     else:

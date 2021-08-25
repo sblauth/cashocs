@@ -198,7 +198,7 @@ class Regularization:
                 "The target_barycenter parameter has to be a list of numbers",
             )
         self.target_barycenter_list = json.loads(target_bar)
-        if not type(self.target_barycenter_list) == list:
+        if not isinstance(self.target_barycenter_list, list):
             raise ConfigError(
                 "Regularization", "target_barycenter", "This has to be a list."
             )
