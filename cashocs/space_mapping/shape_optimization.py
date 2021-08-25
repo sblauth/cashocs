@@ -297,10 +297,10 @@ class SpaceMapping:
 
         self.fine_model.solve_and_evaluate()
         # self.parameter_extraction._solve()
-        self.parameter_extraction._solve(initial_guess=self.x.coordinates()[:, :])
-        # self.parameter_extraction._solve(
-        #     initial_guess=self.coarse_model.coordinates_optimal
-        # )
+        # self.parameter_extraction._solve(initial_guess=self.x.coordinates()[:, :])
+        self.parameter_extraction._solve(
+            initial_guess=self.coarse_model.coordinates_optimal
+        )
         self.p_current.vector()[:] = self.deformation_handler_coarse.coordinate_to_dof(
             self.parameter_extraction.mesh.coordinates()[:, :]
             - self.coordinates_initial
@@ -339,12 +339,12 @@ class SpaceMapping:
 
                 self.fine_model.solve_and_evaluate()
                 # self.parameter_extraction._solve()
-                self.parameter_extraction._solve(
-                    initial_guess=self.x.coordinates()[:, :]
-                )
                 # self.parameter_extraction._solve(
-                #     initial_guess=self.coarse_model.coordinates_optimal
+                #     initial_guess=self.x.coordinates()[:, :]
                 # )
+                self.parameter_extraction._solve(
+                    initial_guess=self.coarse_model.coordinates_optimal
+                )
                 self.p_current.vector()[
                     :
                 ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -366,12 +366,12 @@ class SpaceMapping:
                     )
                     self.fine_model.solve_and_evaluate()
                     # self.parameter_extraction._solve()
-                    self.parameter_extraction._solve(
-                        initial_guess=self.x.coordinates()[:, :]
-                    )
                     # self.parameter_extraction._solve(
-                    #     self.coarse_model.coordinates_optimal
+                    #     initial_guess=self.x.coordinates()[:, :]
                     # )
+                    self.parameter_extraction._solve(
+                        self.coarse_model.coordinates_optimal
+                    )
                     self.p_current.vector()[
                         :
                     ] = self.deformation_handler_coarse.coordinate_to_dof(
