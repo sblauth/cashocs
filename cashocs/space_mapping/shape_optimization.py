@@ -323,12 +323,11 @@ class SpaceMapping:
             )
             self._compute_search_direction(self.temp, self.h)
 
-            if self._scalar_product(self.h, self.temp) <= 0.0:
-                print("DEBUG: Failed")
-                debug(
-                    "The computed search direction for space mapping did not yield a descent direction"
-                )
-                self.h.vector()[:] = self.temp.vector()[:]
+            # if self._scalar_product(self.h, self.temp) <= 0.0:
+            #     debug(
+            #         "The computed search direction for space mapping did not yield a descent direction"
+            #     )
+            #     self.h.vector()[:] = self.temp.vector()[:]
 
             stepsize = 1.0
             self.p_prev.vector()[:] = self.p_current.vector()[:]
