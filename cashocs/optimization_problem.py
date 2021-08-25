@@ -34,7 +34,14 @@ from ._exceptions import InputError
 from ._forms import FormHandler, Lagrangian
 from ._loggers import info, warning
 from ._pde_problems import StateProblem
-from .utils import _parse_remesh, summation
+from .utils import (
+    _parse_remesh,
+    summation,
+    _check_and_enlist_functions,
+    _check_and_enlist_ufl_forms,
+    _check_and_enlist_bcs,
+    _check_and_enlist_ksp_options,
+)
 
 
 class OptimizationProblem:
@@ -122,130 +129,48 @@ class OptimizationProblem:
 
         self.has_cashocs_remesh_flag, self.temp_dir = _parse_remesh()
 
-        ### Overloading, so that we do not have to use lists for a single state and a single control
         ### state_forms
         try:
-            if type(state_forms) == list and len(state_forms) > 0:
-                for i in range(len(state_forms)):
-                    if (
-                        state_forms[i].__module__ == "ufl.form"
-                        and type(state_forms[i]).__name__ == "Form"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.optimization_problem.OptimizationProblem",
-                            "state_forms",
-                            "state_forms have to be ufl forms",
-                        )
-                self.state_forms = state_forms
-            elif (
-                state_forms.__module__ == "ufl.form"
-                and type(state_forms).__name__ == "Form"
-            ):
-                self.state_forms = [state_forms]
-            else:
-                raise InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "state_forms",
-                    "state_forms have to be ufl forms",
-                )
+            self.state_forms = _check_and_enlist_ufl_forms(state_forms)
         except:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "state_forms",
-                "state_forms have to be ufl forms",
+                "Type of state_forms is wrong.",
             )
+
         self.state_dim = len(self.state_forms)
 
         ### bcs_list
-        try:
-            if bcs_list == [] or bcs_list is None:
-                self.bcs_list = []
-                for i in range(self.state_dim):
-                    self.bcs_list.append([])
-            elif type(bcs_list) == list and len(bcs_list) > 0:
-                if type(bcs_list[0]) == list:
-                    for i in range(len(bcs_list)):
-                        if type(bcs_list[i]) == list:
-                            pass
-                        else:
-                            raise InputError(
-                                "cashocs.optimization_problem.OptimizationProblem",
-                                "bcs_list",
-                                "bcs_list has inconsistent types.",
-                            )
-                    self.bcs_list = bcs_list
-
-                elif (
-                    bcs_list[0].__module__ == "dolfin.fem.dirichletbc"
-                    and type(bcs_list[0]).__name__ == "DirichletBC"
-                ):
-                    for i in range(len(bcs_list)):
-                        if (
-                            bcs_list[i].__module__ == "dolfin.fem.dirichletbc"
-                            and type(bcs_list[i]).__name__ == "DirichletBC"
-                        ):
-                            pass
-                        else:
-                            raise InputError(
-                                "cashocs.optimization_problem.OptimizationProblem",
-                                "bcs_list",
-                                "bcs_list has inconsistent types.",
-                            )
-                    self.bcs_list = [bcs_list]
-            elif (
-                bcs_list.__module__ == "dolfin.fem.dirichletbc"
-                and type(bcs_list).__name__ == "DirichletBC"
-            ):
-                self.bcs_list = [[bcs_list]]
-            else:
+        if bcs_list == [] or bcs_list is None:
+            self.bcs_list = []
+            for i in range(self.state_dim):
+                self.bcs_list.append([])
+        else:
+            try:
+                self.bcs_list = _check_and_enlist_bcs(bcs_list)
+            except InputError:
                 raise InputError(
                     "cashocs.optimization_problem.OptimizationProblem",
                     "bcs_list",
                     "Type of bcs_list is wrong.",
                 )
-        except:
-            raise InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "bcs_list",
-                "Type of bcs_list is wrong.",
-            )
 
         ### cost_functional_form
         self.use_cost_functional_list = False
+        if type(cost_functional_form) == list:
+            self.use_cost_functional_list = True
+
         try:
-            if type(cost_functional_form) == list:
-                for term in cost_functional_form:
-                    if term.__module__ == "ufl.form" and type(term).__name__ == "Form":
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.optimization_problem.OptimizationProblem",
-                            "cost_functional_form",
-                            "cost_functional_form has to be a ufl form or a list of ufl forms.",
-                        )
-
-                self.use_cost_functional_list = True
-                self.cost_functional_list = cost_functional_form
-                # generate a dummy cost_functional_form, which is overwritten in _scale_cost_functional
-                self.cost_functional_form = summation(
-                    [term for term in self.cost_functional_list]
-                )
-
-            elif (
-                cost_functional_form.__module__ == "ufl.form"
-                and type(cost_functional_form).__name__ == "Form"
-            ):
-                self.cost_functional_form = cost_functional_form
-
+            self.cost_functional_form_list = _check_and_enlist_ufl_forms(
+                cost_functional_form
+            )
+            if self.use_cost_functional_list:
+                self.cost_functional_list = self.cost_functional_form_list
+                self.cost_functional_form = summation(self.cost_functional_form_list)
             else:
-                raise InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "cost_functional_form",
-                    "cost_functional_form has to be a ufl form.",
-                )
-        except:
+                self.cost_functional_form = self.cost_functional_form_list[0]
+        except InputError:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "cost_functional_form",
@@ -254,34 +179,8 @@ class OptimizationProblem:
 
         ### states
         try:
-            if type(states) == list and len(states) > 0:
-                for i in range(len(states)):
-                    if (
-                        states[i].__module__ == "dolfin.function.function"
-                        and type(states[i]).__name__ == "Function"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.optimization_problem.OptimizationProblem",
-                            "states",
-                            "states have to be fenics Functions.",
-                        )
-
-                self.states = states
-
-            elif (
-                states.__module__ == "dolfin.function.function"
-                and type(states).__name__ == "Function"
-            ):
-                self.states = [states]
-            else:
-                raise InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "states",
-                    "Type of states is wrong.",
-                )
-        except:
+            self.states = _check_and_enlist_functions(states)
+        except InputError:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "states",
@@ -290,34 +189,8 @@ class OptimizationProblem:
 
         ### adjoints
         try:
-            if type(adjoints) == list and len(adjoints) > 0:
-                for i in range(len(adjoints)):
-                    if (
-                        adjoints[i].__module__ == "dolfin.function.function"
-                        and type(adjoints[i]).__name__ == "Function"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.optimization_problem.OptimizationProblem",
-                            "adjoints",
-                            "adjoints have to fenics Functions.",
-                        )
-
-                self.adjoints = adjoints
-
-            elif (
-                adjoints.__module__ == "dolfin.function.function"
-                and type(adjoints).__name__ == "Function"
-            ):
-                self.adjoints = [adjoints]
-            else:
-                raise InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "adjoints",
-                    "Type of adjoints is wrong.",
-                )
-        except:
+            self.adjoints = _check_and_enlist_functions(adjoints)
+        except InputError:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "adjoints",
@@ -354,24 +227,12 @@ class OptimizationProblem:
             self.initial_guess = initial_guess
         else:
             try:
-                if type(initial_guess) == list:
-                    self.initial_guess = initial_guess
-                elif (
-                    initial_guess.__module__ == "dolfin.function.function"
-                    and type(initial_guess).__name__ == "Function"
-                ):
-                    self.initial_guess = [initial_guess]
-                else:
-                    raise InputError(
-                        "cashocs.optimization_problem.OptimizationProblem",
-                        "initial_guess",
-                        "initial guess has to be a list of functions",
-                    )
-            except:
+                self.initial_guess = _check_and_enlist_functions(initial_guess)
+            except InputError:
                 raise InputError(
                     "cashocs.optimization_problem.OptimizationProblem",
                     "initial_guess",
-                    "initial guess has to be a list of functions",
+                    "Type of initial_guess is wrong.",
                 )
 
         ### ksp_options
@@ -386,52 +247,31 @@ class OptimizationProblem:
 
             for i in range(self.state_dim):
                 self.ksp_options.append(option)
-
-        elif (
-            type(ksp_options) == list
-            and type(ksp_options[0]) == list
-            and type(ksp_options[0][0]) == str
-        ):
-            self.ksp_options = [ksp_options[:]]
-
-        elif (
-            type(ksp_options) == list
-            and type(ksp_options[0]) == list
-            and type(ksp_options[0][0]) == list
-        ):
-            self.ksp_options = ksp_options[:]
-
         else:
-            raise InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "ksp_options",
-                "Wrong input format for ksp_options.",
-            )
+            try:
+                self.ksp_options = _check_and_enlist_ksp_options(ksp_options)
+            except InputError:
+                raise InputError(
+                    "cashocs.optimization_problem.OptimizationProblem",
+                    "ksp_options",
+                    "Type of ksp_options is wrong.",
+                )
 
         ### adjoint_ksp_options
         if adjoint_ksp_options is None:
             self.adjoint_ksp_options = self.ksp_options[:]
 
-        elif (
-            type(adjoint_ksp_options) == list
-            and type(adjoint_ksp_options[0]) == list
-            and type(adjoint_ksp_options[0][0]) == str
-        ):
-            self.adjoint_ksp_options = [adjoint_ksp_options[:]]
-
-        elif (
-            type(adjoint_ksp_options) == list
-            and type(adjoint_ksp_options[0]) == list
-            and type(adjoint_ksp_options[0][0]) == list
-        ):
-            self.adjoint_ksp_options = adjoint_ksp_options[:]
-
         else:
-            raise InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "adjoint_ksp_options",
-                "Wrong input format for adjoint_ksp_options.",
-            )
+            try:
+                self.adjoint_ksp_options = _check_and_enlist_ksp_options(
+                    adjoint_ksp_options
+                )
+            except InputError:
+                raise InputError(
+                    "cashocs.optimization_problem.OptimizationProblem",
+                    "adjoint_ksp_options",
+                    "Type of adjoint_ksp_options is wrong.",
+                )
 
         ### desired_weights
         if desired_weights is not None:

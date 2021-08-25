@@ -34,7 +34,7 @@ from .._pde_problems import (
     UnconstrainedHessianProblem,
 )
 from ..optimization_problem import OptimizationProblem
-from ..utils import _optimization_algorithm_configuration
+from ..utils import _optimization_algorithm_configuration, _check_and_enlist_functions
 
 
 class OptimalControlProblem(OptimizationProblem):
@@ -136,37 +136,10 @@ class OptimalControlProblem(OptimizationProblem):
             desired_weights,
             scalar_tracking_forms,
         )
-        ### Overloading, such that we do not have to use lists for a single state and a single control
-        ### controls
+
         try:
-            if type(controls) == list and len(controls) > 0:
-                for i in range(len(controls)):
-                    if (
-                        controls[i].__module__ == "dolfin.function.function"
-                        and type(controls[i]).__name__ == "Function"
-                    ):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                            "controls",
-                            "controls have to be fenics Functions.",
-                        )
-
-                self.controls = controls
-
-            elif (
-                controls.__module__ == "dolfin.function.function"
-                and type(controls).__name__ == "Function"
-            ):
-                self.controls = [controls]
-            else:
-                raise InputError(
-                    "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                    "controls",
-                    "Type of controls is wrong.",
-                )
-        except:
+            self.controls = _check_and_enlist_functions(controls)
+        except InputError:
             raise InputError(
                 "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
                 "controls",

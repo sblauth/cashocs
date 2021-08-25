@@ -831,3 +831,161 @@ def _check_for_config_list(string):
     result = True
 
     return result
+
+
+def _check_and_enlist_functions(functions):
+    try:
+        if type(functions) == list and len(functions) > 0:
+            for i in range(len(functions)):
+                if (
+                    functions[i].__module__ == "dolfin.function.function"
+                    and type(functions[i]).__name__ == "Function"
+                ):
+                    pass
+                else:
+                    raise InputError(
+                        "cashocs.utils._check_and_enlist_functions",
+                        "functions",
+                        "Not a valid input.",
+                    )
+
+            return functions
+
+        elif (
+            functions.__module__ == "dolfin.function.function"
+            and type(functions).__name__ == "Function"
+        ):
+            return [functions]
+        else:
+            raise InputError(
+                "cashocs.utils._check_and_enlist_functions",
+                "functions",
+                "Not a valid input.",
+            )
+
+    except:
+        raise InputError(
+            "cashocs.utils._check_and_enlist_functions",
+            "functions",
+            "Not a valid input.",
+        )
+
+
+def _check_and_enlist_ufl_forms(ufl_forms):
+    try:
+        if type(ufl_forms) == list and len(ufl_forms) > 0:
+            for i in range(len(ufl_forms)):
+                if (
+                    ufl_forms[i].__module__ == "ufl.form"
+                    and type(ufl_forms[i]).__name__ == "Form"
+                ):
+                    pass
+                else:
+                    raise InputError(
+                        "cashocs.utils._check_and_enlist_ufl_forms",
+                        "ufl_forms",
+                        "Not a valid input.",
+                    )
+
+            return ufl_forms
+
+        elif ufl_forms.__module__ == "ufl.form" and type(ufl_forms).__name__ == "Form":
+            return [ufl_forms]
+
+        else:
+            raise InputError(
+                "cashocs.utils._check_and_enlist_ufl_forms",
+                "ufl_forms",
+                "Not a valid input.",
+            )
+
+    except:
+        raise InputError(
+            "cashocs.utils._check_and_enlist_ufl_forms",
+            "ufl_forms",
+            "Not a valid input.",
+        )
+
+
+def _check_and_enlist_bcs(bcs_list):
+    try:
+        if type(bcs_list) == list and len(bcs_list) > 0:
+            if type(bcs_list[0]) == list:
+                for i in range(len(bcs_list)):
+                    if type(bcs_list[i]) == list:
+                        for bc in bcs_list[i]:
+                            if (
+                                bc.__module__ == "dolfin.fem.dirichletbc"
+                                and type(bc).__name__ == "DirichletBC"
+                            ):
+                                pass
+                            else:
+                                raise InputError(
+                                    "cashocs.utils._check_and_enlist_bcs",
+                                    "bcs_list",
+                                    "Type of bcs_list is wrong.",
+                                )
+                    else:
+                        raise InputError(
+                            "cashocs.utils._check_and_enlist_bcs",
+                            "bcs_list",
+                            "Type of bcs_list is wrong.",
+                        )
+                return bcs_list
+
+            elif (
+                bcs_list[0].__module__ == "dolfin.fem.dirichletbc"
+                and type(bcs_list[0]).__name__ == "DirichletBC"
+            ):
+                for i in range(len(bcs_list)):
+                    if (
+                        bcs_list[i].__module__ == "dolfin.fem.dirichletbc"
+                        and type(bcs_list[i]).__name__ == "DirichletBC"
+                    ):
+                        pass
+                    else:
+                        raise InputError(
+                            "cashocs.utils._check_and_enlist_bcs",
+                            "bcs_list",
+                            "Type of bcs_list is wrong.",
+                        )
+                return [bcs_list]
+        elif (
+            bcs_list.__module__ == "dolfin.fem.dirichletbc"
+            and type(bcs_list).__name__ == "DirichletBC"
+        ):
+            return [[bcs_list]]
+        else:
+            raise InputError(
+                "cashocs.utils._check_and_enlist_bcs",
+                "bcs_list",
+                "Type of bcs_list is wrong.",
+            )
+    except:
+        raise InputError(
+            "cashocs.utils._check_and_enlist_bcs",
+            "bcs_list",
+            "Type of bcs_list is wrong.",
+        )
+
+
+def _check_and_enlist_ksp_options(ksp_options):
+    if (
+        type(ksp_options) == list
+        and type(ksp_options[0]) == list
+        and type(ksp_options[0][0]) == str
+    ):
+        return [ksp_options[:]]
+
+    elif (
+        type(ksp_options) == list
+        and type(ksp_options[0]) == list
+        and type(ksp_options[0][0]) == list
+    ):
+        return ksp_options[:]
+    else:
+        raise InputError(
+            "cashocs.utils._check_and_enlist_ksp_options",
+            "ksp_options",
+            "Type of ksp_options is wrong.",
+        )
