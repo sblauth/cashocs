@@ -114,3 +114,16 @@ class ConfigError(CashocsException):
             return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}."
         else:
             return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}"
+
+
+class GeometryError(CashocsException):
+    """This exception gets raised when there is a problem with the finite element mesh."""
+
+    def __init__(self, message=None):
+        self.message = message
+
+    def __str__(self):
+        if self.message is None:
+            return f"The finite element mesh is not valid anymore."
+        else:
+            return f"The finite element mesh is not valid anymore.\n{self.message}"
