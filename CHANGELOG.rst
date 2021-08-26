@@ -8,7 +8,7 @@ of the maintenance releases, please take a look at
 
 
 1.4.0 (in development)
---------------
+----------------------
 
 * Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation
 
