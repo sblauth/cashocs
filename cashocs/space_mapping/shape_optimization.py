@@ -29,7 +29,6 @@ from .._shape_optimization.shape_optimization_problem import ShapeOptimizationPr
 from .._exceptions import InputError, NotConvergedError, GeometryError
 from ..utils import _check_and_enlist_functions
 from ..geometry import DeformationHandler, compute_mesh_quality
-from .._loggers import debug
 
 
 class ParentFineModel:
@@ -271,6 +270,7 @@ class SpaceMapping:
         self.h = fenics.Function(self.VCG)
         self.v = fenics.Function(self.VCG)
         self.u = fenics.Function(self.VCG)
+        self.transformation = fenics.Function(self.VCG)
 
         self.x_save = None
 
@@ -328,14 +328,10 @@ class SpaceMapping:
             #     )
             #     self.h.vector()[:] = self.temp.vector()[:]
 
-            stepsize = 1.0
+            self.stepsize = 1.0
             self.p_prev.vector()[:] = self.p_current.vector()[:]
             if not self.use_backtracking_line_search:
-                success = self.deformation_handler_fine.assign_coordinates(
-                    self.x.coordinates()[:, :]
-                    + stepsize
-                    * self.deformation_handler_coarse.dof_to_coordinate(self.h)
-                )
+                success = self.deformation_handler_fine.move_mesh(self.h)
                 if not success:
                     raise GeometryError(
                         "The assignment of mesh coordinates was not possible due to intersections"
@@ -360,16 +356,15 @@ class SpaceMapping:
                 self.x_save = self.x.coordinates().copy()
 
                 while True:
-                    if stepsize <= 1e-4:
+                    if self.stepsize <= 1e-4:
                         raise NotConvergedError(
                             "Space Mapping Backtracking Line Search",
                             "The line search did not converge.",
                         )
 
-                    success = self.deformation_handler_fine.assign_coordinates(
-                        self.x_save
-                        + stepsize
-                        * self.deformation_handler_coarse.dof_to_coordinate(self.h)
+                    self.transformation.vector()[:] = self.stepsize * self.h.vector()[:]
+                    success = self.deformation_handler_fine.move_mesh(
+                        self.transformation
                     )
                     if success:
 
@@ -392,10 +387,10 @@ class SpaceMapping:
                             self.eps = eps_new
                             break
                         else:
-                            stepsize /= 2
+                            self.stepsize /= 2
 
                     else:
-                        stepsize /= 2
+                        self.stepsize /= 2
 
             self.iteration += 1
             self.current_mesh_quality = compute_mesh_quality(self.fine_model.mesh)
@@ -403,7 +398,7 @@ class SpaceMapping:
                 print(
                     f"Space Mapping - Iteration {self.iteration:3d}:    Cost functional value = "
                     f"{self.fine_model.cost_functional_value:.3e}    eps = {self.eps:.3e}"
-                    f"    Mesh Quality = {self.current_mesh_quality:1.2f}    step size = {stepsize:.3e}"
+                    f"    Mesh Quality = {self.current_mesh_quality:1.2f}    step size = {self.stepsize:.3e}"
                 )
 
             if self.eps <= self.tol:
