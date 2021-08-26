@@ -8,7 +8,7 @@ of the maintenance releases, please take a look at
 
 
 1.4.0 (in development)
---------------
+----------------------
 
 
 * Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is ``scalar_tracking_forms``, which is a dictionary consisting of ``'integrand'``, which is the integrand of the scalar quantity, and ``'tracking_goal'``, which is the (scalar) value that shall be achieved. 
