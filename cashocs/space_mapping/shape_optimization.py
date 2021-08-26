@@ -26,7 +26,7 @@ from _collections import deque
 
 import cashocs
 from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-from .._exceptions import InputError, NotConvergedError
+from .._exceptions import InputError, NotConvergedError, GeometryError
 from ..utils import _check_and_enlist_functions
 from ..geometry import DeformationHandler, compute_mesh_quality
 from .._loggers import debug
@@ -297,7 +297,6 @@ class SpaceMapping:
 
         self.fine_model.solve_and_evaluate()
         # self.parameter_extraction._solve()
-        # self.parameter_extraction._solve(initial_guess=self.x.coordinates()[:, :])
         self.parameter_extraction._solve(
             initial_guess=self.coarse_model.coordinates_optimal
         )
@@ -332,16 +331,18 @@ class SpaceMapping:
             stepsize = 1.0
             self.p_prev.vector()[:] = self.p_current.vector()[:]
             if not self.use_backtracking_line_search:
-                self.deformation_handler_fine.assign_coordinates(
+                success = self.deformation_handler_fine.assign_coordinates(
                     self.x.coordinates()[:, :]
-                    + self.deformation_handler_coarse.dof_to_coordinate(self.h)
+                    + stepsize
+                    * self.deformation_handler_coarse.dof_to_coordinate(self.h)
                 )
+                if not success:
+                    raise GeometryError(
+                        "The assignment of mesh coordinates was not possible due to intersections"
+                    )
 
                 self.fine_model.solve_and_evaluate()
                 # self.parameter_extraction._solve()
-                # self.parameter_extraction._solve(
-                #     initial_guess=self.x.coordinates()[:, :]
-                # )
                 self.parameter_extraction._solve(
                     initial_guess=self.coarse_model.coordinates_optimal
                 )
@@ -359,40 +360,42 @@ class SpaceMapping:
                 self.x_save = self.x.coordinates().copy()
 
                 while True:
-                    self.deformation_handler_fine.assign_coordinates(
-                        self.x_save
-                        + stepsize
-                        * self.deformation_handler_coarse.dof_to_coordinate(self.h)
-                    )
-                    self.fine_model.solve_and_evaluate()
-                    # self.parameter_extraction._solve()
-                    # self.parameter_extraction._solve(
-                    #     initial_guess=self.x.coordinates()[:, :]
-                    # )
-                    self.parameter_extraction._solve(
-                        self.coarse_model.coordinates_optimal
-                    )
-                    self.p_current.vector()[
-                        :
-                    ] = self.deformation_handler_coarse.coordinate_to_dof(
-                        self.parameter_extraction.mesh.coordinates()[:, :]
-                        - self.coordinates_initial
-                    ).vector()[
-                        :
-                    ]
-                    eps_new = self._compute_eps()
-
-                    if eps_new <= self.eps:
-                        self.eps = eps_new
-                        break
-                    else:
-                        stepsize /= 2
-
                     if stepsize <= 1e-4:
                         raise NotConvergedError(
                             "Space Mapping Backtracking Line Search",
                             "The line search did not converge.",
                         )
+
+                    success = self.deformation_handler_fine.assign_coordinates(
+                        self.x_save
+                        + stepsize
+                        * self.deformation_handler_coarse.dof_to_coordinate(self.h)
+                    )
+                    if success:
+
+                        self.fine_model.solve_and_evaluate()
+                        # self.parameter_extraction._solve()
+                        self.parameter_extraction._solve(
+                            self.coarse_model.coordinates_optimal
+                        )
+                        self.p_current.vector()[
+                            :
+                        ] = self.deformation_handler_coarse.coordinate_to_dof(
+                            self.parameter_extraction.mesh.coordinates()[:, :]
+                            - self.coordinates_initial
+                        ).vector()[
+                            :
+                        ]
+                        eps_new = self._compute_eps()
+
+                        if eps_new <= self.eps:
+                            self.eps = eps_new
+                            break
+                        else:
+                            stepsize /= 2
+
+                    else:
+                        stepsize /= 2
 
             self.iteration += 1
             self.current_mesh_quality = compute_mesh_quality(self.fine_model.mesh)
