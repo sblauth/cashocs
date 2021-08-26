@@ -7,6 +7,45 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
+1.4.0 (in development)
+--------------
+
+- Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is ``scalar_tracking_forms``, which is a dictionary consisting of ``'integrand'``, which is the integrand of the scalar quantity, and ``'tracking_goal'``, which is the (scalar) value that shall be achieved. 
+
+- Fixed a bug concerning cashocs' memory management, which would occur if several OptimizationProblems were created one after the other
+
+- Changed the coding style to "black"
+
+- Switched printing to f-string syntax for better readability
+
+- Config files are now copied when they are passed to OptimizationProblems, so that manipulation of them is only possible before the instance is created
+
+- New configuration file parameters:
+
+- Small bugfixes and other improvements:
+
+  - Switched to pseudo random numbers for the tests for the sake of reproduceability
+
+  - fixed some tolerances for the tests
+
+  - replaced os.system() calls by subprocess.run()
+
+
+1.3.0 (June 11, 2021)
+---------------------
+
+- Improved the remeshing workflow and fixed several smaller bugs concerning it
+
+- New configuration file parameters:
+
+  - Section Output
+    
+    - ``save_pvd_adjoint`` is a boolean flag which allows users to also save adjoint states in paraview format
+
+    - ``save_pvd_gradient`` is a boolean flag which allows users to save the (shape) gradient(s) in paraview format
+
+    - ``save_txt`` is a boolean flag, which allows users to capture the command line output as .txt file
+
 1.2.0 (December 01, 2020)
 -------------------------
 
