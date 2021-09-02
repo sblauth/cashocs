@@ -37,7 +37,7 @@ import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
 
-from ._exceptions import CashocsException, ConfigError, InputError
+from ._exceptions import CashocsException, ConfigError, InputError, GeometryError
 from ._loggers import debug, info, warning
 from .utils import (
     _assemble_petsc_system,
@@ -1613,7 +1613,8 @@ class DeformationHandler:
 
         Returns
         -------
-        None
+         : bool
+            ``True`` if the assignment was possible, ``False`` if not
 
         """
 
@@ -1629,8 +1630,11 @@ class DeformationHandler:
                 "coordinates",
                 "The number of vertices is wrong.",
             )
+        self.old_coordinates = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
+
+        return self.__test_a_posteriori()
 
 
 class MeshQuality:
