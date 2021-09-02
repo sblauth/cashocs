@@ -27,7 +27,7 @@ of the maintenance releases, please take a look at
 
   * Section ShapeGradient
 
-    * ``use_distance_mu``is a boolean flag which enables stiffness computation based on distances
+    * ``use_distance_mu`` is a boolean flag which enables stiffness computation based on distances
 
     * ``dist_min`` and ``dist_max`` describe the minimal and maximum distance to the boundary for which a certain stiffness is used (see below)
 
