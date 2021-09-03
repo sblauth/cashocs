@@ -802,10 +802,15 @@ In the end, we also have, like for optimal control problems, a parameter that sp
 where the output is placed, again named ``result_dir``, which is given in the config file
 in the line ::
 
-    result_dir = ./
+    result_dir = ./results
 
 As before, this is either a relative or absolute path to the directory where the
 results should be placed.
+
+Moreover, we have the parameter ``time_suffix``, which adds a suffix to the result directory based on the current time. It is controlled by the line ::
+
+	time_suffix = False
+
 
 
 .. _config_shape_summary:
@@ -1153,5 +1158,8 @@ in the following.
       - ``False``
       - if ``True``, saves the mesh for the optimized geometry; only available for GMSH input
     * - result_dir
-      - ``./``
+      - ``./results``
       - path to the directory, where the output should be placed
+    * - time_suffix
+      - ``False``
+      - Boolean flag, which adds a suffix to ``result_dir`` based on the current time

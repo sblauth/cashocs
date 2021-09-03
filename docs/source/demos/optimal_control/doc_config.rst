@@ -479,10 +479,15 @@ This boolean flag ensures that a paraview with the computed gradients is saved i
 Finally, we can specify in which directory the results should be stored with the
 parameter ``result_dir``, which is given in this config file by ::
 
-    result_dir = ./
+    result_dir = ./results
 
 The path given there can be either relative or absolute. In this example, the
 working directory of the python script is chosen.
+
+Moreover, we have the parameter ``time_suffix``, which adds a suffix to the result directory based on the current time. It is controlled by the line ::
+
+	time_suffix = False
+
 
 
 .. _config_ocp_summary:
@@ -703,6 +708,9 @@ in the following.
     * - result_dir
       - ``./``
       - path to the directory, where the output should be placed
+    * - time_suffix
+      - ``False``
+      - Boolean flag, which adds a suffix to ``result_dir`` based on the current time
 
 
 This concludes the documentation of the config files for optimal control problems.
