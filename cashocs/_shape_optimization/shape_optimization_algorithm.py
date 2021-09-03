@@ -19,6 +19,7 @@
 
 """
 
+from datetime import datetime
 import json
 import os
 import subprocess
@@ -115,10 +116,32 @@ class ShapeOptimizationAlgorithm:
         self.save_pvd_gradient = self.config.getboolean(
             "Output", "save_pvd_gradient", fallback=False
         )
-        self.result_dir = self.config.get("Output", "result_dir", fallback="./")
+
+        self.has_output = (
+            self.save_txt
+            or self.save_pvd
+            or self.save_pvd_gradient
+            or self.save_pvd_adjoint
+            or self.save_results
+        )
+
+        self.result_dir = self.config.get("Output", "result_dir", fallback="./results")
+        self.time_suffix = self.config.getboolean(
+            "Output", "time_suffix", fallback=False
+        )
+        if self.time_suffix:
+            dt = datetime.now()
+            self.suffix = (
+                f"{dt.year}_{dt.month}_{dt.day}_{dt.hour}_{dt.minute}_{dt.second}"
+            )
+            if self.result_dir[-1] == "/":
+                self.result_dir = f"{self.result_dir[:-1]}_{self.suffix}"
+            else:
+                self.result_dir = f"{self.result_dir}_{self.suffix}"
 
         if not os.path.isdir(self.result_dir):
-            Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+            if self.has_output:
+                Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
         if self.save_pvd:
             self.state_pvd_list = []
