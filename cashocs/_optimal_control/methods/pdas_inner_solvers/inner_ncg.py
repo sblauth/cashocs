@@ -23,11 +23,11 @@ import fenics
 import numpy as np
 
 from .unconstrained_line_search import UnconstrainedLineSearch
-from ...optimization_algorithm import OptimizationAlgorithm
+from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import ConfigError, NotConvergedError
 
 
-class InnerNCG(OptimizationAlgorithm):
+class InnerNCG(ControlOptimizationAlgorithm):
     """Unconstrained nonlinear conjugate gradient method."""
 
     def __init__(self, optimization_problem):
@@ -39,7 +39,7 @@ class InnerNCG(OptimizationAlgorithm):
                 the corresponding optimization problem
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = UnconstrainedLineSearch(self)
 

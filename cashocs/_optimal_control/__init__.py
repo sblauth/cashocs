@@ -24,6 +24,6 @@ the line search needed for this.
 
 from .cost_functional import ReducedCostFunctional
 from .line_search import ArmijoLineSearch
-from .optimization_algorithm import OptimizationAlgorithm
+from .control_optimization_algorithm import ControlOptimizationAlgorithm
 
-__all__ = ["ReducedCostFunctional", "ArmijoLineSearch", "OptimizationAlgorithm"]
+__all__ = ["ReducedCostFunctional", "ArmijoLineSearch", "ControlOptimizationAlgorithm"]

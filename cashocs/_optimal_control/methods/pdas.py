@@ -24,10 +24,10 @@ import numpy as np
 
 from .pdas_inner_solvers import InnerNCG, InnerGradientDescent, InnerLBFGS, InnerNewton
 from ..._exceptions import ConfigError
-from ..._optimal_control import OptimizationAlgorithm
+from ..._optimal_control import ControlOptimizationAlgorithm
 
 
-class PDAS(OptimizationAlgorithm):
+class PDAS(ControlOptimizationAlgorithm):
     """A primal-dual-active-set method."""
 
     def __init__(self, optimization_problem):
@@ -39,7 +39,7 @@ class PDAS(OptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.idx_active_upper_prev = [
             np.array([]) for j in range(optimization_problem.control_dim)
