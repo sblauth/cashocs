@@ -338,3 +338,14 @@ def test_move_mesh():
     assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
     assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
     assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+
+
+def test_eikonal_distance():
+    mesh, _, boundaries, _, _, _ = cashocs.regular_mesh(16)
+    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1, 2, 3, 4])
+    assert np.min(dist.vector()[:]) >= 0.0
+    assert (np.max(dist.vector()[:]) - 0.5) / 0.5 <= 0.05
+
+    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
+    assert np.min(dist.vector()[:]) >= 0.0
+    assert (np.max(dist.vector()[:]) - 1.0) / 1.0 <= 0.05

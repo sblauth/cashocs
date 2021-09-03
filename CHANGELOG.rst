@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 1.4.0 (in development)
 ----------------------
 
+* Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation
+
 
 * Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is ``scalar_tracking_forms``, which is a dictionary consisting of ``'integrand'``, which is the integrand of the scalar quantity, and ``'tracking_goal'``, which is the (scalar) value that shall be achieved. 
 
@@ -22,6 +24,18 @@ of the maintenance releases, please take a look at
 * Config files are now copied when they are passed to OptimizationProblems, so that manipulation of them is only possible before the instance is created
 
 * New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * ``use_distance_mu`` is a boolean flag which enables stiffness computation based on distances
+
+    * ``dist_min`` and ``dist_max`` describe the minimal and maximum distance to the boundary for which a certain stiffness is used (see below)
+
+    * ``mu_min`` and ``mu_max`` describe the stiffness values: If the boundary distance is smaller than ``dist_min``, then ``mu = mu_min`` and if the distance is larger than ``dist_max``, we have ``mu = mu_max``
+
+    * ``smooth_mu`` is a boolean flag, which determines how ``mu`` is interpolated between ``dist_min`` and ``dist_max``: If this is set to ``False``, linear interpolation is used, otherwise, a cubic spline is used
+
+    * ``boundaries_dist`` is a list of boundary indices to which the distance shall be computed
 
 * Small bugfixes and other improvements:
 
