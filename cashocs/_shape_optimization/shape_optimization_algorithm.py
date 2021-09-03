@@ -125,7 +125,18 @@ class ShapeOptimizationAlgorithm:
             or self.save_results
         )
 
-        self.result_dir = self.config.get("Output", "result_dir", fallback="./results")
+        try:
+            if self.temp_dict is not None:
+                self.result_dir = self.temp_dict["result_dir"]
+            else:
+                self.result_dir = self.config.get(
+                    "Output", "result_dir", fallback="./results"
+                )
+        except KeyError:
+            self.result_dir = self.config.get(
+                "Output", "result_dir", fallback="./results"
+            )
+
         self.time_suffix = self.config.getboolean(
             "Output", "time_suffix", fallback=False
         )
@@ -134,10 +145,11 @@ class ShapeOptimizationAlgorithm:
             self.suffix = (
                 f"{dt.year}_{dt.month}_{dt.day}_{dt.hour}_{dt.minute}_{dt.second}"
             )
-            if self.result_dir[-1] == "/":
-                self.result_dir = f"{self.result_dir[:-1]}_{self.suffix}"
-            else:
-                self.result_dir = f"{self.result_dir}_{self.suffix}"
+            if not optimization_problem.has_cashocs_remesh_flag:
+                if self.result_dir[-1] == "/":
+                    self.result_dir = f"{self.result_dir[:-1]}_{self.suffix}"
+                else:
+                    self.result_dir = f"{self.result_dir}_{self.suffix}"
 
         if not os.path.isdir(self.result_dir):
             if self.has_output:
