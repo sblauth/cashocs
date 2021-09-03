@@ -33,9 +33,9 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from ufl.log import UFLException
 
 from ._exceptions import CashocsException, ConfigError, InputError
-from .geometry import compute_boundary_distance
 from ._loggers import warning
 from ._shape_optimization import Regularization
+from .geometry import compute_boundary_distance
 from .utils import (
     _assemble_petsc_system,
     _optimization_algorithm_configuration,

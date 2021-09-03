@@ -7,8 +7,8 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-1.4.0 (in development)
-----------------------
+1.4.0 (September 3, 2021)
+-------------------------
 
 * Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation
 
