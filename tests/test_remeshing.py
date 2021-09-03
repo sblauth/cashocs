@@ -14,6 +14,7 @@ from fenics import *
 
 import cashocs
 
+
 rng = np.random.RandomState(300696)
 has_gmsh = False
 query = shutil.which("gmsh")

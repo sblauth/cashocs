@@ -24,6 +24,7 @@ from fenics import *
 
 import cashocs
 
+
 set_log_level(LogLevel.CRITICAL)
 config = cashocs.load_config("config.ini")
 

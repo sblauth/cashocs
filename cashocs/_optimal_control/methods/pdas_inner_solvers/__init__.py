@@ -19,9 +19,9 @@
 
 """
 
-from .inner_ncg import InnerNCG
 from .inner_gradient_descent import InnerGradientDescent
 from .inner_lbfgs import InnerLBFGS
+from .inner_ncg import InnerNCG
 from .inner_newton import InnerNewton
 
 

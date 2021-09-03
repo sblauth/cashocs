@@ -29,9 +29,9 @@ import os
 
 import fenics
 import numpy as np
+import ufl
 from deprecated import deprecated
 from petsc4py import PETSc
-import ufl
 from ufl.measure import Measure
 
 from ._exceptions import InputError, PETScKSPError

@@ -21,9 +21,9 @@ In this module, the optimization algorithms for the optimal control
 problems are implemented.
 """
 
-from .ncg import NCG
 from .gradient_descent import GradientDescent
 from .l_bfgs import LBFGS
+from .ncg import NCG
 from .newton import Newton
 from .pdas import PDAS
 

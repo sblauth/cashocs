@@ -26,6 +26,7 @@ import numpy as np
 
 import cashocs
 
+
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
 V = fenics.FunctionSpace(mesh, "CG", 1)
