@@ -22,11 +22,9 @@ ShapeOptimizationAlgorithm classes are based.
 
 """
 
-from datetime import datetime
 import os
+from datetime import datetime
 from pathlib import Path
-
-import fenics
 
 
 class OptimizationAlgorithm:

@@ -5,7 +5,9 @@ Created on 15/06/2020, 16.11
 """
 
 from fenics import *
+
 import cashocs
+
 
 # load the config
 config = cashocs.load_config("./config.ini")

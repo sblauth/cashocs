@@ -22,8 +22,9 @@ It includes the optimization problem, the solution algorithms and
 the line search needed for this.
 """
 
+from .control_optimization_algorithm import ControlOptimizationAlgorithm
 from .cost_functional import ReducedCostFunctional
 from .line_search import ArmijoLineSearch
-from .control_optimization_algorithm import ControlOptimizationAlgorithm
+
 
 __all__ = ["ReducedCostFunctional", "ArmijoLineSearch", "ControlOptimizationAlgorithm"]

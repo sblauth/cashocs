@@ -4,11 +4,13 @@ Created on 03.09.21, 13:40
 @author: blauths
 """
 
-from fenics import *
-import cashocs
 import os
 import subprocess
-from datetime import datetime
+
+from fenics import *
+
+import cashocs
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
