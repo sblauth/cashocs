@@ -34,7 +34,7 @@ class UnconstrainedLineSearch:
         ----------
         config : configparser.ConfigParser
                 the config file for the problem
-        optimization_algorithm : cashocs._optimal_control.OptimizationAlgorithm
+        optimization_algorithm : cashocs._optimal_control.ControlOptimizationAlgorithm
                 the corresponding optimization algorithm
         """
 

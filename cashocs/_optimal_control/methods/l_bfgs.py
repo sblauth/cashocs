@@ -25,10 +25,10 @@ import fenics
 import numpy as np
 
 from ..._loggers import debug
-from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
+from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-class LBFGS(OptimizationAlgorithm):
+class LBFGS(ControlOptimizationAlgorithm):
     """A limited memory BFGS method"""
 
     def __init__(self, optimization_problem):
@@ -40,7 +40,7 @@ class LBFGS(OptimizationAlgorithm):
                 the optimization problem to be solved
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

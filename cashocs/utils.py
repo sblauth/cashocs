@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Sebastian Blauth
+# Copyright (C) 2020-2021 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -26,6 +26,7 @@ actions.
 import argparse
 import configparser
 import os
+from pathlib import Path
 
 import fenics
 import numpy as np
@@ -640,6 +641,9 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
         )
 
     dim = mesh.geometric_dimension()
+
+    if not Path(out_msh_file).parent.is_dir():
+        Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
 
     with open(original_msh_file, "r") as old_file, open(out_msh_file, "w") as new_file:
 

@@ -137,6 +137,9 @@ def damped_newton_solve(
 		cashocs.damped_newton_solve(F, u, bcs)
 	"""
 
+    if isinstance(bcs, fenics.DirichletBC):
+        bcs = [bcs]
+
     if not convergence_type in ["rel", "abs", "combined"]:
         raise InputError(
             "cashocs.nonlinear_solvers.damped_newton_solve",

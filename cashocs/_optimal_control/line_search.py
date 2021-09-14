@@ -40,7 +40,7 @@ class ArmijoLineSearch:
 
         Parameters
         ----------
-        optimization_algorithm : cashocs._optimal_control.optimization_algorithm.OptimizationAlgorithm
+        optimization_algorithm : cashocs._optimal_control.control_optimization_algorithm.ControlOptimizationAlgorithm
                 the corresponding optimization algorihm
         """
 

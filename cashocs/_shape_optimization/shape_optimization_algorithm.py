@@ -20,18 +20,17 @@
 """
 
 import json
-import os
 import subprocess
-from pathlib import Path
 
 import fenics
 
 from .._exceptions import NotConvergedError
 from .._loggers import error, info
+from .._optimization_algorithm import OptimizationAlgorithm
 from ..utils import write_out_mesh
 
 
-class ShapeOptimizationAlgorithm:
+class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
     """Blueprint for a solution algorithm for shape optimization problems"""
 
     def __init__(self, optimization_problem):
@@ -43,20 +42,17 @@ class ShapeOptimizationAlgorithm:
                 the optimization problem
         """
 
+        OptimizationAlgorithm.__init__(self, optimization_problem)
+
         self.line_search_broken = False
         self.requires_remeshing = False
         self.remeshing_its = False
         self.has_curvature_info = False
 
-        self.form_handler = optimization_problem.form_handler
-        self.state_problem = optimization_problem.state_problem
-        self.config = self.state_problem.config
-        self.adjoint_problem = optimization_problem.adjoint_problem
         self.mesh_handler = optimization_problem.mesh_handler
 
         self.shape_gradient_problem = optimization_problem.shape_gradient_problem
         self.gradient = self.shape_gradient_problem.gradient
-        self.cost_functional = optimization_problem.reduced_cost_functional
         self.search_direction = fenics.Function(self.form_handler.deformation_space)
 
         self.temp_dict = optimization_problem.temp_dict
@@ -69,13 +65,6 @@ class ShapeOptimizationAlgorithm:
             )
         else:
             self.iteration = 0
-        self.objective_value = 1.0
-        self.gradient_norm_initial = 1.0
-        self.relative_norm = 1.0
-        self.stepsize = 1.0
-
-        self.converged = False
-        self.converged_reason = 0
 
         self.output_dict = dict()
         try:
@@ -94,31 +83,6 @@ class ShapeOptimizationAlgorithm:
             self.output_dict["gradient_norm"] = []
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
-
-        self.verbose = self.config.getboolean("Output", "verbose", fallback=True)
-        self.save_results = self.config.getboolean(
-            "Output", "save_results", fallback=True
-        )
-        self.save_txt = self.config.getboolean("Output", "save_txt", fallback=True)
-        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol", fallback=1e-3)
-        self.atol = self.config.getfloat("OptimizationRoutine", "atol", fallback=0.0)
-        self.maximum_iterations = self.config.getint(
-            "OptimizationRoutine", "maximum_iterations", fallback=100
-        )
-        self.soft_exit = self.config.getboolean(
-            "OptimizationRoutine", "soft_exit", fallback=False
-        )
-        self.save_pvd = self.config.getboolean("Output", "save_pvd", fallback=False)
-        self.save_pvd_adjoint = self.config.getboolean(
-            "Output", "save_pvd_adjoint", fallback=False
-        )
-        self.save_pvd_gradient = self.config.getboolean(
-            "Output", "save_pvd_gradient", fallback=False
-        )
-        self.result_dir = self.config.get("Output", "result_dir", fallback="./")
-
-        if not os.path.isdir(self.result_dir):
-            Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
         if self.save_pvd:
             self.state_pvd_list = []

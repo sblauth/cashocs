@@ -21,10 +21,10 @@
 
 import numpy as np
 
-from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
+from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-class GradientDescent(OptimizationAlgorithm):
+class GradientDescent(ControlOptimizationAlgorithm):
     """A gradient descent method"""
 
     def __init__(self, optimization_problem):
@@ -36,7 +36,7 @@ class GradientDescent(OptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

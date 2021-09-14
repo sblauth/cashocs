@@ -1279,6 +1279,7 @@ class _MeshHandler:
 
             self.temp_dict["remesh_counter"] = self.remesh_counter
             self.temp_dict["remesh_directory"] = self.remesh_directory
+            self.temp_dict["result_dir"] = solver.result_dir
 
             self.new_xdmf_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"

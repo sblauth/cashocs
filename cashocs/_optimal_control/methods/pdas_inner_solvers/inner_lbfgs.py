@@ -25,11 +25,11 @@ import fenics
 import numpy as np
 
 from .unconstrained_line_search import UnconstrainedLineSearch
-from ...optimization_algorithm import OptimizationAlgorithm
+from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-class InnerLBFGS(OptimizationAlgorithm):
+class InnerLBFGS(ControlOptimizationAlgorithm):
     """A unconstrained limited memory BFGS method"""
 
     def __init__(self, optimization_problem):
@@ -41,7 +41,7 @@ class InnerLBFGS(OptimizationAlgorithm):
                 the corresponding optimal control problem to be solved
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = UnconstrainedLineSearch(self)
         self.maximum_iterations = self.config.getint(

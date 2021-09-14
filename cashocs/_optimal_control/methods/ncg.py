@@ -23,10 +23,10 @@ import fenics
 import numpy as np
 
 from ..._exceptions import ConfigError
-from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
+from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-class NCG(OptimizationAlgorithm):
+class NCG(ControlOptimizationAlgorithm):
     """Nonlinear conjugate gradient method."""
 
     def __init__(self, optimization_problem):
@@ -38,7 +38,7 @@ class NCG(OptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

@@ -22,10 +22,10 @@
 import numpy as np
 
 from ..._loggers import debug
-from ..._optimal_control import ArmijoLineSearch, OptimizationAlgorithm
+from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-class Newton(OptimizationAlgorithm):
+class Newton(ControlOptimizationAlgorithm):
     """A truncated Newton method."""
 
     def __init__(self, optimization_problem):
@@ -37,7 +37,7 @@ class Newton(OptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
         self.hessian_problem = optimization_problem.hessian_problem

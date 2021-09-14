@@ -1,0 +1,36 @@
+Iteration    0 - Objective value:  9.403e-01    Gradient norm:  3.408e+00 (abs)    Mesh Quality: 0.27 (skewness)
+
+Iteration    1 - Objective value:  8.873e-01    Gradient norm:  8.260e-01 (rel)    Mesh Quality: 0.27 (skewness)    Step size:  5.000e-03
+Iteration    2 - Objective value:  7.179e-01    Gradient norm:  2.968e-01 (rel)    Mesh Quality: 0.27 (skewness)    Step size:  1.000e+00
+Iteration    3 - Objective value:  6.631e-01    Gradient norm:  1.798e-01 (rel)    Mesh Quality: 0.26 (skewness)    Step size:  1.000e+00
+Iteration    4 - Objective value:  6.079e-01    Gradient norm:  1.032e-01 (rel)    Mesh Quality: 0.24 (skewness)    Step size:  1.000e+00
+Iteration    5 - Objective value:  5.554e-01    Gradient norm:  8.522e-02 (rel)    Mesh Quality: 0.23 (skewness)    Step size:  1.000e+00
+Iteration    6 - Objective value:  4.959e-01    Gradient norm:  2.146e-01 (rel)    Mesh Quality: 0.20 (skewness)    Step size:  1.000e+00
+Iteration    7 - Objective value:  4.554e-01    Gradient norm:  6.933e-02 (rel)    Mesh Quality: 0.04 (skewness)    Step size:  1.000e+00
+Iteration    8 - Objective value:  4.539e-01    Gradient norm:  1.182e-01 (rel)    Mesh Quality: 0.08 (skewness)    Step size:  1.000e+00
+Iteration    9 - Objective value:  4.381e-01    Gradient norm:  3.224e-02 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   10 - Objective value:  4.370e-01    Gradient norm:  1.832e-02 (rel)    Mesh Quality: 0.03 (skewness)    Step size:  1.000e+00
+Iteration   11 - Objective value:  4.355e-01    Gradient norm:  1.294e-02 (rel)    Mesh Quality: 0.03 (skewness)    Step size:  1.000e+00
+Iteration   12 - Objective value:  4.344e-01    Gradient norm:  8.790e-03 (rel)    Mesh Quality: 0.04 (skewness)    Step size:  5.000e-01
+Iteration   13 - Objective value:  4.339e-01    Gradient norm:  3.010e-02 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   14 - Objective value:  4.337e-01    Gradient norm:  1.538e-02 (rel)    Mesh Quality: 0.01 (skewness)    Step size:  3.815e-06
+Iteration   15 - Objective value:  4.336e-01    Gradient norm:  1.188e-02 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  7.812e-03
+Iteration   16 - Objective value:  4.333e-01    Gradient norm:  5.485e-03 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  1.000e+00
+Iteration   17 - Objective value:  4.331e-01    Gradient norm:  5.031e-03 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  1.000e+00
+Iteration   18 - Objective value:  4.331e-01    Gradient norm:  3.425e-03 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  5.000e-01
+Iteration   19 - Objective value:  4.331e-01    Gradient norm:  2.410e-03 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  1.000e+00
+Iteration   20 - Objective value:  4.330e-01    Gradient norm:  2.140e-03 (rel)    Mesh Quality: 0.02 (skewness)    Step size:  1.000e+00
+Iteration   21 - Objective value:  4.330e-01    Gradient norm:  1.761e-03 (rel)    Mesh Quality: 0.01 (skewness)    Step size:  1.000e+00
+Iteration   22 - Objective value:  4.330e-01    Gradient norm:  1.509e-03 (rel)    Mesh Quality: 0.01 (skewness)    Step size:  1.000e+00
+Iteration   23 - Objective value:  4.330e-01    Gradient norm:  2.148e-03 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   24 - Objective value:  4.330e-01    Gradient norm:  1.686e-03 (rel)    Mesh Quality: 0.01 (skewness)    Step size:  1.000e+00
+Iteration   25 - Objective value:  4.329e-01    Gradient norm:  9.888e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   26 - Objective value:  4.329e-01    Gradient norm:  2.214e-03 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  5.000e-01
+Iteration   27 - Objective value:  4.329e-01    Gradient norm:  8.365e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   28 - Objective value:  4.329e-01    Gradient norm:  6.021e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   29 - Objective value:  4.329e-01    Gradient norm:  5.880e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.000e+00
+Iteration   30 - Objective value:  4.329e-01    Gradient norm:  6.405e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  5.000e-01
+Iteration   31 - Objective value:  4.329e-01    Gradient norm:  4.997e-04 (rel)    Mesh Quality: 0.00 (skewness)    Step size:  1.250e-01
+
+Statistics --- Total iterations:   31 --- Final objective value:  4.329e-01 --- Final gradient norm:  4.997e-04 (rel)
+           --- State equations solved: 37 --- Adjoint equations solved: 32
