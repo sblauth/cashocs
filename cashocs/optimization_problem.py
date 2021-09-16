@@ -684,16 +684,7 @@ class OptimizationProblem:
 
             if not self.has_cashocs_remesh_flag:
                 # Create dummy objects for adjoints, so that we can actually solve the state problem
-                temp_form_handler = FormHandler(
-                    self.lagrangian,
-                    self.bcs_list,
-                    self.states,
-                    self.adjoints,
-                    self.config,
-                    self.ksp_options,
-                    self.adjoint_ksp_options,
-                    use_scalar_tracking=self.use_scalar_tracking,
-                )
+                temp_form_handler = FormHandler(self)
                 temp_state_problem = StateProblem(temp_form_handler, self.initial_guess)
 
                 temp_state_problem.solve()
@@ -785,3 +776,73 @@ class OptimizationProblem:
                 self.cost_functional_form = summation(
                     [term for term in self.cost_functional_list]
                 )
+
+    def inject_pre_hook(self, function):
+        """
+        Changes the a-priori hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        function : function
+            A custom function without arguments, which will be called before each solve
+            of the state system
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self.form_handler._pre_hook = function
+        self.state_problem.has_solution = False
+        self.adjoint_problem.has_solution = False
+        try:
+            self.gradient_problem.has_solution = False
+        except AttributeError:
+            self.shape_gradient_problem.has_solution = False
+
+    def inject_post_hook(self, function):
+        """
+        Changes the a-posteriori hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        function : function
+            A custom function without arguments, which will be called after the computation
+            of the gradient(s)
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self.form_handler._post_hook = function
+        self.state_problem.has_solution = False
+        self.adjoint_problem.has_solution = False
+        try:
+            self.gradient_problem.has_solution = False
+        except AttributeError:
+            self.shape_gradient_problem.has_solution = False
+
+    def inject_pre_post_hook(self, pre_function, post_function):
+        """
+        Changes the a-priori (pre) and a-posteriori (post) hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        pre_function : function
+            A function without arguments, which is to be called before each solve of the
+            state system
+        post_function : function
+            A function without arguments, which is to be called after each computation of
+            the (shape) gradient
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self.inject_pre_hook(pre_function)
+        self.inject_post_hook(post_function)

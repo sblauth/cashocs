@@ -362,20 +362,7 @@ class OptimalControlProblem(OptimizationProblem):
             )
         ### end overloading
 
-        self.form_handler = ControlFormHandler(
-            self.lagrangian,
-            self.bcs_list,
-            self.states,
-            self.controls,
-            self.adjoints,
-            self.config,
-            self.riesz_scalar_products,
-            self.control_constraints,
-            self.ksp_options,
-            self.adjoint_ksp_options,
-            self.require_control_constraints,
-            use_scalar_tracking=self.use_scalar_tracking,
-        )
+        self.form_handler = ControlFormHandler(self)
 
         self.state_spaces = self.form_handler.state_spaces
         self.control_spaces = self.form_handler.control_spaces
