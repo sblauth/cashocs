@@ -250,21 +250,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     "Not a valid type for shape_scalar_product.",
                 )
 
-        self.form_handler = ShapeFormHandler(
-            self.lagrangian,
-            self.bcs_list,
-            self.states,
-            self.adjoints,
-            self.boundaries,
-            self.config,
-            self.ksp_options,
-            self.adjoint_ksp_options,
-            self.shape_scalar_product,
-            self.deformation_space,
-            use_scalar_tracking=self.use_scalar_tracking,
-            has_cashocs_remesh_flag=self.has_cashocs_remesh_flag,
-            temp_dir=self.temp_dir,
-        )
+        self.form_handler = ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
             self.temp_dict["Regularization"] = {
