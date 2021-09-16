@@ -101,6 +101,8 @@ class StateProblem:
 
         if not self.has_solution:
 
+            self.form_handler._pre_hook()
+
             if self.initial_guess is not None:
                 for j in range(self.form_handler.state_dim):
                     fenics.assign(self.states[j], self.initial_guess[j])

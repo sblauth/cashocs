@@ -25,6 +25,7 @@ actions.
 
 import argparse
 import configparser
+import functools
 import os
 from pathlib import Path
 
@@ -973,3 +974,22 @@ def _check_and_enlist_ksp_options(ksp_options):
             "ksp_options",
             "Type of ksp_options is wrong.",
         )
+
+
+def _prefix_function(function, pre_function):
+    @functools.wraps(function)
+    def run(*args, **kwargs):
+        pre_function()
+        return function(*args, **kwargs)
+
+    return run
+
+
+def _suffix_function(function, post_function):
+    @functools.wraps(function)
+    def run(*args, **kwargs):
+        temp = function(*args, **kwargs)
+        post_function()
+        return temp
+
+    return run

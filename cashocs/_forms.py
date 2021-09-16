@@ -99,48 +99,23 @@ class FormHandler:
     ShapeFormHandler : FormHandler for shape optimization problems
     """
 
-    def __init__(
-        self,
-        lagrangian,
-        bcs_list,
-        states,
-        adjoints,
-        config,
-        ksp_options,
-        adjoint_ksp_options,
-        use_scalar_tracking=False,
-    ):
+    def __init__(self, optimization_problem):
         """Initializes the form handler.
 
         Parameters
         ----------
-        lagrangian : cashocs._forms.Lagrangian
-                The lagrangian of the optimization problem.
-        bcs_list : list[list[dolfin.fem.dirichletbc.DirichletBC]]
-                The list of DirichletBCs for the state equation.
-        states : list[dolfin.function.function.Function]
-                The function that acts as the state variable.
-        adjoints : list[dolfin.function.function.Function]
-                The function that acts as the adjoint variable.
-        config : configparser.ConfigParser
-                The configparser object of the config file.
-        ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                state systems.
-        adjoint_ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                adjoint systems.
+        optimization_problem : cashocs.optimization_problem.OptimizationProblem
+            The corresponding optimization problem
         """
 
-        # Initialize the attributes from the arguments
-        self.lagrangian = lagrangian
-        self.bcs_list = bcs_list
-        self.states = states
-        self.adjoints = adjoints
-        self.config = config
-        self.state_ksp_options = ksp_options
-        self.adjoint_ksp_options = adjoint_ksp_options
-        self.use_scalar_tracking = use_scalar_tracking
+        self.lagrangian = optimization_problem.lagrangian
+        self.bcs_list = optimization_problem.bcs_list
+        self.states = optimization_problem.states
+        self.adjoints = optimization_problem.adjoints
+        self.config = optimization_problem.config
+        self.state_ksp_options = optimization_problem.ksp_options
+        self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
+        self.use_scalar_tracking = optimization_problem.use_scalar_tracking
 
         # Further initializations
         self.cost_functional_form = self.lagrangian.cost_functional_form
@@ -209,7 +184,7 @@ class FormHandler:
         self.state_is_picard = self.config.getboolean(
             "StateSystem", "picard_iteration", fallback=False
         )
-        self.opt_algo = _optimization_algorithm_configuration(config)
+        self.opt_algo = _optimization_algorithm_configuration(self.config)
 
         if self.opt_algo == "pdas":
             self.inner_pdas = self.config.get("AlgoPDAS", "inner_pdas")
@@ -429,6 +404,12 @@ class FormHandler:
                                 bc.sub_domain,
                             )
 
+    def _pre_hook(self):
+        pass
+
+    def _post_hook(self):
+        pass
+
 
 class ControlFormHandler(FormHandler):
     """Class for UFL form manipulation for optimal control problems.
@@ -443,69 +424,24 @@ class ControlFormHandler(FormHandler):
     ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
     """
 
-    def __init__(
-        self,
-        lagrangian,
-        bcs_list,
-        states,
-        controls,
-        adjoints,
-        config,
-        riesz_scalar_products,
-        control_constraints,
-        ksp_options,
-        adjoint_ksp_options,
-        require_control_constraints,
-        use_scalar_tracking=False,
-    ):
+    def __init__(self, optimization_problem):
         """Initializes the ControlFormHandler class.
 
         Parameters
         ----------
-        lagrangian : cashocs._forms.Lagrangian
-                The lagrangian corresponding to the optimization problem.
-        bcs_list : list[list[dolfin.fem.dirichletbc.DirichletBC]]
-                The list of DirichletBCs for the state equation.
-        states : list[dolfin.function.function.Function]
-                The function that acts as the state variable.
-        controls : list[dolfin.function.function.Function]
-                The function that acts as the control variable.
-        adjoints : list[dolfin.function.function.Function]
-                The function that acts as the adjoint variable.
-        config : configparser.ConfigParser
-                The configparser object of the config file.
-        riesz_scalar_products : list[ufl.form.Form]
-                The UFL forms of the scalar products for the control variables.
-        control_constraints : list[list[dolfin.function.function.Function]]
-                The control constraints of the problem.
-        ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                state systems.
-        adjoint_ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                adjoint systems.
-        require_control_constraints : list[bool]
-                A list of boolean flags that indicates, whether the i-th control
-                has actual control constraints present.
+        optimization_problem : cashocs._optimal_control.optimal_control_problem.OptimalControlProblem
+            The corresponding optimal control problem
         """
 
-        FormHandler.__init__(
-            self,
-            lagrangian,
-            bcs_list,
-            states,
-            adjoints,
-            config,
-            ksp_options,
-            adjoint_ksp_options,
-            use_scalar_tracking,
-        )
+        FormHandler.__init__(self, optimization_problem)
 
         # Initialize the attributes from the arguments
-        self.controls = controls
-        self.riesz_scalar_products = riesz_scalar_products
-        self.control_constraints = control_constraints
-        self.require_control_constraints = require_control_constraints
+        self.controls = optimization_problem.controls
+        self.riesz_scalar_products = optimization_problem.riesz_scalar_products
+        self.control_constraints = optimization_problem.control_constraints
+        self.require_control_constraints = (
+            optimization_problem.require_control_constraints
+        )
 
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
@@ -1032,65 +968,22 @@ class ShapeFormHandler(FormHandler):
     ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
     """
 
-    def __init__(
-        self,
-        lagrangian,
-        bcs_list,
-        states,
-        adjoints,
-        boundaries,
-        config,
-        ksp_options,
-        adjoint_ksp_options,
-        shape_scalar_product=None,
-        deformation_space=None,
-        use_scalar_tracking=False,
-        has_cashocs_remesh_flag=False,
-        temp_dir=None,
-    ):
+    def __init__(self, optimization_problem):
         """Initializes the ShapeFormHandler object.
 
         Parameters
         ----------
-        lagrangian : cashocs._forms.Lagrangian
-                The Lagrangian corresponding to the shape optimization problem
-        bcs_list : list[list[dolfin.fem.dirichletbc.DirichletBC]]
-                list of boundary conditions for the state variables
-        states : list[dolfin.function.function.Function]
-                list of state variables
-        adjoints : list[dolfin.function.function.Function]
-                list of adjoint variables
-        boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
-                a MeshFunction for the boundary markers
-        config : configparser.ConfigParser
-                the configparser object storing the problems config
-        ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                state systems.
-        adjoint_ksp_options : list[list[list[str]]]
-                The list of command line options for the KSP for the
-                adjoint systems.
-        shape_scalar_product : ufl.form.Form
-                The weak form of the scalar product used to determine the
-                shape gradient.
+        optimization_problem : cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+            The corresponding shape optimization problem
         """
 
-        FormHandler.__init__(
-            self,
-            lagrangian,
-            bcs_list,
-            states,
-            adjoints,
-            config,
-            ksp_options,
-            adjoint_ksp_options,
-            use_scalar_tracking,
-        )
+        FormHandler.__init__(self, optimization_problem)
 
-        self.has_cashocs_remesh_flag = has_cashocs_remesh_flag
-        self.temp_dir = temp_dir
-        self.boundaries = boundaries
-        self.shape_scalar_product = shape_scalar_product
+        self.has_cashocs_remesh_flag = optimization_problem.has_cashocs_remesh_flag
+        self.temp_dir = optimization_problem.temp_dir
+        self.boundaries = optimization_problem.boundaries
+        self.shape_scalar_product = optimization_problem.shape_scalar_product
+        deformation_space = optimization_problem.deformation_space
 
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation", fallback=True

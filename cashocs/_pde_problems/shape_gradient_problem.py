@@ -103,4 +103,6 @@ class ShapeGradientProblem:
                 self.gradient, self.gradient
             )
 
+            self.form_handler._post_hook()
+
         return self.gradient

@@ -111,4 +111,6 @@ class GradientProblem:
                 self.gradients, self.gradients
             )
 
+            self.form_handler._post_hook()
+
         return self.gradients
