@@ -789,3 +789,29 @@ def test_riesz_scalar_products():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_hooks():
+    def pre_function():
+        u.vector()[:] = 1.0
+
+    def post_function():
+        u.vector()[:] = -1.0
+
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+    grad = Function(V)
+    grad.vector()[:] = ocp.compute_gradient()[0].vector()[:]
+
+    ocp.inject_pre_post_hook(pre_function, post_function)
+    assert ocp.form_handler._pre_hook == pre_function
+    assert ocp.form_handler._post_hook == post_function
+
+    ocp.compute_state_variables()
+    assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15
+
+    injected_grad = ocp.compute_gradient()
+    assert np.max(np.abs(u.vector()[:] - (-1.0))) < 1e-15
+
+    assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
