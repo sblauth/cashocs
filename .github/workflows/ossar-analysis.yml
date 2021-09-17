@@ -4,10 +4,10 @@
 name: OSSAR
 
 on:
-  push:
+  workflow_dispatch:
   pull_request:
   schedule:
-    - cron: '37 22 * * 5'
+    - cron: '37 22 * * *'
 
 jobs:
   OSSAR-Scan:
