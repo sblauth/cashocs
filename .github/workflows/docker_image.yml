@@ -1,6 +1,7 @@
 name: dockerbuild
 
 on:
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '13 0 * * *'
@@ -31,7 +32,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          file: ./docker/Dockerfile
+          file: ./.docker/Dockerfile
           push: true
           tags: ghcr.io/sblauth/cashocs_testimage:latest
 

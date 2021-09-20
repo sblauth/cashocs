@@ -1,0 +1,35 @@
+name: docker ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [build_success]
+
+jobs:
+  docker ci:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sblauth/cashocs_testimage:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2 
+
+    - name: Install cashocs
+      shell: bash -l {0}
+      run: |
+        source /root/miniconda3/etc/profile.d/conda.sh
+        conda activate fenics
+        pip install .
+
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        source /root/miniconda3/etc/profile.d/conda.sh
+        conda activate fenics
+        pytest
