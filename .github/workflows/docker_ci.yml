@@ -8,7 +8,7 @@ on:
     types: [build_success]
 
 jobs:
-  docker ci:
+  docker_ci:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/sblauth/cashocs_testimage:latest
