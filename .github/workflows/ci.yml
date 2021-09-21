@@ -1,46 +1,35 @@
 name: ci
 
 on:
-  workflow_dispatch:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
-    - cron: '17 0 * * *'
+    - cron: '7 0 * * *'
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
+    container:
+      image: sblauth/cashocs-test-env:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v2 
 
-    - name: Add conda to system path
-      run: |
-        echo $CONDA/bin >> $GITHUB_PATH
-
-    - name: Install dependencies
+    - name: Install cashocs
       shell: bash -l {0}
       run: |
-        conda create -n fenics -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base gmsh">=4.8" python">=3.6" coverage
-        conda init bash
-
-    - name: Install package
-      shell: bash -l {0}
-      run: |
-        source $CONDA/bin/activate fenics
+        source /root/miniconda3/etc/profile.d/conda.sh
+        conda activate cashocs
         pip install .
 
-    - name: Run tests and generate coverage
+    - name: Run tests
       shell: bash -l {0}
       run: |
-        source $CONDA/bin/activate fenics
-        coverage run --source=cashocs -m pytest
-        coverage xml
-
-    - name: Upload coverage to codecov
-      uses: codecov/codecov-action@v1
-      with:
-        files: coverage.xml
+        source /root/miniconda3/etc/profile.d/conda.sh
+        conda activate cashocs
+        pytest
