@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: sblauth/cashocs-test-env:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_PAT }}
 
     steps:
     - name: Checkout repository
