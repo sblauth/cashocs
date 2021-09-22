@@ -1,0 +1,86 @@
+name: Docker images
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+  schedule:
+    - cron: '13 0 * * *'
+
+jobs:
+  build_test_env:
+    name: Build sblauth/cashocs-test-env image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+
+      - name: Get tag name
+        id: tag_name
+        run: |
+          if [[ ${GITHUB_REF#refs/tags/} == v* ]]
+          then
+            echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+          else
+            echo "::set-output name=TAG_PREFIX::latest"
+          fi
+
+      - name: Log into the Dockerhub registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Build the Docker image
+        run: |
+          docker buildx build --push \
+            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
+            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --target=test-env \
+            --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
+
+
+  build_user_image:
+    name: Build sblauth/cashocs image
+    needs: 
+      - build_test_env
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get tag name
+        id: tag_name
+        run: |
+          if [[ ${GITHUB_REF#refs/tags/} == v* ]]
+          then
+            echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+          else
+            echo "::set-output name=TAG_PREFIX::latest"
+          fi
+
+      - name: Log into the Dockerhub registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Build the Docker image
+        run: |
+          docker buildx build --push \
+            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
+            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --target=cashocs \
+            --tag sblauth/cashocs:${{ steps.tag_name.outputs.TAG_PREFIX }} .
+
+
+  test_user_image:
+    name: Test sblauth/cashocs image
+    needs:
+      - build_user_image
+    runs-on: ubuntu-latest
+    container: sblauth/cashocs:latest
+    steps:
+      - name: Run tests
+        shell: bash -l {0}
+        run: |
+          source /root/miniconda3/etc/profile.d/conda.sh
+          conda activate cashocs
+          cd /root/cashocs/
+          pytest
