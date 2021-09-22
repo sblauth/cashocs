@@ -20,13 +20,11 @@ jobs:
     - name: Install cashocs
       shell: bash -l {0}
       run: |
-        source /root/miniconda3/etc/profile.d/conda.sh
         conda activate cashocs
         pip install .
 
     - name: Run tests
       shell: bash -l {0}
       run: |
-        source /root/miniconda3/etc/profile.d/conda.sh
         conda activate cashocs
         pytest
