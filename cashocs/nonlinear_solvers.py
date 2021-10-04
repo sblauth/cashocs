@@ -33,6 +33,7 @@ def damped_newton_solve(
     F,
     u,
     bcs,
+    dF=None,
     rtol=1e-10,
     atol=1e-10,
     max_iter=50,
@@ -78,6 +79,9 @@ def damped_newton_solve(
 		The method overwrites / updates this Function.
 	bcs : list[dolfin.fem.dirichletbc.DirichletBC]
 		A list of DirichletBCs for the nonlinear variational problem.
+	dF : ufl.form.Form, optional
+	    The Jacobian of F, used for the Newton method. Default is None, and in this case
+	    the Jacobian is computed automatically with AD.
 	rtol : float, optional
 		Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
 		(default is ``rtol = 1e-10``).
@@ -169,7 +173,8 @@ def damped_newton_solve(
         ksp.setFromOptions()
 
     # Calculate the Jacobian.
-    dF = fenics.derivative(F, u)
+    if dF is None:
+        dF = fenics.derivative(F, u)
 
     # Setup increment and function for monotonicity test
     V = u.function_space()
