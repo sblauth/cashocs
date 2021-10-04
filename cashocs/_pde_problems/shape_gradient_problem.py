@@ -22,9 +22,11 @@ shape derivative to the shape gradient with a Riesz projection.
 """
 
 import fenics
+import numpy as np
 from petsc4py import PETSc
 
 from ..utils import _setup_petsc_options, _solve_linear_problem
+from ..nonlinear_solvers import shifted_newton
 
 
 class ShapeGradientProblem:
@@ -82,27 +84,75 @@ class ShapeGradientProblem:
         if not self.has_solution:
 
             self.form_handler.regularization.update_geometric_quantities()
-            self.form_handler.assembler.assemble(
-                self.form_handler.fe_shape_derivative_vector
-            )
-            b = fenics.as_backend_type(
-                self.form_handler.fe_shape_derivative_vector
-            ).vec()
-            _solve_linear_problem(
-                self.ksp,
-                self.form_handler.scalar_product_matrix,
-                b,
-                self.gradient.vector().vec(),
-                self.ksp_options,
-            )
-            self.gradient.vector().apply("")
 
-            self.has_solution = True
+            if self.config.getboolean(
+                "ShapeGradient", "use_p_laplacian", fallback=False
+            ):
+                p_target = self.config.getint("ShapeGradient", "p", fallback=2)
+                self.gradient.vector()[:] = 0.0
 
-            self.gradient_norm_squared = self.form_handler.scalar_product(
-                self.gradient, self.gradient
-            )
+                if p_target >= 2:
+                    p_list = np.arange(2, p_target + 1, 1)
+                    for p in p_list:
+                        kappa = pow(
+                            fenics.inner(
+                                fenics.grad(self.gradient), fenics.grad(self.gradient)
+                            ),
+                            (p - 2) / 2,
+                        )
+                        F = (
+                            fenics.inner(
+                                kappa * fenics.grad(self.gradient),
+                                fenics.grad(self.form_handler.test_vector_field),
+                            )
+                            * self.form_handler.dx
+                            + fenics.Constant(1e-2)
+                            * fenics.dot(
+                                self.gradient, self.form_handler.test_vector_field
+                            )
+                            * self.form_handler.dx
+                        )
 
-            self.form_handler._post_hook()
+                        shifted_newton(
+                            F,
+                            self.form_handler.shape_derivative,
+                            self.gradient,
+                            self.form_handler.bcs_shape,
+                            damped=False,
+                            verbose=False,
+                        )
+
+                        self.has_solution = True
+
+                        self.gradient_norm_squared = self.form_handler.scalar_product(
+                            self.gradient, self.gradient
+                        )
+
+                        self.form_handler._post_hook()
+                    self.F_shape = F
+
+            else:
+                self.form_handler.assembler.assemble(
+                    self.form_handler.fe_shape_derivative_vector
+                )
+                b = fenics.as_backend_type(
+                    self.form_handler.fe_shape_derivative_vector
+                ).vec()
+                _solve_linear_problem(
+                    self.ksp,
+                    self.form_handler.scalar_product_matrix,
+                    b,
+                    self.gradient.vector().vec(),
+                    self.ksp_options,
+                )
+                self.gradient.vector().apply("")
+
+                self.has_solution = True
+
+                self.gradient_norm_squared = self.form_handler.scalar_product(
+                    self.gradient, self.gradient
+                )
+
+                self.form_handler._post_hook()
 
         return self.gradient
