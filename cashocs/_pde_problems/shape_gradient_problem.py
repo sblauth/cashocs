@@ -50,7 +50,6 @@ class ShapeGradientProblem:
         self.adjoint_problem = adjoint_problem
 
         self.gradient = self.form_handler.gradient
-        # self.gradient = fenics.Function(self.form_handler.deformation_space)
         self.gradient_norm_squared = 1.0
 
         self.config = self.form_handler.config
@@ -76,7 +75,6 @@ class ShapeGradientProblem:
                 self.form_handler.bcs_shape,
                 self.config,
             )
-            self.F_shape = self.p_laplace_projector.F_list[-1]
 
         self.has_solution = False
 
@@ -138,13 +136,13 @@ class _PLaplacProjector:
         self, shape_gradient_problem, gradient, shape_derivative, bcs_shape, config
     ):
         self.p_target = config.getint("ShapeGradient", "p", fallback=2)
-        self.delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
+        delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient
         self.shape_derivative = shape_derivative
         self.test_vector_field = shape_gradient_problem.form_handler.test_vector_field
         self.bcs_shape = bcs_shape
-        self.dx = shape_gradient_problem.form_handler.dx
+        dx = shape_gradient_problem.form_handler.dx
 
         self.F_list = []
         for p in self.p_list:
@@ -157,10 +155,10 @@ class _PLaplacProjector:
                     kappa * fenics.grad(self.solution),
                     fenics.grad(self.test_vector_field),
                 )
-                * self.dx
-                + fenics.Constant(self.delta)
+                * dx
+                + fenics.Constant(delta)
                 * fenics.dot(self.solution, self.test_vector_field)
-                * self.dx
+                * dx
             )
 
     def solve(self):

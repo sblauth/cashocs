@@ -150,7 +150,7 @@ class NCG(ShapeOptimizationAlgorithm):
                         self.gradient, self.gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
-                        self.search_direction, self.difference
+                        self.difference, self.search_direction
                     )
                     self.beta = self.beta_numerator / self.beta_denominator
 
@@ -160,7 +160,7 @@ class NCG(ShapeOptimizationAlgorithm):
                     )
 
                     dy = self.form_handler.scalar_product(
-                        self.search_direction, self.difference
+                        self.difference, self.search_direction
                     )
                     y2 = self.form_handler.scalar_product(
                         self.difference, self.difference
@@ -172,7 +172,7 @@ class NCG(ShapeOptimizationAlgorithm):
                     )
 
                     self.beta = (
-                        self.form_handler.scalar_product(self.difference, self.gradient)
+                        self.form_handler.scalar_product(self.gradient, self.difference)
                         / dy
                     )
 
