@@ -23,7 +23,6 @@ import weakref
 
 import fenics
 import numpy as np
-from ufl import replace
 
 from .._loggers import error
 from ..utils import _optimization_algorithm_configuration
@@ -81,11 +80,6 @@ class ArmijoLineSearch:
         return self.stepsize * self.form_handler.scalar_product(
             self.gradient, search_direction
         )
-        # self.form = self.ref_algo().shape_gradient_problem.F_shape
-        # self.form = replace(
-        #     self.form, {self.form_handler.test_vector_field: -self.gradient}
-        # )
-        # return self.stepsize * fenics.assemble(self.form)
 
     def search(self, search_direction, has_curvature_info):
         """Performs the line search along the entered search direction

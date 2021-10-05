@@ -1000,6 +1000,7 @@ class ShapeFormHandler(FormHandler):
         else:
             self.deformation_space = deformation_space
 
+        self.gradient = fenics.Function(self.deformation_space)
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
         self.regularization = Regularization(self)
@@ -1045,6 +1046,7 @@ class ShapeFormHandler(FormHandler):
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
         self.update_scalar_product()
+        self.__compute_p_laplacian_forms()
 
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
@@ -1495,11 +1497,41 @@ class ShapeFormHandler(FormHandler):
                 The value of the scalar product.
         """
 
-        x = fenics.as_backend_type(a.vector()).vec()
-        y = fenics.as_backend_type(b.vector()).vec()
+        if not self.config.getboolean(
+            "ShapeGradient", "use_p_laplacian", fallback=False
+        ):
+            x = fenics.as_backend_type(a.vector()).vec()
+            y = fenics.as_backend_type(b.vector()).vec()
 
-        temp, _ = self.scalar_product_matrix.getVecs()
-        self.scalar_product_matrix.mult(x, temp)
-        result = temp.dot(y)
+            temp, _ = self.scalar_product_matrix.getVecs()
+            self.scalar_product_matrix.mult(x, temp)
+            result = temp.dot(y)
+
+        else:
+            self.form = replace(
+                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
+            )
+            result = fenics.assemble(self.form)
 
         return result
+
+    def __compute_p_laplacian_forms(self):
+        if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
+            p = self.config.getint("ShapeGradient", "p", fallback=2)
+            delta = self.config.getfloat(
+                "ShapeGradient", "damping_factor", fallback=0.0
+            )
+            kappa = pow(
+                fenics.inner(fenics.grad(self.gradient), fenics.grad(self.gradient)),
+                (p - 2) / 2.0,
+            )
+            self.F_p_laplace = (
+                fenics.inner(
+                    kappa * fenics.grad(self.gradient),
+                    fenics.grad(self.test_vector_field),
+                )
+                * self.dx
+                + fenics.Constant(delta)
+                * fenics.dot(self.gradient, self.test_vector_field)
+                * self.dx
+            )

@@ -287,11 +287,12 @@ def damped_newton_solve(
     return u
 
 
-def shifted_newton(
+def _shifted_newton_solve(
     F,
     shift,
     u,
     bcs,
+    dF=None,
     rtol=1e-10,
     atol=1e-10,
     max_iter=50,
@@ -302,99 +303,76 @@ def shifted_newton(
     ksp=None,
     ksp_options=None,
 ):
-    r"""A damped Newton method for solving nonlinear equations.
+    r"""A damped Newton method for solving nonlinear equations with a shift term
 
-	The damped Newton method is based on the natural monotonicity test from
-	`Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
-	It also allows fine tuning via a direct interface, and absolute, relative,
-	and combined stopping criteria. Can also be used to specify the solver for
-	the inner (linear) subproblems via petsc ksps.
+    The damped Newton method is based on the natural monotonicity test from
+    `Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
+    It also allows fine tuning via a direct interface, and absolute, relative,
+    and combined stopping criteria. Can also be used to specify the solver for
+    the inner (linear) subproblems via petsc ksps.
 
-	The method terminates after ``max_iter`` iterations, or if a termination criterion is
-	satisfied. These criteria are given by
+    The method terminates after ``max_iter`` iterations, or if a termination criterion is
+    satisfied. These criteria are given by
 
-	- a relative one in case ``convergence_type = 'rel'``, i.e.,
+    - a relative one in case ``convergence_type = 'rel'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
-	- an absolute one in case ``convergence_type = 'abs'``, i.e.,
+    - an absolute one in case ``convergence_type = 'abs'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}.
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}.
 
-	- a combination of both in case ``convergence_type = 'combined'``, i.e.,
+    - a combination of both in case ``convergence_type = 'combined'``, i.e.,
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
-	The norm chosen for the termination criterion is specified via ``norm_type``.
+    The norm chosen for the termination criterion is specified via ``norm_type``.
 
-	Parameters
-	----------
-	F : ufl.form.Form
-		The variational form of the nonlinear problem to be solved by Newton's method.
-	u : dolfin.function.function.Function
-		The sought solution / initial guess. It is not assumed that the initial guess
-		satisfies the Dirichlet boundary conditions, they are applied automatically.
-		The method overwrites / updates this Function.
-	bcs : list[dolfin.fem.dirichletbc.DirichletBC]
-		A list of DirichletBCs for the nonlinear variational problem.
-	rtol : float, optional
-		Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
-		(default is ``rtol = 1e-10``).
-	atol : float, optional
-		Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
-		(default is ``atol = 1e-10``).
-	max_iter : int, optional
-		Maximum number of iterations carried out by the method
-		(default is ``max_iter = 50``).
-	convergence_type : {'combined', 'rel', 'abs'}
-		Determines the type of stopping criterion that is used.
-	norm_type : {'l2', 'linf'}
-		Determines which norm is used in the stopping criterion.
-	damped : bool, optional
-		If ``True``, then a damping strategy is used. If ``False``, the classical
-		Newton-Raphson iteration (without damping) is used (default is ``True``).
-	verbose : bool, optional
-		If ``True``, prints status of the iteration to the console (default
-		is ``True``).
-	ksp : petsc4py.PETSc.KSP, optional
-		The PETSc ksp object used to solve the inner (linear) problem
-		if this is ``None`` it uses the direct solver MUMPS (default is
-		``None``).
-	ksp_options : list[list[str]]
-		The list of options for the linear solver.
-
-
-	Returns
-	-------
-	dolfin.function.function.Function
-		The solution of the nonlinear variational problem, if converged.
-		This overrides the input function u.
+    Parameters
+    ----------
+    F : ufl.form.Form
+            The variational form of the nonlinear problem to be solved by Newton's method.
+    shift : ufl.form.Form
+        The shift term, which is independent of u
+    u : dolfin.function.function.Function
+            The sought solution / initial guess. It is not assumed that the initial guess
+            satisfies the Dirichlet boundary conditions, they are applied automatically.
+            The method overwrites / updates this Function.
+    bcs : list[dolfin.fem.dirichletbc.DirichletBC]
+            A list of DirichletBCs for the nonlinear variational problem.
+    rtol : float, optional
+            Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
+            (default is ``rtol = 1e-10``).
+    atol : float, optional
+            Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
+            (default is ``atol = 1e-10``).
+    max_iter : int, optional
+            Maximum number of iterations carried out by the method
+            (default is ``max_iter = 50``).
+    convergence_type : {'combined', 'rel', 'abs'}
+            Determines the type of stopping criterion that is used.
+    norm_type : {'l2', 'linf'}
+            Determines which norm is used in the stopping criterion.
+    damped : bool, optional
+            If ``True``, then a damping strategy is used. If ``False``, the classical
+            Newton-Raphson iteration (without damping) is used (default is ``True``).
+    verbose : bool, optional
+            If ``True``, prints status of the iteration to the console (default
+            is ``True``).
+    ksp : petsc4py.PETSc.KSP, optional
+            The PETSc ksp object used to solve the inner (linear) problem
+            if this is ``None`` it uses the direct solver MUMPS (default is
+            ``None``).
+    ksp_options : list[list[str]]
+            The list of options for the linear solver.
 
 
-	Examples
-	--------
-	Consider the problem
-
-	.. math::
-		\begin{alignedat}{2}
-		- \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
-		u &= 0 \quad &&\text{ on } \Gamma.
-		\end{alignedat}
-
-	This is solved with the code ::
-
-		from fenics import *
-		import cashocs
-
-		mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
-		V = FunctionSpace(mesh, 'CG', 1)
-
-		u = Function(V)
-		v = TestFunction(V)
-		F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-		bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
-		cashocs.damped_newton_solve(F, u, bcs)
-	"""
+    Returns
+    -------
+     : dolfin.function.function.Function
+        The solution of the nonlinear variational problem, if converged.
+        This overrides the input function u.
+    """
 
     if isinstance(bcs, fenics.DirichletBC):
         bcs = [bcs]
@@ -428,7 +406,8 @@ def shifted_newton(
         ksp.setFromOptions()
 
     # Calculate the Jacobian.
-    dF = fenics.derivative(F, u)
+    if dF is None:
+        dF = fenics.derivative(F, u)
 
     # Setup increment and function for monotonicity test
     V = u.function_space()
@@ -453,13 +432,12 @@ def shifted_newton(
 
     # Compute the initial residual
     assembler.assemble(A_fenics, residual)
+    assembler_shift.assemble(residual_shift)
     A_fenics.ident_zeros()
+    residual[:] += residual_shift[:]
+
     A = fenics.as_backend_type(A_fenics).mat()
     b = fenics.as_backend_type(residual).vec()
-    assembler_shift.assemble(residual_shift)
-    c = fenics.as_backend_type(residual_shift).vec()
-    residual[:] += residual_shift[:]
-    b[:] += c[:]
 
     res_0 = residual.norm(norm_type)
     if res_0 == 0.0:
@@ -496,10 +474,10 @@ def shifted_newton(
             while True:
                 u.vector()[:] += lmbd * du.vector()[:]
                 assembler.assemble(residual)
-                b = fenics.as_backend_type(residual).vec()
                 assembler_shift.assemble(residual_shift)
-                c = fenics.as_backend_type(residual_shift).vec()
-                b[:] += c[:]
+                residual[:] += residual_shift[:]
+                b = fenics.as_backend_type(residual).vec()
+
                 _solve_linear_problem(
                     ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options
                 )
@@ -531,13 +509,12 @@ def shifted_newton(
 
         # compute the new residual
         assembler.assemble(A_fenics, residual)
+        assembler_shift.assemble(residual_shift)
         A_fenics.ident_zeros()
+        residual[:] += residual_shift[:]
+
         A = fenics.as_backend_type(A_fenics).mat()
         b = fenics.as_backend_type(residual).vec()
-        assembler_shift.assemble(residual_shift)
-        c = fenics.as_backend_type(residual_shift).vec()
-        residual[:] += residual_shift[:]
-        b[:] += c[:]
 
         [bc.apply(residual) for bc in bcs_hom]
 
