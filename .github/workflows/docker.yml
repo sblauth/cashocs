@@ -6,7 +6,7 @@ on:
     tags:
       - 'v*'
   schedule:
-    - cron: '13 22 * * *'
+    - cron: '17 21 * * *'
 
 jobs:
   build_test_env:
