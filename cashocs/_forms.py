@@ -1527,7 +1527,7 @@ class ShapeFormHandler(FormHandler):
             )
             self.F_p_laplace = (
                 fenics.inner(
-                    kappa * fenics.grad(self.gradient),
+                    self.mu_lame * kappa * fenics.grad(self.gradient),
                     fenics.grad(self.test_vector_field),
                 )
                 * self.dx

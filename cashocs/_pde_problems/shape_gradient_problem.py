@@ -143,6 +143,7 @@ class _PLaplacProjector:
         self.test_vector_field = shape_gradient_problem.form_handler.test_vector_field
         self.bcs_shape = bcs_shape
         dx = shape_gradient_problem.form_handler.dx
+        self.mu_lame = shape_gradient_problem.form_handler.mu_lame
 
         self.F_list = []
         for p in self.p_list:
@@ -152,7 +153,7 @@ class _PLaplacProjector:
             )
             self.F_list.append(
                 fenics.inner(
-                    kappa * fenics.grad(self.solution),
+                    self.mu_lame * kappa * fenics.grad(self.solution),
                     fenics.grad(self.test_vector_field),
                 )
                 * dx
@@ -170,6 +171,6 @@ class _PLaplacProjector:
                 self.shape_derivative,
                 self.solution,
                 self.bcs_shape,
-                damped=True,
+                damped=False,
                 verbose=False,
             )
