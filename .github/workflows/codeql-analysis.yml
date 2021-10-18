@@ -15,7 +15,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '22 22 * * *'
+    - cron: '37 22 * * *'
 
 jobs:
   analyze:

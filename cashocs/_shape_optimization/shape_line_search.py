@@ -77,9 +77,7 @@ class ArmijoLineSearch:
                 the decrease measure for the Armijo rule
         """
 
-        return self.stepsize * self.form_handler.scalar_product(
-            self.gradient, search_direction
-        )
+        return self.form_handler.scalar_product(self.gradient, search_direction)
 
     def search(self, search_direction, has_curvature_info):
         """Performs the line search along the entered search direction
@@ -127,6 +125,7 @@ class ArmijoLineSearch:
                 break
 
             self.deformation.vector()[:] = self.stepsize * search_direction.vector()[:]
+            self.dm = self.decrease_measure(search_direction)
 
             if self.mesh_handler.move_mesh(self.deformation):
                 if (
@@ -143,7 +142,7 @@ class ArmijoLineSearch:
                 if (
                     self.objective_step
                     < self.ref_algo().objective_value
-                    + self.epsilon_armijo * self.decrease_measure(search_direction)
+                    + self.epsilon_armijo * self.stepsize * self.dm
                 ):
 
                     if (
