@@ -82,7 +82,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
             for i, _ in enumerate(self.history_s):
                 alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.history_s[i], self.search_direction
+                    self.search_direction, self.history_s[i]
                 )
                 history_alpha.append(alpha)
                 self.search_direction.vector()[:] -= (
@@ -163,7 +163,7 @@ class LBFGS(ShapeOptimizationAlgorithm):
             self.search_direction = self.compute_search_direction(self.gradient)
 
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_direction, self.gradient
+                self.gradient, self.search_direction
             )
             if self.directional_derivative > 0:
                 debug("No descent direction found with L-BFGS")

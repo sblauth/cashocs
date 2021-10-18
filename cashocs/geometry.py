@@ -272,7 +272,7 @@ def import_mesh(input_arg):
     return mesh, subdomains, boundaries, dx, ds, dS
 
 
-def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
+def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None, diagonal="right"):
     r"""Creates a mesh corresponding to a rectangle or cube.
 
 	This function creates a uniform mesh of either a rectangle
@@ -312,6 +312,10 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
 	L_z : float or None, optional
 		Length in z-direction, if this is ``None``, then the geometry
 		will be two-dimensional (default is ``None``).
+	diagonal : str, optional
+	    This defines the type of diagonal used to create the box mesh in 2D. This can be
+	    one of ``"right"``, ``"left"``, ``"left/right"``, ``"right/left"`` or
+	    ``"crossed"``.
 
 	Returns
 	-------
@@ -361,7 +365,11 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
 
     if L_z is None:
         mesh = fenics.RectangleMesh(
-            fenics.Point(0, 0), fenics.Point(sizes), num_points[0], num_points[1]
+            fenics.Point(0, 0),
+            fenics.Point(sizes),
+            num_points[0],
+            num_points[1],
+            diagonal=diagonal,
         )
     else:
         mesh = fenics.BoxMesh(
@@ -412,7 +420,9 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None):
     return mesh, subdomains, boundaries, dx, ds, dS
 
 
-def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None):
+def regular_box_mesh(
+    n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=None, diagonal="right"
+):
     r"""Creates a mesh corresponding to a rectangle or cube.
 
 	This function creates a uniform mesh of either a rectangle
@@ -458,6 +468,10 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
 	E_z : float or None, optional
 		End of the z-interval, mesh is 2D if this is ``None``
 		(default is ``None``).
+	diagonal : str, optional
+	    This defines the type of diagonal used to create the box mesh in 2D. This can be
+	    one of ``"right"``, ``"left"``, ``"left/right"``, ``"right/left"`` or
+	    ``"crossed"``.
 
 	Returns
 	-------
@@ -518,7 +532,11 @@ def regular_box_mesh(n=10, S_x=0.0, S_y=0.0, S_z=None, E_x=1.0, E_y=1.0, E_z=Non
 
     if S_z is None:
         mesh = fenics.RectangleMesh(
-            fenics.Point(S_x, S_y), fenics.Point(E_x, E_y), num_points[0], num_points[1]
+            fenics.Point(S_x, S_y),
+            fenics.Point(E_x, E_y),
+            num_points[0],
+            num_points[1],
+            diagonal=diagonal,
         )
     else:
         mesh = fenics.BoxMesh(

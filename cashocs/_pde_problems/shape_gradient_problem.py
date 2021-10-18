@@ -22,9 +22,11 @@ shape derivative to the shape gradient with a Riesz projection.
 """
 
 import fenics
+import numpy as np
 from petsc4py import PETSc
 
 from ..utils import _setup_petsc_options, _solve_linear_problem
+from ..nonlinear_solvers import _shifted_newton_solve
 
 
 class ShapeGradientProblem:
@@ -47,7 +49,7 @@ class ShapeGradientProblem:
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
-        self.gradient = fenics.Function(self.form_handler.deformation_space)
+        self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
         self.config = self.form_handler.config
@@ -64,6 +66,15 @@ class ShapeGradientProblem:
             ["ksp_max_it", 1000],
         ]
         _setup_petsc_options([self.ksp], [self.ksp_options])
+
+        if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
+            self.p_laplace_projector = _PLaplacProjector(
+                self,
+                self.gradient,
+                self.form_handler.shape_derivative,
+                self.form_handler.bcs_shape,
+                self.config,
+            )
 
         self.has_solution = False
 
@@ -82,27 +93,89 @@ class ShapeGradientProblem:
         if not self.has_solution:
 
             self.form_handler.regularization.update_geometric_quantities()
-            self.form_handler.assembler.assemble(
-                self.form_handler.fe_shape_derivative_vector
-            )
-            b = fenics.as_backend_type(
-                self.form_handler.fe_shape_derivative_vector
-            ).vec()
-            _solve_linear_problem(
-                self.ksp,
-                self.form_handler.scalar_product_matrix,
-                b,
-                self.gradient.vector().vec(),
-                self.ksp_options,
-            )
-            self.gradient.vector().apply("")
 
-            self.has_solution = True
+            if self.config.getboolean(
+                "ShapeGradient", "use_p_laplacian", fallback=False
+            ):
+                self.p_laplace_projector.solve()
+                self.has_solution = True
 
-            self.gradient_norm_squared = self.form_handler.scalar_product(
-                self.gradient, self.gradient
-            )
+                self.gradient_norm_squared = self.form_handler.scalar_product(
+                    self.gradient, self.gradient
+                )
+
+            else:
+                self.form_handler.assembler.assemble(
+                    self.form_handler.fe_shape_derivative_vector
+                )
+                b = fenics.as_backend_type(
+                    self.form_handler.fe_shape_derivative_vector
+                ).vec()
+                _solve_linear_problem(
+                    self.ksp,
+                    self.form_handler.scalar_product_matrix,
+                    b,
+                    self.gradient.vector().vec(),
+                    self.ksp_options,
+                )
+                self.gradient.vector().apply("")
+
+                self.has_solution = True
+
+                self.gradient_norm_squared = self.form_handler.scalar_product(
+                    self.gradient, self.gradient
+                )
 
             self.form_handler._post_hook()
 
         return self.gradient
+
+
+class _PLaplacProjector:
+    def __init__(
+        self, shape_gradient_problem, gradient, shape_derivative, bcs_shape, config
+    ):
+        self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
+        delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
+        eps = config.getfloat(
+            "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
+        )
+        self.p_list = np.arange(2, self.p_target + 1, 1)
+        self.solution = gradient
+        self.shape_derivative = shape_derivative
+        self.test_vector_field = shape_gradient_problem.form_handler.test_vector_field
+        self.bcs_shape = bcs_shape
+        dx = shape_gradient_problem.form_handler.dx
+        self.mu_lame = shape_gradient_problem.form_handler.mu_lame
+
+        self.F_list = []
+        for p in self.p_list:
+            kappa = pow(
+                fenics.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
+                (p - 2) / 2.0,
+            )
+            self.F_list.append(
+                fenics.inner(
+                    self.mu_lame
+                    * (fenics.Constant(eps) + kappa)
+                    * fenics.grad(self.solution),
+                    fenics.grad(self.test_vector_field),
+                )
+                * dx
+                + fenics.Constant(delta)
+                * fenics.dot(self.solution, self.test_vector_field)
+                * dx
+            )
+
+    def solve(self):
+        self.solution.vector()[:] = 0.0
+        for F in self.F_list:
+
+            _shifted_newton_solve(
+                F,
+                self.shape_derivative,
+                self.solution,
+                self.bcs_shape,
+                damped=False,
+                verbose=False,
+            )
