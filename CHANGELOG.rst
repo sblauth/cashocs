@@ -12,6 +12,18 @@ of the maintenance releases, please take a look at
 
 * Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_hook <cashocs.optimization_problem.OptimizationProblem.inject_pre_hook>` and :py:meth:`inject_post_hook <cashocs.optimization_problem.OptimizationProblem.inject_post_hook>`.
 
+* Added support for using the p-Laplacian to compute the shape gradient. 
+
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * ``use_p_laplacian`` is a boolean flag which enables the use of the p-Laplacian for the computation of the shape gradient
+    
+    * ``p_laplacian_power`` is an integer parameter specifying the power p used for the p-Laplacian
+
+    * ``p_laplacian_stabilization`` is a float parameter, which acts as stabilization term for the p-Laplacian. This should be positive and small (e.g. 1e-3).
+
 1.4.0 (September 3, 2021)
 -------------------------
 

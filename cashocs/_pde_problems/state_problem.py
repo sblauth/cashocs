@@ -24,7 +24,7 @@ import numpy as np
 from petsc4py import PETSc
 
 from .._exceptions import NotConvergedError
-from ..nonlinear_solvers import damped_newton_solve
+from ..nonlinear_solvers import newton_solve
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
@@ -132,7 +132,7 @@ class StateProblem:
                         if self.initial_guess is not None:
                             fenics.assign(self.states[i], self.initial_guess[i])
 
-                        self.states[i] = damped_newton_solve(
+                        self.states[i] = newton_solve(
                             self.form_handler.state_eq_forms[i],
                             self.states[i],
                             self.bcs_list[i],
@@ -186,7 +186,7 @@ class StateProblem:
                                 atol=self.newton_atols[j] / 100,
                             )
 
-                            self.states[j] = damped_newton_solve(
+                            self.states[j] = newton_solve(
                                 self.form_handler.state_eq_forms[j],
                                 self.states[j],
                                 self.bcs_list[j],
