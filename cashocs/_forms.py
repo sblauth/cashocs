@@ -1279,10 +1279,12 @@ class ShapeFormHandler(FormHandler):
         self.CG1 = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.DG0 = fenics.FunctionSpace(self.mesh, "DG", 0)
 
+        self.mu_lame = fenics.Function(self.CG1)
+        self.mu_lame.vector()[:] = 1.0
+
         if self.shape_scalar_product is None:
             # Use the default linear elasticity approach
 
-            self.mu_lame = fenics.Function(self.CG1)
             self.lambda_lame = self.config.getfloat(
                 "ShapeGradient", "lambda_lame", fallback=0.0
             )
