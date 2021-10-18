@@ -1323,7 +1323,6 @@ class ShapeFormHandler(FormHandler):
 
         else:
             # Use the scalar product supplied by the user
-
             self.riesz_scalar_product = self.shape_scalar_product
 
     def __setup_mu_computation(self):
@@ -1517,9 +1516,12 @@ class ShapeFormHandler(FormHandler):
 
     def __compute_p_laplacian_forms(self):
         if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
-            p = self.config.getint("ShapeGradient", "p", fallback=2)
+            p = self.config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
             delta = self.config.getfloat(
                 "ShapeGradient", "damping_factor", fallback=0.0
+            )
+            eps = self.config.getfloat(
+                "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
             )
             kappa = pow(
                 fenics.inner(fenics.grad(self.gradient), fenics.grad(self.gradient)),
@@ -1527,7 +1529,9 @@ class ShapeFormHandler(FormHandler):
             )
             self.F_p_laplace = (
                 fenics.inner(
-                    self.mu_lame * kappa * fenics.grad(self.gradient),
+                    self.mu_lame
+                    * (fenics.Constant(eps) + kappa)
+                    * fenics.grad(self.gradient),
                     fenics.grad(self.test_vector_field),
                 )
                 * self.dx

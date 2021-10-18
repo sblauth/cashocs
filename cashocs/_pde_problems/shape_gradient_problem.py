@@ -135,8 +135,11 @@ class _PLaplacProjector:
     def __init__(
         self, shape_gradient_problem, gradient, shape_derivative, bcs_shape, config
     ):
-        self.p_target = config.getint("ShapeGradient", "p", fallback=2)
+        self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
         delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
+        eps = config.getfloat(
+            "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
+        )
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient
         self.shape_derivative = shape_derivative
@@ -153,7 +156,9 @@ class _PLaplacProjector:
             )
             self.F_list.append(
                 fenics.inner(
-                    self.mu_lame * kappa * fenics.grad(self.solution),
+                    self.mu_lame
+                    * (fenics.Constant(eps) + kappa)
+                    * fenics.grad(self.solution),
                     fenics.grad(self.test_vector_field),
                 )
                 * dx
