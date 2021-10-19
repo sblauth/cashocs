@@ -23,6 +23,7 @@ follow.
 """
 
 import fenics
+import numpy as np
 from petsc4py import PETSc
 
 from deprecated import deprecated
@@ -43,6 +44,7 @@ def newton_solve(
     convergence_type="combined",
     norm_type="l2",
     damped=True,
+    inexact=True,
     verbose=True,
     ksp=None,
     ksp_options=None,
@@ -106,6 +108,9 @@ def newton_solve(
 	damped : bool, optional
 		If ``True``, then a damping strategy is used. If ``False``, the classical
 		Newton-Raphson iteration (without damping) is used (default is ``True``).
+	inexact : bool, optional
+	    If ``True``, then an inexact Newtons method is used, in case an iterative solver
+	    is used for the inner solution of the linear systems. Default is ``True``.
 	verbose : bool, optional
 		If ``True``, prints status of the iteration to the console (default
 		is ``True``).
@@ -197,6 +202,12 @@ def newton_solve(
     bcs_hom = [fenics.DirichletBC(bc) for bc in bcs]
     [bc.homogenize() for bc in bcs_hom]
 
+    # inexact newton parameters
+    eta = 1.0
+    eta_max = 0.9999
+    eta_a = 1.0
+    gamma = 0.9
+
     assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
     assembler.keep_diagonal = True
 
@@ -245,7 +256,25 @@ def newton_solve(
         u_save.vector()[:] = u.vector()[:]
 
         # Solve the inner problem
-        _solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options)
+        if inexact:
+            if iterations == 1:
+                eta = eta_max
+            elif gamma * pow(eta, 2) <= 0.1:
+                eta = np.minimum(eta_max, eta_a)
+            else:
+                eta = np.minimum(
+                    eta_max,
+                    np.maximum(eta_a, gamma * pow(eta, 2)),
+                )
+
+            eta = np.minimum(
+                eta_max,
+                np.maximum(eta, 0.5 * tol / res),
+            )
+        else:
+            eta = rtol * 1e-1
+
+        _solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options, rtol=eta)
         du.vector().apply("")
 
         # perform backtracking in case damping is used
@@ -258,7 +287,11 @@ def newton_solve(
                     residual[:] += residual_shift[:]
                 b = fenics.as_backend_type(residual).vec()
                 _solve_linear_problem(
-                    ksp=ksp, b=b, x=ddu.vector().vec(), ksp_options=ksp_options
+                    ksp=ksp,
+                    b=b,
+                    x=ddu.vector().vec(),
+                    ksp_options=ksp_options,
+                    rtol=eta,
                 )
                 ddu.vector().apply("")
 
@@ -295,7 +328,9 @@ def newton_solve(
 
         [bc.apply(residual) for bc in bcs_hom]
 
+        res_prev = res
         res = residual.norm(norm_type)
+        eta_a = gamma * pow(res / res_prev, 2)
         if verbose:
             print(
                 f"Newton Iteration {iterations:2d} - residual (abs):  {res:.3e} (tol = {atol:.3e})    residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"

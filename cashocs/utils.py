@@ -528,7 +528,9 @@ def _setup_petsc_options(ksps, ksp_options):
         ksps[i].setFromOptions()
 
 
-def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
+def _solve_linear_problem(
+    ksp=None, A=None, b=None, x=None, ksp_options=None, rtol=None, atol=None
+):
     """Solves a finite dimensional linear problem.
 
     Parameters
@@ -547,6 +549,15 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
     x : petsc4py.PETSc.Vec or None, optional
             The PETSc vector that stores the solution of the problem. If this is
             None, then a new vector will be created (and returned)
+    ksp_options : list, optional
+        The options for the PETSc ksp object. If this is None (the default) a direct method
+        is used
+    rtol : float, optional
+        The relative tolerance used in case an iterative solver is used for solving the
+        linear problem. Overrides the specification in the ksp object and ksp_options.
+    atol : float, optional
+        The absolute tolerance used in case an iterative solver is used for solving the
+        linear problem. Overrides the specification in the ksp object and ksp_options.
 
     Returns
     -------
@@ -557,15 +568,13 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
     if ksp is None:
         ksp = PETSc.KSP().create()
         options = [
-            [
-                ["ksp_type", "preonly"],
-                ["pc_type", "lu"],
-                ["pc_factor_mat_solver_type", "mumps"],
-                ["mat_mumps_icntl_24", 1],
-            ]
+            ["ksp_type", "preonly"],
+            ["pc_type", "lu"],
+            ["pc_factor_mat_solver_type", "mumps"],
+            ["mat_mumps_icntl_24", 1],
         ]
 
-        _setup_petsc_options([ksp], options)
+        _setup_petsc_options([ksp], [options])
 
     if A is not None:
         ksp.setOperators(A)
@@ -593,6 +602,10 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
 
         ksp.setFromOptions()
 
+    if rtol is not None:
+        ksp.rtol = rtol
+    if atol is not None:
+        ksp.atol = atol
     ksp.solve(b, x)
 
     if ksp.getConvergedReason() < 0:
