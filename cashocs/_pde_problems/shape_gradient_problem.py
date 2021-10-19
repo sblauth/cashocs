@@ -167,6 +167,15 @@ class _PLaplacProjector:
                 * dx
             )
 
+            self.ksp_options = [
+                ["ksp_type", "cg"],
+                ["pc_type", "hypre"],
+                ["pc_hypre_type", "boomeramg"],
+                ["ksp_rtol", 1e-16],
+                ["ksp_atol", 1e-50],
+                ["ksp_max_it", 100],
+            ]
+
     def solve(self):
         self.solution.vector()[:] = 0.0
         for F in self.F_list:
@@ -177,5 +186,7 @@ class _PLaplacProjector:
                 self.bcs_shape,
                 shift=self.shape_derivative,
                 damped=False,
+                inexact=True,
                 verbose=False,
+                ksp_options=self.ksp_options,
             )

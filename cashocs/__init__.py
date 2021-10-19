@@ -33,7 +33,7 @@ from .geometry import (
     regular_box_mesh,
     regular_mesh,
 )
-from .nonlinear_solvers import newton_solve
+from .nonlinear_solvers import newton_solve, damped_newton_solve
 from .utils import create_bcs_list, create_config, load_config
 
 __version__ = "1.4.0"
