@@ -23,10 +23,13 @@ import os
 import subprocess
 
 import fenics
+import pytest
 import numpy as np
 
 import cashocs
 from cashocs.geometry import MeshQuality
+from cashocs._exceptions import InputError
+import cashocs._cli
 
 
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
@@ -350,3 +353,54 @@ def test_eikonal_distance():
     dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
     assert np.min(dist.vector()[:]) >= 0.0
     assert (np.max(dist.vector()[:]) - 1.0) / 1.0 <= 0.05
+
+
+def test_named_mesh_import():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    cashocs._cli.convert(
+        [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
+    )
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/named_mesh.xdmf"
+    )
+
+    assert fenics.assemble(1 * dx("volume")) == fenics.assemble(1 * dx(1))
+    assert fenics.assemble(1 * ds("inlet")) == fenics.assemble(1 * ds(1))
+    assert fenics.assemble(1 * ds("wall")) == fenics.assemble(1 * ds(2))
+    assert fenics.assemble(1 * ds("outlet")) == fenics.assemble(1 * ds(3))
+
+    assert dx("volume") == dx(1)
+    assert ds("inlet") == ds(1)
+    assert ds("wall") == ds(2)
+    assert ds("outlet") == ds(3)
+
+    with pytest.raises(InputError) as e_info:
+        dx("inlet")
+        assert "subdomain_id" in str(e_info.value)
+
+    with pytest.raises(InputError) as e_info:
+        ds("volume")
+        assert "subdomain_id" in str(e_info.value)
+
+    with pytest.raises(InputError) as e_info:
+        dx("fantasy")
+        assert "subdomain_id" in str(e_info.value)
+
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
+    subprocess.run(
+        ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
+    )

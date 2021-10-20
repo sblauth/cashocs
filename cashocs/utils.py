@@ -137,6 +137,75 @@ def multiplication(x):
     return y
 
 
+class NamedMeasure(Measure):
+    def __init__(
+        self,
+        integral_type,
+        domain=None,
+        subdomain_id="everywhere",
+        metadata=None,
+        subdomain_data=None,
+        physical_groups=None,
+    ):
+        super().__init__(
+            integral_type,
+            domain=domain,
+            subdomain_id=subdomain_id,
+            metadata=metadata,
+            subdomain_data=subdomain_data,
+        )
+        self.physical_groups = physical_groups
+
+    def __call__(
+        self,
+        subdomain_id=None,
+        metadata=None,
+        domain=None,
+        subdomain_data=None,
+        degree=None,
+        scheme=None,
+        rule=None,
+    ):
+        if isinstance(subdomain_id, int):
+            return super().__call__(
+                subdomain_id=subdomain_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+        elif isinstance(subdomain_id, str):
+            try:
+                if (
+                    subdomain_id in self.physical_groups["dx"].keys()
+                    and self._integral_type == "cell"
+                ):
+                    integer_id = self.physical_groups["dx"][subdomain_id]
+                elif subdomain_id in self.physical_groups[
+                    "ds"
+                ].keys() and self._integral_type in [
+                    "exterior_facet",
+                    "interior_facet",
+                ]:
+                    integer_id = self.physical_groups["ds"][subdomain_id]
+                else:
+                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+            except:
+                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+
+            return super().__call__(
+                subdomain_id=integer_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+
+
 class EmptyMeasure(Measure):
     """Implements an empty measure (e.g. of a null set).
 
