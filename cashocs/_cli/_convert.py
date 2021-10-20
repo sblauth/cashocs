@@ -22,6 +22,7 @@
 """
 
 import argparse
+import json
 import sys
 import time
 
@@ -131,6 +132,37 @@ def convert(argv=None):
                     },
                 )
                 meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
+
+    # Check for physical names
+    physical_groups = {"dx": {}, "ds": {}}
+    has_physical_groups = False
+    with open(inputfile, "r") as infile:
+        for line in infile:
+            line = line.strip()
+            if line == "$PhysicalNames":
+                has_physical_groups = True
+                info_line = next(infile).strip()
+                no_physical_groups = int(info_line)
+                for i in range(no_physical_groups):
+                    physical_line = next(infile).strip().split()
+                    phys_dim = int(physical_line[0])
+                    phys_tag = int(physical_line[1])
+                    phys_name = physical_line[2]
+                    if "'" in phys_name:
+                        phys_name = phys_name.replace("'", "")
+                    if '"' in phys_name:
+                        phys_name = phys_name.replace('"', "")
+
+                    if phys_dim == meshdim:
+                        physical_groups["dx"][phys_name] = phys_tag
+                    elif phys_dim == meshdim - 1:
+                        physical_groups["ds"][phys_name] = phys_tag
+
+                break
+
+        if has_physical_groups:
+            with open(f"{ostring}_physical_groups.json", "w") as ofile:
+                json.dump(physical_groups, ofile)
 
     end_time = time.time()
     print(
