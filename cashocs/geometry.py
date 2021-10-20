@@ -46,6 +46,7 @@ from .utils import (
     _solve_linear_problem,
     create_bcs_list,
     write_out_mesh,
+    NamedMeasure,
 )
 
 
@@ -153,12 +154,23 @@ def import_mesh(input_arg):
         xdmf_boundaries.read(boundaries_mvc, "boundaries")
         xdmf_boundaries.close()
 
+    physical_groups = None
+    if os.path.isfile(f"{file_string}_physical_groups.json"):
+        with open(f"{file_string}_physical_groups.json") as file:
+            physical_groups = json.load(file)
+
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = fenics.Measure("dx", domain=mesh, subdomain_data=subdomains)
-    ds = fenics.Measure("ds", domain=mesh, subdomain_data=boundaries)
-    dS = fenics.Measure("dS", domain=mesh, subdomain_data=boundaries)
+    dx = NamedMeasure(
+        "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
+    )
+    ds = NamedMeasure(
+        "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
+    dS = NamedMeasure(
+        "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
 
     end_time = time.time()
     info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")

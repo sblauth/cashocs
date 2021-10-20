@@ -137,6 +137,75 @@ def multiplication(x):
     return y
 
 
+class NamedMeasure(Measure):
+    def __init__(
+        self,
+        integral_type,
+        domain=None,
+        subdomain_id="everywhere",
+        metadata=None,
+        subdomain_data=None,
+        physical_groups=None,
+    ):
+        super().__init__(
+            integral_type,
+            domain=domain,
+            subdomain_id=subdomain_id,
+            metadata=metadata,
+            subdomain_data=subdomain_data,
+        )
+        self.physical_groups = physical_groups
+
+    def __call__(
+        self,
+        subdomain_id=None,
+        metadata=None,
+        domain=None,
+        subdomain_data=None,
+        degree=None,
+        scheme=None,
+        rule=None,
+    ):
+        if isinstance(subdomain_id, int):
+            return super().__call__(
+                subdomain_id=subdomain_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+        elif isinstance(subdomain_id, str):
+            try:
+                if (
+                    subdomain_id in self.physical_groups["dx"].keys()
+                    and self._integral_type == "cell"
+                ):
+                    integer_id = self.physical_groups["dx"][subdomain_id]
+                elif subdomain_id in self.physical_groups[
+                    "ds"
+                ].keys() and self._integral_type in [
+                    "exterior_facet",
+                    "interior_facet",
+                ]:
+                    integer_id = self.physical_groups["ds"][subdomain_id]
+                else:
+                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+            except:
+                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+
+            return super().__call__(
+                subdomain_id=integer_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+
+
 class EmptyMeasure(Measure):
     """Implements an empty measure (e.g. of a null set).
 
@@ -528,7 +597,9 @@ def _setup_petsc_options(ksps, ksp_options):
         ksps[i].setFromOptions()
 
 
-def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
+def _solve_linear_problem(
+    ksp=None, A=None, b=None, x=None, ksp_options=None, rtol=None, atol=None
+):
     """Solves a finite dimensional linear problem.
 
     Parameters
@@ -547,6 +618,15 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
     x : petsc4py.PETSc.Vec or None, optional
             The PETSc vector that stores the solution of the problem. If this is
             None, then a new vector will be created (and returned)
+    ksp_options : list, optional
+        The options for the PETSc ksp object. If this is None (the default) a direct method
+        is used
+    rtol : float, optional
+        The relative tolerance used in case an iterative solver is used for solving the
+        linear problem. Overrides the specification in the ksp object and ksp_options.
+    atol : float, optional
+        The absolute tolerance used in case an iterative solver is used for solving the
+        linear problem. Overrides the specification in the ksp object and ksp_options.
 
     Returns
     -------
@@ -557,15 +637,13 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
     if ksp is None:
         ksp = PETSc.KSP().create()
         options = [
-            [
-                ["ksp_type", "preonly"],
-                ["pc_type", "lu"],
-                ["pc_factor_mat_solver_type", "mumps"],
-                ["mat_mumps_icntl_24", 1],
-            ]
+            ["ksp_type", "preonly"],
+            ["pc_type", "lu"],
+            ["pc_factor_mat_solver_type", "mumps"],
+            ["mat_mumps_icntl_24", 1],
         ]
 
-        _setup_petsc_options([ksp], options)
+        _setup_petsc_options([ksp], [options])
 
     if A is not None:
         ksp.setOperators(A)
@@ -593,6 +671,10 @@ def _solve_linear_problem(ksp=None, A=None, b=None, x=None, ksp_options=None):
 
         ksp.setFromOptions()
 
+    if rtol is not None:
+        ksp.rtol = rtol
+    if atol is not None:
+        ksp.atol = atol
     ksp.solve(b, x)
 
     if ksp.getConvergedReason() < 0:

@@ -26,7 +26,7 @@ import numpy as np
 from petsc4py import PETSc
 
 from ..utils import _setup_petsc_options, _solve_linear_problem
-from ..nonlinear_solvers import _shifted_newton_solve
+from ..nonlinear_solvers import newton_solve
 
 
 class ShapeGradientProblem:
@@ -167,15 +167,26 @@ class _PLaplacProjector:
                 * dx
             )
 
+            self.ksp_options = [
+                ["ksp_type", "cg"],
+                ["pc_type", "hypre"],
+                ["pc_hypre_type", "boomeramg"],
+                ["ksp_rtol", 1e-16],
+                ["ksp_atol", 1e-50],
+                ["ksp_max_it", 100],
+            ]
+
     def solve(self):
         self.solution.vector()[:] = 0.0
         for F in self.F_list:
 
-            _shifted_newton_solve(
+            newton_solve(
                 F,
-                self.shape_derivative,
                 self.solution,
                 self.bcs_shape,
+                shift=self.shape_derivative,
                 damped=False,
+                inexact=True,
                 verbose=False,
+                ksp_options=self.ksp_options,
             )

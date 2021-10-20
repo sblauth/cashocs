@@ -43,7 +43,7 @@ def test_newton_solver():
     solve(F == 0, u, bcs)
     u_fen.vector()[:] = u.vector()[:]
     u.vector()[:] = 0.0
-    cashocs.damped_newton_solve(
+    cashocs.newton_solve(
         F,
         u,
         bcs,
