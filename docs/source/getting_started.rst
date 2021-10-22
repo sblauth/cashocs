@@ -48,7 +48,7 @@ To define the state problem, we then define a state variable ``y``, an adjoint v
     p = Function(V)
     u = Function(V)
     e = inner(grad(y), grad(p)) - u*p*dx
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
 
 Finally, we define the cost functional and the optimization problem ::
 

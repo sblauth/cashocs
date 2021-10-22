@@ -24,6 +24,7 @@ from fenics import *
 import cashocs
 
 
+
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 
@@ -43,10 +44,10 @@ v = Function(U)
 controls = [u, v]
 
 e_y = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
-bcs_y = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
+bcs_y = cashocs.create_dirichlet_bcs(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
 
 e_z = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
-bcs_z = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
+bcs_z = cashocs.create_dirichlet_bcs(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
 
 e = e_y + e_z
 bcs = bcs_y + bcs_z

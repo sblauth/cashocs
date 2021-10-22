@@ -113,7 +113,7 @@ Note, that ``states[k]`` corresponds to :math:`y_{k+1}` since indices start at
 As the boundary conditions are not time dependent, we can initialize them now, and
 repeat them in a list, since they are the same for every state ::
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
     bcs_list = [bcs for i in range(len(t_array))]
 
 To define the sequence of PDEs, we will use a loop over all time steps. But before we

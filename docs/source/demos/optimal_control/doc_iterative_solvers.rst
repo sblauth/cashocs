@@ -55,7 +55,7 @@ The initialization works exactly as in :ref:`demo_poisson` ::
     u = Function(V)
 
     e = inner(grad(y), grad(p))*dx - u*p*dx
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Definition of the iterative solvers
 ***********************************

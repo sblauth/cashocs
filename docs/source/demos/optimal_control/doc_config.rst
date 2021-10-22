@@ -90,6 +90,12 @@ Moreover, we have the boolean ``newton_damped`` ::
 which determines whether a damping should be used (in case this is ``True``) or not
 (otherwise). This parameter defaults to ``True`` if nothing is given.
 
+Additionally, we have the boolean parameter ``newton_inexact``, defined via ::
+
+    newton_inexact = False
+
+which sets up an inexact Newton method for solving nonlinear problems in case this is ``True``. The default is ``False``.
+
 The parameter ::
 
     newton_verbose = False
@@ -535,6 +541,9 @@ in the following.
     * - newton_damped
       - ``True``
       - if ``True``, damping is enabled
+    * - newton_inexact
+      - ``False``
+      - if ``True``, an inexact Newton's method is used
     * - newton_verbose
       - ``False``
       - ``True`` enables verbose output of Newton's method

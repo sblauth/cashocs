@@ -40,6 +40,7 @@ from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
 
 
+
 def summation(x):
     """Sums elements of a list in a UFL friendly fashion.
 
@@ -138,6 +139,11 @@ def multiplication(x):
 
 
 class NamedMeasure(Measure):
+    """A named integration measure, which can use names for subdomains defined in a gmsh
+    .msh file.
+
+    """
+
     def __init__(
         self,
         integral_type,
@@ -364,6 +370,89 @@ def load_config(path):
     return config
 
 
+def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
+    """Create several Dirichlet boundary conditions at once.
+
+    Wraps multiple Dirichlet boundary conditions into a list, in case
+    they have the same value but are to be defined for multiple boundaries
+    with different markers. Particularly useful for defining homogeneous
+    boundary conditions.
+
+    Parameters
+    ----------
+    function_space : dolfin.function.functionspace.FunctionSpace
+            The function space onto which the BCs should be imposed on.
+    value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
+            The value of the boundary condition. Has to be compatible with the function_space,
+            so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+            The :py:class:`fenics.MeshFunction` object representing the boundaries.
+    idcs : list[int] or list[str] or int or str
+            A list of indices / boundary markers that determine the boundaries
+            onto which the Dirichlet boundary conditions should be applied to.
+            Can also be a single entry for a single boundary.
+
+    Returns
+    -------
+    list[dolfin.fem.dirichletbc.DirichletBC]
+            A list of DirichletBC objects that represent the boundary conditions.
+
+    Examples
+    --------
+    Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square ::
+
+        from fenics import *
+        import cashocs
+
+        mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
+        V = FunctionSpace(mesh, 'CG', 1)
+        bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+    """
+
+    mesh = function_space.mesh()
+
+    if not isinstance(idcs, list):
+        idcs = [idcs]
+
+    bcs_list = []
+    for entry in idcs:
+        if isinstance(entry, int):
+            bcs_list.append(
+                fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
+            )
+        elif isinstance(entry, str):
+            try:
+                physical_groups = mesh._physical_groups
+                if entry in physical_groups["ds"].keys():
+                    bcs_list.append(
+                        fenics.DirichletBC(
+                            function_space,
+                            value,
+                            boundaries,
+                            physical_groups["ds"][entry],
+                            **kwargs,
+                        )
+                    )
+                else:
+                    raise InputError(
+                        "cashocs.create_dirichlet_bcs",
+                        "idcs",
+                        "The string you have supplied is not associated with a boundary.",
+                    )
+            except AttributeError:
+                raise InputError(
+                    "cashocs.create_dirichlet_bcs",
+                    "mesh",
+                    "The mesh you are using does not support string type boundary conditions. These have to be set in the .msh file.",
+                )
+
+    return bcs_list
+
+
+@deprecated(
+    version="1.5.0",
+    reason="This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.",
+)
 def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
     """Create several Dirichlet boundary conditions at once.
 

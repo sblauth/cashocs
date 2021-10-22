@@ -29,6 +29,7 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
+
 class InnerLBFGS(ControlOptimizationAlgorithm):
     """A unconstrained limited memory BFGS method"""
 

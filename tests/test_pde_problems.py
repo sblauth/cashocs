@@ -39,7 +39,7 @@ u = Function(V)
 
 e = inner(grad(y), grad(p)) * dx - u * p * dx
 
-bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2])
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2])
 
 y_d = Function(V)
 alpha = 1e-6

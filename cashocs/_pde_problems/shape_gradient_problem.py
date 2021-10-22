@@ -25,8 +25,9 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from ..utils import _setup_petsc_options, _solve_linear_problem
 from ..nonlinear_solvers import newton_solve
+from ..utils import _setup_petsc_options, _solve_linear_problem
+
 
 
 class ShapeGradientProblem:
@@ -177,6 +178,12 @@ class _PLaplacProjector:
             ]
 
     def solve(self):
+        """Solves the p-Laplace problem for computing the shape gradient
+
+        Returns
+        -------
+
+        """
         self.solution.vector()[:] = 0.0
         for F in self.F_list:
 

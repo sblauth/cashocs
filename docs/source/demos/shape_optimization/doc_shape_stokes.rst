@@ -142,7 +142,7 @@ velocity :math:`u^\text{in}` we use a parabolic profile ::
 The wall and obstacle boundaries get a no-slip boundary condition, each, with the
 line ::
 
-    bc_no_slip = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [2,4])
+    bc_no_slip = cashocs.create_dirichlet_bcs(V.sub(0), Constant((0,0)), boundaries, [2,4])
 
 Finally, all Dirichlet boundary conditions are gathered into the list ``bcs`` ::
 

@@ -99,12 +99,12 @@ Next, we define the mixed weak form. To do so, we first define the first equatio
 and its Dirichlet boundary conditions ::
 
     e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
-    bcs_y = cashocs.create_bcs_list(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
+    bcs_y = cashocs.create_dirichlet_bcs(V.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
 
 and, in analogy, the second state equation ::
 
     e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
-    bcs_z = cashocs.create_bcs_list(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
+    bcs_z = cashocs.create_dirichlet_bcs(V.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
 
 To arrive at the mixed weak form of the entire syste, we have to add the state equations
 and Dirichlet boundary conditions ::

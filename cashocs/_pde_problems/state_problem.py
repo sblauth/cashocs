@@ -28,6 +28,7 @@ from ..nonlinear_solvers import newton_solve
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
+
 class StateProblem:
     """The state system."""
 
@@ -66,6 +67,9 @@ class StateProblem:
         )
         self.newton_damped = self.config.getboolean(
             "StateSystem", "newton_damped", fallback=True
+        )
+        self.newton_inexact = self.config.getboolean(
+            "StateSystem", "newton_inexact", fallback=False
         )
         self.newton_verbose = self.config.getboolean(
             "StateSystem", "newton_verbose", fallback=False
@@ -140,6 +144,7 @@ class StateProblem:
                             atol=self.newton_atol,
                             max_iter=self.newton_iter,
                             damped=self.newton_damped,
+                            inexact=self.newton_inexact,
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],

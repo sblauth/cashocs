@@ -27,6 +27,7 @@ from ..._exceptions import ConfigError
 from ..._optimal_control import ControlOptimizationAlgorithm
 
 
+
 class PDAS(ControlOptimizationAlgorithm):
     """A primal-dual-active-set method."""
 

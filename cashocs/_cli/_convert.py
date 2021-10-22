@@ -29,6 +29,7 @@ import time
 import meshio
 
 
+
 def _generate_parser():
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
@@ -46,6 +47,18 @@ def _generate_parser():
 
 
 def convert(argv=None):
+    """Converts a Gmsh .msh file to a .xdmf mesh file
+
+    Parameters
+    ----------
+    argv : list[str]
+        Command line options. The first parameter is the input .msh file,
+        the second is the output .xdmf file
+
+    Returns
+    -------
+
+    """
 
     start_time = time.time()
 

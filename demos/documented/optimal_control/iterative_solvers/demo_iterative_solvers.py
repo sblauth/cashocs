@@ -24,6 +24,7 @@ from fenics import *
 import cashocs
 
 
+
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 V = FunctionSpace(mesh, "CG", 1)
@@ -33,7 +34,7 @@ p = Function(V)
 u = Function(V)
 
 e = inner(grad(y), grad(p)) * dx - u * p * dx
-bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 ksp_options = [
     ["ksp_type", "cg"],

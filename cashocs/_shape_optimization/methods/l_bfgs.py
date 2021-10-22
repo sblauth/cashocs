@@ -28,7 +28,10 @@ from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
+
 class LBFGS(ShapeOptimizationAlgorithm):
+    """A limited memory BFGS (L-BFGS) method for solving shape optimization problems"""
+
     def __init__(self, optimization_problem):
         """Implements the L-BFGS method for solving the optimization problem
 

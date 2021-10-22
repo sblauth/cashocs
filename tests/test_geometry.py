@@ -23,13 +23,13 @@ import os
 import subprocess
 
 import fenics
-import pytest
 import numpy as np
+import pytest
 
 import cashocs
-from cashocs.geometry import MeshQuality
-from cashocs._exceptions import InputError
 import cashocs._cli
+from cashocs._exceptions import InputError
+from cashocs.geometry import MeshQuality
 
 
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)

@@ -27,6 +27,7 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import ConfigError, NotConvergedError
 
 
+
 class InnerNCG(ControlOptimizationAlgorithm):
     """Unconstrained nonlinear conjugate gradient method."""
 

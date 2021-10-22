@@ -44,10 +44,11 @@ from .utils import (
     _parse_remesh,
     _setup_petsc_options,
     _solve_linear_problem,
-    create_bcs_list,
+    create_dirichlet_bcs,
     write_out_mesh,
     NamedMeasure,
 )
+
 
 
 def import_mesh(input_arg):
@@ -89,6 +90,26 @@ def import_mesh(input_arg):
     dS : ufl.measure.Measure
             The interior facet measure of the mesh corresponding
             to boundaries (i.e. GMSH Physical region indices).
+
+    Notes
+    -----
+    In case the boundaries in the Gmsh .msh file are not only marked with numbers (as pyhsical
+    groups), but also with names (i.e. strings), these strings can be used with the integration
+    measures ``dx`` and ``ds`` returned by this method. E.g., if one specified the
+    following in a 2D Gmsh .geo file ::
+
+        Physical Surface("domain", 1) = {i,j,k};
+
+    where i,j,k are representative for some integers, then this can be used in the measure
+    ``dx`` (as we are 2D) as follows. The command ::
+
+        dx(1)
+
+    is completely equivalent to ::
+
+       dx("domain")
+
+    and both can be used interchangeably.
     """
 
     start_time = time.time()
@@ -180,6 +201,9 @@ def import_mesh(input_arg):
 
     # Add an attribute to the mesh to show with what procedure it was generated
     mesh._cashocs_generator = mesh_attribute
+    # Add the physical groups to the mesh in case they are present
+    if physical_groups is not None:
+        mesh._physical_groups = physical_groups
 
     # Check the mesh quality of the imported mesh in case a config file is passed
     if isinstance(input_arg, configparser.ConfigParser):
@@ -719,7 +743,9 @@ def compute_boundary_distance(
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
-            bcs = create_bcs_list(V, fenics.Constant(0.0), boundaries, boundary_idcs)
+            bcs = create_dirichlet_bcs(
+                V, fenics.Constant(0.0), boundaries, boundary_idcs
+            )
         else:
             bcs = fenics.DirichletBC(
                 V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
@@ -1338,6 +1364,13 @@ class _MeshHandler:
                 json.dump(self.temp_dict, file)
 
             def filter_sys_argv():
+                """Filters the command line arguments for the cashocs remesh flag
+
+                Returns
+                -------
+                 : list[str]
+                    The filtered list of command line arguments
+                """
                 arg_list = sys.argv.copy()
                 idx_cashocs_remesh_flag = [
                     i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
@@ -1396,6 +1429,13 @@ class _MeshHandler:
 
 
 class DeformationHandler:
+    """A class, which implements mesh deformations.
+
+    The deformations can be due to a deformation vector field or a (piecewise) update of
+    the mesh coordinates.
+
+    """
+
     def __init__(self, mesh):
         """
 
@@ -1547,6 +1587,10 @@ class DeformationHandler:
         ----------
         transformation : dolfin.function.function.Function or np.ndarray
             The transformation for the mesh, a vector CG1 Function.
+        validated_a_priori : bool
+            A boolean flag, which indicates whether an a-priori check has
+            already been performed before moving the mesh. Default is
+            ``False``
         """
 
         if isinstance(transformation, np.ndarray):

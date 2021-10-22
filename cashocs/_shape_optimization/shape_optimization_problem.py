@@ -40,6 +40,8 @@ from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
 from ..optimization_problem import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration
+from ..verification import shape_gradient_test
+
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -404,6 +406,18 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         def custom_except_hook(exctype, value, traceback):
+            """A customized hook which is injected when an exception occurs.
+
+            Parameters
+            ----------
+            exctype
+            value
+            traceback
+
+            Returns
+            -------
+
+            """
             debug(
                 "An exception was raised by cashocs, deleting the created temporary files."
             )
@@ -573,3 +587,22 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         return self.form_handler.test_vector_field
+
+    def shape_gradient_test(self, h=None, rng=None):
+        """Taylor test to verify that the computed shape gradient is correct.
+
+        Parameters
+        ----------
+        h : dolfin.function.function.Function, optional
+            The direction used to compute the directional derivative. If this is
+            ``None``, then a random direction is used (default is ``None``).
+        rng : numpy.random.RandomState
+            A numpy random state for calculating a random direction
+
+        Returns
+        -------
+         : float
+            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+            everything works as expected.
+        """
+        return shape_gradient_test(self, h, rng)

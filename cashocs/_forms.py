@@ -41,10 +41,11 @@ from .utils import (
     _optimization_algorithm_configuration,
     _setup_petsc_options,
     _solve_linear_problem,
-    create_bcs_list,
+    create_dirichlet_bcs,
     summation,
     _check_for_config_list,
 )
+
 
 
 class Lagrangian:
@@ -610,6 +611,21 @@ class ControlFormHandler(FormHandler):
         return b
 
     def restrict_to_lower_active_set(self, a, b):
+        """Restricts a function to the lower bound of the constraints
+
+        Parameters
+        ----------
+        a : list[dolfin.function.function.Function]
+            The input, which is to be restricted
+        b : list[dolfin.function.function.Function]
+            The output, which stores the result
+
+        Returns
+        -------
+        b : list[dolfin.function.function.Function]
+            Function a restricted onto the lower boundaries of the constraints
+
+        """
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -625,6 +641,21 @@ class ControlFormHandler(FormHandler):
         return b
 
     def restrict_to_upper_active_set(self, a, b):
+        """Restricts a function to the upper bound of the constraints
+
+        Parameters
+        ----------
+        a : list[dolfin.function.function.Function]
+            The input, which is to be restricted
+        b : list[dolfin.function.function.Function]
+            The output, which stores the result
+
+        Returns
+        -------
+        b : list[dolfin.function.function.Function]
+            Function a restricted onto the upper boundaries of the constraints
+
+        """
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -1250,26 +1281,26 @@ class ShapeFormHandler(FormHandler):
                 "ShapeGradient", "shape_bdry_fix_z", "The input has to be a list."
             )
 
-        self.bcs_shape = create_bcs_list(
+        self.bcs_shape = create_dirichlet_bcs(
             self.deformation_space,
             fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
             self.boundaries,
             self.shape_bdry_fix,
         )
-        self.bcs_shape += create_bcs_list(
+        self.bcs_shape += create_dirichlet_bcs(
             self.deformation_space.sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
-        self.bcs_shape += create_bcs_list(
+        self.bcs_shape += create_dirichlet_bcs(
             self.deformation_space.sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
         if self.deformation_space.num_sub_spaces() == 3:
-            self.bcs_shape += create_bcs_list(
+            self.bcs_shape += create_dirichlet_bcs(
                 self.deformation_space.sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
@@ -1301,6 +1332,20 @@ class ShapeFormHandler(FormHandler):
                 self.volumes = fenics.Constant(1.0)
 
             def eps(u):
+                """Computes the symmetrized gradient of a vector field ``u``.
+
+                Parameters
+                ----------
+                u : dolfin.function.function.Function
+                    A vector field
+
+                Returns
+                -------
+                 : ufl.core.expr.Expr
+                    The symmetrized gradient of ``u``
+
+
+                """
                 return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
 
             trial = fenics.TrialFunction(self.deformation_space)
@@ -1354,13 +1399,13 @@ class ShapeFormHandler(FormHandler):
                 self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.L_mu = fenics.Constant(0.0) * psi * self.dx
 
-                self.bcs_mu = create_bcs_list(
+                self.bcs_mu = create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_fix),
                     self.boundaries,
                     self.shape_bdry_fix,
                 )
-                self.bcs_mu += create_bcs_list(
+                self.bcs_mu += create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_def),
                     self.boundaries,

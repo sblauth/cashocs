@@ -25,6 +25,7 @@ from fenics import *
 import cashocs
 
 
+
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 n = FacetNormal(mesh)
@@ -58,7 +59,7 @@ ocp = cashocs.OptimalControlProblem(
 ocp.solve()
 
 
-bcs = cashocs.create_bcs_list(V, 1, boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_dirichlet_bcs(V, 1, boundaries, [1, 2, 3, 4])
 bdry_idx = Function(V)
 [bc.apply(bdry_idx.vector()) for bc in bcs]
 mask = np.where(bdry_idx.vector()[:] == 1)[0]

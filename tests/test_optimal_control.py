@@ -30,6 +30,7 @@ import cashocs
 from cashocs._exceptions import InputError
 
 
+
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
@@ -41,7 +42,7 @@ p = Function(V)
 u = Function(V)
 
 F = inner(grad(y), grad(p)) * dx - u * p * dx
-bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
 alpha = 1e-6
@@ -722,7 +723,7 @@ def test_different_spaces():
         - u * p * dx
     )
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     lambd = 1e-6
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)

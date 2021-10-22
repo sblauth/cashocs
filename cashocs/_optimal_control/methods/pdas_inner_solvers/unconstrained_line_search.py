@@ -24,6 +24,7 @@ import weakref
 import numpy as np
 
 
+
 class UnconstrainedLineSearch:
     """Armijo line search for unconstrained optimization problems"""
 

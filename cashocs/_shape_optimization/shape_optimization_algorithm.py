@@ -30,6 +30,7 @@ from .._optimization_algorithm import OptimizationAlgorithm
 from ..utils import write_out_mesh
 
 
+
 class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
     """Blueprint for a solution algorithm for shape optimization problems"""
 

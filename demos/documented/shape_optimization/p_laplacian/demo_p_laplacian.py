@@ -1,22 +1,7 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
-#
-# This file is part of CASHOCS.
-#
-# CASHOCS is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# CASHOCS is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Created on 21/10/2021, 14.12
 
-"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_regularization.html.
-
+@author: blauths
 """
 
 from fenics import *
@@ -24,6 +9,7 @@ from fenics import *
 import cashocs
 
 
+cashocs.set_log_level(cashocs.LogLevel.INFO)
 
 config = cashocs.load_config("./config.ini")
 
@@ -47,10 +33,7 @@ f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-alpha_vol = 1e-1
-alpha_surf = 1e-1
-
-J = u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+J = u * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 sop.solve()
@@ -74,4 +57,4 @@ plt.colorbar(fig_u, fraction=0.046, pad=0.04)
 plt.title("State variable u")
 
 plt.tight_layout()
-# plt.savefig('./img_regularization.png', dpi=150, bbox_inches='tight')
+# plt.savefig("./img_p_laplacian.png", dpi=150, bbox_inches="tight")

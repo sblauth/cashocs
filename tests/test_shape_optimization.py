@@ -417,7 +417,7 @@ def test_shape_barycenter_regularization_hole():
     )
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     V = FunctionSpace(mesh, "CG", 1)
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
     x = SpatialCoordinate(mesh)
     f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
@@ -817,7 +817,7 @@ def test_inhomogeneous_mu():
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
     V = FunctionSpace(mesh, "CG", 1)
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     x = SpatialCoordinate(mesh)
     f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1

@@ -26,7 +26,10 @@ from ..._exceptions import ConfigError
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
+
 class NCG(ShapeOptimizationAlgorithm):
+    """A nonlinear conjugate gradient (NCG) method for solving shape optimization problems"""
+
     def __init__(self, optimization_problem):
         """A nonlinear cg method to solve the optimization problem
 

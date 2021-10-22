@@ -17,3 +17,4 @@ be treated with CASHOCS.
    doc_custom_scalar_product
    doc_scaling
    doc_eikonal_stiffness
+   doc_p_laplacian

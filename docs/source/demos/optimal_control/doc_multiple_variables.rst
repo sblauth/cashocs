@@ -65,7 +65,7 @@ is done in analogy to :ref:`demo_poisson` ::
     p = Function(V)
     u = Function(V)
     e_y = inner(grad(y), grad(p)) * dx - u * p * dx
-    bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs_y = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Similarly to before, ``p`` is the adjoint state corresponding to ``y``.
 
@@ -75,7 +75,7 @@ Next, we define the second state equation (which is for the state :math:`z`) via
     q = Function(V)
     v = Function(V)
     e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
-    bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs_z = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Here, ``q`` is the adjoint state corresponding to ``z``.
 
@@ -128,8 +128,8 @@ has to be in analogy to the list y, i.e., ::
 Finally, the boundary conditions for both states are homogeneous
 Dirichlet conditions, which we generate via ::
 
-    bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-    bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     bcs_list = [bcs1, bcs2]
 

@@ -25,6 +25,7 @@ from fenics import *
 import cashocs
 
 
+
 def test_newton_solver():
     mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
     V = FunctionSpace(mesh, "CG", 1)
@@ -38,7 +39,7 @@ def test_newton_solver():
         + Constant(1e2) * pow(u, 3) * v * dx
         - Constant(1) * v * dx
     )
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     solve(F == 0, u, bcs)
     u_fen.vector()[:] = u.vector()[:]

@@ -20,11 +20,15 @@
 """
 
 import os
+import subprocess
 
 import fenics
 import numpy as np
+import pytest
 
 import cashocs
+import cashocs._cli
+from cashocs._exceptions import InputError
 
 
 rng = np.random.RandomState(300696)
@@ -136,7 +140,9 @@ def test_create_bcs():
     bc3 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 3)
     bc4 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 4)
     bcs_ex = [bc1, bc2, bc3, bc4]
-    bcs = cashocs.create_bcs_list(V, fenics.Constant(bc_val), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(
+        V, fenics.Constant(bc_val), boundaries, [1, 2, 3, 4]
+    )
 
     u_ex = fenics.Function(V)
     u = fenics.Function(V)
@@ -166,3 +172,53 @@ def test_interpolator():
 
     assert np.allclose(fen_W.vector()[:], cas_W.vector()[:])
     assert np.allclose(fen_X.vector()[:], cas_X.vector()[:])
+
+
+def test_create_named_bcs():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    cashocs._cli.convert(
+        [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
+    )
+
+    mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/named_mesh.xdmf"
+    )
+    V_ = fenics.FunctionSpace(mesh_, "CG", 1)
+
+    bcs_str = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, ["inlet", "wall", "outlet"]
+    )
+    bcs_int = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, [1, 2, 3]
+    )
+    bcs_mixed = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, ["inlet", 2, "outlet"]
+    )
+
+    with pytest.raises(InputError) as e_info:
+        cashocs.create_dirichlet_bcs(V_, fenics.Constant(0.0), boundaries, "fantasy")
+        assert "The string you have supplied is not associated with a boundary" in str(
+            e_info.value
+        )
+
+    with pytest.raises(InputError) as e_info:
+        cashocs.create_dirichlet_bcs(V, fenics.Constant(0.0), boundaries, "inlet")
+        assert "does not support string type boundary conditions" in str(e_info.value)
+
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
+    subprocess.run(
+        ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
+    )

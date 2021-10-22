@@ -161,7 +161,7 @@ The result should look like this
     using this approach. Therefore, we first compute the indices of all DOF's
     that lie on the boundary via ::
 
-        bcs = cashocs.create_bcs_list(V, 1, boundaries, [1,2,3,4])
+        bcs = cashocs.create_dirichlet_bcs(V, 1, boundaries, [1,2,3,4])
         bdry_idx = Function(V)
         [bc.apply(bdry_idx.vector()) for bc in bcs]
         mask = np.where(bdry_idx.vector()[:] == 1)[0]

@@ -24,6 +24,7 @@ from fenics import *
 import cashocs
 
 
+
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
@@ -40,7 +41,9 @@ e = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
 
 u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
-bc_no_slip = cashocs.create_bcs_list(V.sub(0), Constant((0, 0)), boundaries, [2, 4])
+bc_no_slip = cashocs.create_dirichlet_bcs(
+    V.sub(0), Constant((0, 0)), boundaries, [2, 4]
+)
 bcs = [bc_in] + bc_no_slip
 
 J = inner(grad(u), grad(u)) * dx

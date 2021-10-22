@@ -135,6 +135,12 @@ Newton method, or whether the classical Newton-Raphson iteration shall be used. 
 defaults to ``True``, but for some problems it might be beneficial (and faster) to not
 use damping.
 
+Additionally, we have the boolean parameter ``newton_inexact``, defined via ::
+
+    newton_inexact = False
+
+which sets up an inexact Newton method for solving nonlinear problems in case this is ``True``. The default is ``False``.
+
 Next, we have the parameter ::
 
     newton_verbose = False
@@ -536,6 +542,22 @@ This means, that only boundaries marked with 1, 2, and 3 are considered for comp
 the distance, and all others are ignored. The default behavior is that all (outer) boundaries
 are considered.
 
+There is also another possibility to compute the shape gradient in CASHOCS, namely using the :math:`p`-Laplacian, as proposed by `Müller, Kühl, Siebenborn, Deckelnick, Hinze, and Rung <https://doi.org/10.1007/s00158-021-03030-x>`_. In order to do so, we have the following line ::
+
+   use_p_laplacian = False
+
+If this is set to ``True``, the :math:`p`-Laplacian is used to compute the shape gradient, as explained in :ref:`demo_p_laplacian`. However, by default this is disabled.
+The value of :math:`p` which is then used is defined in the next line ::
+
+    p_laplacian_power = 6
+
+which defaults to ``2``, whenever the parameter is not defined. The higher :math:`p` is chosen, the better the numerical are expected to be, but the numerical solution of the problem becomes more involved.
+
+Finally, there is the possibility to use a stabilized weak form for the :math:`p`-Laplacian operator, where the stabilization parameter can be defined in the line ::
+
+    p_laplacian_stabilization = 0.0
+
+The default value of this parameter is ``0.0``. Note, that the parameter should be chosen comparatively small, i.e., significantly smaller than ``1.0``.
 
 .. _config_shape_regularization:
 
@@ -873,6 +895,9 @@ in the following.
     * - newton_damped
       - ``True``
       - if ``True``, damping is enabled
+    * - newton_inexact
+      - ``False``
+      - if ``True``, an inexact Newton's method is used
     * - newton_verbose
       - ``False``
       - ``True`` enables verbose output of Newton's method
@@ -1042,6 +1067,15 @@ in the following.
     * - smooth_mu
       - ``False``
       - If false, a linear (continuous) interpolation between ``mu_min`` and ``mu_max`` is used, otherwise a cubic :math:`C^1` interpolant is used
+    * - use_p_laplacian
+      - ``False``
+      - If ``True``, then the :math:`p`-Laplacian is used to compute the shape gradient
+    * - p_laplacian_power
+      - 2
+      - The parameter :math:`p` of the :math:`p`-Laplacian
+    * - p_laplacian_stabilization
+      - 0.0
+      - The stabilization parameter for the :math:`p`-Laplacian problem. No stabilization is used when this is ``0.0``.
 
 
 [Regularization]

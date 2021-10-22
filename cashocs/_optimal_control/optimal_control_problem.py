@@ -36,6 +36,8 @@ from .._pde_problems import (
 )
 from ..optimization_problem import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration, _check_and_enlist_functions
+from ..verification import control_gradient_test
+
 
 
 class OptimalControlProblem(OptimizationProblem):
@@ -640,3 +642,26 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.supply_derivatives(derivatives)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
+
+    def gradient_test(self, u=None, h=None, rng=None):
+        """Taylor test to verify that the computed gradient is correct for optimal control problems.
+
+        Parameters
+        ----------
+        u : list[dolfin.function.function.Function], optional
+            The point, at which the gradient shall be verified. If this is ``None``,
+            then the current controls of the optimization problem are used. Default is
+            ``None``.
+        h : list[dolfin.function.function.Function], optional
+            The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
+            one random direction is chosen. Default is ``None``.
+        rng : numpy.random.RandomState
+            A numpy random state for calculating a random direction
+
+        Returns
+        -------
+        float
+            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+             everything works as expected.
+        """
+        return control_gradient_test(self, u, h, rng)

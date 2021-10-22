@@ -34,7 +34,7 @@ from .geometry import (
     regular_mesh,
 )
 from .nonlinear_solvers import newton_solve, damped_newton_solve
-from .utils import create_bcs_list, create_config, load_config
+from .utils import create_bcs_list, create_dirichlet_bcs, create_config, load_config
 
 __version__ = "1.4.0"
 
@@ -50,5 +50,6 @@ __all__ = [
     "create_config",
     "load_config",
     "create_bcs_list",
+    "create_dirichlet_bcs",
     "verification",
 ]

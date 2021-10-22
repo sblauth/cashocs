@@ -104,14 +104,14 @@ The boundary conditions for this system can be defined as follows ::
 
     def pressure_point(x, on_boundary):
     	return on_boundary and near(x[0], 0) and near(x[1], 0)
-    no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
+    no_slip_bcs = cashocs.create_dirichlet_bcs(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
     lid_velocity = Expression(('4*x[0]*(1-x[0])', '0.0'), degree=2)
     bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
     bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
     bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
 Here, we first define the point :math:`x^\text{pres}`, where the pressure is set to 0.
-Afterwards, we use the CASHOCS function :py:func:`create_bcs_list <cashocs.create_bcs_list>`
+Afterwards, we use the CASHOCS function :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`
 to quickly create the no slip conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
 velocity :math:`u_\text{dir}` for the lid of the cavity as a :py:class:`fenics.Expression`, and create a corresponding
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,
