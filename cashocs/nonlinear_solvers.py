@@ -31,7 +31,6 @@ from ._exceptions import InputError, NotConvergedError
 from .utils import _setup_petsc_options, _solve_linear_problem
 
 
-
 def newton_solve(
     F,
     u,

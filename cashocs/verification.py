@@ -27,7 +27,6 @@ from ._exceptions import InputError
 from ._loggers import warning
 
 
-
 def control_gradient_test(ocp, u=None, h=None, rng=None):
     """Taylor test to verify that the computed gradient is correct for optimal control problems.
 

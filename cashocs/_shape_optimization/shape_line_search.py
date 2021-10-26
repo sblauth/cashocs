@@ -28,7 +28,6 @@ from .._loggers import error
 from ..utils import _optimization_algorithm_configuration
 
 
-
 class ArmijoLineSearch:
     """An Armijo line search algorithm for shape optimization problems"""
 

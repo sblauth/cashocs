@@ -28,7 +28,6 @@ from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
-
 class LBFGS(ShapeOptimizationAlgorithm):
     """A limited memory BFGS (L-BFGS) method for solving shape optimization problems"""
 
@@ -207,9 +206,14 @@ class LBFGS(ShapeOptimizationAlgorithm):
                     self.y_k, self.s_k
                 )
 
-                # if self.curvature_condition <= 1e-14:
-                if self.curvature_condition <= 0.0:
-                    # if self.curvature_condition / self.form_handler.scalar_product(self.s_k, self.s_k) < 1e-7 * self.gradient_problem.return_norm_squared():
+                if (
+                    self.curvature_condition
+                    / np.sqrt(
+                        self.form_handler.scalar_product(self.y_k, self.y_k)
+                        * self.form_handler.scalar_product(self.s_k, self.s_k)
+                    )
+                    <= 1e-14
+                ):
                     self.has_curvature_info = False
 
                     self.history_s.clear()

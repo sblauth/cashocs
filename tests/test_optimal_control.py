@@ -30,7 +30,6 @@ import cashocs
 from cashocs._exceptions import InputError
 
 
-
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
@@ -554,6 +553,37 @@ def test_scalar_norm_optimization():
     test_ocp.solve(algorithm="bfgs", rtol=1e-3)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_scalar_tracking_weight():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 1e-3
+
+    J = Constant(0) * dx
+    norm_y = y * y * dx
+    tracking_goal = rng.uniform(0.25, 0.75)
+    weight = rng.uniform(1.0, 1e3)
+    J_norm = {"integrand": norm_y, "tracking_goal": tracking_goal, "weight": 1.0}
+    config.set("OptimizationRoutine", "initial_stepsize", "4e3")
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
+    )
+    test_ocp.compute_state_variables()
+    initial_function_value = 0.5 * pow(assemble(norm_y) - tracking_goal, 2)
+    J_norm["weight"] = weight / initial_function_value
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
+    )
+    test_ocp.compute_state_variables()
+    val = test_ocp.reduced_cost_functional.evaluate()
+    assert np.abs(val - weight) < 1e-15
 
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9

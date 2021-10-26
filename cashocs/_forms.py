@@ -47,7 +47,6 @@ from .utils import (
 )
 
 
-
 class Lagrangian:
     r"""Implementation of a Lagrangian.
 
@@ -148,7 +147,7 @@ class FormHandler:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector()[
                         :
-                    ] = self.lagrangian.scalar_tracking_forms[j]["weights"]
+                    ] = self.lagrangian.scalar_tracking_forms[j]["weight"]
             except KeyError:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector()[:] = 1.0

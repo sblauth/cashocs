@@ -50,7 +50,6 @@ from .utils import (
 )
 
 
-
 def import_mesh(input_arg):
     """Imports a mesh file for use with CASHOCS / FEniCS.
 

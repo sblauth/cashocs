@@ -25,7 +25,6 @@ from fenics import *
 import cashocs
 
 
-
 def test_newton_solver():
     mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
     V = FunctionSpace(mesh, "CG", 1)

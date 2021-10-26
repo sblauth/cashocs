@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_shape_stokes.html.
+"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_pre_post_hooks.html.
 
 """
 
 from fenics import *
 
 import cashocs
-
 
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
@@ -36,7 +35,13 @@ u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
-e = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
+Re = 1e2
+e = (
+    inner(grad(u), grad(v)) * dx
+    + Constant(Re) * dot(grad(u) * u, v) * dx
+    - p * div(v) * dx
+    - q * div(u) * dx
+)
 
 u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
@@ -77,4 +82,4 @@ plt.colorbar(fig_p, fraction=0.046, pad=0.04)
 plt.title("State variable p")
 
 plt.tight_layout()
-# plt.savefig("./img_eikonal_stiffness.png", dpi=150, bbox_inches="tight")
+# plt.savefig('./img_pre_post_hooks.png', dpi=150, bbox_inches='tight')

@@ -28,7 +28,6 @@ from .._exceptions import NotConvergedError
 from .._optimization_algorithm import OptimizationAlgorithm
 
 
-
 class ControlOptimizationAlgorithm(OptimizationAlgorithm):
     """Abstract class representing a optimization algorithm
 

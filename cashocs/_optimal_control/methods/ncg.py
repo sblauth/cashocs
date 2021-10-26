@@ -26,7 +26,6 @@ from ..._exceptions import ConfigError
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-
 class NCG(ControlOptimizationAlgorithm):
     """Nonlinear conjugate gradient method."""
 

@@ -26,7 +26,6 @@ from ufl import Max
 import cashocs
 
 
-
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, "CG", 1)

@@ -24,7 +24,6 @@ import numpy as np
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
-
 class GradientDescent(ShapeOptimizationAlgorithm):
     """A gradient descent method for shape optimization"""
 

@@ -29,7 +29,6 @@ from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
-
 class ShapeGradientProblem:
     """Riesz problem for the computation of the shape gradient."""
 

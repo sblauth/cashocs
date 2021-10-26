@@ -28,7 +28,6 @@ from petsc4py import PETSc
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
-
 class GradientProblem:
     """A class representing the Riesz problem to determine the gradient."""
 

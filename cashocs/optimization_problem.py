@@ -45,7 +45,6 @@ from .utils import (
 )
 
 
-
 class OptimizationProblem:
     """Blueprint for an abstract PDE constrained optimization problem.
 
@@ -763,7 +762,7 @@ class OptimizationProblem:
 
             if self.use_scalar_tracking:
                 for i in range(len(self.scalar_tracking_forms)):
-                    self.scalar_tracking_forms[-1 - i]["weights"] = abs(
+                    self.scalar_tracking_forms[-1 - i]["weight"] = abs(
                         self.desired_weights[-1 - i]
                         / self.initial_scalar_tracking_values[-1 - i]
                     )

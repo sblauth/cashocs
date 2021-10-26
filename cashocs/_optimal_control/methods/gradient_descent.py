@@ -24,7 +24,6 @@ import numpy as np
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-
 class GradientDescent(ControlOptimizationAlgorithm):
     """A gradient descent method"""
 

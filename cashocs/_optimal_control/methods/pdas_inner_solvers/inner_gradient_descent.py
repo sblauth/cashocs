@@ -27,7 +27,6 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerGradientDescent(ControlOptimizationAlgorithm):
     """A unconstrained gradient descent method."""
 

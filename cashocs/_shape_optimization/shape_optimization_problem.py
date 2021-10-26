@@ -43,7 +43,6 @@ from ..utils import _optimization_algorithm_configuration
 from ..verification import shape_gradient_test
 
 
-
 class ShapeOptimizationProblem(OptimizationProblem):
     r"""A shape optimization problem.
 

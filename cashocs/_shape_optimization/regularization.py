@@ -32,7 +32,6 @@ from .._loggers import info
 from ..utils import _solve_linear_problem, _check_for_config_list
 
 
-
 def t_grad(u, n):
     """Computes the tangential gradient of u
 

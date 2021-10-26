@@ -14,7 +14,6 @@ import cashocs
 import cashocs._cli
 
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 

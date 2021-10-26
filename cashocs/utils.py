@@ -40,7 +40,6 @@ from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
 
 
-
 def summation(x):
     """Sums elements of a list in a UFL friendly fashion.
 
@@ -390,7 +389,9 @@ def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
     idcs : list[int] or list[str] or int or str
             A list of indices / boundary markers that determine the boundaries
             onto which the Dirichlet boundary conditions should be applied to.
-            Can also be a single entry for a single boundary.
+            Can also be a single entry for a single boundary. If your mesh file
+            is named, then you can also use the names of the boundaries to define the
+            boundary conditions.
 
     Returns
     -------

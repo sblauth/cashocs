@@ -31,7 +31,6 @@ from .._loggers import debug
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
-
 class BaseHessianProblem:
     """Base class for derived Hessian problems."""
 

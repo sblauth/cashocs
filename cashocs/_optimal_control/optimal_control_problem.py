@@ -39,7 +39,6 @@ from ..utils import _optimization_algorithm_configuration, _check_and_enlist_fun
 from ..verification import control_gradient_test
 
 
-
 class OptimalControlProblem(OptimizationProblem):
     """Implements an optimal control problem.
 

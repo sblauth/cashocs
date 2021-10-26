@@ -29,7 +29,6 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerLBFGS(ControlOptimizationAlgorithm):
     """A unconstrained limited memory BFGS method"""
 
@@ -253,7 +252,16 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 )
                 self.history_rho.appendleft(rho)
 
-                if 1 / rho <= 0:
+                if (
+                    np.sqrt(
+                        self.form_handler.scalar_product(self.storage_y, self.storage_y)
+                        * self.form_handler.scalar_product(
+                            self.storage_s, self.storage_s
+                        )
+                    )
+                    / rho
+                    <= 1e-14
+                ):
                     self.history_s.clear()
                     self.history_y.clear()
                     self.history_rho.clear()

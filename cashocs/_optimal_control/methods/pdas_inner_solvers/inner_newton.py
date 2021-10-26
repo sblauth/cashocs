@@ -27,7 +27,6 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerNewton(ControlOptimizationAlgorithm):
     """Unconstrained truncated Newton method"""
 
