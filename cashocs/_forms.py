@@ -1013,6 +1013,9 @@ class ShapeFormHandler(FormHandler):
         self.temp_dir = optimization_problem.temp_dir
         self.boundaries = optimization_problem.boundaries
         self.shape_scalar_product = optimization_problem.shape_scalar_product
+        self.uses_custom_scalar_product = (
+            optimization_problem.uses_custom_scalar_product
+        )
         deformation_space = optimization_problem.deformation_space
 
         self.degree_estimation = self.config.getboolean(
@@ -1542,21 +1545,22 @@ class ShapeFormHandler(FormHandler):
                 The value of the scalar product.
         """
 
-        if not self.config.getboolean(
-            "ShapeGradient", "use_p_laplacian", fallback=False
+        if (
+            self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
+            and not self.uses_custom_scalar_product
         ):
+            self.form = replace(
+                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
+            )
+            result = fenics.assemble(self.form)
+
+        else:
             x = fenics.as_backend_type(a.vector()).vec()
             y = fenics.as_backend_type(b.vector()).vec()
 
             temp, _ = self.scalar_product_matrix.getVecs()
             self.scalar_product_matrix.mult(x, temp)
             result = temp.dot(y)
-
-        else:
-            self.form = replace(
-                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
-            )
-            result = fenics.assemble(self.form)
 
         return result
 

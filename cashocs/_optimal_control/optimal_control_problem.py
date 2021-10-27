@@ -177,8 +177,10 @@ class OptimalControlProblem(OptimizationProblem):
                                 "riesz_scalar_products have to be ufl forms",
                             )
                     self.riesz_scalar_products = riesz_scalar_products
+                    self.uses_custom_scalar_product = True
                 elif isinstance(riesz_scalar_products, ufl.form.Form):
                     self.riesz_scalar_products = [riesz_scalar_products]
+                    self.uses_custom_scalar_product = True
                 else:
                     raise InputError(
                         "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
@@ -458,7 +460,7 @@ class OptimalControlProblem(OptimizationProblem):
           .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||.
         """
 
-        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         if self.algorithm == "newton" or (
             self.algorithm == "pdas"
@@ -474,21 +476,6 @@ class OptimalControlProblem(OptimizationProblem):
             self.unconstrained_hessian = UnconstrainedHessianProblem(
                 self.form_handler, self.gradient_problem
             )
-
-        if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
-        elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-        elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
-
-        self._check_for_custom_forms()
 
         if self.algorithm == "gradient_descent":
             self.solver = GradientDescent(self)

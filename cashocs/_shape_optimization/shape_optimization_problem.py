@@ -251,6 +251,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     "Not a valid type for shape_scalar_product.",
                 )
 
+        if self.shape_scalar_product is not None:
+            self.uses_custom_scalar_product = True
+
+        if self.uses_custom_scalar_product and self.config.getboolean(
+            "ShapeGradient", "use_p_laplacian", fallback=False
+        ):
+            warning(
+                "You have supplied a custom scalar product and set the parameter ``use_p_laplacian`` in the config file."
+                "cashocs will use the supplied scalar product and not the p-Laplacian to compute the shape gradient."
+            )
+
         self.form_handler = ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
@@ -351,22 +362,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
           .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
         """
 
-        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
-
-        if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
-        elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-        elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
-
-        self._check_for_custom_forms()
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         if self.algorithm == "gradient_descent":
             self.solver = GradientDescent(self)
@@ -587,7 +583,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         return self.form_handler.test_vector_field
 
-    def shape_gradient_test(self, h=None, rng=None):
+    def gradient_test(self, h=None, rng=None):
         """Taylor test to verify that the computed shape gradient is correct.
 
         Parameters

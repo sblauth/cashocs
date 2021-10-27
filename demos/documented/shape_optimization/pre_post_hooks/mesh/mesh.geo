@@ -1,4 +1,4 @@
-lc = 3.75e-1;
+lc = 2e-1;
 
 length = 3.0;
 width = 2.0;
@@ -45,7 +45,7 @@ Field[1].NNodesByEdge = 1000;
 Field[1].EdgesList = {5,6,7,8};
 Field[2] = Threshold;
 Field[2].IField = 1;
-Field[2].LcMin = lc/50;
+Field[2].LcMin = lc/30;
 Field[2].LcMax = lc;
 Field[2].DistMin = 0;
 Field[2].DistMax = 2.5e-2;

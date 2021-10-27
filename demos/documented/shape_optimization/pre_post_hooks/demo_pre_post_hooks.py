@@ -50,7 +50,7 @@ bc_no_slip = cashocs.create_dirichlet_bcs(
 )
 bcs = [bc_in] + bc_no_slip
 
-J = inner(grad(u), grad(u)) * dx
+J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
 sop.solve()

@@ -490,7 +490,7 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 
         mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
         V = FunctionSpace(mesh, 'CG', 1)
-        bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+        bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
     """
 
     bcs_list = []

@@ -67,7 +67,10 @@ class ShapeGradientProblem:
         ]
         _setup_petsc_options([self.ksp], [self.ksp_options])
 
-        if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
+        if (
+            self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
+            and not self.form_handler.uses_custom_scalar_product
+        ):
             self.p_laplace_projector = _PLaplacProjector(
                 self,
                 self.gradient,
@@ -94,8 +97,11 @@ class ShapeGradientProblem:
 
             self.form_handler.regularization.update_geometric_quantities()
 
-            if self.config.getboolean(
-                "ShapeGradient", "use_p_laplacian", fallback=False
+            if (
+                self.config.getboolean(
+                    "ShapeGradient", "use_p_laplacian", fallback=False
+                )
+                and not self.form_handler.uses_custom_scalar_product
             ):
                 self.p_laplace_projector.solve()
                 self.has_solution = True
