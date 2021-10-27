@@ -73,8 +73,16 @@ def test_2_laplacian():
     )
     sop2.solve(algorithm="gd", rtol=1e-2, max_iter=21)
 
-    assert sop1.solver.objective_value == sop2.solver.objective_value
-    assert sop1.solver.gradient_norm == sop2.solver.gradient_norm
+    assert (
+        np.abs(sop1.solver.objective_value - sop2.solver.objective_value)
+        / np.abs(sop1.solver.objective_value)
+        < 1e-10
+    )
+    assert (
+        np.abs(sop1.solver.gradient_norm - sop2.solver.gradient_norm)
+        / np.abs(sop1.solver.gradient_norm)
+        < 1e-8
+    )
 
 
 def test_p_laplacian():
