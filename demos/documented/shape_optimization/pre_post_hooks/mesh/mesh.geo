@@ -39,7 +39,6 @@ Physical Line(3) = {2};
 Physical Line(4) = {5,6,7,8};
 
 
-// Inlet and Outlet
 Field[1] = Distance;
 Field[1].NNodesByEdge = 1000;
 Field[1].EdgesList = {5,6,7,8};
@@ -48,6 +47,23 @@ Field[2].IField = 1;
 Field[2].LcMin = lc/30;
 Field[2].LcMax = lc;
 Field[2].DistMin = 0;
-Field[2].DistMax = 2.5e-2;
+Field[2].DistMax = 1.25;
+Field[2].Sigmoid = 0;
 
-Background Field = 2;
+Field[3] = Distance;
+Field[3].NNodesByEdge = 1000;
+Field[3].EdgesList = {1,2,3,4};
+Field[4] = Threshold;
+Field[4].IField = 3;
+Field[4].LcMin = lc/5;
+Field[4].LcMax = lc;
+Field[4].DistMin = 0;
+Field[4].DistMax = 0.5;
+Field[4].Sigmoid = 0;
+
+Field[5] = Min;
+Field[5].FieldsList = {2,4};
+
+Background Field = 5;
+
+Mesh.CharacteristicLengthExtendFromBoundary = 0;

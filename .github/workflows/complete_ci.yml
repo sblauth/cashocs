@@ -37,6 +37,11 @@ jobs:
       run: |
         source $CONDA/bin/activate fenics
         coverage run --source=cashocs -m pytest
+
+    - name: Generate .xml coverage results
+      shell: bash -l {0}
+      run: |
+        source $CONDA/bin/activate fenics
         coverage xml
 
     - name: Upload coverage to codecov
