@@ -36,7 +36,7 @@ from .geometry import (
 from .nonlinear_solvers import newton_solve, damped_newton_solve
 from .utils import create_bcs_list, create_dirichlet_bcs, create_config, load_config
 
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 
 __all__ = [
     "import_mesh",
