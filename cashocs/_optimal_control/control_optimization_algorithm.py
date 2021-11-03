@@ -85,7 +85,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd:
             self.state_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.state_pvd_list.append([])
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i].append(
@@ -98,7 +102,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
             self.control_pvd_list = []
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.control_pvd_list.append([])
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
@@ -116,7 +124,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd_adjoint:
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.adjoint_pvd_list.append([])
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
@@ -134,7 +146,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd_gradient:
             self.gradient_pvd_list = []
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.gradient_pvd_list.append([])
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
@@ -203,7 +219,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i][j] << self.form_handler.states[i].sub(
                             j, True
@@ -214,7 +234,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                     ], self.iteration
 
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
                     ):
@@ -228,7 +252,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
                     ):
@@ -242,7 +270,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
                     ):
