@@ -796,6 +796,8 @@ def test_save_pvd_files():
     assert os.path.isfile(dir_path + "/out/history.json")
     assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")

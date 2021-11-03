@@ -96,6 +96,23 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                         fenics.File(f"{self.result_dir}/pvd/state_{i:d}.pvd")
                     )
 
+            self.control_pvd_list = []
+            for i in range(self.form_handler.control_dim):
+                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                    self.control_pvd_list.append([])
+                    for j in range(
+                        self.form_handler.control_spaces[i].num_sub_spaces()
+                    ):
+                        self.control_pvd_list[i].append(
+                            fenics.File(
+                                f"{self.result_dir}/pvd/control_{i:d}_{j:d}.pvd"
+                            )
+                        )
+                else:
+                    self.control_pvd_list.append(
+                        fenics.File(f"{self.result_dir}/pvd/control_{i:d}.pvd")
+                    )
+
         if self.save_pvd_adjoint:
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
@@ -193,6 +210,19 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                         ), self.iteration
                 else:
                     self.state_pvd_list[i] << self.form_handler.states[
+                        i
+                    ], self.iteration
+
+            for i in range(self.form_handler.control_dim):
+                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                    for j in range(
+                        self.form_handler.control_spaces[i].num_sub_spaces()
+                    ):
+                        self.control_pvd_list[i][j] << self.form_handler.controls[
+                            i
+                        ].sub(j, True), self.iteration
+                else:
+                    self.control_pvd_list[i] << self.form_handler.controls[
                         i
                     ], self.iteration
 
