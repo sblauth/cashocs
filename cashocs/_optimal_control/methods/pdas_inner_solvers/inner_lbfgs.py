@@ -41,7 +41,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 the corresponding optimal control problem to be solved
         """
 
-        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = UnconstrainedLineSearch(self)
         self.maximum_iterations = self.config.getint(

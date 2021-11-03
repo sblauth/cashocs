@@ -41,7 +41,7 @@ class NCG(ShapeOptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

@@ -42,7 +42,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
                 the optimization problem
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search_broken = False
         self.requires_remeshing = False

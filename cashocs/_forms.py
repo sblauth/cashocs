@@ -433,7 +433,7 @@ class ControlFormHandler(FormHandler):
             The corresponding optimal control problem
         """
 
-        FormHandler.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         # Initialize the attributes from the arguments
         self.controls = optimization_problem.controls
@@ -1007,7 +1007,7 @@ class ShapeFormHandler(FormHandler):
             The corresponding shape optimization problem
         """
 
-        FormHandler.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.has_cashocs_remesh_flag = optimization_problem.has_cashocs_remesh_flag
         self.temp_dir = optimization_problem.temp_dir

@@ -40,7 +40,7 @@ class LBFGS(ControlOptimizationAlgorithm):
                 the optimization problem to be solved
         """
 
-        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

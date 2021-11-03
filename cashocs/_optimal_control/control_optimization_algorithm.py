@@ -54,7 +54,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                 the OptimalControlProblem class as defined through the user
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.gradient_problem = optimization_problem.gradient_problem
         self.gradients = optimization_problem.gradients

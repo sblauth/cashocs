@@ -121,8 +121,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 i.e., no scalar tracking terms are considered.
         """
 
-        OptimizationProblem.__init__(
-            self,
+        super().__init__(
             state_forms,
             bcs_list,
             cost_functional_form,

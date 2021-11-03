@@ -385,7 +385,7 @@ class HessianProblem(BaseHessianProblem):
                 of the Hessian).
         """
 
-        BaseHessianProblem.__init__(self, form_handler, gradient_problem)
+        super().__init__(form_handler, gradient_problem)
 
     def reduced_hessian_application(self, h, out):
         """Computes the application of the reduced Hessian on a direction.
@@ -592,7 +592,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
                 of the Hessian).
         """
 
-        BaseHessianProblem.__init__(self, form_handler, gradient_problem)
+        super().__init__(form_handler, gradient_problem)
 
         self.reduced_gradient = [
             fenics.Function(self.form_handler.control_spaces[j])

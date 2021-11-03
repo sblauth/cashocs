@@ -82,7 +82,7 @@ def summation(x):
 
     if len(x) == 0:
         y = fenics.Constant(0.0)
-        warning("Empty list handed to summ, returning 0.")
+        warning("Empty list handed to summation, returning 0.")
     else:
         y = x[0]
 
@@ -171,37 +171,63 @@ class NamedMeasure(Measure):
         scheme=None,
         rule=None,
     ):
-        if isinstance(subdomain_id, int):
+        if subdomain_id is not None:
+            if not isinstance(subdomain_id, (list, tuple)):
+                subdomain_id = [subdomain_id]
+
+            measure_list = []
+
+            for id in subdomain_id:
+
+                if isinstance(id, int):
+                    meas = super().__call__(
+                        subdomain_id=id,
+                        metadata=metadata,
+                        domain=domain,
+                        subdomain_data=subdomain_data,
+                        degree=degree,
+                        scheme=scheme,
+                        rule=rule,
+                    )
+                    measure_list.append(meas)
+                elif isinstance(id, str):
+                    try:
+                        if (
+                            id in self.physical_groups["dx"].keys()
+                            and self._integral_type == "cell"
+                        ):
+                            integer_id = self.physical_groups["dx"][id]
+                        elif id in self.physical_groups[
+                            "ds"
+                        ].keys() and self._integral_type in [
+                            "exterior_facet",
+                            "interior_facet",
+                        ]:
+                            integer_id = self.physical_groups["ds"][id]
+                        else:
+                            raise InputError(
+                                "cashocs.geometry.NamedMeasure", "subdomain_id"
+                            )
+                    except:
+                        raise InputError(
+                            "cashocs.geometry.NamedMeasure", "subdomain_id"
+                        )
+
+                    measure_list.append(
+                        super().__call__(
+                            subdomain_id=integer_id,
+                            metadata=metadata,
+                            domain=domain,
+                            subdomain_data=subdomain_data,
+                            degree=degree,
+                            scheme=scheme,
+                            rule=rule,
+                        )
+                    )
+            return summation(measure_list)
+        else:
             return super().__call__(
                 subdomain_id=subdomain_id,
-                metadata=metadata,
-                domain=domain,
-                subdomain_data=subdomain_data,
-                degree=degree,
-                scheme=scheme,
-                rule=rule,
-            )
-        elif isinstance(subdomain_id, str):
-            try:
-                if (
-                    subdomain_id in self.physical_groups["dx"].keys()
-                    and self._integral_type == "cell"
-                ):
-                    integer_id = self.physical_groups["dx"][subdomain_id]
-                elif subdomain_id in self.physical_groups[
-                    "ds"
-                ].keys() and self._integral_type in [
-                    "exterior_facet",
-                    "interior_facet",
-                ]:
-                    integer_id = self.physical_groups["ds"][subdomain_id]
-                else:
-                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
-            except:
-                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
-
-            return super().__call__(
-                subdomain_id=integer_id,
                 metadata=metadata,
                 domain=domain,
                 subdomain_data=subdomain_data,
@@ -241,7 +267,7 @@ class EmptyMeasure(Measure):
                 The underlying UFL measure.
         """
 
-        Measure.__init__(self, measure.integral_type())
+        super().__init__(measure.integral_type())
 
         self.measure = measure
 

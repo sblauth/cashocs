@@ -124,8 +124,7 @@ class OptimalControlProblem(OptimizationProblem):
         Examples how to use this class can be found in the :ref:`tutorial <tutorial_index>`.
         """
 
-        OptimizationProblem.__init__(
-            self,
+        super().__init__(
             state_forms,
             bcs_list,
             cost_functional_form,
