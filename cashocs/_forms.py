@@ -1027,6 +1027,9 @@ class ShapeFormHandler(FormHandler):
         self.use_distance_mu = self.config.getboolean(
             "ShapeGradient", "use_distance_mu", fallback=False
         )
+        self.update_inhomogeneous = self.config.getboolean(
+            "ShapeGradient", "update_inhomogeneous", fallback=False
+        )
 
         if deformation_space is None:
             self.deformation_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
@@ -1522,6 +1525,12 @@ class ShapeFormHandler(FormHandler):
         """
 
         self.__compute_mu_elas()
+        if self.update_inhomogeneous:
+            self.volumes.vector()[:] = fenics.project(
+                fenics.CellVolume(self.mesh), self.DG0
+            ).vector()[:]
+            vol_max = np.max(np.abs(self.volumes.vector()[:]))
+            self.volumes.vector()[:] /= vol_max
 
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()

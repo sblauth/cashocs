@@ -507,6 +507,11 @@ more details on this approach, we refer to the paper `Blauth, Leithäuser, and P
 Model Hierarchy for the Shape Optimization of a Microchannel Cooling System
 <https://doi.org/10.1002/zamm.202000166>`_.
 
+Moreover, the parameter ::
+
+    update_inhomogeneous = False
+
+can be used to update the local mesh size after each mesh deformation, in case this is ``True``, so that elements which become smaller also obtain a higher stiffness and vice versa. The default is ``False``.
 
 There is also a different possibility to define the stiffness parameter :math:`\mu`
 using CASHOCS, namely to define :math:`\mu` in terms of how close a point of the
@@ -1046,6 +1051,10 @@ in the following.
     * - inhomogeneous
       - ``False``
       - if ``True``, uses inhomogeneous elasticity equations, weighted by the local mesh size
+    * - update_inhomogeneous
+      - ``False``
+      - if ``True`` and ``inhomogeneous=True``, then the weighting with the local mesh size is updated as the mesh is deformed.
+      
     * - use_distance_mu
       - ``False``
       - if ``True``, the value of the second Lamé parameter is computed via the distance to the boundary

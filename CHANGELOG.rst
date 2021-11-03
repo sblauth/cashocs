@@ -31,6 +31,8 @@ creating Dirichlet boundary conditions (e.g. ``cashocs.create_dirichlet_bcs(V, C
 
     * ``p_laplacian_stabilization`` is a float parameter, which acts as stabilization term for the p-Laplacian. This should be positive and small (e.g. 1e-3).
 
+    * ``update_inhomogeneous`` is a boolean parameter, which allows to update the cell volume when using ``inhomogeneous=True`` in the ShapeGradient section. This makes small elements have a higher stiffness and updates this over the course of the optimization. Default is ``False``
+
 1.4.0 (September 3, 2021)
 -------------------------
 
