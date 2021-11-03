@@ -82,37 +82,6 @@ def test_multiplication():
     assert np.allclose(b, b_exact)
 
 
-def test_empty_measure():
-    trial = fenics.TrialFunction(V)
-    test = fenics.TestFunction(V)
-    fun = fenics.Function(V)
-    fun.vector()[:] = rng.rand(V.dim())
-
-    d1 = cashocs.utils.EmptyMeasure(dx)
-    d2 = cashocs.utils.EmptyMeasure(ds)
-
-    a = trial * test * d1 + trial * test * d2
-    L = fun * test * d1 + fun * test * d2
-    F = fun * d1 + fun * d2
-
-    A = fenics.assemble(a)
-    b = fenics.assemble(L)
-    c = fenics.assemble(F)
-
-    assert np.max(np.abs(A.array())) == 0.0
-    assert np.max(np.abs(b[:])) == 0.0
-    assert c == 0.0
-
-
-def test_create_measure():
-    meas = cashocs.utils.generate_measure([1, 2, 3], ds)
-    test = ds(1) + ds(2) + ds(3)
-
-    assert abs(fenics.assemble(1 * meas) - 3) < 1e-14
-    for i in range(3):
-        assert meas._measures[i] == test._measures[i]
-
-
 def test_load_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config = cashocs.load_config(dir_path + "/test_config.ini")
@@ -194,6 +163,24 @@ def test_create_named_bcs():
     bcs_mixed = cashocs.create_dirichlet_bcs(
         V_, fenics.Constant(0.0), boundaries, ["inlet", 2, "outlet"]
     )
+
+    fun1 = fenics.Function(V_)
+    fun1.vector()[:] = rng.rand(V_.dim())
+
+    fun2 = fenics.Function(V_)
+    fun2.vector()[:] = fun1.vector()[:]
+
+    fun3 = fenics.Function(V_)
+    fun3.vector()[:] = fun1.vector()[:]
+
+    [bc.apply(fun1.vector()) for bc in bcs_int]
+    [bc.apply(fun2.vector()) for bc in bcs_str]
+    [bc.apply(fun3.vector()) for bc in bcs_mixed]
+
+    for i in range(len(bcs_str)):
+        assert np.max(np.abs(fun1.vector()[:] - fun2.vector()[:])) <= 1e-14
+        assert np.max(np.abs(fun1.vector()[:] - fun3.vector()[:])) <= 1e-14
+        assert np.max(np.abs(fun2.vector()[:] - fun3.vector()[:])) <= 1e-14
 
     with pytest.raises(InputError) as e_info:
         cashocs.create_dirichlet_bcs(V_, fenics.Constant(0.0), boundaries, "fantasy")
