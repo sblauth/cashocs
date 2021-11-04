@@ -14,8 +14,7 @@ of the maintenance releases, please take a look at
 
 * Added support for using the p-Laplacian to compute the shape gradient. 
 
-* cashocs now also imports Gmsh Physical Group information when it is given by strings, which can be used in integration measures (e.g., ``dx('part1')`` or ``ds('inlet')``, or for
-creating Dirichlet boundary conditions (e.g. ``cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, 'dirichlet_boundary')``).
+* cashocs now also imports Gmsh Physical Group information when it is given by strings, which can be used in integration measures (e.g., ``dx('part1')`` or ``ds('inlet')``, or for creating Dirichlet boundary conditions (e.g. ``cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, 'dirichlet_boundary')``).
 
 * The nonlinear solver (Newton's method) got an additional ``inexact`` parameter, which allows users to use an inexact Newton's method with iterative solvers. Additionally, users can specify their own Jacobians to be used in Newton's method with the parameter ``dF``.
 

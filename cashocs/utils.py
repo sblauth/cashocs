@@ -994,3 +994,102 @@ def _suffix_function(function, post_function):
         return temp
 
     return run
+
+
+def _max(a, b):
+    return (a + b + abs(a - b)) / fenics.Constant(2.0)
+
+
+def _min(a, b):
+    return (a + b - abs(a - b)) / fenics.Constant(2.0)
+
+
+def moreau_yosida_regularization(
+    term,
+    gamma,
+    measure,
+    lower_threshold=None,
+    upper_treshold=None,
+    shift_lower=None,
+    shift_upper=None,
+):
+    """Implements a Moreau-Yosida regularization of an inequality constraint
+
+    The general form of the inequality is of the form ::
+
+        lower_threshold <= term <= upper_threshold
+
+    which is defined over the region specified in ``measure``.
+
+    In case ``lower_threshold`` or ``upper_threshold`` are ``None``, they are set to
+    :math:`-\infty` and :math:`\infty`, respectively.
+
+    Parameters
+    ----------
+    term : ufl.core.expr.Expr
+        The term inside the inequality constraint
+    gamma : float
+        The weighting factor of the regularization
+    measure : ufl.measure.Measure
+        The measure over which the inequality constraint is defined
+    lower_threshold : float or dolfin.function.function.Function or None, optional
+        The lower threshold for the inequality constraint. In case this is ``None``, the
+        lower bound is set to :math:`-\infty`. The default is ``None``
+    upper_treshold : float or dolfin.function.function.Function or None, optional
+        The upper threshold for the inequality constraint. In case this is ``None``, the
+        upper bound is set to :math:`\infty`. The default is ``None``
+    shift_lower : float or dolfin.function.function.Function or None:
+        A shift function for the lower bound of the Moreau-Yosida regularization. Should be non-positive.
+        In case this is ``None``, it is set to 0. Default is ``None``.
+    shift_upper
+        A shift function for the upper bound of the Moreau-Yosida regularization. Should be non-negative.
+        In case this is ``None``, it is set to 0. Default is ``None``.
+
+    Returns
+    -------
+     : ufl.form.Form
+        The ufl form of the Moreau-Yosida regularization, to be used in the cost functional.
+    """
+    if lower_threshold is None and upper_treshold is None:
+        raise InputError(
+            "cashocs.utils.moreau_yosida_regularization",
+            "upper_threshold, lower_threshold",
+            "At least one of the threshold parameters has to be defined.",
+        )
+
+    if shift_lower is None:
+        shift_lower = fenics.Constant(0.0)
+    if shift_upper is None:
+        shift_upper = fenics.Constant(0.0)
+
+    if lower_threshold is not None:
+        reg_lower = (
+            fenics.Constant(1 / (2 * gamma))
+            * pow(
+                _min(
+                    shift_lower + fenics.Constant(gamma) * (term - lower_threshold),
+                    fenics.Constant(0.0),
+                ),
+                2,
+            )
+            * measure
+        )
+    if upper_treshold is not None:
+        reg_upper = (
+            fenics.Constant(1 / (2 * gamma))
+            * pow(
+                _max(
+                    shift_upper + fenics.Constant(gamma) * (term - upper_treshold),
+                    fenics.Constant(0.0),
+                ),
+                2,
+            )
+            * measure
+        )
+
+    if upper_treshold is not None and lower_threshold is not None:
+        return reg_lower + reg_upper
+    elif upper_treshold is None and lower_threshold is not None:
+        return reg_lower
+    elif upper_treshold is not None and lower_threshold is None:
+        return reg_upper

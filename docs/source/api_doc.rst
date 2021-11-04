@@ -93,7 +93,7 @@ load_config
 .. autofunction:: cashocs.load_config
 
 create_dirichlet_bcs
-***************
+********************
 .. autofunction:: cashocs.create_dirichlet_bcs
 
 
@@ -101,6 +101,10 @@ newton_solve
 ************
 .. autofunction:: cashocs.newton_solve
 
+
+moreau_yosida_regularization
+****************************
+.. autofunction:: cashocs.moreau_yosida_regularization
 
 set_log_level
 *************
