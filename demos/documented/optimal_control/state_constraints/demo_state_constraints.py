@@ -49,10 +49,8 @@ gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
 for gamma in gammas:
 
-    J = (
-        Constant(0.5) * (y - y_d) * (y - y_d) * dx
-        + Constant(0.5 * alpha) * u * u * dx
-        + Constant(1 / (2 * gamma)) * pow(Max(0, Constant(gamma) * (y - y_bar)), 2) * dx
+    J = J_init + cashocs.moreau_yosida_regularization(
+        y, gamma, dx, upper_treshold=y_bar
     )
 
     ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)

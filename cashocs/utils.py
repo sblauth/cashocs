@@ -997,10 +997,40 @@ def _suffix_function(function, post_function):
 
 
 def _max(a, b):
+    """Computes the maximum of ``a`` and ``b``
+
+    Parameters
+    ----------
+    a : float or dolfin.function.function.Function
+        The first parameter
+    b : float or dolfin.function.function.Function
+        The second parameter
+
+    Returns
+    -------
+     : ufl.core.expr.Expr
+        The maximum of ``a`` and ``b``
+
+    """
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
 def _min(a, b):
+    """Computes the minimum of ``a`` and ``b``
+
+    Parameters
+    ----------
+    a : float or dolfin.function.function.Function
+        The first parameter
+    b : float or dolfin.function.function.Function
+        The second parameter
+
+    Returns
+    -------
+     : ufl.core.expr.Expr
+        The minimum of ``a`` and ``b``
+
+    """
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
