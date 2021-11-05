@@ -21,3 +21,4 @@
 
 from .constraints import EqualityConstraint, InequalityConstraint
 from .control_solvers import AugmentedLagrangianOptimalControlProblem
+from .shape_solvers import AugmentedLagrangianShapeOptimizationProblem

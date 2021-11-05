@@ -63,45 +63,23 @@ class AugmentedLagrangianOptimalControlProblem(AugmentedLagrangianProblem):
         self.control_constraints = control_constraints
 
     def solve(self, tol=1e-2, max_iter=10):
-        self.iterations = 0
-        while True:
-            self.iterations += 1
+        super().solve(tol=tol, max_iter=max_iter)
 
-            debug(f"{self.mu = }")
-            debug(f"{self.lmbd = }")
-
-            self._update_cost_functional()
-
-            ocp = OptimalControlProblem(
-                self.state_forms,
-                self.bcs_list,
-                self.cost_functional_form,
-                self.states,
-                self.controls,
-                self.adjoints,
-                config=self.config,
-                riesz_scalar_products=self.riesz_scalar_products,
-                control_constraints=self.control_constraints,
-                initial_guess=self.initial_guess,
-                ksp_options=self.ksp_options,
-                adjoint_ksp_options=self.adjoint_ksp_options,
-                desired_weights=self.desired_weights,
-                scalar_tracking_forms=self.scalar_tracking_forms,
-            )
-            ocp.solve(rtol=tol, atol=tol / 10.0)
-
-            self._update_lagrange_multiplier_estimates()
-
-            self.constraint_violation_prev = self.constraint_violation
-            self.constraint_violation = self.total_constraint_violation()
-
-            if self.constraint_violation > self.gamma * self.constraint_violation_prev:
-                self.mu *= self.beta
-
-            if self.constraint_violation <= tol / 10.0:
-                print("Converged successfully.")
-                break
-
-            if self.iterations >= max_iter:
-                print("Augmented Lagrangian did not converge")
-                break
+    def _solve_inner_problem(self, tol=1e-2):
+        ocp = OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form,
+            self.states,
+            self.controls,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            control_constraints=self.control_constraints,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
+            scalar_tracking_forms=self.scalar_tracking_forms,
+        )
+        ocp.solve(rtol=tol, atol=tol / 10.0)

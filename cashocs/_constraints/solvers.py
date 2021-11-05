@@ -16,8 +16,11 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 
+from .._loggers import debug
 from .constraints import EqualityConstraint, InequalityConstraint
+from ..utils import _max
 import fenics
+import numpy as np
 
 
 class ConstrainedOptimizationProblem:
@@ -81,6 +84,17 @@ class ConstrainedOptimizationProblem:
         else:
             self.lmbd = [0.0] * self.constraint_dim
 
+        for constraint in self.constraints:
+            if constraint.is_pointwise_constraint:
+                mesh = constraint.measure.ufl_domain().ufl_cargo()
+                self.CG = fenics.FunctionSpace(mesh, "CG", 1)
+                break
+
+        for i, constraint in enumerate(self.constraints):
+            if constraint.is_pointwise_constraint:
+                constraint.multiplier.vector()[:] = self.lmbd[i]
+                self.lmbd[i] = constraint.multiplier
+
         self.iterations = 0
         self.constraint_violation = 0.0
         self.constraint_violation_prev = 0.0
@@ -91,9 +105,12 @@ class ConstrainedOptimizationProblem:
     def total_constraint_violation(self):
         s = 0.0
         for constraint in self.constraints:
-            s += constraint.constraint_violation()
+            s += pow(constraint.constraint_violation(), 2)
 
-        return s
+        return np.sqrt(s)
+
+    def _solve_inner_problem(self, tol=1e-2):
+        pass
 
 
 class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
@@ -134,24 +151,37 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
         self.beta = 10.0
 
     def _update_cost_functional(self):
+        has_scalar_tracking_terms = False
         for i, constraint in enumerate(self.constraints):
-            if constraint.is_integral_constraint:
-                self.cost_functional_form = self.cost_functional_form_initial + [
-                    fenics.Constant(self.lmbd[i]) * constraint.linear_term
-                ]
-                constraint.quadratic_term["weight"] = self.mu
-                if self.scalar_tracking_forms_initial is not None:
-                    self.scalar_tracking_forms = self.scalar_tracking_forms_initial + [
-                        constraint.quadratic_term
+            if isinstance(constraint, EqualityConstraint):
+                if constraint.is_integral_constraint:
+                    has_scalar_tracking_terms = True
+                    self.cost_functional_form = self.cost_functional_form_initial + [
+                        fenics.Constant(self.lmbd[i]) * constraint.linear_term
                     ]
-                else:
-                    self.scalar_tracking_forms = [constraint.quadratic_term]
+                    constraint.quadratic_term["weight"] = self.mu
+                    if self.scalar_tracking_forms_initial is not None:
+                        self.scalar_tracking_forms = (
+                            self.scalar_tracking_forms_initial
+                            + [constraint.quadratic_term]
+                        )
+                    else:
+                        self.scalar_tracking_forms = [constraint.quadratic_term]
 
-            elif constraint.is_pointwise_constraint:
-                self.cost_functional_form = self.cost_functional_form_initial + [
-                    fenics.Constant(self.lmbd[i]) * constraint.linear_term,
-                    fenics.Constant(self.mu) * constraint.quadratic_term,
-                ]
+                elif constraint.is_pointwise_constraint:
+                    self.cost_functional_form = self.cost_functional_form_initial + [
+                        constraint.linear_term,
+                        fenics.Constant(self.mu) * constraint.quadratic_term,
+                    ]
+
+            # elif isinstance(constraint, InequalityConstraint):
+            #     if constraint.is_integral_constraint:
+            #         self.cost_functional_form = self.cost_functional_form_initial + [
+            #             fenics.Constant(1 / (2 * self.mu)) * pow(, 2)
+            #         ]
+
+            if not has_scalar_tracking_terms:
+                self.scalar_tracking_forms = self.scalar_tracking_forms_initial
 
     def _update_lagrange_multiplier_estimates(self):
         for i in range(self.constraint_dim):
@@ -161,12 +191,47 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                         fenics.assemble(self.constraints[i].variable_function)
                         - self.constraints[i].target
                     )
+                elif self.constraints[i].is_pointwise_constraint:
+                    self.lmbd[i].vector()[:] += (
+                        self.mu
+                        * fenics.project(
+                            self.constraints[i].variable_function
+                            - self.constraints[i].target,
+                            self.CG,
+                        ).vector()[:]
+                    )
+
             elif isinstance(self.constraints[i], InequalityConstraint):
                 if self.constraints[i].is_integral_constraint:
-                    pass
+                    self.lmbd[i] = 0.0
 
     def solve(self, tol=1e-2, max_iter=10):
-        pass
+        self.iterations = 0
+        while True:
+            self.iterations += 1
+
+            debug(f"{self.mu = }")
+            debug(f"{self.lmbd = }")
+
+            self._update_cost_functional()
+
+            self._solve_inner_problem(tol=tol)
+
+            self._update_lagrange_multiplier_estimates()
+
+            self.constraint_violation_prev = self.constraint_violation
+            self.constraint_violation = self.total_constraint_violation()
+
+            if self.constraint_violation > self.gamma * self.constraint_violation_prev:
+                self.mu *= self.beta
+
+            if self.constraint_violation <= tol / 10.0:
+                print("Converged successfully.")
+                break
+
+            if self.iterations >= max_iter:
+                print("Augmented Lagrangian did not converge")
+                break
 
 
 # class LagrangianProblem(ConstrainedOptimizationProblem):
