@@ -21,6 +21,9 @@ class Constraint:
         else:
             self.is_pointwise_constraint = True
 
+        self.linear_term = None
+        self.quadratic_term = None
+
     def constraint_violation(self):
         pass
 
@@ -39,7 +42,9 @@ class EqualityConstraint(Constraint):
             }
         elif self.is_pointwise_constraint:
             self.linear_term = variable_function * measure
-            self.quadratic_term = pow(variable_function - target, 2) * measure
+            self.quadratic_term = (
+                fenics.Constant(0.5) * pow(variable_function - target, 2) * measure
+            )
 
     def constraint_violation(self):
         if self.is_integral_constraint:

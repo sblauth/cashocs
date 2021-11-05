@@ -14,10 +14,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
-
-"""Module for treatment of additional equality or inequality constraints
-
-"""
-
-from .constraints import EqualityConstraint, InequalityConstraint
-from .control_solvers import AugmentedLagrangianOptimalControlProblem
