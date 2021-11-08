@@ -18,7 +18,7 @@
 
 from .._loggers import debug
 from .constraints import EqualityConstraint, InequalityConstraint
-from ..utils import _max
+from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 import fenics
 import numpy as np
 
@@ -174,14 +174,34 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
 
-            # elif isinstance(constraint, InequalityConstraint):
-            #     if constraint.is_integral_constraint:
-            #         self.cost_functional_form = self.cost_functional_form_initial + [
-            #             fenics.Constant(1 / (2 * self.mu)) * pow(, 2)
-            #         ]
+            elif isinstance(constraint, InequalityConstraint):
+                if constraint.is_integral_constraint:
+                    pass
+
+                elif constraint.is_pointwise_constraint:
+                    constraint.weight.vector()[:] = self.mu
+                    self.cost_functional_form = (
+                        self.cost_functional_form_initial
+                        + constraint.cost_functional_terms
+                    )
 
             if not has_scalar_tracking_terms:
                 self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+
+    def project_pointwise_multiplier(self, project_terms, measure, index):
+        if isinstance(project_terms, list):
+            project_term = summation(project_terms)
+        else:
+            project_term = project_terms
+
+        trial = fenics.TrialFunction(self.CG)
+        test = fenics.TestFunction(self.CG)
+
+        a = trial * test * measure
+        L = project_term * test * measure
+
+        A, b = _assemble_petsc_system(a, L)
+        _solve_linear_problem(A=A, b=b, x=self.lmbd[index].vector().vec())
 
     def _update_lagrange_multiplier_estimates(self):
         for i in range(self.constraint_dim):
@@ -192,18 +212,49 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                         - self.constraints[i].target
                     )
                 elif self.constraints[i].is_pointwise_constraint:
-                    self.lmbd[i].vector()[:] += (
-                        self.mu
-                        * fenics.project(
-                            self.constraints[i].variable_function
-                            - self.constraints[i].target,
-                            self.CG,
-                        ).vector()[:]
+                    project_term = self.lmbd[i] + self.mu * (
+                        self.constraints[i].variable_function
+                        - self.constraints[i].target
+                    )
+                    self.project_pointwise_multiplier(
+                        project_term, self.constraints[i].measure, i
                     )
 
             elif isinstance(self.constraints[i], InequalityConstraint):
                 if self.constraints[i].is_integral_constraint:
                     self.lmbd[i] = 0.0
+
+                elif self.constraints[i].is_pointwise_constraint:
+                    project_terms = []
+                    if self.constraints[i].upper_bound is not None:
+                        project_terms.append(
+                            _max(
+                                self.lmbd[i]
+                                + self.mu
+                                * (
+                                    self.constraints[i].variable_function
+                                    - self.constraints[i].upper_bound
+                                ),
+                                fenics.Constant(0.0),
+                            )
+                        )
+
+                    if self.constraints[i].lower_bound is not None:
+                        project_terms.append(
+                            _min(
+                                self.lmbd[i]
+                                + self.mu
+                                * (
+                                    self.constraints[i].variable_function
+                                    - self.constraints[i].lower_bound
+                                ),
+                                fenics.Constant(0.0),
+                            )
+                        )
+
+                    self.project_pointwise_multiplier(
+                        project_terms, self.constraints[i].measure, i
+                    )
 
     def solve(self, tol=1e-2, max_iter=10):
         self.iterations = 0

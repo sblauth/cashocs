@@ -7,6 +7,7 @@ Created on 05/11/2021, 09.40
 import numpy as np
 import fenics
 
+from ..utils import _max, _min
 from .._exceptions import InputError
 
 
@@ -71,26 +72,82 @@ class InequalityConstraint(Constraint):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
-        self.is_twosided = False
-        self.is_onesided = False
-        if self.lower_bound is not None and self.upper_bound is not None:
-            self.is_twosided = True
-
-        elif self.lower_bound is not None and self.upper_bound is None:
-            self.is_onesided = True
-            self.upper_bound = -self.lower_bound
-            self.lower_bound = None
-
-        elif self.upper_bound is not None and self.lower_bound is None:
-            self.is_onesided = True
-
-        else:
+        if self.lower_bound is None and self.upper_bound is None:
             raise InputError(
                 "cashocs._constraints.constraints.InequalityConstraint",
                 "lower_bound and upper_bound",
-                "At least one of the bounds has to be given.",
+                "You have to specify at least one bound for the inequality constraint.",
             )
 
         if self.is_integral_constraint:
-            if self.is_onesided:
-                pass
+            pass
+
+        elif self.is_pointwise_constraint:
+            mesh = measure.ufl_domain().ufl_cargo()
+            multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
+            self.multiplier = fenics.Function(multiplier_space)
+            weight_space = fenics.FunctionSpace(mesh, "R", 0)
+            self.weight = fenics.Function(weight_space)
+
+            self.cost_functional_terms = []
+            if self.upper_bound is not None:
+                self.cost_functional_terms.append(
+                    fenics.Constant(1 / 2)
+                    / self.weight
+                    * pow(
+                        _max(
+                            fenics.Constant(0.0),
+                            self.multiplier
+                            + self.weight * (self.variable_function - self.upper_bound),
+                        ),
+                        2,
+                    )
+                    * self.measure
+                )
+
+            if self.lower_bound is not None:
+                self.cost_functional_terms.append(
+                    fenics.Constant(1 / 2)
+                    / self.weight
+                    * pow(
+                        _min(
+                            fenics.Constant(0.0),
+                            self.multiplier
+                            + self.weight * (self.variable_function - self.lower_bound),
+                        ),
+                        2,
+                    )
+                    * self.measure
+                )
+
+    def constraint_violation(self):
+        if self.is_integral_constraint:
+            pass
+        elif self.is_pointwise_constraint:
+            violation = 0.0
+
+            if self.upper_bound is not None:
+                violation += fenics.assemble(
+                    pow(
+                        _max(
+                            self.variable_function - self.upper_bound,
+                            fenics.Constant(0.0),
+                        ),
+                        2,
+                    )
+                    * self.measure
+                )
+
+            if self.lower_bound is not None:
+                violation += fenics.assemble(
+                    pow(
+                        _min(
+                            self.variable_function - self.lower_bound,
+                            fenics.Constant(0.0),
+                        ),
+                        2,
+                    )
+                    * self.measure
+                )
+
+            return np.sqrt(violation)
