@@ -78,5 +78,6 @@ class AugmentedLagrangianShapeOptimizationProblem(AugmentedLagrangianProblem):
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
             scalar_tracking_forms=self.scalar_tracking_forms,
+            min_max_terms=self.min_max_terms,
         )
         sop.solve(rtol=tol, atol=tol / 10.0)

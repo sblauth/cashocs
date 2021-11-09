@@ -152,41 +152,46 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
 
     def _update_cost_functional(self):
         has_scalar_tracking_terms = False
+        has_min_max_terms = False
+
+        self.cost_functional_form = self.cost_functional_form_initial
+        if self.scalar_tracking_forms_initial is not None:
+            self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+        else:
+            self.scalar_tracking_forms = []
+        self.min_max_terms = []
+
         for i, constraint in enumerate(self.constraints):
             if isinstance(constraint, EqualityConstraint):
                 if constraint.is_integral_constraint:
                     has_scalar_tracking_terms = True
-                    self.cost_functional_form = self.cost_functional_form_initial + [
+                    self.cost_functional_form += [
                         fenics.Constant(self.lmbd[i]) * constraint.linear_term
                     ]
                     constraint.quadratic_term["weight"] = self.mu
-                    if self.scalar_tracking_forms_initial is not None:
-                        self.scalar_tracking_forms = (
-                            self.scalar_tracking_forms_initial
-                            + [constraint.quadratic_term]
-                        )
-                    else:
-                        self.scalar_tracking_forms = [constraint.quadratic_term]
+                    self.scalar_tracking_forms += [constraint.quadratic_term]
 
                 elif constraint.is_pointwise_constraint:
-                    self.cost_functional_form = self.cost_functional_form_initial + [
+                    self.cost_functional_form += [
                         constraint.linear_term,
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
 
             elif isinstance(constraint, InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    pass
+                    has_min_max_terms = True
+                    constraint.min_max_term["mu"] = self.mu
+                    constraint.min_max_term["lambda"] = self.lmbd[i]
+                    self.min_max_terms += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector()[:] = self.mu
-                    self.cost_functional_form = (
-                        self.cost_functional_form_initial
-                        + constraint.cost_functional_terms
-                    )
+                    self.cost_functional_form += constraint.cost_functional_terms
 
             if not has_scalar_tracking_terms:
                 self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+            if not has_min_max_terms:
+                self.min_max_terms = None
 
     def project_pointwise_multiplier(self, project_terms, measure, index):
         if isinstance(project_terms, list):
@@ -222,7 +227,31 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
 
             elif isinstance(self.constraints[i], InequalityConstraint):
                 if self.constraints[i].is_integral_constraint:
-                    self.lmbd[i] = 0.0
+                    lower_term = 0.0
+                    upper_term = 0.0
+
+                    min_max_integral = fenics.assemble(
+                        self.constraints[i].min_max_term["integrand"]
+                    )
+
+                    if self.constraints[i].lower_bound is not None:
+                        lower_term = np.minimum(
+                            self.lmbd[i]
+                            + self.mu
+                            * (min_max_integral - self.constraints[i].lower_bound),
+                            0.0,
+                        )
+
+                    if self.constraints[i].upper_bound is not None:
+                        upper_term = np.maximum(
+                            self.lmbd[i]
+                            + self.mu
+                            * (min_max_integral - self.constraints[i].upper_bound),
+                            0.0,
+                        )
+
+                    self.lmbd[i] = lower_term + upper_term
+                    self.constraints[i].min_max_term["lambda"] = self.lmbd[i]
 
                 elif self.constraints[i].is_pointwise_constraint:
                     project_terms = []

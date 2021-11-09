@@ -69,6 +69,7 @@ class OptimizationProblem:
         adjoint_ksp_options=None,
         desired_weights=None,
         scalar_tracking_forms=None,
+        min_max_terms=None,
     ):
         r"""Initializes the optimization problem.
 
@@ -354,6 +355,27 @@ class OptimizationProblem:
                     "Type of scalar_tracking_forms is wrong.",
                 )
 
+        ### min_max_terms
+        self.use_min_max_terms = False
+
+        if min_max_terms is None:
+            self.min_max_terms = min_max_terms
+        else:
+            try:
+                if isinstance(min_max_terms, list):
+                    self.min_max_terms = min_max_terms
+                    self.use_min_max_terms = True
+
+                elif isinstance(min_max_terms, dict):
+                    self.min_max_terms = [min_max_terms]
+                    self.use_min_max_terms = True
+            except:
+                raise InputError(
+                    "cashocs.optimization_problem.OptimizationProblem",
+                    "min_max_terms",
+                    "Type of scalar_tracking_forms is wrong.",
+                )
+
         if not len(self.bcs_list) == self.state_dim:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
@@ -441,7 +463,10 @@ class OptimizationProblem:
         self.adjoint_problem = None
 
         self.lagrangian = Lagrangian(
-            self.state_forms, self.cost_functional_form, self.scalar_tracking_forms
+            self.state_forms,
+            self.cost_functional_form,
+            self.scalar_tracking_forms,
+            self.min_max_terms,
         )
         self.form_handler = None
         self.has_custom_adjoint = False
@@ -771,7 +796,10 @@ class OptimizationProblem:
                     )
 
             self.lagrangian = Lagrangian(
-                self.state_forms, self.cost_functional_form, self.scalar_tracking_forms
+                self.state_forms,
+                self.cost_functional_form,
+                self.scalar_tracking_forms,
+                self.min_max_terms,
             )
 
         else:

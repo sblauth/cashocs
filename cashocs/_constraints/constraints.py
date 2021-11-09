@@ -80,7 +80,13 @@ class InequalityConstraint(Constraint):
             )
 
         if self.is_integral_constraint:
-            pass
+            self.min_max_term = {
+                "integrand": variable_function,
+                "lower_bound": lower_bound,
+                "upper_bound": upper_bound,
+                "mu": 1.0,
+                "lambda": 1.0,
+            }
 
         elif self.is_pointwise_constraint:
             mesh = measure.ufl_domain().ufl_cargo()
@@ -121,10 +127,21 @@ class InequalityConstraint(Constraint):
                 )
 
     def constraint_violation(self):
+        violation = 0.0
         if self.is_integral_constraint:
-            pass
+            min_max_integral = fenics.assemble(self.min_max_term["integrand"])
+
+            if self.upper_bound is not None:
+                violation += pow(
+                    np.maximum(min_max_integral - self.upper_bound, 0.0), 2
+                )
+
+            if self.lower_bound is not None:
+                violation += pow(
+                    np.minimum(min_max_integral - self.lower_bound, 0.0), 2
+                )
+
         elif self.is_pointwise_constraint:
-            violation = 0.0
 
             if self.upper_bound is not None:
                 violation += fenics.assemble(
@@ -150,4 +167,4 @@ class InequalityConstraint(Constraint):
                     * self.measure
                 )
 
-            return np.sqrt(violation)
+        return np.sqrt(violation)
