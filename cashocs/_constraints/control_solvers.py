@@ -83,4 +83,5 @@ class AugmentedLagrangianOptimalControlProblem(AugmentedLagrangianProblem):
             scalar_tracking_forms=self.scalar_tracking_forms,
             min_max_terms=self.min_max_terms,
         )
+        ocp.inject_pre_post_hook(self._pre_hook, self._post_hook)
         ocp.solve(rtol=tol, atol=tol / 10.0)

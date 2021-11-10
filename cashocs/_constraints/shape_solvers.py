@@ -80,4 +80,5 @@ class AugmentedLagrangianShapeOptimizationProblem(AugmentedLagrangianProblem):
             scalar_tracking_forms=self.scalar_tracking_forms,
             min_max_terms=self.min_max_terms,
         )
+        sop.inject_pre_post_hook(self._pre_hook, self._post_hook)
         sop.solve(rtol=tol, atol=tol / 10.0)

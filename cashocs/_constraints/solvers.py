@@ -112,6 +112,70 @@ class ConstrainedOptimizationProblem:
     def _solve_inner_problem(self, tol=1e-2):
         pass
 
+    def _pre_hook(self):
+        pass
+
+    def _post_hook(self):
+        pass
+
+    def inject_pre_hook(self, function):
+        """
+        Changes the a-priori hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        function : function
+            A custom function without arguments, which will be called before each solve
+            of the state system
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self._pre_hook = function
+
+    def inject_post_hook(self, function):
+        """
+        Changes the a-posteriori hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        function : function
+            A custom function without arguments, which will be called after the computation
+            of the gradient(s)
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self._post_hook = function
+
+    def inject_pre_post_hook(self, pre_function, post_function):
+        """
+        Changes the a-priori (pre) and a-posteriori (post) hook of the OptimizationProblem
+
+        Parameters
+        ----------
+        pre_function : function
+            A function without arguments, which is to be called before each solve of the
+            state system
+        post_function : function
+            A function without arguments, which is to be called after each computation of
+            the (shape) gradient
+
+        Returns
+        -------
+         : None
+
+        """
+
+        self.inject_pre_hook(pre_function)
+        self.inject_post_hook(post_function)
+
 
 class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
     def __init__(
