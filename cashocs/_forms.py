@@ -124,6 +124,8 @@ class FormHandler:
         self.use_min_max_terms = optimization_problem.use_min_max_terms
         self.min_max_forms = self.lagrangian.min_max_forms
 
+        self.cost_functional_shift = 0.0
+
         # Further initializations
         self.cost_functional_form = self.lagrangian.cost_functional_form
         self.state_forms = self.lagrangian.state_forms

@@ -123,4 +123,6 @@ class ReducedShapeCostFunctional:
                         )
                     )
 
+        val += self.form_handler.cost_functional_shift
+
         return val

@@ -84,4 +84,5 @@ class AugmentedLagrangianOptimalControlProblem(AugmentedLagrangianProblem):
             min_max_terms=self.min_max_terms,
         )
         ocp.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        ocp._OptimizationProblem__shift_cost_functional(self.cost_functional_shift)
         ocp.solve(rtol=tol, atol=tol / 10.0)

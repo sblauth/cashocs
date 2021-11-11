@@ -218,6 +218,8 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
         has_scalar_tracking_terms = False
         has_min_max_terms = False
 
+        self.cost_functional_shifts = []
+
         self.cost_functional_form = self.cost_functional_form_initial
         if self.scalar_tracking_forms_initial is not None:
             self.scalar_tracking_forms = self.scalar_tracking_forms_initial
@@ -232,6 +234,10 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                     self.cost_functional_form += [
                         fenics.Constant(self.lmbd[i]) * constraint.linear_term
                     ]
+                    self.cost_functional_shifts.append(
+                        -self.lmbd[i] * constraint.target
+                    )
+
                     constraint.quadratic_term["weight"] = self.mu
                     self.scalar_tracking_forms += [constraint.quadratic_term]
 
@@ -240,6 +246,13 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                         constraint.linear_term,
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
+                    self.cost_functional_shifts.append(
+                        -fenics.assemble(
+                            fenics.Constant(self.lmbd[i])
+                            * constraint.target
+                            * constraint.measure
+                        )
+                    )
 
             elif isinstance(constraint, InequalityConstraint):
                 if constraint.is_integral_constraint:
@@ -252,10 +265,12 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                     constraint.weight.vector()[:] = self.mu
                     self.cost_functional_form += constraint.cost_functional_terms
 
-            if not has_scalar_tracking_terms:
-                self.scalar_tracking_forms = self.scalar_tracking_forms_initial
-            if not has_min_max_terms:
-                self.min_max_terms = None
+        if not has_scalar_tracking_terms:
+            self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+        if not has_min_max_terms:
+            self.min_max_terms = None
+
+        self.cost_functional_shift = np.sum(self.cost_functional_shifts)
 
     def project_pointwise_multiplier(self, project_terms, measure, index):
         if isinstance(project_terms, list):

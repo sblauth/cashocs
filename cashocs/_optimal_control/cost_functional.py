@@ -126,4 +126,7 @@ class ReducedCostFunctional:
                             2,
                         )
                     )
+
+        val += self.form_handler.cost_functional_shift
+
         return val

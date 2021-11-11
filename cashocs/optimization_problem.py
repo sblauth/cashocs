@@ -948,3 +948,6 @@ class OptimizationProblem:
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
         self._check_for_custom_forms()
+
+    def __shift_cost_functional(self, shift=0.0):
+        self.form_handler.cost_functional_shift = shift
