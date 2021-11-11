@@ -393,18 +393,109 @@ class AugmentedLagrangianProblem(ConstrainedOptimizationProblem):
                 break
 
 
+class QuadraticPenaltyProblem(ConstrainedOptimizationProblem):
+    def __init__(
+        self,
+        state_forms,
+        bcs_list,
+        cost_functional_form,
+        states,
+        adjoints,
+        constraints,
+        config=None,
+        initial_guess=None,
+        ksp_options=None,
+        adjoint_ksp_options=None,
+        desired_weights=None,
+        scalar_tracking_forms=None,
+        mu_0=None,
+        lambda_0=None,
+    ):
+        super().__init__(
+            state_forms,
+            bcs_list,
+            cost_functional_form,
+            states,
+            adjoints,
+            constraints,
+            config=config,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+            scalar_tracking_forms=scalar_tracking_forms,
+            mu_0=mu_0,
+        )
+        # self.gamma = 0.25
+        self.beta = 10.0
+
+    def _update_cost_functional(self):
+        has_scalar_tracking_terms = False
+        has_min_max_terms = False
+
+        self.cost_functional_form = self.cost_functional_form_initial
+        if self.scalar_tracking_forms_initial is not None:
+            self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+        else:
+            self.scalar_tracking_forms = []
+        self.min_max_terms = []
+
+        for i, constraint in enumerate(self.constraints):
+            if isinstance(constraint, EqualityConstraint):
+                if constraint.is_integral_constraint:
+                    has_scalar_tracking_terms = True
+                    constraint.quadratic_term["weight"] = self.mu
+                    self.scalar_tracking_forms += [constraint.quadratic_term]
+
+                elif constraint.is_pointwise_constraint:
+                    self.cost_functional_form += [
+                        fenics.Constant(self.mu) * constraint.quadratic_term,
+                    ]
+
+            elif isinstance(constraint, InequalityConstraint):
+                if constraint.is_integral_constraint:
+                    has_min_max_terms = True
+                    constraint.min_max_term["mu"] = self.mu
+                    constraint.min_max_term["lambda"] = 0.0
+                    self.min_max_terms += [constraint.min_max_term]
+
+                elif constraint.is_pointwise_constraint:
+                    constraint.weight.vector()[:] = self.mu
+                    constraint.multiplier.vector()[:] = 0.0
+                    self.cost_functional_form += constraint.cost_functional_terms
+
+        if not has_scalar_tracking_terms:
+            self.scalar_tracking_forms = self.scalar_tracking_forms_initial
+        if not has_min_max_terms:
+            self.min_max_terms = None
+
+    def solve(self, tol=1e-2, max_iter=10):
+        self.iterations = 0
+        while True:
+            self.iterations += 1
+
+            debug(f"{self.mu = }")
+
+            self._update_cost_functional()
+
+            self._solve_inner_problem(tol=tol)
+
+            self.constraint_violation = self.total_constraint_violation()
+            self.mu *= self.beta
+
+            if self.constraint_violation <= tol / 10.0:
+                print("Converged successfully.")
+                break
+
+            if self.iterations >= max_iter:
+                print("Quadratic Penalty Method did not converge")
+                break
+
+
 # class LagrangianProblem(ConstrainedOptimizationProblem):
 #     def __init__(self, optimization_problem, constraints):
 #         super().__init__(optimization_problem, constraints)
 #         pass
-#
-#
-# class QuadraticPenaltyProblem(ConstrainedOptimizationProblem):
-#     def __init__(self, optimization_problem, constraints):
-#         super().__init__(optimization_problem, constraints)
-#         pass
-#
-#
 # class L1PenaltyProblem(ConstrainedOptimizationProblem):
 #     def __init__(self, optimization_problem, constraints):
 #         super().__init__(optimization_problem, constraints)
