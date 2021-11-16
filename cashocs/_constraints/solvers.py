@@ -409,7 +409,6 @@ class QuadraticPenaltyProblem(ConstrainedOptimizationProblem):
         desired_weights=None,
         scalar_tracking_forms=None,
         mu_0=None,
-        lambda_0=None,
     ):
         super().__init__(
             state_forms,
@@ -426,7 +425,6 @@ class QuadraticPenaltyProblem(ConstrainedOptimizationProblem):
             scalar_tracking_forms=scalar_tracking_forms,
             mu_0=mu_0,
         )
-        # self.gamma = 0.25
         self.beta = 10.0
 
     def _update_cost_functional(self):
@@ -496,6 +494,8 @@ class QuadraticPenaltyProblem(ConstrainedOptimizationProblem):
 #     def __init__(self, optimization_problem, constraints):
 #         super().__init__(optimization_problem, constraints)
 #         pass
+#
+#
 # class L1PenaltyProblem(ConstrainedOptimizationProblem):
 #     def __init__(self, optimization_problem, constraints):
 #         super().__init__(optimization_problem, constraints)
