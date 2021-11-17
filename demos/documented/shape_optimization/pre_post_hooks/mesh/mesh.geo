@@ -31,6 +31,7 @@ Line Loop(2) = {5,6,7,8};
 Plane Surface(1) = {1,2};
 
 
+
 Physical Surface(1) = {1};
 
 Physical Line(1) = {4};
@@ -44,7 +45,7 @@ Field[1].NNodesByEdge = 1000;
 Field[1].EdgesList = {5,6,7,8};
 Field[2] = Threshold;
 Field[2].IField = 1;
-Field[2].LcMin = lc/30;
+Field[2].LcMin = lc/25;
 Field[2].LcMax = lc;
 Field[2].DistMin = 0;
 Field[2].DistMax = 1.25;

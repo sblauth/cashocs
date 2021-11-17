@@ -20,6 +20,9 @@
 """
 
 import fenics
+import numpy as np
+
+from ..utils import _max, _min
 
 
 class ReducedShapeCostFunctional:
@@ -74,5 +77,52 @@ class ReducedShapeCostFunctional:
                         2,
                     )
                 )
+
+        if self.form_handler.use_min_max_terms:
+            for j in range(self.form_handler.no_min_max_terms):
+                min_max_integral_value = fenics.assemble(
+                    self.form_handler.min_max_integrands[j]
+                )
+                self.form_handler.min_max_integrand_values[j].vector()[
+                    :
+                ] = min_max_integral_value
+
+                if self.form_handler.min_max_lower_bounds[j] is not None:
+                    val += (
+                        1
+                        / (2 * self.form_handler.min_max_mu[j])
+                        * pow(
+                            np.minimum(
+                                0,
+                                self.form_handler.min_max_lambda[j]
+                                + self.form_handler.min_max_mu[j]
+                                * (
+                                    min_max_integral_value
+                                    - self.form_handler.min_max_lower_bounds[j]
+                                ),
+                            ),
+                            2,
+                        )
+                    )
+
+                if self.form_handler.min_max_upper_bounds[j] is not None:
+                    val += (
+                        1
+                        / (2 * self.form_handler.min_max_mu[j])
+                        * pow(
+                            np.maximum(
+                                0,
+                                self.form_handler.min_max_lambda[j]
+                                + self.form_handler.min_max_mu[j]
+                                * (
+                                    min_max_integral_value
+                                    - self.form_handler.min_max_upper_bounds[j]
+                                ),
+                            ),
+                            2,
+                        )
+                    )
+
+        val += self.form_handler.cost_functional_shift
 
         return val

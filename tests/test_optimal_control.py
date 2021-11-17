@@ -848,3 +848,35 @@ def test_hooks():
     assert np.max(np.abs(u.vector()[:] - (-1.0))) < 1e-15
 
     assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
+
+
+# def test_min_max_terms():
+#
+# min_max_term = {
+#     "integrand": u * u * dx,
+#     "lower_bound": None,
+#     "upper_bound": 1.0,
+#     "mu": 1.0,
+#     "lambda": 1.0,
+# }
+#
+#
+# config = cashocs.load_config(dir_path + "/config_ocp.ini")
+#
+# u.vector()[:] = 0.0
+# test_ocp = cashocs.OptimalControlProblem(
+#     F,
+#     bcs,
+#     J,
+#     y,
+#     u,
+#     p,
+#     config,
+#     min_max_terms=min_max_term,
+# )
+#
+# test_ocp.solve()
+#
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9

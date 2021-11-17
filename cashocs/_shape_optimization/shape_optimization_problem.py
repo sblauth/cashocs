@@ -71,6 +71,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         adjoint_ksp_options=None,
         desired_weights=None,
         scalar_tracking_forms=None,
+        min_max_terms=None,
     ):
         """This is used to generate all classes and functionalities. First ensures
         consistent input, afterwards, the solution algorithm is initialized.
@@ -133,6 +134,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             adjoint_ksp_options,
             desired_weights,
             scalar_tracking_forms,
+            min_max_terms,
         )
 
         ### Initialize the remeshing behavior, and a temp file

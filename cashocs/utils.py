@@ -809,6 +809,13 @@ def _parse_remesh():
     return cashocs_remesh_flag, temp_dir
 
 
+def enlist(arg):
+    if isinstance(arg, list):
+        return arg
+    else:
+        return [arg]
+
+
 def _check_for_config_list(string):
     """Checks, whether a given string is a valid representation of a list if integers
 

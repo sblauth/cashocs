@@ -68,6 +68,7 @@ class OptimalControlProblem(OptimizationProblem):
         adjoint_ksp_options=None,
         desired_weights=None,
         scalar_tracking_forms=None,
+        min_max_terms=None,
     ):
         r"""This is used to generate all classes and functionalities. First ensures
         consistent input, afterwards, the solution algorithm is initialized.
@@ -136,6 +137,7 @@ class OptimalControlProblem(OptimizationProblem):
             adjoint_ksp_options,
             desired_weights,
             scalar_tracking_forms,
+            min_max_terms,
         )
 
         try:

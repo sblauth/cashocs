@@ -50,10 +50,27 @@ bc_no_slip = cashocs.create_dirichlet_bcs(
 )
 bcs = [bc_in] + bc_no_slip
 
-J = Constant(1) * inner(grad(u), grad(u)) * dx
+J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
-sop.solve()
+vol_fun = Constant(1) * dx
+vol_init = assemble(vol_fun)
+vol_constraint = cashocs.EqualityConstraint(vol_fun, vol_init)
+
+x = SpatialCoordinate(mesh)
+bc_x_fun = Constant(1 / vol_init) * x[0] * dx
+bc_x_init = assemble(bc_x_fun)
+bc_x_constraint = cashocs.EqualityConstraint(bc_x_fun, bc_x_init)
+
+bc_y_fun = Constant(1 / vol_init) * x[1] * dx
+bc_y_init = assemble(bc_y_fun)
+bc_y_constraint = cashocs.EqualityConstraint(bc_y_fun, bc_y_init)
+
+constraints = [vol_constraint, bc_x_constraint, bc_y_constraint]
+
+problem = cashocs.AugmentedLagrangianShapeOptimizationProblem(
+    e, bcs, J, up, vq, boundaries, constraints, config, mu_0=1e4
+)
+problem.solve(tol=1e-3)
 
 
 ### Post Processing
