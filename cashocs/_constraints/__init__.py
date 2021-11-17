@@ -20,12 +20,7 @@
 """
 
 from .constraints import EqualityConstraint, InequalityConstraint
-
-from .control_solvers import (
-    AugmentedLagrangianOptimalControlProblem,
-    QuadraticPenaltyOptimalControlProblem,
-)
-from .shape_solvers import (
-    AugmentedLagrangianShapeOptimizationProblem,
-    QuadraticPenaltyShapeOptimizationProblem,
+from .constrained_problems import (
+    ConstrainedOptimalControlProblem,
+    ConstrainedShapeOptimizationProblem,
 )
