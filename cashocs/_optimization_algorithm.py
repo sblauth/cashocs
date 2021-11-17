@@ -22,12 +22,20 @@ ShapeOptimizationAlgorithm classes are based.
 
 """
 
+import abc
 import os
+import json
 from datetime import datetime
 from pathlib import Path
+import numpy as np
+
+import fenics
+
+from ._exceptions import NotConvergedError
+from ._loggers import error, info
 
 
-class OptimizationAlgorithm:
+class OptimizationAlgorithm(abc.ABC):
     """Abstract class representing all kinds of optimization algorithms."""
 
     def __init__(self, optimization_problem):
@@ -48,10 +56,16 @@ class OptimizationAlgorithm:
 
         self.cost_functional = optimization_problem.reduced_cost_functional
 
+        self.iteration = 0
         self.objective_value = 1.0
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
         self.stepsize = 1.0
+
+        self.require_control_constraints = False
+
+        self.requires_remeshing = False
+        self.remeshing_its = False
 
         self.converged = False
         self.converged_reason = 0
@@ -76,6 +90,26 @@ class OptimizationAlgorithm:
         self.save_pvd_gradient = self.config.getboolean(
             "Output", "save_pvd_gradient", fallback=False
         )
+
+        self.pvd_prefix = ""
+
+        self.output_dict = dict()
+        try:
+            self.output_dict["cost_function_value"] = self.temp_dict["output_dict"][
+                "cost_function_value"
+            ]
+            self.output_dict["gradient_norm"] = self.temp_dict["output_dict"][
+                "gradient_norm"
+            ]
+            self.output_dict["stepsize"] = self.temp_dict["output_dict"]["stepsize"]
+            self.output_dict["MeshQuality"] = self.temp_dict["output_dict"][
+                "MeshQuality"
+            ]
+        except (TypeError, KeyError, AttributeError):
+            self.output_dict["cost_function_value"] = []
+            self.output_dict["gradient_norm"] = []
+            self.output_dict["stepsize"] = []
+            self.output_dict["MeshQuality"] = []
 
         self.has_output = (
             self.save_txt
@@ -102,3 +136,229 @@ class OptimizationAlgorithm:
         if not os.path.isdir(self.result_dir):
             if self.has_output:
                 Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+
+    @abc.abstractmethod
+    def run(self):
+        pass
+
+    def generate_pvd_file(self, space, name, prefix=""):
+
+        if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
+            lst = []
+            for j in range(space.num_sub_spaces()):
+                lst.append(
+                    fenics.File(f"{self.result_dir}/pvd/{prefix}{name}_{j:d}.pvd")
+                )
+            return lst
+        else:
+            return fenics.File(f"{self.result_dir}/pvd/{prefix}{name}.pvd")
+
+    def print_results(self):
+        strs = []
+        strs.append(f"Iteration {self.iteration:4d} - ")
+        strs.append(f" Objective value:  {self.objective_value:.3e}")
+        self.output_dict["cost_function_value"].append(self.objective_value)
+
+        if not np.any(self.require_control_constraints):
+            if self.iteration == 0:
+                strs.append(
+                    f"    Gradient norm:  {self.gradient_norm_initial:.3e} (abs)"
+                )
+            else:
+                strs.append(f"    Gradient norm:  {self.relative_norm:.3e} (rel)")
+        else:
+            if self.iteration == 0:
+                strs.append(
+                    f"    Stationarity measure:  {self.gradient_norm_initial:.3e} (abs)"
+                )
+            else:
+                strs.append(
+                    f"    Stationarity measure:  {self.relative_norm:.3e} (rel)"
+                )
+        self.output_dict["gradient_norm"].append(self.relative_norm)
+
+        try:
+            strs.append(
+                f"    Mesh Quality:  {self.mesh_handler.current_mesh_quality:1.2f} ({self.mesh_handler.mesh_quality_measure})"
+            )
+            self.output_dict["MeshQuality"].append(
+                self.mesh_handler.current_mesh_quality
+            )
+        except AttributeError:
+            pass
+
+        if self.iteration > 0:
+            strs.append(f"    Step size:  {self.stepsize:.3e}")
+        self.output_dict["stepsize"].append(self.stepsize)
+
+        if self.iteration == 0:
+            strs.append("\n")
+
+        output = "".join(strs)
+        if self.verbose:
+            print(output)
+
+        if self.save_txt:
+            if self.iteration == 0:
+                with open(f"{self.result_dir}/history.txt", "w") as file:
+                    file.write(f"{output}\n")
+            else:
+                with open(f"{self.result_dir}/history.txt", "a") as file:
+                    file.write(f"{output}\n")
+
+        if self.save_pvd:
+            for i in range(self.form_handler.state_dim):
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
+                    for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
+                        self.state_pvd_list[i][j] << (
+                            self.form_handler.states[i].sub(j, True),
+                            float(self.iteration),
+                        )
+                else:
+                    self.state_pvd_list[i] << (
+                        self.form_handler.states[i],
+                        float(self.iteration),
+                    )
+
+        if self.save_pvd_adjoint:
+            for i in range(self.form_handler.state_dim):
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
+                    for j in range(
+                        self.form_handler.adjoint_spaces[i].num_sub_spaces()
+                    ):
+                        self.adjoint_pvd_list[i][j] << (
+                            self.form_handler.adjoints[i].sub(j, True),
+                            float(self.iteration),
+                        )
+                else:
+                    self.adjoint_pvd_list[i] << (
+                        self.form_handler.adjoints[i],
+                        float(self.iteration),
+                    )
+
+    def print_summary(self):
+        strs = []
+        strs.append("\n")
+        strs.append(f"Statistics --- Total iterations:  {self.iteration:4d}")
+        strs.append(f" --- Final objective value:  {self.objective_value:.3e}")
+        strs.append(f" --- Final gradient norm:  {self.relative_norm:.3e} (rel)")
+        strs.append("\n")
+        strs.append(
+            f"           --- State equations solved:  {self.state_problem.number_of_solves:d}"
+        )
+        strs.append(
+            f" --- Adjoint equations solved:  {self.adjoint_problem.number_of_solves:d}"
+        )
+        strs.append("\n")
+
+        output = "".join(strs)
+        if self.verbose:
+            print(output)
+
+        if self.save_txt:
+            with open(f"{self.result_dir}/history.txt", "a") as file:
+                file.write(output)
+
+    def finalize(self):
+        self.output_dict["initial_gradient_norm"] = self.gradient_norm_initial
+        self.output_dict["state_solves"] = self.state_problem.number_of_solves
+        self.output_dict["adjoint_solves"] = self.adjoint_problem.number_of_solves
+        self.output_dict["iterations"] = self.iteration
+        if self.save_results:
+            with open(f"{self.result_dir}/history.json", "w") as file:
+                json.dump(self.output_dict, file)
+
+    def post_processing(self):
+        if self.converged:
+            self.print_results()
+            self.print_summary()
+            self.finalize()
+
+        else:
+            # maximum iterations reached
+            if self.converged_reason == -1:
+                self.print_results()
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Maximum number of iterations exceeded.")
+                    self.finalize()
+                else:
+                    self.finalize()
+                    raise NotConvergedError(
+                        "Optimization Algorithm",
+                        "Maximum number of iterations were exceeded.",
+                    )
+
+            # Armijo line search failed
+            elif self.converged_reason == -2:
+                self.iteration -= 1
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Armijo rule failed.")
+                    self.finalize()
+                else:
+                    self.finalize()
+                    raise NotConvergedError(
+                        "Armijo line search",
+                        "Failed to compute a feasible Armijo step.",
+                    )
+
+            # Mesh Quality is too low
+            elif self.converged_reason == -3:
+                self.iteration -= 1
+                if self.mesh_handler.do_remesh:
+                    info("Mesh quality too low. Performing a remeshing operation.\n")
+                    self.mesh_handler.remesh(self)
+                else:
+                    if self.soft_exit:
+                        error("Mesh quality is too low.")
+                        self.finalize()
+                    else:
+                        self.finalize()
+                        raise NotConvergedError(
+                            "Optimization Algorithm", "Mesh quality is too low."
+                        )
+
+            # Iteration for remeshing is the one exceeding the maximum number of iterations
+            elif self.converged_reason == -4:
+                if self.soft_exit:
+                    if self.verbose:
+                        print("Maximum number of iterations exceeded.")
+                    self.finalize()
+                else:
+                    self.finalize()
+                    raise NotConvergedError(
+                        "Optimization Algorithm",
+                        "Maximum number of iterations were exceeded.",
+                    )
+
+    def nonconvergence(self):
+        """Checks for nonconvergence of the solution algorithm
+
+        Returns
+        -------
+         : boolean
+                A flag which is True, when the algorithm did not converge
+        """
+
+        if self.iteration >= self.maximum_iterations:
+            self.converged_reason = -1
+        if self.line_search_broken:
+            self.converged_reason = -2
+        if self.requires_remeshing:
+            self.converged_reason = -3
+        if self.remeshing_its:
+            self.converged_reason = -4
+
+        if self.converged_reason < 0:
+            return True
+        else:
+            return False

@@ -35,7 +35,7 @@ from .._pde_problems import (
     UnconstrainedHessianProblem,
 )
 from ..optimization_problem import OptimizationProblem
-from ..utils import _optimization_algorithm_configuration, _check_and_enlist_functions
+from ..utils import _optimization_algorithm_configuration, enlist
 from ..verification import control_gradient_test
 
 
@@ -66,7 +66,6 @@ class OptimalControlProblem(OptimizationProblem):
         initial_guess=None,
         ksp_options=None,
         adjoint_ksp_options=None,
-        desired_weights=None,
         scalar_tracking_forms=None,
         min_max_terms=None,
     ):
@@ -135,20 +134,11 @@ class OptimalControlProblem(OptimizationProblem):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            desired_weights,
             scalar_tracking_forms,
             min_max_terms,
         )
 
-        try:
-            self.controls = _check_and_enlist_functions(controls)
-        except InputError:
-            raise InputError(
-                "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                "controls",
-                "Type of controls is wrong.",
-            )
-
+        self.controls = enlist(controls)
         self.control_dim = len(self.controls)
 
         ### riesz_scalar_products
@@ -163,37 +153,8 @@ class OptimalControlProblem(OptimizationProblem):
                 for i in range(len(self.controls))
             ]
         else:
-            try:
-                if (
-                    isinstance(riesz_scalar_products, list)
-                    and len(riesz_scalar_products) > 0
-                ):
-                    for i in range(len(riesz_scalar_products)):
-                        if isinstance(riesz_scalar_products[i], ufl.form.Form):
-                            pass
-                        else:
-                            raise InputError(
-                                "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                                "riesz_scalar_products",
-                                "riesz_scalar_products have to be ufl forms",
-                            )
-                    self.riesz_scalar_products = riesz_scalar_products
-                    self.uses_custom_scalar_product = True
-                elif isinstance(riesz_scalar_products, ufl.form.Form):
-                    self.riesz_scalar_products = [riesz_scalar_products]
-                    self.uses_custom_scalar_product = True
-                else:
-                    raise InputError(
-                        "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                        "riesz_scalar_products",
-                        "riesz_scalar_products have to be ufl forms",
-                    )
-            except:
-                raise InputError(
-                    "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                    "riesz_scalar_products",
-                    "riesz_scalar_products have to be ufl forms",
-                )
+            self.riesz_scalar_products = enlist(riesz_scalar_products)
+            self.uses_custom_scalar_product = True
 
         ### control_constraints
         if control_constraints is None:
@@ -240,7 +201,7 @@ class OptimalControlProblem(OptimizationProblem):
                         self.control_constraints = control_constraints
                     elif (
                         isinstance(control_constraints[0], (float, int))
-                        or (isinstance(control_constraints, fenics.Function))
+                        or (isinstance(control_constraints[0], fenics.Function))
                     ) and (
                         isinstance(control_constraints[1], (float, int))
                         or (isinstance(control_constraints[1], fenics.Function))

@@ -847,114 +847,42 @@ def _check_for_config_list(string):
     return result
 
 
-def _check_and_enlist_functions(functions):
-    try:
-        if isinstance(functions, list) and len(functions) > 0:
-            for i in range(len(functions)):
-                if isinstance(functions[i], fenics.Function):
-                    pass
-                else:
-                    raise InputError(
-                        "cashocs.utils._check_and_enlist_functions",
-                        "functions",
-                        "Not a valid input.",
-                    )
-
-            return functions
-
-        elif isinstance(functions, fenics.Function):
-            return [functions]
-        else:
-            raise InputError(
-                "cashocs.utils._check_and_enlist_functions",
-                "functions",
-                "Not a valid input.",
-            )
-
-    except:
-        raise InputError(
-            "cashocs.utils._check_and_enlist_functions",
-            "functions",
-            "Not a valid input.",
-        )
-
-
-def _check_and_enlist_ufl_forms(ufl_forms):
-    try:
-        if isinstance(ufl_forms, list) and len(ufl_forms) > 0:
-            for i in range(len(ufl_forms)):
-                if isinstance(ufl_forms[i], ufl.form.Form):
-                    pass
-                else:
-                    raise InputError(
-                        "cashocs.utils._check_and_enlist_ufl_forms",
-                        "ufl_forms",
-                        "Not a valid input.",
-                    )
-
-            return ufl_forms
-
-        elif isinstance(ufl_forms, ufl.form.Form):
-            return [ufl_forms]
-
-        else:
-            raise InputError(
-                "cashocs.utils._check_and_enlist_ufl_forms",
-                "ufl_forms",
-                "Not a valid input.",
-            )
-
-    except:
-        raise InputError(
-            "cashocs.utils._check_and_enlist_ufl_forms",
-            "ufl_forms",
-            "Not a valid input.",
-        )
-
-
 def _check_and_enlist_bcs(bcs_list):
-    try:
-        if isinstance(bcs_list, list) and len(bcs_list) > 0:
-            if isinstance(bcs_list[0], list):
-                for i in range(len(bcs_list)):
-                    if isinstance(bcs_list[i], list):
-                        for bc in bcs_list[i]:
-                            if isinstance(bc, fenics.DirichletBC):
-                                pass
-                            else:
-                                raise InputError(
-                                    "cashocs.utils._check_and_enlist_bcs",
-                                    "bcs_list",
-                                    "Type of bcs_list is wrong.",
-                                )
-                    else:
-                        raise InputError(
-                            "cashocs.utils._check_and_enlist_bcs",
-                            "bcs_list",
-                            "Type of bcs_list is wrong.",
-                        )
-                return bcs_list
+    if isinstance(bcs_list, list) and len(bcs_list) > 0:
+        if isinstance(bcs_list[0], list):
+            for i in range(len(bcs_list)):
+                if isinstance(bcs_list[i], list):
+                    for bc in bcs_list[i]:
+                        if isinstance(bc, fenics.DirichletBC):
+                            pass
+                        else:
+                            raise InputError(
+                                "cashocs.utils._check_and_enlist_bcs",
+                                "bcs_list",
+                                "Type of bcs_list is wrong.",
+                            )
+                else:
+                    raise InputError(
+                        "cashocs.utils._check_and_enlist_bcs",
+                        "bcs_list",
+                        "Type of bcs_list is wrong.",
+                    )
+            return bcs_list
 
-            elif isinstance(bcs_list[0], fenics.DirichletBC):
-                for i in range(len(bcs_list)):
-                    if isinstance(bcs_list[i], fenics.DirichletBC):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs.utils._check_and_enlist_bcs",
-                            "bcs_list",
-                            "Type of bcs_list is wrong.",
-                        )
-                return [bcs_list]
-        elif isinstance(bcs_list, fenics.DirichletBC):
-            return [[bcs_list]]
-        else:
-            raise InputError(
-                "cashocs.utils._check_and_enlist_bcs",
-                "bcs_list",
-                "Type of bcs_list is wrong.",
-            )
-    except:
+        elif isinstance(bcs_list[0], fenics.DirichletBC):
+            for i in range(len(bcs_list)):
+                if isinstance(bcs_list[i], fenics.DirichletBC):
+                    pass
+                else:
+                    raise InputError(
+                        "cashocs.utils._check_and_enlist_bcs",
+                        "bcs_list",
+                        "Type of bcs_list is wrong.",
+                    )
+            return [bcs_list]
+    elif isinstance(bcs_list, fenics.DirichletBC):
+        return [[bcs_list]]
+    else:
         raise InputError(
             "cashocs.utils._check_and_enlist_bcs",
             "bcs_list",

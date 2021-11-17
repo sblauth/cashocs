@@ -36,7 +36,6 @@ class ConstrainedOptimizationProblem:
         initial_guess=None,
         ksp_options=None,
         adjoint_ksp_options=None,
-        desired_weights=None,
         scalar_tracking_forms=None,
     ):
 
@@ -48,7 +47,6 @@ class ConstrainedOptimizationProblem:
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
-        self.desired_weights = desired_weights
 
         self.solver = None
 
@@ -186,7 +184,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         initial_guess=None,
         ksp_options=None,
         adjoint_ksp_options=None,
-        desired_weights=None,
         scalar_tracking_forms=None,
     ):
         super().__init__(
@@ -200,7 +197,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
-            desired_weights=desired_weights,
             scalar_tracking_forms=scalar_tracking_forms,
         )
 
@@ -222,7 +218,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            desired_weights=self.desired_weights,
             scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
             min_max_terms=self.solver.inner_min_max_terms,
         )
@@ -260,7 +255,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         initial_guess=None,
         ksp_options=None,
         adjoint_ksp_options=None,
-        desired_weights=None,
         scalar_tracking_forms=None,
     ):
         super().__init__(
@@ -274,7 +268,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
-            desired_weights=desired_weights,
             scalar_tracking_forms=scalar_tracking_forms,
         )
 
@@ -294,7 +287,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            desired_weights=self.desired_weights,
             scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
             min_max_terms=self.solver.inner_min_max_terms,
         )

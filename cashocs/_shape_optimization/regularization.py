@@ -94,10 +94,6 @@ class Regularization:
 
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
-        self.use_relative_scaling = self.config.getboolean(
-            "Regularization", "use_relative_scaling", fallback=False
-        )
-
         self.measure_hole = self.config.getboolean(
             "Regularization", "measure_hole", fallback=False
         )
@@ -275,8 +271,6 @@ class Regularization:
             self.has_regularization = True
         else:
             self.has_regularization = False
-
-        self._scale_weights()
 
         self.current_volume = fenics.Expression("val", degree=0, val=1.0)
         self.current_surface = fenics.Expression("val", degree=0, val=1.0)
@@ -609,126 +603,3 @@ class Regularization:
         else:
             dim = self.geometric_dimension
             return inner(fenics.Constant([0] * dim), V) * self.dx
-
-    def _scale_weights(self):
-
-        if self.use_relative_scaling and self.has_regularization:
-
-            if not self.has_cashocs_remesh_flag:
-
-                if self.mu_volume > 0.0:
-                    if not self.measure_hole:
-                        volume = fenics.assemble(Constant(1.0) * self.dx)
-                    else:
-                        volume = (
-                            self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(Constant(1) * self.dx)
-                        )
-
-                    value = 0.5 * pow(volume - self.target_volume, 2)
-
-                    if abs(value) < 1e-15:
-                        info(
-                            "The volume regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight."
-                        )
-                    else:
-                        self.mu_volume /= abs(value)
-
-                if self.mu_surface > 0.0:
-                    surface = fenics.assemble(Constant(1.0) * self.ds)
-                    value = 0.5 * pow(surface - self.target_surface, 2)
-
-                    if abs(value) < 1e-15:
-                        info(
-                            "The surface regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight."
-                        )
-                    else:
-                        self.mu_surface /= abs(value)
-
-                if self.mu_curvature > 0.0:
-                    self.compute_curvature()
-                    value = 0.5 * fenics.assemble(
-                        fenics.inner(self.kappa_curvature, self.kappa_curvature)
-                        * self.ds
-                    )
-
-                    if abs(value) < 1e-15:
-                        info(
-                            "The curvature regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight."
-                        )
-                    else:
-                        self.mu_curvature /= abs(value)
-
-                if self.mu_barycenter > 0.0:
-                    if not self.measure_hole:
-                        volume = fenics.assemble(Constant(1) * self.dx)
-
-                        barycenter_x = (
-                            fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                            / volume
-                        )
-                        barycenter_y = (
-                            fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                            / volume
-                        )
-                        if self.geometric_dimension == 3:
-                            barycenter_z = (
-                                fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                                / volume
-                            )
-                        else:
-                            barycenter_z = 0.0
-
-                    else:
-                        volume = (
-                            self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(Constant(1) * self.dx)
-                        )
-
-                        barycenter_x = (
-                            0.5
-                            * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                            * self.delta_y
-                            * self.delta_z
-                            - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                        ) / volume
-                        barycenter_y = (
-                            0.5
-                            * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                            * self.delta_x
-                            * self.delta_z
-                            - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                        ) / volume
-                        if self.geometric_dimension == 3:
-                            barycenter_z = (
-                                0.5
-                                * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                                * self.delta_x
-                                * self.delta_y
-                                - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                            ) / volume
-                        else:
-                            barycenter_z = 0.0
-
-                    value = 0.5 * (
-                        pow(barycenter_x - self.target_barycenter_list[0], 2)
-                        + pow(barycenter_y - self.target_barycenter_list[1], 2)
-                        + pow(barycenter_z - self.target_barycenter_list[2], 2)
-                    )
-
-                    if abs(value) < 1e-15:
-                        info(
-                            "The barycenter regularization vanishes for the initial iteration. Multiplying this term with the factor you supplied as weight."
-                        )
-                    else:
-                        self.mu_barycenter /= abs(value)
-
-            else:
-
-                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
-                    temp_dict = json.load(file)
-
-                self.mu_volume = temp_dict["Regularization"]["mu_volume"]
-                self.mu_surface = temp_dict["Regularization"]["mu_surface"]
-                self.mu_curvature = temp_dict["Regularization"]["mu_curvature"]
-                self.mu_barycenter = temp_dict["Regularization"]["mu_barycenter"]

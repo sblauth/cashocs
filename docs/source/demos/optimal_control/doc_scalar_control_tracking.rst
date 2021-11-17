@@ -131,18 +131,6 @@ This is then put into a dictionary as follows ::
     The factor in front of the quadratic term can also be adapted, by using the keyword ``weight`` in the integrand and supplying the desired factor. Note, that the default factor is ``0.5``, and that each weight defined in the dictionary will be multiplied by this value.
 
 
-.. hint::
-
-    For the scaling possibilities, which are described in detail in :ref:`demo_scaling`,
-    we use the following convention: All desired weights are defined in the list
-    ``desired_weights``. In case we have :math:`n` cost functionals defined in
-    ``cost_functional_form`` (here, :math:`n \geq 1`), and :math:`m` additional cost functionals
-    defined as ``scalar_tracking_forms`` (:math:`m \geq 0`), then the first :math:`n`
-    entries of ``desired_weights`` correspond to the cost functionals given in
-    ``cost_functional_form``, and the last :math:`m` entries correspond to the
-    cost functionals defined in ``scalar_tracking_forms``.
-
-
 Finally, we can set up our new optimization problem as we already know, but we
 now use the keyword argument ::
 

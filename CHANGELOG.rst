@@ -7,6 +7,10 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
+1.6.0 (in development)
+
+* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian, Quadratic Penalty, L1 Penalty, and Lagrangian methods.
+
 1.5.0 (in development)
 ----------------------
 

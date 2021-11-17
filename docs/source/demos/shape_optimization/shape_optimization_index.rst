@@ -15,6 +15,5 @@ be treated with CASHOCS.
    doc_shape_stokes
    doc_remeshing
    doc_custom_scalar_product
-   doc_scaling
    doc_eikonal_stiffness
    doc_p_laplacian

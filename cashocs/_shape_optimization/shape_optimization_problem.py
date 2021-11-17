@@ -39,7 +39,6 @@ from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
 from ..optimization_problem import OptimizationProblem
-from ..utils import _optimization_algorithm_configuration
 from ..verification import shape_gradient_test
 
 
@@ -69,7 +68,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
         initial_guess=None,
         ksp_options=None,
         adjoint_ksp_options=None,
-        desired_weights=None,
         scalar_tracking_forms=None,
         min_max_terms=None,
     ):
@@ -115,11 +113,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 A list of strings corresponding to command line options for PETSc,
                 used to solve the adjoint systems. If this is ``None``, then the same options
                 as for the state systems are used (default is ``None``).
-        scalar_tracking_forms : dict or list[dict]
-                A list of dictionaries that define scalar tracking type cost functionals,
-                where an integral value should be brought to a desired value. Each dict needs
-                to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
-                i.e., no scalar tracking terms are considered.
         """
 
         super().__init__(
@@ -132,7 +125,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            desired_weights,
             scalar_tracking_forms,
             min_max_terms,
         )
@@ -188,15 +180,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     },
                     "output_dict": {},
                 }
-
-                if self.bool_scaling:
-                    self.temp_dict[
-                        "initial_function_values"
-                    ] = self.initial_function_values
-                    if self.use_scalar_tracking:
-                        self.temp_dict[
-                            "intitial_scalar_tracking_values"
-                        ] = self.initial_scalar_tracking_values
 
             else:
                 self.__change_except_hook()
