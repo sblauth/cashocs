@@ -4,11 +4,11 @@ Created on 05/11/2021, 09.40
 @author: blauths
 """
 
-import numpy as np
 import fenics
+import numpy as np
 
-from ..utils import _max, _min
 from .._exceptions import InputError
+from ..utils import _max, _min
 
 
 class Constraint:

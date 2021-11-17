@@ -21,7 +21,6 @@
 
 import numpy as np
 from fenics import *
-from ufl import Max
 
 import cashocs
 

@@ -28,6 +28,7 @@ from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
+
 class LBFGS(ControlOptimizationAlgorithm):
     """A limited memory BFGS method"""
 

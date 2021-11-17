@@ -22,8 +22,6 @@
 import fenics
 import numpy as np
 
-from ..utils import _max, _min
-
 
 class ReducedCostFunctional:
     """The reduced cost functional for the optimization problem

@@ -23,13 +23,13 @@ ShapeOptimizationAlgorithm classes are based.
 """
 
 import abc
-import os
 import json
+import os
 from datetime import datetime
 from pathlib import Path
-import numpy as np
 
 import fenics
+import numpy as np
 
 from ._exceptions import NotConvergedError
 from ._loggers import error, info

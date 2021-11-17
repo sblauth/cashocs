@@ -16,11 +16,12 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from .._loggers import debug
-from .constraints import EqualityConstraint, InequalityConstraint
-from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 import fenics
 import numpy as np
+
+from .constraints import EqualityConstraint, InequalityConstraint
+from .._loggers import debug
+from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 
 
 class ConstrainedSolver:

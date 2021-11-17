@@ -47,7 +47,6 @@ from .utils import (
     _solve_linear_problem,
     create_dirichlet_bcs,
     write_out_mesh,
-    summation,
 )
 
 

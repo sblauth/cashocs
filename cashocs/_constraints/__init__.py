@@ -19,8 +19,8 @@
 
 """
 
-from .constraints import EqualityConstraint, InequalityConstraint
 from .constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
+from .constraints import EqualityConstraint, InequalityConstraint

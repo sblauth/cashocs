@@ -17,9 +17,10 @@
 
 
 import numpy as np
+
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
-from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
+from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from ..utils import enlist
 
 
