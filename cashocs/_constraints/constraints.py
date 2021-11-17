@@ -4,6 +4,8 @@ Created on 05/11/2021, 09.40
 @author: blauths
 """
 
+import abc
+
 import fenics
 import numpy as np
 
@@ -11,7 +13,7 @@ from .._exceptions import InputError
 from ..utils import _max, _min
 
 
-class Constraint:
+class Constraint(abc.ABC):
     def __init__(self, variable_function, measure=None):
         self.variable_function = variable_function
         self.measure = measure
@@ -27,6 +29,7 @@ class Constraint:
         self.linear_term = None
         self.quadratic_term = None
 
+    @abc.abstractmethod
     def constraint_violation(self):
         pass
 

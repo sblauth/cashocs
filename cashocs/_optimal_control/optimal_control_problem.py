@@ -26,7 +26,7 @@ import ufl
 from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
 from .._forms import ControlFormHandler
-from .._optimal_control import ReducedCostFunctional
+from .._optimal_control import ReducedControlCostFunctional
 from .._pde_problems import (
     AdjointProblem,
     GradientProblem,
@@ -34,7 +34,7 @@ from .._pde_problems import (
     StateProblem,
     UnconstrainedHessianProblem,
 )
-from ..optimization_problem import OptimizationProblem
+from .._interfaces import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration, enlist
 from ..verification import control_gradient_test
 
@@ -343,7 +343,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.algorithm = _optimization_algorithm_configuration(self.config)
 
-        self.reduced_cost_functional = ReducedCostFunctional(
+        self.reduced_cost_functional = ReducedControlCostFunctional(
             self.form_handler, self.state_problem
         )
 
@@ -361,8 +361,7 @@ class OptimalControlProblem(OptimizationProblem):
         None
         """
 
-        self.state_problem.has_solution = False
-        self.adjoint_problem.has_solution = False
+        super()._erase_pde_memory()
         self.gradient_problem.has_solution = False
 
     def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):

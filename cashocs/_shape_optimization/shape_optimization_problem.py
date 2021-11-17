@@ -38,7 +38,7 @@ from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
-from ..optimization_problem import OptimizationProblem
+from .._interfaces import OptimizationProblem
 from ..verification import shape_gradient_test
 
 
@@ -289,10 +289,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
         None
         """
 
+        super()._erase_pde_memory()
         self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
         self.form_handler.update_scalar_product()
-        self.state_problem.has_solution = False
-        self.adjoint_problem.has_solution = False
         self.shape_gradient_problem.has_solution = False
 
     def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):

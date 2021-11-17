@@ -22,6 +22,7 @@ as many parameters and variables are common for optimal control and shape
 optimization problems.
 """
 
+import abc
 import configparser
 import copy
 
@@ -30,10 +31,10 @@ import numpy as np
 import ufl
 from ufl import replace
 
-from ._exceptions import InputError
-from ._forms import Lagrangian
-from ._loggers import warning
-from .utils import (
+from .._exceptions import InputError
+from .._forms import Lagrangian
+from .._loggers import warning
+from ..utils import (
     _parse_remesh,
     summation,
     _optimization_algorithm_configuration,
@@ -43,7 +44,7 @@ from .utils import (
 )
 
 
-class OptimizationProblem:
+class OptimizationProblem(abc.ABC):
     """Blueprint for an abstract PDE constrained optimization problem.
 
     This class performs the initialization of the shared input so that the rest
@@ -228,6 +229,11 @@ class OptimizationProblem:
         self.has_custom_derivative = False
         self.reduced_cost_functional = None
         self.uses_custom_scalar_product = False
+
+    @abc.abstractmethod
+    def _erase_pde_memory(self):
+        self.state_problem.has_solution = False
+        self.adjoint_problem.has_solution = False
 
     def compute_state_variables(self):
         """Solves the state system.
@@ -461,6 +467,7 @@ class OptimizationProblem:
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
+    @abc.abstractmethod
     def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
         r"""Solves the optimization problem by the method specified in the config file.
 
@@ -534,3 +541,7 @@ class OptimizationProblem:
 
     def __shift_cost_functional(self, shift=0.0):
         self.form_handler.cost_functional_shift = shift
+
+    @abc.abstractmethod
+    def gradient_test(self):
+        pass

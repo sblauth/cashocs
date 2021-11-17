@@ -22,7 +22,7 @@ import abc
 
 import fenics
 
-from .._optimization_algorithm import OptimizationAlgorithm
+from .._interfaces import OptimizationAlgorithm
 
 
 class ControlOptimizationAlgorithm(OptimizationAlgorithm):
@@ -76,7 +76,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
             self.state_pvd_list = []
             for i in range(self.form_handler.state_dim):
                 self.state_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.state_spaces[i],
                         f"state_{i:d}",
                         self.pvd_prefix,
@@ -86,7 +86,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
             self.control_pvd_list = []
             for i in range(self.form_handler.control_dim):
                 self.control_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.control_spaces[i],
                         f"control_{i:d}",
                         self.pvd_prefix,
@@ -97,7 +97,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
                 self.adjoint_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.adjoint_spaces[i],
                         f"adjoint_{i:d}",
                         self.pvd_prefix,
@@ -108,7 +108,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
             self.gradient_pvd_list = []
             for i in range(self.form_handler.control_dim):
                 self.gradient_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.control_spaces[i],
                         f"gradient_{i:d}",
                         self.pvd_prefix,

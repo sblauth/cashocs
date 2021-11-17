@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+import abc
 
 import fenics
 import numpy as np
@@ -24,7 +25,7 @@ from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 
 
-class ConstrainedSolver:
+class ConstrainedSolver(abc.ABC):
     def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
         """
 
@@ -68,9 +69,11 @@ class ConstrainedSolver:
         self.constraint_violation_prev = 0.0
         self.beta = 10.0
 
+    @abc.abstractmethod
     def _update_cost_functional(self):
         pass
 
+    @abc.abstractmethod
     def solve(
         self,
         tol=1e-2,

@@ -31,8 +31,8 @@ from pathlib import Path
 import fenics
 import numpy as np
 
-from ._exceptions import NotConvergedError
-from ._loggers import error, info
+from .._exceptions import NotConvergedError
+from .._loggers import error, info
 
 
 class OptimizationAlgorithm(abc.ABC):
@@ -141,7 +141,7 @@ class OptimizationAlgorithm(abc.ABC):
     def run(self):
         pass
 
-    def generate_pvd_file(self, space, name, prefix=""):
+    def _generate_pvd_file(self, space, name, prefix=""):
 
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []

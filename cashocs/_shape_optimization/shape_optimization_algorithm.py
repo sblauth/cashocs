@@ -23,7 +23,7 @@ import subprocess
 
 import fenics
 
-from .._optimization_algorithm import OptimizationAlgorithm
+from .._interfaces import OptimizationAlgorithm
 from ..utils import write_out_mesh
 
 
@@ -70,7 +70,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
             self.state_pvd_list = []
             for i in range(self.form_handler.state_dim):
                 self.state_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.state_spaces[i],
                         f"state_{i:d}",
                         self.pvd_prefix,
@@ -81,7 +81,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
                 self.adjoint_pvd_list.append(
-                    self.generate_pvd_file(
+                    self._generate_pvd_file(
                         self.form_handler.state_spaces[i],
                         f"adjoint_{i:d}",
                         self.pvd_prefix,
@@ -89,7 +89,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
                 )
 
         if self.save_pvd_gradient:
-            self.shape_gradient_pvd_file = self.generate_pvd_file(
+            self.shape_gradient_pvd_file = self._generate_pvd_file(
                 self.gradient.function_space(), "shape_gradient", self.pvd_prefix
             )
 

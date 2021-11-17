@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+import abc
 
 import numpy as np
 
@@ -24,7 +25,7 @@ from .._shape_optimization.shape_optimization_problem import ShapeOptimizationPr
 from ..utils import enlist
 
 
-class ConstrainedOptimizationProblem:
+class ConstrainedOptimizationProblem(abc.ABC):
     def __init__(
         self,
         state_forms,
@@ -101,6 +102,7 @@ class ConstrainedOptimizationProblem:
 
         return np.sqrt(s)
 
+    @abc.abstractmethod
     def _solve_inner_problem(self, tol=1e-2, inner_rtol=None, inner_atol=None):
         pass
 

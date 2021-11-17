@@ -22,8 +22,10 @@
 import fenics
 import numpy as np
 
+from .._interfaces import ReducedCostFunctional
 
-class ReducedShapeCostFunctional:
+
+class ReducedShapeCostFunctional(ReducedCostFunctional):
     """Reduced cost functional for a shape optimization problem"""
 
     def __init__(self, form_handler, state_problem):
@@ -37,90 +39,22 @@ class ReducedShapeCostFunctional:
                 the StateProblem object corresponding to the state system
         """
 
-        self.form_handler = form_handler
-        self.state_problem = state_problem
+        super().__init__(form_handler, state_problem)
 
     def evaluate(self):
-        """Evaluates the reduced cost functional
+        """Evaluates the reduced cost functional.
+
+        First solves the state system, so that the state variables are up-to-date,
+        and then evaluates the reduced cost functional by assembling the corresponding
+        UFL form.
 
         Returns
         -------
         float
-                the value of the reduced cost functional at the current control
-
+                the value of the reduced cost functional
         """
 
-        self.state_problem.solve()
+        val = super().evaluate()
+        val_reg = self.form_handler.regularization.compute_objective()
 
-        val = (
-            fenics.assemble(self.form_handler.cost_functional_form)
-            + self.form_handler.regularization.compute_objective()
-        )
-
-        if self.form_handler.use_scalar_tracking:
-            for j in range(self.form_handler.no_scalar_tracking_terms):
-                scalar_integral_value = fenics.assemble(
-                    self.form_handler.scalar_cost_functional_integrands[j]
-                )
-                self.form_handler.scalar_cost_functional_integrand_values[j].vector()[
-                    :
-                ] = scalar_integral_value
-
-                val += (
-                    self.form_handler.scalar_weights[j].vector()[0]
-                    / 2
-                    * pow(
-                        scalar_integral_value
-                        - self.form_handler.scalar_tracking_goals[j],
-                        2,
-                    )
-                )
-
-        if self.form_handler.use_min_max_terms:
-            for j in range(self.form_handler.no_min_max_terms):
-                min_max_integral_value = fenics.assemble(
-                    self.form_handler.min_max_integrands[j]
-                )
-                self.form_handler.min_max_integrand_values[j].vector()[
-                    :
-                ] = min_max_integral_value
-
-                if self.form_handler.min_max_lower_bounds[j] is not None:
-                    val += (
-                        1
-                        / (2 * self.form_handler.min_max_mu[j])
-                        * pow(
-                            np.minimum(
-                                0,
-                                self.form_handler.min_max_lambda[j]
-                                + self.form_handler.min_max_mu[j]
-                                * (
-                                    min_max_integral_value
-                                    - self.form_handler.min_max_lower_bounds[j]
-                                ),
-                            ),
-                            2,
-                        )
-                    )
-
-                if self.form_handler.min_max_upper_bounds[j] is not None:
-                    val += (
-                        1
-                        / (2 * self.form_handler.min_max_mu[j])
-                        * pow(
-                            np.maximum(
-                                0,
-                                self.form_handler.min_max_lambda[j]
-                                + self.form_handler.min_max_mu[j]
-                                * (
-                                    min_max_integral_value
-                                    - self.form_handler.min_max_upper_bounds[j]
-                                ),
-                            ),
-                            2,
-                        )
-                    )
-
-        val += self.form_handler.cost_functional_shift
-
-        return val
+        return val + val_reg

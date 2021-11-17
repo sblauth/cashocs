@@ -15,20 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for treatment of optimal control problems.
+"""Interfaces for general optimization problems.
 
-This module is used for the treatment of optimal control problems.
-It includes the optimization problem, the solution algorithms and
-the line search needed for this.
+This module provides interfaces for general optimization problems. These are base
+classes meant to be sublcassed for more specific problems, such as optimal control
+or shape optimization
 """
 
-from .control_optimization_algorithm import ControlOptimizationAlgorithm
-from .cost_functional import ReducedControlCostFunctional
-from .line_search import ArmijoLineSearch
-
-
-__all__ = [
-    "ReducedControlCostFunctional",
-    "ArmijoLineSearch",
-    "ControlOptimizationAlgorithm",
-]
+from .cost_functional import ReducedCostFunctional
+from .optimization_algorithm import OptimizationAlgorithm
+from .optimization_problem import OptimizationProblem
