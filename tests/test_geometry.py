@@ -23,13 +23,13 @@ import os
 import subprocess
 
 import fenics
-import pytest
 import numpy as np
+import pytest
 
 import cashocs
-from cashocs.geometry import MeshQuality
-from cashocs._exceptions import InputError
 import cashocs._cli
+from cashocs._exceptions import InputError
+from cashocs.geometry import MeshQuality
 
 
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
@@ -276,7 +276,7 @@ def test_write_mesh():
 def test_empty_measure():
     mesh, _, _, dx, ds, dS = cashocs.regular_mesh(5)
     V = fenics.FunctionSpace(mesh, "CG", 1)
-    dm = cashocs.utils.EmptyMeasure(dx)
+    dm = cashocs.geometry._EmptyMeasure(dx)
 
     trial = fenics.TrialFunction(V)
     test = fenics.TestFunction(V)
@@ -284,6 +284,24 @@ def test_empty_measure():
     assert fenics.assemble(1 * dm) == 0.0
     assert (fenics.assemble(test * dm).norm("linf")) == 0.0
     assert (fenics.assemble(trial * test * dm).norm("linf")) == 0.0
+
+    fun = fenics.Function(V)
+    fun.vector()[:] = rng.rand(V.dim())
+
+    d1 = cashocs.geometry._EmptyMeasure(dx)
+    d2 = cashocs.geometry._EmptyMeasure(ds)
+
+    a = trial * test * d1 + trial * test * d2
+    L = fun * test * d1 + fun * test * d2
+    F = fun * d1 + fun * d2
+
+    A = fenics.assemble(a)
+    b = fenics.assemble(L)
+    c = fenics.assemble(F)
+
+    assert np.max(np.abs(A.array())) == 0.0
+    assert np.max(np.abs(b[:])) == 0.0
+    assert c == 0.0
 
 
 def test_convert_coordinate_defo_to_dof_defo():
@@ -404,3 +422,26 @@ def test_named_mesh_import():
     subprocess.run(
         ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
     )
+
+
+def test_create_measure():
+
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
+    V = fenics.FunctionSpace(mesh, "CG", 1)
+
+    meas = cashocs.geometry.generate_measure([1, 2, 3], ds)
+    test = ds(1) + ds(2) + ds(3)
+
+    assert abs(fenics.assemble(1 * meas) - 3) < 1e-14
+    for i in range(3):
+        assert meas._measures[i] == test._measures[i]
+
+
+def test_list_measure():
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
+
+    m_sum = ds(1) + ds(2) + ds(3)
+    ref = ds([1, 2, 3])
+
+    for i in range(3):
+        assert m_sum._measures[i] == ref._measures[i]

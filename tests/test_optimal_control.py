@@ -41,7 +41,7 @@ p = Function(V)
 u = Function(V)
 
 F = inner(grad(y), grad(p)) * dx - u * p * dx
-bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
 alpha = 1e-6
@@ -559,6 +559,37 @@ def test_scalar_norm_optimization():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
+def test_scalar_tracking_weight():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 1e-3
+
+    J = Constant(0) * dx
+    norm_y = y * y * dx
+    tracking_goal = rng.uniform(0.25, 0.75)
+    weight = rng.uniform(1.0, 1e3)
+    J_norm = {"integrand": norm_y, "tracking_goal": tracking_goal, "weight": 1.0}
+    config.set("OptimizationRoutine", "initial_stepsize", "4e3")
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
+    )
+    test_ocp.compute_state_variables()
+    initial_function_value = 0.5 * pow(assemble(norm_y) - tracking_goal, 2)
+    J_norm["weight"] = weight / initial_function_value
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
+    )
+    test_ocp.compute_state_variables()
+    val = test_ocp.reduced_cost_functional.evaluate()
+    assert np.abs(val - weight) < 1e-15
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
 def test_scalar_multiple_norms():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
@@ -722,7 +753,7 @@ def test_different_spaces():
         - u * p * dx
     )
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     lambd = 1e-6
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
@@ -765,6 +796,8 @@ def test_save_pvd_files():
     assert os.path.isfile(dir_path + "/out/history.json")
     assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
@@ -815,3 +848,35 @@ def test_hooks():
     assert np.max(np.abs(u.vector()[:] - (-1.0))) < 1e-15
 
     assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
+
+
+# def test_min_max_terms():
+#
+# min_max_term = {
+#     "integrand": u * u * dx,
+#     "lower_bound": None,
+#     "upper_bound": 1.0,
+#     "mu": 1.0,
+#     "lambda": 1.0,
+# }
+#
+#
+# config = cashocs.load_config(dir_path + "/config_ocp.ini")
+#
+# u.vector()[:] = 0.0
+# test_ocp = cashocs.OptimalControlProblem(
+#     F,
+#     bcs,
+#     J,
+#     y,
+#     u,
+#     p,
+#     config,
+#     min_max_terms=min_max_term,
+# )
+#
+# test_ocp.solve()
+#
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9

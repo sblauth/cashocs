@@ -74,7 +74,7 @@ we would use for the problem in FEniCS, i.e., we write ::
 
 Finally, the boundary conditions are defined as before ::
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Solution of the optimization problem
 ************************************

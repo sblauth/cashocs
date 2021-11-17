@@ -34,7 +34,6 @@ import numpy as np
 import ufl
 from deprecated import deprecated
 from petsc4py import PETSc
-from ufl.measure import Measure
 
 from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
@@ -82,7 +81,7 @@ def summation(x):
 
     if len(x) == 0:
         y = fenics.Constant(0.0)
-        warning("Empty list handed to summ, returning 0.")
+        warning("Empty list handed to summation, returning 0.")
     else:
         y = x[0]
 
@@ -135,171 +134,6 @@ def multiplication(x):
             y *= item
 
     return y
-
-
-class NamedMeasure(Measure):
-    def __init__(
-        self,
-        integral_type,
-        domain=None,
-        subdomain_id="everywhere",
-        metadata=None,
-        subdomain_data=None,
-        physical_groups=None,
-    ):
-        super().__init__(
-            integral_type,
-            domain=domain,
-            subdomain_id=subdomain_id,
-            metadata=metadata,
-            subdomain_data=subdomain_data,
-        )
-        self.physical_groups = physical_groups
-
-    def __call__(
-        self,
-        subdomain_id=None,
-        metadata=None,
-        domain=None,
-        subdomain_data=None,
-        degree=None,
-        scheme=None,
-        rule=None,
-    ):
-        if isinstance(subdomain_id, int):
-            return super().__call__(
-                subdomain_id=subdomain_id,
-                metadata=metadata,
-                domain=domain,
-                subdomain_data=subdomain_data,
-                degree=degree,
-                scheme=scheme,
-                rule=rule,
-            )
-        elif isinstance(subdomain_id, str):
-            try:
-                if (
-                    subdomain_id in self.physical_groups["dx"].keys()
-                    and self._integral_type == "cell"
-                ):
-                    integer_id = self.physical_groups["dx"][subdomain_id]
-                elif subdomain_id in self.physical_groups[
-                    "ds"
-                ].keys() and self._integral_type in [
-                    "exterior_facet",
-                    "interior_facet",
-                ]:
-                    integer_id = self.physical_groups["ds"][subdomain_id]
-                else:
-                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
-            except:
-                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
-
-            return super().__call__(
-                subdomain_id=integer_id,
-                metadata=metadata,
-                domain=domain,
-                subdomain_data=subdomain_data,
-                degree=degree,
-                scheme=scheme,
-                rule=rule,
-            )
-
-
-class EmptyMeasure(Measure):
-    """Implements an empty measure (e.g. of a null set).
-
-    This is used for automatic measure generation, e.g., if
-    the fixed boundary is empty for a shape optimization problem,
-    and is used to avoid case distinctions.
-
-    Examples
-    --------
-    The code ::
-
-        dm = EmptyMeasure(dx)
-        u*dm
-
-    is equivalent to ::
-
-        Constant(0)*u*dm
-
-    so that ``fenics.assemble(u*dm)`` generates zeros.
-    """
-
-    def __init__(self, measure):
-        """Initializes self.
-
-        Parameters
-        ----------
-        measure : ufl.measure.Measure
-                The underlying UFL measure.
-        """
-
-        Measure.__init__(self, measure.integral_type())
-
-        self.measure = measure
-
-    def __rmul__(self, other):
-        """Multiplies the empty measure to the right.
-
-        Parameters
-        ----------
-        other : ufl.core.expr.Expr
-                A UFL expression to be integrated over an empty measure.
-
-        Returns
-        -------
-        ufl.form.Form
-                The resulting UFL form.
-        """
-
-        return fenics.Constant(0) * other * self.measure
-
-
-def generate_measure(idx, measure):
-    """Generates a measure based on indices.
-
-    Generates a :py:class:`fenics.MeasureSum` or :py:class:`EmptyMeasure <cashocs.utils.EmptyMeasure>`
-    object corresponding to ``measure`` and the subdomains / boundaries specified in idx. This
-    is a convenient shortcut to writing ``dx(1) + dx(2) + dx(3)``
-    in case many measures are involved.
-
-    Parameters
-    ----------
-    idx : list[int]
-            A list of indices for the boundary / volume markers that
-            define the (new) measure.
-    measure : ufl.measure.Measure
-            The corresponding UFL measure.
-
-    Returns
-    -------
-    ufl.measure.Measure or cashocs.utils.EmptyMeasure
-            The corresponding sum of the measures or an empty measure.
-
-    Examples
-    --------
-    Here, we create a wrapper for the surface measure on the top and bottom of
-    the unit square::
-
-        from fenics import *
-        import cashocs
-        mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
-        top_bottom_measure = cashocs.utils.generate_measure([3,4], ds)
-        assemble(1*top_bottom_measure)
-    """
-
-    if len(idx) == 0:
-        out_measure = EmptyMeasure(measure)
-
-    else:
-        out_measure = measure(idx[0])
-
-        for i in idx[1:]:
-            out_measure += measure(i)
-
-    return out_measure
 
 
 @deprecated(
@@ -364,6 +198,91 @@ def load_config(path):
     return config
 
 
+def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
+    """Create several Dirichlet boundary conditions at once.
+
+    Wraps multiple Dirichlet boundary conditions into a list, in case
+    they have the same value but are to be defined for multiple boundaries
+    with different markers. Particularly useful for defining homogeneous
+    boundary conditions.
+
+    Parameters
+    ----------
+    function_space : dolfin.function.functionspace.FunctionSpace
+            The function space onto which the BCs should be imposed on.
+    value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
+            The value of the boundary condition. Has to be compatible with the function_space,
+            so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+            The :py:class:`fenics.MeshFunction` object representing the boundaries.
+    idcs : list[int] or list[str] or int or str
+            A list of indices / boundary markers that determine the boundaries
+            onto which the Dirichlet boundary conditions should be applied to.
+            Can also be a single entry for a single boundary. If your mesh file
+            is named, then you can also use the names of the boundaries to define the
+            boundary conditions.
+
+    Returns
+    -------
+    list[dolfin.fem.dirichletbc.DirichletBC]
+            A list of DirichletBC objects that represent the boundary conditions.
+
+    Examples
+    --------
+    Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square ::
+
+        from fenics import *
+        import cashocs
+
+        mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
+        V = FunctionSpace(mesh, 'CG', 1)
+        bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+    """
+
+    mesh = function_space.mesh()
+
+    if not isinstance(idcs, list):
+        idcs = [idcs]
+
+    bcs_list = []
+    for entry in idcs:
+        if isinstance(entry, int):
+            bcs_list.append(
+                fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
+            )
+        elif isinstance(entry, str):
+            try:
+                physical_groups = mesh._physical_groups
+                if entry in physical_groups["ds"].keys():
+                    bcs_list.append(
+                        fenics.DirichletBC(
+                            function_space,
+                            value,
+                            boundaries,
+                            physical_groups["ds"][entry],
+                            **kwargs,
+                        )
+                    )
+                else:
+                    raise InputError(
+                        "cashocs.create_dirichlet_bcs",
+                        "idcs",
+                        "The string you have supplied is not associated with a boundary.",
+                    )
+            except AttributeError:
+                raise InputError(
+                    "cashocs.create_dirichlet_bcs",
+                    "mesh",
+                    "The mesh you are using does not support string type boundary conditions. These have to be set in the .msh file.",
+                )
+
+    return bcs_list
+
+
+@deprecated(
+    version="1.5.0",
+    reason="This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.",
+)
 def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
     """Create several Dirichlet boundary conditions at once.
 
@@ -400,7 +319,7 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 
         mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
         V = FunctionSpace(mesh, 'CG', 1)
-        bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+        bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
     """
 
     bcs_list = []
@@ -890,6 +809,13 @@ def _parse_remesh():
     return cashocs_remesh_flag, temp_dir
 
 
+def enlist(arg):
+    if isinstance(arg, list):
+        return arg
+    else:
+        return [arg]
+
+
 def _check_for_config_list(string):
     """Checks, whether a given string is a valid representation of a list if integers
 
@@ -1075,3 +1001,132 @@ def _suffix_function(function, post_function):
         return temp
 
     return run
+
+
+def _max(a, b):
+    """Computes the maximum of ``a`` and ``b``
+
+    Parameters
+    ----------
+    a : float or dolfin.function.function.Function
+        The first parameter
+    b : float or dolfin.function.function.Function
+        The second parameter
+
+    Returns
+    -------
+     : ufl.core.expr.Expr
+        The maximum of ``a`` and ``b``
+
+    """
+    return (a + b + abs(a - b)) / fenics.Constant(2.0)
+
+
+def _min(a, b):
+    """Computes the minimum of ``a`` and ``b``
+
+    Parameters
+    ----------
+    a : float or dolfin.function.function.Function
+        The first parameter
+    b : float or dolfin.function.function.Function
+        The second parameter
+
+    Returns
+    -------
+     : ufl.core.expr.Expr
+        The minimum of ``a`` and ``b``
+
+    """
+    return (a + b - abs(a - b)) / fenics.Constant(2.0)
+
+
+def moreau_yosida_regularization(
+    term,
+    gamma,
+    measure,
+    lower_threshold=None,
+    upper_treshold=None,
+    shift_lower=None,
+    shift_upper=None,
+):
+    """Implements a Moreau-Yosida regularization of an inequality constraint
+
+    The general form of the inequality is of the form ::
+
+        lower_threshold <= term <= upper_threshold
+
+    which is defined over the region specified in ``measure``.
+
+    In case ``lower_threshold`` or ``upper_threshold`` are ``None``, they are set to
+    :math:`-\infty` and :math:`\infty`, respectively.
+
+    Parameters
+    ----------
+    term : ufl.core.expr.Expr
+        The term inside the inequality constraint
+    gamma : float
+        The weighting factor of the regularization
+    measure : ufl.measure.Measure
+        The measure over which the inequality constraint is defined
+    lower_threshold : float or dolfin.function.function.Function or None, optional
+        The lower threshold for the inequality constraint. In case this is ``None``, the
+        lower bound is set to :math:`-\infty`. The default is ``None``
+    upper_treshold : float or dolfin.function.function.Function or None, optional
+        The upper threshold for the inequality constraint. In case this is ``None``, the
+        upper bound is set to :math:`\infty`. The default is ``None``
+    shift_lower : float or dolfin.function.function.Function or None:
+        A shift function for the lower bound of the Moreau-Yosida regularization. Should be non-positive.
+        In case this is ``None``, it is set to 0. Default is ``None``.
+    shift_upper
+        A shift function for the upper bound of the Moreau-Yosida regularization. Should be non-negative.
+        In case this is ``None``, it is set to 0. Default is ``None``.
+
+    Returns
+    -------
+     : ufl.form.Form
+        The ufl form of the Moreau-Yosida regularization, to be used in the cost functional.
+    """
+    if lower_threshold is None and upper_treshold is None:
+        raise InputError(
+            "cashocs.utils.moreau_yosida_regularization",
+            "upper_threshold, lower_threshold",
+            "At least one of the threshold parameters has to be defined.",
+        )
+
+    if shift_lower is None:
+        shift_lower = fenics.Constant(0.0)
+    if shift_upper is None:
+        shift_upper = fenics.Constant(0.0)
+
+    if lower_threshold is not None:
+        reg_lower = (
+            fenics.Constant(1 / (2 * gamma))
+            * pow(
+                _min(
+                    shift_lower + fenics.Constant(gamma) * (term - lower_threshold),
+                    fenics.Constant(0.0),
+                ),
+                2,
+            )
+            * measure
+        )
+    if upper_treshold is not None:
+        reg_upper = (
+            fenics.Constant(1 / (2 * gamma))
+            * pow(
+                _max(
+                    shift_upper + fenics.Constant(gamma) * (term - upper_treshold),
+                    fenics.Constant(0.0),
+                ),
+                2,
+            )
+            * measure
+        )
+
+    if upper_treshold is not None and lower_threshold is not None:
+        return reg_lower + reg_upper
+    elif upper_treshold is None and lower_threshold is not None:
+        return reg_lower
+    elif upper_treshold is not None and lower_threshold is None:
+        return reg_upper

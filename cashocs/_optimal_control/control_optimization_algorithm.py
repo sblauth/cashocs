@@ -54,7 +54,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                 the OptimalControlProblem class as defined through the user
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.gradient_problem = optimization_problem.gradient_problem
         self.gradients = optimization_problem.gradients
@@ -85,7 +85,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd:
             self.state_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.state_pvd_list.append([])
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i].append(
@@ -96,10 +100,35 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                         fenics.File(f"{self.result_dir}/pvd/state_{i:d}.pvd")
                     )
 
+            self.control_pvd_list = []
+            for i in range(self.form_handler.control_dim):
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
+                    self.control_pvd_list.append([])
+                    for j in range(
+                        self.form_handler.control_spaces[i].num_sub_spaces()
+                    ):
+                        self.control_pvd_list[i].append(
+                            fenics.File(
+                                f"{self.result_dir}/pvd/control_{i:d}_{j:d}.pvd"
+                            )
+                        )
+                else:
+                    self.control_pvd_list.append(
+                        fenics.File(f"{self.result_dir}/pvd/control_{i:d}.pvd")
+                    )
+
         if self.save_pvd_adjoint:
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.adjoint_pvd_list.append([])
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
@@ -117,7 +146,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd_gradient:
             self.gradient_pvd_list = []
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.gradient_pvd_list.append([])
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
@@ -186,7 +219,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i][j] << self.form_handler.states[i].sub(
                             j, True
@@ -196,9 +233,30 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                         i
                     ], self.iteration
 
+            for i in range(self.form_handler.control_dim):
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
+                    for j in range(
+                        self.form_handler.control_spaces[i].num_sub_spaces()
+                    ):
+                        self.control_pvd_list[i][j] << self.form_handler.controls[
+                            i
+                        ].sub(j, True), self.iteration
+                else:
+                    self.control_pvd_list[i] << self.form_handler.controls[
+                        i
+                    ], self.iteration
+
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
                     ):
@@ -212,7 +270,11 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
-                if self.form_handler.control_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.control_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
                     ):

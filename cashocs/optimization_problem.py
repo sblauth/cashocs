@@ -42,6 +42,7 @@ from .utils import (
     _check_and_enlist_ufl_forms,
     _check_and_enlist_bcs,
     _check_and_enlist_ksp_options,
+    _optimization_algorithm_configuration,
 )
 
 
@@ -68,6 +69,7 @@ class OptimizationProblem:
         adjoint_ksp_options=None,
         desired_weights=None,
         scalar_tracking_forms=None,
+        min_max_terms=None,
     ):
         r"""Initializes the optimization problem.
 
@@ -353,6 +355,27 @@ class OptimizationProblem:
                     "Type of scalar_tracking_forms is wrong.",
                 )
 
+        ### min_max_terms
+        self.use_min_max_terms = False
+
+        if min_max_terms is None:
+            self.min_max_terms = min_max_terms
+        else:
+            try:
+                if isinstance(min_max_terms, list):
+                    self.min_max_terms = min_max_terms
+                    self.use_min_max_terms = True
+
+                elif isinstance(min_max_terms, dict):
+                    self.min_max_terms = [min_max_terms]
+                    self.use_min_max_terms = True
+            except:
+                raise InputError(
+                    "cashocs.optimization_problem.OptimizationProblem",
+                    "min_max_terms",
+                    "Type of scalar_tracking_forms is wrong.",
+                )
+
         if not len(self.bcs_list) == self.state_dim:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
@@ -440,11 +463,16 @@ class OptimizationProblem:
         self.adjoint_problem = None
 
         self.lagrangian = Lagrangian(
-            self.state_forms, self.cost_functional_form, self.scalar_tracking_forms
+            self.state_forms,
+            self.cost_functional_form,
+            self.scalar_tracking_forms,
+            self.min_max_terms,
         )
         self.form_handler = None
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
+
+        self.uses_custom_scalar_product = False
 
         self._scale_cost_functional()
 
@@ -762,13 +790,16 @@ class OptimizationProblem:
 
             if self.use_scalar_tracking:
                 for i in range(len(self.scalar_tracking_forms)):
-                    self.scalar_tracking_forms[-1 - i]["weights"] = abs(
+                    self.scalar_tracking_forms[-1 - i]["weight"] = abs(
                         self.desired_weights[-1 - i]
                         / self.initial_scalar_tracking_values[-1 - i]
                     )
 
             self.lagrangian = Lagrangian(
-                self.state_forms, self.cost_functional_form, self.scalar_tracking_forms
+                self.state_forms,
+                self.cost_functional_form,
+                self.scalar_tracking_forms,
+                self.min_max_terms,
             )
 
         else:
@@ -846,3 +877,77 @@ class OptimizationProblem:
 
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
+
+    def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Parameters
+        ----------
+        algorithm : str or None, optional
+                Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
+                limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``. In addition, for optimal control problems,
+                one can use ``'newton'`` for a truncated Newton method,
+                and ``'pdas'`` or ``'primal_dual_active_set'`` for a
+                primal dual active set method.
+        rtol : float or None, optional
+                The relative tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+        atol : float or None, optional
+                The absolute tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+        max_iter : int or None, optional
+                The maximum number of iterations the optimization algorithm
+                can carry out before it is terminated. Overwrites the value
+                specified in the config file. If this is ``None``, the value from
+                the config file is taken. Default is ``None``.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        If either ``rtol`` or ``atol`` are specified as arguments to the solve
+        call, the termination criterion changes to:
+
+          - a purely relative one (if only ``rtol`` is specified), i.e.,
+
+          .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+
+          - a purely absolute one (if only ``atol`` is specified), i.e.,
+
+          .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+
+          - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
+          .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+        """
+
+        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
+
+        if (rtol is not None) and (atol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(0.0))
+        elif (atol is not None) and (rtol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(0.0))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+        elif (atol is not None) and (rtol is not None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+
+        if max_iter is not None:
+            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+
+        self._check_for_custom_forms()
+
+    def __shift_cost_functional(self, shift=0.0):
+        self.form_handler.cost_functional_shift = shift

@@ -33,7 +33,7 @@ p = Function(V)
 u = Function(V)
 
 e = inner(grad(y), grad(p)) * dx - u * p * dx
-bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 alpha = 1e-4

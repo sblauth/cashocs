@@ -29,6 +29,8 @@ from ..utils import _optimization_algorithm_configuration
 
 
 class ArmijoLineSearch:
+    """An Armijo line search algorithm for shape optimization problems"""
+
     def __init__(self, optimization_algorithm):
         """Initializes the line search
 

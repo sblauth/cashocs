@@ -172,7 +172,7 @@ After defining the weak form of the state equation, we now
 specify the corresponding (homogeneous) Dirichlet boundary
 conditions via ::
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
 
 This creates Dirichlet boundary conditions with value 0 at the
 boundaries 1,2,3, and 4, i.e., everywhere.
@@ -187,7 +187,7 @@ boundaries 1,2,3, and 4, i.e., everywhere.
         bc = DirichletBC(V, Constant(0), boundary)
 
     which would yield a single DirichletBC object, instead of
-    the list returned by :py:func:`create_bcs_list <cashocs.create_bcs_list>`. Any of the many methods for
+    the list returned by :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`. Any of the many methods for
     defining the boundary conditions works here, as long as it
     is valid input for the :py:func:`fenics.solve` function.
 

@@ -49,8 +49,8 @@ e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
 
 e = [e_y, e_z]
 
-bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 bcs_list = [bcs1, bcs2]
 

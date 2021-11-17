@@ -33,15 +33,17 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
     Parameters
     ----------
     ocp : cashocs.OptimalControlProblem
-            The underlying optimal control problem, for which the gradient
-            of the reduced cost function shall be verified.
+        The underlying optimal control problem, for which the gradient
+        of the reduced cost function shall be verified.
     u : list[dolfin.function.function.Function], optional
-            The point, at which the gradient shall be verified. If this is ``None``,
-            then the current controls of the optimization problem are used. Default is
-            ``None``.
+        The point, at which the gradient shall be verified. If this is ``None``,
+        then the current controls of the optimization problem are used. Default is
+        ``None``.
     h : list[dolfin.function.function.Function], optional
-            The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
-            one random direction is chosen. Default is ``None``.
+        The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
+        one random direction is chosen. Default is ``None``.
+    rng : numpy.random.RandomState
+        A numpy random state for calculating a random direction
 
     Returns
     -------
@@ -132,16 +134,18 @@ def shape_gradient_test(sop, h=None, rng=None):
     Parameters
     ----------
     sop : cashocs.ShapeOptimizationProblem
-            The underlying shape optimization problem.
+        The underlying shape optimization problem.
     h : dolfin.function.function.Function, optional
-            The direction used to compute the directional derivative. If this is
-            ``None``, then a random direction is used (default is ``None``).
+        The direction used to compute the directional derivative. If this is
+        ``None``, then a random direction is used (default is ``None``).
+    rng : numpy.random.RandomState
+        A numpy random state for calculating a random direction
 
     Returns
     -------
-    float
-            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
-             everything works as expected.
+     : float
+        The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+        everything works as expected.
     """
 
     if h is None:
@@ -192,6 +196,22 @@ def shape_gradient_test(sop, h=None, rng=None):
 
 
 def compute_convergence_rates(epsilons, residuals, verbose=True):
+    """Computes the convergence rate of the Taylor test.
+
+    Parameters
+    ----------
+    epsilons : list[float]
+        The step sizes
+    residuals : list[float]
+        The corresponding residuals
+    verbose : bool, optional
+        Prints the result to the console, if ``True``. Default is ``True``
+
+    Returns
+    -------
+     : list[float]
+        The computed convergence rates
+    """
 
     rates = []
     for i in range(1, len(epsilons)):

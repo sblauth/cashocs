@@ -304,6 +304,19 @@ class BaseHessianProblem:
         self.no_sensitivity_solves += 2
 
     def newton_solve(self, idx_active=None):
+        """Solves the problem with a truncated Newton method.
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            List of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         self.gradient_problem.solve()
         self.form_handler.compute_active_sets()
@@ -325,9 +338,35 @@ class BaseHessianProblem:
         return self.delta_control
 
     def cg(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CG method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
         pass
 
     def cr(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CR method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
         pass
 
 
@@ -346,9 +385,24 @@ class HessianProblem(BaseHessianProblem):
                 of the Hessian).
         """
 
-        BaseHessianProblem.__init__(self, form_handler, gradient_problem)
+        super().__init__(form_handler, gradient_problem)
 
     def reduced_hessian_application(self, h, out):
+        """Computes the application of the reduced Hessian on a direction.
+
+        This is needed to solve the Newton step with iterative solvers.
+
+        Parameters
+        ----------
+        h : list[dolfin.function.function.Function]
+            The direction, onto which the reduced Hessian is applied
+        out : list[dolfin.function.function.Function]
+            The output of the application of the (linear) operator
+
+        Returns
+        -------
+
+        """
 
         for j in range(self.control_dim):
             out[j].vector()[:] = 0.0
@@ -366,6 +420,19 @@ class HessianProblem(BaseHessianProblem):
             )
 
     def newton_solve(self, idx_active=None):
+        """Solves the Newton step with an iterative method
+
+        Parameters
+        ----------
+        idx_active : list[list[int]]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         if idx_active is not None:
             raise CashocsException("Must not pass idx_active to HessianProblem.")
@@ -373,6 +440,19 @@ class HessianProblem(BaseHessianProblem):
         return BaseHessianProblem.newton_solve(self)
 
     def cg(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CG method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         for j in range(self.control_dim):
             self.residual[j].vector()[:] = -self.gradients[j].vector()[:]
@@ -414,6 +494,19 @@ class HessianProblem(BaseHessianProblem):
             self.rsold = self.rsnew
 
     def cr(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CR method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         for j in range(self.control_dim):
             self.residual[j].vector()[:] = -self.gradients[j].vector()[:]
@@ -499,7 +592,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
                 of the Hessian).
         """
 
-        BaseHessianProblem.__init__(self, form_handler, gradient_problem)
+        super().__init__(form_handler, gradient_problem)
 
         self.reduced_gradient = [
             fenics.Function(self.form_handler.control_spaces[j])
@@ -508,6 +601,21 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
     def reduced_hessian_application(self, h, out, idx_active):
+        """Computes the application of the reduced Hessian on a direction.
+
+        This is needed to solve the Newton step with iterative solvers.
+
+        Parameters
+        ----------
+        h : list[dolfin.function.function.Function]
+            The direction, onto which the reduced Hessian is applied
+        out : list[dolfin.function.function.Function]
+            The output of the application of the (linear) operator
+
+        Returns
+        -------
+
+        """
 
         for j in range(self.control_dim):
             self.temp[j].vector()[:] = h[j].vector()[:]
@@ -519,6 +627,19 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             out[j].vector()[idx_active[j]] = 0.0
 
     def newton_solve(self, idx_active=None):
+        """Solves the Newton step with an iterative method
+
+        Parameters
+        ----------
+        idx_active : list[list[int]]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         if idx_active is None:
             raise CashocsException(
@@ -534,6 +655,19 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         return BaseHessianProblem.newton_solve(self, idx_active)
 
     def cg(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CG method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         for j in range(self.control_dim):
             self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
@@ -566,6 +700,19 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.rsold = self.rsnew
 
     def cr(self, idx_active=None):
+        """Solves the (truncated) Newton step with a CR method
+
+        Parameters
+        ----------
+        idx_active : list[int]
+            The list of active indices
+
+        Returns
+        -------
+         : list[dolfin.function.function.Function]
+            The Newton increment
+
+        """
 
         for j in range(self.control_dim):
             self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]

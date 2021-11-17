@@ -50,8 +50,8 @@ e1 = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
 e2 = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
 e = [e1, e2]
 
-bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 bcs = [bcs1, bcs2]
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
@@ -84,8 +84,12 @@ F = (
     + y_m * q_m * dx
     - v * q_m * dx
 )
-bcs_m1 = cashocs.create_bcs_list(Mixed.sub(0), Constant(0), boundaries, [1, 2, 3, 4])
-bcs_m2 = cashocs.create_bcs_list(Mixed.sub(1), Constant(0), boundaries, [1, 2, 3, 4])
+bcs_m1 = cashocs.create_dirichlet_bcs(
+    Mixed.sub(0), Constant(0), boundaries, [1, 2, 3, 4]
+)
+bcs_m2 = cashocs.create_dirichlet_bcs(
+    Mixed.sub(1), Constant(0), boundaries, [1, 2, 3, 4]
+)
 bcs_m = bcs_m1 + bcs_m2
 
 J_m = (

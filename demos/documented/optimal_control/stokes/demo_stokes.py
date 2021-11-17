@@ -45,7 +45,9 @@ def pressure_point(x, on_boundary):
     return near(x[0], 0) and near(x[1], 0)
 
 
-no_slip_bcs = cashocs.create_bcs_list(V.sub(0), Constant((0, 0)), boundaries, [1, 2, 3])
+no_slip_bcs = cashocs.create_dirichlet_bcs(
+    V.sub(0), Constant((0, 0)), boundaries, [1, 2, 3]
+)
 lid_velocity = Expression(("4*x[0]*(1-x[0])", "0.0"), degree=2)
 bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
 bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")

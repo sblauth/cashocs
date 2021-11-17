@@ -37,10 +37,10 @@ u = Function(V)
 v = Function(V)
 
 e_y = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
-bcs_y = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs_y = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 e_z = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
-bcs_z = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+bcs_z = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 states = [y, z]
 adjoints = [p, q]

@@ -38,7 +38,7 @@ class NCG(ControlOptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

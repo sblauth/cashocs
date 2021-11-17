@@ -39,7 +39,7 @@ class PDAS(ControlOptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.idx_active_upper_prev = [
             np.array([]) for j in range(optimization_problem.control_dim)

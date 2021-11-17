@@ -40,6 +40,7 @@ from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
 from ..optimization_problem import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration
+from ..verification import shape_gradient_test
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -70,6 +71,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         adjoint_ksp_options=None,
         desired_weights=None,
         scalar_tracking_forms=None,
+        min_max_terms=None,
     ):
         """This is used to generate all classes and functionalities. First ensures
         consistent input, afterwards, the solution algorithm is initialized.
@@ -120,8 +122,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 i.e., no scalar tracking terms are considered.
         """
 
-        OptimizationProblem.__init__(
-            self,
+        super().__init__(
             state_forms,
             bcs_list,
             cost_functional_form,
@@ -133,6 +134,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             adjoint_ksp_options,
             desired_weights,
             scalar_tracking_forms,
+            min_max_terms,
         )
 
         ### Initialize the remeshing behavior, and a temp file
@@ -250,6 +252,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     "Not a valid type for shape_scalar_product.",
                 )
 
+        if self.shape_scalar_product is not None:
+            self.uses_custom_scalar_product = True
+
+        if self.uses_custom_scalar_product and self.config.getboolean(
+            "ShapeGradient", "use_p_laplacian", fallback=False
+        ):
+            warning(
+                "You have supplied a custom scalar product and set the parameter ``use_p_laplacian`` in the config file."
+                "cashocs will use the supplied scalar product and not the p-Laplacian to compute the shape gradient."
+            )
+
         self.form_handler = ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
@@ -350,22 +363,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
           .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
         """
 
-        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
-
-        if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
-        elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-        elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
-
-        self._check_for_custom_forms()
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         if self.algorithm == "gradient_descent":
             self.solver = GradientDescent(self)
@@ -404,6 +402,18 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         def custom_except_hook(exctype, value, traceback):
+            """A customized hook which is injected when an exception occurs.
+
+            Parameters
+            ----------
+            exctype
+            value
+            traceback
+
+            Returns
+            -------
+
+            """
             debug(
                 "An exception was raised by cashocs, deleting the created temporary files."
             )
@@ -573,3 +583,22 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         return self.form_handler.test_vector_field
+
+    def gradient_test(self, h=None, rng=None):
+        """Taylor test to verify that the computed shape gradient is correct.
+
+        Parameters
+        ----------
+        h : dolfin.function.function.Function, optional
+            The direction used to compute the directional derivative. If this is
+            ``None``, then a random direction is used (default is ``None``).
+        rng : numpy.random.RandomState
+            A numpy random state for calculating a random direction
+
+        Returns
+        -------
+         : float
+            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+            everything works as expected.
+        """
+        return shape_gradient_test(self, h, rng)

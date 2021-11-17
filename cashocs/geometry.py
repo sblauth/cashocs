@@ -36,6 +36,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 from ufl import Jacobian, JacobianInverse
+from ufl.measure import Measure
 
 from ._exceptions import CashocsException, ConfigError, InputError
 from ._loggers import debug, info, warning
@@ -44,9 +45,9 @@ from .utils import (
     _parse_remesh,
     _setup_petsc_options,
     _solve_linear_problem,
-    create_bcs_list,
+    create_dirichlet_bcs,
     write_out_mesh,
-    NamedMeasure,
+    summation,
 )
 
 
@@ -89,6 +90,26 @@ def import_mesh(input_arg):
     dS : ufl.measure.Measure
             The interior facet measure of the mesh corresponding
             to boundaries (i.e. GMSH Physical region indices).
+
+    Notes
+    -----
+    In case the boundaries in the Gmsh .msh file are not only marked with numbers (as pyhsical
+    groups), but also with names (i.e. strings), these strings can be used with the integration
+    measures ``dx`` and ``ds`` returned by this method. E.g., if one specified the
+    following in a 2D Gmsh .geo file ::
+
+        Physical Surface("domain", 1) = {i,j,k};
+
+    where i,j,k are representative for some integers, then this can be used in the measure
+    ``dx`` (as we are 2D) as follows. The command ::
+
+        dx(1)
+
+    is completely equivalent to ::
+
+       dx("domain")
+
+    and both can be used interchangeably.
     """
 
     start_time = time.time()
@@ -162,13 +183,13 @@ def import_mesh(input_arg):
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = NamedMeasure(
+    dx = _NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = NamedMeasure(
+    ds = _NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    dS = NamedMeasure(
+    dS = _NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
@@ -180,6 +201,9 @@ def import_mesh(input_arg):
 
     # Add an attribute to the mesh to show with what procedure it was generated
     mesh._cashocs_generator = mesh_attribute
+    # Add the physical groups to the mesh in case they are present
+    if physical_groups is not None:
+        mesh._physical_groups = physical_groups
 
     # Check the mesh quality of the imported mesh in case a config file is passed
     if isinstance(input_arg, configparser.ConfigParser):
@@ -425,9 +449,9 @@ def regular_mesh(n=10, L_x=1.0, L_y=1.0, L_z=None, diagonal="right"):
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = fenics.Measure("dx", mesh, subdomain_data=subdomains)
-    ds = fenics.Measure("ds", mesh, subdomain_data=boundaries)
-    dS = fenics.Measure("dS", mesh)
+    dx = _NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = _NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    dS = _NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS
 
@@ -590,9 +614,9 @@ def regular_box_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = fenics.Measure("dx", mesh, subdomain_data=subdomains)
-    ds = fenics.Measure("ds", mesh, subdomain_data=boundaries)
-    dS = fenics.Measure("dS", mesh)
+    dx = _NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = _NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    dS = _NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS
 
@@ -696,7 +720,7 @@ def compute_boundary_distance(
     """
 
     V = fenics.FunctionSpace(mesh, "CG", 1)
-    dx = fenics.Measure("dx", mesh)
+    dx = _NamedMeasure("dx", mesh)
 
     ksp = PETSc.KSP().create()
     ksp_options = [
@@ -719,7 +743,9 @@ def compute_boundary_distance(
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
-            bcs = create_bcs_list(V, fenics.Constant(0.0), boundaries, boundary_idcs)
+            bcs = create_dirichlet_bcs(
+                V, fenics.Constant(0.0), boundaries, boundary_idcs
+            )
         else:
             bcs = fenics.DirichletBC(
                 V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
@@ -758,6 +784,181 @@ def compute_boundary_distance(
             break
 
     return u_curr
+
+
+def generate_measure(idx, measure):
+    """Generates a measure based on indices.
+
+    Generates a :py:class:`fenics.MeasureSum` or :py:class:`_EmptyMeasure <cashocs.geometry._EmptyMeasure>`
+    object corresponding to ``measure`` and the subdomains / boundaries specified in idx. This
+    is a convenient shortcut to writing ``dx(1) + dx(2) + dx(3)``
+    in case many measures are involved.
+
+    Parameters
+    ----------
+    idx : list[int]
+            A list of indices for the boundary / volume markers that
+            define the (new) measure.
+    measure : ufl.measure.Measure
+            The corresponding UFL measure.
+
+    Returns
+    -------
+    ufl.measure.Measure or cashocs.geometry._EmptyMeasure
+            The corresponding sum of the measures or an empty measure.
+
+    Examples
+    --------
+    Here, we create a wrapper for the surface measure on the top and bottom of
+    the unit square::
+
+        from fenics import *
+        import cashocs
+        mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
+        top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
+        assemble(1*top_bottom_measure)
+    """
+
+    if len(idx) == 0:
+        out_measure = _EmptyMeasure(measure)
+
+    else:
+        out_measure = measure(idx[0])
+
+        for i in idx[1:]:
+            out_measure += measure(i)
+
+    return out_measure
+
+
+class _NamedMeasure(Measure):
+    """A named integration measure, which can use names for subdomains defined in a gmsh
+    .msh file.
+
+    """
+
+    def __init__(
+        self,
+        integral_type,
+        domain=None,
+        subdomain_id="everywhere",
+        metadata=None,
+        subdomain_data=None,
+        physical_groups=None,
+    ):
+        super().__init__(
+            integral_type,
+            domain=domain,
+            subdomain_id=subdomain_id,
+            metadata=metadata,
+            subdomain_data=subdomain_data,
+        )
+        self.physical_groups = physical_groups
+
+    def __call__(
+        self,
+        subdomain_id=None,
+        metadata=None,
+        domain=None,
+        subdomain_data=None,
+        degree=None,
+        scheme=None,
+        rule=None,
+    ):
+
+        if isinstance(subdomain_id, int):
+            return super().__call__(
+                subdomain_id=subdomain_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+
+        elif isinstance(subdomain_id, str):
+            try:
+                if (
+                    subdomain_id in self.physical_groups["dx"].keys()
+                    and self._integral_type == "cell"
+                ):
+                    integer_id = self.physical_groups["dx"][subdomain_id]
+                elif subdomain_id in self.physical_groups[
+                    "ds"
+                ].keys() and self._integral_type in [
+                    "exterior_facet",
+                    "interior_facet",
+                ]:
+                    integer_id = self.physical_groups["ds"][subdomain_id]
+                else:
+                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+            except:
+                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+
+            return super().__call__(
+                subdomain_id=integer_id,
+                metadata=metadata,
+                domain=domain,
+                subdomain_data=subdomain_data,
+                degree=degree,
+                scheme=scheme,
+                rule=rule,
+            )
+
+        elif isinstance(subdomain_id, (list, tuple)):
+            return generate_measure(subdomain_id, self)
+
+
+class _EmptyMeasure(Measure):
+    """Implements an empty measure (e.g. of a null set).
+
+    This is used for automatic measure generation, e.g., if
+    the fixed boundary is empty for a shape optimization problem,
+    and is used to avoid case distinctions.
+
+    Examples
+    --------
+    The code ::
+
+        dm = _EmptyMeasure(dx)
+        u*dm
+
+    is equivalent to ::
+
+        Constant(0)*u*dm
+
+    so that ``fenics.assemble(u*dm)`` generates zeros.
+    """
+
+    def __init__(self, measure):
+        """Initializes self.
+
+        Parameters
+        ----------
+        measure : ufl.measure.Measure
+                The underlying UFL measure.
+        """
+
+        super().__init__(measure.integral_type())
+
+        self.measure = measure
+
+    def __rmul__(self, other):
+        """Multiplies the empty measure to the right.
+
+        Parameters
+        ----------
+        other : ufl.core.expr.Expr
+                A UFL expression to be integrated over an empty measure.
+
+        Returns
+        -------
+        ufl.form.Form
+                The resulting UFL form.
+        """
+
+        return fenics.Constant(0) * other * self.measure
 
 
 class _MeshHandler:
@@ -1338,6 +1539,13 @@ class _MeshHandler:
                 json.dump(self.temp_dict, file)
 
             def filter_sys_argv():
+                """Filters the command line arguments for the cashocs remesh flag
+
+                Returns
+                -------
+                 : list[str]
+                    The filtered list of command line arguments
+                """
                 arg_list = sys.argv.copy()
                 idx_cashocs_remesh_flag = [
                     i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
@@ -1396,6 +1604,13 @@ class _MeshHandler:
 
 
 class DeformationHandler:
+    """A class, which implements mesh deformations.
+
+    The deformations can be due to a deformation vector field or a (piecewise) update of
+    the mesh coordinates.
+
+    """
+
     def __init__(self, mesh):
         """
 
@@ -1405,7 +1620,7 @@ class DeformationHandler:
             The fenics mesh which is to be deformed
         """
         self.mesh = mesh
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx = _NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
         self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
@@ -1547,6 +1762,10 @@ class DeformationHandler:
         ----------
         transformation : dolfin.function.function.Function or np.ndarray
             The transformation for the mesh, a vector CG1 Function.
+        validated_a_priori : bool
+            A boolean flag, which indicates whether an a-priori check has
+            already been performed before moving the mesh. Default is
+            ``False``
         """
 
         if isinstance(transformation, np.ndarray):
@@ -2076,7 +2295,7 @@ class MeshQuality:
         ksp = PETSc.KSP().create()
         _setup_petsc_options([ksp], [options])
 
-        dx = fenics.Measure("dx", mesh)
+        dx = _NamedMeasure("dx", mesh)
         a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
         L = (
             fenics.sqrt(fenics.inner(jac, jac))
@@ -2127,7 +2346,7 @@ class MeshQuality:
         ksp = PETSc.KSP().create()
         _setup_petsc_options([ksp], [options])
 
-        dx = fenics.Measure("dx", mesh)
+        dx = _NamedMeasure("dx", mesh)
         a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
         L = (
             fenics.sqrt(fenics.inner(jac, jac))

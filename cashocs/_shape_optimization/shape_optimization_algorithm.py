@@ -42,7 +42,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
                 the optimization problem
         """
 
-        OptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search_broken = False
         self.requires_remeshing = False
@@ -87,7 +87,11 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd:
             self.state_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.state_pvd_list.append([])
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         if self.mesh_handler.do_remesh:
@@ -117,7 +121,11 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd_adjoint:
             self.adjoint_pvd_list = []
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     self.adjoint_pvd_list.append([])
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
@@ -184,7 +192,11 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.state_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.state_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         self.state_pvd_list[i][j] << (
                             self.form_handler.states[i].sub(j, True),
@@ -198,7 +210,11 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
-                if self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0:
+                if (
+                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
+                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
+                    == "Mixed"
+                ):
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
                     ):

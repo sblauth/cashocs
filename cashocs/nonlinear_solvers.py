@@ -24,9 +24,8 @@ follow.
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
-
 from deprecated import deprecated
+from petsc4py import PETSc
 
 from ._exceptions import InputError, NotConvergedError
 from .utils import _setup_petsc_options, _solve_linear_problem
@@ -150,7 +149,7 @@ def newton_solve(
 		u = Function(V)
 		v = TestFunction(V)
 		F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-		bcs = cashocs.create_bcs_list(V, Constant(0.0), boundaries, [1,2,3,4])
+		bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
 		cashocs.damped_newton_solve(F, u, bcs)
 	"""
 
@@ -345,7 +344,7 @@ def newton_solve(
 
 
 @deprecated(
-    version="1.4.0",
+    version="1.5.0",
     reason="This is replaced by cashocs.newton_solve and will be removed in the future.",
 )
 def damped_newton_solve(
@@ -363,6 +362,55 @@ def damped_newton_solve(
     ksp=None,
     ksp_options=None,
 ):
+    """Damped Newton solve interface, only here for compatibility reasons.
+
+    Parameters
+    ----------
+    F : ufl.form.Form
+            The variational form of the nonlinear problem to be solved by Newton's method.
+    u : dolfin.function.function.Function
+            The sought solution / initial guess. It is not assumed that the initial guess
+            satisfies the Dirichlet boundary conditions, they are applied automatically.
+            The method overwrites / updates this Function.
+    bcs : list[dolfin.fem.dirichletbc.DirichletBC]
+            A list of DirichletBCs for the nonlinear variational problem.
+    dF : ufl.form.Form, optional
+        The Jacobian of F, used for the Newton method. Default is None, and in this case
+        the Jacobian is computed automatically with AD.
+    rtol : float, optional
+            Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
+            (default is ``rtol = 1e-10``).
+    atol : float, optional
+            Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
+            (default is ``atol = 1e-10``).
+    max_iter : int, optional
+            Maximum number of iterations carried out by the method
+            (default is ``max_iter = 50``).
+    convergence_type : {'combined', 'rel', 'abs'}
+            Determines the type of stopping criterion that is used.
+    norm_type : {'l2', 'linf'}
+            Determines which norm is used in the stopping criterion.
+    damped : bool, optional
+            If ``True``, then a damping strategy is used. If ``False``, the classical
+            Newton-Raphson iteration (without damping) is used (default is ``True``).
+    verbose : bool, optional
+            If ``True``, prints status of the iteration to the console (default
+            is ``True``).
+    ksp : petsc4py.PETSc.KSP, optional
+            The PETSc ksp object used to solve the inner (linear) problem
+            if this is ``None`` it uses the direct solver MUMPS (default is
+            ``None``).
+    ksp_options : list[list[str]]
+            The list of options for the linear solver.
+
+
+    Returns
+    -------
+    dolfin.function.function.Function
+            The solution of the nonlinear variational problem, if converged.
+            This overrides the input function u.
+
+    """
     return newton_solve(
         F,
         u,

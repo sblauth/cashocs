@@ -41,9 +41,11 @@ from .utils import (
     _optimization_algorithm_configuration,
     _setup_petsc_options,
     _solve_linear_problem,
-    create_bcs_list,
+    create_dirichlet_bcs,
     summation,
     _check_for_config_list,
+    _max,
+    _min,
 )
 
 
@@ -64,7 +66,9 @@ class Lagrangian:
     FormHandler : Derives necessary adjoint and gradient / shape derivative equations.
     """
 
-    def __init__(self, state_forms, cost_functional_form, scalar_tracking_forms):
+    def __init__(
+        self, state_forms, cost_functional_form, scalar_tracking_forms, min_max_forms
+    ):
         """Initializes the Lagrangian.
 
         Parameters
@@ -81,6 +85,7 @@ class Lagrangian:
         self.state_forms = state_forms
         self.cost_functional_form = cost_functional_form
         self.scalar_tracking_forms = scalar_tracking_forms
+        self.min_max_forms = min_max_forms
 
         self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
 
@@ -116,6 +121,10 @@ class FormHandler:
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
         self.use_scalar_tracking = optimization_problem.use_scalar_tracking
+        self.use_min_max_terms = optimization_problem.use_min_max_terms
+        self.min_max_forms = self.lagrangian.min_max_forms
+
+        self.cost_functional_shift = 0.0
 
         # Further initializations
         self.cost_functional_form = self.lagrangian.cost_functional_form
@@ -147,10 +156,31 @@ class FormHandler:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector()[
                         :
-                    ] = self.lagrangian.scalar_tracking_forms[j]["weights"]
+                    ] = self.lagrangian.scalar_tracking_forms[j]["weight"]
             except KeyError:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector()[:] = 1.0
+
+        if self.use_min_max_terms:
+            self.min_max_integrands = [d["integrand"] for d in self.min_max_forms]
+            self.min_max_lower_bounds = [d["lower_bound"] for d in self.min_max_forms]
+            self.min_max_upper_bounds = [d["upper_bound"] for d in self.min_max_forms]
+
+            dummy_meshes = [
+                integrand.integrals()[0].ufl_domain().ufl_cargo()
+                for integrand in self.min_max_integrands
+            ]
+            self.min_max_integrand_values = [
+                fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+                for mesh in dummy_meshes
+            ]
+
+            self.no_min_max_terms = len(self.min_max_integrands)
+            self.min_max_mu = []
+            self.min_max_lambda = []
+            for j in range(self.no_min_max_terms):
+                self.min_max_mu.append(self.min_max_forms[j]["mu"])
+                self.min_max_lambda.append(self.min_max_forms[j]["lambda"])
 
         self.state_dim = len(self.states)
 
@@ -294,6 +324,36 @@ class FormHandler:
                             self.test_functions_adjoint[i],
                         )
 
+            if self.use_min_max_terms:
+                for i in range(self.state_dim):
+                    for j in range(self.no_min_max_terms):
+
+                        if self.min_max_lower_bounds[j] is not None:
+                            term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                                self.min_max_integrand_values[j]
+                                - self.min_max_lower_bounds[j]
+                            )
+                            self.adjoint_picard_forms[i] += _min(
+                                fenics.Constant(0.0), term_lower
+                            ) * fenics.derivative(
+                                self.min_max_integrands[j],
+                                self.states[i],
+                                self.test_functions_adjoint[i],
+                            )
+
+                        if self.min_max_upper_bounds[j] is not None:
+                            term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                                self.min_max_integrand_values[j]
+                                - self.min_max_upper_bounds[j]
+                            )
+                            self.adjoint_picard_forms[i] += _max(
+                                fenics.Constant(0.0), term_upper
+                            ) * fenics.derivative(
+                                self.min_max_integrands[j],
+                                self.states[i],
+                                self.test_functions_adjoint[i],
+                            )
+
         self.adjoint_eq_forms = [
             fenics.derivative(
                 self.lagrangian_temp_forms[i],
@@ -321,6 +381,40 @@ class FormHandler:
                             self.test_functions_adjoint[i],
                         )
                     )
+
+        if self.use_min_max_terms:
+            for i in range(self.state_dim):
+                for j in range(self.no_min_max_terms):
+                    self.temp_form = replace(
+                        self.min_max_integrands[j],
+                        {self.adjoints[i]: self.trial_functions_adjoint[i]},
+                    )
+                    if self.min_max_lower_bounds[j] is not None:
+                        term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                            self.min_max_integrand_values[j]
+                            - self.min_max_lower_bounds[j]
+                        )
+                        self.adjoint_eq_forms[i] += _min(
+                            fenics.Constant(0.0), term_lower
+                        ) * fenics.derivative(
+                            self.temp_form,
+                            self.states[i],
+                            self.test_functions_adjoint[i],
+                        )
+
+                    if self.min_max_upper_bounds[j] is not None:
+                        term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                            self.min_max_integrand_values[j]
+                            - self.min_max_upper_bounds[j]
+                        )
+                        self.adjoint_eq_forms[i] += _max(
+                            fenics.Constant(0.0), term_upper
+                        ) * fenics.derivative(
+                            self.temp_form,
+                            self.states[i],
+                            self.test_functions_adjoint[i],
+                        )
+
         self.adjoint_eq_lhs = []
         self.adjoint_eq_rhs = []
 
@@ -433,7 +527,7 @@ class ControlFormHandler(FormHandler):
             The corresponding optimal control problem
         """
 
-        FormHandler.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         # Initialize the attributes from the arguments
         self.controls = optimization_problem.controls
@@ -610,6 +704,21 @@ class ControlFormHandler(FormHandler):
         return b
 
     def restrict_to_lower_active_set(self, a, b):
+        """Restricts a function to the lower bound of the constraints
+
+        Parameters
+        ----------
+        a : list[dolfin.function.function.Function]
+            The input, which is to be restricted
+        b : list[dolfin.function.function.Function]
+            The output, which stores the result
+
+        Returns
+        -------
+        b : list[dolfin.function.function.Function]
+            Function a restricted onto the lower boundaries of the constraints
+
+        """
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -625,6 +734,21 @@ class ControlFormHandler(FormHandler):
         return b
 
     def restrict_to_upper_active_set(self, a, b):
+        """Restricts a function to the upper bound of the constraints
+
+        Parameters
+        ----------
+        a : list[dolfin.function.function.Function]
+            The input, which is to be restricted
+        b : list[dolfin.function.function.Function]
+            The output, which stores the result
+
+        Returns
+        -------
+        b : list[dolfin.function.function.Function]
+            Function a restricted onto the upper boundaries of the constraints
+
+        """
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -733,6 +857,35 @@ class ControlFormHandler(FormHandler):
                         )
                     )
 
+        if self.use_min_max_terms:
+            for i in range(self.control_dim):
+                for j in range(self.no_min_max_terms):
+                    if self.min_max_lower_bounds[j] is not None:
+                        term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                            self.min_max_integrand_values[j]
+                            - self.min_max_lower_bounds[j]
+                        )
+                        self.gradient_forms_rhs[i] += _min(
+                            fenics.Constant(0.0), term_lower
+                        ) * fenics.derivative(
+                            self.min_max_integrands[j],
+                            self.controls[i],
+                            self.test_functions_control[i],
+                        )
+
+                    if self.min_max_upper_bounds[j] is not None:
+                        term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                            self.min_max_integrand_values[j]
+                            - self.min_max_upper_bounds[j]
+                        )
+                        self.gradient_forms_rhs[i] += _max(
+                            fenics.Constant(0.0), term_upper
+                        ) * fenics.derivative(
+                            self.min_max_integrands[j],
+                            self.controls[i],
+                            self.test_functions_control[i],
+                        )
+
     def __compute_newton_forms(self):
         """Calculates the needed forms for the truncated Newton method.
 
@@ -741,11 +894,11 @@ class ControlFormHandler(FormHandler):
         None
         """
 
-        if self.use_scalar_tracking:
+        if self.use_scalar_tracking or self.use_min_max_terms:
             raise InputError(
                 "cashocs._forms.ShapeFormHandler",
                 "__compute_newton_forms",
-                "Newton's method is not available with scalar tracking.",
+                "Newton's method is not available with scalar tracking or min_max terms.",
             )
 
         # Use replace -> derivative to speed up the computations
@@ -977,12 +1130,15 @@ class ShapeFormHandler(FormHandler):
             The corresponding shape optimization problem
         """
 
-        FormHandler.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.has_cashocs_remesh_flag = optimization_problem.has_cashocs_remesh_flag
         self.temp_dir = optimization_problem.temp_dir
         self.boundaries = optimization_problem.boundaries
         self.shape_scalar_product = optimization_problem.shape_scalar_product
+        self.uses_custom_scalar_product = (
+            optimization_problem.uses_custom_scalar_product
+        )
         deformation_space = optimization_problem.deformation_space
 
         self.degree_estimation = self.config.getboolean(
@@ -993,6 +1149,9 @@ class ShapeFormHandler(FormHandler):
         )
         self.use_distance_mu = self.config.getboolean(
             "ShapeGradient", "use_distance_mu", fallback=False
+        )
+        self.update_inhomogeneous = self.config.getboolean(
+            "ShapeGradient", "update_inhomogeneous", fallback=False
         )
 
         if deformation_space is None:
@@ -1106,6 +1265,30 @@ class ShapeFormHandler(FormHandler):
                     self.test_vector_field,
                 )
 
+        if self.use_min_max_terms:
+            for j in range(self.no_min_max_terms):
+                if self.min_max_lower_bounds[j] is not None:
+                    term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                        self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
+                    )
+                    self.shape_derivative += fenics.derivative(
+                        _min(fenics.Constant(0.0), term_lower)
+                        * self.min_max_integrands[j],
+                        fenics.SpatialCoordinate(self.mesh),
+                        self.test_vector_field,
+                    )
+
+                if self.min_max_upper_bounds[j] is not None:
+                    term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                        self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
+                    )
+                    self.shape_derivative += fenics.derivative(
+                        _max(fenics.Constant(0.0), term_upper)
+                        * self.min_max_integrands[j],
+                        fenics.SpatialCoordinate(self.mesh),
+                        self.test_vector_field,
+                    )
+
         # Add pull-backs
         if self.use_pull_back:
             self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
@@ -1131,6 +1314,15 @@ class ShapeFormHandler(FormHandler):
                             if not (coeff.ufl_element().family() == "Real"):
                                 self.material_derivative_coeffs.append(coeff)
 
+            if self.use_min_max_terms:
+                for j in range(self.no_min_max_terms):
+                    for coeff in self.min_max_integrands[j].coefficients():
+                        if coeff.id() in self.state_adjoint_ids:
+                            pass
+                        else:
+                            if not (coeff.ufl_element().family() == "Real"):
+                                self.material_derivative_coeffs.append(coeff)
+
             if len(self.material_derivative_coeffs) > 0:
                 warning(
                     "Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n"
@@ -1138,10 +1330,6 @@ class ShapeFormHandler(FormHandler):
                 )
 
             for coeff in self.material_derivative_coeffs:
-                # temp_space = fenics.FunctionSpace(self.mesh, coeff.ufl_element())
-                # placeholder = fenics.Function(temp_space)
-                # temp_form = fenics.derivative(self.lagrangian.lagrangian_form, coeff, placeholder)
-                # material_derivative = replace(temp_form, {placeholder : fenics.dot(fenics.grad(coeff), self.test_vector_field)})
 
                 material_derivative = fenics.derivative(
                     self.lagrangian.lagrangian_form,
@@ -1160,6 +1348,33 @@ class ShapeFormHandler(FormHandler):
                             coeff,
                             fenics.dot(fenics.grad(coeff), self.test_vector_field),
                         )
+
+                if self.use_min_max_terms:
+                    for j in range(self.no_min_max_terms):
+                        if self.min_max_lower_bounds[j] is not None:
+                            term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                                self.min_max_integrand_values[j]
+                                - self.min_max_lower_bounds[j]
+                            )
+                            material_derivative += fenics.derivative(
+                                _min(fenics.Constant(0.0), term_lower)
+                                * self.min_max_integrands[j],
+                                coeff,
+                                fenics.dot(fenics.grad(coeff), self.test_vector_field),
+                            )
+
+                        if self.min_max_upper_bounds[j] is not None:
+                            term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
+                                self.min_max_integrand_values[j]
+                                - self.min_max_upper_bounds[j]
+                            )
+                            material_derivative += fenics.derivative(
+                                _max(fenics.Constant(0.0), term_upper)
+                                * self.min_max_integrands[j],
+                                coeff,
+                                fenics.dot(fenics.grad(coeff), self.test_vector_field),
+                            )
+
                 material_derivative = expand_derivatives(material_derivative)
 
                 self.shape_derivative += material_derivative
@@ -1250,26 +1465,26 @@ class ShapeFormHandler(FormHandler):
                 "ShapeGradient", "shape_bdry_fix_z", "The input has to be a list."
             )
 
-        self.bcs_shape = create_bcs_list(
+        self.bcs_shape = create_dirichlet_bcs(
             self.deformation_space,
             fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
             self.boundaries,
             self.shape_bdry_fix,
         )
-        self.bcs_shape += create_bcs_list(
+        self.bcs_shape += create_dirichlet_bcs(
             self.deformation_space.sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
-        self.bcs_shape += create_bcs_list(
+        self.bcs_shape += create_dirichlet_bcs(
             self.deformation_space.sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
         if self.deformation_space.num_sub_spaces() == 3:
-            self.bcs_shape += create_bcs_list(
+            self.bcs_shape += create_dirichlet_bcs(
                 self.deformation_space.sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
@@ -1301,6 +1516,20 @@ class ShapeFormHandler(FormHandler):
                 self.volumes = fenics.Constant(1.0)
 
             def eps(u):
+                """Computes the symmetrized gradient of a vector field ``u``.
+
+                Parameters
+                ----------
+                u : dolfin.function.function.Function
+                    A vector field
+
+                Returns
+                -------
+                 : ufl.core.expr.Expr
+                    The symmetrized gradient of ``u``
+
+
+                """
                 return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
 
             trial = fenics.TrialFunction(self.deformation_space)
@@ -1354,13 +1583,13 @@ class ShapeFormHandler(FormHandler):
                 self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.L_mu = fenics.Constant(0.0) * psi * self.dx
 
-                self.bcs_mu = create_bcs_list(
+                self.bcs_mu = create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_fix),
                     self.boundaries,
                     self.shape_bdry_fix,
                 )
-                self.bcs_mu += create_bcs_list(
+                self.bcs_mu += create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_def),
                     self.boundaries,
@@ -1475,6 +1704,12 @@ class ShapeFormHandler(FormHandler):
         """
 
         self.__compute_mu_elas()
+        if self.update_inhomogeneous:
+            self.volumes.vector()[:] = fenics.project(
+                fenics.CellVolume(self.mesh), self.DG0
+            ).vector()[:]
+            vol_max = np.max(np.abs(self.volumes.vector()[:]))
+            self.volumes.vector()[:] /= vol_max
 
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()
@@ -1498,21 +1733,22 @@ class ShapeFormHandler(FormHandler):
                 The value of the scalar product.
         """
 
-        if not self.config.getboolean(
-            "ShapeGradient", "use_p_laplacian", fallback=False
+        if (
+            self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
+            and not self.uses_custom_scalar_product
         ):
+            self.form = replace(
+                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
+            )
+            result = fenics.assemble(self.form)
+
+        else:
             x = fenics.as_backend_type(a.vector()).vec()
             y = fenics.as_backend_type(b.vector()).vec()
 
             temp, _ = self.scalar_product_matrix.getVecs()
             self.scalar_product_matrix.mult(x, temp)
             result = temp.dot(y)
-
-        else:
-            self.form = replace(
-                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
-            )
-            result = fenics.assemble(self.form)
 
         return result
 

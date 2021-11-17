@@ -64,7 +64,7 @@ and its setup are completely analogous to :ref:`demo_poisson` ::
 
     e = inner(grad(y), grad(p))*dx - u*p*dx
 
-    bcs = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 
 Definition of the scalar tracking type cost functional
@@ -125,6 +125,11 @@ This is then put into a dictionary as follows ::
 
     We could also prescribe a list of multiple dicts of this type. In this case,
     each of the corresponding tracking type terms will be added up.
+
+.. note::
+
+    The factor in front of the quadratic term can also be adapted, by using the keyword ``weight`` in the integrand and supplying the desired factor. Note, that the default factor is ``0.5``, and that each weight defined in the dictionary will be multiplied by this value.
+
 
 .. hint::
 

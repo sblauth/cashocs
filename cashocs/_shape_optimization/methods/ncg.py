@@ -27,6 +27,8 @@ from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
 
 class NCG(ShapeOptimizationAlgorithm):
+    """A nonlinear conjugate gradient (NCG) method for solving shape optimization problems"""
+
     def __init__(self, optimization_problem):
         """A nonlinear cg method to solve the optimization problem
 
@@ -39,7 +41,7 @@ class NCG(ShapeOptimizationAlgorithm):
                 the OptimalControlProblem object
         """
 
-        ShapeOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 

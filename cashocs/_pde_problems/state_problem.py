@@ -67,6 +67,9 @@ class StateProblem:
         self.newton_damped = self.config.getboolean(
             "StateSystem", "newton_damped", fallback=True
         )
+        self.newton_inexact = self.config.getboolean(
+            "StateSystem", "newton_inexact", fallback=False
+        )
         self.newton_verbose = self.config.getboolean(
             "StateSystem", "newton_verbose", fallback=False
         )
@@ -140,6 +143,7 @@ class StateProblem:
                             atol=self.newton_atol,
                             max_iter=self.newton_iter,
                             damped=self.newton_damped,
+                            inexact=self.newton_inexact,
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
@@ -226,5 +230,14 @@ class StateProblem:
                     self.form_handler.scalar_cost_functional_integrand_values[
                         j
                     ].vector()[:] = scalar_integral_value
+
+            if self.form_handler.use_min_max_terms:
+                for j in range(self.form_handler.no_min_max_terms):
+                    min_max_integral_value = fenics.assemble(
+                        self.form_handler.min_max_integrands[j]
+                    )
+                    self.form_handler.min_max_integrand_values[j].vector()[
+                        :
+                    ] = min_max_integral_value
 
         return self.states

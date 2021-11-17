@@ -41,7 +41,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 the corresponding optimal control problem to be solved
         """
 
-        ControlOptimizationAlgorithm.__init__(self, optimization_problem)
+        super().__init__(optimization_problem)
 
         self.line_search = UnconstrainedLineSearch(self)
         self.maximum_iterations = self.config.getint(
@@ -252,7 +252,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 )
                 self.history_rho.appendleft(rho)
 
-                if 1 / rho <= 0:
+                if 1 / rho <= 1e-14:
                     self.history_s.clear()
                     self.history_y.clear()
                     self.history_rho.clear()

@@ -88,28 +88,48 @@ regular_box_mesh
 .. autofunction:: cashocs.regular_box_mesh
 
 
-create_config
-*************
-.. autofunction:: cashocs.create_config
-
-
 load_config
 ***********
 .. autofunction:: cashocs.load_config
 
-create_bcs_list
-***************
-.. autofunction:: cashocs.create_bcs_list
+create_dirichlet_bcs
+********************
+.. autofunction:: cashocs.create_dirichlet_bcs
 
+
+newton_solve
+************
+.. autofunction:: cashocs.newton_solve
+
+
+moreau_yosida_regularization
+****************************
+.. autofunction:: cashocs.moreau_yosida_regularization
+
+set_log_level
+*************
+.. autofunction:: cashocs.set_log_level
+
+
+Deprecated Capabilities
+-----------------------
+
+Here, we list deprecated functions and classes of cashocs, which can still be
+used, but are replaced by newer instances with more capabilities. These deprecated objects
+are still maintained for compatibility reasons.
 
 damped_newton_solve
 *******************
 .. autofunction:: cashocs.damped_newton_solve
 
 
-set_log_level
+create_config
 *************
-.. autofunction:: cashocs.set_log_level
+.. autofunction:: cashocs.create_config
+
+create_bcs_list
+***************
+.. autofunction:: cashocs.create_bcs_list
 
 
 .. _sub_modules:

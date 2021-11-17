@@ -20,11 +20,15 @@
 """
 
 import os
+import subprocess
 
 import fenics
 import numpy as np
+import pytest
 
 import cashocs
+import cashocs._cli
+from cashocs._exceptions import InputError
 
 
 rng = np.random.RandomState(300696)
@@ -78,37 +82,6 @@ def test_multiplication():
     assert np.allclose(b, b_exact)
 
 
-def test_empty_measure():
-    trial = fenics.TrialFunction(V)
-    test = fenics.TestFunction(V)
-    fun = fenics.Function(V)
-    fun.vector()[:] = rng.rand(V.dim())
-
-    d1 = cashocs.utils.EmptyMeasure(dx)
-    d2 = cashocs.utils.EmptyMeasure(ds)
-
-    a = trial * test * d1 + trial * test * d2
-    L = fun * test * d1 + fun * test * d2
-    F = fun * d1 + fun * d2
-
-    A = fenics.assemble(a)
-    b = fenics.assemble(L)
-    c = fenics.assemble(F)
-
-    assert np.max(np.abs(A.array())) == 0.0
-    assert np.max(np.abs(b[:])) == 0.0
-    assert c == 0.0
-
-
-def test_create_measure():
-    meas = cashocs.utils.generate_measure([1, 2, 3], ds)
-    test = ds(1) + ds(2) + ds(3)
-
-    assert abs(fenics.assemble(1 * meas) - 3) < 1e-14
-    for i in range(3):
-        assert meas._measures[i] == test._measures[i]
-
-
 def test_load_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     config = cashocs.load_config(dir_path + "/test_config.ini")
@@ -136,7 +109,9 @@ def test_create_bcs():
     bc3 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 3)
     bc4 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 4)
     bcs_ex = [bc1, bc2, bc3, bc4]
-    bcs = cashocs.create_bcs_list(V, fenics.Constant(bc_val), boundaries, [1, 2, 3, 4])
+    bcs = cashocs.create_dirichlet_bcs(
+        V, fenics.Constant(bc_val), boundaries, [1, 2, 3, 4]
+    )
 
     u_ex = fenics.Function(V)
     u = fenics.Function(V)
@@ -166,3 +141,71 @@ def test_interpolator():
 
     assert np.allclose(fen_W.vector()[:], cas_W.vector()[:])
     assert np.allclose(fen_X.vector()[:], cas_X.vector()[:])
+
+
+def test_create_named_bcs():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    cashocs._cli.convert(
+        [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
+    )
+
+    mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/named_mesh.xdmf"
+    )
+    V_ = fenics.FunctionSpace(mesh_, "CG", 1)
+
+    bcs_str = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, ["inlet", "wall", "outlet"]
+    )
+    bcs_int = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, [1, 2, 3]
+    )
+    bcs_mixed = cashocs.create_dirichlet_bcs(
+        V_, fenics.Constant(0.0), boundaries, ["inlet", 2, "outlet"]
+    )
+
+    fun1 = fenics.Function(V_)
+    fun1.vector()[:] = rng.rand(V_.dim())
+
+    fun2 = fenics.Function(V_)
+    fun2.vector()[:] = fun1.vector()[:]
+
+    fun3 = fenics.Function(V_)
+    fun3.vector()[:] = fun1.vector()[:]
+
+    [bc.apply(fun1.vector()) for bc in bcs_int]
+    [bc.apply(fun2.vector()) for bc in bcs_str]
+    [bc.apply(fun3.vector()) for bc in bcs_mixed]
+
+    for i in range(len(bcs_str)):
+        assert np.max(np.abs(fun1.vector()[:] - fun2.vector()[:])) <= 1e-14
+        assert np.max(np.abs(fun1.vector()[:] - fun3.vector()[:])) <= 1e-14
+        assert np.max(np.abs(fun2.vector()[:] - fun3.vector()[:])) <= 1e-14
+
+    with pytest.raises(InputError) as e_info:
+        cashocs.create_dirichlet_bcs(V_, fenics.Constant(0.0), boundaries, "fantasy")
+        assert "The string you have supplied is not associated with a boundary" in str(
+            e_info.value
+        )
+
+    with pytest.raises(InputError) as e_info:
+        cashocs.create_dirichlet_bcs(V, fenics.Constant(0.0), boundaries, "inlet")
+        assert "does not support string type boundary conditions" in str(e_info.value)
+
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
+    subprocess.run(
+        ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
+    )
