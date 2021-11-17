@@ -37,6 +37,7 @@ class ConstrainedSolver:
 
         self.constraints = self.constrained_problem.constraints
         self.constraint_dim = self.constrained_problem.constraint_dim
+        self.iterations = 0
 
         if mu_0 is not None:
             self.mu = mu_0
@@ -85,7 +86,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
 
-    def _project_pointwise_multiplier(self, project_terms, measure, index):
+    def _project_pointwise_multiplier(self, project_terms, measure, multiplier):
         if isinstance(project_terms, list):
             project_term = summation(project_terms)
         else:
@@ -98,47 +99,38 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         L = project_term * test * measure
 
         A, b = _assemble_petsc_system(a, L)
-        _solve_linear_problem(A=A, b=b, x=self.lmbd[index].vector().vec())
+        _solve_linear_problem(A=A, b=b, x=multiplier.vector().vec())
 
     def _update_cost_functional(self):
-        has_scalar_tracking_terms = False
-        has_min_max_terms = False
 
-        self.cost_functional_shifts = []
+        self.inner_cost_functional_shifts = []
 
-        self.constrained_problem.cost_functional_form = (
+        self.inner_cost_functional_form = (
             self.constrained_problem.cost_functional_form_initial
         )
-        if self.constrained_problem.scalar_tracking_forms_initial is not None:
-            self.constrained_problem.scalar_tracking_forms = (
-                self.constrained_problem.scalar_tracking_forms_initial
-            )
-        else:
-            self.constrained_problem.scalar_tracking_forms = []
-        self.constrained_problem.min_max_terms = []
+
+        self.inner_scalar_tracking_forms = []
+        self.inner_min_max_terms = []
 
         for i, constraint in enumerate(self.constraints):
             if isinstance(constraint, EqualityConstraint):
                 if constraint.is_integral_constraint:
-                    has_scalar_tracking_terms = True
-                    self.constrained_problem.cost_functional_form += [
+                    self.inner_cost_functional_form += [
                         fenics.Constant(self.lmbd[i]) * constraint.linear_term
                     ]
-                    self.cost_functional_shifts.append(
+                    self.inner_cost_functional_shifts.append(
                         -self.lmbd[i] * constraint.target
                     )
 
                     constraint.quadratic_term["weight"] = self.mu
-                    self.constrained_problem.scalar_tracking_forms += [
-                        constraint.quadratic_term
-                    ]
+                    self.inner_scalar_tracking_forms += [constraint.quadratic_term]
 
                 elif constraint.is_pointwise_constraint:
-                    self.constrained_problem.cost_functional_form += [
+                    self.inner_cost_functional_form += [
                         constraint.linear_term,
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
-                    self.cost_functional_shifts.append(
+                    self.inner_cost_functional_shifts.append(
                         -fenics.assemble(
                             fenics.Constant(self.lmbd[i])
                             * constraint.target
@@ -148,27 +140,28 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             elif isinstance(constraint, InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    has_min_max_terms = True
                     constraint.min_max_term["mu"] = self.mu
                     constraint.min_max_term["lambda"] = self.lmbd[i]
-                    self.constrained_problem.min_max_terms += [constraint.min_max_term]
+                    self.inner_min_max_terms += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector()[:] = self.mu
-                    self.constrained_problem.cost_functional_form += (
-                        constraint.cost_functional_terms
-                    )
+                    self.inner_cost_functional_form += constraint.cost_functional_terms
 
-        if not has_scalar_tracking_terms:
-            self.constrained_problem.scalar_tracking_forms = (
+        if len(self.inner_scalar_tracking_forms) == 0:
+            self.inner_scalar_tracking_forms = (
                 self.constrained_problem.scalar_tracking_forms_initial
             )
-        if not has_min_max_terms:
-            self.constrained_problem.min_max_terms = None
+        else:
+            if self.constrained_problem.scalar_tracking_forms_initial is not None:
+                self.inner_scalar_tracking_forms += (
+                    self.constrained_problem.scalar_tracking_forms_initial
+                )
 
-        self.constrained_problem.cost_functional_shift = np.sum(
-            self.cost_functional_shifts
-        )
+        if len(self.inner_min_max_terms) == 0:
+            self.inner_min_max_terms = None
+
+        self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
 
     def _update_lagrange_multiplier_estimates(self):
         for i in range(self.constraint_dim):
@@ -184,7 +177,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         - self.constraints[i].target
                     )
                     self._project_pointwise_multiplier(
-                        project_term, self.constraints[i].measure, i
+                        project_term, self.constraints[i].measure, self.lmbd[i]
                     )
 
             elif isinstance(self.constraints[i], InequalityConstraint):
@@ -244,7 +237,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         )
 
                     self._project_pointwise_multiplier(
-                        project_terms, self.constraints[i].measure, i
+                        project_terms, self.constraints[i].measure, self.lmbd[i]
                     )
 
     def solve(
@@ -333,31 +326,22 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 break
 
     def _update_cost_functional(self):
-        has_scalar_tracking_terms = False
-        has_min_max_terms = False
 
-        self.constrained_problem.cost_functional_form = (
+        self.inner_cost_functional_form = (
             self.constrained_problem.cost_functional_form_initial
         )
-        if self.constrained_problem.scalar_tracking_forms_initial is not None:
-            self.constrained_problem.scalar_tracking_forms = (
-                self.constrained_problem.scalar_tracking_forms_initial
-            )
-        else:
-            self.constrained_problem.scalar_tracking_forms = []
-        self.constrained_problem.min_max_terms = []
+        self.inner_scalar_tracking_forms = []
+        self.inner_min_max_terms = []
 
         for i, constraint in enumerate(self.constraints):
             if isinstance(constraint, EqualityConstraint):
                 if constraint.is_integral_constraint:
                     has_scalar_tracking_terms = True
                     constraint.quadratic_term["weight"] = self.mu
-                    self.constrained_problem.scalar_tracking_forms += [
-                        constraint.quadratic_term
-                    ]
+                    self.inner_scalar_tracking_forms += [constraint.quadratic_term]
 
                 elif constraint.is_pointwise_constraint:
-                    self.constrained_problem.cost_functional_form += [
+                    self.inner_cost_functional_form += [
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
 
@@ -366,21 +350,24 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                     has_min_max_terms = True
                     constraint.min_max_term["mu"] = self.mu
                     constraint.min_max_term["lambda"] = 0.0
-                    self.constrained_problem.min_max_terms += [constraint.min_max_term]
+                    self.inner_min_max_terms += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector()[:] = self.mu
                     constraint.multiplier.vector()[:] = 0.0
-                    self.constrained_problem.cost_functional_form += (
-                        constraint.cost_functional_terms
-                    )
+                    self.inner_cost_functional_form += constraint.cost_functional_terms
 
-        if not has_scalar_tracking_terms:
-            self.constrained_problem.scalar_tracking_forms = (
+        if len(self.inner_scalar_tracking_forms) == 0:
+            self.inner_scalar_tracking_forms = (
                 self.constrained_problem.scalar_tracking_forms_initial
             )
-        if not has_min_max_terms:
-            self.constrained_problem.min_max_terms = None
+        else:
+            if self.constrained_problem.scalar_tracking_forms_initial is not None:
+                self.inner_scalar_tracking_forms += (
+                    self.constrained_problem.scalar_tracking_forms_initial
+                )
+        if len(self.inner_min_max_terms) == 0:
+            self.inner_min_max_terms = None
 
 
 # class LagrangianMethod(ConstrainedSolver):

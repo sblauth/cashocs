@@ -20,6 +20,7 @@ import numpy as np
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
 from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
+from ..utils import enlist
 
 
 class ConstrainedOptimizationProblem:
@@ -49,28 +50,15 @@ class ConstrainedOptimizationProblem:
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
 
-        self.cost_functional_form = None
-        self.scalar_tracking_forms = None
-        self.min_max_terms = None
         self.solver = None
 
-        if not isinstance(cost_functional_form, list):
-            self.cost_functional_form_initial = [cost_functional_form]
-        else:
-            self.cost_functional_form_initial = cost_functional_form
-
+        self.cost_functional_form_initial = enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
-            if not isinstance(scalar_tracking_forms, list):
-                self.scalar_tracking_forms_initial = [scalar_tracking_forms]
-            else:
-                self.scalar_tracking_forms_initial = scalar_tracking_forms
+            self.scalar_tracking_forms_initial = enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
+        self.constraints = enlist(constraints)
 
-        if not isinstance(constraints, list):
-            self.constraints = [constraints]
-        else:
-            self.constraints = constraints
         self.constraint_dim = len(self.constraints)
 
         self.iterations = 0
@@ -94,6 +82,10 @@ class ConstrainedOptimizationProblem:
             self.solver = AugmentedLagrangianMethod(self, mu_0=mu_0, lambda_0=lambda_0)
         elif method in ["Quadratic Penalty", "QP"]:
             self.solver = QuadraticPenaltyMethod(self, mu_0=mu_0, lambda_0=lambda_0)
+        elif method in ["Lagrangian", "L"]:
+            raise NotImplementedError("Lagrangian Method is not implemented yet")
+        elif method in ["L1 Penalty", "L1"]:
+            raise NotImplementedError("L1 Penalty Method is not implemented yet")
 
         self.solver.solve(
             tol=tol,
@@ -110,7 +102,7 @@ class ConstrainedOptimizationProblem:
 
         return np.sqrt(s)
 
-    def _solve_inner_problem(self, tol=1e-2):
+    def _solve_inner_problem(self, tol=1e-2, inner_rtol=None, inner_atol=None):
         pass
 
     def _pre_hook(self):
@@ -220,7 +212,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         ocp = OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
-            self.cost_functional_form,
+            self.solver.inner_cost_functional_form,
             self.states,
             self.controls,
             self.adjoints,
@@ -231,12 +223,14 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
-            scalar_tracking_forms=self.scalar_tracking_forms,
-            min_max_terms=self.min_max_terms,
+            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
+            min_max_terms=self.solver.inner_min_max_terms,
         )
 
         ocp.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        ocp._OptimizationProblem__shift_cost_functional(self.cost_functional_shift)
+        ocp._OptimizationProblem__shift_cost_functional(
+            self.solver.inner_cost_functional_shift
+        )
 
         if inner_rtol is not None:
             rtol = inner_rtol
@@ -291,7 +285,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         sop = ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
-            self.cost_functional_form,
+            self.solver.inner_cost_functional_form,
             self.states,
             self.adjoints,
             self.boundaries,
@@ -301,11 +295,13 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
-            scalar_tracking_forms=self.scalar_tracking_forms,
-            min_max_terms=self.min_max_terms,
+            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
+            min_max_terms=self.solver.inner_min_max_terms,
         )
         sop.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        sop._OptimizationProblem__shift_cost_functional(self.cost_functional_shift)
+        sop._OptimizationProblem__shift_cost_functional(
+            self.solver.inner_cost_functional_shift
+        )
 
         if inner_rtol is not None:
             rtol = inner_rtol
