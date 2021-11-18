@@ -173,6 +173,7 @@ class OptimizationProblem(abc.ABC):
         if min_max_terms is None:
             self.min_max_terms = min_max_terms
         else:
+            self.use_min_max_terms = True
             self.min_max_terms = enlist(min_max_terms)
 
         if not len(self.bcs_list) == self.state_dim:

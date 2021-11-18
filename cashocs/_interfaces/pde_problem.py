@@ -15,15 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Interfaces for general optimization problems.
 
-This module provides interfaces for general optimization problems. These are base
-classes meant to be sublcassed for more specific problems, such as optimal control
-or shape optimization
-"""
+import abc
 
-from .cost_functional import ReducedCostFunctional
-from .optimization_algorithm import OptimizationAlgorithm
-from .optimization_problem import OptimizationProblem
-from .line_search import LineSearch
-from .pde_problem import PDEProblem
+
+class PDEProblem(abc.ABC):
+    def __init__(self, form_handler):
+
+        self.form_handler = form_handler
+        self.config = form_handler.config
+
+        self.has_solution = False
+
+    @abc.abstractmethod
+    def solve(self):
+        pass

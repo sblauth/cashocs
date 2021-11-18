@@ -25,10 +25,11 @@ the gradient of the reduced cost functional.
 import fenics
 from petsc4py import PETSc
 
+from .._interfaces.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
-class GradientProblem:
+class GradientProblem(PDEProblem):
     """A class representing the Riesz problem to determine the gradient."""
 
     def __init__(self, form_handler, state_problem, adjoint_problem):
@@ -44,12 +45,12 @@ class GradientProblem:
                 The AdjointProblem used to solve the adjoint equations.
         """
 
-        self.form_handler = form_handler
+        super().__init__(form_handler)
+
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
         self.gradients = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.config = self.form_handler.config
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
         self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
@@ -77,8 +78,6 @@ class GradientProblem:
         _setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
-
-        self.has_solution = False
 
     def solve(self):
         """Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.

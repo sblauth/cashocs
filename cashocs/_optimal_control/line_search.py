@@ -24,11 +24,11 @@ import weakref
 import fenics
 import numpy as np
 
+from .._interfaces.line_search import LineSearch
 from .._loggers import error
-from ..utils import _optimization_algorithm_configuration
 
 
-class ArmijoLineSearch:
+class ArmijoLineSearch(LineSearch):
     """An Armijo-based line search for optimal control
 
     Implements an Armijo line search for the solution of control problems.
@@ -44,41 +44,14 @@ class ArmijoLineSearch:
                 the corresponding optimization algorihm
         """
 
-        self.ref_algo = weakref.ref(optimization_algorithm)
-        self.config = optimization_algorithm.config
-        self.form_handler = optimization_algorithm.form_handler
-        self.state_problem = optimization_algorithm.state_problem
-        self.line_search_broken = optimization_algorithm.line_search_broken
+        super().__init__(optimization_algorithm)
 
-        self.stepsize = self.config.getfloat(
-            "OptimizationRoutine", "initial_stepsize", fallback=1.0
-        )
-        self.epsilon_armijo = self.config.getfloat(
-            "OptimizationRoutine", "epsilon_armijo", fallback=1e-4
-        )
-        self.beta_armijo = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo", fallback=2.0
-        )
-        self.armijo_stepsize_initial = self.stepsize
-
-        self.cost_functional = optimization_algorithm.cost_functional
         self.projected_difference = [
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
-
         self.controls = optimization_algorithm.controls
         self.controls_temp = optimization_algorithm.controls_temp
         self.gradients = optimization_algorithm.gradients
-
-        self.is_newton_like = (
-            _optimization_algorithm_configuration(self.config) == "lbfgs"
-        )
-        self.is_newton = _optimization_algorithm_configuration(self.config) == "newton"
-        self.is_steepest_descent = (
-            _optimization_algorithm_configuration(self.config) == "gradient_descent"
-        )
-        if self.is_newton:
-            self.stepsize = 1.0
 
     def decrease_measure(self):
         """Computes the measure of decrease needed for the Armijo test
@@ -158,7 +131,7 @@ class ArmijoLineSearch:
 
             self.form_handler.project_to_admissible_set(self.controls)
 
-            self.state_problem.has_solution = False
+            self.ref_algo().state_problem.has_solution = False
             self.objective_step = self.cost_functional.evaluate()
 
             # self.project_direction_active(search_directions)

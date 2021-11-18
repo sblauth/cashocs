@@ -24,11 +24,11 @@ import weakref
 import fenics
 import numpy as np
 
+from .._interfaces.line_search import LineSearch
 from .._loggers import error
-from ..utils import _optimization_algorithm_configuration
 
 
-class ArmijoLineSearch:
+class ArmijoLineSearch(LineSearch):
     """An Armijo line search algorithm for shape optimization problems"""
 
     def __init__(self, optimization_algorithm):
@@ -40,30 +40,11 @@ class ArmijoLineSearch:
                 the optimization problem of interest
         """
 
-        self.ref_algo = weakref.ref(optimization_algorithm)
-        self.config = optimization_algorithm.config
-        self.form_handler = optimization_algorithm.form_handler
+        super().__init__(optimization_algorithm)
+
         self.mesh_handler = optimization_algorithm.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
-
-        self.stepsize = self.config.getfloat(
-            "OptimizationRoutine", "initial_stepsize", fallback=1.0
-        )
-        self.epsilon_armijo = self.config.getfloat(
-            "OptimizationRoutine", "epsilon_armijo", fallback=1e-4
-        )
-        self.beta_armijo = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo", fallback=2.0
-        )
-        self.armijo_stepsize_initial = self.stepsize
-
-        self.cost_functional = optimization_algorithm.cost_functional
-
         self.gradient = optimization_algorithm.gradient
-
-        self.algorithm = _optimization_algorithm_configuration(self.config)
-        self.is_newton_like = self.algorithm == "lbfgs"
-        self.is_steepest_descent = self.algorithm == "gradient_descent"
 
     def decrease_measure(self, search_direction):
         """Computes the measure of decrease needed for the Armijo test

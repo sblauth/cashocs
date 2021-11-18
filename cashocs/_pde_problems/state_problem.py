@@ -23,12 +23,13 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._interfaces import PDEProblem
 from .._exceptions import NotConvergedError
 from ..nonlinear_solvers import newton_solve
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
-class StateProblem:
+class StateProblem(PDEProblem):
     """The state system."""
 
     def __init__(self, form_handler, initial_guess, temp_dict=None):
@@ -44,11 +45,11 @@ class StateProblem:
                 A dict used for reinitialization when remeshing is performed.
         """
 
-        self.form_handler = form_handler
+        super().__init__(form_handler)
+
         self.initial_guess = initial_guess
         self.temp_dict = temp_dict
 
-        self.config = self.form_handler.config
         self.bcs_list = self.form_handler.bcs_list
         self.states = self.form_handler.states
 
@@ -91,7 +92,6 @@ class StateProblem:
             self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
         except TypeError:
             self.number_of_solves = 0
-        self.has_solution = False
 
     def solve(self):
         """Solves the state system.

@@ -68,6 +68,7 @@ class ConstrainedSolver(abc.ABC):
         self.constraint_violation = 0.0
         self.constraint_violation_prev = 0.0
         self.beta = 10.0
+        self.inner_cost_functional_shift = 0.0
 
     @abc.abstractmethod
     def _update_cost_functional(self):
@@ -136,9 +137,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     ]
                     self.inner_cost_functional_shifts.append(
                         -fenics.assemble(
-                            fenics.Constant(self.lmbd[i])
-                            * constraint.target
-                            * constraint.measure
+                            self.lmbd[i] * constraint.target * constraint.measure
                         )
                     )
 
@@ -351,7 +350,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             elif isinstance(constraint, InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    has_min_max_terms = True
                     constraint.min_max_term["mu"] = self.mu
                     constraint.min_max_term["lambda"] = 0.0
                     self.inner_min_max_terms += [constraint.min_max_term]

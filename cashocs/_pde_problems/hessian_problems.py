@@ -22,6 +22,8 @@ the "Hessian problems" occurring in the truncated Newton
 method.
 """
 
+import abc
+
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -31,7 +33,7 @@ from .._loggers import debug
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
-class BaseHessianProblem:
+class BaseHessianProblem(abc.ABC):
     """Base class for derived Hessian problems."""
 
     def __init__(self, form_handler, gradient_problem):
@@ -337,6 +339,7 @@ class BaseHessianProblem:
 
         return self.delta_control
 
+    @abc.abstractmethod
     def cg(self, idx_active=None):
         """Solves the (truncated) Newton step with a CG method
 
@@ -353,6 +356,7 @@ class BaseHessianProblem:
         """
         pass
 
+    @abc.abstractmethod
     def cr(self, idx_active=None):
         """Solves the (truncated) Newton step with a CR method
 
@@ -437,7 +441,7 @@ class HessianProblem(BaseHessianProblem):
         if idx_active is not None:
             raise CashocsException("Must not pass idx_active to HessianProblem.")
 
-        return BaseHessianProblem.newton_solve(self)
+        return super().newton_solve()
 
     def cg(self, idx_active=None):
         """Solves the (truncated) Newton step with a CG method
@@ -652,7 +656,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
-        return BaseHessianProblem.newton_solve(self, idx_active)
+        return super().newton_solve(idx_active)
 
     def cg(self, idx_active=None):
         """Solves the (truncated) Newton step with a CG method

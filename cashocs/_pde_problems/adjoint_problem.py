@@ -23,11 +23,12 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._interfaces import PDEProblem
 from .._exceptions import NotConvergedError
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
-class AdjointProblem:
+class AdjointProblem(PDEProblem):
     """The adjoint problem.
 
     This class implements the adjoint problem as well as its solver.
@@ -46,11 +47,11 @@ class AdjointProblem:
                 A dictionary used for reinitializations when remeshing is performed.
         """
 
-        self.form_handler = form_handler
+        super().__init__(form_handler)
+
         self.state_problem = state_problem
         self.temp_dict = temp_dict
 
-        self.config = self.form_handler.config
         self.adjoints = self.form_handler.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
@@ -70,7 +71,6 @@ class AdjointProblem:
             )
         except TypeError:
             self.number_of_solves = 0
-        self.has_solution = False
 
     def solve(self):
         """Solves the adjoint system.

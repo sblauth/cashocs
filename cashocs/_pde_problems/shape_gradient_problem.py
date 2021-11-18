@@ -25,11 +25,12 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._interfaces.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
-class ShapeGradientProblem:
+class ShapeGradientProblem(PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
 
     def __init__(self, form_handler, state_problem, adjoint_problem):
@@ -45,14 +46,12 @@ class ShapeGradientProblem:
                 The corresponding adjoint problem.
         """
 
-        self.form_handler = form_handler
+        super().__init__(form_handler)
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
         self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
-
-        self.config = self.form_handler.config
 
         # Generate the Krylov solver for the shape gradient problem
         self.ksp = PETSc.KSP().create()
@@ -78,8 +77,6 @@ class ShapeGradientProblem:
                 self.form_handler.bcs_shape,
                 self.config,
             )
-
-        self.has_solution = False
 
     def solve(self):
         """Solves the Riesz projection problem to obtain the shape gradient of the cost functional.

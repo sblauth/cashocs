@@ -7,12 +7,10 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-1.6.0 (in development)
-
-* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian, Quadratic Penalty, L1 Penalty, and Lagrangian methods.
-
 1.5.0 (in development)
 ----------------------
+
+* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian, Quadratic Penalty, L1 Penalty, and Lagrangian methods.
 
 * Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_hook <cashocs.optimization_problem.OptimizationProblem.inject_pre_hook>` and :py:meth:`inject_post_hook <cashocs.optimization_problem.OptimizationProblem.inject_post_hook>`.
 
@@ -22,7 +20,9 @@ of the maintenance releases, please take a look at
 
 * The nonlinear solver (Newton's method) got an additional ``inexact`` parameter, which allows users to use an inexact Newton's method with iterative solvers. Additionally, users can specify their own Jacobians to be used in Newton's method with the parameter ``dF``.
 
-* Users can now specify the weight of the scalar tracking terms individually, and not only when using desired weights (this is now documented).
+* Users can now specify the weight of the scalar tracking terms individually (this is now documented).
+
+* Removed the support for the scaling of cost functions via desired_weights. Users can still scale their cost functionals themselves before defining the optimization problems.
 
 * New configuration file parameters:
 
