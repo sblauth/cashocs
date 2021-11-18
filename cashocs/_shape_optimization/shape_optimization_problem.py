@@ -34,11 +34,11 @@ from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from .methods import NCG, GradientDescent, LBFGS
 from .._exceptions import CashocsException, ConfigError, InputError
 from .._forms import ShapeFormHandler
+from .._interfaces import OptimizationProblem
 from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
-from .._interfaces import OptimizationProblem
 from ..verification import shape_gradient_test
 
 

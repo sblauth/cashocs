@@ -16,6 +16,7 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 import abc
+
 import fenics
 import numpy as np
 

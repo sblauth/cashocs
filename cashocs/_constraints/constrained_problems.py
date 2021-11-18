@@ -20,6 +20,7 @@ import abc
 import numpy as np
 
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
+from .._exceptions import InputError
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
 from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from ..utils import enlist
@@ -82,10 +83,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.solver = AugmentedLagrangianMethod(self, mu_0=mu_0, lambda_0=lambda_0)
         elif method in ["Quadratic Penalty", "QP"]:
             self.solver = QuadraticPenaltyMethod(self, mu_0=mu_0, lambda_0=lambda_0)
-        elif method in ["Lagrangian", "L"]:
-            raise NotImplementedError("Lagrangian Method is not implemented yet")
-        elif method in ["L1 Penalty", "L1"]:
-            raise NotImplementedError("L1 Penalty Method is not implemented yet")
+        else:
+            raise InputError(
+                "cashocs._constraints.constrained_problems.ConstrainedOptimizationProblem.solve",
+                "method",
+                "The parameter `method` should be either 'AL' or 'Augmented Lagrangian' or 'QP' or 'Quadratic Penalty'",
+            )
 
         self.solver.solve(
             tol=tol,

@@ -19,9 +19,6 @@
 
 """
 
-import fenics
-import numpy as np
-
 from .._interfaces import ReducedCostFunctional
 
 

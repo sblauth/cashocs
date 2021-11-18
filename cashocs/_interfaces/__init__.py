@@ -23,7 +23,7 @@ or shape optimization
 """
 
 from .cost_functional import ReducedCostFunctional
+from .line_search import LineSearch
 from .optimization_algorithm import OptimizationAlgorithm
 from .optimization_problem import OptimizationProblem
-from .line_search import LineSearch
 from .pde_problem import PDEProblem

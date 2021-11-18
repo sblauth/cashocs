@@ -26,6 +26,7 @@ import ufl
 from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
 from .._exceptions import ConfigError, InputError
 from .._forms import ControlFormHandler
+from .._interfaces import OptimizationProblem
 from .._optimal_control import ReducedControlCostFunctional
 from .._pde_problems import (
     AdjointProblem,
@@ -34,7 +35,6 @@ from .._pde_problems import (
     StateProblem,
     UnconstrainedHessianProblem,
 )
-from .._interfaces import OptimizationProblem
 from ..utils import _optimization_algorithm_configuration, enlist
 from ..verification import control_gradient_test
 

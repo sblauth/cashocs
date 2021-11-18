@@ -339,7 +339,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         for i, constraint in enumerate(self.constraints):
             if isinstance(constraint, EqualityConstraint):
                 if constraint.is_integral_constraint:
-                    has_scalar_tracking_terms = True
                     constraint.quadratic_term["weight"] = self.mu
                     self.inner_scalar_tracking_forms += [constraint.quadratic_term]
 
@@ -370,14 +369,3 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 )
         if len(self.inner_min_max_terms) == 0:
             self.inner_min_max_terms = None
-
-
-# class LagrangianMethod(ConstrainedSolver):
-#     def __init__(self, optimization_problem, constraints):
-#         super().__init__(optimization_problem, constraints)
-#         pass
-#
-#
-# class L1PenaltyMethod(ConstrainedSolver):
-#     def __init__(self, optimization_problem, constraints):
-#         super().__init__(optimization_problem, constraints)

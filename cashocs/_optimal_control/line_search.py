@@ -19,8 +19,6 @@
 
 """
 
-import weakref
-
 import fenics
 import numpy as np
 

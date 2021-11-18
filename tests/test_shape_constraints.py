@@ -22,9 +22,12 @@ Created on 18/11/2021, 08.48
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+
 import numpy as np
 from fenics import *
+
 import cashocs
+
 
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
