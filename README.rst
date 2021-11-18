@@ -1,5 +1,6 @@
 .. image:: https://raw.githubusercontent.com/sblauth/cashocs/master/logo.png
     :width: 800
+    :align: center
     :target: https://github.com/sblauth/cashocs
 
 .. image:: https://img.shields.io/pypi/v/cashocs
