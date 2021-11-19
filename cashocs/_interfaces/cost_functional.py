@@ -58,12 +58,12 @@ class ReducedCostFunctional(abc.ABC):
                 scalar_integral_value = fenics.assemble(
                     self.form_handler.scalar_cost_functional_integrands[j]
                 )
-                self.form_handler.scalar_cost_functional_integrand_values[j].vector()[
-                    :
-                ] = scalar_integral_value
+                self.form_handler.scalar_cost_functional_integrand_values[
+                    j
+                ].vector().vec().set(scalar_integral_value)
 
                 val += (
-                    self.form_handler.scalar_weights[j].vector()[0]
+                    self.form_handler.scalar_weights[j].vector().vec()[0]
                     / 2
                     * pow(
                         scalar_integral_value
@@ -77,9 +77,9 @@ class ReducedCostFunctional(abc.ABC):
                 min_max_integral_value = fenics.assemble(
                     self.form_handler.min_max_integrands[j]
                 )
-                self.form_handler.min_max_integrand_values[j].vector()[
-                    :
-                ] = min_max_integral_value
+                self.form_handler.min_max_integrand_values[j].vector().vec().set(
+                    min_max_integral_value
+                )
 
                 if self.form_handler.min_max_lower_bounds[j] is not None:
                     val += (

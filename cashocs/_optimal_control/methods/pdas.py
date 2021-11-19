@@ -183,7 +183,7 @@ class PDAS(ControlOptimizationAlgorithm):
             self.inner_solver.run(self.idx_active)
 
             for j in range(len(self.controls)):
-                self.mu[j].vector()[:] = -self.gradients[j].vector()[:]
+                self.mu[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
                 self.mu[j].vector()[self.idx_inactive[j]] = 0.0
 
             self.objective_value = self.inner_solver.line_search.objective_step

@@ -100,7 +100,9 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             history_alpha = deque()
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] = grad[j].vector()[:]
+                self.search_directions[j].vector().vec().aypx(
+                    0.0, grad[j].vector().vec()
+                )
                 self.search_directions[j].vector()[idx_active[j]] = 0.0
 
             for i, _ in enumerate(self.history_s):
@@ -109,8 +111,8 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 )
                 history_alpha.append(alpha)
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector()[:] -= (
-                        alpha * self.history_y[i][j].vector()[:]
+                    self.search_directions[j].vector().vec().axpy(
+                        -alpha, self.history_y[i][j].vector().vec()
                     )
 
             if self.use_bfgs_scaling and self.iteration > 0:
@@ -123,7 +125,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 factor = 1.0
 
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] *= factor
+                self.search_directions[j].vector().vec().scale(factor)
                 self.search_directions[j].vector()[idx_active[j]] = 0.0
 
             for i, _ in enumerate(self.history_s):
@@ -132,17 +134,20 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 )
 
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector()[:] += self.history_s[-1 - i][
-                        j
-                    ].vector()[:] * (history_alpha[-1 - i] - beta)
+                    self.search_directions[j].vector().vec().axpy(
+                        history_alpha[-1 - i] - beta,
+                        self.history_s[-1 - i][j].vector().vec(),
+                    )
 
             for j in range(len(self.controls)):
                 self.search_directions[j].vector()[idx_active[j]] = 0.0
-                self.search_directions[j].vector()[:] *= -1
+                self.search_directions[j].vector().vec().scale(-1)
 
         else:
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] = -grad[j].vector()[:]
+                self.search_directions[j].vector().vec().aypx(
+                    0.0, -grad[j].vector().vec()
+                )
                 self.search_directions[j].vector()[idx_active[j]] = 0.0
 
         return self.search_directions
@@ -169,7 +174,9 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
         self.gradient_problem.solve()
 
         for j in range(len(self.controls)):
-            self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+            self.reduced_gradient[j].vector().vec().aypx(
+                0.0, self.gradients[j].vector().vec()
+            )
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
         self.gradient_norm = np.sqrt(
@@ -200,9 +207,9 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
             if self.directional_derivative > 0:
                 # print('No descent direction found')
                 for j in range(self.form_handler.control_dim):
-                    self.search_directions[j].vector()[:] = -self.reduced_gradient[
-                        j
-                    ].vector()[:]
+                    self.search_directions[j].vector().vec().aypx(
+                        0.0, -self.reduced_gradient[j].vector().vec()
+                    )
 
             self.line_search.search(self.search_directions)
             if self.line_search_broken:
@@ -215,16 +222,18 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
             if self.bfgs_memory_size > 0:
                 for i in range(len(self.controls)):
-                    self.gradients_prev[i].vector()[:] = self.reduced_gradient[
-                        i
-                    ].vector()[:]
+                    self.gradients_prev[i].vector().vec().aypx(
+                        0.0, self.reduced_gradient[i].vector().vec()
+                    )
 
             self.adjoint_problem.has_solution = False
             self.gradient_problem.has_solution = False
             self.gradient_problem.solve()
 
             for j in range(len(self.controls)):
-                self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+                self.reduced_gradient[j].vector().vec().aypx(
+                    0.0, self.gradients[j].vector().vec()
+                )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
             self.gradient_norm = np.sqrt(
@@ -237,12 +246,13 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
             if self.bfgs_memory_size > 0:
                 for i in range(len(self.controls)):
-                    self.storage_y[i].vector()[:] = (
-                        self.reduced_gradient[i].vector()[:]
-                        - self.gradients_prev[i].vector()[:]
+                    self.storage_y[i].vector().vec().aypx(
+                        0.0,
+                        self.reduced_gradient[i].vector().vec()
+                        - self.gradients_prev[i].vector().vec(),
                     )
-                    self.storage_s[i].vector()[:] = (
-                        self.stepsize * self.search_directions[i].vector()[:]
+                    self.storage_s[i].vector().vec().aypx(
+                        0.0, self.stepsize * self.search_directions[i].vector().vec()
                     )
 
                 self.history_y.appendleft([x.copy(True) for x in self.storage_y])

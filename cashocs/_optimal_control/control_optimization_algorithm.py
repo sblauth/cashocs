@@ -142,15 +142,17 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         """
 
         for j in range(self.form_handler.control_dim):
-            self.projected_difference[j].vector()[:] = (
-                self.controls[j].vector()[:] - self.gradients[j].vector()[:]
+            self.projected_difference[j].vector().vec().aypx(
+                0.0, self.controls[j].vector().vec() - self.gradients[j].vector().vec()
             )
 
         self.form_handler.project_to_admissible_set(self.projected_difference)
 
         for j in range(self.form_handler.control_dim):
-            self.projected_difference[j].vector()[:] = (
-                self.controls[j].vector()[:] - self.projected_difference[j].vector()[:]
+            self.projected_difference[j].vector().vec().aypx(
+                0.0,
+                self.controls[j].vector().vec()
+                - self.projected_difference[j].vector().vec(),
             )
 
         return self.form_handler.scalar_product(

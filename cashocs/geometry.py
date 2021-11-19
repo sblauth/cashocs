@@ -774,7 +774,7 @@ def compute_boundary_distance(
     res_0 = np.sqrt(fenics.assemble(F_res))
 
     for i in range(max_iter):
-        u_prev.vector()[:] = u_curr.vector()[:]
+        u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         A, b = _assemble_petsc_system(a, L, bcs)
         _solve_linear_problem(ksp, A, b, u_curr.vector().vec())
         res = np.sqrt(fenics.assemble(F_res))
@@ -1219,7 +1219,9 @@ class _MeshHandler:
             return 0
 
         else:
-            self.search_direction_container.vector()[:] = search_direction.vector()[:]
+            self.search_direction_container.vector().vec().aypx(
+                0.0, search_direction.vector().vec()
+            )
             A, b = _assemble_petsc_system(self.a_frobenius, self.L_frobenius)
             x = _solve_linear_problem(
                 self.ksp_frobenius, A, b, ksp_options=self.options_frobenius
@@ -1299,7 +1301,9 @@ class _MeshHandler:
                 A boolean that indicates whether the desired transformation is feasible
         """
 
-        self.transformation_container.vector()[:] = transformation.vector()[:]
+        self.transformation_container.vector().vec().aypx(
+            0.0, transformation.vector().vec()
+        )
         A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
         x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
 
@@ -1685,7 +1689,9 @@ class DeformationHandler:
             A boolean that indicates whether the desired transformation is feasible
         """
 
-        self.transformation_container.vector()[:] = transformation.vector()[:]
+        self.transformation_container.vector().vec().aypx(
+            0.0, transformation.vector().vec()
+        )
         A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
         x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
         min_det = np.min(x[:])
@@ -1848,7 +1854,7 @@ class DeformationHandler:
                 "dof_deformation has to be a piecewise linear Lagrange vector field.",
             )
 
-        coordinate_deformation = dof_deformation.vector()[:][self.v2d]
+        coordinate_deformation = dof_deformation.vector().vec()[self.v2d]
 
         return coordinate_deformation
 
@@ -2308,8 +2314,10 @@ class MeshQuality:
         A, b = _assemble_petsc_system(a, L)
         _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
+        cond.vector().vec().reciprocal()
+        cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
 
-        return np.min(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
+        return cond.vector().vec().min()[1]
 
     @staticmethod
     def avg_condition_number(mesh):
@@ -2360,4 +2368,7 @@ class MeshQuality:
         _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
 
-        return np.average(np.sqrt(mesh.geometric_dimension()) / cond.vector()[:])
+        cond.vector().vec().reciprocal()
+        cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
+
+        return cond.vector().vec().sum() / cond.vector().vec().getSize()

@@ -84,8 +84,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
             if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
                 self.converged = True
                 break
-
-            self.search_direction.vector()[:] = -self.gradient.vector()[:]
+            
+            self.search_direction.vector().vec().aypx(0.0, -self.gradient.vector().vec())
 
             self.line_search.search(self.search_direction, self.has_curvature_info)
 

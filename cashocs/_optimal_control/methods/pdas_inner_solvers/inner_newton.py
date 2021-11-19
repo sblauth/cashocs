@@ -87,7 +87,9 @@ class InnerNewton(ControlOptimizationAlgorithm):
             self.gradient_problem.solve()
 
             for j in range(len(self.controls)):
-                self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+                self.reduced_gradient[j].vector().vec().aypx(
+                    0.0, self.gradients[j].vector().vec()
+                )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
             self.gradient_norm = np.sqrt(
@@ -120,9 +122,9 @@ class InnerNewton(ControlOptimizationAlgorithm):
             if self.directional_derivative > 0:
                 # print('No descent direction')
                 for i in range(len(self.controls)):
-                    self.search_directions[i].vector()[:] = -self.reduced_gradient[
-                        i
-                    ].vector()[:]
+                    self.search_directions[i].vector().vec().aypx(
+                        0.0, -self.reduced_gradient[i].vector().vec()
+                    )
 
             self.line_search.search(self.search_directions)
             if self.armijo_broken:

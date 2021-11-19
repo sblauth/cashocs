@@ -108,13 +108,17 @@ class UnconstrainedLineSearch:
         # self.ref_algo().print_results()
 
         for j in range(self.form_handler.control_dim):
-            self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
+            self.controls_temp[j].vector().vec().aypx(
+                0.0, self.controls[j].vector().vec()
+            )
 
         while True:
             if self.stepsize * self.search_direction_inf <= 1e-8:
                 self.ref_algo().line_search_broken = True
                 for j in range(self.form_handler.control_dim):
-                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                    self.controls[j].vector().vec().aypx(
+                        0.0, self.controls_temp[j].vector().vec()
+                    )
                 break
             elif (
                 not self.is_newton_like
@@ -123,12 +127,14 @@ class UnconstrainedLineSearch:
             ):
                 self.ref_algo().line_search_broken = True
                 for j in range(self.form_handler.control_dim):
-                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                    self.controls[j].vector().vec().aypx(
+                        0.0, self.controls_temp[j].vector().vec()
+                    )
                 break
 
             for j in range(len(self.controls)):
-                self.controls[j].vector()[:] += (
-                    self.stepsize * search_directions[j].vector()[:]
+                self.controls[j].vector().vec().axpy(
+                    self.stepsize, search_directions[j].vector().vec()
                 )
 
             self.ref_algo().state_problem.has_solution = False
@@ -146,7 +152,9 @@ class UnconstrainedLineSearch:
             else:
                 self.stepsize /= self.beta_armijo
                 for i in range(len(self.controls)):
-                    self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
+                    self.controls[i].vector().vec().aypx(
+                        0.0, self.controls_temp[i].vector().vec()
+                    )
 
         self.ref_algo().stepsize = self.stepsize
         self.ref_algo().objective_value = self.objective_step

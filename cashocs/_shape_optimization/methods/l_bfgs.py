@@ -80,15 +80,15 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             history_alpha = deque()
-            self.search_direction.vector()[:] = grad.vector()[:]
+            self.search_direction.vector().vec().aypx(0.0, grad.vector().vec())
 
             for i, _ in enumerate(self.history_s):
                 alpha = self.history_rho[i] * self.form_handler.scalar_product(
                     self.search_direction, self.history_s[i]
                 )
                 history_alpha.append(alpha)
-                self.search_direction.vector()[:] -= (
-                    alpha * self.history_y[i].vector()[:]
+                self.search_direction.vector().vec().axpy(
+                    -alpha, self.history_y[i].vector().vec()
                 )
 
             if self.use_bfgs_scaling and self.iteration > 0:
@@ -100,21 +100,20 @@ class LBFGS(ShapeOptimizationAlgorithm):
             else:
                 factor = 1.0
 
-            self.search_direction.vector()[:] *= factor
+            self.search_direction.vector().vec().scale(factor)
 
             for i, _ in enumerate(self.history_s):
                 beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
                     self.history_y[-1 - i], self.search_direction
                 )
 
-                self.search_direction.vector()[:] += self.history_s[-1 - i].vector()[
-                    :
-                ] * (history_alpha[-1 - i] - beta)
+                self.search_direction.vector().vec().axpy(
+                    history_alpha[-1 - i] - beta, self.history_s[-1 - i].vector().vec()
+                )
 
-            self.search_direction.vector()[:] *= -1
-
+            self.search_direction.vector().vec().scale(-1)
         else:
-            self.search_direction.vector()[:] = -grad.vector()[:]
+            self.search_direction.vector().vec().aypx(0.0, -grad.vector().vec())
 
         return self.search_direction
 
@@ -169,7 +168,9 @@ class LBFGS(ShapeOptimizationAlgorithm):
             )
             if self.directional_derivative > 0:
                 debug("No descent direction found with L-BFGS")
-                self.search_direction.vector()[:] = -self.gradient.vector()[:]
+                self.search_direction.vector().vec().aypx(
+                    0.0, -self.gradient.vector().vec()
+                )
 
             self.line_search.search(self.search_direction, self.has_curvature_info)
 
@@ -178,7 +179,9 @@ class LBFGS(ShapeOptimizationAlgorithm):
                 break
 
             if self.bfgs_memory_size > 0:
-                self.gradient_prev.vector()[:] = self.gradient.vector()[:]
+                self.gradient_prev.vector().vec().aypx(
+                    0.0, self.gradient.vector().vec()
+                )
 
             self.adjoint_problem.has_solution = False
             self.shape_gradient_problem.has_solution = False
@@ -194,10 +197,13 @@ class LBFGS(ShapeOptimizationAlgorithm):
                 break
 
             if self.bfgs_memory_size > 0:
-                self.y_k.vector()[:] = (
-                    self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                self.y_k.vector().vec().aypx(
+                    0.0,
+                    self.gradient.vector().vec() - self.gradient_prev.vector().vec(),
                 )
-                self.s_k.vector()[:] = self.stepsize * self.search_direction.vector()[:]
+                self.s_k.vector().vec().aypx(
+                    0.0, self.stepsize * self.search_direction.vector().vec()
+                )
 
                 self.history_y.appendleft(self.y_k.copy(True))
                 self.history_s.appendleft(self.s_k.copy(True))

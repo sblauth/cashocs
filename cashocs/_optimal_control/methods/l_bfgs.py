@@ -28,7 +28,6 @@ from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-
 class LBFGS(ControlOptimizationAlgorithm):
     """A limited memory BFGS method"""
 
@@ -89,7 +88,9 @@ class LBFGS(ControlOptimizationAlgorithm):
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             history_alpha = deque()
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] = grad[j].vector()[:]
+                self.search_directions[j].vector().vec().aypx(
+                    0.0, grad[j].vector().vec()
+                )
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_directions, self.search_directions
@@ -101,8 +102,8 @@ class LBFGS(ControlOptimizationAlgorithm):
                 )
                 history_alpha.append(alpha)
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector()[:] -= (
-                        alpha * self.history_y[i][j].vector()[:]
+                    self.search_directions[j].vector().vec().axpy(
+                        -alpha, self.history_y[i][j].vector().vec()
                     )
 
             if self.use_bfgs_scaling and self.iteration > 0:
@@ -115,7 +116,7 @@ class LBFGS(ControlOptimizationAlgorithm):
                 factor = 1.0
 
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] *= factor
+                self.search_directions[j].vector().vec().scale(factor)
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_directions, self.search_directions
@@ -127,21 +128,26 @@ class LBFGS(ControlOptimizationAlgorithm):
                 )
 
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector()[:] += self.history_s[-1 - i][
-                        j
-                    ].vector()[:] * (history_alpha[-1 - i] - beta)
+                    self.search_directions[j].vector().vec().axpy(
+                        history_alpha[-1 - i] - beta,
+                        self.history_s[-1 - i][j].vector().vec(),
+                    )
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_directions, self.search_directions
             )
             self.form_handler.restrict_to_active_set(self.gradients, self.temp)
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] += self.temp[j].vector()[:]
-                self.search_directions[j].vector()[:] *= -1
+                self.search_directions[j].vector().vec().axpy(
+                    1.0, self.temp[j].vector().vec()
+                )
+                self.search_directions[j].vector().vec().scale(-1.0)
 
         else:
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[:] = -grad[j].vector()[:]
+                self.search_directions[j].vector().vec().aypx(
+                    0.0, -grad[j].vector().vec()
+                )
 
         return self.search_directions
 
@@ -177,9 +183,9 @@ class LBFGS(ControlOptimizationAlgorithm):
             if self.directional_derivative > 0:
                 debug("No descent direction found with L-BFGS")
                 for j in range(self.form_handler.control_dim):
-                    self.search_directions[j].vector()[:] = -self.gradients[j].vector()[
-                        :
-                    ]
+                    self.search_directions[j].vector().vec().aypx(
+                        0.0, -self.gradients[j].vector().vec()
+                    )
 
             self.line_search.search(self.search_directions, self.has_curvature_info)
 
@@ -189,7 +195,9 @@ class LBFGS(ControlOptimizationAlgorithm):
 
             if self.bfgs_memory_size > 0:
                 for i in range(len(self.gradients)):
-                    self.gradients_prev[i].vector()[:] = self.gradients[i].vector()[:]
+                    self.gradients_prev[i].vector().vec().aypx(
+                        0.0, self.gradients[i].vector().vec()
+                    )
 
             self.adjoint_problem.has_solution = False
             self.gradient_problem.has_solution = False
@@ -205,12 +213,14 @@ class LBFGS(ControlOptimizationAlgorithm):
 
             if self.bfgs_memory_size > 0:
                 for i in range(len(self.gradients)):
-                    self.storage_y[i].vector()[:] = (
-                        self.gradients[i].vector()[:]
-                        - self.gradients_prev[i].vector()[:]
+                    self.storage_y[i].vector().vec().aypx(
+                        0.0,
+                        self.gradients[i].vector().vec()
+                        - self.gradients_prev[i].vector().vec(),
                     )
-                    self.storage_s[i].vector()[:] = (
-                        self.stepsize * self.search_directions[i].vector()[:]
+                    self.storage_s[i].vector().vec().aypx(
+                        0.0,
+                        self.stepsize * self.search_directions[i].vector().vec(),
                     )
 
                 self.form_handler.restrict_to_inactive_set(self.storage_y, self.y_k)

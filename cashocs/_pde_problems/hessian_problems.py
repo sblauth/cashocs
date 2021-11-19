@@ -155,7 +155,7 @@ class BaseHessianProblem(abc.ABC):
         """
 
         for i in range(self.control_dim):
-            self.test_directions[i].vector()[:] = h[i].vector()[:]
+            self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
 
         self.states_prime = self.form_handler.states_prime
         self.adjoints_prime = self.form_handler.adjoints_prime
@@ -324,7 +324,7 @@ class BaseHessianProblem(abc.ABC):
         self.form_handler.compute_active_sets()
 
         for j in range(self.control_dim):
-            self.delta_control[j].vector()[:] = 0.0
+            self.delta_control[j].vector().vec().set(0.0)
 
         if self.inner_newton == "cg":
             self.cg(idx_active)
@@ -409,7 +409,7 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            out[j].vector()[:] = 0.0
+            out[j].vector().vec().set(0.0)
 
         self.form_handler.restrict_to_inactive_set(h, self.inactive_part)
         self.hessian_application(self.inactive_part, self.hessian_actions)
@@ -419,8 +419,10 @@ class HessianProblem(BaseHessianProblem):
         self.form_handler.restrict_to_active_set(h, self.active_part)
 
         for j in range(self.control_dim):
-            out[j].vector()[:] = (
-                self.active_part[j].vector()[:] + self.inactive_part[j].vector()[:]
+            out[j].vector().vec().aypx(
+                0.0,
+                self.active_part[j].vector().vec()
+                + self.inactive_part[j].vector().vec(),
             )
 
     def newton_solve(self, idx_active=None):
@@ -459,8 +461,8 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector()[:] = -self.gradients[j].vector()[:]
-            self.p[j].vector()[:] = self.residual[j].vector()[:]
+            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.rsold = self.form_handler.scalar_product(self.residual, self.residual)
         self.eps_0 = np.sqrt(self.rsold)
@@ -479,8 +481,12 @@ class HessianProblem(BaseHessianProblem):
             self.alpha = self.rsold / sp_val
 
             for j in range(self.control_dim):
-                self.delta_control[j].vector()[:] += self.alpha * self.p[j].vector()[:]
-                self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
+                self.delta_control[j].vector().vec().axpy(
+                    self.alpha, self.p[j].vector().vec()
+                )
+                self.residual[j].vector().vec().axpy(
+                    -self.alpha, self.q[j].vector().vec()
+                )
 
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
@@ -491,8 +497,8 @@ class HessianProblem(BaseHessianProblem):
             self.beta = self.rsnew / self.rsold
 
             for j in range(self.control_dim):
-                self.p[j].vector()[:] = (
-                    self.residual[j].vector()[:] + self.beta * self.p[j].vector()[:]
+                self.p[j].vector().vec().aypx(
+                    self.beta, self.residual[j].vector().vec()
                 )
 
             self.rsold = self.rsnew
@@ -513,8 +519,8 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector()[:] = -self.gradients[j].vector()[:]
-            self.p[j].vector()[:] = self.residual[j].vector()[:]
+            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.eps_0 = np.sqrt(
             self.form_handler.scalar_product(self.residual, self.residual)
@@ -523,7 +529,7 @@ class HessianProblem(BaseHessianProblem):
         self.reduced_hessian_application(self.residual, self.s)
 
         for j in range(self.control_dim):
-            self.q[j].vector()[:] = self.s[j].vector()[:]
+            self.q[j].vector().vec().aypx(0.0, self.s[j].vector().vec())
 
         self.form_handler.restrict_to_active_set(self.residual, self.temp1)
         self.form_handler.restrict_to_active_set(self.s, self.temp2)
@@ -545,8 +551,12 @@ class HessianProblem(BaseHessianProblem):
             self.alpha = self.rAr / denominator
 
             for j in range(self.control_dim):
-                self.delta_control[j].vector()[:] += self.alpha * self.p[j].vector()[:]
-                self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
+                self.delta_control[j].vector().vec().axpy(
+                    self.alpha, self.p[j].vector().vec()
+                )
+                self.residual[j].vector().vec().axpy(
+                    -self.alpha, self.q[j].vector().vec()
+                )
 
             self.eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
@@ -571,12 +581,10 @@ class HessianProblem(BaseHessianProblem):
             self.beta = self.rAr_new / self.rAr
 
             for j in range(self.control_dim):
-                self.p[j].vector()[:] = (
-                    self.residual[j].vector()[:] + self.beta * self.p[j].vector()[:]
+                self.p[j].vector().vec().aypx(
+                    self.beta, self.residual[j].vector().vec()
                 )
-                self.q[j].vector()[:] = (
-                    self.s[j].vector()[:] + self.beta * self.q[j].vector()[:]
-                )
+                self.q[j].vector().vec().aypx(self.beta, self.s[j].vector().vec())
 
             self.rAr = self.rAr_new
 
@@ -622,7 +630,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.temp[j].vector()[:] = h[j].vector()[:]
+            self.temp[j].vector().vec().aypx(0.0, h[j].vector().vec())
             self.temp[j].vector()[idx_active[j]] = 0.0
 
         self.hessian_application(self.temp, out)
@@ -653,7 +661,9 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         self.gradient_problem.solve()
 
         for j in range(self.control_dim):
-            self.reduced_gradient[j].vector()[:] = self.gradients[j].vector()[:]
+            self.reduced_gradient[j].vector().vec().aypx(
+                0.0, self.gradients[j].vector().vec()
+            )
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
         return super().newton_solve(idx_active)
@@ -674,8 +684,10 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
-            self.p[j].vector()[:] = self.residual[j].vector()[:]
+            self.residual[j].vector().vec().aypx(
+                0.0, -self.reduced_gradient[j].vector().vec()
+            )
+            self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.rsold = self.form_handler.scalar_product(self.residual, self.residual)
         self.eps_0 = np.sqrt(self.rsold)
@@ -685,8 +697,12 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
             self.alpha = self.rsold / self.form_handler.scalar_product(self.p, self.q)
             for j in range(self.control_dim):
-                self.delta_control[j].vector()[:] += self.alpha * self.p[j].vector()[:]
-                self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
+                self.delta_control[j].vector().vec().axpy(
+                    self.alpha, self.p[j].vector().vec()
+                )
+                self.residual[j].vector().vec().axpy(
+                    -self.alpha, self.q[j].vector().vec()
+                )
 
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
@@ -697,8 +713,8 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.beta = self.rsnew / self.rsold
 
             for j in range(self.control_dim):
-                self.p[j].vector()[:] = (
-                    self.residual[j].vector()[:] + self.beta * self.p[j].vector()[:]
+                self.p[j].vector().vec().aypx(
+                    self.beta, self.residual[j].vector().vec()
                 )
 
             self.rsold = self.rsnew
@@ -719,8 +735,10 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector()[:] = -self.reduced_gradient[j].vector()[:]
-            self.p[j].vector()[:] = self.residual[j].vector()[:]
+            self.residual[j].vector().vec().aypx(
+                0.0, -self.reduced_gradient[j].vector().vec()
+            )
+            self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.eps_0 = np.sqrt(
             self.form_handler.scalar_product(self.residual, self.residual)
@@ -729,7 +747,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
         self.reduced_hessian_application(self.residual, self.s, idx_active)
 
         for j in range(self.control_dim):
-            self.q[j].vector()[:] = self.s[j].vector()[:]
+            self.q[j].vector().vec().aypx(0.0, self.s[j].vector().vec())
 
         self.rAr = self.form_handler.scalar_product(self.residual, self.s)
 
@@ -737,8 +755,12 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.alpha = self.rAr / self.form_handler.scalar_product(self.q, self.q)
 
             for j in range(self.control_dim):
-                self.delta_control[j].vector()[:] += self.alpha * self.p[j].vector()[:]
-                self.residual[j].vector()[:] -= self.alpha * self.q[j].vector()[:]
+                self.delta_control[j].vector().vec().axpy(
+                    self.alpha, self.p[j].vector().vec()
+                )
+                self.residual[j].vector().vec().axpy(
+                    -self.alpha, self.q[j].vector().vec()
+                )
 
             self.eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
@@ -756,11 +778,9 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.beta = self.rAr_new / self.rAr
 
             for j in range(self.control_dim):
-                self.p[j].vector()[:] = (
-                    self.residual[j].vector()[:] + self.beta * self.p[j].vector()[:]
+                self.p[j].vector().vec().aypx(
+                    self.beta, self.residual[j].vector().vec()
                 )
-                self.q[j].vector()[:] = (
-                    self.s[j].vector()[:] + self.beta * self.q[j].vector()[:]
-                )
+                self.q[j].vector().vec().aypx(self.beta, self.s[j].vector().vec())
 
             self.rAr = self.rAr_new

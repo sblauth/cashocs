@@ -61,8 +61,9 @@ class ArmijoLineSearch(LineSearch):
         """
 
         for j in range(self.form_handler.control_dim):
-            self.projected_difference[j].vector()[:] = (
-                self.controls[j].vector()[:] - self.controls_temp[j].vector()[:]
+            self.projected_difference[j].vector().vec().aypx(
+                0.0,
+                self.controls[j].vector().vec() - self.controls_temp[j].vector().vec(),
             )
 
         return self.form_handler.scalar_product(
@@ -102,14 +103,18 @@ class ArmijoLineSearch(LineSearch):
         self.ref_algo().print_results()
 
         for j in range(self.form_handler.control_dim):
-            self.controls_temp[j].vector()[:] = self.controls[j].vector()[:]
+            self.controls_temp[j].vector().vec().aypx(
+                0.0, self.controls[j].vector().vec()
+            )
 
         while True:
             if self.stepsize * self.search_direction_inf <= 1e-8:
                 error("Stepsize too small.")
                 self.ref_algo().line_search_broken = True
                 for j in range(self.form_handler.control_dim):
-                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                    self.controls[j].vector().vec().aypx(
+                        0.0, self.controls_temp[j].vector().vec()
+                    )
                 break
             elif (
                 not self.is_newton_like
@@ -119,12 +124,14 @@ class ArmijoLineSearch(LineSearch):
                 self.ref_algo().line_search_broken = True
                 error("Stepsize too small.")
                 for j in range(self.form_handler.control_dim):
-                    self.controls[j].vector()[:] = self.controls_temp[j].vector()[:]
+                    self.controls[j].vector().vec().aypx(
+                        0.0, self.controls_temp[j].vector().vec()
+                    )
                 break
 
             for j in range(len(self.controls)):
-                self.controls[j].vector()[:] += (
-                    self.stepsize * search_directions[j].vector()[:]
+                self.controls[j].vector().vec().axpy(
+                    self.stepsize, search_directions[j].vector().vec()
                 )
 
             self.form_handler.project_to_admissible_set(self.controls)
@@ -147,7 +154,9 @@ class ArmijoLineSearch(LineSearch):
             else:
                 self.stepsize /= self.beta_armijo
                 for i in range(len(self.controls)):
-                    self.controls[i].vector()[:] = self.controls_temp[i].vector()[:]
+                    self.controls[i].vector().vec().aypx(
+                        0.0, self.controls_temp[i].vector().vec()
+                    )
 
         if not self.ref_algo().line_search_broken:
             self.ref_algo().stepsize = self.stepsize

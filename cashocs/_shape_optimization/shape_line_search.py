@@ -105,7 +105,9 @@ class ArmijoLineSearch(LineSearch):
                 self.ref_algo().line_search_broken = True
                 break
 
-            self.deformation.vector()[:] = self.stepsize * search_direction.vector()[:]
+            self.deformation.vector().vec().aypx(
+                0.0, self.stepsize * search_direction.vector().vec()
+            )
             self.dm = self.decrease_measure(search_direction)
 
             if self.mesh_handler.move_mesh(self.deformation):

@@ -252,7 +252,7 @@ def newton_solve(
         iterations += 1
         lmbd = 1.0
         breakdown = False
-        u_save.vector()[:] = u.vector()[:]
+        u_save.vector().vec().aypx(0.0, u.vector().vec())
 
         # Solve the inner problem
         if inexact:
@@ -279,7 +279,7 @@ def newton_solve(
         # perform backtracking in case damping is used
         if damped:
             while True:
-                u.vector()[:] += lmbd * du.vector()[:]
+                u.vector().vec().axpy(lmbd, du.vector().vec())
                 assembler.assemble(residual)
                 if shift is not None:
                     assembler_shift.assemble(residual_shift)
@@ -297,7 +297,7 @@ def newton_solve(
                 if ddu.vector().norm(norm_type) / du.vector().norm(norm_type) <= 1:
                     break
                 else:
-                    u.vector()[:] = u_save.vector()[:]
+                    u.vector().vec().aypx(0.0, u_save.vector().vec())
                     lmbd /= 2
 
                 if lmbd < 1e-6:
@@ -305,7 +305,7 @@ def newton_solve(
                     break
 
         else:
-            u.vector()[:] += du.vector()[:]
+            u.vector().vec().axpy(1.0, du.vector().vec())
 
         if breakdown:
             raise NotConvergedError(

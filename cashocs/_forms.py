@@ -154,12 +154,12 @@ class FormHandler:
             self.no_scalar_tracking_terms = len(self.scalar_tracking_goals)
             try:
                 for j in range(self.no_scalar_tracking_terms):
-                    self.scalar_weights[j].vector()[
-                        :
-                    ] = self.lagrangian.scalar_tracking_forms[j]["weight"]
+                    self.scalar_weights[j].vector().vec().set(
+                        self.lagrangian.scalar_tracking_forms[j]["weight"]
+                    )
             except KeyError:
                 for j in range(self.no_scalar_tracking_terms):
-                    self.scalar_weights[j].vector()[:] = 1.0
+                    self.scalar_weights[j].vector().vec().set(1.0)
 
         if self.use_min_max_terms:
             self.min_max_integrands = [d["integrand"] for d in self.min_max_forms]
@@ -692,14 +692,14 @@ class ControlFormHandler(FormHandler):
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
-                self.temp[j].vector()[:] = 0.0
+                self.temp[j].vector().vec().set(0.0)
                 self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[
                     self.idx_active[j]
                 ]
-                b[j].vector()[:] = self.temp[j].vector()[:]
+                b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
 
             else:
-                b[j].vector()[:] = 0.0
+                b[j].vector().vec().set(0.0)
 
         return b
 
@@ -722,14 +722,14 @@ class ControlFormHandler(FormHandler):
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
-                self.temp[j].vector()[:] = 0.0
+                self.temp[j].vector().vec().set(0.0)
                 self.temp[j].vector()[self.idx_active_lower[j]] = a[j].vector()[
                     self.idx_active_lower[j]
                 ]
-                b[j].vector()[:] = self.temp[j].vector()[:]
+                b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
 
             else:
-                b[j].vector()[:] = 0.0
+                b[j].vector().vec().set(0.0)
 
         return b
 
@@ -752,14 +752,14 @@ class ControlFormHandler(FormHandler):
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
-                self.temp[j].vector()[:] = 0.0
+                self.temp[j].vector().vec().set(0.0)
                 self.temp[j].vector()[self.idx_active_upper[j]] = a[j].vector()[
                     self.idx_active_upper[j]
                 ]
-                b[j].vector()[:] = self.temp[j].vector()[:]
+                b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
 
             else:
-                b[j].vector()[:] = 0.0
+                b[j].vector().vec().set(0.0)
 
         return b
 
@@ -784,14 +784,15 @@ class ControlFormHandler(FormHandler):
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
-                self.temp[j].vector()[:] = 0.0
+                self.temp[j].vector().vec().set(0.0)
                 self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[
                     self.idx_inactive[j]
                 ]
-                b[j].vector()[:] = self.temp[j].vector()[:]
+                b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
 
             else:
-                b[j].vector()[:] = a[j].vector()[:]
+                if not b[j].vector().vec().equal(a[j].vector().vec()):
+                    b[j].vector().vec().aypx(0.0, a[j].vector().vec())
 
         return b
 
@@ -815,11 +816,11 @@ class ControlFormHandler(FormHandler):
 
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
-                a[j].vector()[:] = np.maximum(
-                    self.control_constraints[j][0].vector()[:],
-                    np.minimum(
-                        self.control_constraints[j][1].vector()[:], a[j].vector()[:]
-                    ),
+                a[j].vector().vec().pointwiseMin(
+                    self.control_constraints[j][1].vector().vec(), a[j].vector().vec()
+                )
+                a[j].vector().vec().pointwiseMax(
+                    a[j].vector().vec(), self.control_constraints[j][0].vector().vec()
                 )
 
         return a
@@ -1495,7 +1496,7 @@ class ShapeFormHandler(FormHandler):
         self.DG0 = fenics.FunctionSpace(self.mesh, "DG", 0)
 
         self.mu_lame = fenics.Function(self.CG1)
-        self.mu_lame.vector()[:] = 1.0
+        self.mu_lame.vector().vec().set(1.0)
 
         if self.shape_scalar_product is None:
             # Use the default linear elasticity approach
@@ -1509,8 +1510,9 @@ class ShapeFormHandler(FormHandler):
 
             if self.config.getboolean("ShapeGradient", "inhomogeneous", fallback=False):
                 self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
-                vol_max = np.max(np.abs(self.volumes.vector()[:]))
-                self.volumes.vector()[:] /= vol_max
+
+                vol_max = self.volumes.vector().vec().max()[1]
+                self.volumes.vector().vec().scale(1 / vol_max)
 
             else:
                 self.volumes = fenics.Constant(1.0)
@@ -1674,20 +1676,25 @@ class ShapeFormHandler(FormHandler):
                     if self.config.getboolean(
                         "ShapeGradient", "use_sqrt_mu", fallback=False
                     ):
-                        self.mu_lame.vector()[:] = np.sqrt(x[:])
-                    else:
-                        self.mu_lame.vector()[:] = x[:]
+                        x.sqrtabs()
+
+                    self.mu_lame.vector().vec().aypx(0.0, x)
 
                 else:
-                    self.mu_lame.vector()[:] = self.mu_fix
+                    self.mu_lame.vector().vec().set(self.mu_fix)
 
             else:
-                self.distance.vector()[:] = compute_boundary_distance(
-                    self.mesh, self.boundaries, self.bdry_idcs
-                ).vector()[:]
-                self.mu_lame.vector()[:] = fenics.interpolate(
-                    self.mu_expression, self.CG1
-                ).vector()[:]
+                self.distance.vector().vec().aypx(
+                    0.0,
+                    compute_boundary_distance(
+                        self.mesh, self.boundaries, self.bdry_idcs
+                    )
+                    .vector()
+                    .vec(),
+                )
+                self.mu_lame.vector().vec().aypx(
+                    0.0, fenics.interpolate(self.mu_expression, self.CG1).vector().vec()
+                )
 
             # for mpi compatibility
             self.mu_lame.vector().apply("")
@@ -1705,11 +1712,12 @@ class ShapeFormHandler(FormHandler):
 
         self.__compute_mu_elas()
         if self.update_inhomogeneous:
-            self.volumes.vector()[:] = fenics.project(
-                fenics.CellVolume(self.mesh), self.DG0
-            ).vector()[:]
-            vol_max = np.max(np.abs(self.volumes.vector()[:]))
-            self.volumes.vector()[:] /= vol_max
+            self.volumes.vector().vec().aypx(
+                0.0,
+                fenics.project(fenics.CellVolume(self.mesh), self.DG0).vector().vec(),
+            )
+            vol_max = self.volumes.vector().vec().max()[1]
+            self.volumes.vector().vec().scale(1 / vol_max)
 
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()

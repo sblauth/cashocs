@@ -978,7 +978,7 @@ def moreau_yosida_regularization(
     shift_lower=None,
     shift_upper=None,
 ):
-    """Implements a Moreau-Yosida regularization of an inequality constraint
+    r"""Implements a Moreau-Yosida regularization of an inequality constraint
 
     The general form of the inequality is of the form ::
 

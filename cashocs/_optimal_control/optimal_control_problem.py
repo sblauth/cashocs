@@ -161,9 +161,9 @@ class OptimalControlProblem(OptimizationProblem):
             self.control_constraints = []
             for control in self.controls:
                 u_a = fenics.Function(control.function_space())
-                u_a.vector()[:] = float("-inf")
+                u_a.vector().vec().set(float("-inf"))
                 u_b = fenics.Function(control.function_space())
-                u_b.vector()[:] = float("inf")
+                u_b.vector().vec().set(float("inf"))
                 self.control_constraints.append([u_a, u_b])
         else:
             try:
@@ -228,7 +228,7 @@ class OptimalControlProblem(OptimizationProblem):
         for idx, pair in enumerate(temp_constraints):
             if isinstance(pair[0], (float, int)):
                 lower_bound = fenics.Function(self.controls[idx].function_space())
-                lower_bound.vector()[:] = pair[0]
+                lower_bound.vector().vec().set(pair[0])
             elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
             else:
@@ -240,7 +240,7 @@ class OptimalControlProblem(OptimizationProblem):
 
             if isinstance(pair[1], (float, int)):
                 upper_bound = fenics.Function(self.controls[idx].function_space())
-                upper_bound.vector()[:] = pair[1]
+                upper_bound.vector().vec().set(pair[1])
             elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
@@ -262,9 +262,9 @@ class OptimalControlProblem(OptimizationProblem):
                     "The lower bound must always be smaller than the upper bound for the control_constraints.",
                 )
 
-            if np.max(pair[0].vector()[:]) == float("-inf") and np.min(
-                pair[1].vector()[:]
-            ) == float("inf"):
+            if pair[0].vector().vec().max()[1] == float("-inf") and pair[
+                1
+            ].vector().vec().min()[1] == float("inf"):
                 # no control constraint for this component
                 pass
             else:

@@ -55,14 +55,14 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
     initial_state = []
     for j in range(ocp.control_dim):
         temp = fenics.Function(ocp.form_handler.control_spaces[j])
-        temp.vector()[:] = ocp.controls[j].vector()[:]
+        temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
         initial_state.append(temp)
 
     if u is None:
         u = []
         for j in range(ocp.control_dim):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
-            temp.vector()[:] = ocp.controls[j].vector()[:]
+            temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             u.append(temp)
 
     if not len(u) == ocp.control_dim:
@@ -79,7 +79,7 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
         u = []
         for j in range(ocp.control_dim):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
-            temp.vector()[:] = ocp.controls[j].vector()[:]
+            temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             u.append(temp)
 
     if h is None:
@@ -93,7 +93,7 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
             h.append(temp)
 
     for j in range(ocp.control_dim):
-        ocp.controls[j].vector()[:] = u[j].vector()[:]
+        ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
 
     # Compute the norm of u for scaling purposes.
     scaling = np.sqrt(ocp.form_handler.scalar_product(ocp.controls, ocp.controls))
@@ -110,7 +110,8 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
 
     for eps in epsilons:
         for j in range(ocp.control_dim):
-            ocp.controls[j].vector()[:] = u[j].vector()[:] + eps * h[j].vector()[:]
+            ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+            ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
         ocp._erase_pde_memory()
         Jv = ocp.reduced_cost_functional.evaluate()
 
@@ -123,7 +124,7 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
     rates = compute_convergence_rates(epsilons, residuals)
 
     for j in range(ocp.control_dim):
-        ocp.controls[j].vector()[:] = initial_state[j].vector()[:]
+        ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
 
     return np.min(rates)
 
@@ -173,7 +174,8 @@ def shape_gradient_test(sop, h=None, rng=None):
     residuals = []
 
     for idx, eps in enumerate(epsilons):
-        transformation.vector()[:] = eps * h.vector()[:]
+        transformation.vector().vec().aypx(0.0, h.vector().vec())
+        transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):
             sop._erase_pde_memory()
             J_pert = sop.reduced_cost_functional.evaluate()

@@ -62,7 +62,7 @@ class ConstrainedSolver(abc.ABC):
 
         for i, constraint in enumerate(self.constraints):
             if constraint.is_pointwise_constraint:
-                constraint.multiplier.vector()[:] = self.lmbd[i]
+                constraint.multiplier.vector().vec().set(self.lmbd[i])
                 self.lmbd[i] = constraint.multiplier
 
         self.constraint_violation = 0.0
@@ -148,7 +148,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     self.inner_min_max_terms += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
-                    constraint.weight.vector()[:] = self.mu
+                    constraint.weight.vector().vec().set(self.mu)
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
         if len(self.inner_scalar_tracking_forms) == 0:
@@ -354,8 +354,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                     self.inner_min_max_terms += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
-                    constraint.weight.vector()[:] = self.mu
-                    constraint.multiplier.vector()[:] = 0.0
+                    constraint.weight.vector().vec().set(self.mu)
+                    constraint.multiplier.vector().vec().set(0.0)
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
         if len(self.inner_scalar_tracking_forms) == 0:

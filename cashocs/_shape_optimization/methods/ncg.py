@@ -93,11 +93,11 @@ class NCG(ShapeOptimizationAlgorithm):
         self.memory = 0
         self.relative_norm = 1.0
         self.state_problem.has_solution = False
-        self.gradient.vector()[:] = 1.0
+        self.gradient.vector().vec().set(1.0)
 
         while True:
 
-            self.gradient_prev.vector()[:] = self.gradient.vector()[:]
+            self.gradient_prev.vector().vec().aypx(0.0, self.gradient.vector().vec())
 
             self.adjoint_problem.has_solution = False
             self.shape_gradient_problem.has_solution = False
@@ -117,8 +117,10 @@ class NCG(ShapeOptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "PR":
-                    self.difference.vector()[:] = (
-                        self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                    self.difference.vector().vec().aypx(
+                        0.0,
+                        self.gradient.vector().vec()
+                        - self.gradient_prev.vector().vec(),
                     )
 
                     self.beta_numerator = self.form_handler.scalar_product(
@@ -131,8 +133,10 @@ class NCG(ShapeOptimizationAlgorithm):
                     # self.beta = np.maximum(self.beta, 0.0)
 
                 elif self.cg_method == "HS":
-                    self.difference.vector()[:] = (
-                        self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                    self.difference.vector().vec().aypx(
+                        0.0,
+                        self.gradient.vector().vec()
+                        - self.gradient_prev.vector().vec(),
                     )
 
                     self.beta_numerator = self.form_handler.scalar_product(
@@ -144,8 +148,10 @@ class NCG(ShapeOptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "DY":
-                    self.difference.vector()[:] = (
-                        self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                    self.difference.vector().vec().aypx(
+                        0.0,
+                        self.gradient.vector().vec()
+                        - self.gradient_prev.vector().vec(),
                     )
 
                     self.beta_numerator = self.form_handler.scalar_product(
@@ -157,8 +163,10 @@ class NCG(ShapeOptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "HZ":
-                    self.difference.vector()[:] = (
-                        self.gradient.vector()[:] - self.gradient_prev.vector()[:]
+                    self.difference.vector().vec().aypx(
+                        0.0,
+                        self.gradient.vector().vec()
+                        - self.gradient_prev.vector().vec(),
                     )
 
                     dy = self.form_handler.scalar_product(
@@ -168,9 +176,8 @@ class NCG(ShapeOptimizationAlgorithm):
                         self.difference, self.difference
                     )
 
-                    self.difference.vector()[:] = (
-                        self.difference.vector()[:]
-                        - 2 * y2 / dy * self.search_direction.vector()[:]
+                    self.difference.vector().vec().axpy(
+                        -2 * y2 / dy, self.search_direction.vector().vec()
                     )
 
                     self.beta = (
@@ -190,15 +197,16 @@ class NCG(ShapeOptimizationAlgorithm):
                 self.converged = True
                 break
 
-            self.search_direction.vector()[:] = (
-                -self.gradient.vector()[:]
-                + self.beta * self.search_direction.vector()[:]
+            self.search_direction.vector().vec().aypx(
+                self.beta, -self.gradient.vector().vec()
             )
             if self.cg_periodic_restart:
                 if self.memory < self.cg_periodic_its:
                     self.memory += 1
                 else:
-                    self.search_direction.vector()[:] = -self.gradient.vector()[:]
+                    self.search_direction.vector().vec().aypx(
+                        0.0, -self.gradient.vector().vec()
+                    )
                     self.memory = 0
             if self.cg_relative_restart:
                 if (
@@ -210,7 +218,9 @@ class NCG(ShapeOptimizationAlgorithm):
                     / pow(self.gradient_norm, 2)
                     >= self.cg_restart_tol
                 ):
-                    self.search_direction.vector()[:] = -self.gradient.vector()[:]
+                    self.search_direction.vector().vec().aypx(
+                        0.0, -self.gradient.vector().vec()
+                    )
                     self.memory = 0
 
             self.directional_derivative = self.form_handler.scalar_product(
@@ -218,7 +228,9 @@ class NCG(ShapeOptimizationAlgorithm):
             )
 
             if self.directional_derivative >= 0:
-                self.search_direction.vector()[:] = -self.gradient.vector()[:]
+                self.search_direction.vector().vec().aypx(
+                    0.0, -self.gradient.vector().vec()
+                )
 
             self.line_search.search(self.search_direction, self.has_curvature_info)
 

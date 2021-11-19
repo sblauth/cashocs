@@ -186,7 +186,8 @@ class _PLaplacProjector:
         -------
 
         """
-        self.solution.vector()[:] = 0.0
+
+        self.solution.vector().vec().set(0.0)
         for F in self.F_list:
 
             newton_solve(

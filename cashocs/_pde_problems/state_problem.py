@@ -229,15 +229,15 @@ class StateProblem(PDEProblem):
                     )
                     self.form_handler.scalar_cost_functional_integrand_values[
                         j
-                    ].vector()[:] = scalar_integral_value
+                    ].vector().vec().set(scalar_integral_value)
 
             if self.form_handler.use_min_max_terms:
                 for j in range(self.form_handler.no_min_max_terms):
                     min_max_integral_value = fenics.assemble(
                         self.form_handler.min_max_integrands[j]
                     )
-                    self.form_handler.min_max_integrand_values[j].vector()[
-                        :
-                    ] = min_max_integral_value
+                    self.form_handler.min_max_integrand_values[j].vector().vec().set(
+                        min_max_integral_value
+                    )
 
         return self.states

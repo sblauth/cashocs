@@ -88,9 +88,9 @@ class Newton(ControlOptimizationAlgorithm):
                 self.has_curvature_info = False
                 debug("Did not compute a descent direction with Newton's method.")
                 for i in range(len(self.gradients)):
-                    self.search_directions[i].vector()[:] = -self.gradients[i].vector()[
-                        :
-                    ]
+                    self.search_directions[i].vector().vec().aypx(
+                        0.0, -self.gradients[i].vector().vec()
+                    )
             else:
                 self.has_curvature_info = True
 
@@ -98,9 +98,9 @@ class Newton(ControlOptimizationAlgorithm):
 
             if self.armijo_broken and self.has_curvature_info:
                 for i in range(len(self.gradients)):
-                    self.search_directions[i].vector()[:] = -self.gradients[i].vector()[
-                        :
-                    ]
+                    self.search_directions[i].vector().vec().aypx(
+                        0.0, -self.gradients[i].vector().vec()
+                    )
                 self.has_curvature_info = False
                 self.armijo_broken = False
                 self.line_search.search(self.search_directions, self.has_curvature_info)
