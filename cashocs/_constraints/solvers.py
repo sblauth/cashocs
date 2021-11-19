@@ -90,8 +90,12 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
     def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
+        self.A_tensors = [fenics.PETScMatrix() for i in range(self.constraint_dim)]
+        self.b_tensors = [fenics.PETScVector() for i in range(self.constraint_dim)]
 
-    def _project_pointwise_multiplier(self, project_terms, measure, multiplier):
+    def _project_pointwise_multiplier(
+        self, project_terms, measure, multiplier, A_tensor, b_tensor
+    ):
         if isinstance(project_terms, list):
             project_term = summation(project_terms)
         else:
@@ -103,8 +107,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         a = trial * test * measure
         L = project_term * test * measure
 
-        A, b = _assemble_petsc_system(a, L)
-        _solve_linear_problem(A=A, b=b, x=multiplier.vector().vec())
+        _assemble_petsc_system(a, L, A_tensor=A_tensor, b_tensor=b_tensor)
+        _solve_linear_problem(
+            A=A_tensor.mat(), b=b_tensor.vec(), x=multiplier.vector().vec()
+        )
 
     def _update_cost_functional(self):
 
@@ -180,7 +186,11 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         - self.constraints[i].target
                     )
                     self._project_pointwise_multiplier(
-                        project_term, self.constraints[i].measure, self.lmbd[i]
+                        project_term,
+                        self.constraints[i].measure,
+                        self.lmbd[i],
+                        self.A_tensors[i],
+                        self.b_tensors[i],
                     )
 
             elif isinstance(self.constraints[i], InequalityConstraint):
@@ -240,7 +250,11 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         )
 
                     self._project_pointwise_multiplier(
-                        project_terms, self.constraints[i].measure, self.lmbd[i]
+                        project_terms,
+                        self.constraints[i].measure,
+                        self.lmbd[i],
+                        self.A_tensors[i],
+                        self.b_tensors[i],
                     )
 
     def solve(

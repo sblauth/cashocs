@@ -79,6 +79,10 @@ class GradientProblem(PDEProblem):
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
+        self.b_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.control_dim)
+        ]
+
     def solve(self):
         """Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.
 
@@ -93,12 +97,12 @@ class GradientProblem(PDEProblem):
 
         if not self.has_solution:
             for i in range(self.form_handler.control_dim):
-                b = fenics.as_backend_type(
-                    fenics.assemble(self.form_handler.gradient_forms_rhs[i])
-                ).vec()
+                fenics.assemble(
+                    self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
+                )
                 _solve_linear_problem(
                     ksp=self.ksps[i],
-                    b=b,
+                    b=self.b_tensors[i].vec(),
                     x=self.gradients[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
                 )

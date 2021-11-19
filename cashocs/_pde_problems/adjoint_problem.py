@@ -65,6 +65,17 @@ class AdjointProblem(PDEProblem):
         self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
         _setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
+        self.A_tensors = [
+            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+        ]
+        self.b_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+
+        self.res_j_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+
         try:
             self.number_of_solves = self.temp_dict["output_dict"].get(
                 "adjoint_solves", 0
@@ -89,15 +100,17 @@ class AdjointProblem(PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
-                    A, b = _assemble_petsc_system(
+                    _assemble_petsc_system(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
+                        A_tensor=self.A_tensors[-1 - i],
+                        b_tensor=self.b_tensors[-1 - i],
                     )
                     _solve_linear_problem(
                         self.ksps[-1 - i],
-                        A,
-                        b,
+                        self.A_tensors[-1 - i].mat(),
+                        self.b_tensors[-1 - i].vec(),
                         self.adjoints[-1 - i].vector().vec(),
                         self.form_handler.adjoint_ksp_options[-1 - i],
                     )
@@ -107,11 +120,15 @@ class AdjointProblem(PDEProblem):
                 for i in range(self.maxiter + 1):
                     res = 0.0
                     for j in range(self.form_handler.state_dim):
-                        res_j = fenics.assemble(
-                            self.form_handler.adjoint_picard_forms[j]
+                        fenics.assemble(
+                            self.form_handler.adjoint_picard_forms[j],
+                            tensor=self.res_j_tensors[j],
                         )
-                        [bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
-                        res += pow(res_j.norm("l2"), 2)
+                        [
+                            bc.apply(self.res_j_tensors[j])
+                            for bc in self.form_handler.bcs_list_ad[j]
+                        ]
+                        res += pow(self.res_j_tensors[j].norm("l2"), 2)
 
                     if res == 0:
                         break
@@ -135,15 +152,17 @@ class AdjointProblem(PDEProblem):
                         )
 
                     for j in range(self.form_handler.state_dim):
-                        A, b = _assemble_petsc_system(
+                        _assemble_petsc_system(
                             self.form_handler.adjoint_eq_lhs[-1 - j],
                             self.form_handler.adjoint_eq_rhs[-1 - j],
                             self.bcs_list_ad[-1 - j],
+                            A_tensor=self.A_tensors[-1 - j],
+                            b_tensor=self.b_tensors[-1 - j],
                         )
                         _solve_linear_problem(
                             self.ksps[-1 - j],
-                            A,
-                            b,
+                            self.A_tensors[-1 - j].mat(),
+                            self.b_tensors[-1 - j].vec(),
                             self.adjoints[-1 - j].vector().vec(),
                             self.form_handler.adjoint_ksp_options[-1 - j],
                         )

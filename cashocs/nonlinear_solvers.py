@@ -47,6 +47,8 @@ def newton_solve(
     verbose=True,
     ksp=None,
     ksp_options=None,
+    A_tensor=None,
+    b_tensor=None,
 ):
     r"""A damped Newton method for solving nonlinear equations.
 
@@ -210,8 +212,15 @@ def newton_solve(
     assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
     assembler.keep_diagonal = True
 
-    A_fenics = fenics.PETScMatrix()
-    residual = fenics.PETScVector()
+    if A_tensor is None:
+        A_fenics = fenics.PETScMatrix()
+    else:
+        A_fenics = A_tensor
+
+    if b_tensor is None:
+        residual = fenics.PETScVector()
+    else:
+        residual = b_tensor
 
     # Compute the initial residual
     assembler.assemble(residual)

@@ -111,13 +111,10 @@ class ShapeGradientProblem(PDEProblem):
                 self.form_handler.assembler.assemble(
                     self.form_handler.fe_shape_derivative_vector
                 )
-                b = fenics.as_backend_type(
-                    self.form_handler.fe_shape_derivative_vector
-                ).vec()
                 _solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,
-                    b,
+                    self.form_handler.fe_shape_derivative_vector.vec(),
                     self.gradient.vector().vec(),
                     self.ksp_options,
                 )
@@ -150,6 +147,9 @@ class _PLaplacProjector:
         self.bcs_shape = bcs_shape
         dx = shape_gradient_problem.form_handler.dx
         self.mu_lame = shape_gradient_problem.form_handler.mu_lame
+
+        self.A_tensor = fenics.PETScMatrix()
+        self.b_tensor = fenics.PETScVector()
 
         self.F_list = []
         for p in self.p_list:
@@ -199,4 +199,6 @@ class _PLaplacProjector:
                 inexact=True,
                 verbose=False,
                 ksp_options=self.ksp_options,
+                A_tensor=self.A_tensor,
+                b_tensor=self.b_tensor,
             )

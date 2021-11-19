@@ -443,7 +443,7 @@ class Interpolator:
         return v
 
 
-def _assemble_petsc_system(A_form, b_form, bcs=None):
+def _assemble_petsc_system(A_form, b_form, bcs=None, A_tensor=None, b_tensor=None):
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Parameters
@@ -469,11 +469,17 @@ def _assemble_petsc_system(A_form, b_form, bcs=None):
     boundary etc.
     """
 
-    A, b = fenics.assemble_system(A_form, b_form, bcs, keep_diagonal=True)
-    A.ident_zeros()
+    if A_tensor is None:
+        A_tensor = fenics.PETScMatrix()
+    if b_tensor is None:
+        b_tensor = fenics.PETScVector()
+    fenics.assemble_system(
+        A_form, b_form, bcs, keep_diagonal=True, A_tensor=A_tensor, b_tensor=b_tensor
+    )
+    A_tensor.ident_zeros()
 
-    A = fenics.as_backend_type(A).mat()
-    b = fenics.as_backend_type(b).vec()
+    A = A_tensor.mat()
+    b = b_tensor.vec()
 
     return A, b
 

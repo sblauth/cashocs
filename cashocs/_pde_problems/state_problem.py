@@ -88,6 +88,16 @@ class StateProblem(PDEProblem):
                     rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
                 )
 
+        self.A_tensors = [
+            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+        ]
+        self.b_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+        self.res_j_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+
         try:
             self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
         except TypeError:
@@ -116,15 +126,17 @@ class StateProblem(PDEProblem):
             ):
                 if self.form_handler.state_is_linear:
                     for i in range(self.form_handler.state_dim):
-                        A, b = _assemble_petsc_system(
+                        _assemble_petsc_system(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
+                            A_tensor=self.A_tensors[i],
+                            b_tensor=self.b_tensors[i],
                         )
                         _solve_linear_problem(
                             self.ksps[i],
-                            A,
-                            b,
+                            self.A_tensors[i].mat(),
+                            self.b_tensors[i].vec(),
                             self.states[i].vector().vec(),
                             self.form_handler.state_ksp_options[i],
                         )
@@ -147,22 +159,32 @@ class StateProblem(PDEProblem):
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
+                            A_tensor=self.A_tensors[i],
+                            b_tensor=self.b_tensors[i],
                         )
 
             else:
                 for i in range(self.maxiter + 1):
                     res = 0.0
                     for j in range(self.form_handler.state_dim):
-                        res_j = fenics.assemble(self.form_handler.state_picard_forms[j])
+                        fenics.assemble(
+                            self.form_handler.state_picard_forms[j],
+                            tensor=self.res_j_tensors[j],
+                        )
 
-                        [bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
+                        [
+                            bc.apply(self.res_j_tensors[j])
+                            for bc in self.form_handler.bcs_list_ad[j]
+                        ]
 
                         if self.number_of_solves == 0 and i == 0:
-                            self.newton_atols[j] = res_j.norm("l2") * self.newton_atol
-                            if res_j.norm("l2") == 0.0:
+                            self.newton_atols[j] = (
+                                self.res_j_tensors[j].norm("l2") * self.newton_atol
+                            )
+                            if self.res_j_tensors[j].norm("l2") == 0.0:
                                 self.newton_atols[j] = self.newton_atol
 
-                        res += pow(res_j.norm("l2"), 2)
+                        res += pow(self.res_j_tensors[j].norm("l2"), 2)
 
                     if res == 0:
                         break
@@ -201,17 +223,21 @@ class StateProblem(PDEProblem):
                                 verbose=self.newton_verbose,
                                 ksp=self.ksps[j],
                                 ksp_options=self.form_handler.state_ksp_options[j],
+                                A_tensor=self.A_tensors[j],
+                                b_tensor=self.b_tensors[j],
                             )
                         else:
-                            A, b = _assemble_petsc_system(
+                            _assemble_petsc_system(
                                 self.form_handler.state_eq_forms_lhs[j],
                                 self.form_handler.state_eq_forms_rhs[j],
                                 self.bcs_list[j],
+                                A_tensor=self.A_tensors[j],
+                                b_tensor=self.b_tensors[j],
                             )
                             _solve_linear_problem(
                                 self.ksps[j],
-                                A,
-                                b,
+                                self.A_tensors[j].mat(),
+                                self.b_tensors[j].vec(),
                                 self.states[j].vector().vec(),
                                 self.form_handler.state_ksp_options[j],
                             )

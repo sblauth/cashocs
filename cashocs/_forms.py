@@ -565,21 +565,22 @@ class ControlFormHandler(FormHandler):
 
         # Initialize the scalar products
         fenics_scalar_product_matrices = [
-            fenics.assemble(self.riesz_scalar_products[i], keep_diagonal=True)
+            fenics.PETScMatrix() for i in range(self.control_dim)
+        ]
+        [
+            fenics.assemble(
+                self.riesz_scalar_products[i],
+                keep_diagonal=True,
+                tensor=fenics_scalar_product_matrices[i],
+            )
             for i in range(self.control_dim)
         ]
-        self.scalar_products_matrices = [
-            fenics.as_backend_type(fenics_scalar_product_matrices[i]).mat()
+        [
+            fenics_scalar_product_matrices[i].ident_zeros()
             for i in range(self.control_dim)
         ]
-
-        copy_scalar_product_matrices = [
-            fenics_scalar_product_matrices[i].copy() for i in range(self.control_dim)
-        ]
-        [copy_scalar_product_matrices[i].ident_zeros() for i in range(self.control_dim)]
         self.riesz_projection_matrices = [
-            fenics.as_backend_type(copy_scalar_product_matrices[i]).mat()
-            for i in range(self.control_dim)
+            fenics_scalar_product_matrices[i].mat() for i in range(self.control_dim)
         ]
 
         # Test for symmetry of the scalar products
@@ -622,8 +623,8 @@ class ControlFormHandler(FormHandler):
             x = fenics.as_backend_type(a[i].vector()).vec()
             y = fenics.as_backend_type(b[i].vector()).vec()
 
-            temp, _ = self.scalar_products_matrices[i].getVecs()
-            self.scalar_products_matrices[i].mult(x, temp)
+            temp, _ = self.riesz_projection_matrices[i].getVecs()
+            self.riesz_projection_matrices[i].mult(x, temp)
             result += temp.dot(y)
 
         return result
@@ -1205,6 +1206,9 @@ class ShapeFormHandler(FormHandler):
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
+        self.A_mu = fenics.PETScMatrix()
+        self.b_mu = fenics.PETScVector()
+
         self.update_scalar_product()
         self.__compute_p_laplacian_forms()
 
@@ -1668,9 +1672,18 @@ class ShapeFormHandler(FormHandler):
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
 
-                    A, b = _assemble_petsc_system(self.a_mu, self.L_mu, self.bcs_mu)
+                    _assemble_petsc_system(
+                        self.a_mu,
+                        self.L_mu,
+                        self.bcs_mu,
+                        A_tensor=self.A_mu,
+                        b_tensor=self.b_mu,
+                    )
                     x = _solve_linear_problem(
-                        self.ksp_mu, A, b, ksp_options=self.options_mu
+                        self.ksp_mu,
+                        self.A_mu.mat(),
+                        self.b_mu.vec(),
+                        ksp_options=self.options_mu,
                     )
 
                     if self.config.getboolean(

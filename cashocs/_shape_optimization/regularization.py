@@ -91,6 +91,9 @@ class Regularization:
         self.dx = fenics.Measure("dx", self.mesh)
         self.ds = fenics.Measure("ds", self.mesh)
 
+        self.A_curvature = fenics.PETScMatrix()
+        self.b_curvature = fenics.PETScVector()
+
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.measure_hole = self.config.getboolean(
@@ -351,14 +354,18 @@ class Regularization:
         """
 
         if self.mu_curvature > 0.0:
-            A = fenics.assemble(self.a_curvature, keep_diagonal=True)
-            A.ident_zeros()
-            A = fenics.as_backend_type(A).mat()
+            fenics.assemble(
+                self.a_curvature, keep_diagonal=True, tensor=self.A_curvature
+            )
+            self.A_curvature.ident_zeros()
 
-            b = fenics.assemble(self.L_curvature)
-            b = fenics.as_backend_type(b).vec()
+            fenics.assemble(self.L_curvature, tensor=self.b_curvature)
 
-            _solve_linear_problem(A=A, b=b, x=self.kappa_curvature.vector().vec())
+            _solve_linear_problem(
+                A=self.A_curvature.mat(),
+                b=self.b_curvature.vec(),
+                x=self.kappa_curvature.vector().vec(),
+            )
 
         else:
             pass
