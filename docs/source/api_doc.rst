@@ -147,6 +147,5 @@ of the sub-module.
 
    sub_modules/geometry
    sub_modules/nonlinear_solvers
-   sub_modules/optimization_problem
    sub_modules/utils
    sub_modules/verification

@@ -10,7 +10,7 @@ of the maintenance releases, please take a look at
 1.5.0 (in development)
 ----------------------
 
-* Performance increase
+* Major performance increase (particularly for large problems)
 
 * Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods.
 
