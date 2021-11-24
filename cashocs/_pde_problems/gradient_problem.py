@@ -55,6 +55,9 @@ class GradientProblem(PDEProblem):
         # Initialize the PETSc Krylov solver for the Riesz projection problems
         self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
 
+        gradient_tol = self.config.getfloat(
+            "OptimizationRoutine", "gradient_tol", fallback=1e-9
+        )
         # option = [
         # 		['ksp_type', 'preonly'],
         # 		['pc_type', 'lu'],
@@ -67,9 +70,9 @@ class GradientProblem(PDEProblem):
             ["pc_type", "hypre"],
             ["pc_hypre_type", "boomeramg"],
             ["pc_hypre_boomeramg_strong_threshold", 0.7],
-            ["ksp_rtol", 1e-16],
+            ["ksp_rtol", gradient_tol],
             ["ksp_atol", 1e-50],
-            ["ksp_max_it", 100],
+            ["ksp_max_it", 250],
         ]
         self.riesz_ksp_options = []
         for i in range(self.form_handler.control_dim):

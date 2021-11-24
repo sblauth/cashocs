@@ -53,6 +53,10 @@ class ShapeGradientProblem(PDEProblem):
         self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
+        gradient_tol = self.config.getfloat(
+            "OptimizationRoutine", "gradient_tol", fallback=1e-9
+        )
+
         # Generate the Krylov solver for the shape gradient problem
         self.ksp = PETSc.KSP().create()
         self.ksp_options = [
@@ -60,9 +64,9 @@ class ShapeGradientProblem(PDEProblem):
             ["pc_type", "hypre"],
             ["pc_hypre_type", "boomeramg"],
             ["pc_hypre_boomeramg_strong_threshold", 0.7],
-            ["ksp_rtol", 1e-20],
+            ["ksp_rtol", gradient_tol],
             ["ksp_atol", 1e-50],
-            ["ksp_max_it", 1000],
+            ["ksp_max_it", 250],
         ]
         _setup_petsc_options([self.ksp], [self.ksp_options])
 
