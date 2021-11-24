@@ -1734,9 +1734,7 @@ class ShapeFormHandler(FormHandler):
 
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()
-        self.scalar_product_matrix = fenics.as_backend_type(
-            self.fe_scalar_product_matrix
-        ).mat()
+        self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
 
     def scalar_product(self, a, b):
         """Computes the scalar product between two deformation functions.

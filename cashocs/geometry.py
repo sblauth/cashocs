@@ -24,6 +24,7 @@ and :py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands cre
 which are great for testing.
 """
 
+from collections import Counter
 import configparser
 import json
 import os
@@ -1635,6 +1636,11 @@ class DeformationHandler:
         )
         self.d2v = fenics.dof_to_vertex_map(self.VCG)
 
+        cells = self.mesh.cells()
+        flat_cells = cells.flatten().tolist()
+        self.cell_counter = Counter(flat_cells)
+        self.coordinates = self.mesh.coordinates()
+
     def __setup_a_priori(self):
         """Sets up the attributes and petsc solver for the a priori quality check.
 
@@ -1716,17 +1722,13 @@ class DeformationHandler:
         element mesh, so this check has to be done manually.
         """
 
-        cells = self.mesh.cells()
-        coordinates = self.mesh.coordinates()
         self_intersections = False
-        for i in range(coordinates.shape[0]):
-            x = fenics.Point(coordinates[i])
-            cells_idx = self.bbtree.compute_entity_collisions(x)
-            intersections = len(cells_idx)
-            M = cells[cells_idx]
-            occurences = M.flatten().tolist().count(i)
+        for i in range(self.coordinates.shape[0]):
+            intersections = len(
+                self.bbtree.compute_entity_collisions(fenics.Point(self.coordinates[i]))
+            )
 
-            if intersections > occurences:
+            if intersections > self.cell_counter[i]:
                 self_intersections = True
                 break
 
