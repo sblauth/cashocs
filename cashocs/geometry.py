@@ -1774,6 +1774,58 @@ class DeformationHandler:
             already been performed before moving the mesh. Default is
             ``False``
         """
+        if isinstance(transformation, np.ndarray):
+            if not transformation.shape == self.coordinates.shape:
+                raise CashocsException("Not a valid dimension for the transformation")
+            else:
+                coordinate_transformation = transformation
+        else:
+            coordinate_transformation = self.dof_to_coordinate(transformation)
+
+        if not validated_a_priori:
+            if isinstance(transformation, np.ndarray):
+                dof_transformation = self.coordinate_to_dof(transformation)
+            else:
+                dof_transformation = transformation
+            if not self.__test_a_priori(dof_transformation):
+                debug(
+                    "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
+                )
+                return False
+            else:
+                self.old_coordinates = self.mesh.coordinates().copy()
+                self.coordinates += coordinate_transformation
+                # fenics.ALE.move(self.mesh, transformation)
+                self.bbtree.build(self.mesh)
+
+                return self.__test_a_posteriori()
+        else:
+            self.old_coordinates = self.mesh.coordinates().copy()
+            self.coordinates += coordinate_transformation
+            # fenics.ALE.move(self.mesh, transformation)
+            self.bbtree.build(self.mesh)
+
+            return self.__test_a_posteriori()
+
+    def move_mesh_ale(self, transformation, validated_a_priori=False):
+        r"""Transforms the mesh by perturbation of identity.
+
+        Moves the mesh according to the deformation given by
+
+        .. math:: \text{id} + \mathcal{V}(x),
+
+        where :math:`\mathcal{V}` is the transformation. This
+        represents the perturbation of identity.
+
+        Parameters
+        ----------
+        transformation : dolfin.function.function.Function or np.ndarray
+            The transformation for the mesh, a vector CG1 Function.
+        validated_a_priori : bool
+            A boolean flag, which indicates whether an a-priori check has
+            already been performed before moving the mesh. Default is
+            ``False``
+        """
 
         if isinstance(transformation, np.ndarray):
             transformation = self.coordinate_to_dof(transformation)
