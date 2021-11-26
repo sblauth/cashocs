@@ -1639,6 +1639,9 @@ class DeformationHandler:
         cells = self.mesh.cells()
         flat_cells = cells.flatten().tolist()
         self.cell_counter = Counter(flat_cells)
+        self.occurrences = np.array(
+            [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
+        )
         self.coordinates = self.mesh.coordinates()
 
     def __setup_a_priori(self):
@@ -1723,14 +1726,9 @@ class DeformationHandler:
         """
 
         self_intersections = False
-        for i in range(self.coordinates.shape[0]):
-            intersections = len(
-                self.bbtree.compute_entity_collisions(fenics.Point(self.coordinates[i]))
-            )
-
-            if intersections > self.cell_counter[i]:
-                self_intersections = True
-                break
+        collisions = CollisionCounter.compute_collisions(self.mesh)
+        if not (collisions == self.occurrences).all():
+            self_intersections = True
 
         if self_intersections:
             self.revert_transformation()
@@ -1944,6 +1942,63 @@ class DeformationHandler:
         self.bbtree.build(self.mesh)
 
         return self.__test_a_posteriori()
+
+
+class CollisionCounter:
+    _cpp_code = """
+    #include <pybind11/pybind11.h>
+    #include <pybind11/eigen.h>
+    #include <pybind11/stl.h>
+    namespace py = pybind11;
+    
+    #include <dolfin/mesh/Mesh.h>
+    #include <dolfin/mesh/Vertex.h>
+    #include <dolfin/mesh/MeshFunction.h>
+    #include <dolfin/mesh/Cell.h>
+    #include <dolfin/mesh/Vertex.h>
+    #include <dolfin/geometry/BoundingBoxTree.h>
+    #include <dolfin/geometry/Point.h>
+    
+    #include <iostream>
+
+    using namespace dolfin;
+    
+    std::vector<int>
+    compute_collisions(std::shared_ptr<const Mesh> mesh)
+    {
+      int num_vertices;
+      std::vector<unsigned int> colliding_cells;
+      
+      //BoundingBoxTree bbtree;
+      //bbtree.build(*mesh);
+      
+      num_vertices = mesh->num_vertices();
+      std::vector<int> collisions(num_vertices);
+
+      int i = 0;
+      for (VertexIterator v(*mesh); !v.end(); ++v)
+      {
+        colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(v->point());
+        collisions[i] = colliding_cells.size();
+        
+        ++i;
+      }
+      return collisions;
+    }
+    
+    PYBIND11_MODULE(SIGNATURE, m)
+    {
+      m.def("compute_collisions", &compute_collisions);
+    }
+    """
+    _cpp_object = fenics.compile_cpp_code(_cpp_code)
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def compute_collisions(cls, mesh):
+        return np.array(cls._cpp_object.compute_collisions(mesh))
 
 
 class MeshQuality:
