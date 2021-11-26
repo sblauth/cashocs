@@ -60,7 +60,7 @@ class GradientProblem(PDEProblem):
             "OptimizationRoutine", "gradient_tol", fallback=1e-9
         )
 
-        gradient_method = self.config.getboolean(
+        gradient_method = self.config.get(
             "OptimizationRoutine", "gradient_method", fallback="direct"
         )
 

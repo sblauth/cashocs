@@ -61,7 +61,7 @@ class ShapeGradientProblem(PDEProblem):
         # Generate the Krylov solver for the shape gradient problem
         self.ksp = PETSc.KSP().create()
 
-        gradient_method = self.config.getboolean(
+        gradient_method = self.config.get(
             "OptimizationRoutine", "gradient_method", fallback="direct"
         )
 
@@ -194,14 +194,32 @@ class _PLaplacProjector:
                 * dx
             )
 
-            self.ksp_options = [
-                ["ksp_type", "cg"],
-                ["pc_type", "hypre"],
-                ["pc_hypre_type", "boomeramg"],
-                ["ksp_rtol", 1e-16],
-                ["ksp_atol", 1e-50],
-                ["ksp_max_it", 100],
-            ]
+            gradient_method = config.get(
+                "OptimizationRoutine", "gradient_method", fallback="direct"
+            )
+
+            if gradient_method == "direct":
+                self.ksp_options = [
+                    ["ksp_type", "preonly"],
+                    ["pc_type", "lu"],
+                    ["pc_factor_mat_solver_type", "mumps"],
+                    ["mat_mumps_icntl_24", 1],
+                ]
+            elif gradient_method == "iterative":
+                self.ksp_options = [
+                    ["ksp_type", "cg"],
+                    ["pc_type", "hypre"],
+                    ["pc_hypre_type", "boomeramg"],
+                    ["ksp_rtol", 1e-16],
+                    ["ksp_atol", 1e-50],
+                    ["ksp_max_it", 100],
+                ]
+            else:
+                raise ConfigError(
+                    "OptimizationRoutine",
+                    "gradient_method",
+                    "gradient_method has to be either 'direct' or 'iterative'",
+                )
 
     def solve(self):
         """Solves the p-Laplace problem for computing the shape gradient
