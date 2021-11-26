@@ -5,7 +5,7 @@ RUN apt-get update --fix-missing \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN conda create -n cashocs -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base gmsh">=4.8" python">=3.6" coverage \
+RUN conda create -n cashocs -c conda-forge fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" matplotlib-base gmsh">=4.8" python">=3.7" coverage \
   && conda clean -tipsy
 
 
