@@ -12,8 +12,8 @@
 .. image:: https://img.shields.io/pypi/pyversions/cashocs
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5714558.svg
-   :target: https://doi.org/10.5281/zenodo.5714558
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5730686.svg
+   :target: https://doi.org/10.5281/zenodo.5730686
 
 .. image:: https://img.shields.io/pypi/l/cashocs?color=informational
     :target: https://pypi.org/project/cashocs/
