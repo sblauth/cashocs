@@ -1953,27 +1953,19 @@ class CollisionCounter:
     
     #include <dolfin/mesh/Mesh.h>
     #include <dolfin/mesh/Vertex.h>
-    #include <dolfin/mesh/MeshFunction.h>
-    #include <dolfin/mesh/Cell.h>
-    #include <dolfin/mesh/Vertex.h>
     #include <dolfin/geometry/BoundingBoxTree.h>
     #include <dolfin/geometry/Point.h>
     
-    #include <iostream>
-
     using namespace dolfin;
     
-    std::vector<int>
+    Eigen::VectorXi
     compute_collisions(std::shared_ptr<const Mesh> mesh)
     {
       int num_vertices;
       std::vector<unsigned int> colliding_cells;
       
-      //BoundingBoxTree bbtree;
-      //bbtree.build(*mesh);
-      
       num_vertices = mesh->num_vertices();
-      std::vector<int> collisions(num_vertices);
+      Eigen::VectorXi collisions(num_vertices);
 
       int i = 0;
       for (VertexIterator v(*mesh); !v.end(); ++v)
@@ -1998,7 +1990,7 @@ class CollisionCounter:
 
     @classmethod
     def compute_collisions(cls, mesh):
-        return np.array(cls._cpp_object.compute_collisions(mesh))
+        return cls._cpp_object.compute_collisions(mesh)
 
 
 class MeshQuality:
