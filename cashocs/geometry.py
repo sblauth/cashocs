@@ -1233,12 +1233,14 @@ class _MeshHandler:
                 "OptimizationRoutine", "beta_armijo", fallback=2
             )
 
-            return np.maximum(
-                np.ceil(
-                    np.log(self.angle_change / stepsize / frobenius_norm)
-                    / np.log(1 / beta_armijo)
-                ),
-                0.0,
+            return int(
+                np.maximum(
+                    np.ceil(
+                        np.log(self.angle_change / stepsize / frobenius_norm)
+                        / np.log(1 / beta_armijo)
+                    ),
+                    0.0,
+                )
             )
 
     def __setup_a_priori(self):
