@@ -1,13 +1,14 @@
-name: macos ci
+name: macOS ci
 
 on:
   workflow_dispatch:
   pull_request:
   schedule:
-    - cron: '27 22 * * *'
+    - cron: '17 22 * * *'
 
 jobs:
-  macos ci:
+  macOS_ci:
+    name: CI on macOS with python ${{ matrix.python-version }}
     runs-on: macos-latest
     strategy:
       max-parallel: 5
