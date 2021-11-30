@@ -21,6 +21,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Fix Conda permissions on macOS
+      run: sudo chown -R $UID $CONDA
+
     - name: Add conda to system path
       run: |
         echo $CONDA/bin >> $GITHUB_PATH
