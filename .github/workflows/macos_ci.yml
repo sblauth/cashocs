@@ -28,6 +28,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
+        eval "$(${CONDA}/bin/conda shell.bash hook)"
         conda create -n fenics -c conda-forge python=${{ matrix.python-version }} fenics=2019 meshio">=4.1.0" pytest">=6.0.0" deprecated">=1.2.10" gmsh">=4.8"
         conda init bash
 
