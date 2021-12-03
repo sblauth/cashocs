@@ -63,6 +63,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.constraint_dim = len(self.constraints)
 
         self.iterations = 0
+        self.initial_norm = 1.0
         self.constraint_violation = 0.0
         self.constraint_violation_prev = 0.0
 
@@ -241,9 +242,10 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         if inner_atol is not None:
             atol = inner_atol
         else:
-            ocp.compute_gradient()
-            initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
-            atol = initial_norm * tol / 10.0
+            if self.iterations == 1:
+                ocp.compute_gradient()
+                self.initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
+            atol = self.initial_norm * tol / 10.0
 
         ocp.solve(rtol=rtol, atol=atol)
 
@@ -311,8 +313,11 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         if inner_atol is not None:
             atol = inner_atol
         else:
-            sop.compute_shape_gradient()
-            initial_norm = np.sqrt(sop.shape_gradient_problem.gradient_norm_squared)
-            atol = initial_norm * tol / 10.0
+            if self.iterations == 1:
+                sop.compute_shape_gradient()
+                self.initial_norm = np.sqrt(
+                    sop.shape_gradient_problem.gradient_norm_squared
+                )
+            atol = self.initial_norm * tol / 10.0
 
         sop.solve(rtol=rtol, atol=atol)
