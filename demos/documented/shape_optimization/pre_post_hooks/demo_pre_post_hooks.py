@@ -26,6 +26,7 @@ import cashocs
 
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
+h = MaxCellEdgeLength(mesh)
 
 v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
 p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
@@ -36,13 +37,18 @@ u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
-Re = 1e2
+
+Re = 50
 e = (
     inner(grad(u), grad(v)) * dx
     + Constant(Re) * dot(grad(u) * u, v) * dx
     - p * div(v) * dx
     - q * div(u) * dx
 )
+
+# beta_pspg = 0.0
+# res = -div(grad(u)) + Constant(Re) * grad(u) * u + grad(p)
+# e -= Constant(beta_pspg) * pow(h, 2) * dot(res, grad(q)) * dx
 
 u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
@@ -51,7 +57,8 @@ bc_no_slip = cashocs.create_dirichlet_bcs(
 )
 bcs = [bc_in] + bc_no_slip
 
-J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
+# J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
+J = Constant(1 / 2) * inner(grad(u), grad(u)) * dx
 
 vol_fun = Constant(1) * dx
 vol_init = assemble(vol_fun)
@@ -67,12 +74,10 @@ bc_y_init = assemble(bc_y_fun)
 bc_y_constraint = cashocs.EqualityConstraint(bc_y_fun, bc_y_init)
 
 constraints = [vol_constraint, bc_x_constraint, bc_y_constraint]
-
-problem = cashocs.AugmentedLagrangianShapeOptimizationProblem(
-    e, bcs, J, up, vq, boundaries, constraints, config, mu_0=1e4
+problem = cashocs.ConstrainedShapeOptimizationProblem(
+    e, bcs, J, up, vq, boundaries, constraints, config
 )
-problem.solve(tol=1e-3)
-
+problem.solve(method="AL", tol=1e-3, mu_0=1e4)
 
 ### Post Processing
 

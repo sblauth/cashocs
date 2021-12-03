@@ -241,7 +241,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         if inner_atol is not None:
             atol = inner_atol
         else:
-            atol = tol / 10.0
+            ocp.compute_gradient()
+            initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
+            atol = initial_norm * tol / 10.0
 
         ocp.solve(rtol=rtol, atol=atol)
 
@@ -309,6 +311,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         if inner_atol is not None:
             atol = inner_atol
         else:
-            atol = tol / 10.0
+            sop.compute_shape_gradient()
+            initial_norm = np.sqrt(sop.shape_gradient_problem.gradient_norm_squared)
+            atol = initial_norm * tol / 10.0
 
         sop.solve(rtol=rtol, atol=atol)
