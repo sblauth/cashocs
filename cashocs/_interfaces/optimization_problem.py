@@ -25,6 +25,7 @@ optimization problems.
 import abc
 import configparser
 import copy
+import json
 
 import fenics
 import numpy as np
@@ -33,7 +34,7 @@ from ufl import replace
 
 from .._exceptions import InputError
 from .._forms import Lagrangian
-from .._loggers import warning
+from .._loggers import warning, info
 from ..utils import (
     _parse_remesh,
     summation,
@@ -67,6 +68,7 @@ class OptimizationProblem(abc.ABC):
         adjoint_ksp_options=None,
         scalar_tracking_forms=None,
         min_max_terms=None,
+        desired_weights=None,
     ):
         r"""Initializes the optimization problem.
 
@@ -176,6 +178,29 @@ class OptimizationProblem(abc.ABC):
             self.use_min_max_terms = True
             self.min_max_terms = enlist(min_max_terms)
 
+        self.use_scaling = False
+        if desired_weights is None:
+            self.desired_weights = desired_weights
+        else:
+            self.desired_weights = enlist(desired_weights)
+            if isinstance(cost_functional_form, list):
+                self.use_scaling = True
+            else:
+                raise InputError(
+                    "OptimizationProblem",
+                    "cost_functional_form",
+                    "If you supply desired weights, you have to supply a matching list in cost_functional_form",
+                )
+
+            if scalar_tracking_forms is not None and not isinstance(
+                scalar_tracking_forms, list
+            ):
+                raise InputError(
+                    "OptimizationProblem",
+                    "scalar_tracking_forms",
+                    "If you supply desired weights, you have to supply a matching list in scalar_tracking_forms",
+                )
+
         if not len(self.bcs_list) == self.state_dim:
             raise InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
@@ -209,6 +234,24 @@ class OptimizationProblem(abc.ABC):
                 "ksp_options",
                 "Length of states does not match.",
             )
+
+        if self.desired_weights is not None:
+            if not self.use_scalar_tracking:
+                if not len(self.cost_functional_list) == len(self.desired_weights):
+                    raise InputError(
+                        "cashocs._interfaces.optimization_problem.OptimizationProblem",
+                        "desired_weights",
+                        "length of desired_weights does not fit",
+                    )
+            else:
+                if not len(self.cost_functional_list) + len(
+                    self.scalar_tracking_forms
+                ) == len(self.desired_weights):
+                    raise InputError(
+                        "cashocs._interfaces.optimization_problem.OptimizationProblem",
+                        "desired_weights",
+                        "length of desired_weights does not fit",
+                    )
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
@@ -546,3 +589,67 @@ class OptimizationProblem(abc.ABC):
     @abc.abstractmethod
     def gradient_test(self):
         pass
+
+    def _scale_cost_functional(self):
+
+        info(
+            "You are using the automatic scaling functionality of cashocs."
+            "This may lead to unexpected results if you try to scale the cost functional yourself or if you supply custom forms."
+        )
+
+        if not self.has_cashocs_remesh_flag:
+            self.state_problem.solve()
+            self.initial_function_values = []
+            for i in range(len(self.cost_functional_list)):
+                val = fenics.assemble(self.cost_functional_list[i])
+
+                if abs(val) <= 1e-15:
+                    val = 1.0
+                    info(
+                        f"Term {i:d} of the cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired weights."
+                    )
+
+                self.initial_function_values.append(val)
+
+            if self.use_scalar_tracking:
+                self.initial_scalar_tracking_values = []
+                for i in range(len(self.scalar_tracking_forms)):
+                    val = 0.5 * pow(
+                        fenics.assemble(
+                            self.form_handler.scalar_cost_functional_integrands[i]
+                        )
+                        - self.form_handler.scalar_tracking_goals[i],
+                        2,
+                    )
+
+                    if abs(val) <= 1e-15:
+                        val = 1.0
+                        info(
+                            f"Term {i:d} of the scalar tracking cost functional vanishes for the initial iteration. Multiplying this term with the factor you supplied in desired weights."
+                        )
+
+                    self.initial_scalar_tracking_values.append(val)
+
+        else:
+            with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+                temp_dict = json.load(file)
+            self.initial_function_values = temp_dict["initial_function_values"]
+            if self.use_scalar_tracking:
+                self.initial_scalar_tracking_values = temp_dict[
+                    "initial_scalar_tracking_values"
+                ]
+
+        for i in range(len(self.cost_functional_list)):
+            self.cost_functional_list[i] = (
+                fenics.Constant(
+                    abs(self.desired_weights[i] / self.initial_function_values[i])
+                )
+                * self.cost_functional_list[i]
+            )
+
+        if self.use_scalar_tracking:
+            for i in range(len(self.scalar_tracking_forms)):
+                self.scalar_tracking_forms[-1 - i]["weight"] = abs(
+                    self.desired_weights[-1 - i]
+                    / self.initial_scalar_tracking_values[-1 - i]
+                )

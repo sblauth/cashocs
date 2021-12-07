@@ -55,6 +55,37 @@ class ShapeOptimizationProblem(OptimizationProblem):
     and so on.
     """
 
+    def __new__(cls, *args, **kwargs):
+        try:
+            desired_weights = kwargs["desired_weights"]
+            if desired_weights is not None:
+                _use_scaling = True
+            else:
+                _use_scaling = False
+        except KeyError:
+            _use_scaling = False
+
+        if _use_scaling:
+            unscaled_problem = super().__new__(cls)
+            unscaled_problem.__init__(*args, **kwargs)
+            if not unscaled_problem.has_cashocs_remesh_flag:
+                unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
+
+            problem = super().__new__(cls)
+            if not unscaled_problem.has_cashocs_remesh_flag:
+                problem.initial_function_values = (
+                    unscaled_problem.initial_function_values
+                )
+                if unscaled_problem.use_scalar_tracking:
+                    problem.initial_scalar_tracking_values = (
+                        unscaled_problem.initial_scalar_tracking_values
+                    )
+
+            return problem
+
+        else:
+            return super().__new__(cls)
+
     def __init__(
         self,
         state_forms,
@@ -70,6 +101,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         adjoint_ksp_options=None,
         scalar_tracking_forms=None,
         min_max_terms=None,
+        desired_weights=None,
     ):
         """This is used to generate all classes and functionalities. First ensures
         consistent input, afterwards, the solution algorithm is initialized.
@@ -127,6 +159,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             adjoint_ksp_options,
             scalar_tracking_forms,
             min_max_terms,
+            desired_weights,
         )
 
         ### Initialize the remeshing behavior, and a temp file
@@ -180,6 +213,15 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     },
                     "output_dict": {},
                 }
+
+                if self.use_scaling:
+                    self.temp_dict[
+                        "initial_function_values"
+                    ] = self.initial_function_values
+                    if self.use_scalar_tracking:
+                        self.temp_dict[
+                            "initial_scalar_tracking_values"
+                        ] = self.initial_scalar_tracking_values
 
             else:
                 self.__change_except_hook()

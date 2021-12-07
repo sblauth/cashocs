@@ -52,6 +52,23 @@ class OptimalControlProblem(OptimizationProblem):
     and so on.
     """
 
+    def __new__(cls, *args, **kwargs):
+        try:
+            desired_weights = kwargs["desired_weights"]
+            if desired_weights is not None:
+                _use_scaling = True
+            else:
+                _use_scaling = False
+        except KeyError:
+            _use_scaling = False
+
+        if _use_scaling:
+            unscaled_problem = super().__new__(cls)
+            unscaled_problem.__init__(*args, **kwargs)
+            unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
+
+        return super().__new__(cls)
+
     def __init__(
         self,
         state_forms,
@@ -68,6 +85,7 @@ class OptimalControlProblem(OptimizationProblem):
         adjoint_ksp_options=None,
         scalar_tracking_forms=None,
         min_max_terms=None,
+        desired_weights=None,
     ):
         r"""This is used to generate all classes and functionalities. First ensures
         consistent input, afterwards, the solution algorithm is initialized.
@@ -136,6 +154,7 @@ class OptimalControlProblem(OptimizationProblem):
             adjoint_ksp_options,
             scalar_tracking_forms,
             min_max_terms,
+            desired_weights,
         )
 
         self.controls = enlist(controls)
