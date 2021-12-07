@@ -80,7 +80,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
                         unscaled_problem.initial_scalar_tracking_values
                     )
 
-            if not unscaled_problem.has_cashocs_remesh_flag:
+            if (
+                not unscaled_problem.has_cashocs_remesh_flag
+                and unscaled_problem.do_remesh
+            ):
                 subprocess.run(["rm", "-r", unscaled_problem.temp_dir], check=True)
                 subprocess.run(
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
