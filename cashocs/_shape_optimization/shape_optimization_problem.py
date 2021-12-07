@@ -68,8 +68,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         if _use_scaling:
             unscaled_problem = super().__new__(cls)
             unscaled_problem.__init__(*args, **kwargs)
-            if not unscaled_problem.has_cashocs_remesh_flag:
-                unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
+            unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
 
             problem = super().__new__(cls)
             if not unscaled_problem.has_cashocs_remesh_flag:
@@ -80,6 +79,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     problem.initial_scalar_tracking_values = (
                         unscaled_problem.initial_scalar_tracking_values
                     )
+
+            if not unscaled_problem.has_cashocs_remesh_flag:
+                subprocess.run(["rm", "-r", unscaled_problem.temp_dir], check=True)
+                subprocess.run(
+                    ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
+                    check=True,
+                )
 
             return problem
 
@@ -214,14 +220,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
                     "output_dict": {},
                 }
 
-                if self.use_scaling:
-                    self.temp_dict[
-                        "initial_function_values"
-                    ] = self.initial_function_values
-                    if self.use_scalar_tracking:
+                try:
+                    if self.use_scaling:
                         self.temp_dict[
-                            "initial_scalar_tracking_values"
-                        ] = self.initial_scalar_tracking_values
+                            "initial_function_values"
+                        ] = self.initial_function_values
+                        if self.use_scalar_tracking:
+                            self.temp_dict[
+                                "initial_scalar_tracking_values"
+                            ] = self.initial_scalar_tracking_values
+                except AttributeError:
+                    pass
 
             else:
                 self.__change_except_hook()
