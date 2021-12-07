@@ -77,7 +77,7 @@ constraints = [vol_constraint, bc_x_constraint, bc_y_constraint]
 problem = cashocs.ConstrainedShapeOptimizationProblem(
     e, bcs, J, up, vq, boundaries, constraints, config
 )
-problem.solve(method="AL", tol=1e-3, mu_0=1e4)
+problem.solve(method="AL", tol=1e-4, mu_0=1e4)
 
 ### Post Processing
 

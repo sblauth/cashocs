@@ -716,33 +716,137 @@ def test_hooks():
     assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
 
 
-# def test_min_max_terms():
-#
-# min_max_term = {
-#     "integrand": u * u * dx,
-#     "lower_bound": None,
-#     "upper_bound": 1.0,
-#     "mu": 1.0,
-#     "lambda": 1.0,
-# }
-#
-#
-# config = cashocs.load_config(dir_path + "/config_ocp.ini")
-#
-# u.vector()[:] = 0.0
-# test_ocp = cashocs.OptimalControlProblem(
-#     F,
-#     bcs,
-#     J,
-#     y,
-#     u,
-#     p,
-#     config,
-#     min_max_terms=min_max_term,
-# )
-#
-# test_ocp.solve()
-#
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+def test_scaling_control():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 1e-2
+
+    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
+    J2 = Constant(0.5) * u * u * dx
+    J_list = [J1, J2]
+
+    desired_weights = rng.rand(2).tolist()
+    summ = sum(desired_weights)
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J_list, y, u, p, config, desired_weights=desired_weights
+    )
+    val = test_ocp.reduced_cost_functional.evaluate()
+
+    assert abs(val - summ) < 1e-14
+    assert abs(assemble(J_list[0]) - desired_weights[0]) < 1e-14
+    assert abs(assemble(J_list[1]) - desired_weights[1]) < 1e-14
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_scaling_scalar_only():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 40
+
+    J = Constant(0) * dx
+    norm_y = y * y * dx
+    norm_u = u * u * dx
+    tracking_goals = [0.24154615814336944, 1554.0246268346273]
+    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
+    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
+    J_scalar = [J_y, J_u]
+
+    desired_weights = rng.rand(3).tolist()
+    summ = sum(desired_weights[1:])
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F,
+        bcs,
+        [J],
+        y,
+        u,
+        p,
+        config,
+        desired_weights=desired_weights,
+        scalar_tracking_forms=J_scalar,
+    )
+    val = test_ocp.reduced_cost_functional.evaluate()
+
+    assert abs(val - summ) < 1e-14
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_scaling_scalar_and_single_cost():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 40
+
+    norm_y = y * y * dx
+    norm_u = u * u * dx
+    tracking_goals = [0.24154615814336944, 1554.0246268346273]
+    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
+    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
+    J_scalar = [J_y, J_u]
+
+    desired_weights = rng.rand(3).tolist()
+    summ = sum(desired_weights)
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F,
+        bcs,
+        [J],
+        y,
+        u,
+        p,
+        config,
+        desired_weights=desired_weights,
+        scalar_tracking_forms=J_scalar,
+    )
+    val = test_ocp.reduced_cost_functional.evaluate()
+
+    assert abs(val - summ) < 1e-14
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_scaling_all():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 40
+
+    norm_y = y * y * dx
+    norm_u = u * u * dx
+    tracking_goals = [0.24154615814336944, 1554.0246268346273]
+    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
+    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
+    J_scalar = [J_y, J_u]
+
+    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
+    J2 = Constant(0.5) * u * u * dx
+    J_list = [J1, J2]
+
+    desired_weights = rng.rand(4).tolist()
+    summ = sum(desired_weights)
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F,
+        bcs,
+        J_list,
+        y,
+        u,
+        p,
+        config,
+        desired_weights=desired_weights,
+        scalar_tracking_forms=J_scalar,
+    )
+    val = test_ocp.reduced_cost_functional.evaluate()
+
+    assert abs(val - summ) < 1e-14
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
