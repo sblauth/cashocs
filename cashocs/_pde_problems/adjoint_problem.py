@@ -28,6 +28,7 @@ from .._interfaces import PDEProblem
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
+
 class AdjointProblem(PDEProblem):
     """The adjoint problem.
 

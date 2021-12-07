@@ -25,6 +25,7 @@ from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 
 
+
 class ConstrainedSolver(abc.ABC):
     def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
         """

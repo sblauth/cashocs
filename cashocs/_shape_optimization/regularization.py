@@ -27,8 +27,8 @@ import json
 import fenics
 from fenics import Constant, div, inner
 
-from .._loggers import info
 from .._exceptions import ConfigError
+from .._loggers import info
 from ..utils import _solve_linear_problem, _check_for_config_list
 
 

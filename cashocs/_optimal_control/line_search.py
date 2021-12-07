@@ -26,6 +26,7 @@ from .._interfaces.line_search import LineSearch
 from .._loggers import error
 
 
+
 class ArmijoLineSearch(LineSearch):
     """An Armijo-based line search for optimal control
 

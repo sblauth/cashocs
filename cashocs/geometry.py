@@ -24,7 +24,6 @@ and :py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands cre
 which are great for testing.
 """
 
-from collections import Counter
 import configparser
 import json
 import os
@@ -32,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections import Counter
 
 import fenics
 import numpy as np

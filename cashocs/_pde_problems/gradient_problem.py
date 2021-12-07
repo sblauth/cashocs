@@ -25,9 +25,9 @@ the gradient of the reduced cost functional.
 import fenics
 from petsc4py import PETSc
 
+from .._exceptions import ConfigError
 from .._interfaces.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
-from .._exceptions import ConfigError
 
 
 class GradientProblem(PDEProblem):

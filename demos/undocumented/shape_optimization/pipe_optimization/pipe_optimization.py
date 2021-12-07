@@ -20,6 +20,7 @@ from fenics import *
 import cashocs
 
 
+
 # load the config
 config = cashocs.load_config("./config.ini")
 # define the Reynold's number

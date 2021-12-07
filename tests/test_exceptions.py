@@ -35,6 +35,7 @@ from cashocs._exceptions import (
 )
 
 
+
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")

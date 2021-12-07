@@ -12,6 +12,7 @@ from fenics import *
 import cashocs
 
 
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)

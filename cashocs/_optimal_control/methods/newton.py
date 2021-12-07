@@ -25,6 +25,7 @@ from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
+
 class Newton(ControlOptimizationAlgorithm):
     """A truncated Newton method."""
 

@@ -49,6 +49,7 @@ from .utils import (
 )
 
 
+
 class Lagrangian:
     r"""Implementation of a Lagrangian.
 

@@ -25,10 +25,11 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from .._exceptions import ConfigError
 from .._interfaces.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
-from .._exceptions import ConfigError
+
 
 
 class ShapeGradientProblem(PDEProblem):
