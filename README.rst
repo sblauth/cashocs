@@ -12,7 +12,7 @@
 .. image:: https://img.shields.io/pypi/pyversions/cashocs
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4035939
+.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.4035939-blue
    :target: https://doi.org/10.5281/zenodo.4035939
 
 .. image:: https://img.shields.io/pypi/l/cashocs?color=informational
