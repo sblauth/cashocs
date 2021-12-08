@@ -936,3 +936,15 @@ def test_scaling_all():
     assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+
+
+def test_angle_change():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    config.set("MeshQuality", "angle_change", "0.1")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=15)
+    assert sop.solver.relative_norm < sop.solver.rtol

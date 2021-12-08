@@ -251,43 +251,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
             )
 
         # shape_scalar_product
+        self.shape_scalar_product = shape_scalar_product
         if shape_scalar_product is None:
-            self.shape_scalar_product = shape_scalar_product
             self.deformation_space = None
-
         else:
-            if isinstance(shape_scalar_product, ufl.form.Form):
-                if len(shape_scalar_product.arguments()) == 2:
-                    family = (
-                        shape_scalar_product.arguments()[0]
-                        .ufl_function_space()
-                        .ufl_element()
-                        .family()
-                    )
-                    degree = (
-                        shape_scalar_product.arguments()[0]
-                        .ufl_function_space()
-                        .ufl_element()
-                        .degree()
-                    )
-                    space_0 = shape_scalar_product.arguments()[0].ufl_function_space()
-                    space_1 = shape_scalar_product.arguments()[1].ufl_function_space()
-
-                    if family == "Lagrange" and degree == 1 and space_0 == space_1:
-                        self.shape_scalar_product = shape_scalar_product
-                        self.deformation_space = space_0
-                else:
-                    raise InputError(
-                        "cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem",
-                        "shape_scalar_product",
-                        "The supplied form must be a bilinear one.",
-                    )
-            else:
-                raise InputError(
-                    "cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem",
-                    "shape_scalar_product",
-                    "Not a valid type for shape_scalar_product.",
-                )
+            self.deformation_space = self.shape_scalar_product.arguments()[
+                0
+            ].ufl_function_space()
 
         if self.shape_scalar_product is not None:
             self.uses_custom_scalar_product = True

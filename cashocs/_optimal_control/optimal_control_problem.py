@@ -35,7 +35,11 @@ from .._pde_problems import (
     StateProblem,
     UnconstrainedHessianProblem,
 )
-from ..utils import _optimization_algorithm_configuration, enlist
+from ..utils import (
+    _optimization_algorithm_configuration,
+    enlist,
+    _check_and_enlist_control_constraints,
+)
 from ..verification import control_gradient_test
 
 
@@ -185,61 +189,9 @@ class OptimalControlProblem(OptimizationProblem):
                 u_b.vector().vec().set(float("inf"))
                 self.control_constraints.append([u_a, u_b])
         else:
-            try:
-                if (
-                    isinstance(control_constraints, list)
-                    and len(control_constraints) > 0
-                ):
-                    if isinstance(control_constraints[0], list):
-                        for i in range(len(control_constraints)):
-                            if (
-                                isinstance(control_constraints[i], list)
-                                and len(control_constraints[i]) == 2
-                            ):
-                                for j in range(2):
-                                    if isinstance(
-                                        control_constraints[i][j], (float, int)
-                                    ):
-                                        pass
-                                    elif isinstance(
-                                        control_constraints[i][j], fenics.Function
-                                    ):
-                                        pass
-                                    else:
-                                        raise InputError(
-                                            "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                                            "control_constraints",
-                                            "control_constraints has to be a list containing upper and lower bounds",
-                                        )
-                            else:
-                                raise InputError(
-                                    "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                                    "control_constraints",
-                                    "control_constraints has to be a list containing upper and lower bounds",
-                                )
-                        self.control_constraints = control_constraints
-                    elif (
-                        isinstance(control_constraints[0], (float, int))
-                        or (isinstance(control_constraints[0], fenics.Function))
-                    ) and (
-                        isinstance(control_constraints[1], (float, int))
-                        or (isinstance(control_constraints[1], fenics.Function))
-                    ):
-
-                        self.control_constraints = [control_constraints]
-                    else:
-                        raise InputError(
-                            "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                            "control_constraints",
-                            "control_constraints has to be a list containing upper and lower bounds",
-                        )
-
-            except:
-                raise InputError(
-                    "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                    "control_constraints",
-                    "control_constraints has to be a list containing upper and lower bounds",
-                )
+            self.control_constraints = _check_and_enlist_control_constraints(
+                control_constraints
+            )
 
         # recast floats into functions for compatibility
         temp_constraints = self.control_constraints[:]

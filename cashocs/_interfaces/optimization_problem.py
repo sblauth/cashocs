@@ -45,7 +45,6 @@ from ..utils import (
 )
 
 
-
 class OptimizationProblem(abc.ABC):
     """Blueprint for an abstract PDE constrained optimization problem.
 
@@ -104,6 +103,12 @@ class OptimizationProblem(abc.ABC):
                 A list of strings corresponding to command line options for PETSc,
                 used to solve the adjoint systems. If this is ``None``, then the same options
                 as for the state systems are used (default is ``None``).
+        desired_weights : list[float] or float or None
+            A list of values for scaling the cost functional terms. If this is supplied,
+            the cost functional has to be given as list of summands. The individual terms
+            are then scaled, so that term `i` has the magnitude of `desired_weights[i]`
+            for the initial iteration. In case that `desired_weights` is `None`, no scaling
+            is performed. Default is `None`.
 
         Notes
         -----

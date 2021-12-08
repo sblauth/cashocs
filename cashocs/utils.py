@@ -823,7 +823,7 @@ def enlist(arg):
 
 
 def _check_for_config_list(string):
-    """Checks, whether a given string is a valid representation of a list if integers
+    """Checks, whether a given string is a valid representation of a list of integers
 
     Parameters
     ----------
@@ -854,45 +854,36 @@ def _check_for_config_list(string):
 
 
 def _check_and_enlist_bcs(bcs_list):
-    if isinstance(bcs_list, list) and len(bcs_list) > 0:
-        if isinstance(bcs_list[0], list):
-            for i in range(len(bcs_list)):
-                if isinstance(bcs_list[i], list):
-                    for bc in bcs_list[i]:
-                        if isinstance(bc, fenics.DirichletBC):
-                            pass
-                        else:
-                            raise InputError(
-                                "cashocs.utils._check_and_enlist_bcs",
-                                "bcs_list",
-                                "Type of bcs_list is wrong.",
-                            )
-                else:
-                    raise InputError(
-                        "cashocs.utils._check_and_enlist_bcs",
-                        "bcs_list",
-                        "Type of bcs_list is wrong.",
-                    )
-            return bcs_list
-
-        elif isinstance(bcs_list[0], fenics.DirichletBC):
-            for i in range(len(bcs_list)):
-                if isinstance(bcs_list[i], fenics.DirichletBC):
-                    pass
-                else:
-                    raise InputError(
-                        "cashocs.utils._check_and_enlist_bcs",
-                        "bcs_list",
-                        "Type of bcs_list is wrong.",
-                    )
-            return [bcs_list]
-    elif isinstance(bcs_list, fenics.DirichletBC):
+    if isinstance(bcs_list, fenics.DirichletBC):
         return [[bcs_list]]
+    elif isinstance(bcs_list, list) and len(bcs_list) == 0:
+        return [bcs_list]
+    elif isinstance(bcs_list, list) and isinstance(bcs_list[0], fenics.DirichletBC):
+        return [bcs_list]
+    elif isinstance(bcs_list, list) and isinstance(bcs_list[0], list):
+        return bcs_list
     else:
         raise InputError(
             "cashocs.utils._check_and_enlist_bcs",
             "bcs_list",
-            "Type of bcs_list is wrong.",
+            "Type of bcs_list is wrong",
+        )
+
+
+def _check_and_enlist_control_constraints(control_constraints):
+    if isinstance(control_constraints, list) and isinstance(
+        control_constraints[0], list
+    ):
+        return control_constraints
+    elif isinstance(control_constraints, list) and not isinstance(
+        control_constraints[0], list
+    ):
+        return [control_constraints]
+    else:
+        raise InputError(
+            "cashocs.utils._check_and_enlist_control_constraints",
+            "control_constraints",
+            "Type of control_constraints is wrong",
         )
 
 
@@ -916,25 +907,6 @@ def _check_and_enlist_ksp_options(ksp_options):
             "ksp_options",
             "Type of ksp_options is wrong.",
         )
-
-
-def _prefix_function(function, pre_function):
-    @functools.wraps(function)
-    def run(*args, **kwargs):
-        pre_function()
-        return function(*args, **kwargs)
-
-    return run
-
-
-def _suffix_function(function, post_function):
-    @functools.wraps(function)
-    def run(*args, **kwargs):
-        temp = function(*args, **kwargs)
-        post_function()
-        return temp
-
-    return run
 
 
 def _max(a, b):
