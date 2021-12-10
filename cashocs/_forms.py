@@ -22,6 +22,7 @@ This is used to carry out form manipulations such as generating the UFL
 problems.
 """
 
+import itertools
 import json
 
 import fenics
@@ -47,7 +48,6 @@ from .utils import (
     _max,
     _min,
 )
-
 
 
 class Lagrangian:
@@ -1167,6 +1167,37 @@ class ShapeFormHandler(FormHandler):
 
         self.regularization = Regularization(self)
 
+        temp_fixed_dimensions = self.config.get(
+            "ShapeGradient", "fixed_dimensions", fallback="[]"
+        )
+        if not _check_for_config_list(temp_fixed_dimensions):
+            raise ConfigError(
+                "ShapeGradient",
+                "fixed_dimensions",
+                "fixed_dimensions has to be a list of integers, where `x` corresponds to 0, `y` corresponds to 1, and `z` corresponds to 2",
+            )
+        fixed_dimensions = json.loads(temp_fixed_dimensions)
+        self.use_fixed_dimensions = False
+        if len(fixed_dimensions) > 0:
+            self.use_fixed_dimensions = True
+            unpack_list = [
+                self.deformation_space.sub(i).dofmap().dofs() for i in fixed_dimensions
+            ]
+            self.fixed_indices = list(itertools.chain(*unpack_list))
+
+        if (
+            self.use_fixed_dimensions
+            and self.config.getboolean(
+                "ShapeGradient", "use_p_laplacian", fallback=False
+            )
+            and not self.form_handler.uses_custom_scalar_product
+        ):
+            raise ConfigError(
+                "ShapeGradient",
+                "use_p_laplacian",
+                "use_p_laplacian is not compatible with fixed_dimensions",
+            )
+
         # Calculate the necessary UFL forms
         self.inhomogeneous_mu = False
         self.__compute_shape_derivative()
@@ -1713,6 +1744,18 @@ class ShapeFormHandler(FormHandler):
             # for mpi compatibility
             self.mu_lame.vector().apply("")
 
+    def _project_scalar_product(self):
+        if self.use_fixed_dimensions:
+
+            copy_mat = self.fe_scalar_product_matrix.copy()
+
+            copy_mat.ident(self.fixed_indices)
+            copy_mat.mat().transpose()
+            copy_mat.ident(self.fixed_indices)
+            copy_mat.mat().transpose()
+
+            self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
+
     def update_scalar_product(self):
         """Updates the linear elasticity equations to the current geometry.
 
@@ -1736,6 +1779,7 @@ class ShapeFormHandler(FormHandler):
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
+        self._project_scalar_product()
 
     def scalar_product(self, a, b):
         """Computes the scalar product between two deformation functions.

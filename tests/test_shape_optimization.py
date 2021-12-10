@@ -948,3 +948,29 @@ def test_angle_change():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=15)
     assert sop.solver.relative_norm < sop.solver.rtol
+
+
+def test_fixed_dimensions():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    config.set("ShapeGradient", "fixed_dimensions", "[0]")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    grad_x = sop.compute_shape_gradient()
+    assert assemble(grad_x[0] * grad_x[0] * dx) == 0
+    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test() > 1.9
+
+    config.set("ShapeGradient", "fixed_dimensions", "[1]")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    grad_x = sop.compute_shape_gradient()
+    assert assemble(grad_x[1] * grad_x[1] * dx) == 0
+    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test() > 1.9

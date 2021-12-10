@@ -564,6 +564,13 @@ Finally, there is the possibility to use a stabilized weak form for the :math:`p
 
 The default value of this parameter is ``0.0``. Note, that the parameter should be chosen comparatively small, i.e., significantly smaller than ``1.0``.
 
+
+Furthermore, we have the parameter ``fixed_dimensions``, which enables us to restrict the shape gradient to specific dimensions. It is set via ::
+
+    fixed_dimensions = []
+
+In case ``fixed_dimensions == []``, there is no restriction on the shape gradient. However, if ``fixed_dimensions`` == [i]``, then the ``i``-th component of the shape gradient is set to 0, so that we have no deformation in the ``i``-th coordinate direction. For example, if ``fixed_dimensions == [0, 2]``, we only have a deformation in the ``y``-component of the mesh. The default is ``fixed_dimensions = []``.
+
 .. _config_shape_regularization:
 
 Section Regularization

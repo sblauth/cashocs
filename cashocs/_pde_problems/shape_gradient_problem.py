@@ -31,7 +31,6 @@ from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 
-
 class ShapeGradientProblem(PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
 
@@ -136,6 +135,10 @@ class ShapeGradientProblem(PDEProblem):
                 self.form_handler.assembler.assemble(
                     self.form_handler.fe_shape_derivative_vector
                 )
+                if self.form_handler.use_fixed_dimensions:
+                    self.form_handler.fe_shape_derivative_vector[
+                        self.form_handler.fixed_indices
+                    ] = 0.0
                 _solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,

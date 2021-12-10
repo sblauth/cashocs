@@ -27,7 +27,6 @@ from ._exceptions import InputError
 from ._loggers import warning
 
 
-
 def control_gradient_test(ocp, u=None, h=None, rng=None):
     """Taylor test to verify that the computed gradient is correct for optimal control problems.
 
@@ -159,6 +158,9 @@ def shape_gradient_test(sop, h=None, rng=None):
 
     # ensure that the shape boundary conditions are applied
     [bc.apply(h.vector()) for bc in sop.form_handler.bcs_shape]
+
+    if sop.form_handler.use_fixed_dimensions:
+        h.vector()[sop.form_handler.fixed_indices] = 0.0
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
