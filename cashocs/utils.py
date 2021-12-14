@@ -25,7 +25,6 @@ actions.
 
 import argparse
 import configparser
-import functools
 import os
 from pathlib import Path
 
