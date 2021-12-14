@@ -1253,7 +1253,7 @@ class ShapeFormHandler(FormHandler):
                         - self.scalar_product_matrix.copy().transpose()
                     ).norm()
                     / self.scalar_product_matrix.norm()
-                    < 1e-14
+                    < 1e-15
                 ):
                     raise InputError(
                         "cashocs._forms.ShapeFormHandler",

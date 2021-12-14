@@ -9,7 +9,7 @@ on:
 jobs:
   macOS_ci:
     name: CI on macOS with python ${{ matrix.python-version }}
-    runs-on: macos-latest
+    runs-on: macOS-10.15
     strategy:
       max-parallel: 5
       matrix:
