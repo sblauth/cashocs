@@ -25,12 +25,12 @@ import argparse
 import json
 import sys
 import time
+from typing import List, Optional
 
 import meshio
 
 
-
-def _generate_parser():
+def _generate_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
     )
@@ -46,7 +46,7 @@ def _generate_parser():
     return parser
 
 
-def convert(argv=None):
+def convert(argv: Optional[List[str]] = None) -> None:
     """Converts a Gmsh .msh file to a .xdmf mesh file
 
     Parameters
@@ -57,6 +57,7 @@ def convert(argv=None):
 
     Returns
     -------
+    None
 
     """
 

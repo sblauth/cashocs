@@ -16,31 +16,42 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 import abc
+import configparser
+from typing import List, Dict, Optional, Union
 
+import fenics
 import numpy as np
+import ufl
 
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
 from .._exceptions import InputError
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
 from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from ..utils import enlist
+from .constraints import EqualityConstraint, InequalityConstraint
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
     def __init__(
         self,
-        state_forms,
-        bcs_list,
-        cost_functional_form,
-        states,
-        adjoints,
-        constraints,
-        config=None,
-        initial_guess=None,
-        ksp_options=None,
-        adjoint_ksp_options=None,
-        scalar_tracking_forms=None,
-    ):
+        state_forms: Union[List[ufl.Form], ufl.Form],
+        bcs_list: Union[
+            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
+        ],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        constraints: Union[
+            List[Union[EqualityConstraint, InequalityConstraint]],
+            EqualityConstraint,
+            InequalityConstraint,
+        ],
+        config: Optional[configparser.ConfigParser] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        scalar_tracking_forms: Optional[List[Dict]] = None,
+    ) -> None:
 
         self.state_forms = state_forms
         self.bcs_list = bcs_list

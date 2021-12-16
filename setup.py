@@ -40,6 +40,7 @@ setuptools.setup(
         "meshio>=4.1.0",
         "deprecated>=1.2.10",
         "matplotlib",
+        "typing_extensions",
     ],
     entry_points={"console_scripts": ["cashocs-convert = cashocs._cli:convert"]},
     python_requires=">=3.7",
