@@ -37,7 +37,7 @@ def t_grad(u, n):
 
     Parameters
     ----------
-    u : dolfin.function.function.Function
+    u : fenics.Function
             the argument
     n : ufl.geometry.FacetNormal
             the unit outer normal vector
@@ -56,7 +56,7 @@ def t_div(u, n):
 
     Parameters
     ----------
-    u : dolfin.function.function.Function
+    u : fenics.Function
             the argument
     n : ufl.geometry.FacetNormal
             the outer unit normal vector

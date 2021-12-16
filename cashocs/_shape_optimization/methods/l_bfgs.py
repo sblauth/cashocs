@@ -68,12 +68,12 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
         Parameters
         ----------
-        grad : dolfin.function.function.Function
+        grad : fenics.Function
                 the current gradient
 
         Returns
         -------
-        self.search_direction : dolfin.function.function.Function
+        self.search_direction : fenics.Function
                 a function corresponding to the current / next search direction
 
         """

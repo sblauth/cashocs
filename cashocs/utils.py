@@ -27,7 +27,7 @@ import argparse
 import configparser
 import os
 from pathlib import Path
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Optional
 
 import dolfin.cpp.mesh
 import fenics
@@ -38,6 +38,111 @@ from petsc4py import PETSc
 
 from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
+
+
+class Interpolator:
+    """Efficient interpolation between two function spaces.
+
+    This is very useful, if multiple interpolations have to be
+    carried out between the same spaces, which is made significantly
+    faster by computing the corresponding matrix.
+    The function spaces can even be defined on different meshes.
+
+    Notes
+    -----
+
+    This class only works properly for continuous Lagrange elements and
+    constant, discontinuous Lagrange elements. All other elements raise
+    an Exception.
+
+    Examples
+    --------
+    Here, we consider interpolating from CG1 elements to CG2 elements ::
+
+        from fenics import *
+        import cashocs
+
+        mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
+        V1 = FunctionSpace(mesh, 'CG', 1)
+        V2 = FunctionSpace(mesh, 'CG', 2)
+
+        expr = Expression('sin(2*pi*x[0])', degree=1)
+        u = interpolate(expr, V1)
+
+        interp = cashocs.utils.Interpolator(V1, V2)
+        interp.interpolate(u)
+    """
+
+    def __init__(self, V: fenics.FunctionSpace, W: fenics.FunctionSpace) -> None:
+        """
+        Parameters
+        ----------
+        V : fenics.FunctionSpace
+            The function space whose objects shall be interpolated.
+        W : fenics.FunctionSpace
+            The space into which they shall be interpolated.
+        """
+
+        if not (
+            V.ufl_element().family() == "Lagrange"
+            or (
+                V.ufl_element().family() == "Discontinuous Lagrange"
+                and V.ufl_element().degree() == 0
+            )
+        ):
+            raise InputError(
+                "cashocs.utils.Interpolator",
+                "V",
+                "The interpolator only works with CG n or DG 0 elements",
+            )
+        if not (
+            W.ufl_element().family() == "Lagrange"
+            or (
+                W.ufl_element().family() == "Discontinuous Lagrange"
+                and W.ufl_element().degree() == 0
+            )
+        ):
+            raise InputError(
+                "cashocs.utils.Interpolator",
+                "W",
+                "The interpolator only works with CG n or DG 0 elements",
+            )
+
+        self.V = V
+        self.W = W
+        self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(
+            self.V, self.W
+        )
+
+    def interpolate(self, u: fenics.Function) -> fenics.Function:
+        """Interpolates function to target space.
+
+        The function has to belong to the origin space, i.e., the first argument
+        of __init__, and it is interpolated to the destination space, i.e., the
+        second argument of __init__. There is no need to call set_allow_extrapolation
+        on the function (this is done automatically due to the method).
+
+        Parameters
+        ----------
+        u : fenics.Function
+            The function that shall be interpolated.
+
+        Returns
+        -------
+        fenics.Function
+            The result of the interpolation.
+        """
+
+        if not u.function_space() == self.V:
+            raise InputError(
+                "cashocs.utils.Interpolator.interpolate",
+                "u",
+                "The input does not belong to the correct function space.",
+            )
+        v = fenics.Function(self.W)
+        v.vector()[:] = (self.transfer_matrix * u.vector())[:]
+
+        return v
 
 
 def summation(
@@ -367,117 +472,12 @@ def create_bcs_list(
     return bcs_list
 
 
-class Interpolator:
-    """Efficient interpolation between two function spaces.
-
-    This is very useful, if multiple interpolations have to be
-    carried out between the same spaces, which is made significantly
-    faster by computing the corresponding matrix.
-    The function spaces can even be defined on different meshes.
-
-    Notes
-    -----
-
-    This class only works properly for continuous Lagrange elements and
-    constant, discontinuous Lagrange elements. All other elements raise
-    an Exception.
-
-    Examples
-    --------
-    Here, we consider interpolating from CG1 elements to CG2 elements ::
-
-        from fenics import *
-        import cashocs
-
-        mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
-        V1 = FunctionSpace(mesh, 'CG', 1)
-        V2 = FunctionSpace(mesh, 'CG', 2)
-
-        expr = Expression('sin(2*pi*x[0])', degree=1)
-        u = interpolate(expr, V1)
-
-        interp = cashocs.utils.Interpolator(V1, V2)
-        interp.interpolate(u)
-    """
-
-    def __init__(self, V: fenics.FunctionSpace, W: fenics.FunctionSpace) -> None:
-        """
-        Parameters
-        ----------
-        V : fenics.FunctionSpace
-            The function space whose objects shall be interpolated.
-        W : fenics.FunctionSpace
-            The space into which they shall be interpolated.
-        """
-
-        if not (
-            V.ufl_element().family() == "Lagrange"
-            or (
-                V.ufl_element().family() == "Discontinuous Lagrange"
-                and V.ufl_element().degree() == 0
-            )
-        ):
-            raise InputError(
-                "cashocs.utils.Interpolator",
-                "V",
-                "The interpolator only works with CG n or DG 0 elements",
-            )
-        if not (
-            W.ufl_element().family() == "Lagrange"
-            or (
-                W.ufl_element().family() == "Discontinuous Lagrange"
-                and W.ufl_element().degree() == 0
-            )
-        ):
-            raise InputError(
-                "cashocs.utils.Interpolator",
-                "W",
-                "The interpolator only works with CG n or DG 0 elements",
-            )
-
-        self.V = V
-        self.W = W
-        self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(
-            self.V, self.W
-        )
-
-    def interpolate(self, u: fenics.Function) -> fenics.Function:
-        """Interpolates function to target space.
-
-        The function has to belong to the origin space, i.e., the first argument
-        of __init__, and it is interpolated to the destination space, i.e., the
-        second argument of __init__. There is no need to call set_allow_extrapolation
-        on the function (this is done automatically due to the method).
-
-        Parameters
-        ----------
-        u : dolfin.function.function.Function
-            The function that shall be interpolated.
-
-        Returns
-        -------
-        fenics.Function
-            The result of the interpolation.
-        """
-
-        if not u.function_space() == self.V:
-            raise InputError(
-                "cashocs.utils.Interpolator.interpolate",
-                "u",
-                "The input does not belong to the correct function space.",
-            )
-        v = fenics.Function(self.W)
-        v.vector()[:] = (self.transfer_matrix * u.vector())[:]
-
-        return v
-
-
 def _assemble_petsc_system(
     A_form: ufl.Form,
     b_form: ufl.Form,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC], None] = None,
-    A_tensor: Union[fenics.PETScMatrix, None] = None,
-    b_tensor: Union[fenics.PETScVector, None] = None,
+    bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,
+    b_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
@@ -564,13 +564,13 @@ def _setup_petsc_options(
 
 
 def _solve_linear_problem(
-    ksp: Union[PETSc.KSP, None] = None,
-    A: Union[PETSc.Mat, None] = None,
-    b: Union[PETSc.Vec, None] = None,
-    x: Union[PETSc.Vec, None] = None,
-    ksp_options: Union[List[List[str]], None] = None,
-    rtol: Union[float, None] = None,
-    atol: Union[float, None] = None,
+    ksp: Optional[PETSc.KSP] = None,
+    A: Optional[PETSc.Mat] = None,
+    b: Optional[PETSc.Vec] = None,
+    x: Optional[PETSc.Vec] = None,
+    ksp_options: Optional[List[List[str]]] = None,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -754,7 +754,7 @@ def write_out_mesh(
 
 
 def _optimization_algorithm_configuration(
-    config: configparser.ConfigParser, algorithm: Union[str, None] = None
+    config: configparser.ConfigParser, algorithm: Optional[str] = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
@@ -1078,10 +1078,10 @@ def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
     measure: fenics.Measure,
-    lower_threshold: Union[float, fenics.Function, None] = None,
-    upper_treshold: Union[float, fenics.Function, None] = None,
-    shift_lower: Union[float, fenics.Function, None] = None,
-    shift_upper: Union[float, fenics.Function, None] = None,
+    lower_threshold: Optional[Union[float, fenics.Function]] = None,
+    upper_treshold: Optional[Union[float, fenics.Function]] = None,
+    shift_lower: Optional[Union[float, fenics.Function]] = None,
+    shift_upper: Optional[Union[float, fenics.Function]] = None,
 ) -> ufl.Form:
     r"""Implements a Moreau-Yosida regularization of an inequality constraint
 

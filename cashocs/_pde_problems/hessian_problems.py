@@ -144,9 +144,9 @@ class BaseHessianProblem(abc.ABC):
 
         Parameters
         ----------
-        h : list[dolfin.function.function.Function]
+        h : list[fenics.Function]
                 A function to which we want to apply the Hessian to.
-        out : list[dolfin.function.function.Function]
+        out : list[fenics.Function]
                 A list of functions into which the result is saved.
 
         Returns
@@ -315,7 +315,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -350,7 +350,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -367,7 +367,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -398,9 +398,9 @@ class HessianProblem(BaseHessianProblem):
 
         Parameters
         ----------
-        h : list[dolfin.function.function.Function]
+        h : list[fenics.Function]
             The direction, onto which the reduced Hessian is applied
-        out : list[dolfin.function.function.Function]
+        out : list[fenics.Function]
             The output of the application of the (linear) operator
 
         Returns
@@ -435,7 +435,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -455,7 +455,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -513,7 +513,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -619,9 +619,9 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Parameters
         ----------
-        h : list[dolfin.function.function.Function]
+        h : list[fenics.Function]
             The direction, onto which the reduced Hessian is applied
-        out : list[dolfin.function.function.Function]
+        out : list[fenics.Function]
             The output of the application of the (linear) operator
 
         Returns
@@ -648,7 +648,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -678,7 +678,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """
@@ -729,7 +729,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
             The Newton increment
 
         """

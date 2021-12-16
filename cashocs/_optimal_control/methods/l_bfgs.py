@@ -76,12 +76,12 @@ class LBFGS(ControlOptimizationAlgorithm):
 
         Parameters
         ----------
-        grad : list[dolfin.function.function.Function]
+        grad : list[fenics.Function]
                 the current gradient
 
         Returns
         -------
-        search_directions : list[dolfin.function.function.Function]
+        search_directions : list[fenics.Function]
                 a function corresponding to the current / next search direction
         """
 

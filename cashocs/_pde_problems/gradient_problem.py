@@ -104,7 +104,7 @@ class GradientProblem(PDEProblem):
 
         Returns
         -------
-        gradients : list[dolfin.function.function.Function]
+        gradients : list[fenics.Function]
                 The list of gradient of the cost functional.
         """
 

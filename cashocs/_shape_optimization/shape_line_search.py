@@ -49,7 +49,7 @@ class ArmijoLineSearch(LineSearch):
 
         Parameters
         ----------
-        search_direction : dolfin.function.function.Function
+        search_direction : fenics.Function
                 The current search direction
 
         Returns
@@ -65,7 +65,7 @@ class ArmijoLineSearch(LineSearch):
 
         Parameters
         ----------
-        search_direction : dolfin.function.function.Function
+        search_direction : fenics.Function
                 The current search direction computed by the algorithms
         has_curvature_info : bool
                 True if the step is (actually) computed via L-BFGS or Newton

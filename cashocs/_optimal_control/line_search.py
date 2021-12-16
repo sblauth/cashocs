@@ -26,7 +26,6 @@ from .._interfaces.line_search import LineSearch
 from .._loggers import error
 
 
-
 class ArmijoLineSearch(LineSearch):
     """An Armijo-based line search for optimal control
 
@@ -79,7 +78,7 @@ class ArmijoLineSearch(LineSearch):
 
         Parameters
         ----------
-        search_directions : list[dolfin.function.function.Function]
+        search_directions : list[fenics.Function]
                 the current search direction computed by the optimization algorithm
         has_curvature_info : bool
                 boolean flag, indicating whether the search direction is (actually) computed by

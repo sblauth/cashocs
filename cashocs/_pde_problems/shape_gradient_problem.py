@@ -107,7 +107,7 @@ class ShapeGradientProblem(PDEProblem):
 
         Returns
         -------
-        gradient : dolfin.function.function.Function
+        gradient : fenics.Function
                 The function representing the shape gradient of the (reduced) cost functional.
         """
 

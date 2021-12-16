@@ -19,6 +19,8 @@
 
 """
 
+from typing import Optional
+
 
 class CashocsException(Exception):
     """Base class for exceptions raised by CASHOCS."""
@@ -34,11 +36,11 @@ class NotConvergedError(CashocsException):
     optimization problem.
     """
 
-    def __init__(self, solver, message=None):
+    def __init__(self, solver: str, message: Optional[str] = None) -> None:
         self.solver = solver
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.message is None:
             return f"The {self.solver} failed to converge."
         else:
@@ -51,7 +53,9 @@ class PETScKSPError(CashocsException):
     Also returns the PETSc error code and reason.
     """
 
-    def __init__(self, error_code, message="PETSc linear solver did not converge."):
+    def __init__(
+        self, error_code: int, message: str = "PETSc linear solver did not converge."
+    ) -> None:
         self.message = message
         self.error_code = error_code
 
@@ -78,7 +82,7 @@ class PETScKSPError(CashocsException):
         else:
             self.error_reason = " (unknown)"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}"
         )
@@ -87,12 +91,12 @@ class PETScKSPError(CashocsException):
 class InputError(CashocsException):
     """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
 
-    def __init__(self, obj, param, message=None):
+    def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
         self.obj = obj
         self.param = param
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.message is None:
             return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
         else:
@@ -104,12 +108,12 @@ class ConfigError(CashocsException):
 
     pre_message = "You have an error in your config file.\n"
 
-    def __init__(self, section, key, message=None):
+    def __init__(self, section: str, key: str, message: Optional[str] = None) -> None:
         self.section = section
         self.key = key
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.message is None:
             return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}."
         else:
@@ -119,10 +123,10 @@ class ConfigError(CashocsException):
 class GeometryError(CashocsException):
     """This exception gets raised when there is a problem with the finite element mesh."""
 
-    def __init__(self, message=None):
+    def __init__(self, message: Optional[str] = None) -> None:
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.message is None:
             return f"The finite element mesh is not valid anymore."
         else:

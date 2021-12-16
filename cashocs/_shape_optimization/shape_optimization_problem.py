@@ -39,7 +39,7 @@ from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
-from ..verification import shape_gradient_test
+from .. import verification
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -125,9 +125,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 If this is ``None``, then no Dirichlet boundary conditions are imposed.
         cost_functional_form : ufl.form.Form or list[ufl.form.Form]
                 UFL form of the cost functional.
-        states : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        states : fenics.Function or list[fenics.Function]
                 The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        adjoints : fenics.Function or list[fenics.Function]
                 The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
         boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
                 :py:class:`fenics.MeshFunction` that indicates the boundary markers.
@@ -143,7 +143,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
                 of continuous, linear Lagrange finite elements. Moreover, this form is required to be
                 symmetric.
-        initial_guess : list[dolfin.function.function.Function], optional
+        initial_guess : list[fenics.Function], optional
                 List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
                 Defaults to ``None``, which means a zero initial guess.
         ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
@@ -190,10 +190,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 pass
 
             try:
-                if (
-                    not self.states[0].function_space().mesh()._cashocs_generator
-                    == "config"
-                ):
+                if not self.states[0].function_space().mesh()._config_flag:
                     raise InputError(
                         "cashocs.import_mesh",
                         "arg",
@@ -441,7 +438,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Returns
         -------
-        dolfin.function.function.Function
+        fenics.Function
                 The shape gradient.
         """
 
@@ -595,7 +592,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Parameters
         ----------
-        h : dolfin.function.function.Function, optional
+        h : fenics.Function, optional
             The direction used to compute the directional derivative. If this is
             ``None``, then a random direction is used (default is ``None``).
         rng : numpy.random.RandomState
@@ -607,4 +604,4 @@ class ShapeOptimizationProblem(OptimizationProblem):
             The convergence order from the Taylor test. If this is (approximately) 2 or larger,
             everything works as expected.
         """
-        return shape_gradient_test(self, h, rng)
+        return verification.shape_gradient_test(self, h, rng)

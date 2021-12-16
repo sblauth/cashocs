@@ -22,8 +22,12 @@ Newton methd. This is the only function at the moment, others might
 follow.
 """
 
+from typing import List, Union, Optional
+from typing_extensions import Literal
+
 import fenics
 import numpy as np
+import ufl
 from deprecated import deprecated
 from petsc4py import PETSc
 
@@ -32,128 +36,128 @@ from .utils import _setup_petsc_options, _solve_linear_problem
 
 
 def newton_solve(
-    F,
-    u,
-    bcs,
-    dF=None,
-    shift=None,
-    rtol=1e-10,
-    atol=1e-10,
-    max_iter=50,
-    convergence_type="combined",
-    norm_type="l2",
-    damped=True,
-    inexact=True,
-    verbose=True,
-    ksp=None,
-    ksp_options=None,
-    A_tensor=None,
-    b_tensor=None,
-):
+    F: ufl.Form,
+    u: fenics.Function,
+    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
+    dF: Optional[ufl.Form] = None,
+    shift: Optional[ufl.Form] = None,
+    rtol: float = 1e-10,
+    atol: float = 1e-10,
+    max_iter: int = 50,
+    convergence_type: Literal["combined", "rel", "abs"] = "combined",
+    norm_type: Literal["l2", "linf"] = "l2",
+    damped: bool = True,
+    inexact: bool = True,
+    verbose: bool = True,
+    ksp: Optional[PETSc.KSP] = None,
+    ksp_options: Optional[List[List[str]]] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,
+    b_tensor: Optional[fenics.PETScVector] = None,
+) -> fenics.Function:
     r"""A damped Newton method for solving nonlinear equations.
+    
+    The damped Newton method is based on the natural monotonicity test from
+    `Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
+    It also allows fine tuning via a direct interface, and absolute, relative,
+    and combined stopping criteria. Can also be used to specify the solver for
+    the inner (linear) subproblems via petsc ksps.
 
-	The damped Newton method is based on the natural monotonicity test from
-	`Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
-	It also allows fine tuning via a direct interface, and absolute, relative,
-	and combined stopping criteria. Can also be used to specify the solver for
-	the inner (linear) subproblems via petsc ksps.
+    The method terminates after ``max_iter`` iterations, or if a termination criterion is
+    satisfied. These criteria are given by
 
-	The method terminates after ``max_iter`` iterations, or if a termination criterion is
-	satisfied. These criteria are given by
+    - a relative one in case ``convergence_type = 'rel'``, i.e.,
 
-	- a relative one in case ``convergence_type = 'rel'``, i.e.,
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    - an absolute one in case ``convergence_type = 'abs'``, i.e.,
 
-	- an absolute one in case ``convergence_type = 'abs'``, i.e.,
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}.
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}.
+    - a combination of both in case ``convergence_type = 'combined'``, i.e.,
 
-	- a combination of both in case ``convergence_type = 'combined'``, i.e.,
+    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
-	.. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    The norm chosen for the termination criterion is specified via ``norm_type``.
 
-	The norm chosen for the termination criterion is specified via ``norm_type``.
-
-	Parameters
-	----------
-	F : ufl.form.Form
-		The variational form of the nonlinear problem to be solved by Newton's method.
-	u : dolfin.function.function.Function
-		The sought solution / initial guess. It is not assumed that the initial guess
-		satisfies the Dirichlet boundary conditions, they are applied automatically.
-		The method overwrites / updates this Function.
-	bcs : list[dolfin.fem.dirichletbc.DirichletBC]
-		A list of DirichletBCs for the nonlinear variational problem.
-	dF : ufl.form.Form, optional
-	    The Jacobian of F, used for the Newton method. Default is None, and in this case
-	    the Jacobian is computed automatically with AD.
-	shift : ufl.form.Form, optional
-	    This is used in case we want to solve a nonlinear operator equation with a nonlinear
-	    part ``F`` and a part ``shift``, which does not depend on the variable ``u``.
-	    Solves the equation :math:`F(u) = shift`. In case shift is ``None`` (the default),
-	    the equation :math:`F(u) = 0` is solved.
-	rtol : float, optional
-		Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
-		(default is ``rtol = 1e-10``).
-	atol : float, optional
-		Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
-		(default is ``atol = 1e-10``).
-	max_iter : int, optional
-		Maximum number of iterations carried out by the method
-		(default is ``max_iter = 50``).
-	convergence_type : {'combined', 'rel', 'abs'}
-		Determines the type of stopping criterion that is used.
-	norm_type : {'l2', 'linf'}
-		Determines which norm is used in the stopping criterion.
-	damped : bool, optional
-		If ``True``, then a damping strategy is used. If ``False``, the classical
-		Newton-Raphson iteration (without damping) is used (default is ``True``).
-	inexact : bool, optional
-	    If ``True``, then an inexact Newtons method is used, in case an iterative solver
-	    is used for the inner solution of the linear systems. Default is ``True``.
-	verbose : bool, optional
-		If ``True``, prints status of the iteration to the console (default
-		is ``True``).
-	ksp : petsc4py.PETSc.KSP, optional
-		The PETSc ksp object used to solve the inner (linear) problem
-		if this is ``None`` it uses the direct solver MUMPS (default is
-		``None``).
-	ksp_options : list[list[str]]
-		The list of options for the linear solver.
-
-
-	Returns
-	-------
-	dolfin.function.function.Function
-		The solution of the nonlinear variational problem, if converged.
-		This overrides the input function u.
+    Parameters
+    ----------
+    F : ufl.form.Form
+        The variational form of the nonlinear problem to be solved by Newton's method.
+    u : fenics.Function
+        The sought solution / initial guess. It is not assumed that the initial guess
+        satisfies the Dirichlet boundary conditions, they are applied automatically.
+        The method overwrites / updates this Function.
+    bcs : list[fenics.DirichletBC]
+        A list of DirichletBCs for the nonlinear variational problem.
+    dF : ufl.Form or None, optional
+        The Jacobian of F, used for the Newton method. Default is None, and in this case
+        the Jacobian is computed automatically with AD.
+    shift : ufl.Form or None, optional
+        This is used in case we want to solve a nonlinear operator equation with a nonlinear
+        part ``F`` and a part ``shift``, which does not depend on the variable ``u``.
+        Solves the equation :math:`F(u) = shift`. In case shift is ``None`` (the default),
+        the equation :math:`F(u) = 0` is solved.
+    rtol : float, optional
+        Relative tolerance of the solver if convergence_type is either ``'combined'`` or ``'rel'``
+        (default is ``rtol = 1e-10``).
+    atol : float, optional
+        Absolute tolerance of the solver if convergence_type is either ``'combined'`` or ``'abs'``
+        (default is ``atol = 1e-10``).
+    max_iter : int, optional
+        Maximum number of iterations carried out by the method
+        (default is ``max_iter = 50``).
+    convergence_type : {'combined', 'rel', 'abs'}
+        Determines the type of stopping criterion that is used.
+    norm_type : {'l2', 'linf'}
+        Determines which norm is used in the stopping criterion.
+    damped : bool, optional
+        If ``True``, then a damping strategy is used. If ``False``, the classical
+        Newton-Raphson iteration (without damping) is used (default is ``True``).
+    inexact : bool, optional
+        If ``True``, then an inexact Newtons method is used, in case an iterative solver
+        is used for the inner solution of the linear systems. Default is ``True``.
+    verbose : bool, optional
+        If ``True``, prints status of the iteration to the console (default
+        is ``True``).
+    ksp : petsc4py.PETSc.KSP or None, optional
+        The PETSc ksp object used to solve the inner (linear) problem
+        if this is ``None`` it uses the direct solver MUMPS (default is
+        ``None``).
+    ksp_options : list[list[str]] or None, optional
+        The list of options for the linear solver.
 
 
-	Examples
-	--------
-	Consider the problem
+    Returns
+    -------
+    fenics.Function
+        The solution of the nonlinear variational problem, if converged.
+        This overrides the input function u.
 
-	.. math::
-		\begin{alignedat}{2}
-		- \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
-		u &= 0 \quad &&\text{ on } \Gamma.
-		\end{alignedat}
 
-	This is solved with the code ::
+    Examples
+    --------
+    Consider the problem
 
-		from fenics import *
-		import cashocs
+    .. math::
+        \begin{alignedat}{2}
+        - \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
+        u &= 0 \quad &&\text{ on } \Gamma.
+        \end{alignedat}
+    
+    This is solved with the code ::
 
-		mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
-		V = FunctionSpace(mesh, 'CG', 1)
+        from fenics import *
+        import cashocs
 
-		u = Function(V)
-		v = TestFunction(V)
-		F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-		bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
-		cashocs.damped_newton_solve(F, u, bcs)
-	"""
+        mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
+        V = FunctionSpace(mesh, 'CG', 1)
+
+        u = Function(V)
+        v = TestFunction(V)
+        F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
+        bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
+        cashocs.damped_newton_solve(F, u, bcs)
+    """
 
     if isinstance(bcs, fenics.DirichletBC):
         bcs = [bcs]
@@ -357,27 +361,27 @@ def newton_solve(
     reason="This is replaced by cashocs.newton_solve and will be removed in the future.",
 )
 def damped_newton_solve(
-    F,
-    u,
-    bcs,
-    dF=None,
-    rtol=1e-10,
-    atol=1e-10,
-    max_iter=50,
-    convergence_type="combined",
-    norm_type="l2",
-    damped=True,
-    verbose=True,
-    ksp=None,
-    ksp_options=None,
-):
+    F: ufl.Form,
+    u: fenics.Function,
+    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
+    dF: Optional[ufl.Form] = None,
+    rtol: float = 1e-10,
+    atol: float = 1e-10,
+    max_iter: int = 50,
+    convergence_type: Literal["combined", "rel", "abs"] = "combined",
+    norm_type: Literal["l2", "linf"] = "l2",
+    damped: bool = True,
+    verbose: bool = True,
+    ksp: Optional[PETSc.KSP] = None,
+    ksp_options: Optional[List[List[str]]] = None,
+) -> fenics.Function:
     """Damped Newton solve interface, only here for compatibility reasons.
 
     Parameters
     ----------
     F : ufl.form.Form
             The variational form of the nonlinear problem to be solved by Newton's method.
-    u : dolfin.function.function.Function
+    u : fenics.Function
             The sought solution / initial guess. It is not assumed that the initial guess
             satisfies the Dirichlet boundary conditions, they are applied automatically.
             The method overwrites / updates this Function.
@@ -415,7 +419,7 @@ def damped_newton_solve(
 
     Returns
     -------
-    dolfin.function.function.Function
+    fenics.Function
             The solution of the nonlinear variational problem, if converged.
             This overrides the input function u.
 

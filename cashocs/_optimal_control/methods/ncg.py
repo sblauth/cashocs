@@ -26,7 +26,6 @@ from ..._exceptions import ConfigError
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
-
 class NCG(ControlOptimizationAlgorithm):
     """Nonlinear conjugate gradient method."""
 
@@ -78,7 +77,7 @@ class NCG(ControlOptimizationAlgorithm):
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
+        a : list[fenics.Function]
                 A function that shall be projected / restricted (will be overwritten)
 
         Returns

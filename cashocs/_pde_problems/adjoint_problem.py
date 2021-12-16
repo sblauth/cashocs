@@ -28,7 +28,6 @@ from .._interfaces import PDEProblem
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
-
 class AdjointProblem(PDEProblem):
     """The adjoint problem.
 
@@ -89,7 +88,7 @@ class AdjointProblem(PDEProblem):
 
         Returns
         -------
-        adjoints : list[dolfin.function.function.Function]
+        adjoints : list[fenics.Function]
                 The list of adjoint variables.
         """
 

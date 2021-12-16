@@ -40,7 +40,7 @@ from ..utils import (
     enlist,
     _check_and_enlist_control_constraints,
 )
-from ..verification import control_gradient_test
+from .. import verification
 
 
 class OptimalControlProblem(OptimizationProblem):
@@ -104,11 +104,11 @@ class OptimalControlProblem(OptimizationProblem):
                 If this is ``None``, then no Dirichlet boundary conditions are imposed.
         cost_functional_form : ufl.form.Form or list[ufl.form.Form]
                 UFL form of the cost functional.
-        states : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        states : fenics.Function or list[fenics.Function]
                 The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        controls : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        controls : fenics.Function or list[fenics.Function]
                 The control variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        adjoints : fenics.Function or list[fenics.Function]
                 The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
         config : configparser.ConfigParser or None
                 The config file for the problem, generated via :py:func:`cashocs.create_config`.
@@ -120,11 +120,11 @@ class OptimalControlProblem(OptimizationProblem):
                 The scalar products of the control space. Can either be None, a single UFL form, or a
                 (ordered) list of UFL forms. If ``None``, the :math:`L^2(\Omega)` product is used.
                 (default is ``None``).
-        control_constraints : None or list[dolfin.function.function.Function] or list[float] or list[list[dolfin.function.function.Function]] or list[list[float]], optional
+        control_constraints : None or list[fenics.Function] or list[float] or list[list[fenics.Function]] or list[list[float]], optional
                 Box constraints posed on the control, ``None`` means that there are none (default is ``None``).
                 The (inner) lists should contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the lower,
                 and ``u_b`` the upper bound.
-        initial_guess : list[dolfin.function.function.Function], optional
+        initial_guess : list[fenics.Function], optional
                 List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
                 Defaults to ``None``, which means a zero initial guess.
         ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
@@ -448,7 +448,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         Returns
         -------
-        list[dolfin.function.function.Function]
+        list[fenics.Function]
                 A list consisting of the (components) of the gradient.
         """
 
@@ -566,11 +566,11 @@ class OptimalControlProblem(OptimizationProblem):
 
         Parameters
         ----------
-        u : list[dolfin.function.function.Function], optional
+        u : list[fenics.Function], optional
             The point, at which the gradient shall be verified. If this is ``None``,
             then the current controls of the optimization problem are used. Default is
             ``None``.
-        h : list[dolfin.function.function.Function], optional
+        h : list[fenics.Function], optional
             The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
             one random direction is chosen. Default is ``None``.
         rng : numpy.random.RandomState
@@ -582,4 +582,4 @@ class OptimalControlProblem(OptimizationProblem):
             The convergence order from the Taylor test. If this is (approximately) 2 or larger,
              everything works as expected.
         """
-        return control_gradient_test(self, u, h, rng)
+        return verification.control_gradient_test(self, u, h, rng)

@@ -19,15 +19,23 @@
 
 """
 
+from typing import List, Optional
 
 import fenics
 import numpy as np
 
+from ._optimal_control.optimal_control_problem import OptimalControlProblem
+from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from ._exceptions import InputError
 from ._loggers import warning
 
 
-def control_gradient_test(ocp, u=None, h=None, rng=None):
+def control_gradient_test(
+    ocp: OptimalControlProblem,
+    u: Optional[List[fenics.Function]] = None,
+    h: Optional[List[fenics.Function]] = None,
+    rng: Optional[np.random.RandomState] = None,
+) -> float:
     """Taylor test to verify that the computed gradient is correct for optimal control problems.
 
     Parameters
@@ -35,21 +43,21 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
     ocp : cashocs.OptimalControlProblem
         The underlying optimal control problem, for which the gradient
         of the reduced cost function shall be verified.
-    u : list[dolfin.function.function.Function], optional
+    u : list[fenics.Function] or None, optional
         The point, at which the gradient shall be verified. If this is ``None``,
         then the current controls of the optimization problem are used. Default is
         ``None``.
-    h : list[dolfin.function.function.Function], optional
+    h : list[fenics.Function] or None, optional
         The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
         one random direction is chosen. Default is ``None``.
-    rng : numpy.random.RandomState
+    rng : numpy.random.RandomState or None, optional
         A numpy random state for calculating a random direction
 
     Returns
     -------
     float
-            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
-             everything works as expected.
+        The convergence order from the Taylor test. If this is (approximately) 2 or larger,
+        everything works as expected.
     """
 
     initial_state = []
@@ -129,17 +137,21 @@ def control_gradient_test(ocp, u=None, h=None, rng=None):
     return np.min(rates)
 
 
-def shape_gradient_test(sop, h=None, rng=None):
+def shape_gradient_test(
+    sop: ShapeOptimizationProblem,
+    h: Optional[fenics.Function] = None,
+    rng: Optional[np.random.RandomState] = None,
+) -> float:
     """Taylor test to verify that the computed shape gradient is correct.
 
     Parameters
     ----------
     sop : cashocs.ShapeOptimizationProblem
         The underlying shape optimization problem.
-    h : dolfin.function.function.Function, optional
+    h : fenics.Function or None, optional
         The direction used to compute the directional derivative. If this is
         ``None``, then a random direction is used (default is ``None``).
-    rng : numpy.random.RandomState
+    rng : numpy.random.RandomState or None, optional
         A numpy random state for calculating a random direction
 
     Returns
@@ -200,7 +212,9 @@ def shape_gradient_test(sop, h=None, rng=None):
     return np.min(rates)
 
 
-def compute_convergence_rates(epsilons, residuals, verbose=True):
+def compute_convergence_rates(
+    epsilons: List[float], residuals: List[float], verbose: bool = True
+) -> List[float]:
     """Computes the convergence rate of the Taylor test.
 
     Parameters

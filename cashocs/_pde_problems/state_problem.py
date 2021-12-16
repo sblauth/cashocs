@@ -39,7 +39,7 @@ class StateProblem(PDEProblem):
         ----------
         form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
                 The FormHandler of the optimization problem.
-        initial_guess : list[dolfin.function.function.Function]
+        initial_guess : list[fenics.Function]
                 An initial guess for the state variables, used to initialize them in each iteration.
         temp_dict : dict
                 A dict used for reinitialization when remeshing is performed.
@@ -108,7 +108,7 @@ class StateProblem(PDEProblem):
 
         Returns
         -------
-        states : list[dolfin.function.function.Function]
+        states : list[fenics.Function]
                 The solution of the state system.
         """
 

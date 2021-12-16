@@ -82,9 +82,9 @@ class OptimizationProblem(abc.ABC):
                 If this is ``None``, then no Dirichlet boundary conditions are imposed.
         cost_functional_form : ufl.form.Form or list[ufl.form.Form]
                 UFL form of the cost functional. Can also be a list of summands of the cost functional
-        states : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        states : fenics.Function or list[fenics.Function]
                 The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : dolfin.function.function.Function or list[dolfin.function.function.Function]
+        adjoints : fenics.Function or list[fenics.Function]
                 The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
         config : configparser.ConfigParser or None
                 The config file for the problem, generated via :py:func:`cashocs.create_config`.
@@ -92,7 +92,7 @@ class OptimizationProblem(abc.ABC):
                 are used, except for the optimization algorithm. This has then to be specified
                 in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
                 default is ``None``.
-        initial_guess : list[dolfin.function.function.Function], optional
+        initial_guess : list[fenics.Function], optional
                 List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
                 Defaults to ``None``, which means a zero initial guess.
         ksp_options : list[list[str]] or list[list[list[str]]] or None, optional

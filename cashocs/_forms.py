@@ -22,12 +22,16 @@ This is used to carry out form manipulations such as generating the UFL
 problems.
 """
 
+from __future__ import annotations
+
+from typing import List, Union, Optional, Dict, TYPE_CHECKING
 import itertools
 import json
 
 import fenics
 import numpy as np
 from petsc4py import PETSc
+import ufl
 from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
@@ -37,6 +41,11 @@ from ._exceptions import CashocsException, ConfigError, InputError
 from ._loggers import warning
 from ._shape_optimization.regularization import Regularization
 from .geometry import compute_boundary_distance
+
+if TYPE_CHECKING:
+    from ._interfaces.optimization_problem import OptimizationProblem
+    from ._optimal_control.optimal_control_problem import OptimalControlProblem
+    from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .utils import (
     _assemble_petsc_system,
     _optimization_algorithm_configuration,
@@ -68,19 +77,25 @@ class Lagrangian:
     """
 
     def __init__(
-        self, state_forms, cost_functional_form, scalar_tracking_forms, min_max_forms
-    ):
+        self,
+        state_forms: List[ufl.Form],
+        cost_functional_form: ufl.Form,
+        scalar_tracking_forms: List[Dict[str, Union[float, fenics.Function, ufl.Form]]],
+        min_max_forms: List[Dict[str, Union[float, fenics.Function, ufl.Form]]],
+    ) -> None:
         """Initializes the Lagrangian.
 
         Parameters
         ----------
-        state_forms : list[ufl.form.Form]
-                The weak forms of the state equation, as implemented by the user.
-        cost_functional_form : ufl.form.Form
-                The cost functional, as implemented by the user.
+        state_forms : list[ufl.Form]
+            The weak forms of the state equation, as implemented by the user.
+        cost_functional_form : ufl.Form
+            The cost functional, as implemented by the user.
         scalar_tracking_forms : list[dict]
-                The list of cost functional forms for scalar (i.e. after
-                integration) tracking type terms.
+            The list of cost functional forms for scalar (i.e. after
+            integration) tracking type terms.
+        min_max_forms : list[dict]
+            The list of terms involving min and max. Used for the treatment of constraints.
         """
 
         self.state_forms = state_forms
@@ -105,12 +120,12 @@ class FormHandler:
     ShapeFormHandler : FormHandler for shape optimization problems
     """
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimizationProblem) -> None:
         """Initializes the form handler.
 
         Parameters
         ----------
-        optimization_problem : cashocs.optimization_problem.OptimizationProblem
+        optimization_problem : OptimizationProblem
             The corresponding optimization problem
         """
 
@@ -223,7 +238,7 @@ class FormHandler:
         self.__compute_state_equations()
         self.__compute_adjoint_equations()
 
-    def __compute_state_equations(self):
+    def __compute_state_equations(self) -> None:
         """Calculates the weak form of the state equation for the use with fenics.
 
         Returns
@@ -286,7 +301,7 @@ class FormHandler:
                 else:
                     self.state_eq_forms_rhs.append(L)
 
-    def __compute_adjoint_equations(self):
+    def __compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics.
 
         Returns
@@ -499,10 +514,10 @@ class FormHandler:
                                 bc.sub_domain,
                             )
 
-    def _pre_hook(self):
+    def _pre_hook(self) -> None:
         pass
 
-    def _post_hook(self):
+    def _post_hook(self) -> None:
         pass
 
 
@@ -519,12 +534,12 @@ class ControlFormHandler(FormHandler):
     ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
     """
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the ControlFormHandler class.
 
         Parameters
         ----------
-        optimization_problem : cashocs._optimal_control.optimal_control_problem.OptimalControlProblem
+        optimization_problem : OptimalControlProblem
             The corresponding optimal control problem
         """
 
@@ -602,20 +617,22 @@ class ControlFormHandler(FormHandler):
                             "Supplied scalar product form is not symmetric.",
                         )
 
-    def scalar_product(self, a, b):
+    def scalar_product(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> float:
         """Computes the scalar product between control type functions a and b.
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
-                The first argument.
-        b : list[dolfin.function.function.Function]
-                The second argument.
+        a : list[fenics.Function]
+            The first argument.
+        b : list[fenics.Function]
+            The second argument.
 
         Returns
         -------
         float
-                The value of the scalar product.
+            The value of the scalar product.
         """
 
         result = 0.0
@@ -630,7 +647,7 @@ class ControlFormHandler(FormHandler):
 
         return result
 
-    def compute_active_sets(self):
+    def compute_active_sets(self) -> None:
         """Computes the indices corresponding to active and inactive sets.
 
         Returns
@@ -673,7 +690,9 @@ class ControlFormHandler(FormHandler):
                 )
             )
 
-    def restrict_to_active_set(self, a, b):
+    def restrict_to_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Restricts a function to the active set.
 
         Restricts a control type function a onto the active set,
@@ -681,15 +700,15 @@ class ControlFormHandler(FormHandler):
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
-                The first argument, to be projected onto the active set.
-        b : list[dolfin.function.function.Function]
-                The second argument, which stores the result (is overwritten).
+        a : list[fenics.Function]
+            The first argument, to be projected onto the active set.
+        b : list[fenics.Function]
+            The second argument, which stores the result (is overwritten).
 
         Returns
         -------
-        b : list[dolfin.function.function.Function]
-                The result of the projection (overwrites input b).
+        b : list[fenics.Function]
+            The result of the projection (overwrites input b).
         """
 
         for j in range(self.control_dim):
@@ -705,19 +724,21 @@ class ControlFormHandler(FormHandler):
 
         return b
 
-    def restrict_to_lower_active_set(self, a, b):
+    def restrict_to_lower_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Restricts a function to the lower bound of the constraints
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
+        a : list[fenics.Function]
             The input, which is to be restricted
-        b : list[dolfin.function.function.Function]
+        b : list[fenics.Function]
             The output, which stores the result
 
         Returns
         -------
-        b : list[dolfin.function.function.Function]
+        b : list[fenics.Function]
             Function a restricted onto the lower boundaries of the constraints
 
         """
@@ -735,19 +756,21 @@ class ControlFormHandler(FormHandler):
 
         return b
 
-    def restrict_to_upper_active_set(self, a, b):
+    def restrict_to_upper_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Restricts a function to the upper bound of the constraints
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
+        a : list[fenics.Function]
             The input, which is to be restricted
-        b : list[dolfin.function.function.Function]
+        b : list[fenics.Function]
             The output, which stores the result
 
         Returns
         -------
-        b : list[dolfin.function.function.Function]
+        b : list[fenics.Function]
             Function a restricted onto the upper boundaries of the constraints
 
         """
@@ -765,7 +788,9 @@ class ControlFormHandler(FormHandler):
 
         return b
 
-    def restrict_to_inactive_set(self, a, b):
+    def restrict_to_inactive_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Restricts a function to the inactive set.
 
         Restricts a control type function a onto the inactive set,
@@ -773,15 +798,15 @@ class ControlFormHandler(FormHandler):
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
-                The control-type function that is to be projected onto the inactive set.
-        b : list[dolfin.function.function.Function]
-                The storage for the result of the projection (is overwritten).
+        a : list[fenics.Function]
+            The control-type function that is to be projected onto the inactive set.
+        b : list[fenics.Function]
+            The storage for the result of the projection (is overwritten).
 
         Returns
         -------
-        b : list[dolfin.function.function.Function]
-                The result of the projection of a onto the inactive set (overwrites input b).
+        b : list[fenics.Function]
+            The result of the projection of a onto the inactive set (overwrites input b).
         """
 
         for j in range(self.control_dim):
@@ -798,7 +823,9 @@ class ControlFormHandler(FormHandler):
 
         return b
 
-    def project_to_admissible_set(self, a):
+    def project_to_admissible_set(
+        self, a: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Project a function to the set of admissible controls.
 
         Projects a control type function a onto the set of admissible controls
@@ -806,14 +833,14 @@ class ControlFormHandler(FormHandler):
 
         Parameters
         ----------
-        a : list[dolfin.function.function.Function]
-                The function which is to be projected onto the set of admissible
-                controls (is overwritten)
+        a : list[fenics.Function]
+            The function which is to be projected onto the set of admissible
+            controls (is overwritten)
 
         Returns
         -------
-        a : list[dolfin.function.function.Function]
-                The result of the projection (overwrites input a)
+        a : list[fenics.Function]
+            The result of the projection (overwrites input a)
         """
 
         for j in range(self.control_dim):
@@ -827,7 +854,7 @@ class ControlFormHandler(FormHandler):
 
         return a
 
-    def __compute_gradient_equations(self):
+    def __compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation, for the Riesz projection.
 
         Returns
@@ -889,7 +916,7 @@ class ControlFormHandler(FormHandler):
                             self.test_functions_control[i],
                         )
 
-    def __compute_newton_forms(self):
+    def __compute_newton_forms(self) -> None:
         """Calculates the needed forms for the truncated Newton method.
 
         Returns
@@ -1124,12 +1151,12 @@ class ShapeFormHandler(FormHandler):
     ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
     """
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
         """Initializes the ShapeFormHandler object.
 
         Parameters
         ----------
-        optimization_problem : cashocs._shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
+        optimization_problem : ShapeOptimizationProblem
             The corresponding shape optimization problem
         """
 
@@ -1268,7 +1295,7 @@ class ShapeFormHandler(FormHandler):
                 "Second order methods are not implemented for shape optimization yet"
             )
 
-    def __compute_shape_derivative(self):
+    def __compute_shape_derivative(self) -> None:
         """Computes the shape derivative.
 
         Returns
@@ -1419,7 +1446,7 @@ class ShapeFormHandler(FormHandler):
         # Add regularization
         self.shape_derivative += self.regularization.compute_shape_derivative()
 
-    def __compute_shape_gradient_forms(self):
+    def __compute_shape_gradient_forms(self) -> None:
         """Calculates the necessary left-hand-sides for the shape gradient problem.
 
         Returns
@@ -1558,7 +1585,7 @@ class ShapeFormHandler(FormHandler):
 
                 Parameters
                 ----------
-                u : dolfin.function.function.Function
+                u : fenics.Function
                     A vector field
 
                 Returns
@@ -1594,7 +1621,7 @@ class ShapeFormHandler(FormHandler):
             # Use the scalar product supplied by the user
             self.riesz_scalar_product = self.shape_scalar_product
 
-    def __setup_mu_computation(self):
+    def __setup_mu_computation(self) -> None:
 
         if not self.use_distance_mu:
             self.mu_def = self.config.getfloat("ShapeGradient", "mu_def", fallback=1.0)
@@ -1689,7 +1716,7 @@ class ShapeFormHandler(FormHandler):
                         mu_max=self.mu_max,
                     )
 
-    def __compute_mu_elas(self):
+    def __compute_mu_elas(self) -> None:
         """Computes the second lame parameter mu_elas, based on `Schulz and
         Siebenborn, Computational Comparison of Surface Metrics for
         PDE Constrained Shape Optimization
@@ -1744,7 +1771,14 @@ class ShapeFormHandler(FormHandler):
             # for mpi compatibility
             self.mu_lame.vector().apply("")
 
-    def _project_scalar_product(self):
+    def _project_scalar_product(self) -> None:
+        """Ensures, that only free dimensions can be deformed.
+
+        Returns
+        -------
+        None
+
+        """
         if self.use_fixed_dimensions:
 
             copy_mat = self.fe_scalar_product_matrix.copy()
@@ -1756,7 +1790,7 @@ class ShapeFormHandler(FormHandler):
 
             self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
 
-    def update_scalar_product(self):
+    def update_scalar_product(self) -> None:
         """Updates the linear elasticity equations to the current geometry.
 
         Updates the left-hand-side of the linear elasticity equations
@@ -1781,20 +1815,20 @@ class ShapeFormHandler(FormHandler):
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
         self._project_scalar_product()
 
-    def scalar_product(self, a, b):
+    def scalar_product(self, a: fenics.Function, b: fenics.Function) -> float:
         """Computes the scalar product between two deformation functions.
 
         Parameters
         ----------
-        a : dolfin.function.function.Function
-                The first argument.
-        b : dolfin.function.function.Function
-                The second argument.
+        a : fenics.Function
+            The first argument.
+        b : fenics.Function
+            The second argument.
 
         Returns
         -------
         float
-                The value of the scalar product.
+            The value of the scalar product.
         """
 
         if (
@@ -1816,7 +1850,15 @@ class ShapeFormHandler(FormHandler):
 
         return result
 
-    def __compute_p_laplacian_forms(self):
+    def __compute_p_laplacian_forms(self) -> None:
+        """Computes the weak forms for the p-Laplace equations, for computing the shape derivative
+
+        Returns
+        -------
+        None
+
+        """
+
         if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
             p = self.config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
             delta = self.config.getfloat(

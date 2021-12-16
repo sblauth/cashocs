@@ -19,6 +19,8 @@
 
 """
 
+from typing import Union
+from typing_extensions import Literal
 import logging
 
 
@@ -46,7 +48,7 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + format + reset,
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     def format(self, record):
@@ -80,7 +82,15 @@ _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
 
-def set_log_level(level):
+def set_log_level(
+    level: Literal[
+        LogLevel.DEBUG,
+        LogLevel.INFO,
+        LogLevel.WARNING,
+        LogLevel.ERROR,
+        LogLevel.CRITICAL,
+    ]
+) -> None:
     """Determines the log level of cashocs.
 
     Can be used to show, e.g., info and warning messages or to hide them.
@@ -91,9 +101,9 @@ def set_log_level(level):
     Parameters
     ----------
     level : int
-            Should be one of ``cashocs.LogLevel.DEBUG``,
-            ``cashocs.LogLevel.INFO``, ``cashocs.LogLevel.WARNING``,
-            ``cashocs.LogLevel.ERROR``, ``cashocs.LogLevel.CRITICAL``
+        Should be one of ``cashocs.LogLevel.DEBUG``,
+        ``cashocs.LogLevel.INFO``, ``cashocs.LogLevel.WARNING``,
+        ``cashocs.LogLevel.ERROR``, ``cashocs.LogLevel.CRITICAL``
 
     Returns
     -------
@@ -122,13 +132,13 @@ def set_log_level(level):
     _cashocs_logger.setLevel(level)
 
 
-def debug(message):
+def debug(message: str) -> None:
     """Issues a debug level logging message.
 
     Parameters
     ----------
     message : str
-            The message to be issued.
+        The message to be issued.
 
     Returns
     -------
@@ -138,13 +148,13 @@ def debug(message):
     _cashocs_logger.debug(message)
 
 
-def info(message):
+def info(message: str) -> None:
     """Issues an info level logging message.
 
     Parameters
     ----------
     message : str
-            The message to be issued.
+        The message to be issued.
 
     Returns
     -------
@@ -154,13 +164,13 @@ def info(message):
     _cashocs_logger.info(message)
 
 
-def warning(message):
+def warning(message: str) -> None:
     """Issues a warning level logging message.
 
     Parameters
     ----------
     message : str
-            The message to be issued.
+        The message to be issued.
 
     Returns
     -------
@@ -170,13 +180,13 @@ def warning(message):
     _cashocs_logger.warning(message)
 
 
-def error(message):
+def error(message: str) -> None:
     """Issues a error level logging message.
 
     Parameters
     ----------
     message : str
-            The message to be issued.
+        The message to be issued.
 
     Returns
     -------
@@ -186,13 +196,13 @@ def error(message):
     _cashocs_logger.error(message)
 
 
-def critical(message):
+def critical(message: str) -> None:
     """Issues a critical level logging message.
 
     Parameters
     ----------
     message : str
-            The message to be issued.
+        The message to be issued.
 
     Returns
     -------

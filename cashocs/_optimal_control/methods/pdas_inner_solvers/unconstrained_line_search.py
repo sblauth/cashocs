@@ -24,7 +24,6 @@ import weakref
 import numpy as np
 
 
-
 class UnconstrainedLineSearch:
     """Armijo line search for unconstrained optimization problems"""
 
@@ -72,7 +71,7 @@ class UnconstrainedLineSearch:
 
         Parameters
         ----------
-        search_directions : list[dolfin.function.function.Function]
+        search_directions : list[fenics.Function]
                 the search direction computed by optimization_algorithm
 
         Returns
@@ -90,7 +89,7 @@ class UnconstrainedLineSearch:
 
         Parameters
         ----------
-        search_directions : list[dolfin.function.function.Function]
+        search_directions : list[fenics.Function]
                 the search direction computed by the optimization_algorithm
 
         Returns

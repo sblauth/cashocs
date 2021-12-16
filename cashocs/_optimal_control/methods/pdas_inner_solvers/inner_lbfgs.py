@@ -29,7 +29,6 @@ from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
 
-
 class InnerLBFGS(ControlOptimizationAlgorithm):
     """A unconstrained limited memory BFGS method"""
 
@@ -88,13 +87,13 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
         Parameters
         ----------
-        grad : list[dolfin.function.function.Function]
+        grad : list[fenics.Function]
                 the current gradient
         idx_active : list[numpy.ndarray]
                 list of indices corresponding to the active set
         Returns
         -------
-        search_directions : list[dolfin.function.function.Function]
+        search_directions : list[fenics.Function]
                 the search direction
         """
 
