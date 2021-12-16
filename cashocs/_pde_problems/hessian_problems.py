@@ -315,7 +315,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -350,7 +350,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -367,7 +367,7 @@ class BaseHessianProblem(abc.ABC):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -435,7 +435,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -455,7 +455,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -513,7 +513,7 @@ class HessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -648,7 +648,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -678,7 +678,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """
@@ -729,7 +729,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         Returns
         -------
-         : list[dolfin.function.function.Function]
+        list[dolfin.function.function.Function]
             The Newton increment
 
         """

@@ -144,7 +144,7 @@ def shape_gradient_test(sop, h=None, rng=None):
 
     Returns
     -------
-     : float
+    float
         The convergence order from the Taylor test. If this is (approximately) 2 or larger,
         everything works as expected.
     """
@@ -214,7 +214,7 @@ def compute_convergence_rates(epsilons, residuals, verbose=True):
 
     Returns
     -------
-     : list[float]
+    list[float]
         The computed convergence rates
     """
 

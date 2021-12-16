@@ -128,7 +128,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 
@@ -146,7 +146,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 
@@ -167,7 +167,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 

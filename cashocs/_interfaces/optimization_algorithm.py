@@ -345,7 +345,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns
         -------
-         : boolean
+        bool
                 A flag which is True, when the algorithm did not converge
         """
 

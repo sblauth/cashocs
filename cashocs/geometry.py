@@ -637,7 +637,7 @@ def compute_mesh_quality(mesh, type="min", measure="skewness"):
 
     Returns
     -------
-     : float
+    float
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst, and
         1 the best possible quality.
     """
@@ -1549,7 +1549,7 @@ class _MeshHandler:
 
                 Returns
                 -------
-                 : list[str]
+                list[str]
                     The filtered list of command line arguments
                 """
                 arg_list = sys.argv.copy()
@@ -1922,7 +1922,7 @@ class DeformationHandler:
 
         Returns
         -------
-         : bool
+        bool
             ``True`` if the assignment was possible, ``False`` if not
 
         """

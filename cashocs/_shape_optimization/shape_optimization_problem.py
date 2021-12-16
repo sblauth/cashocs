@@ -584,8 +584,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Returns
         -------
-         : dolfin.function.argument.Argument
-                The TestFunction object.
+        dolfin.function.argument.Argument
+            The TestFunction object.
         """
 
         return self.form_handler.test_vector_field
@@ -603,7 +603,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Returns
         -------
-         : float
+         float
             The convergence order from the Taylor test. If this is (approximately) 2 or larger,
             everything works as expected.
         """

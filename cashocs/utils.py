@@ -27,7 +27,9 @@ import argparse
 import configparser
 import os
 from pathlib import Path
+from typing import Union, List, Tuple
 
+import dolfin.cpp.mesh
 import fenics
 import numpy as np
 import ufl
@@ -38,7 +40,9 @@ from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
 
 
-def summation(x):
+def summation(
+    x: List[Union[ufl.core.expr.Expr, int, float]]
+) -> Union[ufl.core.expr.Expr, int, float]:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions
@@ -46,13 +50,13 @@ def summation(x):
 
     Parameters
     ----------
-    x : list[ufl.core.expr.Expr] or list[int] or list[float]
-            The list of entries that shall be summed.
+    x : list[ufl.core.expr.Expr or int or float]
+        The list of entries that shall be summed.
 
     Returns
     -------
-    ufl.form.Form or int or float
-            Sum of input (same type as entries of input).
+    ufl.core.expr.Expr or int or float
+        Sum of input (same type as entries of input).
 
     See Also
     --------
@@ -90,7 +94,9 @@ def summation(x):
     return y
 
 
-def multiplication(x):
+def multiplication(
+    x: List[Union[ufl.core.expr.Expr, int, float]]
+) -> Union[ufl.core.expr.Expr, int, float]:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct
@@ -98,13 +104,13 @@ def multiplication(x):
 
     Parameters
     ----------
-    x : list[ufl.core.expr.Expr] or list[int] or list[float]
-            The list whose entries shall be multiplied.
+    x : list[ufl.core.expr.Expr or int or float]
+        The list whose entries shall be multiplied.
 
     Returns
     -------
     ufl.core.expr.Expr or int or float
-            The result of the multiplication.
+        The result of the multiplication.
 
     See Also
     --------
@@ -139,7 +145,7 @@ def multiplication(x):
     version="1.1.0",
     reason="This is replaced by cashocs.load_config and will be removed in the future.",
 )
-def create_config(path):
+def create_config(path: str) -> configparser.ConfigParser:
     """Loads a config object from a config file.
 
     Loads the config from a .ini file via the
@@ -148,17 +154,18 @@ def create_config(path):
     Parameters
     ----------
     path : str
-            The path to the .ini file storing the configuration.
+        The path to the .ini file storing the configuration.
 
     Returns
     -------
     configparser.ConfigParser
-            The output config file, which includes the path
-            to the .ini file.
+        The output config file, which includes the path
+        to the .ini file.
 
 
     .. deprecated:: 1.1.0
-            This is replaced by :py:func:`load_config <cashocs.load_config>` and will be removed in the future.
+        This is replaced by :py:func:`load_config <cashocs.load_config>`
+        and will be removed in the future.
     """
 
     config = load_config(path)
@@ -166,7 +173,7 @@ def create_config(path):
     return config
 
 
-def load_config(path):
+def load_config(path: str) -> configparser.ConfigParser:
     """Loads a config object from a config file.
 
     Loads the config from a .ini file via the
@@ -175,13 +182,13 @@ def load_config(path):
     Parameters
     ----------
     path : str
-            The path to the .ini file storing the configuration.
+        The path to the .ini file storing the configuration.
 
     Returns
     -------
     configparser.ConfigParser
-            The output config file, which includes the path
-            to the .ini file.
+        The output config file, which includes the path
+        to the .ini file.
     """
 
     config = configparser.ConfigParser()
@@ -197,7 +204,15 @@ def load_config(path):
     return config
 
 
-def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
+def create_dirichlet_bcs(
+    function_space: fenics.FunctionSpace,
+    value: Union[
+        fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
+    ],
+    boundaries: dolfin.cpp.mesh.MeshFunctionSizet,
+    idcs: Union[List[Union[int, str]], int, str],
+    **kwargs,
+) -> List[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
     Wraps multiple Dirichlet boundary conditions into a list, in case
@@ -207,28 +222,32 @@ def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
 
     Parameters
     ----------
-    function_space : dolfin.function.functionspace.FunctionSpace
-            The function space onto which the BCs should be imposed on.
-    value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
-            The value of the boundary condition. Has to be compatible with the function_space,
-            so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
-            The :py:class:`fenics.MeshFunction` object representing the boundaries.
-    idcs : list[int] or list[str] or int or str
-            A list of indices / boundary markers that determine the boundaries
-            onto which the Dirichlet boundary conditions should be applied to.
-            Can also be a single entry for a single boundary. If your mesh file
-            is named, then you can also use the names of the boundaries to define the
-            boundary conditions.
+    function_space : fenics.FunctionSpace
+        The function space onto which the BCs should be imposed on.
+    value : fenics.Constant or fenics.Expression or fenics.Function or float or tuple(float)
+        The value of the boundary condition. Has to be compatible with the
+        function_space, so that it could also be used as
+        ``fenics.DirichletBC(function_space, value, ...)``.
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+        The :py:class:`fenics.MeshFunction` object representing the boundaries.
+    idcs : list[int or str] or int or str
+        A list of indices / boundary markers that determine the boundaries
+        onto which the Dirichlet boundary conditions should be applied to.
+        Can also be a single entry for a single boundary. If your mesh file
+        is named, then you can also use the names of the boundaries to define the
+        boundary conditions.
+    **kwargs
+        Keyword arguments for fenics.DirichletBC
 
     Returns
     -------
-    list[dolfin.fem.dirichletbc.DirichletBC]
-            A list of DirichletBC objects that represent the boundary conditions.
+    list[fenics.DirichletBC]
+        A list of DirichletBC objects that represent the boundary conditions.
 
     Examples
     --------
-    Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square ::
+    Generate homogeneous Dirichlet boundary conditions for all 4 sides of
+    the unit square ::
 
         from fenics import *
         import cashocs
@@ -282,7 +301,15 @@ def create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs):
     version="1.5.0",
     reason="This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.",
 )
-def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
+def create_bcs_list(
+    function_space: fenics.FunctionSpace,
+    value: Union[
+        fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
+    ],
+    boundaries: dolfin.cpp.mesh.MeshFunctionSizet,
+    idcs: Union[List[Union[int, str]], int, str],
+    **kwargs,
+) -> List[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
     Wraps multiple Dirichlet boundary conditions into a list, in case
@@ -292,26 +319,30 @@ def create_bcs_list(function_space, value, boundaries, idcs, **kwargs):
 
     Parameters
     ----------
-    function_space : dolfin.function.functionspace.FunctionSpace
-            The function space onto which the BCs should be imposed on.
-    value : dolfin.function.constant.Constant or dolfin.function.expression.Expression or dolfin.function.function.Function or float or tuple(float)
-            The value of the boundary condition. Has to be compatible with the function_space,
-            so that it could also be used as ``fenics.DirichletBC(function_space, value, ...)``.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
-            The :py:class:`fenics.MeshFunction` object representing the boundaries.
+    function_space : fenics.FunctionSpace
+        The function space onto which the BCs should be imposed on.
+    value : fenics.Constant or fenics.Expression or fenics.Function or float or tuple(float)
+        The value of the boundary condition. Has to be compatible with the
+        function_space, so that it could also be used as
+        ``fenics.DirichletBC(function_space, value, ...)``.
+    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+        The :py:class:`fenics.MeshFunction` object representing the boundaries.
     idcs : list[int] or int
-            A list of indices / boundary markers that determine the boundaries
-            onto which the Dirichlet boundary conditions should be applied to.
-            Can also be a single integer for a single boundary.
+        A list of indices / boundary markers that determine the boundaries
+        onto which the Dirichlet boundary conditions should be applied to.
+        Can also be a single integer for a single boundary.
+    **kwargs
+        Keyword arguments for fenics.DirichletBC
 
     Returns
     -------
-    list[dolfin.fem.dirichletbc.DirichletBC]
+    list[fenics.DirichletBC]
             A list of DirichletBC objects that represent the boundary conditions.
 
     Examples
     --------
-    Generate homogeneous Dirichlet boundary conditions for all 4 sides of the unit square ::
+    Generate homogeneous Dirichlet boundary conditions for all 4 sides of the
+    unit square ::
 
         from fenics import *
         import cashocs
@@ -369,15 +400,14 @@ class Interpolator:
         interp.interpolate(u)
     """
 
-    def __init__(self, V, W):
-        """Initializes the object.
-
+    def __init__(self, V: fenics.FunctionSpace, W: fenics.FunctionSpace) -> None:
+        """
         Parameters
         ----------
-        V : dolfin.function.functionspace.FunctionSpace
-                The function space whose objects shall be interpolated.
-        W : dolfin.function.functionspace.FunctionSpace
-                The space into which they shall be interpolated.
+        V : fenics.FunctionSpace
+            The function space whose objects shall be interpolated.
+        W : fenics.FunctionSpace
+            The space into which they shall be interpolated.
         """
 
         if not (
@@ -411,7 +441,7 @@ class Interpolator:
             self.V, self.W
         )
 
-    def interpolate(self, u):
+    def interpolate(self, u: fenics.Function) -> fenics.Function:
         """Interpolates function to target space.
 
         The function has to belong to the origin space, i.e., the first argument
@@ -422,12 +452,12 @@ class Interpolator:
         Parameters
         ----------
         u : dolfin.function.function.Function
-                The function that shall be interpolated.
+            The function that shall be interpolated.
 
         Returns
         -------
-        dolfin.function.function.Function
-                The result of the interpolation.
+        fenics.Function
+            The result of the interpolation.
         """
 
         if not u.function_space() == self.V:
@@ -442,24 +472,34 @@ class Interpolator:
         return v
 
 
-def _assemble_petsc_system(A_form, b_form, bcs=None, A_tensor=None, b_tensor=None):
+def _assemble_petsc_system(
+    A_form: ufl.Form,
+    b_form: ufl.Form,
+    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC], None] = None,
+    A_tensor: Union[fenics.PETScMatrix, None] = None,
+    b_tensor: Union[fenics.PETScVector, None] = None,
+) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Parameters
     ----------
     A_form : ufl.form.Form
-            The UFL form for the left-hand side of the linear equation.
+        The UFL form for the left-hand side of the linear equation.
     b_form : ufl.form.Form
-            The UFL form for the right-hand side of the linear equation.
-    bcs : None or dolfin.fem.dirichletbc.DirichletBC or list[dolfin.fem.dirichletbc.DirichletBC]
-            A list of Dirichlet boundary conditions.
+        The UFL form for the right-hand side of the linear equation.
+    bcs : None or dolfin.fem.dirichletbc.DirichletBC or list[dolfin.fem.dirichletbc.DirichletBC], optional
+        A list of Dirichlet boundary conditions.
+    A_tensor : fenics.PETScMatrix or None, optional
+        A matrix into which the result is assembled. Default is ``None``
+    b_tensor : fenics.PETScVector or None, optional
+        A vector into which the result is assembled. Default is ``None``
 
     Returns
     -------
     petsc4py.PETSc.Mat
-            The petsc matrix for the left-hand side of the linear equation.
+        The petsc matrix for the left-hand side of the linear equation.
     petsc4py.PETSc.Vec
-            The petsc vector for the right-hand side of the linear equation.
+        The petsc vector for the right-hand side of the linear equation.
 
     Notes
     -----
@@ -483,7 +523,9 @@ def _assemble_petsc_system(A_form, b_form, bcs=None, A_tensor=None, b_tensor=Non
     return A, b
 
 
-def _setup_petsc_options(ksps, ksp_options):
+def _setup_petsc_options(
+    ksps: List[PETSc.KSP], ksp_options: List[List[List[str]]]
+) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
@@ -492,11 +534,11 @@ def _setup_petsc_options(ksps, ksp_options):
     Parameters
     ----------
     ksps : list[petsc4py.PETSc.KSP]
-            A list of PETSc KSP objects (linear solvers) to which the (command line)
-            options are applied to.
+        A list of PETSc KSP objects (linear solvers) to which the (command line)
+        options are applied to.
     ksp_options : list[list[list[str]]]
-            A list of command line options that specify the iterative solver
-            from PETSc.
+        A list of command line options that specify the iterative solver
+        from PETSc.
 
     Returns
     -------
@@ -522,40 +564,46 @@ def _setup_petsc_options(ksps, ksp_options):
 
 
 def _solve_linear_problem(
-    ksp=None, A=None, b=None, x=None, ksp_options=None, rtol=None, atol=None
-):
+    ksp: Union[PETSc.KSP, None] = None,
+    A: Union[PETSc.Mat, None] = None,
+    b: Union[PETSc.Vec, None] = None,
+    x: Union[PETSc.Vec, None] = None,
+    ksp_options: Union[List[List[str]], None] = None,
+    rtol: Union[float, None] = None,
+    atol: Union[float, None] = None,
+) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
     Parameters
     ----------
     ksp : petsc4py.PETSc.KSP or None, optional
-            The PETSc KSP object used to solve the problem. None means that the solver
-            mumps is used (default is None).
+        The PETSc KSP object used to solve the problem. None means that the solver
+        mumps is used (default is None).
     A : petsc4py.PETSc.Mat or None, optional
-            The PETSc matrix corresponding to the left-hand side of the problem. If
-            this is None, then the matrix stored in the ksp object is used. Raises
-            an error if no matrix is stored. Default is None.
+        The PETSc matrix corresponding to the left-hand side of the problem. If
+        this is None, then the matrix stored in the ksp object is used. Raises
+        an error if no matrix is stored. Default is None.
     b : petsc4py.PETSc.Vec or None, optional
-            The PETSc vector corresponding to the right-hand side of the problem.
-            If this is None, then a zero right-hand side is assumed, and a zero
-            vector is returned. Default is None.
+        The PETSc vector corresponding to the right-hand side of the problem.
+        If this is None, then a zero right-hand side is assumed, and a zero
+        vector is returned. Default is None.
     x : petsc4py.PETSc.Vec or None, optional
-            The PETSc vector that stores the solution of the problem. If this is
-            None, then a new vector will be created (and returned)
-    ksp_options : list, optional
-        The options for the PETSc ksp object. If this is None (the default) a direct method
-        is used
-    rtol : float, optional
+        The PETSc vector that stores the solution of the problem. If this is
+        None, then a new vector will be created (and returned)
+    ksp_options : list or None, optional
+        The options for the PETSc ksp object. If this is None (the default) a direct
+        method is used
+    rtol : float or None, optional
         The relative tolerance used in case an iterative solver is used for solving the
         linear problem. Overrides the specification in the ksp object and ksp_options.
-    atol : float, optional
+    atol : float or None, optional
         The absolute tolerance used in case an iterative solver is used for solving the
         linear problem. Overrides the specification in the ksp object and ksp_options.
 
     Returns
     -------
     petsc4py.PETSc.Vec
-            The solution vector.
+        The solution vector.
     """
 
     if ksp is None:
@@ -607,7 +655,9 @@ def _solve_linear_problem(
     return x
 
 
-def write_out_mesh(mesh, original_msh_file, out_msh_file):
+def write_out_mesh(
+    mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
+) -> None:
     """Writes out the current mesh as .msh file.
 
     This method updates the vertex positions in the ``original_gmsh_file``, the
@@ -616,13 +666,13 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
 
     Parameters
     ----------
-    mesh : dolfin.cpp.mesh.Mesh.Mesh
-            The mesh object in fenics that should be saved as GMSH file.
+    mesh : fenics.Mesh
+        The mesh object in fenics that should be saved as GMSH file.
     original_msh_file : str
-            Path to the original GMSH mesh file of the mesh object, has to
-            end with .msh.
+        Path to the original GMSH mesh file of the mesh object, has to
+        end with .msh.
     out_msh_file : str
-            Path (and name) of the output mesh file, has to end with .msh.
+        Path (and name) of the output mesh file, has to end with .msh.
 
     Returns
     -------
@@ -703,23 +753,25 @@ def write_out_mesh(mesh, original_msh_file, out_msh_file):
                 info_section = True
 
 
-def _optimization_algorithm_configuration(config, algorithm=None):
+def _optimization_algorithm_configuration(
+    config: configparser.ConfigParser, algorithm: Union[str, None] = None
+) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
     Parameters
     ----------
     config : configparser.ConfigParser or None
-            The config of the problem.
+        The config of the problem.
     algorithm : str or None, optional
-            A string representing user input for the optimization algorithm
-            if this is set via keywords in the .solve() call. If this is
-            None, then the config is used to return a consistent value
-            for internal use. (Default is None).
+        A string representing user input for the optimization algorithm
+        if this is set via keywords in the .solve() call. If this is
+        ``None``, then the config is used to return a consistent value
+        for internal use. (Default is None).
 
     Returns
     -------
     str
-            Internal name of the algorithms.
+        Internal name of the algorithms.
     """
 
     internal_algorithm = None
@@ -767,7 +819,16 @@ def _optimization_algorithm_configuration(config, algorithm=None):
     return internal_algorithm
 
 
-def _parse_remesh():
+def _parse_remesh() -> Tuple[bool, str]:
+    """Parses command line arguments for the remeshing flag
+
+    Returns
+    -------
+    bool, str
+        A boolean indicating, whether a remeshing was performed and a string which
+        points to the remeshing directory.
+
+    """
 
     temp_dir = None
     cashocs_remesh_flag = False
@@ -814,14 +875,28 @@ def _parse_remesh():
     return cashocs_remesh_flag, temp_dir
 
 
-def enlist(arg):
+def enlist(arg: Union[object, List]) -> List:
+    """Wraps the input argument into a list, if it isn't a list already.
+
+    Parameters
+    ----------
+    arg : list or object
+        The input argument, which is to wrapped into a list
+
+    Returns
+    -------
+    list
+        The object wrapped into a list
+
+    """
+
     if isinstance(arg, list):
         return arg
     else:
         return [arg]
 
 
-def _check_for_config_list(string):
+def _check_for_config_list(string: str) -> bool:
     """Checks, whether a given string is a valid representation of a list of integers
 
     Parameters
@@ -831,7 +906,7 @@ def _check_for_config_list(string):
 
     Returns
     -------
-    result : bool
+    bool
         ``True`` if the string is valid, ``False`` otherwise
 
     """
@@ -852,7 +927,24 @@ def _check_for_config_list(string):
     return result
 
 
-def _check_and_enlist_bcs(bcs_list):
+def _check_and_enlist_bcs(
+    bcs_list: Union[
+        fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+    ]
+) -> List[List[fenics.DirichletBC]]:
+    """Enlists DirichletBC objects for cashocs
+
+    Parameters
+    ----------
+    bcs_list : fenics.DirichletBC or list[fenics.DirichletBC] or list[list[fenics.DirichletBC]]
+        The list of DirichletBC objects
+
+    Returns
+    -------
+    list[list[fenics.DirichletBC]]
+        The wrapped list of DirichletBC objects
+    """
+
     if isinstance(bcs_list, fenics.DirichletBC):
         return [[bcs_list]]
     elif isinstance(bcs_list, list) and len(bcs_list) == 0:
@@ -869,7 +961,25 @@ def _check_and_enlist_bcs(bcs_list):
         )
 
 
-def _check_and_enlist_control_constraints(control_constraints):
+def _check_and_enlist_control_constraints(
+    control_constraints: Union[
+        List[Union[float, int, fenics.Function]],
+        List[List[Union[float, int, fenics.Function]]],
+    ]
+) -> List[List[Union[float, int, fenics.Function]]]:
+    """Wraps control constraints into a list suitable for cashocs.
+
+    Parameters
+    ----------
+    control_constraints : list[float or int or fenics.Function] or list[list[float or int or fenics.Function]]
+        The list of control constraints
+
+    Returns
+    -------
+    list[list[float or int or fenics.Function]]
+        The wrapped list of control constraints
+    """
+
     if isinstance(control_constraints, list) and isinstance(
         control_constraints[0], list
     ):
@@ -886,7 +996,22 @@ def _check_and_enlist_control_constraints(control_constraints):
         )
 
 
-def _check_and_enlist_ksp_options(ksp_options):
+def _check_and_enlist_ksp_options(
+    ksp_options: Union[List[List[str]], List[List[List[str]]]]
+) -> List[List[List[str]]]:
+    """Wraps ksp options into a list suitable for cashocs.
+
+    Parameters
+    ----------
+    ksp_options : list[list[str]] or list[list[list[str]]]
+        The list of ksp options
+
+    Returns
+    -------
+    list[list[list[str]]]
+        The wrapped list of ksp options
+    """
+
     if (
         isinstance(ksp_options, list)
         and isinstance(ksp_options[0], list)
@@ -908,53 +1033,56 @@ def _check_and_enlist_ksp_options(ksp_options):
         )
 
 
-def _max(a, b):
+def _max(
+    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
+) -> ufl.core.expr.Expr:
     """Computes the maximum of ``a`` and ``b``
 
     Parameters
     ----------
-    a : float or dolfin.function.function.Function
+    a : float or fenics.Function
         The first parameter
-    b : float or dolfin.function.function.Function
+    b : float or fenics.Function
         The second parameter
 
     Returns
     -------
-     : ufl.core.expr.Expr
+    ufl.core.expr.Expr
         The maximum of ``a`` and ``b``
-
     """
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
-def _min(a, b):
+def _min(
+    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
+) -> ufl.core.expr.Expr:
     """Computes the minimum of ``a`` and ``b``
 
     Parameters
     ----------
-    a : float or dolfin.function.function.Function
+    a : float or fenics.Function
         The first parameter
-    b : float or dolfin.function.function.Function
+    b : float or fenics.Function
         The second parameter
 
     Returns
     -------
-     : ufl.core.expr.Expr
+    ufl.core.expr.Expr
         The minimum of ``a`` and ``b``
-
     """
+
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
 def moreau_yosida_regularization(
-    term,
-    gamma,
-    measure,
-    lower_threshold=None,
-    upper_treshold=None,
-    shift_lower=None,
-    shift_upper=None,
-):
+    term: ufl.core.expr.Expr,
+    gamma: float,
+    measure: fenics.Measure,
+    lower_threshold: Union[float, fenics.Function, None] = None,
+    upper_treshold: Union[float, fenics.Function, None] = None,
+    shift_lower: Union[float, fenics.Function, None] = None,
+    shift_upper: Union[float, fenics.Function, None] = None,
+) -> ufl.Form:
     r"""Implements a Moreau-Yosida regularization of an inequality constraint
 
     The general form of the inequality is of the form ::
@@ -972,26 +1100,29 @@ def moreau_yosida_regularization(
         The term inside the inequality constraint
     gamma : float
         The weighting factor of the regularization
-    measure : ufl.measure.Measure
+    measure : fenics.Measure
         The measure over which the inequality constraint is defined
-    lower_threshold : float or dolfin.function.function.Function or None, optional
+    lower_threshold : float or fenics.Function or None, optional
         The lower threshold for the inequality constraint. In case this is ``None``, the
         lower bound is set to :math:`-\infty`. The default is ``None``
-    upper_treshold : float or dolfin.function.function.Function or None, optional
+    upper_treshold : float or fenics.Function or None, optional
         The upper threshold for the inequality constraint. In case this is ``None``, the
         upper bound is set to :math:`\infty`. The default is ``None``
-    shift_lower : float or dolfin.function.function.Function or None:
-        A shift function for the lower bound of the Moreau-Yosida regularization. Should be non-positive.
-        In case this is ``None``, it is set to 0. Default is ``None``.
-    shift_upper
-        A shift function for the upper bound of the Moreau-Yosida regularization. Should be non-negative.
-        In case this is ``None``, it is set to 0. Default is ``None``.
+    shift_lower : float or fenics.Function or None:
+        A shift function for the lower bound of the Moreau-Yosida regularization.
+        Should be non-positive. In case this is ``None``, it is set to 0.
+        Default is ``None``.
+    shift_upper : float or fenics.Function or None:
+        A shift function for the upper bound of the Moreau-Yosida regularization.
+        Should be non-negative. In case this is ``None``, it is set to 0.
+        Default is ``None``.
 
     Returns
     -------
-     : ufl.form.Form
+    ufl.form.Form
         The ufl form of the Moreau-Yosida regularization, to be used in the cost functional.
     """
+
     if lower_threshold is None and upper_treshold is None:
         raise InputError(
             "cashocs.utils.moreau_yosida_regularization",

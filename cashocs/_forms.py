@@ -1563,7 +1563,7 @@ class ShapeFormHandler(FormHandler):
 
                 Returns
                 -------
-                 : ufl.core.expr.Expr
+                ufl.core.expr.Expr
                     The symmetrized gradient of ``u``
 
 

@@ -52,7 +52,7 @@ napoleon_use_keyword = True
 napoleon_use_rtype = True
 
 autodoc_member_order = "alphabetical"  #'bysource'
-autodoc_mock_imports = ["fenics", "numpy", "petsc4py", "ufl", "meshio"]
+autodoc_mock_imports = ["fenics", "numpy", "petsc4py", "ufl", "meshio", "dolfin"]
 autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.

@@ -459,7 +459,7 @@ class OptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 
@@ -483,7 +483,7 @@ class OptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 
@@ -510,7 +510,7 @@ class OptimizationProblem(abc.ABC):
 
         Returns
         -------
-         : None
+        None
 
         """
 
