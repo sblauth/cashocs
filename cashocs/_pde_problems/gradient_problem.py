@@ -22,6 +22,9 @@ the gradient of the reduced cost functional.
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union
+
 import fenics
 from petsc4py import PETSc
 
@@ -29,21 +32,30 @@ from .._exceptions import ConfigError
 from .._interfaces.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
+if TYPE_CHECKING:
+    from .._forms import ControlFormHandler
+    from .state_problem import StateProblem
+    from .adjoint_problem import AdjointProblem
+
 
 class GradientProblem(PDEProblem):
     """A class representing the Riesz problem to determine the gradient."""
 
-    def __init__(self, form_handler, state_problem, adjoint_problem):
-        """Initializes the gradient problem.
-
+    def __init__(
+        self,
+        form_handler: ControlFormHandler,
+        state_problem: StateProblem,
+        adjoint_problem: AdjointProblem,
+    ) -> None:
+        """
         Parameters
         ----------
-        form_handler : cashocs._forms.ControlFormHandler
-                The FormHandler object of the optimization problem.
-        state_problem : cashocs._pde_problems.StateProblem
-                The StateProblem object used to solve the state equations.
-        adjoint_problem : cashocs._pde_problems.AdjointProblem
-                The AdjointProblem used to solve the adjoint equations.
+        form_handler : ControlFormHandler
+            The FormHandler object of the optimization problem.
+        state_problem : StateProblem
+            The StateProblem object used to solve the state equations.
+        adjoint_problem : AdjointProblem
+            The AdjointProblem used to solve the adjoint equations.
         """
 
         super().__init__(form_handler)
@@ -99,13 +111,13 @@ class GradientProblem(PDEProblem):
             fenics.PETScVector() for i in range(self.form_handler.control_dim)
         ]
 
-    def solve(self):
+    def solve(self) -> List[fenics.Function]:
         """Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.
 
         Returns
         -------
-        gradients : list[fenics.Function]
-                The list of gradient of the cost functional.
+        list[fenics.Function]
+            The list of gradient of the cost functional.
         """
 
         self.state_problem.solve()

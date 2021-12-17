@@ -23,6 +23,8 @@ Includes wrappers that allow to shorten the coding for often recurring
 actions.
 """
 
+from __future__ import annotations
+
 import argparse
 import configparser
 import os

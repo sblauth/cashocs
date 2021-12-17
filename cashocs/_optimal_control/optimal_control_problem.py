@@ -56,9 +56,25 @@ class OptimalControlProblem(OptimizationProblem):
     and so on.
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(
+        cls,
+        state_forms,
+        bcs_list,
+        cost_functional_form,
+        states,
+        controls,
+        adjoints,
+        config=None,
+        riesz_scalar_products=None,
+        control_constraints=None,
+        initial_guess=None,
+        ksp_options=None,
+        adjoint_ksp_options=None,
+        scalar_tracking_forms=None,
+        min_max_terms=None,
+        desired_weights=None,
+    ):
         try:
-            desired_weights = kwargs["desired_weights"]
             if desired_weights is not None:
                 _use_scaling = True
             else:
@@ -68,7 +84,23 @@ class OptimalControlProblem(OptimizationProblem):
 
         if _use_scaling:
             unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(*args, **kwargs)
+            unscaled_problem.__init__(
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                controls,
+                adjoints,
+                config=config,
+                riesz_scalar_products=riesz_scalar_products,
+                control_constraints=control_constraints,
+                initial_guess=initial_guess,
+                ksp_options=ksp_options,
+                adjoint_ksp_options=adjoint_ksp_options,
+                scalar_tracking_forms=scalar_tracking_forms,
+                min_max_terms=min_max_terms,
+                desired_weights=desired_weights,
+            )
             unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
 
         return super().__new__(cls)

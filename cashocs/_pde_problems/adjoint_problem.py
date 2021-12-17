@@ -18,6 +18,8 @@
 """Abstract implementation of an adjoint problem.
 
 """
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union
 
 import fenics
 import numpy as np
@@ -27,6 +29,10 @@ from .._exceptions import NotConvergedError
 from .._interfaces import PDEProblem
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
+if TYPE_CHECKING:
+    from .._forms import FormHandler
+    from .state_problem import StateProblem
+
 
 class AdjointProblem(PDEProblem):
     """The adjoint problem.
@@ -34,17 +40,21 @@ class AdjointProblem(PDEProblem):
     This class implements the adjoint problem as well as its solver.
     """
 
-    def __init__(self, form_handler, state_problem, temp_dict=None):
-        """Initializes the AdjointProblem
-
+    def __init__(
+        self,
+        form_handler: FormHandler,
+        state_problem: StateProblem,
+        temp_dict: Dict = None,
+    ) -> None:
+        """
         Parameters
         ----------
-        form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
-                The FormHandler object for the optimization problem.
-        state_problem : cashocs._pde_problems.StateProblem
-                The StateProblem object used to get the point where we linearize the problem.
+        form_handler : FormHandler
+            The FormHandler object for the optimization problem.
+        state_problem : StateProblem
+            The StateProblem object used to get the point where we linearize the problem.
         temp_dict : dict
-                A dictionary used for reinitializations when remeshing is performed.
+            A dictionary used for reinitializations when remeshing is performed.
         """
 
         super().__init__(form_handler)
@@ -83,13 +93,13 @@ class AdjointProblem(PDEProblem):
         except TypeError:
             self.number_of_solves = 0
 
-    def solve(self):
+    def solve(self) -> List[fenics.Function]:
         """Solves the adjoint system.
 
         Returns
         -------
-        adjoints : list[fenics.Function]
-                The list of adjoint variables.
+        list[fenics.Function]
+            The list of adjoint variables.
         """
 
         self.state_problem.solve()

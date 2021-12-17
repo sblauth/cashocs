@@ -22,6 +22,7 @@ Newton methd. This is the only function at the moment, others might
 follow.
 """
 
+from __future__ import annotations
 from typing import List, Union, Optional
 from typing_extensions import Literal
 

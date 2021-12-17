@@ -19,6 +19,9 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -28,21 +31,29 @@ from .._interfaces import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
+if TYPE_CHECKING:
+    from .._forms import FormHandler
+
 
 class StateProblem(PDEProblem):
     """The state system."""
 
-    def __init__(self, form_handler, initial_guess, temp_dict=None):
+    def __init__(
+        self,
+        form_handler: FormHandler,
+        initial_guess: List[fenics.Function],
+        temp_dict: Optional[Dict] = None,
+    ) -> None:
         """Initializes the state system.
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
-                The FormHandler of the optimization problem.
+        form_handler : FormHandler
+            The FormHandler of the optimization problem.
         initial_guess : list[fenics.Function]
-                An initial guess for the state variables, used to initialize them in each iteration.
-        temp_dict : dict
-                A dict used for reinitialization when remeshing is performed.
+            An initial guess for the state variables, used to initialize them in each iteration.
+        temp_dict : dict or None, optional
+            A dict used for reinitialization when remeshing is performed.
         """
 
         super().__init__(form_handler)
@@ -103,13 +114,13 @@ class StateProblem(PDEProblem):
         except TypeError:
             self.number_of_solves = 0
 
-    def solve(self):
+    def solve(self) -> List[fenics.Function]:
         """Solves the state system.
 
         Returns
         -------
-        states : list[fenics.Function]
-                The solution of the state system.
+        list[fenics.Function]
+            The solution of the state system.
         """
 
         if not self.has_solution:

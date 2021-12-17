@@ -21,8 +21,14 @@ This class uses the linear elasticity equations to project the
 shape derivative to the shape gradient with a Riesz projection.
 """
 
+from __future__ import annotations
+
+import configparser
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
+import ufl
 from petsc4py import PETSc
 
 from .._exceptions import ConfigError
@@ -30,21 +36,31 @@ from .._interfaces.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
+if TYPE_CHECKING:
+    from .state_problem import StateProblem
+    from .adjoint_problem import AdjointProblem
+    from .._forms import ShapeFormHandler
+
 
 class ShapeGradientProblem(PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
 
-    def __init__(self, form_handler, state_problem, adjoint_problem):
+    def __init__(
+        self,
+        form_handler: ShapeFormHandler,
+        state_problem: StateProblem,
+        adjoint_problem: AdjointProblem,
+    ) -> None:
         """Initialize the ShapeGradientProblem.
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ShapeFormHandler
-                The ShapeFormHandler object corresponding to the shape optimization problem.
-        state_problem : cashocs._pde_problems.StateProblem
-                The corresponding state problem.
-        adjoint_problem : cashocs._pde_problems.AdjointProblem
-                The corresponding adjoint problem.
+        form_handler : ShapeFormHandler
+            The ShapeFormHandler object corresponding to the shape optimization problem.
+        state_problem : StateProblem
+            The corresponding state problem.
+        adjoint_problem : AdjointProblem
+            The corresponding adjoint problem.
         """
 
         super().__init__(form_handler)
@@ -102,13 +118,13 @@ class ShapeGradientProblem(PDEProblem):
                 self.config,
             )
 
-    def solve(self):
+    def solve(self) -> fenics.Function:
         """Solves the Riesz projection problem to obtain the shape gradient of the cost functional.
 
         Returns
         -------
-        gradient : fenics.Function
-                The function representing the shape gradient of the (reduced) cost functional.
+        fenics.Function
+            The function representing the shape gradient of the (reduced) cost functional.
         """
 
         self.state_problem.solve()
@@ -160,9 +176,32 @@ class ShapeGradientProblem(PDEProblem):
 
 
 class _PLaplacProjector:
+    """A class for computing the gradient deformation with a p-Laplace projection"""
+
     def __init__(
-        self, shape_gradient_problem, gradient, shape_derivative, bcs_shape, config
-    ):
+        self,
+        shape_gradient_problem: ShapeGradientProblem,
+        gradient: fenics.Function,
+        shape_derivative: ufl.Form,
+        bcs_shape: List[fenics.DirichletBC],
+        config: configparser.ConfigParser,
+    ) -> None:
+        """
+
+        Parameters
+        ----------
+        shape_gradient_problem : ShapeGradientProblem
+            The shape gradient problem
+        gradient : fenics.Function
+            The fenics Function representing the gradient deformation
+        shape_derivative : ufl.Form
+            The ufl Form of the shape derivative
+        bcs_shape : list[fenics.DirichletBC]
+            The boundary conditions for computing the gradient deformation
+        config : configparser.ConfigParser
+            The config for the optimization problem
+        """
+
         self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
         delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
         eps = config.getfloat(
@@ -225,17 +264,16 @@ class _PLaplacProjector:
                     "gradient_method has to be either 'direct' or 'iterative'",
                 )
 
-    def solve(self):
+    def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient
 
         Returns
         -------
-
+        None
         """
 
         self.solution.vector().vec().set(0.0)
         for F in self.F_list:
-
             newton_solve(
                 F,
                 self.solution,
