@@ -18,27 +18,35 @@
 """Implementation of a reduced shape cost functional
 
 """
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 from .._interfaces import ReducedCostFunctional
+
+if TYPE_CHECKING:
+    from .._forms import ShapeFormHandler
+    from .._pde_problems import StateProblem
 
 
 class ReducedShapeCostFunctional(ReducedCostFunctional):
     """Reduced cost functional for a shape optimization problem"""
 
-    def __init__(self, form_handler, state_problem):
+    def __init__(
+        self, form_handler: ShapeFormHandler, state_problem: StateProblem
+    ) -> None:
         """Initializes the reduced cost functional
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ShapeFormHandler
+        form_handler : ShapeFormHandler
                 the ControlFormHandler object for the optimization problem
-        state_problem : cashocs._pde_problems.StateProblem
+        state_problem : StateProblem
                 the StateProblem object corresponding to the state system
         """
 
         super().__init__(form_handler, state_problem)
 
-    def evaluate(self):
+    def evaluate(self) -> float:
         """Evaluates the reduced cost functional.
 
         First solves the state system, so that the state variables are up-to-date,
@@ -48,7 +56,7 @@ class ReducedShapeCostFunctional(ReducedCostFunctional):
         Returns
         -------
         float
-                the value of the reduced cost functional
+            the value of the reduced cost functional
         """
 
         val = super().evaluate()

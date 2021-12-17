@@ -18,8 +18,13 @@
 """Implementation of a reduced cost functional.
 
 """
-
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 from .._interfaces import ReducedCostFunctional
+
+if TYPE_CHECKING:
+    from .._forms import ControlFormHandler
+    from .._pde_problems import StateProblem
 
 
 class ReducedControlCostFunctional(ReducedCostFunctional):
@@ -29,20 +34,22 @@ class ReducedControlCostFunctional(ReducedCostFunctional):
     is used to evaluate it.
     """
 
-    def __init__(self, form_handler, state_problem):
+    def __init__(
+        self, form_handler: ControlFormHandler, state_problem: StateProblem
+    ) -> None:
         """Initialize the reduced cost functional
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ControlFormHandler
-                the FormHandler object for the optimization problem
-        state_problem : cashocs._pde_problems.StateProblem
-                the StateProblem object corresponding to the state system
+        form_handler : ControlFormHandler
+            The FormHandler object for the optimization problem
+        state_problem : StateProblem
+            The StateProblem object corresponding to the state system
         """
 
         super().__init__(form_handler, state_problem)
 
-    def evaluate(self):
+    def evaluate(self) -> float:
         """Evaluates the reduced cost functional.
 
         First solves the state system, so that the state variables are up-to-date,
@@ -52,7 +59,7 @@ class ReducedControlCostFunctional(ReducedCostFunctional):
         Returns
         -------
         float
-            the value of the reduced cost functional
+            The value of the reduced cost functional
         """
 
         return super().evaluate()

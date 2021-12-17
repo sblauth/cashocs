@@ -36,6 +36,42 @@ ShapeOptimizationProblem
 	:inherited-members:
 	:show-inheritance:
 
+Additionally constrained problems
+---------------------------------
+
+ConstrainedOptimalControlProblem
+********************************
+.. autoclass:: cashocs.ConstrainedOptimalControlProblem
+	:members:
+	:undoc-members:
+	:inherited-members:
+	:show-inheritance:
+
+ConstrainedShapeOptimizationProblem
+***********************************
+.. autoclass:: cashocs.ConstrainedShapeOptimizationProblem
+	:members:
+	:undoc-members:
+	:inherited-members:
+	:show-inheritance:
+
+
+EqualityConstraint
+******************
+.. autoclass:: cashocs.EqualityConstraint
+	:members:
+	:undoc-members:
+	:inherited-members:
+	:show-inheritance:
+
+InequalityConstraint
+********************
+.. autoclass:: cashocs.InequalityConstraint
+	:members:
+	:undoc-members:
+	:inherited-members:
+	:show-inheritance:
+
 
 Command Line Interface
 ----------------------
@@ -100,11 +136,6 @@ create_dirichlet_bcs
 newton_solve
 ************
 .. autofunction:: cashocs.newton_solve
-
-
-moreau_yosida_regularization
-****************************
-.. autofunction:: cashocs.moreau_yosida_regularization
 
 set_log_level
 *************

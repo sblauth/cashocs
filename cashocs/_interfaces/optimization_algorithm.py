@@ -22,6 +22,9 @@ ShapeOptimizationAlgorithm classes are based.
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
 import json
 import os
@@ -34,16 +37,19 @@ import numpy as np
 from .._exceptions import NotConvergedError
 from .._loggers import error, info
 
+if TYPE_CHECKING:
+    from .optimization_problem import OptimizationProblem
+
 
 class OptimizationAlgorithm(abc.ABC):
     """Abstract class representing all kinds of optimization algorithms."""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimizationProblem) -> None:
         """
-
         Parameters
         ----------
-        optimization_problem : cashocs.optimization_problem.OptimizationProblem
+        optimization_problem : OptimizationProblem
+            The corresponding optimization problem
         """
 
         self.line_search_broken = False
@@ -138,10 +144,28 @@ class OptimizationAlgorithm(abc.ABC):
                 Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
     @abc.abstractmethod
-    def run(self):
+    def run(self) -> None:
         pass
 
-    def _generate_pvd_file(self, space, name, prefix=""):
+    def _generate_pvd_file(
+        self, space: fenics.FunctionSpace, name: str, prefix: str = ""
+    ) -> Union[fenics.File, List[fenics.File]]:
+        """Generate a fenics.File for saving Functions
+
+        Parameters
+        ----------
+        space : fenics.FunctionSpace
+            The FEM function space where the function is taken from.
+        name : str
+            The name of the function / file
+        prefix : str, optional
+            A prefix for the file name, used for remeshing
+
+        Returns
+        -------
+        fenics.File
+            A .pvd fenics.File object, into which a Function can be written
+        """
 
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
@@ -153,7 +177,15 @@ class OptimizationAlgorithm(abc.ABC):
         else:
             return fenics.File(f"{self.result_dir}/pvd/{prefix}{name}.pvd")
 
-    def print_results(self):
+    @abc.abstractmethod
+    def print_results(self) -> None:
+        """Prints the results of the current iteration step to the console
+
+        Returns
+        -------
+        None
+        """
+
         strs = []
         strs.append(f"Iteration {self.iteration:4d} - ")
         strs.append(f" Objective value:  {self.objective_value:.3e}")
@@ -244,7 +276,14 @@ class OptimizationAlgorithm(abc.ABC):
                         float(self.iteration),
                     )
 
-    def print_summary(self):
+    def print_summary(self) -> None:
+        """Prints a summary of the optimization to the console
+
+        Returns
+        -------
+        None
+        """
+
         strs = []
         strs.append("\n")
         strs.append(f"Statistics --- Total iterations:  {self.iteration:4d}")
@@ -267,7 +306,15 @@ class OptimizationAlgorithm(abc.ABC):
             with open(f"{self.result_dir}/history.txt", "a") as file:
                 file.write(output)
 
-    def finalize(self):
+    def finalize(self) -> None:
+        """Finalizes the optimization algorithm, saves the history (if enabled)
+
+        Returns
+        -------
+        None
+
+        """
+
         self.output_dict["initial_gradient_norm"] = self.gradient_norm_initial
         self.output_dict["state_solves"] = self.state_problem.number_of_solves
         self.output_dict["adjoint_solves"] = self.adjoint_problem.number_of_solves
@@ -276,7 +323,14 @@ class OptimizationAlgorithm(abc.ABC):
             with open(f"{self.result_dir}/history.json", "w") as file:
                 json.dump(self.output_dict, file)
 
-    def post_processing(self):
+    def post_processing(self) -> None:
+        """Does a post processing after the optimization algorithm terminates.
+
+        Returns
+        -------
+        None
+        """
+
         if self.converged:
             self.print_results()
             self.print_summary()
@@ -340,13 +394,13 @@ class OptimizationAlgorithm(abc.ABC):
                         "Maximum number of iterations were exceeded.",
                     )
 
-    def nonconvergence(self):
+    def nonconvergence(self) -> bool:
         """Checks for nonconvergence of the solution algorithm
 
         Returns
         -------
         bool
-                A flag which is True, when the algorithm did not converge
+            A flag which is True, when the algorithm did not converge
         """
 
         if self.iteration >= self.maximum_iterations:

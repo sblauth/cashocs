@@ -19,11 +19,17 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
 
 from .._interfaces.line_search import LineSearch
 from .._loggers import error
+
+if TYPE_CHECKING:
+    from .control_optimization_algorithm import ControlOptimizationAlgorithm
 
 
 class ArmijoLineSearch(LineSearch):
@@ -33,13 +39,12 @@ class ArmijoLineSearch(LineSearch):
     The exact behavior can be controlled via the config file.
     """
 
-    def __init__(self, optimization_algorithm):
-        """Initializes the line search object
-
+    def __init__(self, optimization_algorithm: ControlOptimizationAlgorithm) -> None:
+        """
         Parameters
         ----------
-        optimization_algorithm : cashocs._optimal_control.control_optimization_algorithm.ControlOptimizationAlgorithm
-                the corresponding optimization algorihm
+        optimization_algorithm : ControlOptimizationAlgorithm
+            The corresponding optimization algorihm
         """
 
         super().__init__(optimization_algorithm)
@@ -51,13 +56,20 @@ class ArmijoLineSearch(LineSearch):
         self.controls_temp = optimization_algorithm.controls_temp
         self.gradients = optimization_algorithm.gradients
 
-    def decrease_measure(self):
+    def decrease_measure(
+        self, search_direction: Optional[fenics.Function] = None
+    ) -> float:
         """Computes the measure of decrease needed for the Armijo test
+
+        Parameters
+        ----------
+        search_direction : fenics.Function or None, optional
+            The search direction (not required)
 
         Returns
         -------
         float
-                the decrease measure for the Armijo test
+            The decrease measure for the Armijo test
         """
 
         for j in range(self.form_handler.control_dim):
@@ -70,7 +82,9 @@ class ArmijoLineSearch(LineSearch):
             self.gradients, self.projected_difference
         )
 
-    def search(self, search_directions, has_curvature_info):
+    def search(
+        self, search_directions: List[fenics.Function], has_curvature_info: bool
+    ) -> None:
         """Does a line search with the Armijo rule.
 
         Performs the line search along the entered search direction and adapts
@@ -79,10 +93,10 @@ class ArmijoLineSearch(LineSearch):
         Parameters
         ----------
         search_directions : list[fenics.Function]
-                the current search direction computed by the optimization algorithm
+            The current search direction computed by the optimization algorithm
         has_curvature_info : bool
-                boolean flag, indicating whether the search direction is (actually) computed by
-                a BFGS or Newton method
+            A boolean flag, indicating whether the search direction is (actually)
+            computed by a BFGS or Newton method
 
         Returns
         -------

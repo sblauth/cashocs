@@ -15,27 +15,43 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
 
 import fenics
+import ufl.core.expr
 import numpy as np
 
 from .constraints import EqualityConstraint, InequalityConstraint
 from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 
+if TYPE_CHECKING:
+    from .constrained_problems import ConstrainedOptimizationProblem
 
 
 class ConstrainedSolver(abc.ABC):
-    def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
+    def __init__(
+        self,
+        constrained_problem: ConstrainedOptimizationProblem,
+        mu_0: Optional[float] = None,
+        lambda_0: Optional[List[float]] = None,
+    ):
         """
-
         Parameters
         ----------
-        constrained_problem : cashocs._constraints.constrained_problems.ConstrainedOptimizationProblem
-        mu_0 : float
-        lambda_0 : list[float]
+        constrained_problem : ConstrainedOptimizationProblem
+            The constrained optimization problem which shall be solved.
+        mu_0 : float or None, optional
+            Initial value for the penalty parameter, defaults to 1 (when ``None`` is given).
+        lambda_0 : list[float] or None, optional
+            Initial guess for the Lagrange multpliers (in AugmentedLagrangian method)
+            Defaults to zero initial guess, when ``None`` is given.
         """
+
         self.constrained_problem = constrained_problem
 
         self.constraints = self.constrained_problem.constraints
@@ -72,31 +88,103 @@ class ConstrainedSolver(abc.ABC):
         self.inner_cost_functional_shift = 0.0
 
     @abc.abstractmethod
-    def _update_cost_functional(self):
+    def _update_cost_functional(self) -> None:
+        """Updates the cost functional with new weights.
+
+        Returns
+        -------
+        None
+        """
         pass
 
     @abc.abstractmethod
     def solve(
         self,
-        tol=1e-2,
-        max_iter=25,
-        inner_rtol=None,
-        inner_atol=None,
-        constraint_tol=None,
-    ):
+        tol: float = 1e-2,
+        max_iter: int = 25,
+        inner_rtol: Optional[float] = None,
+        inner_atol: Optional[float] = None,
+        constraint_tol: Optional[float] = None,
+    ) -> None:
+        """Solves the constrained problem.
+
+        Parameters
+        ----------
+        tol : float, optional
+            An overall tolerance to be used in the algorithm. This will set the relative
+            tolerance for the inner optimization problems to ``tol``. Default is 1e-2.
+        max_iter : int, optional
+            Maximum number of iterations for the outer solver. Default is 25.
+        inner_rtol : float or None, optional
+            Relative tolerance for the inner problem. Default is ``None``, so that
+            ``inner_rtol = tol`` is used.
+        inner_atol : float or None, optional
+            Absolute tolerance for the inner problem. Default is ``None``, so that
+            ``inner_atol = tol/10`` is used.
+        constraint_tol : float or None, optional
+            The tolerance for the constraint violation, which is desired. If this is
+            ``None`` (default), then this is specified as ``tol/10``.
+
+        Returns
+        -------
+        None
+        """
+
         pass
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
-    def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
+    def __init__(
+        self,
+        constrained_problem: ConstrainedOptimizationProblem,
+        mu_0: Optional[float] = None,
+        lambda_0: Optional[List[float]] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        constrained_problem : ConstrainedOptimizationProblem
+            The constrained optimization problem which shall be solved.
+        mu_0 : float or None, optional
+            Initial value for the penalty parameter, defaults to 1 (when ``None`` is given).
+        lambda_0 : list[float] or None, optional
+            Initial guess for the Lagrange multpliers (in AugmentedLagrangian method)
+            Defaults to zero initial guess, when ``None`` is given.
+        """
+
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
         self.A_tensors = [fenics.PETScMatrix() for i in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for i in range(self.constraint_dim)]
 
     def _project_pointwise_multiplier(
-        self, project_terms, measure, multiplier, A_tensor, b_tensor
-    ):
+        self,
+        project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
+        measure: fenics.Measure,
+        multiplier: fenics.Function,
+        A_tensor: fenics.PETScMatrix,
+        b_tensor: fenics.PETScVector,
+    ) -> None:
+        """Project the multiplier for a pointwise constraint to a FE function space.
+
+        Parameters
+        ----------
+        project_terms : ufl.core.expr.Expr or list[ufl.core.expr.Expr]
+            The ufl expression of the Lagrange multiplier (guess)
+        measure : fenics.Measure
+            The measure, where the pointwise constraint is posed.
+        multiplier : fenics.Function
+            The function representing the Lagrange multiplier (guess)
+        A_tensor : fenics.PETScMatrix
+            A matrix, into which the form is assembled for speed up
+        b_tensor : fenics.PETScVector
+            A vector, into which the form is assembled for speed up
+
+        Returns
+        -------
+        None
+        """
+
         if isinstance(project_terms, list):
             project_term = summation(project_terms)
         else:
@@ -113,7 +201,13 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             A=A_tensor.mat(), b=b_tensor.vec(), x=multiplier.vector().vec()
         )
 
-    def _update_cost_functional(self):
+    def _update_cost_functional(self) -> None:
+        """Update the cost functional with new weights / guesses.
+
+        Returns
+        -------
+        None
+        """
 
         self.inner_cost_functional_shifts = []
 
@@ -173,7 +267,14 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
 
-    def _update_lagrange_multiplier_estimates(self):
+    def _update_lagrange_multiplier_estimates(self) -> None:
+        """Perform an update of the Lagrange multiplier estimates
+
+        Returns
+        -------
+        None
+        """
+
         for i in range(self.constraint_dim):
             if isinstance(self.constraints[i], EqualityConstraint):
                 if self.constraints[i].is_integral_constraint:
@@ -260,12 +361,36 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def solve(
         self,
-        tol=1e-2,
-        max_iter=10,
-        inner_rtol=None,
-        inner_atol=None,
-        constraint_tol=None,
-    ):
+        tol: float = 1e-2,
+        max_iter: int = 10,
+        inner_rtol: Optional[float] = None,
+        inner_atol: Optional[float] = None,
+        constraint_tol: Optional[float] = None,
+    ) -> None:
+        """Solves the constrained problem.
+
+        Parameters
+        ----------
+        tol : float, optional
+            An overall tolerance to be used in the algorithm. This will set the relative
+            tolerance for the inner optimization problems to ``tol``. Default is 1e-2.
+        max_iter : int, optional
+            Maximum number of iterations for the outer solver. Default is 25.
+        inner_rtol : float or None, optional
+            Relative tolerance for the inner problem. Default is ``None``, so that
+            ``inner_rtol = tol`` is used.
+        inner_atol : float or None, optional
+            Absolute tolerance for the inner problem. Default is ``None``, so that
+            ``inner_atol = tol/10`` is used.
+        constraint_tol : float or None, optional
+            The tolerance for the constraint violation, which is desired. If this is
+            ``None`` (default), then this is specified as ``tol/10``.
+
+        Returns
+        -------
+        None
+        """
+
         self.iterations = 0
         while True:
             self.iterations += 1
@@ -304,17 +429,57 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
 
 class QuadraticPenaltyMethod(ConstrainedSolver):
-    def __init__(self, constrained_problem, mu_0=None, lambda_0=None):
+    def __init__(
+        self,
+        constrained_problem: ConstrainedOptimizationProblem,
+        mu_0: Optional[float] = None,
+        lambda_0: Optional[list[float]] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        constrained_problem : ConstrainedOptimizationProblem
+            The constrained optimization problem to be solved.
+        mu_0 : float or None, optional
+            Initial value of the penalty parameter. Default is 1.
+        lambda_0: list[float] or None, optional
+            Initial guess for the Lagrange multipliers. Default is 0.
+        """
+
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
 
     def solve(
         self,
-        tol=1e-2,
-        max_iter=25,
-        inner_rtol=None,
-        inner_atol=None,
-        constraint_tol=None,
+        tol: float = 1e-2,
+        max_iter: int = 25,
+        inner_rtol: Optional[float] = None,
+        inner_atol: Optional[float] = None,
+        constraint_tol: Optional[float] = None,
     ):
+        """Solves the constrained problem.
+
+        Parameters
+        ----------
+        tol : float, optional
+            An overall tolerance to be used in the algorithm. This will set the relative
+            tolerance for the inner optimization problems to ``tol``. Default is 1e-2.
+        max_iter : int, optional
+            Maximum number of iterations for the outer solver. Default is 25.
+        inner_rtol : float or None, optional
+            Relative tolerance for the inner problem. Default is ``None``, so that
+            ``inner_rtol = tol`` is used.
+        inner_atol : float or None, optional
+            Absolute tolerance for the inner problem. Default is ``None``, so that
+            ``inner_atol = tol/10`` is used.
+        constraint_tol : float or None, optional
+            The tolerance for the constraint violation, which is desired. If this is
+            ``None`` (default), then this is specified as ``tol/10``.
+
+        Returns
+        -------
+        None
+        """
+
         self.iterations = 0
         while True:
             self.iterations += 1
@@ -343,7 +508,13 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 print("Quadratic Penalty Method did not converge")
                 break
 
-    def _update_cost_functional(self):
+    def _update_cost_functional(self) -> None:
+        """Update the cost functional.
+
+        Returns
+        -------
+        None
+        """
 
         self.inner_cost_functional_form = (
             self.constrained_problem.cost_functional_form_initial

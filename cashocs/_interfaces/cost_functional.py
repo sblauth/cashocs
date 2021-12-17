@@ -15,29 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
 
 import fenics
 import numpy as np
 
+if TYPE_CHECKING:
+    from .._forms import FormHandler
+    from .._pde_problems import StateProblem
+
 
 class ReducedCostFunctional(abc.ABC):
-    def __init__(self, form_handler, state_problem):
+    def __init__(self, form_handler: FormHandler, state_problem: StateProblem) -> None:
         """Initialize the reduced cost functional
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ControlFormHandler or cashocs._forms.ShapeFormHandler
-                the FormHandler object for the optimization problem
-        state_problem : cashocs._pde_problems.StateProblem
-                the StateProblem object corresponding to the state system
+        form_handler : FormHandler
+            The FormHandler object for the optimization problem
+        state_problem : StateProblem
+            The StateProblem object corresponding to the state system
         """
 
         self.form_handler = form_handler
         self.state_problem = state_problem
 
     @abc.abstractmethod
-    def evaluate(self):
+    def evaluate(self) -> float:
         """Evaluates the reduced cost functional.
 
         First solves the state system, so that the state variables are up-to-date,
@@ -47,8 +54,9 @@ class ReducedCostFunctional(abc.ABC):
         Returns
         -------
         float
-            the value of the reduced cost functional
+            The value of the reduced cost functional
         """
+
         self.state_problem.solve()
 
         val = fenics.assemble(self.form_handler.cost_functional_form)

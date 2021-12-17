@@ -18,11 +18,17 @@
 """Blueprint for the optimization algorithms.
 
 """
+
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import abc
 
 import fenics
 
 from .._interfaces import OptimizationAlgorithm
+
+if TYPE_CHECKING:
+    from .optimal_control_problem import OptimalControlProblem
 
 
 class ControlOptimizationAlgorithm(OptimizationAlgorithm):
@@ -40,15 +46,15 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
     methods.primal_dual_active_set_method.PDAS
     """
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the optimization algorithm
 
         Defines common parameters used by all sub-classes.
 
         Parameters
         ----------
-        optimization_problem : cashocs._optimal_control.optimal_control_problem.OptimalControlProblem
-                the OptimalControlProblem class as defined through the user
+        optimization_problem : OptimalControlProblem
+            The OptimalControlProblem class defined by the user
         """
 
         super().__init__(optimization_problem)
@@ -116,10 +122,10 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                 )
 
     @abc.abstractmethod
-    def run(self):
+    def run(self) -> None:
         """Blueprint for a print function
 
-        This is overrriden by the specific optimization algorithms later on.
+        This is overwritten by the specific optimization algorithms later on.
 
         Returns
         -------
@@ -128,7 +134,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         pass
 
-    def _stationary_measure_squared(self):
+    def _stationary_measure_squared(self) -> float:
         """Computes the stationary measure (squared) corresponding to box-constraints
 
         In case there are no box constraints this reduces to the classical gradient
@@ -137,7 +143,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         Returns
         -------
          float
-                The square of the stationary measure
+            The square of the stationary measure
 
         """
 
@@ -159,7 +165,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
             self.projected_difference, self.projected_difference
         )
 
-    def print_results(self):
+    def print_results(self) -> None:
         """Prints the current state of the optimization algorithm to the console.
 
         Returns

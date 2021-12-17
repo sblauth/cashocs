@@ -19,23 +19,27 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import fenics
 import numpy as np
 
 from ..._exceptions import ConfigError
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..optimal_control_problem import OptimalControlProblem
+
 
 class NCG(ControlOptimizationAlgorithm):
     """Nonlinear conjugate gradient method."""
 
-    def __init__(self, optimization_problem):
-        """Initializes the nonlinear cg method.
-
+    def __init__(self, optimization_problem: OptimalControlProblem):
+        """
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the OptimalControlProblem object
+        optimization_problem : OptimalControlProblem
+            The OptimalControlProblem object
         """
 
         super().__init__(optimization_problem)
@@ -72,13 +76,13 @@ class NCG(ControlOptimizationAlgorithm):
             "AlgoCG", "cg_restart_tol", fallback=0.25
         )
 
-    def project_direction(self, a):
+    def project_direction(self, a: List[fenics.Function]) -> None:
         """Restricts the search direction to the inactive set.
 
         Parameters
         ----------
         a : list[fenics.Function]
-                A function that shall be projected / restricted (will be overwritten)
+            A function that shall be projected / restricted (will be overwritten)
 
         Returns
         -------
@@ -103,7 +107,7 @@ class NCG(ControlOptimizationAlgorithm):
 
             a[j].vector()[idx] = 0.0
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the nonlinear cg method
 
         Returns

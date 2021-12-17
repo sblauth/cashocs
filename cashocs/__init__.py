@@ -62,7 +62,6 @@ __all__ = [
     "load_config",
     "create_bcs_list",
     "create_dirichlet_bcs",
-    "moreau_yosida_regularization",
     "verification",
     "ConstrainedOptimalControlProblem",
     "ConstrainedShapeOptimizationProblem",

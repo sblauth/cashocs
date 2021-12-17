@@ -19,22 +19,26 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import numpy as np
 
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..shape_optimization_problem import ShapeOptimizationProblem
 
 
 class GradientDescent(ShapeOptimizationAlgorithm):
     """A gradient descent method for shape optimization"""
 
-    def __init__(self, optimization_problem):
-        """A gradient descent method to solve the optimization problem
+    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
+        """A gradient descent method to solve the shape optimization problem
 
         Parameters
         ----------
-        optimization_problem : cashocs.optimization.optimization_problem.OptimalControlProblem
-                the OptimalControlProblem object
+        optimization_problem : ShapeOptimizationProblem
+            The shape optimization problem to be solved
         """
 
         super().__init__(optimization_problem)
@@ -42,14 +46,17 @@ class GradientDescent(ShapeOptimizationAlgorithm):
         self.line_search = ArmijoLineSearch(self)
         self.has_curvature_info = False
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the gradient descent method
+
+        Notes
+        -----
+        The result of the optimization is found in the user-defined inputs for the
+        optimization problem.
 
         Returns
         -------
         None
-                the result can be found in the control (user defined)
-
         """
 
         try:
@@ -85,8 +92,10 @@ class GradientDescent(ShapeOptimizationAlgorithm):
             if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
                 self.converged = True
                 break
-            
-            self.search_direction.vector().vec().aypx(0.0, -self.gradient.vector().vec())
+
+            self.search_direction.vector().vec().aypx(
+                0.0, -self.gradient.vector().vec()
+            )
 
             self.line_search.search(self.search_direction, self.has_curvature_info)
 

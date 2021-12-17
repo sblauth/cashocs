@@ -19,6 +19,14 @@
 
 """
 
+from __future__ import annotations
+
+import configparser
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+import dolfin.function.argument
+from typing_extensions import Literal
+
 import json
 import os
 import subprocess
@@ -55,9 +63,29 @@ class ShapeOptimizationProblem(OptimizationProblem):
     and so on.
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(
+        cls,
+        state_forms: Union[ufl.Form, List[ufl.Form]],
+        bcs_list: Union[
+            fenics.DirichletBC,
+            List[fenics.DirichletBC],
+            List[List[fenics.DirichletBC]],
+            None,
+        ],
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        boundaries: fenics.MeshFunction,
+        config: Optional[configparser.ConfigParser] = None,
+        shape_scalar_product: Optional[ufl.Form] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        scalar_tracking_forms: Optional[Dict] = None,
+        min_max_terms: Optional[Dict] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> ShapeOptimizationProblem:
         try:
-            desired_weights = kwargs["desired_weights"]
             if desired_weights is not None:
                 _use_scaling = True
             else:
@@ -67,7 +95,22 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         if _use_scaling:
             unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(*args, **kwargs)
+            unscaled_problem.__init__(
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                adjoints,
+                boundaries,
+                config=config,
+                shape_scalar_product=shape_scalar_product,
+                initial_guess=initial_guess,
+                ksp_options=ksp_options,
+                adjoint_ksp_options=adjoint_ksp_options,
+                scalar_tracking_forms=scalar_tracking_forms,
+                min_max_terms=min_max_terms,
+                desired_weights=desired_weights,
+            )
             unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
 
             problem = super().__new__(cls)
@@ -97,63 +140,79 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
     def __init__(
         self,
-        state_forms,
-        bcs_list,
-        cost_functional_form,
-        states,
-        adjoints,
-        boundaries,
-        config=None,
-        shape_scalar_product=None,
-        initial_guess=None,
-        ksp_options=None,
-        adjoint_ksp_options=None,
-        scalar_tracking_forms=None,
-        min_max_terms=None,
-        desired_weights=None,
-    ):
-        """This is used to generate all classes and functionalities. First ensures
-        consistent input, afterwards, the solution algorithm is initialized.
-
+        state_forms: Union[ufl.Form, List[ufl.Form]],
+        bcs_list: Union[
+            fenics.DirichletBC,
+            List[fenics.DirichletBC],
+            List[List[fenics.DirichletBC]],
+            None,
+        ],
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        boundaries: fenics.MeshFunction,
+        config: Optional[configparser.ConfigParser] = None,
+        shape_scalar_product: Optional[ufl.Form] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        scalar_tracking_forms: Optional[Dict] = None,
+        min_max_terms: Optional[Dict] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
+        """
         Parameters
         ----------
-        state_forms : ufl.form.Form or list[ufl.form.Form]
-                The weak form of the state equation (user implemented). Can be either
-                a single UFL form, or a (ordered) list of UFL forms.
+        state_forms : ufl.Form or list[ufl.Form]
+            The weak form of the state equation (user implemented). Can be either
+            a single UFL form, or a (ordered) list of UFL forms.
         bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-                The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-                If this is ``None``, then no Dirichlet boundary conditions are imposed.
-        cost_functional_form : ufl.form.Form or list[ufl.form.Form]
-                UFL form of the cost functional.
+            The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
+            If this is ``None``, then no Dirichlet boundary conditions are imposed.
+        cost_functional_form : ufl.Form or list[ufl.Form]
+            UFL form of the cost functional.
         states : fenics.Function or list[fenics.Function]
-                The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
         adjoints : fenics.Function or list[fenics.Function]
-                The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
         boundaries : fenics.MeshFunction
-                :py:class:`fenics.MeshFunction` that indicates the boundary markers.
-        config : configparser.ConfigParser or None
-                The config file for the problem, generated via :py:func:`cashocs.create_config`.
-                Alternatively, this can also be ``None``, in which case the default configurations
-                are used, except for the optimization algorithm. This has then to be specified
-                in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-        shape_scalar_product : ufl.form.Form
-                The bilinear form for computing the shape gradient (or gradient deformation).
-                This has to use :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
-                objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
-                of continuous, linear Lagrange finite elements. Moreover, this form is required to be
-                symmetric.
-        initial_guess : list[fenics.Function], optional
-                List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-                Defaults to ``None``, which means a zero initial guess.
+            :py:class:`fenics.MeshFunction` that indicates the boundary markers.
+        config : configparser.ConfigParser or None, optional
+            The config file for the problem, generated via :py:func:`cashocs.create_config`.
+            Alternatively, this can also be ``None``, in which case the default configurations
+            are used, except for the optimization algorithm. This has then to be specified
+            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+            default is ``None``.
+        shape_scalar_product : ufl.form.Form or None, optional
+            The bilinear form for computing the shape gradient (or gradient deformation).
+            This has to use :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
+            objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
+            of continuous, linear Lagrange finite elements. Moreover, this form is required to be
+            symmetric.
+        initial_guess : list[fenics.Function] or None, optional
+            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
+            Defaults to ``None``, which means a zero initial guess.
         ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
-                A list of strings corresponding to command line options for PETSc,
-                used to solve the state systems. If this is ``None``, then the direct solver
-                mumps is used (default is ``None``).
+            A list of strings corresponding to command line options for PETSc,
+            used to solve the state systems. If this is ``None``, then the direct solver
+            mumps is used (default is ``None``).
         adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
-                A list of strings corresponding to command line options for PETSc,
-                used to solve the adjoint systems. If this is ``None``, then the same options
-                as for the state systems are used (default is ``None``).
+            A list of strings corresponding to command line options for PETSc,
+            used to solve the adjoint systems. If this is ``None``, then the same options
+            as for the state systems are used (default is ``None``).
+        scalar_tracking_forms : dict or list[dict] or None, optional
+            A list of dictionaries that define scalar tracking type cost functionals,
+            where an integral value should be brought to a desired value. Each dict needs
+            to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
+            i.e., no scalar tracking terms are considered.
+        min_max_terms : dict or list[dict] or None, optional
+            Additional terms for the cost functional, not to be used directly.
+        desired_weights : list[float] or None, optional
+            A list of values for scaling the cost functional terms. If this is supplied,
+            the cost functional has to be given as list of summands. The individual terms
+            are then scaled, so that term `i` has the magnitude of `desired_weights[i]`
+            for the initial iteration. In case that `desired_weights` is `None`, no scaling
+            is performed. Default is `None`.
         """
 
         super().__init__(
@@ -299,7 +358,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.gradient = self.shape_gradient_problem.gradient
         self.objective_value = 1.0
 
-    def _erase_pde_memory(self):
+    def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
 
         This sets the value of has_solution to False for all relevant PDE problems,
@@ -315,34 +374,50 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.form_handler.update_scalar_product()
         self.shape_gradient_problem.has_solution = False
 
-    def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+    def solve(
+        self,
+        algorithm: Optional[
+            Literal[
+                "gradient_descent",
+                "gd",
+                "conjugate_gradient",
+                "nonlinear_cg",
+                "ncg",
+                "lbfgs",
+                "bfgs",
+            ]
+        ] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
         Parameters
         ----------
         algorithm : str or None, optional
-                Selects the optimization algorithm. Valid choices are
-                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
-                limited memory BFGS methods. This overwrites the value specified
-                in the config file. If this is ``None``, then the value in the
-                config file is used. Default is ``None``.
+            Selects the optimization algorithm. Valid choices are
+            ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+            ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+            for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
+            limited memory BFGS methods. This overwrites the value specified
+            in the config file. If this is ``None``, then the value in the
+            config file is used. Default is ``None``.
         rtol : float or None, optional
-                The relative tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
+            The relative tolerance used for the termination criterion.
+            Overwrites the value specified in the config file. If this
+            is ``None``, the value from the config file is taken. Default
+            is ``None``.
         atol : float or None, optional
-                The absolute tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
+            The absolute tolerance used for the termination criterion.
+            Overwrites the value specified in the config file. If this
+            is ``None``, the value from the config file is taken. Default
+            is ``None``.
         max_iter : int or None, optional
-                The maximum number of iterations the optimization algorithm
-                can carry out before it is terminated. Overwrites the value
-                specified in the config file. If this is ``None``, the value from
-                the config file is taken. Default is ``None``.
+            The maximum number of iterations the optimization algorithm
+            can carry out before it is terminated. Overwrites the value
+            specified in the config file. If this is ``None``, the value from
+            the config file is taken. Default is ``None``.
 
         Returns
         -------
@@ -393,7 +468,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.solver.run()
         self.solver.post_processing()
 
-    def __change_except_hook(self):
+    def __change_except_hook(self) -> None:
         """Ensures that temp files are deleted when an exception occurs.
 
         This modifies the sys.excepthook command so that it also deletes temp files
@@ -429,7 +504,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         sys.excepthook = custom_except_hook
 
-    def compute_shape_gradient(self):
+    def compute_shape_gradient(self) -> fenics.Function:
         """Solves the Riesz problem to determine the shape gradient.
 
         This can be used for debugging, or code validation.
@@ -439,14 +514,14 @@ class ShapeOptimizationProblem(OptimizationProblem):
         Returns
         -------
         fenics.Function
-                The shape gradient.
+            The shape gradient.
         """
 
         self.shape_gradient_problem.solve()
 
         return self.gradient
 
-    def supply_shape_derivative(self, shape_derivative):
+    def supply_shape_derivative(self, shape_derivative: ufl.Form) -> None:
         """Overrides the shape derivative of the reduced cost functional.
 
         This allows users to implement their own shape derivative and use cashocs as a
@@ -454,8 +529,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Parameters
         ----------
-        shape_derivative : ufl.form.Form
-                The shape_derivative of the reduced (!) cost functional w.r.t. controls.
+        shape_derivative : ufl.Form
+            The shape_derivative of the reduced (!) cost functional w.r.t. controls.
 
         Returns
         -------
@@ -544,7 +619,14 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         self.has_custom_derivative = True
 
-    def supply_custom_forms(self, shape_derivative, adjoint_forms, adjoint_bcs_list):
+    def supply_custom_forms(
+        self,
+        shape_derivative: ufl.Form,
+        adjoint_forms: Union[ufl.Form, List[ufl.Form]],
+        adjoint_bcs_list: Union[
+            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+        ],
+    ) -> None:
         """Overrides both adjoint system and shape derivative with user input.
 
         This allows the user to specify both the shape_derivative of the reduced cost functional
@@ -557,12 +639,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Parameters
         ----------
-        shape_derivative : ufl.form.Form
-                The shape derivative of the reduced (!) cost functional.
-        adjoint_forms : ufl.form.Form or list[ufl.form.Form]
-                The UFL forms of the adjoint system(s).
+        shape_derivative : ufl.Form
+            The shape derivative of the reduced (!) cost functional.
+        adjoint_forms : ufl.Form or list[ufl.Form]
+            The UFL forms of the adjoint system(s).
         adjoint_bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-                The list of Dirichlet boundary conditions for the adjoint system(s).
+            The list of Dirichlet boundary conditions for the adjoint system(s).
 
         Returns
         -------
@@ -572,7 +654,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.supply_shape_derivative(shape_derivative)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
 
-    def get_vector_field(self):
+    def get_vector_field(self) -> dolfin.function.argument.Argument:
         """Returns the TestFunction for defining shape derivatives.
 
         See Also
@@ -587,15 +669,19 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         return self.form_handler.test_vector_field
 
-    def gradient_test(self, h=None, rng=None):
+    def gradient_test(
+        self,
+        h: Optional[fenics.Function] = None,
+        rng: Optional[np.random.RandomState] = None,
+    ) -> float:
         """Taylor test to verify that the computed shape gradient is correct.
 
         Parameters
         ----------
-        h : fenics.Function, optional
+        h : fenics.Function or None, optional
             The direction used to compute the directional derivative. If this is
             ``None``, then a random direction is used (default is ``None``).
-        rng : numpy.random.RandomState
+        rng : numpy.random.RandomState or None, optional
             A numpy random state for calculating a random direction
 
         Returns
@@ -604,4 +690,5 @@ class ShapeOptimizationProblem(OptimizationProblem):
             The convergence order from the Taylor test. If this is (approximately) 2 or larger,
             everything works as expected.
         """
+
         return verification.shape_gradient_test(self, h, rng)

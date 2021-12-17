@@ -15,20 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
 import weakref
 
+import fenics
+
 from ..utils import _optimization_algorithm_configuration
+
+if TYPE_CHECKING:
+    from .optimization_algorithm import OptimizationAlgorithm
 
 
 class LineSearch(abc.ABC):
-    def __init__(self, optimization_algorithm):
+    def __init__(self, optimization_algorithm: OptimizationAlgorithm) -> None:
         """Initializes the line search object
 
         Parameters
         ----------
-        optimization_algorithm : cashocs._optimal_control.ControlOptimizationAlgorithm or cashocs._shape_optimization.ShapeOptimizationAlgorithm
-                the corresponding optimization algorihm
+        optimization_algorithm : OptimizationAlgorithm
+            The corresponding optimization algorihm
         """
 
         self.ref_algo = weakref.ref(optimization_algorithm)
@@ -56,9 +64,15 @@ class LineSearch(abc.ABC):
             self.stepsize = 1.0
 
     @abc.abstractmethod
-    def decrease_measure(self):
+    def decrease_measure(
+        self, search_direction: Optional[fenics.Function] = None
+    ) -> float:
         pass
 
     @abc.abstractmethod
-    def search(self, search_direction, has_curvature_info):
+    def search(
+        self,
+        search_direction: Union[fenics.Function, List[fenics.Function]],
+        has_curvature_info: bool,
+    ) -> None:
         pass

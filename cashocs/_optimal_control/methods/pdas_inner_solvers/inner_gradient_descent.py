@@ -19,6 +19,9 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
 
@@ -26,18 +29,20 @@ from .unconstrained_line_search import UnconstrainedLineSearch
 from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
+if TYPE_CHECKING:
+    from ...optimal_control_problem import OptimalControlProblem
 
 
 class InnerGradientDescent(ControlOptimizationAlgorithm):
     """A unconstrained gradient descent method."""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the gradient descent method.
 
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the corresponding optimal control problem to be solved
+        optimization_problem : OptimalControlProblem
+            the corresponding optimal control problem to be solved
         """
 
         super().__init__(optimization_problem)
@@ -58,13 +63,13 @@ class InnerGradientDescent(ControlOptimizationAlgorithm):
 
         self.pdas_solver = True
 
-    def run(self, idx_active):
+    def run(self, idx_active: List[np.ndarray]) -> None:
         """Solves the inner PDAS optimization problem with the gradient descent method
 
         Parameters
         ----------
-        idx_active : list[numpy.ndarray]
-                list of indices for the active set
+        idx_active : list[np.ndarray]
+            list of indices for the active set
 
         Returns
         -------

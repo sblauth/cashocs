@@ -19,6 +19,9 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 from _collections import deque
 
 import fenics
@@ -28,17 +31,20 @@ from .unconstrained_line_search import UnconstrainedLineSearch
 from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
 
+if TYPE_CHECKING:
+    from ...optimal_control_problem import OptimalControlProblem
+
 
 class InnerLBFGS(ControlOptimizationAlgorithm):
     """A unconstrained limited memory BFGS method"""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the BFGS method
 
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the corresponding optimal control problem to be solved
+        optimization_problem : OptimalControlProblem
+            the corresponding optimal control problem to be solved
         """
 
         super().__init__(optimization_problem)
@@ -82,19 +88,22 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
         self.pdas_solver = True
 
-    def compute_search_direction(self, grad, idx_active):
+    def compute_search_direction(
+        self, grad: List[fenics.Function], idx_active: List[np.ndarray]
+    ) -> List[fenics.Function]:
         """Computes the BFGS search direction via a double loop
 
         Parameters
         ----------
         grad : list[fenics.Function]
-                the current gradient
-        idx_active : list[numpy.ndarray]
-                list of indices corresponding to the active set
+            the current gradient
+        idx_active : list[np.ndarray]
+            list of indices corresponding to the active set
+
         Returns
         -------
         search_directions : list[fenics.Function]
-                the search direction
+            the search direction
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
@@ -152,13 +161,13 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
         return self.search_directions
 
-    def run(self, idx_active):
+    def run(self, idx_active: List[np.ndarray]) -> None:
         """Solves the inner PDAS optimization problem
 
         Parameters
         ----------
         idx_active : list[numpy.ndarray]
-                list of indices corresponding to the active set
+            list of indices corresponding to the active set
 
         Returns
         -------

@@ -19,23 +19,28 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import weakref
 
+import fenics
 import numpy as np
+
+if TYPE_CHECKING:
+    from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 
 
 class UnconstrainedLineSearch:
     """Armijo line search for unconstrained optimization problems"""
 
-    def __init__(self, optimization_algorithm):
+    def __init__(self, optimization_algorithm: ControlOptimizationAlgorithm) -> None:
         """Initializes the line search
 
         Parameters
         ----------
-        config : configparser.ConfigParser
-                the config file for the problem
-        optimization_algorithm : cashocs._optimal_control.ControlOptimizationAlgorithm
-                the corresponding optimization algorithm
+        optimization_algorithm : ControlOptimizationAlgorithm
+            the corresponding optimization algorithm
         """
 
         self.ref_algo = weakref.ref(optimization_algorithm)
@@ -66,31 +71,31 @@ class UnconstrainedLineSearch:
         if self.is_newton:
             self.stepsize = 1.0
 
-    def decrease_measure(self, search_directions):
+    def decrease_measure(self, search_directions: List[fenics.Function]) -> float:
         """Computes the decrease measure for the Armijo rule
 
         Parameters
         ----------
         search_directions : list[fenics.Function]
-                the search direction computed by optimization_algorithm
+            The search direction computed by optimization_algorithm
 
         Returns
         -------
         float
-                the decrease measure for the Armijo rule
+            The decrease measure for the Armijo rule
         """
 
         return self.stepsize * self.form_handler.scalar_product(
             self.gradients, search_directions
         )
 
-    def search(self, search_directions):
+    def search(self, search_directions: List[fenics.Function]) -> None:
         """Performs an Armijo line search
 
         Parameters
         ----------
         search_directions : list[fenics.Function]
-                the search direction computed by the optimization_algorithm
+            The search direction computed by the optimization_algorithm
 
         Returns
         -------

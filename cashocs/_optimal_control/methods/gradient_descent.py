@@ -19,28 +19,33 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import numpy as np
 
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
+
+if TYPE_CHECKING:
+    from ..optimal_control_problem import OptimalControlProblem
 
 
 class GradientDescent(ControlOptimizationAlgorithm):
     """A gradient descent method"""
 
-    def __init__(self, optimization_problem):
-        """Initializes the method.
-
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
+        """
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the OptimalControlProblem object
+        optimization_problem : OptimalControlProblem
+            The OptimalControlProblem object
         """
 
         super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the gradient descent method
 
         Returns

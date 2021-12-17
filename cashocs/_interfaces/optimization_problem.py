@@ -22,6 +22,9 @@ as many parameters and variables are common for optimal control and shape
 optimization problems.
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional, Callable
+
 import abc
 import configparser
 import copy
@@ -57,53 +60,64 @@ class OptimizationProblem(abc.ABC):
 
     def __init__(
         self,
-        state_forms,
-        bcs_list,
-        cost_functional_form,
-        states,
-        adjoints,
-        config=None,
-        initial_guess=None,
-        ksp_options=None,
-        adjoint_ksp_options=None,
-        scalar_tracking_forms=None,
-        min_max_terms=None,
-        desired_weights=None,
-    ):
+        state_forms: Union[ufl.Form, List[ufl.Form]],
+        bcs_list: Union[
+            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+        ],
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        config: Optional[configparser.ConfigParser] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[Union[List[List[str]]], List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[
+            Union[List[List[str]]], List[List[List[str]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Dict] = None,
+        min_max_terms: Optional[Dict] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
         r"""Initializes the optimization problem.
 
         Parameters
         ----------
         state_forms : ufl.form.Form or list[ufl.form.Form]
-                The weak form of the state equation (user implemented). Can be either
-                a single UFL form, or a (ordered) list of UFL forms.
+            The weak form of the state equation (user implemented). Can be either
+            a single UFL form, or a (ordered) list of UFL forms.
         bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-                The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet (essential) boundary conditions.
-                If this is ``None``, then no Dirichlet boundary conditions are imposed.
+            The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet (essential) boundary conditions.
+            If this is ``None``, then no Dirichlet boundary conditions are imposed.
         cost_functional_form : ufl.form.Form or list[ufl.form.Form]
-                UFL form of the cost functional. Can also be a list of summands of the cost functional
+            UFL form of the cost functional. Can also be a list of summands of the cost functional
         states : fenics.Function or list[fenics.Function]
-                The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
         adjoints : fenics.Function or list[fenics.Function]
-                The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        config : configparser.ConfigParser or None
-                The config file for the problem, generated via :py:func:`cashocs.create_config`.
-                Alternatively, this can also be ``None``, in which case the default configurations
-                are used, except for the optimization algorithm. This has then to be specified
-                in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-        initial_guess : list[fenics.Function], optional
-                List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-                Defaults to ``None``, which means a zero initial guess.
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
+        config : configparser.ConfigParser or None, optional
+            The config file for the problem, generated via :py:func:`cashocs.create_config`.
+            Alternatively, this can also be ``None``, in which case the default configurations
+            are used, except for the optimization algorithm. This has then to be specified
+            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+            default is ``None``.
+        initial_guess : list[fenics.Function] or None, optional
+            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
+            Defaults to ``None``, which means a zero initial guess.
         ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
-                A list of strings corresponding to command line options for PETSc,
-                used to solve the state systems. If this is ``None``, then the direct solver
-                mumps is used (default is ``None``).
-        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
-                A list of strings corresponding to command line options for PETSc,
-                used to solve the adjoint systems. If this is ``None``, then the same options
-                as for the state systems are used (default is ``None``).
-        desired_weights : list[float] or float or None
+            A list of strings corresponding to command line options for PETSc,
+            used to solve the state systems. If this is ``None``, then the direct solver
+            mumps is used (default is ``None``).
+        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+            A list of strings corresponding to command line options for PETSc,
+            used to solve the adjoint systems. If this is ``None``, then the same options
+            as for the state systems are used (default is ``None``).
+        scalar_tracking_forms : dict or list[dict] or None, optional
+            A list of dictionaries that define scalar tracking type cost functionals,
+            where an integral value should be brought to a desired value. Each dict needs
+            to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
+            i.e., no scalar tracking terms are considered.
+        min_max_terms : dict or None, optional
+            Additional terms for the cost functional, not be used directly.
+        desired_weights : list[float] or None, optional
             A list of values for scaling the cost functional terms. If this is supplied,
             the cost functional has to be given as list of summands. The individual terms
             are then scaled, so that term `i` has the magnitude of `desired_weights[i]`
@@ -281,11 +295,18 @@ class OptimizationProblem(abc.ABC):
         self.uses_custom_scalar_product = False
 
     @abc.abstractmethod
-    def _erase_pde_memory(self):
+    def _erase_pde_memory(self) -> None:
+        """Ensures that the PDEs are solved again, and no cache is used
+
+        Returns
+        -------
+        None
+        """
+
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
 
-    def compute_state_variables(self):
+    def compute_state_variables(self) -> None:
         """Solves the state system.
 
         This can be used for debugging purposes and to validate the solver.
@@ -298,7 +319,7 @@ class OptimizationProblem(abc.ABC):
 
         self.state_problem.solve()
 
-    def compute_adjoint_variables(self):
+    def compute_adjoint_variables(self) -> None:
         """Solves the adjoint system.
 
         This can be used for debugging purposes and solver validation.
@@ -314,18 +335,24 @@ class OptimizationProblem(abc.ABC):
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
-    def supply_adjoint_forms(self, adjoint_forms, adjoint_bcs_list):
-        """Overrides the computed weak forms of the adjoint system.
+    def supply_adjoint_forms(
+        self,
+        adjoint_forms: Union[ufl.Form, List[ufl.Form]],
+        adjoint_bcs_list: Union[
+            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+        ],
+    ) -> None:
+        """Overwrites the computed weak forms of the adjoint system.
 
         This allows the user to specify their own weak forms of the problems and to use cashocs merely as
         a solver for solving the optimization problems.
 
         Parameters
         ----------
-        adjoint_forms : ufl.form.Form or list[ufl.form.Form]
-                The UFL forms of the adjoint system(s).
+        adjoint_forms : ufl.Form or list[ufl.Form]
+            The UFL forms of the adjoint system(s).
         adjoint_bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-                The list of Dirichlet boundary conditions for the adjoint system(s).
+            The list of Dirichlet boundary conditions for the adjoint system(s).
 
         Returns
         -------
@@ -415,7 +442,7 @@ class OptimizationProblem(abc.ABC):
 
         self.has_custom_adjoint = True
 
-    def _check_for_custom_forms(self):
+    def _check_for_custom_forms(self) -> None:
         """Checks whether custom user forms are used and if they are compatible with the settings.
 
         Returns
@@ -447,7 +474,7 @@ class OptimizationProblem(abc.ABC):
                 "Please do not supply custom forms if you want to use the Newton solver.",
             )
 
-    def inject_pre_hook(self, function):
+    def inject_pre_hook(self, function: Callable) -> None:
         """
         Changes the a-priori hook of the OptimizationProblem
 
@@ -471,7 +498,7 @@ class OptimizationProblem(abc.ABC):
         except AttributeError:
             self.shape_gradient_problem.has_solution = False
 
-    def inject_post_hook(self, function):
+    def inject_post_hook(self, function: Callable) -> None:
         """
         Changes the a-posteriori hook of the OptimizationProblem
 
@@ -495,7 +522,9 @@ class OptimizationProblem(abc.ABC):
         except AttributeError:
             self.shape_gradient_problem.has_solution = False
 
-    def inject_pre_post_hook(self, pre_function, post_function):
+    def inject_pre_post_hook(
+        self, pre_function: Callable, post_function: Callable
+    ) -> None:
         """
         Changes the a-priori (pre) and a-posteriori (post) hook of the OptimizationProblem
 
@@ -518,37 +547,43 @@ class OptimizationProblem(abc.ABC):
         self.inject_post_hook(post_function)
 
     @abc.abstractmethod
-    def solve(self, algorithm=None, rtol=None, atol=None, max_iter=None):
+    def solve(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
         Parameters
         ----------
         algorithm : str or None, optional
-                Selects the optimization algorithm. Valid choices are
-                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
-                limited memory BFGS methods. This overwrites the value specified
-                in the config file. If this is ``None``, then the value in the
-                config file is used. Default is ``None``. In addition, for optimal control problems,
-                one can use ``'newton'`` for a truncated Newton method,
-                and ``'pdas'`` or ``'primal_dual_active_set'`` for a
-                primal dual active set method.
+            Selects the optimization algorithm. Valid choices are
+            ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+            ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+            for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
+            limited memory BFGS methods. This overwrites the value specified
+            in the config file. If this is ``None``, then the value in the
+            config file is used. Default is ``None``. In addition, for optimal control problems,
+            one can use ``'newton'`` for a truncated Newton method,
+            and ``'pdas'`` or ``'primal_dual_active_set'`` for a
+            primal dual active set method.
         rtol : float or None, optional
-                The relative tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
+            The relative tolerance used for the termination criterion.
+            Overwrites the value specified in the config file. If this
+            is ``None``, the value from the config file is taken. Default
+            is ``None``.
         atol : float or None, optional
-                The absolute tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
+            The absolute tolerance used for the termination criterion.
+            Overwrites the value specified in the config file. If this
+            is ``None``, the value from the config file is taken. Default
+            is ``None``.
         max_iter : int or None, optional
-                The maximum number of iterations the optimization algorithm
-                can carry out before it is terminated. Overwrites the value
-                specified in the config file. If this is ``None``, the value from
-                the config file is taken. Default is ``None``.
+            The maximum number of iterations the optimization algorithm
+            can carry out before it is terminated. Overwrites the value
+            specified in the config file. If this is ``None``, the value from
+            the config file is taken. Default is ``None``.
 
         Returns
         -------
@@ -589,14 +624,40 @@ class OptimizationProblem(abc.ABC):
 
         self._check_for_custom_forms()
 
-    def __shift_cost_functional(self, shift=0.0):
+    def __shift_cost_functional(self, shift: float = 0.0) -> None:
+        """Shifts the cost functional by a constant.
+
+        Parameters
+        ----------
+        shift : float, optional
+            The constant, by which the cost functional is shifted.
+
+        Returns
+        -------
+        None
+        """
+
         self.form_handler.cost_functional_shift = shift
 
     @abc.abstractmethod
     def gradient_test(self):
+        """Test the computed gradient with finite differences.
+
+        Returns
+        -------
+        float
+            The result of the gradient test. If this is (approximately) 2 or larger,
+            everything works as expected.
+        """
         pass
 
     def _scale_cost_functional(self):
+        """Scales the terms of the cost functional and scalar_tracking forms.
+
+        Returns
+        -------
+        None
+        """
 
         info(
             "You are using the automatic scaling functionality of cashocs."

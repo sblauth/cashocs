@@ -15,12 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional, Callable
 import abc
+
+import fenics
+
+
+if TYPE_CHECKING:
+    from .._forms import FormHandler
 
 
 class PDEProblem(abc.ABC):
-    def __init__(self, form_handler):
+    def __init__(self, form_handler: FormHandler) -> None:
+        """
+        Parameters
+        ----------
+        form_handler: FormHandler
+            The form handler for the problem
+        """
 
         self.form_handler = form_handler
         self.config = form_handler.config
@@ -28,5 +41,13 @@ class PDEProblem(abc.ABC):
         self.has_solution = False
 
     @abc.abstractmethod
-    def solve(self):
+    def solve(self) -> Union[fenics.Function, List[fenics.Function]]:
+        """
+
+        Returns
+        -------
+        fenics.Function or list[fenics.Function]
+            The solution of the PDE
+        """
+
         pass

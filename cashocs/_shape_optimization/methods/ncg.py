@@ -18,27 +18,33 @@
 """Nonlinear conjugate gradient methods for shape optimization.
 
 """
-
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import fenics
 import numpy as np
 
 from ..._exceptions import ConfigError
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..shape_optimization_problem import ShapeOptimizationProblem
+
 
 class NCG(ShapeOptimizationAlgorithm):
     """A nonlinear conjugate gradient (NCG) method for solving shape optimization problems"""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
         """A nonlinear cg method to solve the optimization problem
 
         Additional parameters in the config file:
-                cg_method : (one of) FR [Fletcher Reeves], PR [Polak Ribiere], HS [Hestenes Stiefel], DY [Dai-Yuan], CD [Conjugate Descent], HZ [Hager Zhang]
+            cg_method : (one of) FR [Fletcher Reeves], PR [Polak Ribiere],
+            HS [Hestenes Stiefel], DY [Dai-Yuan], CD [Conjugate Descent],
+            HZ [Hager Zhang]
 
         Parameters
         ----------
-        optimization_problem : cashocs.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
-                the OptimalControlProblem object
+        optimization_problem : ShapeOptimizationProblem
+            the OptimalControlProblem object
         """
 
         super().__init__(optimization_problem)
@@ -70,14 +76,12 @@ class NCG(ShapeOptimizationAlgorithm):
             "AlgoCG", "cg_restart_tol", fallback=0.25
         )
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the nonlinear cg method
 
         Returns
         -------
         None
-                the result can be found in the control (user defined)
-
         """
 
         try:

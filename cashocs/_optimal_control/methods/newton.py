@@ -19,23 +19,27 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import numpy as np
 
 from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..optimal_control_problem import OptimalControlProblem
 
 
 class Newton(ControlOptimizationAlgorithm):
     """A truncated Newton method."""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the Newton method
 
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the OptimalControlProblem object
+        optimization_problem : OptimalControlProblem
+            The OptimalControlProblem object
         """
 
         super().__init__(optimization_problem)
@@ -50,7 +54,7 @@ class Newton(ControlOptimizationAlgorithm):
 
         self.armijo_broken = False
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the truncated Newton method
 
         Returns

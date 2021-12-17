@@ -18,6 +18,9 @@
 """Blueprints for shape optimization algorithms.
 
 """
+
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import abc
 import subprocess
 
@@ -26,16 +29,19 @@ import fenics
 from .._interfaces import OptimizationAlgorithm
 from ..utils import write_out_mesh
 
+if TYPE_CHECKING:
+    from .shape_optimization_problem import ShapeOptimizationProblem
+
 
 class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
     """Blueprint for a solution algorithm for shape optimization problems"""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
         """Parent class for the optimization methods implemented in cashocs.optimization.methods
 
         Parameters
         ----------
-        optimization_problem : cashocs.ShapeOptimizationProblem
+        optimization_problem : ShapeOptimizationProblem
                 the optimization problem
         """
 
@@ -94,7 +100,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
             )
 
     @abc.abstractmethod
-    def run(self):
+    def run(self) -> None:
         """Blueprint run method, overriden by the actual solution algorithms
 
         Returns
@@ -104,7 +110,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         pass
 
-    def print_results(self):
+    def print_results(self) -> None:
         """Prints the current state of the optimization algorithm to the console.
 
         Returns
@@ -117,7 +123,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         if self.save_pvd_gradient:
             self.shape_gradient_pvd_file << self.gradient, float(self.iteration)
 
-    def finalize(self):
+    def finalize(self) -> None:
         """Saves the history of the optimization algorithm
 
         Returns

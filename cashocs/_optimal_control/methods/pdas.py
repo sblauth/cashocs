@@ -19,6 +19,8 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 import fenics
 import numpy as np
 
@@ -26,17 +28,19 @@ from .pdas_inner_solvers import InnerNCG, InnerGradientDescent, InnerLBFGS, Inne
 from ..._exceptions import ConfigError
 from ..._optimal_control import ControlOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..optimal_control_problem import OptimalControlProblem
+
 
 class PDAS(ControlOptimizationAlgorithm):
     """A primal-dual-active-set method."""
 
-    def __init__(self, optimization_problem):
-        """Initialize the primal-dual-active-set method
-
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
+        """
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the OptimalControlProblem object
+        optimization_problem : OptimalControlProblem
+            The OptimalControlProblem object
         """
 
         super().__init__(optimization_problem)
@@ -75,7 +79,7 @@ class PDAS(ControlOptimizationAlgorithm):
                 "Not a valid input. Needs to be one of gradient_descent, lbfgs, cg, or newton.",
             )
 
-    def compute_active_inactive_sets(self):
+    def compute_active_inactive_sets(self) -> None:
         """Computes the active and inactive sets.
 
         This implementation differs slightly from the one in
@@ -146,13 +150,14 @@ class PDAS(ControlOptimizationAlgorithm):
         ]
         self.initialized = True
 
-    def run(self):
+    def run(self) -> None:
         """Solves the optimization problem with the primal-dual-active-set method.
 
         Returns
         -------
         None
         """
+
         self.iteration = 0
 
         ### TODO: Check for feasible initialization

@@ -421,9 +421,10 @@ def damped_newton_solve(
             The solution of the nonlinear variational problem, if converged.
             This overrides the input function u.
 
+    Notes
+    -----
     .. deprecated:: 1.5.0
         This is replaced by cashocs.newton_solve and will be removed in the future.
-
     """
 
     warning(

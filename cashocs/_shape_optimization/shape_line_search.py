@@ -19,22 +19,28 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
 
 from .._interfaces.line_search import LineSearch
 from .._loggers import error
 
+if TYPE_CHECKING:
+    from .shape_optimization_algorithm import ShapeOptimizationAlgorithm
+
 
 class ArmijoLineSearch(LineSearch):
     """An Armijo line search algorithm for shape optimization problems"""
 
-    def __init__(self, optimization_algorithm):
+    def __init__(self, optimization_algorithm: ShapeOptimizationAlgorithm) -> None:
         """Initializes the line search
 
         Parameters
         ----------
-        optimization_algorithm : cashocs._shape_optimization.shape_optimization_algorithm.ShapeOptimizationAlgorithm
+        optimization_algorithm : ShapeOptimizationAlgorithm
                 the optimization problem of interest
         """
 
@@ -44,31 +50,33 @@ class ArmijoLineSearch(LineSearch):
         self.deformation = fenics.Function(self.form_handler.deformation_space)
         self.gradient = optimization_algorithm.gradient
 
-    def decrease_measure(self, search_direction):
+    def decrease_measure(self, search_direction: fenics.Function) -> float:
         """Computes the measure of decrease needed for the Armijo test
 
         Parameters
         ----------
         search_direction : fenics.Function
-                The current search direction
+            The current search direction
 
         Returns
         -------
         float
-                the decrease measure for the Armijo rule
+            the decrease measure for the Armijo rule
         """
 
         return self.form_handler.scalar_product(self.gradient, search_direction)
 
-    def search(self, search_direction, has_curvature_info):
+    def search(
+        self, search_direction: fenics.Function, has_curvature_info: bool
+    ) -> None:
         """Performs the line search along the entered search direction
 
         Parameters
         ----------
         search_direction : fenics.Function
-                The current search direction computed by the algorithms
+            The current search direction computed by the algorithms
         has_curvature_info : bool
-                True if the step is (actually) computed via L-BFGS or Newton
+            ``True`` if the step is (actually) computed via L-BFGS or Newton
 
         Returns
         -------

@@ -19,6 +19,9 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 from _collections import deque
 
 import fenics
@@ -27,17 +30,20 @@ import numpy as np
 from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..shape_optimization_problem import ShapeOptimizationProblem
+
 
 class LBFGS(ShapeOptimizationAlgorithm):
     """A limited memory BFGS (L-BFGS) method for solving shape optimization problems"""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
         """Implements the L-BFGS method for solving the optimization problem
 
         Parameters
         ----------
-        optimization_problem : cashocs.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem
-                instance of the OptimalControlProblem (user defined)
+        optimization_problem : ShapeOptimizationProblem
+            The shape optimization problem
         """
 
         super().__init__(optimization_problem)
@@ -63,19 +69,18 @@ class LBFGS(ShapeOptimizationAlgorithm):
             self.y_k = fenics.Function(self.form_handler.deformation_space)
             self.s_k = fenics.Function(self.form_handler.deformation_space)
 
-    def compute_search_direction(self, grad):
+    def compute_search_direction(self, grad: fenics.Function) -> fenics.Function:
         """Computes the search direction for the BFGS method with the so-called double loop
 
         Parameters
         ----------
         grad : fenics.Function
-                the current gradient
+            the current gradient
 
         Returns
         -------
-        self.search_direction : fenics.Function
-                a function corresponding to the current / next search direction
-
+        fenics.Function
+            a function corresponding to the current / next search direction
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
@@ -117,14 +122,12 @@ class LBFGS(ShapeOptimizationAlgorithm):
 
         return self.search_direction
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method
 
         Returns
         -------
         None
-                the result can be found in the control (user defined)
-
         """
 
         self.converged = False

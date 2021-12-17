@@ -19,6 +19,8 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
 from _collections import deque
 
 import fenics
@@ -27,17 +29,20 @@ import numpy as np
 from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
+if TYPE_CHECKING:
+    from ..optimal_control_problem import OptimalControlProblem
+
 
 class LBFGS(ControlOptimizationAlgorithm):
     """A limited memory BFGS method"""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the L-BFGS method.
 
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the optimization problem to be solved
+        optimization_problem : OptimalControlProblem
+            The optimization problem to be solved
         """
 
         super().__init__(optimization_problem)
@@ -71,18 +76,20 @@ class LBFGS(ControlOptimizationAlgorithm):
             self.y_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
             self.s_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
 
-    def compute_search_direction(self, grad):
+    def compute_search_direction(
+        self, grad: List[fenics.Function]
+    ) -> List[fenics.Function]:
         """Computes the search direction for the BFGS method with a double loop
 
         Parameters
         ----------
         grad : list[fenics.Function]
-                the current gradient
+            The current gradient
 
         Returns
         -------
         search_directions : list[fenics.Function]
-                a function corresponding to the current / next search direction
+            A function corresponding to the current / next search direction
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
@@ -151,7 +158,7 @@ class LBFGS(ControlOptimizationAlgorithm):
 
         return self.search_directions
 
-    def run(self):
+    def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method
 
         Returns

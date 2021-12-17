@@ -22,49 +22,56 @@ which are the :math:`L^2` distances between current volume, surface,
 and barycenter, and desired ones.
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import json
 
 import fenics
 from fenics import Constant, div, inner
+import ufl
 
 from .._exceptions import ConfigError
 from .._loggers import info
 from ..utils import _solve_linear_problem, _check_for_config_list
 
+if TYPE_CHECKING:
+    from .._forms import ShapeFormHandler
 
-def t_grad(u, n):
+
+def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     """Computes the tangential gradient of u
 
     Parameters
     ----------
     u : fenics.Function
-            the argument
-    n : ufl.geometry.FacetNormal
-            the unit outer normal vector
+        the argument
+    n : fenics.FacetNormal
+        the unit outer normal vector
 
     Returns
     -------
     ufl.core.expr.Expr
-            the tangential gradient of u
+        the tangential gradient of u
     """
 
     return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
 
 
-def t_div(u, n):
-    """Computes the tangential divergence
+def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
+    """Computes the tangential divergence of u
 
     Parameters
     ----------
     u : fenics.Function
-            the argument
-    n : ufl.geometry.FacetNormal
-            the outer unit normal vector
+        the argument
+    n : fenics.FacetNormal
+        the outer unit normal vector
 
     Returns
     -------
     ufl.core.expr.Expr
-            the tangential divergence of u
+        the tangential divergence of u
     """
 
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
@@ -73,13 +80,13 @@ def t_div(u, n):
 class Regularization:
     """Regularization terms for shape optimization problems"""
 
-    def __init__(self, form_handler):
+    def __init__(self, form_handler: ShapeFormHandler) -> None:
         """Initializes the regularization
 
         Parameters
         ----------
-        form_handler : cashocs._forms.ShapeFormHandler
-                the corresponding shape form handler object
+        form_handler : ShapeFormHandler
+            the corresponding shape form handler object
         """
 
         self.test_vector_field = form_handler.test_vector_field
@@ -287,7 +294,7 @@ class Regularization:
         self.current_barycenter_y = fenics.Expression("val", degree=0, val=0.0)
         self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
 
-    def update_geometric_quantities(self):
+    def update_geometric_quantities(self) -> None:
         """Updates the geometric quantities
 
         Updates the volume, surface area, and barycenters (after the
@@ -352,7 +359,7 @@ class Regularization:
 
         self.compute_curvature()
 
-    def compute_curvature(self):
+    def compute_curvature(self) -> None:
         """Computes the mean curvature vector of the geometry.
 
         Returns
@@ -377,13 +384,13 @@ class Regularization:
         else:
             pass
 
-    def compute_objective(self):
+    def compute_objective(self) -> float:
         """Computes the part of the objective value that comes from the regularization
 
         Returns
         -------
         float
-                Part of the objective value coming from the regularization
+            Part of the objective value coming from the regularization
 
         """
 
@@ -478,13 +485,13 @@ class Regularization:
         else:
             return 0.0
 
-    def compute_shape_derivative(self):
+    def compute_shape_derivative(self) -> ufl.Form:
         """Computes the part of the shape derivative that comes from the regularization
 
         Returns
         -------
-        ufl.form.Form
-                The weak form of the shape derivative coming from the regularization
+        ufl.Form
+            The weak form of the shape derivative coming from the regularization
 
         """
 
@@ -618,6 +625,12 @@ class Regularization:
             return inner(fenics.Constant([0] * dim), V) * self.dx
 
     def _scale_weights(self):
+        """Scales the terms of the regularization by the weights given in the config file
+
+        Returns
+        -------
+        None
+        """
 
         if self.use_relative_scaling and self.has_regularization:
 

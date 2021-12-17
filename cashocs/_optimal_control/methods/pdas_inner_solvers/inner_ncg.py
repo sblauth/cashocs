@@ -19,6 +19,9 @@
 
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import fenics
 import numpy as np
 
@@ -26,17 +29,20 @@ from .unconstrained_line_search import UnconstrainedLineSearch
 from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import ConfigError, NotConvergedError
 
+if TYPE_CHECKING:
+    from ...optimal_control_problem import OptimalControlProblem
+
 
 class InnerNCG(ControlOptimizationAlgorithm):
     """Unconstrained nonlinear conjugate gradient method."""
 
-    def __init__(self, optimization_problem):
+    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
         """Initializes the nonlinear CG method.
 
         Parameters
         ----------
-        optimization_problem : cashocs.OptimalControlProblem
-                the corresponding optimization problem
+        optimization_problem : OptimalControlProblem
+            the corresponding optimization problem
         """
 
         super().__init__(optimization_problem)
@@ -82,13 +88,14 @@ class InnerNCG(ControlOptimizationAlgorithm):
 
         self.pdas_solver = True
 
-    def run(self, idx_active):
+    def run(self, idx_active: List[np.ndarray]) -> None:
         """Solves the inner optimization problem with the nonlinear CG method
 
         Parameters
         ----------
         idx_active : list[numpy.ndarray]
-                list of the indices corresponding to the active set
+            list of the indices corresponding to the active set
+
         Returns
         -------
         None
