@@ -24,14 +24,14 @@ problems.
 
 from __future__ import annotations
 
-from typing import List, Union, Optional, Dict, TYPE_CHECKING
 import itertools
 import json
+from typing import List, Union, Dict, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
+from petsc4py import PETSc
 from ufl import replace
 from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
@@ -41,11 +41,6 @@ from ._exceptions import CashocsException, ConfigError, InputError
 from ._loggers import warning
 from ._shape_optimization.regularization import Regularization
 from .geometry import compute_boundary_distance
-
-if TYPE_CHECKING:
-    from ._interfaces.optimization_problem import OptimizationProblem
-    from ._optimal_control.optimal_control_problem import OptimalControlProblem
-    from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from .utils import (
     _assemble_petsc_system,
     _optimization_algorithm_configuration,
@@ -57,6 +52,12 @@ from .utils import (
     _max,
     _min,
 )
+
+
+if TYPE_CHECKING:
+    from ._interfaces.optimization_problem import OptimizationProblem
+    from ._optimal_control.optimal_control_problem import OptimalControlProblem
+    from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 
 
 class Lagrangian:

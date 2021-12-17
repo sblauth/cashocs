@@ -382,7 +382,7 @@ def damped_newton_solve(
             The sought solution / initial guess. It is not assumed that the initial guess
             satisfies the Dirichlet boundary conditions, they are applied automatically.
             The method overwrites / updates this Function.
-    bcs : list[dolfin.fem.dirichletbc.DirichletBC]
+    bcs : list[fenics.DirichletBC]
             A list of DirichletBCs for the nonlinear variational problem.
     dF : ufl.form.Form, optional
         The Jacobian of F, used for the Newton method. Default is None, and in this case

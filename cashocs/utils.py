@@ -29,7 +29,6 @@ import os
 from pathlib import Path
 from typing import Union, List, Tuple, Optional
 
-import dolfin.cpp.mesh
 import fenics
 import numpy as np
 import ufl
@@ -313,7 +312,7 @@ def create_dirichlet_bcs(
     value: Union[
         fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
     ],
-    boundaries: dolfin.cpp.mesh.MeshFunctionSizet,
+    boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
     **kwargs,
 ) -> List[fenics.DirichletBC]:
@@ -332,7 +331,7 @@ def create_dirichlet_bcs(
         The value of the boundary condition. Has to be compatible with the
         function_space, so that it could also be used as
         ``fenics.DirichletBC(function_space, value, ...)``.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+    boundaries : fenics.MeshFunction
         The :py:class:`fenics.MeshFunction` object representing the boundaries.
     idcs : list[int or str] or int or str
         A list of indices / boundary markers that determine the boundaries
@@ -407,7 +406,7 @@ def create_bcs_list(
     value: Union[
         fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
     ],
-    boundaries: dolfin.cpp.mesh.MeshFunctionSizet,
+    boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
     **kwargs,
 ) -> List[fenics.DirichletBC]:
@@ -426,7 +425,7 @@ def create_bcs_list(
         The value of the boundary condition. Has to be compatible with the
         function_space, so that it could also be used as
         ``fenics.DirichletBC(function_space, value, ...)``.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+    boundaries : fenics.MeshFunction
         The :py:class:`fenics.MeshFunction` object representing the boundaries.
     idcs : list[int] or int
         A list of indices / boundary markers that determine the boundaries
@@ -490,7 +489,7 @@ def _assemble_petsc_system(
         The UFL form for the left-hand side of the linear equation.
     b_form : ufl.form.Form
         The UFL form for the right-hand side of the linear equation.
-    bcs : None or dolfin.fem.dirichletbc.DirichletBC or list[dolfin.fem.dirichletbc.DirichletBC], optional
+    bcs : None or fenics.DirichletBC or list[fenics.DirichletBC], optional
         A list of Dirichlet boundary conditions.
     A_tensor : fenics.PETScMatrix or None, optional
         A matrix into which the result is assembled. Default is ``None``

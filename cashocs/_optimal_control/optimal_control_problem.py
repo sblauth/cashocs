@@ -99,7 +99,7 @@ class OptimalControlProblem(OptimizationProblem):
         state_forms : ufl.form.Form or list[ufl.form.Form]
                 The weak form of the state equation (user implemented). Can be either
                 a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
+        bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
                 The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
                 If this is ``None``, then no Dirichlet boundary conditions are imposed.
         cost_functional_form : ufl.form.Form or list[ufl.form.Form]
@@ -550,7 +550,7 @@ class OptimalControlProblem(OptimizationProblem):
                 The derivatives of the reduced (!) cost functional w.r.t. controls.
         adjoint_forms : ufl.form.Form or list[ufl.form.Form]
                 The UFL forms of the adjoint system(s).
-        adjoint_bcs_list : list[dolfin.fem.dirichletbc.DirichletBC] or list[list[dolfin.fem.dirichletbc.DirichletBC]] or dolfin.fem.dirichletbc.DirichletBC or None
+        adjoint_bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
                 The list of Dirichlet boundary conditions for the adjoint system(s).
 
         Returns

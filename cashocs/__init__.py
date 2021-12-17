@@ -23,11 +23,11 @@ optimization problems, in particular, shape optimization and optimal control pro
 """
 
 from . import verification
-from .constraints.constrained_problems import (
+from ._constraints.constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-from .constraints.constraints import EqualityConstraint, InequalityConstraint
+from ._constraints.constraints import EqualityConstraint, InequalityConstraint
 from ._loggers import LogLevel, set_log_level
 from ._optimal_control.optimal_control_problem import OptimalControlProblem
 from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
@@ -44,7 +44,6 @@ from .utils import (
     create_dirichlet_bcs,
     create_config,
     load_config,
-    moreau_yosida_regularization,
 )
 
 

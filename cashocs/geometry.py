@@ -126,8 +126,8 @@ def import_mesh(
     input_arg: Union[str, configparser.ConfigParser]
 ) -> Tuple[
     Mesh,
-    dolfin.cpp.mesh.MeshFunctionSizet,
-    dolfin.cpp.mesh.MeshFunctionSizet,
+    fenics.MeshFunction,
+    fenics.MeshFunction,
     fenics.Measure,
     fenics.Measure,
     fenics.Measure,
@@ -152,10 +152,10 @@ def import_mesh(
     -------
     mesh : Mesh
         The imported (computational) mesh.
-    subdomains : dolfin.cpp.mesh.MeshFunctionSizet
+    subdomains : fenics.MeshFunction
         A :py:class:`fenics.MeshFunction` object containing the subdomains,
         i.e., the Physical regions marked in the GMSH file.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet
+    boundaries : fenics.MeshFunction
         A MeshFunction object containing the boundaries,
         i.e., the Physical regions marked in the GMSH file. Can, e.g., be used to set
         up boundary conditions.
@@ -394,8 +394,8 @@ def regular_mesh(
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
 ) -> Tuple[
     fenics.Mesh,
-    dolfin.cpp.mesh.MeshFunctionSizet,
-    dolfin.cpp.mesh.MeshFunctionSizet,
+    fenics.MeshFunction,
+    fenics.MeshFunction,
     fenics.Measure,
     fenics.Measure,
     fenics.Measure,
@@ -448,9 +448,9 @@ def regular_mesh(
     -------
     mesh : fenics.Mesh
         The computational mesh.
-    subdomains : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+    subdomains : fenics.MeshFunction
         A :py:class:`fenics.MeshFunction` object containing the subdomains.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+    boundaries : fenics.MeshFunction
         A MeshFunction object containing the boundaries.
     dx : fenics.Measure
         The volume measure of the mesh corresponding to subdomains.
@@ -559,8 +559,8 @@ def regular_box_mesh(
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
 ) -> Tuple[
     fenics.Mesh,
-    dolfin.cpp.mesh.MeshFunctionSizet,
-    dolfin.cpp.mesh.MeshFunctionSizet,
+    fenics.MeshFunction,
+    fenics.MeshFunction,
     fenics.Measure,
     fenics.Measure,
     fenics.Measure,
@@ -619,9 +619,9 @@ def regular_box_mesh(
     -------
     mesh : fenice.Mesh
         The computational mesh.
-    subdomains : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+    subdomains : fenics.MeshFunction
         A MeshFunction object containing the subdomains.
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet
+    boundaries : fenics.MeshFunction
         A MeshFunction object containing the boundaries.
     dx : fenics.Measure
         The volume measure of the mesh corresponding to subdomains.
@@ -797,7 +797,7 @@ def compute_mesh_quality(
 
 def compute_boundary_distance(
     mesh: fenics.Mesh,
-    boundaries: Optional[dolfin.cpp.mesh.MeshFunctionSizet] = None,
+    boundaries: Optional[fenics.MeshFunction] = None,
     boundary_idcs: Optional[List[int]] = None,
     tol: float = 1e-1,
     max_iter: int = 10,
@@ -815,7 +815,7 @@ def compute_boundary_distance(
     ----------
     mesh : fenics.Mesh
         The dolfin mesh object, representing the computational domain
-    boundaries : dolfin.cpp.mesh.MeshFunctionSizet.MeshFunctionSizet, optional
+    boundaries : fenics.MeshFunction or None, optional
         A meshfunction for the boundaries, which is needed in case specific boundaries
         are targeted for the distance computation (while others are ignored), default
         is `None` (all boundaries are used)
@@ -961,7 +961,7 @@ class _NamedMeasure(Measure):
         domain: Optional[fenics.Mesh] = None,
         subdomain_id: str = "everywhere",
         metadata: Optional[Dict] = None,
-        subdomain_data: Optional[dolfin.cpp.mesh.MeshFunctionSizet] = None,
+        subdomain_data: Optional[fenics.MeshFunction] = None,
         physical_groups=None,
     ) -> None:
         super().__init__(
@@ -2376,7 +2376,7 @@ class MeshQuality:
 
         Parameters
         ----------
-        mesh : dolfin.cpp.mesh.Mesh.Mesh
+        mesh : fenics.Mesh
                 The mesh, whose quality shall be computed.
 
         Returns
