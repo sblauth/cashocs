@@ -35,6 +35,8 @@ class Constraint(abc.ABC):
 
 
 class EqualityConstraint(Constraint):
+    """Models an equality constraint."""
+
     def __init__(self, variable_function, target, measure=None):
         super().__init__(variable_function, measure=measure)
         self.target = target
