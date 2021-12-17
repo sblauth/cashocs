@@ -1,17 +1,14 @@
 {
+    "description": "<p>cashocs is a computational, adjoint-based shape optimization and optimal control software.</p>", 
+    "license": "GPL-3.0+", 
+    "title": "cashocs v1.4.5", 
+    "version": "v1.4.5", 
+    "upload_type": "software", 
     "creators": [
-        {   
-            "orcid": " 0000-0001-9173-0866 ",
-            "affiliation": "Fraunhofer ITWM",
-            "name": "Blauth, Sebastian"
-        },
-    ],    
-
-    "license": "GPL v3+",
-
-    "title": "cashocs v1.4.6"
-    "description": "cashocs is a computational, adjoint-based shape optimization and optimal control software.",
-    
-    "upload_type": "software"
+        {
+            "orcid": "0000-0001-9173-0866", 
+            "name": "Sebastian Blauth"
+        }
+    ], 
+    "access_right": "open", 
 }
-
