@@ -145,6 +145,7 @@ of the sub-module.
 .. toctree::
    :maxdepth: 5
 
+   sub_modules/constraints
    sub_modules/geometry
    sub_modules/nonlinear_solvers
    sub_modules/utils
