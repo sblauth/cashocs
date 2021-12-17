@@ -28,10 +28,10 @@ from typing_extensions import Literal
 import fenics
 import numpy as np
 import ufl
-from deprecated import deprecated
 from petsc4py import PETSc
 
 from ._exceptions import InputError, NotConvergedError
+from ._loggers import warning
 from .utils import _setup_petsc_options, _solve_linear_problem
 
 
@@ -356,10 +356,7 @@ def newton_solve(
     return u
 
 
-@deprecated(
-    version="1.5.0",
-    reason="This is replaced by cashocs.newton_solve and will be removed in the future.",
-)
+# deprecated
 def damped_newton_solve(
     F: ufl.Form,
     u: fenics.Function,
@@ -423,7 +420,15 @@ def damped_newton_solve(
             The solution of the nonlinear variational problem, if converged.
             This overrides the input function u.
 
+    .. deprecated:: 1.5.0
+        This is replaced by cashocs.newton_solve and will be removed in the future.
+
     """
+
+    warning(
+        "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced by cashocs.newton_solve and will be removed in the future."
+    )
+
     return newton_solve(
         F,
         u,

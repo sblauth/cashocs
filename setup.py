@@ -36,10 +36,8 @@ setuptools.setup(
     ],
     keywords="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
     install_requires=[
-        "pytest>=6.0.0",
         "meshio>=4.1.0",
-        "deprecated>=1.2.10",
-        "matplotlib",
+        "numpy>=1.21",
         "typing_extensions",
     ],
     entry_points={"console_scripts": ["cashocs-convert = cashocs._cli:convert"]},

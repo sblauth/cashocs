@@ -33,7 +33,6 @@ import dolfin.cpp.mesh
 import fenics
 import numpy as np
 import ufl
-from deprecated import deprecated
 from petsc4py import PETSc
 
 from ._exceptions import InputError, PETScKSPError
@@ -246,10 +245,7 @@ def multiplication(
     return y
 
 
-@deprecated(
-    version="1.1.0",
-    reason="This is replaced by cashocs.load_config and will be removed in the future.",
-)
+# deprecated
 def create_config(path: str) -> configparser.ConfigParser:
     """Loads a config object from a config file.
 
@@ -273,6 +269,9 @@ def create_config(path: str) -> configparser.ConfigParser:
         and will be removed in the future.
     """
 
+    warning(
+        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config and will be removed in the future."
+    )
     config = load_config(path)
 
     return config
@@ -402,10 +401,7 @@ def create_dirichlet_bcs(
     return bcs_list
 
 
-@deprecated(
-    version="1.5.0",
-    reason="This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.",
-)
+# deprecated
 def create_bcs_list(
     function_space: fenics.FunctionSpace,
     value: Union[
@@ -455,7 +451,14 @@ def create_bcs_list(
         mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
         V = FunctionSpace(mesh, 'CG', 1)
         bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+
+    .. deprecated:: 1.5.0
+        This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.
     """
+
+    warning(
+        "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by cashocs.create_dirichlet_bcs and will be removed in the future."
+    )
 
     bcs_list = []
     if isinstance(idcs, list):
