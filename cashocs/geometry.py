@@ -387,7 +387,7 @@ def import_mesh(
 
 
 def regular_mesh(
-    n: float = 10,
+    n: int = 10,
     L_x: float = 1.0,
     L_y: float = 1.0,
     L_z: Optional[float] = None,
