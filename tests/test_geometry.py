@@ -32,7 +32,6 @@ from cashocs._exceptions import InputError
 from cashocs.geometry import MeshQuality
 
 
-
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
 u_mesh = fenics.UnitSquareMesh(5, 5)
 rng = np.random.RandomState(300696)
@@ -154,6 +153,12 @@ def test_regular_mesh():
 
     assert np.alltrue(abs(np.max(s_mesh.coordinates(), axis=0) - max_vals) < 1e-14)
     assert np.alltrue(abs(np.min(s_mesh.coordinates(), axis=0) - min_vals) < 1e-14)
+
+    t_mesh, _, _, _, _, _ = cashocs.regular_box_mesh(
+        2, S_x=0.0, E_x=lens[0], S_y=0.0, E_y=lens[1]
+    )
+
+    assert np.allclose(t_mesh.coordinates(), r_mesh.coordinates())
 
 
 def test_mesh_quality_2D():
@@ -304,6 +309,9 @@ def test_empty_measure():
     assert np.max(np.abs(b[:])) == 0.0
     assert c == 0.0
 
+    dE = cashocs.geometry.generate_measure([], dx)
+    assert fenics.assemble(fenics.Constant(1) * dE) == 0.0
+
 
 def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
@@ -372,6 +380,10 @@ def test_eikonal_distance():
     dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
     assert np.min(dist.vector()[:]) >= 0.0
     assert (np.max(dist.vector()[:]) - 1.0) / 1.0 <= 0.05
+
+    dist = cashocs.geometry.compute_boundary_distance(mesh)
+    assert np.min(dist.vector()[:]) >= 0.0
+    assert (np.max(dist.vector()[:]) - 0.5) / 0.5 <= 0.05
 
 
 def test_named_mesh_import():

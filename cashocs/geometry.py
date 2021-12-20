@@ -37,7 +37,6 @@ from collections import Counter
 from typing import Union, List, Optional, Tuple, Dict, TYPE_CHECKING
 from typing_extensions import Literal
 
-import dolfin
 import fenics
 import numpy as np
 from petsc4py import PETSc
