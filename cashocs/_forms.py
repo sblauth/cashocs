@@ -26,11 +26,10 @@ from __future__ import annotations
 
 import itertools
 import json
-from typing import List, Union, Dict, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
 from ufl import replace
 from ufl.algorithms import expand_derivatives
@@ -60,53 +59,6 @@ if TYPE_CHECKING:
     from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 
 
-class Lagrangian:
-    r"""Implementation of a Lagrangian.
-
-    This corresponds to the classical Lagrangian of a PDE constrained
-    optimization problem, of the form
-
-    .. math:: L = J + e,
-
-    where J is the cost functional and e the (weak) PDE constrained, tested by
-    the adjoint variables. This is used to derive the adjoint and gradient
-    equations needed for the optimization.
-
-    See Also
-    --------
-    FormHandler : Derives necessary adjoint and gradient / shape derivative equations.
-    """
-
-    def __init__(
-        self,
-        state_forms: List[ufl.Form],
-        cost_functional_form: ufl.Form,
-        scalar_tracking_forms: List[Dict[str, Union[float, fenics.Function, ufl.Form]]],
-        min_max_forms: List[Dict[str, Union[float, fenics.Function, ufl.Form]]],
-    ) -> None:
-        """Initializes the Lagrangian.
-
-        Parameters
-        ----------
-        state_forms : list[ufl.Form]
-            The weak forms of the state equation, as implemented by the user.
-        cost_functional_form : ufl.Form
-            The cost functional, as implemented by the user.
-        scalar_tracking_forms : list[dict]
-            The list of cost functional forms for scalar (i.e. after
-            integration) tracking type terms.
-        min_max_forms : list[dict]
-            The list of terms involving min and max. Used for the treatment of constraints.
-        """
-
-        self.state_forms = state_forms
-        self.cost_functional_form = cost_functional_form
-        self.scalar_tracking_forms = scalar_tracking_forms
-        self.min_max_forms = min_max_forms
-
-        self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
-
-
 class FormHandler:
     """Parent class for UFL form manipulation.
 
@@ -130,7 +82,6 @@ class FormHandler:
             The corresponding optimization problem
         """
 
-        self.lagrangian = optimization_problem.lagrangian
         self.bcs_list = optimization_problem.bcs_list
         self.states = optimization_problem.states
         self.adjoints = optimization_problem.adjoints
@@ -139,20 +90,21 @@ class FormHandler:
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
         self.use_scalar_tracking = optimization_problem.use_scalar_tracking
         self.use_min_max_terms = optimization_problem.use_min_max_terms
-        self.min_max_forms = self.lagrangian.min_max_forms
+        self.min_max_forms = optimization_problem.min_max_terms
+        self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
 
+        self.cost_functional_form = optimization_problem.cost_functional_form
+        self.state_forms = optimization_problem.state_forms
+
+        self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
         self.cost_functional_shift = 0.0
-
-        # Further initializations
-        self.cost_functional_form = self.lagrangian.cost_functional_form
-        self.state_forms = self.lagrangian.state_forms
 
         if self.use_scalar_tracking:
             self.scalar_cost_functional_integrands = [
-                d["integrand"] for d in self.lagrangian.scalar_tracking_forms
+                d["integrand"] for d in self.scalar_tracking_forms
             ]
             self.scalar_tracking_goals = [
-                d["tracking_goal"] for d in self.lagrangian.scalar_tracking_forms
+                d["tracking_goal"] for d in self.scalar_tracking_forms
             ]
 
             dummy_meshes = [
@@ -172,7 +124,7 @@ class FormHandler:
             try:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector().vec().set(
-                        self.lagrangian.scalar_tracking_forms[j]["weight"]
+                        self.scalar_tracking_forms[j]["weight"]
                     )
             except KeyError:
                 for j in range(self.no_scalar_tracking_terms):
@@ -313,7 +265,7 @@ class FormHandler:
         # Use replace -> derivative to speed up computations
         self.lagrangian_temp_forms = [
             replace(
-                self.lagrangian.lagrangian_form,
+                self.lagrangian_form,
                 {self.adjoints[i]: self.trial_functions_adjoint[i]},
             )
             for i in range(self.state_dim)
@@ -322,7 +274,7 @@ class FormHandler:
         if self.state_is_picard:
             self.adjoint_picard_forms = [
                 fenics.derivative(
-                    self.lagrangian.lagrangian_form,
+                    self.lagrangian_form,
                     self.states[i],
                     self.test_functions_adjoint[i],
                 )
@@ -865,7 +817,7 @@ class ControlFormHandler(FormHandler):
 
         self.gradient_forms_rhs = [
             fenics.derivative(
-                self.lagrangian.lagrangian_form,
+                self.lagrangian_form,
                 self.controls[i],
                 self.test_functions_control[i],
             )
@@ -1005,7 +957,7 @@ class ControlFormHandler(FormHandler):
         # Compute forms for the truncated Newton method
         self.L_y = [
             fenics.derivative(
-                self.lagrangian.lagrangian_form,
+                self.lagrangian_form,
                 self.states[i],
                 self.test_functions_state[i],
             )
@@ -1013,7 +965,7 @@ class ControlFormHandler(FormHandler):
         ]
         self.L_u = [
             fenics.derivative(
-                self.lagrangian.lagrangian_form,
+                self.lagrangian_form,
                 self.controls[i],
                 self.test_functions_control[i],
             )
@@ -1312,7 +1264,7 @@ class ShapeFormHandler(FormHandler):
 
         # Shape derivative of Lagrangian w/o regularization and pull-backs
         self.shape_derivative = fenics.derivative(
-            self.lagrangian.lagrangian_form,
+            self.lagrangian_form,
             fenics.SpatialCoordinate(self.mesh),
             self.test_vector_field,
         )
@@ -1361,7 +1313,7 @@ class ShapeFormHandler(FormHandler):
             ]
 
             self.material_derivative_coeffs = []
-            for coeff in self.lagrangian.lagrangian_form.coefficients():
+            for coeff in self.lagrangian_form.coefficients():
                 if coeff.id() in self.state_adjoint_ids:
                     pass
                 else:
@@ -1397,7 +1349,7 @@ class ShapeFormHandler(FormHandler):
             for coeff in self.material_derivative_coeffs:
 
                 material_derivative = fenics.derivative(
-                    self.lagrangian.lagrangian_form,
+                    self.lagrangian_form,
                     coeff,
                     fenics.dot(fenics.grad(coeff), self.test_vector_field),
                 )

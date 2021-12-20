@@ -36,7 +36,6 @@ import ufl
 from ufl import replace
 
 from .._exceptions import InputError
-from .._forms import Lagrangian
 from .._loggers import warning, info
 from ..utils import (
     _parse_remesh,
@@ -282,12 +281,6 @@ class OptimizationProblem(abc.ABC):
 
         self.algorithm = None
 
-        self.lagrangian = Lagrangian(
-            self.state_forms,
-            self.cost_functional_form,
-            self.scalar_tracking_forms,
-            self.min_max_terms,
-        )
         self.form_handler = None
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
