@@ -23,19 +23,20 @@ ShapeOptimizationAlgorithm classes are based.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import abc
 import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, List, Union
 
 import fenics
 import numpy as np
 
 from .._exceptions import NotConvergedError
 from .._loggers import error, info
+
 
 if TYPE_CHECKING:
     from .optimization_problem import OptimizationProblem

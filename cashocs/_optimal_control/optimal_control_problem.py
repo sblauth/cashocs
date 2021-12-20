@@ -22,15 +22,16 @@
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
-from typing_extensions import Literal
+from typing import Dict, List, Union, Optional
 
 import fenics
 import numpy as np
 import ufl
+from typing_extensions import Literal
 
 from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
-from .._exceptions import ConfigError, InputError
+from .. import verification
+from .._exceptions import InputError
 from .._forms import ControlFormHandler
 from .._interfaces import OptimizationProblem
 from .._optimal_control import ReducedControlCostFunctional
@@ -46,7 +47,6 @@ from ..utils import (
     enlist,
     _check_and_enlist_control_constraints,
 )
-from .. import verification
 
 
 class OptimalControlProblem(OptimizationProblem):
@@ -497,13 +497,6 @@ class OptimalControlProblem(OptimizationProblem):
                 "method. Needs to be one of"
                 "'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' ('cg'), "
                 "'newton', or 'primal_dual_active_set' ('pdas').",
-            )
-        else:
-            raise ConfigError(
-                "OptimizationRoutine",
-                "algorithm",
-                "Not a valid input. Needs to be one "
-                "of 'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' ('cg'), 'newton', or 'primal_dual_active_set' ('pdas').",
             )
 
         self.solver.run()

@@ -11,9 +11,8 @@ from fenics import *
 import cashocs
 
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config = cashocs.load_config(dir_path + "/config_remesh.ini")
+config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
 config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
 config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")

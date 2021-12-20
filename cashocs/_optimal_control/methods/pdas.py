@@ -20,13 +20,15 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING
+
 import fenics
 import numpy as np
 
 from .pdas_inner_solvers import InnerNCG, InnerGradientDescent, InnerLBFGS, InnerNewton
-from ..._exceptions import ConfigError
 from ..._optimal_control import ControlOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem
@@ -72,12 +74,6 @@ class PDAS(ControlOptimizationAlgorithm):
             self.inner_solver = InnerLBFGS(optimization_problem)
         elif self.inner_pdas == "newton":
             self.inner_solver = InnerNewton(optimization_problem)
-        else:
-            raise ConfigError(
-                "AlgoPDAS",
-                "inner_pdas",
-                "Not a valid input. Needs to be one of gradient_descent, lbfgs, cg, or newton.",
-            )
 
     def compute_active_inactive_sets(self) -> None:
         """Computes the active and inactive sets.

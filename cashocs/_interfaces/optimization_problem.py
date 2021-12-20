@@ -23,12 +23,12 @@ optimization problems.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional, Callable
 
 import abc
 import configparser
 import copy
 import json
+from typing import Dict, List, Union, Optional, Callable
 
 import fenics
 import numpy as np
@@ -37,6 +37,7 @@ from ufl import replace
 
 from .._exceptions import InputError
 from .._loggers import warning, info
+from ..config import Config
 from ..utils import (
     _parse_remesh,
     summation,
@@ -151,11 +152,13 @@ class OptimizationProblem(abc.ABC):
         self.adjoints = enlist(adjoints)
 
         if config is None:
-            self.config = configparser.ConfigParser()
+            self.config = Config()
             self.config.add_section("OptimizationRoutine")
             self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
             self.config = copy.deepcopy(config)
+
+        self.config.validate_config()
 
         if initial_guess is None:
             self.initial_guess = initial_guess

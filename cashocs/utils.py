@@ -38,6 +38,7 @@ from petsc4py import PETSc
 
 from ._exceptions import InputError, PETScKSPError
 from ._loggers import warning
+from .config import Config
 
 
 class Interpolator:
@@ -295,10 +296,8 @@ def load_config(path: str) -> configparser.ConfigParser:
         The output config file, which includes the path
         to the .ini file.
     """
-
-    config = configparser.ConfigParser()
     if os.path.isfile(path):
-        config.read(path)
+        config = Config(path)
     else:
         raise InputError(
             "cashocs.utils.load_config",
@@ -898,37 +897,6 @@ def enlist(arg: Union[object, List]) -> List:
         return arg
     else:
         return [arg]
-
-
-def _check_for_config_list(string: str) -> bool:
-    """Checks, whether a given string is a valid representation of a list of integers
-
-    Parameters
-    ----------
-    string : str
-        The input string.
-
-    Returns
-    -------
-    bool
-        ``True`` if the string is valid, ``False`` otherwise
-
-    """
-
-    result = False
-
-    for char in string:
-        if not (char.isdigit() or char.isspace() or char in ["[", "]", ".", ",", "-"]):
-            return result
-
-    if string[0] != "[":
-        return result
-    if string[-1] != "]":
-        return result
-
-    result = True
-
-    return result
 
 
 def _check_and_enlist_bcs(

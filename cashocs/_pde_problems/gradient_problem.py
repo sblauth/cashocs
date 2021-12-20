@@ -23,14 +23,15 @@ the gradient of the reduced cost functional.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union
+
+from typing import TYPE_CHECKING, List
 
 import fenics
 from petsc4py import PETSc
 
-from .._exceptions import ConfigError
 from .._interfaces.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
+
 
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
@@ -93,12 +94,7 @@ class GradientProblem(PDEProblem):
                 ["ksp_atol", 1e-50],
                 ["ksp_max_it", 250],
             ]
-        else:
-            raise ConfigError(
-                "OptimizationRoutine",
-                "gradient_method",
-                "gradient_method has to be either 'direct' or 'iterative'",
-            )
+
         self.riesz_ksp_options = []
         for i in range(self.form_handler.control_dim):
             self.riesz_ksp_options.append(option)

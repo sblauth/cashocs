@@ -23,17 +23,17 @@ and barycenter, and desired ones.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import json
+from typing import TYPE_CHECKING
 
 import fenics
-from fenics import Constant, div, inner
 import ufl
+from fenics import Constant, div, inner
 
-from .._exceptions import ConfigError
 from .._loggers import info
-from ..utils import _solve_linear_problem, _check_for_config_list
+from ..utils import _solve_linear_problem
+
 
 if TYPE_CHECKING:
     from .._forms import ShapeFormHandler
@@ -117,8 +117,12 @@ class Regularization:
             )
             self.x_end = self.config.getfloat("Regularization", "x_end", fallback=1.0)
             if not self.x_end >= self.x_start:
-                raise ConfigError(
-                    "Regularization", "x_end", "x_end must not be smaller than x_start."
+                raise IncompatibleConfigurationError(
+                    "x_start",
+                    "Regularization",
+                    "x_end",
+                    "Regularization",
+                    "Reason: x_end must not be smaller than x_start.",
                 )
             self.delta_x = self.x_end - self.x_start
 
@@ -127,8 +131,12 @@ class Regularization:
             )
             self.y_end = self.config.getfloat("Regularization", "y_end", fallback=1.0)
             if not self.y_end >= self.y_start:
-                raise ConfigError(
-                    "Regularization", "y_end", "y_end must not be smaller than y_start."
+                raise IncompatibleConfigurationError(
+                    "y_start",
+                    "Regularization",
+                    "y_end",
+                    "Regularization",
+                    "Reason: y_end must not be smaller than y_start.",
                 )
             self.delta_y = self.y_end - self.y_start
 
@@ -137,8 +145,12 @@ class Regularization:
             )
             self.z_end = self.config.getfloat("Regularization", "z_end", fallback=1.0)
             if not self.z_end >= self.z_start:
-                raise ConfigError(
-                    "Regularization", "z_end", "z_end must not be smaller than z_start."
+                raise IncompatibleConfigurationError(
+                    "z_start",
+                    "Regularization",
+                    "z_end",
+                    "Regularization",
+                    "Reason: z_end must not be smaller than z_start.",
                 )
             self.delta_z = self.z_end - self.z_start
             if self.geometric_dimension == 2:
@@ -201,17 +213,7 @@ class Regularization:
         target_bar = self.config.get(
             "Regularization", "target_barycenter", fallback="[0,0,0]"
         )
-        if not _check_for_config_list(target_bar):
-            raise ConfigError(
-                "Regularization",
-                "target_barycenter",
-                "The target_barycenter parameter has to be a list of numbers",
-            )
         self.target_barycenter_list = json.loads(target_bar)
-        if not isinstance(self.target_barycenter_list, list):
-            raise ConfigError(
-                "Regularization", "target_barycenter", "This has to be a list."
-            )
 
         if self.geometric_dimension == 2 and len(self.target_barycenter_list) == 2:
             self.target_barycenter_list.append(0.0)
@@ -263,18 +265,6 @@ class Regularization:
                     ) / volume
                 else:
                     self.target_barycenter_list[2] = 0.0
-
-        if not (
-            self.mu_volume >= 0.0
-            and self.mu_surface >= 0.0
-            and self.mu_curvature >= 0
-            and self.mu_barycenter >= 0.0
-        ):
-            raise ConfigError(
-                "Regularization",
-                "mu_volume, mu_surface, or mu_barycenter",
-                "All regularization constants have to be nonnegative.",
-            )
 
         if (
             self.mu_volume > 0.0

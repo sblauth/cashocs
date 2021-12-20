@@ -16,12 +16,13 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import abc
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
+
 
 if TYPE_CHECKING:
     from .._forms import FormHandler

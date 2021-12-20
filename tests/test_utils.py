@@ -31,7 +31,6 @@ import cashocs._cli
 from cashocs._exceptions import InputError
 
 
-
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
 V = fenics.FunctionSpace(mesh, "CG", 1)
@@ -81,21 +80,6 @@ def test_multiplication():
     assert cashocs.utils.multiplication(a) == 24
     assert abs(cashocs.utils.multiplication(b) - np.prod(b)) < 1e-14
     assert np.allclose(b, b_exact)
-
-
-def test_load_config():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    config = cashocs.load_config(dir_path + "/test_config.ini")
-
-    assert config.getint("A", "a") == 1
-    assert config.getfloat("A", "b") == 3.14
-    assert config.getboolean("A", "c") == True
-    assert config.get("A", "d") == "algorithm"
-
-    assert config.getint("B", "a") == 2
-    assert config.getfloat("B", "b") == 6.28
-    assert config.getboolean("B", "c") == False
-    assert config.get("B", "d") == "cashocs"
 
 
 def test_create_bcs():

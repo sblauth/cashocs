@@ -24,17 +24,17 @@ shape derivative to the shape gradient with a Riesz projection.
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+from typing import TYPE_CHECKING, List
 
 import fenics
 import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from .._exceptions import ConfigError
 from .._interfaces.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
+
 
 if TYPE_CHECKING:
     from .state_problem import StateProblem
@@ -98,12 +98,7 @@ class ShapeGradientProblem(PDEProblem):
                 ["ksp_atol", 1e-50],
                 ["ksp_max_it", 250],
             ]
-        else:
-            raise ConfigError(
-                "OptimizationRoutine",
-                "gradient_method",
-                "gradient_method has to be either 'direct' or 'iterative'",
-            )
+
         _setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
@@ -257,12 +252,6 @@ class _PLaplacProjector:
                     ["ksp_atol", 1e-50],
                     ["ksp_max_it", 100],
                 ]
-            else:
-                raise ConfigError(
-                    "OptimizationRoutine",
-                    "gradient_method",
-                    "gradient_method has to be either 'direct' or 'iterative'",
-                )
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient

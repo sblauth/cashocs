@@ -16,14 +16,15 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import abc
 import weakref
+from typing import TYPE_CHECKING, List, Union, Optional
 
 import fenics
 
 from ..utils import _optimization_algorithm_configuration
+
 
 if TYPE_CHECKING:
     from .optimization_algorithm import OptimizationAlgorithm

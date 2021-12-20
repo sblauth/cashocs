@@ -19,7 +19,8 @@
 
 """
 from __future__ import annotations
-from typing import Optional
+
+from typing import Optional, List
 
 
 class CashocsException(Exception):
@@ -108,16 +109,40 @@ class ConfigError(CashocsException):
 
     pre_message = "You have an error in your config file.\n"
 
-    def __init__(self, section: str, key: str, message: Optional[str] = None) -> None:
-        self.section = section
-        self.key = key
-        self.message = message
+    def __init__(self, config_errors: List[str]) -> None:
+        self.config_errors = config_errors
 
     def __str__(self) -> str:
-        if self.message is None:
-            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}."
+        except_str = f"{self.pre_message}"
+        for error in self.config_errors:
+            except_str += error
+        return except_str
+
+
+class IncompatibleConfigurationError(CashocsException):
+    """This exception gets raised when parameters in the config file are in conflict."""
+
+    pre_message = "Incompatible configuration file parameters.\n"
+
+    def __init__(
+        self,
+        key1: str,
+        section1: str,
+        key2: str,
+        section2: str,
+        post_message: Optional[str] = None,
+    ) -> None:
+        self.key1 = key1
+        self.section1 = section1
+        self.key2 = key2
+        self.section2 = section2
+        self.post_message = post_message
+
+    def __str__(self) -> str:
+        if self.post_message is None:
+            return f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}."
         else:
-            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}"
+            return f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}.\n{self.post_message}"
 
 
 class GeometryError(CashocsException):

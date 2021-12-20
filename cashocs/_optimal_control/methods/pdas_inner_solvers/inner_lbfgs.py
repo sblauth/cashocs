@@ -20,9 +20,9 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 from _collections import deque
+from typing import TYPE_CHECKING, List
 
 import fenics
 import numpy as np
@@ -30,6 +30,7 @@ import numpy as np
 from .unconstrained_line_search import UnconstrainedLineSearch
 from ...control_optimization_algorithm import ControlOptimizationAlgorithm
 from ...._exceptions import NotConvergedError
+
 
 if TYPE_CHECKING:
     from ...optimal_control_problem import OptimalControlProblem

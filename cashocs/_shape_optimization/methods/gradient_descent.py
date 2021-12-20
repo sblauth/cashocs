@@ -20,10 +20,13 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..shape_optimization_problem import ShapeOptimizationProblem

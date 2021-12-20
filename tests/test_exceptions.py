@@ -28,12 +28,11 @@ from fenics import *
 import cashocs
 from cashocs._exceptions import (
     CashocsException,
-    ConfigError,
     InputError,
     NotConvergedError,
     PETScKSPError,
+    ConfigError,
 )
-
 
 
 rng = np.random.RandomState(300696)
@@ -103,15 +102,8 @@ def test_petsc_error():
 
 
 def test_config_error():
-    with pytest.raises(ConfigError) as e_info:
-        config.set("AlgoCG", "cg_method", "nonexistent")
-        config.set("OptimizationRoutine", "algorithm", "cg")
-        config.set("OptimizationRoutine", "maximum_iterations", "2")
-        u.vector()[:] = rng.rand(V.dim())
-        ocp_conf = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-        ocp_conf.solve(max_iter=10)
-    assert "You have an error in your config file." in str(e_info.value)
+    with pytest.raises(ConfigError):
+        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+        config.set("Mesh", "remesh", "1.0")
 
-    with pytest.raises(CashocsException):
-        ocp_conf._erase_pde_memory()
-        ocp_conf.solve(max_iter=10)
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)

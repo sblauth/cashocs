@@ -20,14 +20,16 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
 import subprocess
+from typing import TYPE_CHECKING
 
 import fenics
 
 from .._interfaces import OptimizationAlgorithm
 from ..utils import write_out_mesh
+
 
 if TYPE_CHECKING:
     from .shape_optimization_problem import ShapeOptimizationProblem

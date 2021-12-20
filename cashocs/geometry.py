@@ -35,16 +35,16 @@ import tempfile
 import time
 from collections import Counter
 from typing import Union, List, Optional, Tuple, Dict, TYPE_CHECKING
-from typing_extensions import Literal
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
+from petsc4py import PETSc
+from typing_extensions import Literal
 from ufl import Jacobian, JacobianInverse
 from ufl.measure import Measure
 
-from ._exceptions import CashocsException, ConfigError, InputError
+from ._exceptions import CashocsException, InputError, IncompatibleConfigurationError
 from ._loggers import debug, info, warning
 from .utils import (
     _assemble_petsc_system,
@@ -54,6 +54,7 @@ from .utils import (
     create_dirichlet_bcs,
     write_out_mesh,
 )
+
 
 if TYPE_CHECKING:
     from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
@@ -292,10 +293,12 @@ def import_mesh(
         )
 
         if not mesh_quality_tol_lower < mesh_quality_tol_upper:
-            raise ConfigError(
-                "MeshQuality",
+            raise IncompatibleConfigurationError(
                 "tol_lower",
-                "The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance",
+                "MeshQuality",
+                "tol_upper",
+                "MeshQuality",
+                "Reason: tol_lower has to be strictly smaller than tol_upper",
             )
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
@@ -306,25 +309,7 @@ def import_mesh(
         mesh_quality_measure = input_arg.get(
             "MeshQuality", "measure", fallback="skewness"
         )
-        if not mesh_quality_measure in [
-            "skewness",
-            "maximum_angle",
-            "radius_ratios",
-            "condition_number",
-        ]:
-            raise ConfigError(
-                "MeshQuality",
-                "measure",
-                "Has to be one of 'skewness', 'maximum_angle', 'condition_number', or 'radius_ratios'.",
-            )
-
         mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
-        if not mesh_quality_type in ["min", "minimum", "avg", "average"]:
-            raise ConfigError(
-                "MeshQuality",
-                "type",
-                "Has to be one of 'min', 'minimum', 'avg', or 'average'.",
-            )
 
         if mesh_quality_type in ["min", "minimum"]:
             if mesh_quality_measure == "skewness":
@@ -1067,10 +1052,12 @@ class _MeshHandler:
             "MeshQuality", "tol_upper", fallback=1e-15
         )
         if not self.mesh_quality_tol_lower < self.mesh_quality_tol_upper:
-            raise ConfigError(
-                "MeshQuality",
+            raise IncompatibleConfigurationError(
                 "tol_lower",
-                "The lower remeshing tolerance has to be strictly smaller than the upper remeshing tolerance",
+                "MeshQuality",
+                "tol_upper",
+                "MeshQuality",
+                "Reason: tol_lower has to be strictly smaller than tol_upper",
             )
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
@@ -1081,25 +1068,8 @@ class _MeshHandler:
         self.mesh_quality_measure = self.config.get(
             "MeshQuality", "measure", fallback="skewness"
         )
-        if not self.mesh_quality_measure in [
-            "skewness",
-            "maximum_angle",
-            "radius_ratios",
-            "condition_number",
-        ]:
-            raise ConfigError(
-                "MeshQuality",
-                "measure",
-                "Has to be one of 'skewness', 'maximum_angle', 'condition_number', or 'radius_ratios'.",
-            )
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type", fallback="min")
-        if not self.mesh_quality_type in ["min", "minimum", "avg", "average"]:
-            raise ConfigError(
-                "MeshQuality",
-                "type",
-                "Has to be one of 'min', 'minimum', 'avg', or 'average'.",
-            )
 
         self.current_mesh_quality = 1.0
         self.current_mesh_quality = compute_mesh_quality(
@@ -1122,16 +1092,20 @@ class _MeshHandler:
                 )
             except configparser.Error:
                 if self.do_remesh:
-                    raise ConfigError(
-                        "Mesh",
+                    raise IncompatibleConfigurationError(
                         "gmsh_file",
-                        "Remeshing is only available with gmsh meshes. Please specify gmsh_file.",
+                        "Mesh",
+                        "remesh",
+                        "Mesh",
+                        "Reason: Remeshing is only available with gmsh meshes. Please specify gmsh_file.",
                     )
                 elif self.save_optimized_mesh:
-                    raise ConfigError(
-                        "Mesh",
+                    raise IncompatibleConfigurationError(
                         "save_mesh",
-                        "The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n"
+                        "Mesh",
+                        "gmsh_file",
+                        "Mesh",
+                        "Reason: The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n"
                         "If you already use a gmsh mesh, please specify gmsh_file.",
                     )
 
@@ -1139,11 +1113,6 @@ class _MeshHandler:
             self.temp_dict = shape_optimization_problem.temp_dict
             self.gmsh_file = self.temp_dict["gmsh_file"]
             self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
-
-            if not self.gmsh_file[-4:] == ".msh":
-                raise ConfigError(
-                    "Mesh", "gmsh_file", "Not a valid gmsh file. Has to end in .msh"
-                )
 
             if not self.form_handler.has_cashocs_remesh_flag:
                 self.remesh_directory = tempfile.mkdtemp(
@@ -1225,11 +1194,6 @@ class _MeshHandler:
         -------
         None
         """
-
-        if not self.angle_change > 0:
-            raise ConfigError(
-                "MeshQuality", "angle_change", "This parameter has to be positive."
-            )
 
         self.options_frobenius = [
             ["ksp_type", "preonly"],
@@ -1338,13 +1302,6 @@ class _MeshHandler:
             self.form_handler.deformation_space
         )
         dim = self.mesh.geometric_dimension()
-
-        if not self.volume_change > 1:
-            raise ConfigError(
-                "MeshQuality",
-                "volume_change",
-                "This parameter has to be larger than 1.",
-            )
 
         self.a_prior = self.trial_dg0 * self.test_dg0 * self.dx
         self.L_prior = (

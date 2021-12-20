@@ -22,32 +22,30 @@
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
-
-import dolfin.function.argument
-from typing_extensions import Literal
-
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from typing import Dict, List, Union, Optional
 
+import dolfin.function.argument
 import fenics
 import numpy as np
 import ufl
+from typing_extensions import Literal
 from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .methods import NCG, GradientDescent, LBFGS
-from .._exceptions import CashocsException, ConfigError, InputError
+from .. import verification
+from .._exceptions import CashocsException, InputError
 from .._forms import ShapeFormHandler
 from .._interfaces import OptimizationProblem
 from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
-from .. import verification
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -456,13 +454,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 "You did not specify a solution algorithm in your config file. You have to specify one in the solve "
                 "method. Needs to be one of 'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), "
                 "or 'conjugate_gradient' ('cg').",
-            )
-        else:
-            raise ConfigError(
-                "OptimizationRoutine",
-                "algorithm",
-                "Not a valid input. Needs to be one "
-                "of 'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), or 'conjugate_gradient' ('cg').",
             )
 
         self.solver.run()

@@ -36,7 +36,11 @@ from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 from ufl.log import UFLException
 
-from ._exceptions import CashocsException, ConfigError, InputError
+from ._exceptions import (
+    CashocsException,
+    InputError,
+    IncompatibleConfigurationError,
+)
 from ._loggers import warning
 from ._shape_optimization.regularization import Regularization
 from .geometry import compute_boundary_distance
@@ -47,7 +51,6 @@ from .utils import (
     _solve_linear_problem,
     create_dirichlet_bcs,
     summation,
-    _check_for_config_list,
     _max,
     _min,
 )
@@ -1150,12 +1153,6 @@ class ShapeFormHandler(FormHandler):
         temp_fixed_dimensions = self.config.get(
             "ShapeGradient", "fixed_dimensions", fallback="[]"
         )
-        if not _check_for_config_list(temp_fixed_dimensions):
-            raise ConfigError(
-                "ShapeGradient",
-                "fixed_dimensions",
-                "fixed_dimensions has to be a list of integers, where `x` corresponds to 0, `y` corresponds to 1, and `z` corresponds to 2",
-            )
         fixed_dimensions = json.loads(temp_fixed_dimensions)
         self.use_fixed_dimensions = False
         if len(fixed_dimensions) > 0:
@@ -1172,10 +1169,8 @@ class ShapeFormHandler(FormHandler):
             )
             and not self.form_handler.uses_custom_scalar_product
         ):
-            raise ConfigError(
-                "ShapeGradient",
-                "use_p_laplacian",
-                "use_p_laplacian is not compatible with fixed_dimensions",
+            raise IncompatibleConfigurationError(
+                "use_p_laplacian", "ShapeGradient", "fixed_dimensions", "ShapeGradient"
             )
 
         # Calculate the necessary UFL forms
@@ -1410,77 +1405,28 @@ class ShapeFormHandler(FormHandler):
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_def", fallback="[]"
         )
-        if not _check_for_config_list(shape_bdry_temp):
-            raise ConfigError(
-                "ShapeGradient",
-                "shape_bdry_def",
-                "shape_bdry_def has to be a list of integers.",
-            )
+
         self.shape_bdry_def = json.loads(shape_bdry_temp)
-        if not isinstance(self.shape_bdry_def, list):
-            raise ConfigError(
-                "ShapeGradient", "shape_bdry_def", "The input has to be a list."
-            )
 
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_fix", fallback="[]"
         )
-        if not _check_for_config_list(shape_bdry_temp):
-            raise ConfigError(
-                "ShapeGradient",
-                "shape_bdry_fix",
-                "shape_bdry_fix has to be a list of integers.",
-            )
         self.shape_bdry_fix = json.loads(shape_bdry_temp)
-        if not isinstance(self.shape_bdry_fix, list):
-            raise ConfigError(
-                "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
-            )
 
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_fix_x", fallback="[]"
         )
-        if not _check_for_config_list(shape_bdry_temp):
-            raise ConfigError(
-                "ShapeGradient",
-                "shape_bdry_fix_x",
-                "shape_bdry_fix_x has to be a list of integers.",
-            )
         self.shape_bdry_fix_x = json.loads(shape_bdry_temp)
-        if not isinstance(self.shape_bdry_fix_x, list):
-            raise ConfigError(
-                "ShapeGradient", "shape_bdry_fix_x", "The input has to be a list."
-            )
 
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_fix_y", fallback="[]"
         )
-        if not _check_for_config_list(shape_bdry_temp):
-            raise ConfigError(
-                "ShapeGradient",
-                "shape_bdry_fix_y",
-                "shape_bdry_fix_y has to be a list of integers.",
-            )
         self.shape_bdry_fix_y = json.loads(shape_bdry_temp)
-        if not isinstance(self.shape_bdry_fix_y, list):
-            raise ConfigError(
-                "ShapeGradient", "shape_bdry_fix_y", "The input has to be a list."
-            )
 
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_fix_z", fallback="[]"
         )
-        if not _check_for_config_list(shape_bdry_temp):
-            raise ConfigError(
-                "ShapeGradient",
-                "shape_bdry_fix_z",
-                "shape_bdry_fix_z has to be a list of integers.",
-            )
         self.shape_bdry_fix_z = json.loads(shape_bdry_temp)
-        if not isinstance(self.shape_bdry_fix_z, list):
-            raise ConfigError(
-                "ShapeGradient", "shape_bdry_fix_z", "The input has to be a list."
-            )
 
         self.bcs_shape = create_dirichlet_bcs(
             self.deformation_space,
@@ -1626,19 +1572,17 @@ class ShapeFormHandler(FormHandler):
                     "ShapeGradient", "dist_max", fallback=1.0
                 )
                 if self.dist_min > self.dist_max:
-                    raise ConfigError(
-                        "ShapeGradinet",
+                    raise IncompatibleConfigurationError(
                         "dist_max",
-                        "dist_max has to be larger than dist_min.",
+                        "ShapeGradient",
+                        "dist_min",
+                        "ShapeGradient",
+                        "Reason: dist_max has to be larger than dist_min",
                     )
 
                 self.bdry_idcs = json.loads(
                     self.config.get("ShapeGradient", "boundaries_dist", fallback="[]")
                 )
-                if not type(self.shape_bdry_fix) == list:
-                    raise ConfigError(
-                        "ShapeGradient", "shape_bdry_fix", "The input has to be a list."
-                    )
                 self.smooth_mu = self.config.getboolean(
                     "ShapeGradient", "smooth_mu", fallback=False
                 )

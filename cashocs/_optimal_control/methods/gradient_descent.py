@@ -20,11 +20,13 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem

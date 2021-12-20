@@ -23,16 +23,18 @@ method.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
 import abc
+from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .._exceptions import CashocsException, ConfigError, NotConvergedError
+from .._exceptions import CashocsException, NotConvergedError
 from .._loggers import debug
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+
 
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
@@ -341,12 +343,6 @@ class BaseHessianProblem(abc.ABC):
             self.cg(idx_active)
         elif self.inner_newton == "cr":
             self.cr(idx_active)
-        else:
-            raise ConfigError(
-                "AlgoTNM",
-                "inner_newton",
-                "Not a valid choice. Needs to be either 'cg' or 'cr'.",
-            )
 
         return self.delta_control
 

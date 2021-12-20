@@ -17,17 +17,18 @@
 
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import abc
+from typing import TYPE_CHECKING, List, Union, Optional
 
 import fenics
-import ufl.core.expr
 import numpy as np
+import ufl.core.expr
 
 from .constraints import EqualityConstraint, InequalityConstraint
 from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
+
 
 if TYPE_CHECKING:
     from .constrained_problems import ConstrainedOptimizationProblem

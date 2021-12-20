@@ -20,13 +20,15 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 import numpy as np
 
 from .._interfaces.line_search import LineSearch
 from .._loggers import error
+
 
 if TYPE_CHECKING:
     from .control_optimization_algorithm import ControlOptimizationAlgorithm

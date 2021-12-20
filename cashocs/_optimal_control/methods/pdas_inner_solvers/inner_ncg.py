@@ -20,14 +20,16 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING, List
 
 import fenics
 import numpy as np
 
 from .unconstrained_line_search import UnconstrainedLineSearch
 from ...control_optimization_algorithm import ControlOptimizationAlgorithm
-from ...._exceptions import ConfigError, NotConvergedError
+from ...._exceptions import NotConvergedError
+
 
 if TYPE_CHECKING:
     from ...optimal_control_problem import OptimalControlProblem
@@ -215,14 +217,6 @@ class InnerNCG(ControlOptimizationAlgorithm):
                             self.differences, self.reduced_gradient
                         )
                         / dy
-                    )
-
-                else:
-                    raise ConfigError(
-                        "AlgoCG",
-                        "cg_method",
-                        "Not a valid input. Choose either 'FR' (Fletcher Reeves), 'PR' (Polak Ribiere), "
-                        "'HS' (Hestenes Stiefel), 'DY' (Dai Yuan), or 'HZ' (Hager Zhang).",
                     )
 
             if self.iteration == 0:

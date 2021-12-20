@@ -19,9 +19,11 @@
 
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING
 
 from .._interfaces import ReducedCostFunctional
+
 
 if TYPE_CHECKING:
     from .._forms import ShapeFormHandler

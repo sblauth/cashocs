@@ -23,13 +23,14 @@ follow.
 """
 
 from __future__ import annotations
+
 from typing import List, Union, Optional
-from typing_extensions import Literal
 
 import fenics
 import numpy as np
 import ufl
 from petsc4py import PETSc
+from typing_extensions import Literal
 
 from ._exceptions import InputError, NotConvergedError
 from ._loggers import warning

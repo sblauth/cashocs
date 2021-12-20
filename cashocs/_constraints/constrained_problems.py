@@ -24,18 +24,18 @@ from __future__ import annotations
 import abc
 import configparser
 from typing import List, Dict, Optional, Union, Callable
-from typing_extensions import Literal
 
 import fenics
 import numpy as np
 import ufl
+from typing_extensions import Literal
 
+from .constraints import EqualityConstraint, InequalityConstraint
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
 from .._exceptions import InputError
 from .._optimal_control.optimal_control_problem import OptimalControlProblem
 from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 from ..utils import enlist
-from .constraints import EqualityConstraint, InequalityConstraint
 
 
 class ConstrainedOptimizationProblem(abc.ABC):

@@ -16,8 +16,9 @@
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional, Callable
+
 import abc
+from typing import TYPE_CHECKING, List, Union
 
 import fenics
 

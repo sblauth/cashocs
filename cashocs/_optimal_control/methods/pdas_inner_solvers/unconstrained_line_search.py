@@ -20,12 +20,13 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 import weakref
+from typing import TYPE_CHECKING, List
 
 import fenics
 import numpy as np
+
 
 if TYPE_CHECKING:
     from ...control_optimization_algorithm import ControlOptimizationAlgorithm

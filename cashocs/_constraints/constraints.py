@@ -4,10 +4,9 @@ Created on 05/11/2021, 09.40
 @author: blauths
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
-
 
 import abc
+from typing import Union, Optional
 
 import fenics
 import numpy as np

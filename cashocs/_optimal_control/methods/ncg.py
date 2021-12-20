@@ -20,12 +20,14 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING, List
+
 import fenics
 import numpy as np
 
-from ..._exceptions import ConfigError
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem
@@ -56,13 +58,6 @@ class NCG(ControlOptimizationAlgorithm):
         self.control_constraints = optimization_problem.control_constraints
 
         self.cg_method = self.config.get("AlgoCG", "cg_method", fallback="FR")
-        if not self.cg_method in ["FR", "PR", "HS", "DY", "HZ"]:
-            raise ConfigError(
-                "AlgoCG",
-                "cg_method",
-                "Not a valid input. Choose either 'FR' (Fletcher Reeves), 'PR' (Polak Ribiere), "
-                "'HS' (Hestenes Stiefel), 'DY' (Dai Yuan), or 'HZ' (Hager Zhang).",
-            )
         self.cg_periodic_restart = self.config.getboolean(
             "AlgoCG", "cg_periodic_restart", fallback=False
         )

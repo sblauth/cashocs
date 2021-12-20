@@ -513,7 +513,7 @@ in the following.
     * - Parameter
       - Default value
       - Remarks
-    * - mesh-file
+    * - mesh_file
       -
       - optional, see :py:func:`import_mesh <cashocs.import_mesh>`
 

@@ -19,12 +19,14 @@
 
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
+
+from typing import TYPE_CHECKING
+
 import fenics
 import numpy as np
 
-from ..._exceptions import ConfigError
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..shape_optimization_problem import ShapeOptimizationProblem
@@ -56,13 +58,6 @@ class NCG(ShapeOptimizationAlgorithm):
         self.temp_HZ = fenics.Function(self.form_handler.deformation_space)
 
         self.cg_method = self.config.get("AlgoCG", "cg_method", fallback="FR")
-        if not self.cg_method in ["FR", "PR", "HS", "DY", "HZ"]:
-            raise ConfigError(
-                "AlgoCG",
-                "cg_method",
-                "Not a valid input. Choose either 'FR' (Fletcher Reeves), 'PR' (Polak Ribiere), "
-                "'HS' (Hestenes Stiefel), 'DY' (Dai Yuan), or 'HZ' (Hager Zhang).",
-            )
         self.cg_periodic_restart = self.config.getboolean(
             "AlgoCG", "cg_periodic_restart", fallback=False
         )

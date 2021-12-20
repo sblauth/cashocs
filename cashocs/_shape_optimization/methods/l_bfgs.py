@@ -20,15 +20,16 @@
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
 
 from _collections import deque
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
+
 
 if TYPE_CHECKING:
     from ..shape_optimization_problem import ShapeOptimizationProblem
