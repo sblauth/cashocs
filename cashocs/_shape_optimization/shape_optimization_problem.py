@@ -345,7 +345,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.adjoint_problem = AdjointProblem(
             self.form_handler, self.state_problem, self.temp_dict
         )
-        self.shape_gradient_problem = ShapeGradientProblem(
+        self.gradient_problem = ShapeGradientProblem(
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
@@ -353,7 +353,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             self.form_handler, self.state_problem
         )
 
-        self.gradient = self.shape_gradient_problem.gradient
+        self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
 
     def _erase_pde_memory(self) -> None:
@@ -370,7 +370,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         super()._erase_pde_memory()
         self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
         self.form_handler.update_scalar_product()
-        self.shape_gradient_problem.has_solution = False
+        self.gradient_problem.has_solution = False
 
     def solve(
         self,
@@ -508,7 +508,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             The shape gradient.
         """
 
-        self.shape_gradient_problem.solve()
+        self.gradient_problem.solve()
 
         return self.gradient
 

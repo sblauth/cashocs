@@ -56,8 +56,8 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         self.mesh_handler = optimization_problem.mesh_handler
 
-        self.shape_gradient_problem = optimization_problem.shape_gradient_problem
-        self.gradient = self.shape_gradient_problem.gradient
+        self.gradient_problem = optimization_problem.gradient_problem
+        self.gradient = self.gradient_problem.gradient
         self.search_direction = fenics.Function(self.form_handler.deformation_space)
 
         self.temp_dict = optimization_problem.temp_dict

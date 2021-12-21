@@ -147,9 +147,9 @@ class LBFGS(ShapeOptimizationAlgorithm):
         self.state_problem.has_solution = False
 
         self.adjoint_problem.has_solution = False
-        self.shape_gradient_problem.has_solution = False
-        self.shape_gradient_problem.solve()
-        self.gradient_norm = np.sqrt(self.shape_gradient_problem.gradient_norm_squared)
+        self.gradient_problem.has_solution = False
+        self.gradient_problem.solve()
+        self.gradient_norm = np.sqrt(self.gradient_problem.gradient_norm_squared)
 
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
@@ -188,12 +188,10 @@ class LBFGS(ShapeOptimizationAlgorithm):
                 )
 
             self.adjoint_problem.has_solution = False
-            self.shape_gradient_problem.has_solution = False
-            self.shape_gradient_problem.solve()
+            self.gradient_problem.has_solution = False
+            self.gradient_problem.solve()
 
-            self.gradient_norm = np.sqrt(
-                self.shape_gradient_problem.gradient_norm_squared
-            )
+            self.gradient_norm = np.sqrt(self.gradient_problem.gradient_norm_squared)
             self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
             if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:

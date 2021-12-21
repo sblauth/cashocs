@@ -280,7 +280,6 @@ class OptimizationProblem(abc.ABC):
         self.state_problem = None
         self.adjoint_problem = None
         self.gradient_problem = None
-        self.shape_gradient_problem = None
 
         self.algorithm = None
 
@@ -489,10 +488,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler._pre_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
-        try:
-            self.gradient_problem.has_solution = False
-        except AttributeError:
-            self.shape_gradient_problem.has_solution = False
+        self.gradient_problem.has_solution = False
 
     def inject_post_hook(self, function: Callable) -> None:
         """
@@ -513,10 +509,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler._post_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
-        try:
-            self.gradient_problem.has_solution = False
-        except AttributeError:
-            self.shape_gradient_problem.has_solution = False
+        self.gradient_problem.has_solution = False
 
     def inject_pre_post_hook(
         self, pre_function: Callable, post_function: Callable

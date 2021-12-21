@@ -99,12 +99,10 @@ class NCG(ShapeOptimizationAlgorithm):
             self.gradient_prev.vector().vec().aypx(0.0, self.gradient.vector().vec())
 
             self.adjoint_problem.has_solution = False
-            self.shape_gradient_problem.has_solution = False
-            self.shape_gradient_problem.solve()
+            self.gradient_problem.has_solution = False
+            self.gradient_problem.solve()
 
-            self.gradient_norm = np.sqrt(
-                self.shape_gradient_problem.gradient_norm_squared
-            )
+            self.gradient_norm = np.sqrt(self.gradient_problem.gradient_norm_squared)
             if self.iteration > 0:
                 if self.cg_method == "FR":
                     self.beta_numerator = self.form_handler.scalar_product(

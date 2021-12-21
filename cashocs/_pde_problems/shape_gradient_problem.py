@@ -175,7 +175,7 @@ class _PLaplacProjector:
 
     def __init__(
         self,
-        shape_gradient_problem: ShapeGradientProblem,
+        gradient_problem: ShapeGradientProblem,
         gradient: fenics.Function,
         shape_derivative: ufl.Form,
         bcs_shape: List[fenics.DirichletBC],
@@ -185,7 +185,7 @@ class _PLaplacProjector:
 
         Parameters
         ----------
-        shape_gradient_problem : ShapeGradientProblem
+        gradient_problem : ShapeGradientProblem
             The shape gradient problem
         gradient : fenics.Function
             The fenics Function representing the gradient deformation
@@ -205,10 +205,10 @@ class _PLaplacProjector:
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient
         self.shape_derivative = shape_derivative
-        self.test_vector_field = shape_gradient_problem.form_handler.test_vector_field
+        self.test_vector_field = gradient_problem.form_handler.test_vector_field
         self.bcs_shape = bcs_shape
-        dx = shape_gradient_problem.form_handler.dx
-        self.mu_lame = shape_gradient_problem.form_handler.mu_lame
+        dx = gradient_problem.form_handler.dx
+        self.mu_lame = gradient_problem.form_handler.mu_lame
 
         self.A_tensor = fenics.PETScMatrix()
         self.b_tensor = fenics.PETScVector()
