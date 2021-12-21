@@ -20,7 +20,7 @@
 """
 
 from .adjoint_problem import AdjointProblem
-from .gradient_problem import GradientProblem
+from .control_gradient_problem import ControlGradientProblem
 from .hessian_problems import HessianProblem, UnconstrainedHessianProblem
 from .shape_gradient_problem import ShapeGradientProblem
 from .state_problem import StateProblem
@@ -28,7 +28,7 @@ from .state_problem import StateProblem
 
 __all__ = [
     "AdjointProblem",
-    "GradientProblem",
+    "ControlGradientProblem",
     "HessianProblem",
     "ShapeGradientProblem",
     "StateProblem",

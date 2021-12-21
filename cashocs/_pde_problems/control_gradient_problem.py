@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from .adjoint_problem import AdjointProblem
 
 
-class GradientProblem(PDEProblem):
+class ControlGradientProblem(PDEProblem):
     """A class representing the Riesz problem to determine the gradient."""
 
     def __init__(

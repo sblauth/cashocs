@@ -47,7 +47,6 @@ class GradientDescent(ShapeOptimizationAlgorithm):
         super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
-        self.has_curvature_info = False
 
     def run(self) -> None:
         """Performs the optimization via the gradient descent method

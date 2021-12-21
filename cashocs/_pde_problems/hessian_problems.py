@@ -38,22 +38,22 @@ from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_
 
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
-    from .gradient_problem import GradientProblem
+    from .control_gradient_problem import ControlGradientProblem
 
 
 class BaseHessianProblem(abc.ABC):
     """Base class for derived Hessian problems."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """
         Parameters
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 
@@ -383,7 +383,7 @@ class HessianProblem(BaseHessianProblem):
     """PDE Problem used to solve the (reduced) Hessian problem."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """Initializes self.
 
@@ -391,8 +391,8 @@ class HessianProblem(BaseHessianProblem):
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 
@@ -601,15 +601,15 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
     """Hessian Problem without control constraints for the inner solver in PDAS."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """
         Parameters
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 

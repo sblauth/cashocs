@@ -24,3 +24,5 @@ cashocs.egg-info/
 /tests/temp
 /tests/out
 *cashocs_remesh_*/
+
+*/_optimization_methods/

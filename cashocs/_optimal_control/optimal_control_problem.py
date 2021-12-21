@@ -37,7 +37,7 @@ from .._interfaces import OptimizationProblem
 from .._optimal_control import ReducedControlCostFunctional
 from .._pde_problems import (
     AdjointProblem,
-    GradientProblem,
+    ControlGradientProblem,
     HessianProblem,
     StateProblem,
     UnconstrainedHessianProblem,
@@ -359,7 +359,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.state_problem = StateProblem(self.form_handler, self.initial_guess)
         self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
-        self.gradient_problem = GradientProblem(
+        self.gradient_problem = ControlGradientProblem(
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
