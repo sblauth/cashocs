@@ -66,14 +66,14 @@ class LineSearch(abc.ABC):
 
     @abc.abstractmethod
     def decrease_measure(
-        self, search_direction: Optional[fenics.Function] = None
+        self, search_direction: Optional[list[fenics.Function]] = None
     ) -> float:
         pass
 
     @abc.abstractmethod
     def search(
         self,
-        search_direction: Union[fenics.Function, List[fenics.Function]],
+        search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
         pass

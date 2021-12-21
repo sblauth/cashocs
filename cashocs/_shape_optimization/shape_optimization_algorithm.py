@@ -55,7 +55,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         self.mesh_handler = optimization_problem.mesh_handler
 
-        self.search_direction = fenics.Function(self.form_handler.deformation_space)
+        self.search_direction = [fenics.Function(self.form_handler.deformation_space)]
 
         self.temp_dict = optimization_problem.temp_dict
         if self.mesh_handler.do_remesh:
@@ -95,7 +95,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
 
         if self.save_pvd_gradient:
             self.shape_gradient_pvd_file = self._generate_pvd_file(
-                self.gradient.function_space(), "shape_gradient", self.pvd_prefix
+                self.gradient[0].function_space(), "shape_gradient", self.pvd_prefix
             )
 
     @abc.abstractmethod
@@ -120,7 +120,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         super().print_results()
 
         if self.save_pvd_gradient:
-            self.shape_gradient_pvd_file << self.gradient, float(self.iteration)
+            self.shape_gradient_pvd_file << self.gradient[0], float(self.iteration)
 
     def finalize(self) -> None:
         """Saves the history of the optimization algorithm

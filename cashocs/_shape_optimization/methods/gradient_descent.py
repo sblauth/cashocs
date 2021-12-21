@@ -93,8 +93,8 @@ class GradientDescent(ShapeOptimizationAlgorithm):
                 self.converged = True
                 break
 
-            self.search_direction.vector().vec().aypx(
-                0.0, -self.gradient.vector().vec()
+            self.search_direction[0].vector().vec().aypx(
+                0.0, -self.gradient[0].vector().vec()
             )
 
             self.line_search.search(self.search_direction, self.has_curvature_info)

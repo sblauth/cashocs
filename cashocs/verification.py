@@ -141,7 +141,7 @@ def control_gradient_test(
 
 def shape_gradient_test(
     sop: ShapeOptimizationProblem,
-    h: Optional[fenics.Function] = None,
+    h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
 ) -> float:
     """Taylor test to verify that the computed shape gradient is correct.
@@ -150,7 +150,7 @@ def shape_gradient_test(
     ----------
     sop : cashocs.ShapeOptimizationProblem
         The underlying shape optimization problem.
-    h : fenics.Function or None, optional
+    h : list[fenics.Function] or None, optional
         The direction used to compute the directional derivative. If this is
         ``None``, then a random direction is used (default is ``None``).
     rng : numpy.random.RandomState or None, optional
@@ -164,17 +164,17 @@ def shape_gradient_test(
     """
 
     if h is None:
-        h = fenics.Function(sop.form_handler.deformation_space)
+        h = [fenics.Function(sop.form_handler.deformation_space)]
         if rng is not None:
-            h.vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
+            h[0].vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
         else:
-            h.vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
+            h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
 
     # ensure that the shape boundary conditions are applied
-    [bc.apply(h.vector()) for bc in sop.form_handler.bcs_shape]
+    [bc.apply(h[0].vector()) for bc in sop.form_handler.bcs_shape]
 
     if sop.form_handler.use_fixed_dimensions:
-        h.vector()[sop.form_handler.fixed_indices] = 0.0
+        h[0].vector()[sop.form_handler.fixed_indices] = 0.0
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
@@ -191,7 +191,7 @@ def shape_gradient_test(
     residuals = []
 
     for idx, eps in enumerate(epsilons):
-        transformation.vector().vec().aypx(0.0, h.vector().vec())
+        transformation.vector().vec().aypx(0.0, h[0].vector().vec())
         transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):
             sop._erase_pde_memory()

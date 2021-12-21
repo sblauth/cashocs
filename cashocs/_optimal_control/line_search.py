@@ -59,13 +59,13 @@ class ArmijoLineSearch(LineSearch):
         self.gradient = optimization_algorithm.gradient
 
     def decrease_measure(
-        self, search_direction: Optional[fenics.Function] = None
+        self, search_direction: Optional[List[fenics.Function]] = None
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test
 
         Parameters
         ----------
-        search_direction : fenics.Function or None, optional
+        search_direction : list[fenics.Function] or None, optional
             The search direction (not required)
 
         Returns
