@@ -88,30 +88,37 @@ class Newton(ControlOptimizationAlgorithm):
                 self.converged = True
                 break
 
-            self.search_directions = self.hessian_problem.newton_solve()
+            self.search_direction = self.hessian_problem.newton_solve()
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_directions, self.gradients
+                self.search_direction, self.gradient
             )
             if self.directional_derivative > 0:
                 self.has_curvature_info = False
                 debug("Did not compute a descent direction with Newton's method.")
-                for i in range(len(self.gradients)):
-                    self.search_directions[i].vector().vec().aypx(
-                        0.0, -self.gradients[i].vector().vec()
+                for i in range(len(self.gradient)):
+                    self.search_direction[i].vector().vec().aypx(
+                        0.0, -self.gradient[i].vector().vec()
                     )
             else:
                 self.has_curvature_info = True
 
-            self.line_search.search(self.search_directions, self.has_curvature_info)
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
+            self.line_search.search(self.search_direction, self.has_curvature_info)
 
             if self.armijo_broken and self.has_curvature_info:
-                for i in range(len(self.gradients)):
-                    self.search_directions[i].vector().vec().aypx(
-                        0.0, -self.gradients[i].vector().vec()
+                for i in range(len(self.gradient)):
+                    self.search_direction[i].vector().vec().aypx(
+                        0.0, -self.gradient[i].vector().vec()
                     )
                 self.has_curvature_info = False
                 self.armijo_broken = False
-                self.line_search.search(self.search_directions, self.has_curvature_info)
+
+                self.objective_value = self.cost_functional.evaluate()
+                self.output()
+
+                self.line_search.search(self.search_direction, self.has_curvature_info)
 
                 if self.armijo_broken:
                     self.converged_reason = -2

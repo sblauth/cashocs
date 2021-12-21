@@ -103,25 +103,25 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
         Returns
         -------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             the search direction
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             history_alpha = deque()
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().aypx(
+                self.search_direction[j].vector().vec().aypx(
                     0.0, grad[j].vector().vec()
                 )
-                self.search_directions[j].vector()[idx_active[j]] = 0.0
+                self.search_direction[j].vector()[idx_active[j]] = 0.0
 
             for i, _ in enumerate(self.history_s):
                 alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.history_s[i], self.search_directions
+                    self.history_s[i], self.search_direction
                 )
                 history_alpha.append(alpha)
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector().vec().axpy(
+                    self.search_direction[j].vector().vec().axpy(
                         -alpha, self.history_y[i][j].vector().vec()
                     )
 
@@ -135,32 +135,32 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                 factor = 1.0
 
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().scale(factor)
-                self.search_directions[j].vector()[idx_active[j]] = 0.0
+                self.search_direction[j].vector().vec().scale(factor)
+                self.search_direction[j].vector()[idx_active[j]] = 0.0
 
             for i, _ in enumerate(self.history_s):
                 beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
-                    self.history_y[-1 - i], self.search_directions
+                    self.history_y[-1 - i], self.search_direction
                 )
 
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector().vec().axpy(
+                    self.search_direction[j].vector().vec().axpy(
                         history_alpha[-1 - i] - beta,
                         self.history_s[-1 - i][j].vector().vec(),
                     )
 
             for j in range(len(self.controls)):
-                self.search_directions[j].vector()[idx_active[j]] = 0.0
-                self.search_directions[j].vector().vec().scale(-1)
+                self.search_direction[j].vector()[idx_active[j]] = 0.0
+                self.search_direction[j].vector().vec().scale(-1)
 
         else:
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().aypx(
+                self.search_direction[j].vector().vec().aypx(
                     0.0, -grad[j].vector().vec()
                 )
-                self.search_directions[j].vector()[idx_active[j]] = 0.0
+                self.search_direction[j].vector()[idx_active[j]] = 0.0
 
-        return self.search_directions
+        return self.search_direction
 
     def run(self, idx_active: List[np.ndarray]) -> None:
         """Solves the inner PDAS optimization problem
@@ -185,7 +185,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
         for j in range(len(self.controls)):
             self.reduced_gradient[j].vector().vec().aypx(
-                0.0, self.gradients[j].vector().vec()
+                0.0, self.gradient[j].vector().vec()
             )
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
@@ -207,25 +207,27 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
             / self.first_gradient_norm
             <= self.tolerance / 2
         ):
-            self.search_directions = self.compute_search_direction(
+            self.search_direction = self.compute_search_direction(
                 self.reduced_gradient, idx_active
             )
 
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_directions, self.reduced_gradient
+                self.search_direction, self.reduced_gradient
             )
             if self.directional_derivative > 0:
                 # print('No descent direction found')
                 for j in range(self.form_handler.control_dim):
-                    self.search_directions[j].vector().vec().aypx(
+                    self.search_direction[j].vector().vec().aypx(
                         0.0, -self.reduced_gradient[j].vector().vec()
                     )
 
-            self.line_search.search(self.search_directions)
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
+            self.line_search.search(self.search_direction)
             if self.line_search_broken:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Armijo rule failed.")
+                    print("Armijo rule failed.")
                     break
                 else:
                     raise NotConvergedError("Armijo line search")
@@ -242,7 +244,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
             for j in range(len(self.controls)):
                 self.reduced_gradient[j].vector().vec().aypx(
-                    0.0, self.gradients[j].vector().vec()
+                    0.0, self.gradient[j].vector().vec()
                 )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
@@ -262,7 +264,7 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                         - self.gradients_prev[i].vector().vec(),
                     )
                     self.storage_s[i].vector().vec().aypx(
-                        0.0, self.stepsize * self.search_directions[i].vector().vec()
+                        0.0, self.stepsize * self.search_direction[i].vector().vec()
                     )
 
                 self.history_y.appendleft([x.copy(True) for x in self.storage_y])
@@ -284,10 +286,8 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
             self.iteration += 1
             if self.iteration >= self.maximum_iterations:
-                # self.print_results()
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Maximum number of iterations exceeded.")
+                    print("Maximum number of iterations exceeded.")
                     break
                 else:
                     raise NotConvergedError(

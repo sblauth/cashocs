@@ -959,7 +959,7 @@ def test_fixed_dimensions():
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
-    assert assemble(grad_x[0] * grad_x[0] * dx) == 0
+    assert assemble(grad_x[0][0] * grad_x[0][0] * dx) == 0
     assert sop.gradient_test() > 1.9
     assert sop.gradient_test() > 1.9
     assert sop.gradient_test() > 1.9
@@ -970,7 +970,7 @@ def test_fixed_dimensions():
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
-    assert assemble(grad_x[1] * grad_x[1] * dx) == 0
+    assert assemble(grad_x[0][1] * grad_x[0][1] * dx) == 0
     assert sop.gradient_test() > 1.9
     assert sop.gradient_test() > 1.9
     assert sop.gradient_test() > 1.9

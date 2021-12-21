@@ -61,7 +61,6 @@ class PDAS(ControlOptimizationAlgorithm):
         self.shift_mult = self.config.getfloat(
             "AlgoPDAS", "pdas_regularization_parameter"
         )
-        self.verbose = self.config.getboolean("Output", "verbose", fallback=True)
 
         self.control_constraints = optimization_problem.control_constraints
 
@@ -169,7 +168,7 @@ class PDAS(ControlOptimizationAlgorithm):
         norm_init = np.sqrt(self._stationary_measure_squared())
         self.adjoint_problem.has_solution = True
 
-        self.print_results()
+        self.output()
 
         while True:
 
@@ -184,7 +183,7 @@ class PDAS(ControlOptimizationAlgorithm):
             self.inner_solver.run(self.idx_active)
 
             for j in range(len(self.controls)):
-                self.mu[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+                self.mu[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
                 self.mu[j].vector()[self.idx_inactive[j]] = 0.0
 
             self.objective_value = self.inner_solver.line_search.objective_step
@@ -203,4 +202,4 @@ class PDAS(ControlOptimizationAlgorithm):
                 self.converged_reason = -1
                 break
 
-            self.print_results()
+            self.output()

@@ -600,9 +600,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         else:
             if self.iterations == 1:
                 sop.compute_shape_gradient()
-                self.initial_norm = np.sqrt(
-                    sop.shape_gradient_problem.gradient_norm_squared
-                )
+                self.initial_norm = np.sqrt(sop.gradient_problem.gradient_norm_squared)
             atol = self.initial_norm * tol / 10.0
 
         sop.solve(rtol=rtol, atol=atol)

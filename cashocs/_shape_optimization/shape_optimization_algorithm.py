@@ -52,13 +52,10 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         self.line_search_broken = False
         self.requires_remeshing = False
         self.remeshing_its = False
-        self.has_curvature_info = False
 
         self.mesh_handler = optimization_problem.mesh_handler
 
-        self.shape_gradient_problem = optimization_problem.shape_gradient_problem
-        self.gradient = self.shape_gradient_problem.gradient
-        self.search_direction = fenics.Function(self.form_handler.deformation_space)
+        self.search_direction = [fenics.Function(self.form_handler.deformation_space)]
 
         self.temp_dict = optimization_problem.temp_dict
         if self.mesh_handler.do_remesh:
@@ -72,34 +69,7 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
             self.iteration = 0
 
         if self.mesh_handler.do_remesh:
-            self.pvd_prefix = f"remesh_{self.temp_dict.get('remesh_counter', 0):d}_"
-
-        if self.save_pvd:
-            self.state_pvd_list = []
-            for i in range(self.form_handler.state_dim):
-                self.state_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.state_spaces[i],
-                        f"state_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
-        if self.save_pvd_adjoint:
-            self.adjoint_pvd_list = []
-            for i in range(self.form_handler.state_dim):
-                self.adjoint_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.state_spaces[i],
-                        f"adjoint_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
-        if self.save_pvd_gradient:
-            self.shape_gradient_pvd_file = self._generate_pvd_file(
-                self.gradient.function_space(), "shape_gradient", self.pvd_prefix
-            )
+            self.output_manager.set_remesh(self.temp_dict.get("remesh_counter", 0))
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -111,40 +81,3 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         """
 
         pass
-
-    def print_results(self) -> None:
-        """Prints the current state of the optimization algorithm to the console.
-
-        Returns
-        -------
-        None
-        """
-
-        super().print_results()
-
-        if self.save_pvd_gradient:
-            self.shape_gradient_pvd_file << self.gradient, float(self.iteration)
-
-    def finalize(self) -> None:
-        """Saves the history of the optimization algorithm
-
-        Returns
-        -------
-        None
-        """
-
-        super().finalize()
-
-        if self.mesh_handler.save_optimized_mesh:
-            write_out_mesh(
-                self.mesh_handler.mesh,
-                self.mesh_handler.gmsh_file,
-                f"{self.result_dir}/optimized_mesh.msh",
-            )
-
-        if self.mesh_handler.do_remesh:
-            if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                subprocess.run(["rm", "-r", self.temp_dir], check=True)
-                subprocess.run(
-                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
-                )

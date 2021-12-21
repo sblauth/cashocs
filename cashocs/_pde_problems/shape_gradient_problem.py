@@ -154,10 +154,10 @@ class ShapeGradientProblem(PDEProblem):
                     self.ksp,
                     self.form_handler.scalar_product_matrix,
                     self.form_handler.fe_shape_derivative_vector.vec(),
-                    self.gradient.vector().vec(),
+                    self.gradient[0].vector().vec(),
                     self.ksp_options,
                 )
-                self.gradient.vector().apply("")
+                self.gradient[0].vector().apply("")
 
                 self.has_solution = True
 
@@ -175,8 +175,8 @@ class _PLaplacProjector:
 
     def __init__(
         self,
-        shape_gradient_problem: ShapeGradientProblem,
-        gradient: fenics.Function,
+        gradient_problem: ShapeGradientProblem,
+        gradient: List[fenics.Function],
         shape_derivative: ufl.Form,
         bcs_shape: List[fenics.DirichletBC],
         config: configparser.ConfigParser,
@@ -185,9 +185,9 @@ class _PLaplacProjector:
 
         Parameters
         ----------
-        shape_gradient_problem : ShapeGradientProblem
+        gradient_problem : ShapeGradientProblem
             The shape gradient problem
-        gradient : fenics.Function
+        gradient : list[fenics.Function]
             The fenics Function representing the gradient deformation
         shape_derivative : ufl.Form
             The ufl Form of the shape derivative
@@ -203,12 +203,12 @@ class _PLaplacProjector:
             "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
         )
         self.p_list = np.arange(2, self.p_target + 1, 1)
-        self.solution = gradient
+        self.solution = gradient[0]
         self.shape_derivative = shape_derivative
-        self.test_vector_field = shape_gradient_problem.form_handler.test_vector_field
+        self.test_vector_field = gradient_problem.form_handler.test_vector_field
         self.bcs_shape = bcs_shape
-        dx = shape_gradient_problem.form_handler.dx
-        self.mu_lame = shape_gradient_problem.form_handler.mu_lame
+        dx = gradient_problem.form_handler.dx
+        self.mu_lame = gradient_problem.form_handler.mu_lame
 
         self.A_tensor = fenics.PETScMatrix()
         self.b_tensor = fenics.PETScVector()

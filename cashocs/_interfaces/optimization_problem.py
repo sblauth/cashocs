@@ -38,6 +38,7 @@ from ufl import replace
 from .._exceptions import InputError
 from .._loggers import warning, info
 from ..config import Config
+from ..output import OutputManager
 from ..utils import (
     _parse_remesh,
     summation,
@@ -150,6 +151,7 @@ class OptimizationProblem(abc.ABC):
 
         self.states = enlist(states)
         self.adjoints = enlist(adjoints)
+        self.gradient = None
 
         if config is None:
             self.config = Config()
@@ -280,7 +282,6 @@ class OptimizationProblem(abc.ABC):
         self.state_problem = None
         self.adjoint_problem = None
         self.gradient_problem = None
-        self.shape_gradient_problem = None
 
         self.algorithm = None
 
@@ -489,10 +490,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler._pre_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
-        try:
-            self.gradient_problem.has_solution = False
-        except AttributeError:
-            self.shape_gradient_problem.has_solution = False
+        self.gradient_problem.has_solution = False
 
     def inject_post_hook(self, function: Callable) -> None:
         """
@@ -513,10 +511,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler._post_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
-        try:
-            self.gradient_problem.has_solution = False
-        except AttributeError:
-            self.shape_gradient_problem.has_solution = False
+        self.gradient_problem.has_solution = False
 
     def inject_pre_post_hook(
         self, pre_function: Callable, post_function: Callable
@@ -619,6 +614,7 @@ class OptimizationProblem(abc.ABC):
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
         self._check_for_custom_forms()
+        self.output_manager = OutputManager(self)
 
     def __shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.

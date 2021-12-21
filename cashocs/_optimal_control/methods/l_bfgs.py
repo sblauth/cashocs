@@ -90,28 +90,28 @@ class LBFGS(ControlOptimizationAlgorithm):
 
         Returns
         -------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             A function corresponding to the current / next search direction
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             history_alpha = deque()
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().aypx(
+                self.search_direction[j].vector().vec().aypx(
                     0.0, grad[j].vector().vec()
                 )
 
             self.form_handler.restrict_to_inactive_set(
-                self.search_directions, self.search_directions
+                self.search_direction, self.search_direction
             )
 
             for i, _ in enumerate(self.history_s):
                 alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.history_s[i], self.search_directions
+                    self.history_s[i], self.search_direction
                 )
                 history_alpha.append(alpha)
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector().vec().axpy(
+                    self.search_direction[j].vector().vec().axpy(
                         -alpha, self.history_y[i][j].vector().vec()
                     )
 
@@ -125,40 +125,40 @@ class LBFGS(ControlOptimizationAlgorithm):
                 factor = 1.0
 
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().scale(factor)
+                self.search_direction[j].vector().vec().scale(factor)
 
             self.form_handler.restrict_to_inactive_set(
-                self.search_directions, self.search_directions
+                self.search_direction, self.search_direction
             )
 
             for i, _ in enumerate(self.history_s):
                 beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
-                    self.history_y[-1 - i], self.search_directions
+                    self.history_y[-1 - i], self.search_direction
                 )
 
                 for j in range(len(self.controls)):
-                    self.search_directions[j].vector().vec().axpy(
+                    self.search_direction[j].vector().vec().axpy(
                         history_alpha[-1 - i] - beta,
                         self.history_s[-1 - i][j].vector().vec(),
                     )
 
             self.form_handler.restrict_to_inactive_set(
-                self.search_directions, self.search_directions
+                self.search_direction, self.search_direction
             )
-            self.form_handler.restrict_to_active_set(self.gradients, self.temp)
+            self.form_handler.restrict_to_active_set(self.gradient, self.temp)
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().axpy(
+                self.search_direction[j].vector().vec().axpy(
                     1.0, self.temp[j].vector().vec()
                 )
-                self.search_directions[j].vector().vec().scale(-1.0)
+                self.search_direction[j].vector().vec().scale(-1.0)
 
         else:
             for j in range(len(self.controls)):
-                self.search_directions[j].vector().vec().aypx(
+                self.search_direction[j].vector().vec().aypx(
                     0.0, -grad[j].vector().vec()
                 )
 
-        return self.search_directions
+        return self.search_direction
 
     def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method
@@ -184,28 +184,31 @@ class LBFGS(ControlOptimizationAlgorithm):
         self.form_handler.compute_active_sets()
 
         while not self.converged:
-            self.search_directions = self.compute_search_direction(self.gradients)
+            self.search_direction = self.compute_search_direction(self.gradient)
 
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_directions, self.gradients
+                self.search_direction, self.gradient
             )
             if self.directional_derivative > 0:
                 debug("No descent direction found with L-BFGS")
                 for j in range(self.form_handler.control_dim):
-                    self.search_directions[j].vector().vec().aypx(
-                        0.0, -self.gradients[j].vector().vec()
+                    self.search_direction[j].vector().vec().aypx(
+                        0.0, -self.gradient[j].vector().vec()
                     )
 
-            self.line_search.search(self.search_directions, self.has_curvature_info)
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
+            self.line_search.search(self.search_direction, self.has_curvature_info)
 
             self.iteration += 1
             if self.nonconvergence():
                 break
 
             if self.bfgs_memory_size > 0:
-                for i in range(len(self.gradients)):
+                for i in range(len(self.gradient)):
                     self.gradients_prev[i].vector().vec().aypx(
-                        0.0, self.gradients[i].vector().vec()
+                        0.0, self.gradient[i].vector().vec()
                     )
 
             self.adjoint_problem.has_solution = False
@@ -221,15 +224,15 @@ class LBFGS(ControlOptimizationAlgorithm):
                 break
 
             if self.bfgs_memory_size > 0:
-                for i in range(len(self.gradients)):
+                for i in range(len(self.gradient)):
                     self.storage_y[i].vector().vec().aypx(
                         0.0,
-                        self.gradients[i].vector().vec()
+                        self.gradient[i].vector().vec()
                         - self.gradients_prev[i].vector().vec(),
                     )
                     self.storage_s[i].vector().vec().aypx(
                         0.0,
-                        self.stepsize * self.search_directions[i].vector().vec(),
+                        self.stepsize * self.search_direction[i].vector().vec(),
                     )
 
                 self.form_handler.restrict_to_inactive_set(self.storage_y, self.y_k)

@@ -37,7 +37,7 @@ from .._interfaces import OptimizationProblem
 from .._optimal_control import ReducedControlCostFunctional
 from .._pde_problems import (
     AdjointProblem,
-    GradientProblem,
+    ControlGradientProblem,
     HessianProblem,
     StateProblem,
     UnconstrainedHessianProblem,
@@ -359,7 +359,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.state_problem = StateProblem(self.form_handler, self.initial_guess)
         self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
-        self.gradient_problem = GradientProblem(
+        self.gradient_problem = ControlGradientProblem(
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
@@ -369,7 +369,7 @@ class OptimalControlProblem(OptimizationProblem):
             self.form_handler, self.state_problem
         )
 
-        self.gradients = self.gradient_problem.gradients
+        self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
 
     def _erase_pde_memory(self) -> None:
@@ -517,7 +517,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.gradient_problem.solve()
 
-        return self.gradients
+        return self.gradient
 
     def supply_derivatives(self, derivatives: Union[ufl.Form, List[ufl.Form]]) -> None:
         """Overwrites the derivatives of the reduced cost functional w.r.t. controls.

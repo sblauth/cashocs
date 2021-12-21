@@ -95,7 +95,7 @@ class InnerNewton(ControlOptimizationAlgorithm):
 
             for j in range(len(self.controls)):
                 self.reduced_gradient[j].vector().vec().aypx(
-                    0.0, self.gradients[j].vector().vec()
+                    0.0, self.gradient[j].vector().vec()
                 )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
@@ -119,25 +119,26 @@ class InnerNewton(ControlOptimizationAlgorithm):
                 / self.first_gradient_norm
                 <= self.tolerance / 2
             ):
-                # self.print_results()
                 break
 
-            self.search_directions = self.unconstrained_hessian.newton_solve(idx_active)
+            self.search_direction = self.unconstrained_hessian.newton_solve(idx_active)
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_directions, self.reduced_gradient
+                self.search_direction, self.reduced_gradient
             )
             if self.directional_derivative > 0:
                 # print('No descent direction')
                 for i in range(len(self.controls)):
-                    self.search_directions[i].vector().vec().aypx(
+                    self.search_direction[i].vector().vec().aypx(
                         0.0, -self.reduced_gradient[i].vector().vec()
                     )
 
-            self.line_search.search(self.search_directions)
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
+            self.line_search.search(self.search_direction)
             if self.armijo_broken:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Armijo rule failed.")
+                    print("Armijo rule failed.")
                     break
                 else:
                     raise NotConvergedError("Armijo line search")
@@ -146,8 +147,7 @@ class InnerNewton(ControlOptimizationAlgorithm):
 
             if self.iteration >= self.maximum_iterations:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Maximum number of iterations exceeded.")
+                    print("Maximum number of iterations exceeded.")
                     break
                 else:
                     raise NotConvergedError(

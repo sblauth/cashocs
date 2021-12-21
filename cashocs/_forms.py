@@ -24,6 +24,7 @@ problems.
 
 from __future__ import annotations
 
+import abc
 import itertools
 import json
 from typing import List, TYPE_CHECKING
@@ -62,7 +63,7 @@ if TYPE_CHECKING:
     from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 
 
-class FormHandler:
+class FormHandler(abc.ABC):
     """Parent class for UFL form manipulation.
 
     This is subclassed by specific form handlers for either
@@ -98,6 +99,8 @@ class FormHandler:
 
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms
+
+        self.gradient = None
 
         self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
         self.cost_functional_shift = 0.0
@@ -476,6 +479,10 @@ class FormHandler:
     def _post_hook(self) -> None:
         pass
 
+    @abc.abstractmethod
+    def scalar_product(self, a, b) -> float:
+        pass
+
 
 class ControlFormHandler(FormHandler):
     """Class for UFL form manipulation for optimal control problems.
@@ -511,6 +518,8 @@ class ControlFormHandler(FormHandler):
 
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
+
+        self.gradient = [fenics.Function(V) for V in self.control_spaces]
 
         # Define the necessary functions
         self.states_prime = [fenics.Function(V) for V in self.state_spaces]
@@ -1127,6 +1136,8 @@ class ShapeFormHandler(FormHandler):
         )
         deformation_space = optimization_problem.deformation_space
 
+        self.control_dim = 1
+
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation", fallback=True
         )
@@ -1145,7 +1156,9 @@ class ShapeFormHandler(FormHandler):
         else:
             self.deformation_space = deformation_space
 
-        self.gradient = fenics.Function(self.deformation_space)
+        self.control_spaces = [self.deformation_space]
+
+        self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
         self.regularization = Regularization(self)
@@ -1712,14 +1725,16 @@ class ShapeFormHandler(FormHandler):
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
         self._project_scalar_product()
 
-    def scalar_product(self, a: fenics.Function, b: fenics.Function) -> float:
+    def scalar_product(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> float:
         """Computes the scalar product between two deformation functions.
 
         Parameters
         ----------
-        a : fenics.Function
+        a : list[fenics.Function]
             The first argument.
-        b : fenics.Function
+        b : list[fenics.Function]
             The second argument.
 
         Returns
@@ -1733,13 +1748,14 @@ class ShapeFormHandler(FormHandler):
             and not self.uses_custom_scalar_product
         ):
             self.form = replace(
-                self.F_p_laplace, {self.gradient: a, self.test_vector_field: b}
+                self.F_p_laplace, {self.gradient[0]: a[0], self.test_vector_field: b[0]}
             )
             result = fenics.assemble(self.form)
 
         else:
-            x = fenics.as_backend_type(a.vector()).vec()
-            y = fenics.as_backend_type(b.vector()).vec()
+
+            x = fenics.as_backend_type(a[0].vector()).vec()
+            y = fenics.as_backend_type(b[0].vector()).vec()
 
             temp, _ = self.scalar_product_matrix.getVecs()
             self.scalar_product_matrix.mult(x, temp)
@@ -1765,18 +1781,20 @@ class ShapeFormHandler(FormHandler):
                 "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
             )
             kappa = pow(
-                fenics.inner(fenics.grad(self.gradient), fenics.grad(self.gradient)),
+                fenics.inner(
+                    fenics.grad(self.gradient[0]), fenics.grad(self.gradient[0])
+                ),
                 (p - 2) / 2.0,
             )
             self.F_p_laplace = (
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
-                    * fenics.grad(self.gradient),
+                    * fenics.grad(self.gradient[0]),
                     fenics.grad(self.test_vector_field),
                 )
                 * self.dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.gradient, self.test_vector_field)
+                * fenics.dot(self.gradient[0], self.test_vector_field)
                 * self.dx
             )

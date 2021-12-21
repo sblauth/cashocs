@@ -38,22 +38,22 @@ from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_
 
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
-    from .gradient_problem import GradientProblem
+    from .control_gradient_problem import ControlGradientProblem
 
 
 class BaseHessianProblem(abc.ABC):
     """Base class for derived Hessian problems."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """
         Parameters
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 
@@ -61,7 +61,7 @@ class BaseHessianProblem(abc.ABC):
         self.gradient_problem = gradient_problem
 
         self.config = self.form_handler.config
-        self.gradients = self.gradient_problem.gradients
+        self.gradient = self.gradient_problem.gradient
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton", fallback="cr")
         self.max_it_inner_newton = self.config.getint(
@@ -383,7 +383,7 @@ class HessianProblem(BaseHessianProblem):
     """PDE Problem used to solve the (reduced) Hessian problem."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """Initializes self.
 
@@ -391,8 +391,8 @@ class HessianProblem(BaseHessianProblem):
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 
@@ -471,7 +471,7 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.rsold = self.form_handler.scalar_product(self.residual, self.residual)
@@ -527,7 +527,7 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.eps_0 = np.sqrt(
@@ -601,15 +601,15 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
     """Hessian Problem without control constraints for the inner solver in PDAS."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: GradientProblem
+        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """
         Parameters
         ----------
         form_handler : ControlFormHandler
             The FormHandler object for the optimization problem.
-        gradient_problem : GradientProblem
-            The GradientProblem object (this is needed for the computation
+        gradient_problem : ControlGradientProblem
+            The ControlGradientProblem object (this is needed for the computation
             of the Hessian).
         """
 
@@ -617,7 +617,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         self.reduced_gradient = [
             fenics.Function(self.form_handler.control_spaces[j])
-            for j in range(len(self.gradients))
+            for j in range(len(self.gradient))
         ]
         self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
@@ -681,7 +681,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         for j in range(self.control_dim):
             self.reduced_gradient[j].vector().vec().aypx(
-                0.0, self.gradients[j].vector().vec()
+                0.0, self.gradient[j].vector().vec()
             )
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 

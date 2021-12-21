@@ -80,11 +80,14 @@ class GradientDescent(ControlOptimizationAlgorithm):
                 break
 
             for i in range(len(self.controls)):
-                self.search_directions[i].vector().vec().aypx(
-                    0.0, -self.gradients[i].vector().vec()
+                self.search_direction[i].vector().vec().aypx(
+                    0.0, -self.gradient[i].vector().vec()
                 )
 
-            self.line_search.search(self.search_directions, self.has_curvature_info)
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
+            self.line_search.search(self.search_direction, self.has_curvature_info)
 
             self.iteration += 1
             if self.nonconvergence():

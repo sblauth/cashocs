@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import abc
 import weakref
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 
@@ -43,6 +43,7 @@ class LineSearch(abc.ABC):
         self.ref_algo = weakref.ref(optimization_algorithm)
         self.config = optimization_algorithm.config
         self.form_handler = optimization_algorithm.form_handler
+        self.gradient = optimization_algorithm.gradient
 
         self.stepsize = self.config.getfloat(
             "OptimizationRoutine", "initial_stepsize", fallback=1.0
@@ -66,14 +67,14 @@ class LineSearch(abc.ABC):
 
     @abc.abstractmethod
     def decrease_measure(
-        self, search_direction: Optional[fenics.Function] = None
+        self, search_direction: Optional[list[fenics.Function]] = None
     ) -> float:
         pass
 
     @abc.abstractmethod
     def search(
         self,
-        search_direction: Union[fenics.Function, List[fenics.Function]],
+        search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
         pass

@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from .adjoint_problem import AdjointProblem
 
 
-class GradientProblem(PDEProblem):
+class ControlGradientProblem(PDEProblem):
     """A class representing the Riesz problem to determine the gradient."""
 
     def __init__(
@@ -64,7 +64,7 @@ class GradientProblem(PDEProblem):
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
-        self.gradients = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.gradient = self.form_handler.gradient
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
         self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
@@ -127,17 +127,17 @@ class GradientProblem(PDEProblem):
                 _solve_linear_problem(
                     ksp=self.ksps[i],
                     b=self.b_tensors[i].vec(),
-                    x=self.gradients[i].vector().vec(),
+                    x=self.gradient[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
                 )
-                self.gradients[i].vector().apply("")
+                self.gradient[i].vector().apply("")
 
             self.has_solution = True
 
             self.gradient_norm_squared = self.form_handler.scalar_product(
-                self.gradients, self.gradients
+                self.gradient, self.gradient
             )
 
             self.form_handler._post_hook()
 
-        return self.gradients
+        return self.gradient

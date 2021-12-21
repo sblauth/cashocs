@@ -56,16 +56,15 @@ class ArmijoLineSearch(LineSearch):
         ]
         self.controls = optimization_algorithm.controls
         self.controls_temp = optimization_algorithm.controls_temp
-        self.gradients = optimization_algorithm.gradients
 
     def decrease_measure(
-        self, search_direction: Optional[fenics.Function] = None
+        self, search_direction: Optional[List[fenics.Function]] = None
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test
 
         Parameters
         ----------
-        search_direction : fenics.Function or None, optional
+        search_direction : list[fenics.Function] or None, optional
             The search direction (not required)
 
         Returns
@@ -81,11 +80,11 @@ class ArmijoLineSearch(LineSearch):
             )
 
         return self.form_handler.scalar_product(
-            self.gradients, self.projected_difference
+            self.gradient, self.projected_difference
         )
 
     def search(
-        self, search_directions: List[fenics.Function], has_curvature_info: bool
+        self, search_direction: List[fenics.Function], has_curvature_info: bool
     ) -> None:
         """Does a line search with the Armijo rule.
 
@@ -94,7 +93,7 @@ class ArmijoLineSearch(LineSearch):
 
         Parameters
         ----------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             The current search direction computed by the optimization algorithm
         has_curvature_info : bool
             A boolean flag, indicating whether the search direction is (actually)
@@ -107,16 +106,14 @@ class ArmijoLineSearch(LineSearch):
 
         self.search_direction_inf = np.max(
             [
-                np.max(np.abs(search_directions[i].vector()[:]))
-                for i in range(len(self.gradients))
+                np.max(np.abs(search_direction[i].vector()[:]))
+                for i in range(len(self.gradient))
             ]
         )
         self.ref_algo().objective_value = self.cost_functional.evaluate()
 
         if has_curvature_info:
             self.stepsize = 1.0
-
-        self.ref_algo().print_results()
 
         for j in range(self.form_handler.control_dim):
             self.controls_temp[j].vector().vec().aypx(
@@ -147,16 +144,13 @@ class ArmijoLineSearch(LineSearch):
 
             for j in range(len(self.controls)):
                 self.controls[j].vector().vec().axpy(
-                    self.stepsize, search_directions[j].vector().vec()
+                    self.stepsize, search_direction[j].vector().vec()
                 )
 
             self.form_handler.project_to_admissible_set(self.controls)
 
             self.ref_algo().state_problem.has_solution = False
             self.objective_step = self.cost_functional.evaluate()
-
-            # self.project_direction_active(search_directions)
-            # meas = -self.epsilon_armijo*self.stepsize*self.form_handler.scalar_product(self.gradients, self.directions)
 
             if (
                 self.objective_step

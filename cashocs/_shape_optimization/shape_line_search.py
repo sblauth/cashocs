@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import fenics
 import numpy as np
@@ -50,14 +50,13 @@ class ArmijoLineSearch(LineSearch):
 
         self.mesh_handler = optimization_algorithm.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
-        self.gradient = optimization_algorithm.gradient
 
-    def decrease_measure(self, search_direction: fenics.Function) -> float:
+    def decrease_measure(self, search_direction: List[fenics.Function] = None) -> float:
         """Computes the measure of decrease needed for the Armijo test
 
         Parameters
         ----------
-        search_direction : fenics.Function
+        search_direction : list[fenics.Function]
             The current search direction
 
         Returns
@@ -69,13 +68,13 @@ class ArmijoLineSearch(LineSearch):
         return self.form_handler.scalar_product(self.gradient, search_direction)
 
     def search(
-        self, search_direction: fenics.Function, has_curvature_info: bool
+        self, search_direction: List[fenics.Function], has_curvature_info: bool
     ) -> None:
         """Performs the line search along the entered search direction
 
         Parameters
         ----------
-        search_direction : fenics.Function
+        search_direction : list[fenics.Function]
             The current search direction computed by the algorithms
         has_curvature_info : bool
             ``True`` if the step is (actually) computed via L-BFGS or Newton
@@ -85,13 +84,11 @@ class ArmijoLineSearch(LineSearch):
         None
         """
 
-        self.search_direction_inf = np.max(np.abs(search_direction.vector()[:]))
+        self.search_direction_inf = np.max(np.abs(search_direction[0].vector()[:]))
         self.ref_algo().objective_value = self.cost_functional.evaluate()
 
         if has_curvature_info:
             self.stepsize = 1.0
-
-        self.ref_algo().print_results()
 
         num_decreases = self.mesh_handler.compute_decreases(
             search_direction, self.stepsize
@@ -116,7 +113,7 @@ class ArmijoLineSearch(LineSearch):
                 break
 
             self.deformation.vector().vec().aypx(
-                0.0, self.stepsize * search_direction.vector().vec()
+                0.0, self.stepsize * search_direction[0].vector().vec()
             )
             self.dm = self.decrease_measure(search_direction)
 
