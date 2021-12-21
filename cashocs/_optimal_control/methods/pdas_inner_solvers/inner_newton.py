@@ -122,18 +122,18 @@ class InnerNewton(ControlOptimizationAlgorithm):
                 # self.print_results()
                 break
 
-            self.search_directions = self.unconstrained_hessian.newton_solve(idx_active)
+            self.search_direction = self.unconstrained_hessian.newton_solve(idx_active)
             self.directional_derivative = self.form_handler.scalar_product(
-                self.search_directions, self.reduced_gradient
+                self.search_direction, self.reduced_gradient
             )
             if self.directional_derivative > 0:
                 # print('No descent direction')
                 for i in range(len(self.controls)):
-                    self.search_directions[i].vector().vec().aypx(
+                    self.search_direction[i].vector().vec().aypx(
                         0.0, -self.reduced_gradient[i].vector().vec()
                     )
 
-            self.line_search.search(self.search_directions)
+            self.line_search.search(self.search_direction)
             if self.armijo_broken:
                 if self.soft_exit:
                     if self.verbose:

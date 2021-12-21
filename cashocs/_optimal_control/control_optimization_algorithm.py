@@ -69,7 +69,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         self.projected_difference = [
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
-        self.search_directions = [
+        self.search_direction = [
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
 

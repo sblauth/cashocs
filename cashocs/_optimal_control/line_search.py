@@ -85,7 +85,7 @@ class ArmijoLineSearch(LineSearch):
         )
 
     def search(
-        self, search_directions: List[fenics.Function], has_curvature_info: bool
+        self, search_direction: List[fenics.Function], has_curvature_info: bool
     ) -> None:
         """Does a line search with the Armijo rule.
 
@@ -94,7 +94,7 @@ class ArmijoLineSearch(LineSearch):
 
         Parameters
         ----------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             The current search direction computed by the optimization algorithm
         has_curvature_info : bool
             A boolean flag, indicating whether the search direction is (actually)
@@ -107,7 +107,7 @@ class ArmijoLineSearch(LineSearch):
 
         self.search_direction_inf = np.max(
             [
-                np.max(np.abs(search_directions[i].vector()[:]))
+                np.max(np.abs(search_direction[i].vector()[:]))
                 for i in range(len(self.gradient))
             ]
         )
@@ -147,7 +147,7 @@ class ArmijoLineSearch(LineSearch):
 
             for j in range(len(self.controls)):
                 self.controls[j].vector().vec().axpy(
-                    self.stepsize, search_directions[j].vector().vec()
+                    self.stepsize, search_direction[j].vector().vec()
                 )
 
             self.form_handler.project_to_admissible_set(self.controls)

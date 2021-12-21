@@ -124,11 +124,11 @@ class InnerGradientDescent(ControlOptimizationAlgorithm):
                 break
 
             for i in range(len(self.controls)):
-                self.search_directions[i].vector().vec().aypx(
+                self.search_direction[i].vector().vec().aypx(
                     0.0, -self.reduced_gradient[i].vector().vec()
                 )
 
-            self.line_search.search(self.search_directions)
+            self.line_search.search(self.search_direction)
             if self.line_search_broken:
                 if self.soft_exit:
                     if self.verbose:

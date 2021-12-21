@@ -72,12 +72,12 @@ class UnconstrainedLineSearch:
         if self.is_newton:
             self.stepsize = 1.0
 
-    def decrease_measure(self, search_directions: List[fenics.Function]) -> float:
+    def decrease_measure(self, search_direction: List[fenics.Function]) -> float:
         """Computes the decrease measure for the Armijo rule
 
         Parameters
         ----------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             The search direction computed by optimization_algorithm
 
         Returns
@@ -87,15 +87,15 @@ class UnconstrainedLineSearch:
         """
 
         return self.stepsize * self.form_handler.scalar_product(
-            self.gradient, search_directions
+            self.gradient, search_direction
         )
 
-    def search(self, search_directions: List[fenics.Function]) -> None:
+    def search(self, search_direction: List[fenics.Function]) -> None:
         """Performs an Armijo line search
 
         Parameters
         ----------
-        search_directions : list[fenics.Function]
+        search_direction : list[fenics.Function]
             The search direction computed by the optimization_algorithm
 
         Returns
@@ -105,7 +105,7 @@ class UnconstrainedLineSearch:
 
         self.search_direction_inf = np.max(
             [
-                np.max(np.abs(search_directions[i].vector()[:]))
+                np.max(np.abs(search_direction[i].vector()[:]))
                 for i in range(len(self.gradient))
             ]
         )
@@ -140,7 +140,7 @@ class UnconstrainedLineSearch:
 
             for j in range(len(self.controls)):
                 self.controls[j].vector().vec().axpy(
-                    self.stepsize, search_directions[j].vector().vec()
+                    self.stepsize, search_direction[j].vector().vec()
                 )
 
             self.ref_algo().state_problem.has_solution = False
@@ -149,7 +149,7 @@ class UnconstrainedLineSearch:
             if (
                 self.objective_step
                 < self.ref_algo().objective_value
-                + self.epsilon_armijo * self.decrease_measure(search_directions)
+                + self.epsilon_armijo * self.decrease_measure(search_direction)
             ):
                 if self.ref_algo().iteration == 0:
                     self.armijo_stepsize_initial = self.stepsize

@@ -172,7 +172,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
                         self.reduced_gradient, self.differences
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
-                        self.differences, self.search_directions
+                        self.differences, self.search_direction
                     )
                     self.beta = self.beta_numerator / self.beta_denominator
 
@@ -188,7 +188,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
                         self.reduced_gradient, self.reduced_gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
-                        self.search_directions, self.differences
+                        self.search_direction, self.differences
                     )
                     self.beta = self.beta_numerator / self.beta_denominator
 
@@ -201,7 +201,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
                         )
 
                     dy = self.form_handler.scalar_product(
-                        self.search_directions, self.differences
+                        self.search_direction, self.differences
                     )
                     y2 = self.form_handler.scalar_product(
                         self.differences, self.differences
@@ -209,7 +209,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
 
                     for i in range(self.form_handler.control_dim):
                         self.differences[i].vector().vec().axpy(
-                            -2 * y2 / dy, self.search_directions[i].vector().vec()
+                            -2 * y2 / dy, self.search_direction[i].vector().vec()
                         )
 
                     self.beta = (
@@ -239,7 +239,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
                 break
 
             for i in range(self.form_handler.control_dim):
-                self.search_directions[i].vector().vec().aypx(
+                self.search_direction[i].vector().vec().aypx(
                     self.beta, -self.reduced_gradient[i].vector().vec()
                 )
 
@@ -248,7 +248,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
                     self.memory += 1
                 else:
                     for i in range(self.form_handler.control_dim):
-                        self.search_directions[i].vector().vec().aypx(
+                        self.search_direction[i].vector().vec().aypx(
                             0.0, -self.reduced_gradient[i].vector().vec()
                         )
                     self.memory = 0
@@ -264,21 +264,21 @@ class InnerNCG(ControlOptimizationAlgorithm):
                     >= self.cg_restart_tol
                 ):
                     for i in range(self.form_handler.control_dim):
-                        self.search_directions[i].vector().vec().aypx(
+                        self.search_direction[i].vector().vec().aypx(
                             0.0, -self.reduced_gradient[i].vector().vec()
                         )
 
             self.directional_derivative = self.form_handler.scalar_product(
-                self.reduced_gradient, self.search_directions
+                self.reduced_gradient, self.search_direction
             )
 
             if self.directional_derivative >= 0:
                 for i in range(self.form_handler.control_dim):
-                    self.search_directions[i].vector().vec().aypx(
+                    self.search_direction[i].vector().vec().aypx(
                         0.0, -self.reduced_gradient[i].vector().vec()
                     )
 
-            self.line_search.search(self.search_directions)
+            self.line_search.search(self.search_direction)
             if self.armijo_broken:
                 if self.soft_exit:
                     if self.verbose:
