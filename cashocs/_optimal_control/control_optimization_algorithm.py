@@ -61,8 +61,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         super().__init__(optimization_problem)
 
-        self.gradient_problem = optimization_problem.gradient_problem
-        self.gradients = optimization_problem.gradients
+        self.gradient = optimization_problem.gradient
         self.controls = optimization_problem.controls
         self.controls_temp = [
             fenics.Function(V) for V in optimization_problem.control_spaces
@@ -151,7 +150,7 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
-                0.0, self.controls[j].vector().vec() - self.gradients[j].vector().vec()
+                0.0, self.controls[j].vector().vec() - self.gradient[j].vector().vec()
             )
 
         self.form_handler.project_to_admissible_set(self.projected_difference)
@@ -205,8 +204,8 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
                     for j in range(
                         self.form_handler.control_spaces[i].num_sub_spaces()
                     ):
-                        self.gradient_pvd_list[i][j] << self.gradients[i].sub(
+                        self.gradient_pvd_list[i][j] << self.gradient[i].sub(
                             j, True
                         ), self.iteration
                 else:
-                    self.gradient_pvd_list[i] << self.gradients[i], self.iteration
+                    self.gradient_pvd_list[i] << self.gradient[i], self.iteration

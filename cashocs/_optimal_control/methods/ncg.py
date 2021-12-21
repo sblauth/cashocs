@@ -48,7 +48,7 @@ class NCG(ControlOptimizationAlgorithm):
 
         self.line_search = ArmijoLineSearch(self)
 
-        self.gradients_prev = [
+        self.gradient_prev = [
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
         self.differences = [
@@ -114,14 +114,14 @@ class NCG(ControlOptimizationAlgorithm):
         self.memory = 0
         self.relative_norm = 1.0
         self.state_problem.has_solution = False
-        for i in range(len(self.gradients)):
-            self.gradients[i].vector().vec().set(1.0)
+        for i in range(len(self.gradient)):
+            self.gradient[i].vector().vec().set(1.0)
 
         while True:
 
             for i in range(self.form_handler.control_dim):
-                self.gradients_prev[i].vector().vec().aypx(
-                    0.0, self.gradients[i].vector().vec()
+                self.gradient_prev[i].vector().vec().aypx(
+                    0.0, self.gradient[i].vector().vec()
                 )
 
             self.adjoint_problem.has_solution = False
@@ -132,39 +132,39 @@ class NCG(ControlOptimizationAlgorithm):
             if self.iteration > 0:
                 if self.cg_method == "FR":
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.gradients
+                        self.gradient, self.gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
-                        self.gradients_prev, self.gradients_prev
+                        self.gradient_prev, self.gradient_prev
                     )
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "PR":
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.differences[i].vector().vec().aypx(
                             0.0,
-                            self.gradients[i].vector().vec()
-                            - self.gradients_prev[i].vector().vec(),
+                            self.gradient[i].vector().vec()
+                            - self.gradient_prev[i].vector().vec(),
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.differences
+                        self.gradient, self.differences
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
-                        self.gradients_prev, self.gradients_prev
+                        self.gradient_prev, self.gradient_prev
                     )
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "HS":
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.differences[i].vector().vec().aypx(
                             0.0,
-                            self.gradients[i].vector().vec()
-                            - self.gradients_prev[i].vector().vec(),
+                            self.gradient[i].vector().vec()
+                            - self.gradient_prev[i].vector().vec(),
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.differences
+                        self.gradient, self.differences
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.differences, self.search_directions
@@ -172,15 +172,15 @@ class NCG(ControlOptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "DY":
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.differences[i].vector().vec().aypx(
                             0.0,
-                            self.gradients[i].vector().vec()
-                            - self.gradients_prev[i].vector().vec(),
+                            self.gradient[i].vector().vec()
+                            - self.gradient_prev[i].vector().vec(),
                         )
 
                     self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradients, self.gradients
+                        self.gradient, self.gradient
                     )
                     self.beta_denominator = self.form_handler.scalar_product(
                         self.search_directions, self.differences
@@ -188,11 +188,11 @@ class NCG(ControlOptimizationAlgorithm):
                     self.beta = self.beta_numerator / self.beta_denominator
 
                 elif self.cg_method == "HZ":
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.differences[i].vector().vec().aypx(
                             0.0,
-                            self.gradients[i].vector().vec()
-                            - self.gradients_prev[i].vector().vec(),
+                            self.gradient[i].vector().vec()
+                            - self.gradient_prev[i].vector().vec(),
                         )
 
                     dy = self.form_handler.scalar_product(
@@ -202,14 +202,14 @@ class NCG(ControlOptimizationAlgorithm):
                         self.differences, self.differences
                     )
 
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.differences[i].vector().vec().axpy(
                             -2 * y2 / dy, self.search_directions[i].vector().vec()
                         )
 
                     self.beta = (
                         self.form_handler.scalar_product(
-                            self.differences, self.gradients
+                            self.differences, self.gradient
                         )
                         / dy
                     )
@@ -231,42 +231,42 @@ class NCG(ControlOptimizationAlgorithm):
 
             for i in range(self.form_handler.control_dim):
                 self.search_directions[i].vector().vec().aypx(
-                    self.beta, -self.gradients[i].vector().vec()
+                    self.beta, -self.gradient[i].vector().vec()
                 )
 
             if self.cg_periodic_restart:
                 if self.memory < self.cg_periodic_its:
                     self.memory += 1
                 else:
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.search_directions[i].vector().vec().aypx(
-                            0.0, -self.gradients[i].vector().vec()
+                            0.0, -self.gradient[i].vector().vec()
                         )
                     self.memory = 0
             if self.cg_relative_restart:
                 if (
                     abs(
                         self.form_handler.scalar_product(
-                            self.gradients, self.gradients_prev
+                            self.gradient, self.gradient_prev
                         )
                     )
                     / pow(self.gradient_norm, 2)
                     >= self.cg_restart_tol
                 ):
-                    for i in range(len(self.gradients)):
+                    for i in range(len(self.gradient)):
                         self.search_directions[i].vector().vec().aypx(
-                            0.0, -self.gradients[i].vector().vec()
+                            0.0, -self.gradient[i].vector().vec()
                         )
 
             self.project_direction(self.search_directions)
             self.directional_derivative = self.form_handler.scalar_product(
-                self.gradients, self.search_directions
+                self.gradient, self.search_directions
             )
 
             if self.directional_derivative >= 0:
-                for i in range(len(self.gradients)):
+                for i in range(len(self.gradient)):
                     self.search_directions[i].vector().vec().aypx(
-                        0.0, -self.gradients[i].vector().vec()
+                        0.0, -self.gradient[i].vector().vec()
                     )
 
             self.line_search.search(self.search_directions, self.has_curvature_info)

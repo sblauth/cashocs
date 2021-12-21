@@ -369,7 +369,7 @@ class OptimalControlProblem(OptimizationProblem):
             self.form_handler, self.state_problem
         )
 
-        self.gradients = self.gradient_problem.gradients
+        self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
 
     def _erase_pde_memory(self) -> None:
@@ -517,7 +517,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.gradient_problem.solve()
 
-        return self.gradients
+        return self.gradient
 
     def supply_derivatives(self, derivatives: Union[ufl.Form, List[ufl.Form]]) -> None:
         """Overwrites the derivatives of the reduced cost functional w.r.t. controls.

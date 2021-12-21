@@ -61,6 +61,7 @@ class OptimizationAlgorithm(abc.ABC):
         self.config = self.state_problem.config
         self.adjoint_problem = optimization_problem.adjoint_problem
 
+        self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
 
         self.iteration = 0

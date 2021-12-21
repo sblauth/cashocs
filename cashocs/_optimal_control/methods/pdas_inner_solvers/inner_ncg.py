@@ -107,8 +107,8 @@ class InnerNCG(ControlOptimizationAlgorithm):
         self.memory = 0
         self.relative_norm = 1.0
         self.state_problem.has_solution = False
-        for i in range(len(self.gradients)):
-            self.gradients[i].vector().vec().set(1.0)
+        for i in range(len(self.gradient)):
+            self.gradient[i].vector().vec().set(1.0)
             self.reduced_gradient[i].vector().vec().set(1.0)
 
         while True:
@@ -124,7 +124,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
 
             for j in range(len(self.controls)):
                 self.reduced_gradient[j].vector().vec().aypx(
-                    0.0, self.gradients[j].vector().vec()
+                    0.0, self.gradient[j].vector().vec()
                 )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 

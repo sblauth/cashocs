@@ -24,6 +24,7 @@ problems.
 
 from __future__ import annotations
 
+import abc
 import itertools
 import json
 from typing import List, TYPE_CHECKING
@@ -62,7 +63,7 @@ if TYPE_CHECKING:
     from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 
 
-class FormHandler:
+class FormHandler(abc.ABC):
     """Parent class for UFL form manipulation.
 
     This is subclassed by specific form handlers for either
@@ -474,6 +475,10 @@ class FormHandler:
         pass
 
     def _post_hook(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def scalar_product(self, a, b) -> float:
         pass
 
 

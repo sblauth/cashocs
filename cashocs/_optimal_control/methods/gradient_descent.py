@@ -81,7 +81,7 @@ class GradientDescent(ControlOptimizationAlgorithm):
 
             for i in range(len(self.controls)):
                 self.search_directions[i].vector().vec().aypx(
-                    0.0, -self.gradients[i].vector().vec()
+                    0.0, -self.gradient[i].vector().vec()
                 )
 
             self.line_search.search(self.search_directions, self.has_curvature_info)

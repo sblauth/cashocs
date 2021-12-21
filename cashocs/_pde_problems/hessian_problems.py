@@ -61,7 +61,7 @@ class BaseHessianProblem(abc.ABC):
         self.gradient_problem = gradient_problem
 
         self.config = self.form_handler.config
-        self.gradients = self.gradient_problem.gradients
+        self.gradient = self.gradient_problem.gradient
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton", fallback="cr")
         self.max_it_inner_newton = self.config.getint(
@@ -471,7 +471,7 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.rsold = self.form_handler.scalar_product(self.residual, self.residual)
@@ -527,7 +527,7 @@ class HessianProblem(BaseHessianProblem):
         """
 
         for j in range(self.control_dim):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradients[j].vector().vec())
+            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
         self.eps_0 = np.sqrt(
@@ -617,7 +617,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         self.reduced_gradient = [
             fenics.Function(self.form_handler.control_spaces[j])
-            for j in range(len(self.gradients))
+            for j in range(len(self.gradient))
         ]
         self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
@@ -681,7 +681,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
 
         for j in range(self.control_dim):
             self.reduced_gradient[j].vector().vec().aypx(
-                0.0, self.gradients[j].vector().vec()
+                0.0, self.gradient[j].vector().vec()
             )
             self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 

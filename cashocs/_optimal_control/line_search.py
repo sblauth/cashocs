@@ -56,7 +56,7 @@ class ArmijoLineSearch(LineSearch):
         ]
         self.controls = optimization_algorithm.controls
         self.controls_temp = optimization_algorithm.controls_temp
-        self.gradients = optimization_algorithm.gradients
+        self.gradient = optimization_algorithm.gradient
 
     def decrease_measure(
         self, search_direction: Optional[fenics.Function] = None
@@ -81,7 +81,7 @@ class ArmijoLineSearch(LineSearch):
             )
 
         return self.form_handler.scalar_product(
-            self.gradients, self.projected_difference
+            self.gradient, self.projected_difference
         )
 
     def search(
@@ -108,7 +108,7 @@ class ArmijoLineSearch(LineSearch):
         self.search_direction_inf = np.max(
             [
                 np.max(np.abs(search_directions[i].vector()[:]))
-                for i in range(len(self.gradients))
+                for i in range(len(self.gradient))
             ]
         )
         self.ref_algo().objective_value = self.cost_functional.evaluate()
@@ -154,9 +154,6 @@ class ArmijoLineSearch(LineSearch):
 
             self.ref_algo().state_problem.has_solution = False
             self.objective_step = self.cost_functional.evaluate()
-
-            # self.project_direction_active(search_directions)
-            # meas = -self.epsilon_armijo*self.stepsize*self.form_handler.scalar_product(self.gradients, self.directions)
 
             if (
                 self.objective_step

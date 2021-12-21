@@ -63,7 +63,7 @@ class UnconstrainedLineSearch:
         self.cost_functional = optimization_algorithm.cost_functional
 
         self.controls = optimization_algorithm.controls
-        self.gradients = optimization_algorithm.gradients
+        self.gradient = optimization_algorithm.gradient
 
         inner_pdas = self.config.get("AlgoPDAS", "inner_pdas")
         self.is_newton_like = inner_pdas in ["lbfgs", "bfgs"]
@@ -87,7 +87,7 @@ class UnconstrainedLineSearch:
         """
 
         return self.stepsize * self.form_handler.scalar_product(
-            self.gradients, search_directions
+            self.gradient, search_directions
         )
 
     def search(self, search_directions: List[fenics.Function]) -> None:
@@ -106,7 +106,7 @@ class UnconstrainedLineSearch:
         self.search_direction_inf = np.max(
             [
                 np.max(np.abs(search_directions[i].vector()[:]))
-                for i in range(len(self.gradients))
+                for i in range(len(self.gradient))
             ]
         )
         self.ref_algo().objective_value = self.cost_functional.evaluate()

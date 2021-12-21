@@ -92,7 +92,7 @@ class InnerGradientDescent(ControlOptimizationAlgorithm):
 
             for j in range(len(self.controls)):
                 self.reduced_gradient[j].vector().vec().aypx(
-                    0.0, self.gradients[j].vector().vec()
+                    0.0, self.gradient[j].vector().vec()
                 )
                 self.reduced_gradient[j].vector()[idx_active[j]] = 0.0
 
