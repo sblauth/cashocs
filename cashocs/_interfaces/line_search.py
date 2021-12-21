@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import abc
 import weakref
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 

@@ -6,19 +6,19 @@ Created on 21/12/2021, 09.14
 
 from __future__ import annotations
 
-from typing import List, Union, TYPE_CHECKING, Optional
-from datetime import datetime
-import os
-from pathlib import Path
 import json
+import os
 import subprocess
+from datetime import datetime
+from pathlib import Path
+from typing import List, Union, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
-
 from ._forms import ControlFormHandler
 from .utils import write_out_mesh
+
 
 if TYPE_CHECKING:
     from ._interfaces import OptimizationProblem
