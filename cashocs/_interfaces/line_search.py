@@ -43,6 +43,7 @@ class LineSearch(abc.ABC):
         self.ref_algo = weakref.ref(optimization_algorithm)
         self.config = optimization_algorithm.config
         self.form_handler = optimization_algorithm.form_handler
+        self.gradient = optimization_algorithm.gradient
 
         self.stepsize = self.config.getfloat(
             "OptimizationRoutine", "initial_stepsize", fallback=1.0

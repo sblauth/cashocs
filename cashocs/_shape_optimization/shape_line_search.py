@@ -50,9 +50,8 @@ class ArmijoLineSearch(LineSearch):
 
         self.mesh_handler = optimization_algorithm.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
-        self.gradient = optimization_algorithm.gradient
 
-    def decrease_measure(self, search_direction: List[fenics.Function]) -> float:
+    def decrease_measure(self, search_direction: List[fenics.Function] = None) -> float:
         """Computes the measure of decrease needed for the Armijo test
 
         Parameters

@@ -56,7 +56,6 @@ class ArmijoLineSearch(LineSearch):
         ]
         self.controls = optimization_algorithm.controls
         self.controls_temp = optimization_algorithm.controls_temp
-        self.gradient = optimization_algorithm.gradient
 
     def decrease_measure(
         self, search_direction: Optional[List[fenics.Function]] = None

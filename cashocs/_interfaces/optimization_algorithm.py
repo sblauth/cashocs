@@ -64,6 +64,9 @@ class OptimizationAlgorithm(abc.ABC):
         self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
         self.gradient = optimization_problem.gradient
+        self.search_direction = [
+            fenics.Function(V) for V in self.form_handler.control_spaces
+        ]
 
         self.iteration = 0
         self.objective_value = 1.0
