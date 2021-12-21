@@ -150,6 +150,7 @@ class OptimizationProblem(abc.ABC):
 
         self.states = enlist(states)
         self.adjoints = enlist(adjoints)
+        self.gradient = None
 
         if config is None:
             self.config = Config()

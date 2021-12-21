@@ -52,11 +52,9 @@ class ShapeOptimizationAlgorithm(OptimizationAlgorithm):
         self.line_search_broken = False
         self.requires_remeshing = False
         self.remeshing_its = False
-        self.has_curvature_info = False
 
         self.mesh_handler = optimization_problem.mesh_handler
 
-        self.gradient = self.gradient_problem.gradient
         self.search_direction = fenics.Function(self.form_handler.deformation_space)
 
         self.temp_dict = optimization_problem.temp_dict

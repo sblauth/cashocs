@@ -61,7 +61,6 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         super().__init__(optimization_problem)
 
-        self.gradient = optimization_problem.gradient
         self.controls = optimization_problem.controls
         self.controls_temp = [
             fenics.Function(V) for V in optimization_problem.control_spaces
