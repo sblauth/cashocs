@@ -38,6 +38,7 @@ from ufl import replace
 from .._exceptions import InputError
 from .._loggers import warning, info
 from ..config import Config
+from ..output import OutputManager
 from ..utils import (
     _parse_remesh,
     summation,
@@ -613,6 +614,7 @@ class OptimizationProblem(abc.ABC):
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
         self._check_for_custom_forms()
+        self.output_manager = OutputManager(self)
 
     def __shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.

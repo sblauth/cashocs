@@ -91,8 +91,6 @@ class ArmijoLineSearch(LineSearch):
         if has_curvature_info:
             self.stepsize = 1.0
 
-        self.ref_algo().print_results()
-
         num_decreases = self.mesh_handler.compute_decreases(
             search_direction, self.stepsize
         )

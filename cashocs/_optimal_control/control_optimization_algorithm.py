@@ -78,49 +78,6 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
 
         self.pdas_solver = False
 
-        if self.save_pvd:
-            self.state_pvd_list = []
-            for i in range(self.form_handler.state_dim):
-                self.state_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.state_spaces[i],
-                        f"state_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
-            self.control_pvd_list = []
-            for i in range(self.form_handler.control_dim):
-                self.control_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.control_spaces[i],
-                        f"control_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
-        if self.save_pvd_adjoint:
-            self.adjoint_pvd_list = []
-            for i in range(self.form_handler.state_dim):
-                self.adjoint_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.adjoint_spaces[i],
-                        f"adjoint_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
-        if self.save_pvd_gradient:
-            self.gradient_pvd_list = []
-            for i in range(self.form_handler.control_dim):
-                self.gradient_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.control_spaces[i],
-                        f"gradient_{i:d}",
-                        self.pvd_prefix,
-                    )
-                )
-
     @abc.abstractmethod
     def run(self) -> None:
         """Blueprint for a print function
@@ -164,47 +121,3 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         return self.form_handler.scalar_product(
             self.projected_difference, self.projected_difference
         )
-
-    def print_results(self) -> None:
-        """Prints the current state of the optimization algorithm to the console.
-
-        Returns
-        -------
-        None
-        """
-
-        super().print_results()
-
-        if self.save_pvd:
-            for i in range(self.form_handler.control_dim):
-                if (
-                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
-                    and self.form_handler.control_spaces[i].ufl_element().family()
-                    == "Mixed"
-                ):
-                    for j in range(
-                        self.form_handler.control_spaces[i].num_sub_spaces()
-                    ):
-                        self.control_pvd_list[i][j] << self.form_handler.controls[
-                            i
-                        ].sub(j, True), self.iteration
-                else:
-                    self.control_pvd_list[i] << self.form_handler.controls[
-                        i
-                    ], self.iteration
-
-        if self.save_pvd_gradient:
-            for i in range(self.form_handler.control_dim):
-                if (
-                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
-                    and self.form_handler.control_spaces[i].ufl_element().family()
-                    == "Mixed"
-                ):
-                    for j in range(
-                        self.form_handler.control_spaces[i].num_sub_spaces()
-                    ):
-                        self.gradient_pvd_list[i][j] << self.gradient[i].sub(
-                            j, True
-                        ), self.iteration
-                else:
-                    self.gradient_pvd_list[i] << self.gradient[i], self.iteration

@@ -102,6 +102,9 @@ class Newton(ControlOptimizationAlgorithm):
             else:
                 self.has_curvature_info = True
 
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
             self.line_search.search(self.search_direction, self.has_curvature_info)
 
             if self.armijo_broken and self.has_curvature_info:
@@ -111,6 +114,10 @@ class Newton(ControlOptimizationAlgorithm):
                     )
                 self.has_curvature_info = False
                 self.armijo_broken = False
+
+                self.objective_value = self.cost_functional.evaluate()
+                self.output()
+
                 self.line_search.search(self.search_direction, self.has_curvature_info)
 
                 if self.armijo_broken:

@@ -235,7 +235,6 @@ class InnerNCG(ControlOptimizationAlgorithm):
                 / self.first_gradient_norm
                 <= self.tolerance / 2
             ):
-                # self.print_results()
                 break
 
             for i in range(self.form_handler.control_dim):
@@ -278,11 +277,13 @@ class InnerNCG(ControlOptimizationAlgorithm):
                         0.0, -self.reduced_gradient[i].vector().vec()
                     )
 
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
             self.line_search.search(self.search_direction)
             if self.armijo_broken:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Armijo rule failed.")
+                    print("Armijo rule failed.")
                     break
                 else:
                     raise NotConvergedError("Armijo line search")
@@ -290,8 +291,7 @@ class InnerNCG(ControlOptimizationAlgorithm):
             self.iteration += 1
             if self.iteration >= self.maximum_iterations:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Maximum number of iterations exceeded.")
+                    print("Maximum number of iterations exceeded.")
                     break
                 else:
                     raise NotConvergedError(

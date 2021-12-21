@@ -10,5 +10,5 @@ Iteration    7 -  Objective value:  7.831e-04    Gradient norm:  6.823e-03 (rel)
 Iteration    8 -  Objective value:  7.828e-04    Gradient norm:  1.588e-03 (rel)    Step size:  1.000e+00
 Iteration    9 -  Objective value:  7.827e-04    Gradient norm:  7.597e-04 (rel)    Step size:  1.000e+00
 
-Statistics -- Total iterations:    9 --- Final objective value:  7.827e-04 --- Final gradient norm:  7.597e-04 (rel)
-           --- State equations solved: 11 --- Adjoint equations solved: 10
+Statistics --- Total iterations:     9 --- Final objective value:  7.827e-04 --- Final gradient norm:  7.597e-04 (rel)
+           --- State equations solved:  11 --- Adjoint equations solved:  10

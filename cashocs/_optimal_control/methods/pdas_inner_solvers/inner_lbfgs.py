@@ -221,11 +221,13 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
                         0.0, -self.reduced_gradient[j].vector().vec()
                     )
 
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
             self.line_search.search(self.search_direction)
             if self.line_search_broken:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Armijo rule failed.")
+                    print("Armijo rule failed.")
                     break
                 else:
                     raise NotConvergedError("Armijo line search")
@@ -284,10 +286,8 @@ class InnerLBFGS(ControlOptimizationAlgorithm):
 
             self.iteration += 1
             if self.iteration >= self.maximum_iterations:
-                # self.print_results()
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Maximum number of iterations exceeded.")
+                    print("Maximum number of iterations exceeded.")
                     break
                 else:
                     raise NotConvergedError(

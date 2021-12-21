@@ -1511,18 +1511,15 @@ class _MeshHandler:
             ] = solver.adjoint_problem.number_of_solves
             self.temp_dict["output_dict"]["iterations"] = solver.iteration + 1
 
-            self.temp_dict["output_dict"]["cost_function_value"] = solver.output_dict[
+            output_dict = solver.output_manager.result_manager.output_dict
+            self.temp_dict["output_dict"]["cost_function_value"] = output_dict[
                 "cost_function_value"
             ][:]
-            self.temp_dict["output_dict"]["gradient_norm"] = solver.output_dict[
+            self.temp_dict["output_dict"]["gradient_norm"] = output_dict[
                 "gradient_norm"
             ][:]
-            self.temp_dict["output_dict"]["stepsize"] = solver.output_dict["stepsize"][
-                :
-            ]
-            self.temp_dict["output_dict"]["MeshQuality"] = solver.output_dict[
-                "MeshQuality"
-            ][:]
+            self.temp_dict["output_dict"]["stepsize"] = output_dict["stepsize"][:]
+            self.temp_dict["output_dict"]["MeshQuality"] = output_dict["MeshQuality"][:]
 
             dim = self.mesh.geometric_dimension()
 
@@ -1550,7 +1547,7 @@ class _MeshHandler:
 
             self.temp_dict["remesh_counter"] = self.remesh_counter
             self.temp_dict["remesh_directory"] = self.remesh_directory
-            self.temp_dict["result_dir"] = solver.result_dir
+            self.temp_dict["result_dir"] = solver.output_manager.result_dir
 
             self.new_xdmf_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"

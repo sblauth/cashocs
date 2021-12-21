@@ -116,8 +116,6 @@ class ArmijoLineSearch(LineSearch):
         if has_curvature_info:
             self.stepsize = 1.0
 
-        self.ref_algo().print_results()
-
         for j in range(self.form_handler.control_dim):
             self.controls_temp[j].vector().vec().aypx(
                 0.0, self.controls[j].vector().vec()

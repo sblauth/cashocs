@@ -100,6 +100,8 @@ class FormHandler(abc.ABC):
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms
 
+        self.gradient = None
+
         self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
         self.cost_functional_shift = 0.0
 
@@ -516,6 +518,8 @@ class ControlFormHandler(FormHandler):
 
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
+
+        self.gradient = [fenics.Function(V) for V in self.control_spaces]
 
         # Define the necessary functions
         self.states_prime = [fenics.Function(V) for V in self.state_spaces]
@@ -1132,6 +1136,8 @@ class ShapeFormHandler(FormHandler):
         )
         deformation_space = optimization_problem.deformation_space
 
+        self.control_dim = 1
+
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation", fallback=True
         )
@@ -1149,6 +1155,8 @@ class ShapeFormHandler(FormHandler):
             self.deformation_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
         else:
             self.deformation_space = deformation_space
+
+        self.control_spaces = [self.deformation_space]
 
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)

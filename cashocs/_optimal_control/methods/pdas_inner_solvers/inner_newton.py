@@ -119,7 +119,6 @@ class InnerNewton(ControlOptimizationAlgorithm):
                 / self.first_gradient_norm
                 <= self.tolerance / 2
             ):
-                # self.print_results()
                 break
 
             self.search_direction = self.unconstrained_hessian.newton_solve(idx_active)
@@ -133,11 +132,13 @@ class InnerNewton(ControlOptimizationAlgorithm):
                         0.0, -self.reduced_gradient[i].vector().vec()
                     )
 
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
             self.line_search.search(self.search_direction)
             if self.armijo_broken:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Armijo rule failed.")
+                    print("Armijo rule failed.")
                     break
                 else:
                     raise NotConvergedError("Armijo line search")
@@ -146,8 +147,7 @@ class InnerNewton(ControlOptimizationAlgorithm):
 
             if self.iteration >= self.maximum_iterations:
                 if self.soft_exit:
-                    if self.verbose:
-                        print("Maximum number of iterations exceeded.")
+                    print("Maximum number of iterations exceeded.")
                     break
                 else:
                     raise NotConvergedError(

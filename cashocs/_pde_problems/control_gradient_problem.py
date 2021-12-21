@@ -64,7 +64,7 @@ class ControlGradientProblem(PDEProblem):
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
-        self.gradient = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.gradient = self.form_handler.gradient
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
         self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]

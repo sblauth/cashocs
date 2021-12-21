@@ -12,7 +12,6 @@ from fenics import *
 import cashocs
 
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
@@ -36,7 +35,7 @@ def test_time_suffix():
     config.set("Output", "save_txt", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve()
-    suffix = ocp.solver.suffix
+    suffix = ocp.solver.output_manager.suffix
     assert os.path.isdir(dir_path + f"/results_{suffix}")
     assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
     subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)

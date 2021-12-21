@@ -196,6 +196,9 @@ class LBFGS(ControlOptimizationAlgorithm):
                         0.0, -self.gradient[j].vector().vec()
                     )
 
+            self.objective_value = self.cost_functional.evaluate()
+            self.output()
+
             self.line_search.search(self.search_direction, self.has_curvature_info)
 
             self.iteration += 1

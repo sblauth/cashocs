@@ -111,8 +111,6 @@ class UnconstrainedLineSearch:
         )
         self.ref_algo().objective_value = self.cost_functional.evaluate()
 
-        # self.ref_algo().print_results()
-
         for j in range(self.form_handler.control_dim):
             self.controls_temp[j].vector().vec().aypx(
                 0.0, self.controls[j].vector().vec()
