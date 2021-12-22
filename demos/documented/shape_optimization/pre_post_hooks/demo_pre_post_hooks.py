@@ -24,7 +24,6 @@ from fenics import *
 import cashocs
 
 
-
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 h = MaxCellEdgeLength(mesh)
@@ -47,10 +46,6 @@ e = (
     - q * div(u) * dx
 )
 
-# beta_pspg = 0.0
-# res = -div(grad(u)) + Constant(Re) * grad(u) * u + grad(p)
-# e -= Constant(beta_pspg) * pow(h, 2) * dot(res, grad(q)) * dx
-
 u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
 bc_no_slip = cashocs.create_dirichlet_bcs(
@@ -58,8 +53,7 @@ bc_no_slip = cashocs.create_dirichlet_bcs(
 )
 bcs = [bc_in] + bc_no_slip
 
-# J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
-J = Constant(1 / 2) * inner(grad(u), grad(u)) * dx
+J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
 
 vol_fun = Constant(1) * dx
 vol_init = assemble(vol_fun)

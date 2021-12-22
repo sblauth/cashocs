@@ -960,9 +960,9 @@ def test_fixed_dimensions():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
     assert assemble(grad_x[0][0] * grad_x[0][0] * dx) == 0
-    assert sop.gradient_test() > 1.9
-    assert sop.gradient_test() > 1.9
-    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
 
     config.set("ShapeGradient", "fixed_dimensions", "[1]")
 
@@ -971,6 +971,6 @@ def test_fixed_dimensions():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
     assert assemble(grad_x[0][1] * grad_x[0][1] * dx) == 0
-    assert sop.gradient_test() > 1.9
-    assert sop.gradient_test() > 1.9
-    assert sop.gradient_test() > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
