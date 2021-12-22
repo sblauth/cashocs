@@ -198,9 +198,7 @@ def import_mesh(
     # Check for the file format
     if isinstance(input_arg, str):
         mesh_file = input_arg
-        mesh_attribute = "str"
     elif isinstance(input_arg, configparser.ConfigParser):
-        mesh_attribute = "config"
         ### overloading for remeshing
         if not input_arg.getboolean("Mesh", "remesh", fallback=False):
             mesh_file = input_arg.get("Mesh", "mesh_file")

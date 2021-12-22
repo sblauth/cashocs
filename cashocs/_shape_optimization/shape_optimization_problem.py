@@ -83,12 +83,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
         min_max_terms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> ShapeOptimizationProblem:
-        try:
-            if desired_weights is not None:
-                _use_scaling = True
-            else:
-                _use_scaling = False
-        except KeyError:
+
+        if desired_weights is not None:
+            _use_scaling = True
+        else:
             _use_scaling = False
 
         if _use_scaling:

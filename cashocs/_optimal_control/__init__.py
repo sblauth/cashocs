@@ -25,7 +25,7 @@ the line search needed for this.
 from .control_optimization_algorithm import ControlOptimizationAlgorithm
 from .cost_functional import ReducedControlCostFunctional
 from .line_search import ArmijoLineSearch
-
+from .optimal_control_problem import OptimalControlProblem
 
 __all__ = [
     "ReducedControlCostFunctional",

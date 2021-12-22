@@ -21,15 +21,17 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from ._exceptions import InputError
 from ._loggers import warning
-from ._optimal_control.optimal_control_problem import OptimalControlProblem
-from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
+
+if TYPE_CHECKING:
+    from ._optimal_control.optimal_control_problem import OptimalControlProblem
+    from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
 
 
 def control_gradient_test(

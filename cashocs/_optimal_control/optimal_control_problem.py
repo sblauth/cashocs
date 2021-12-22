@@ -83,12 +83,9 @@ class OptimalControlProblem(OptimizationProblem):
         desired_weights: Optional[List[float]] = None,
     ) -> OptimalControlProblem:
 
-        try:
-            if desired_weights is not None:
-                _use_scaling = True
-            else:
-                _use_scaling = False
-        except KeyError:
+        if desired_weights is not None:
+            _use_scaling = True
+        else:
             _use_scaling = False
 
         if _use_scaling:
