@@ -62,6 +62,6 @@ class ReducedShapeCostFunctional(ReducedCostFunctional):
         """
 
         val = super().evaluate()
-        val_reg = self.form_handler.regularization.compute_objective()
+        val_reg = self.form_handler.shape_regularization.compute_objective()
 
         return val + val_reg

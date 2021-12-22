@@ -127,7 +127,7 @@ class ShapeGradientProblem(PDEProblem):
 
         if not self.has_solution:
 
-            self.form_handler.regularization.update_geometric_quantities()
+            self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
                 self.config.getboolean(

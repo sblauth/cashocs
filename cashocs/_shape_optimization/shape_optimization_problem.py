@@ -326,10 +326,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
             self.temp_dict["Regularization"] = {
-                "mu_volume": self.form_handler.regularization.mu_volume,
-                "mu_surface": self.form_handler.regularization.mu_surface,
-                "mu_curvature": self.form_handler.regularization.mu_curvature,
-                "mu_barycenter": self.form_handler.regularization.mu_barycenter,
+                "mu_volume": self.form_handler.shape_regularization.mu_volume,
+                "mu_surface": self.form_handler.shape_regularization.mu_surface,
+                "mu_curvature": self.form_handler.shape_regularization.mu_curvature,
+                "mu_barycenter": self.form_handler.shape_regularization.mu_barycenter,
             }
 
         self.mesh_handler = _MeshHandler(self)

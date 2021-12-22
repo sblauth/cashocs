@@ -15,21 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for treatment of optimal control problems.
+"""Private module forms of CASHOCS.
 
-This module is used for the treatment of optimal control problems.
-It includes the optimization problem, the solution algorithms and
-the line search needed for this.
+This is used to carry out form manipulations such as generating the UFL
+ forms for the adjoint system and for the Riesz gradient identificiation
+problems.
 """
 
-from .control_optimization_algorithm import ControlOptimizationAlgorithm
-from .cost_functional import ReducedControlCostFunctional
-from .line_search import ArmijoLineSearch
-from .optimal_control_problem import OptimalControlProblem
-
-__all__ = [
-    "ReducedControlCostFunctional",
-    "ArmijoLineSearch",
-    "ControlOptimizationAlgorithm",
-    "OptimalControlProblem",
-]
+from .control_form_handler import ControlFormHandler
+from .form_handler import FormHandler
+from .shape_form_handler import ShapeFormHandler
+from .shape_regularization import ShapeRegularization

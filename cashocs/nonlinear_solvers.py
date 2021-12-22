@@ -358,6 +358,14 @@ def newton_solve(
     return u
 
 
+def picard_iteration(
+    F_list: List[ufl.form],
+    u_list: List[fenics.Function],
+    bcs: Union[List[fenics.DirichletBC], List[List[fenics.DirichletBC]]],
+) -> List[fenics.Function]:
+    raise NotImplementedError()
+
+
 # deprecated
 def damped_newton_solve(
     F: ufl.Form,

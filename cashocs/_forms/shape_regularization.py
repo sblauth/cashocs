@@ -31,6 +31,7 @@ import fenics
 import ufl
 from fenics import Constant, div, inner
 
+from .._exceptions import IncompatibleConfigurationError
 from .._loggers import info
 from ..utils import _solve_linear_problem
 
@@ -77,7 +78,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
 
 
-class OldRegularization:
+class ShapeRegularization:
     """Regularization terms for shape optimization problems"""
 
     def __init__(self, form_handler: ShapeFormHandler) -> None:

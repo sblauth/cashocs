@@ -559,9 +559,9 @@ def test_curvature_computation():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
-    sop.form_handler.regularization.compute_curvature()
+    sop.form_handler.shape_regularization.compute_curvature()
 
-    kappa = sop.form_handler.regularization.kappa_curvature
+    kappa = sop.form_handler.shape_regularization.kappa_curvature
     mean_curvature = assemble(sqrt(inner(kappa, kappa)) * ds) / assemble(1 * ds)
 
     assert abs(mean_curvature - 1) < 1e-3
