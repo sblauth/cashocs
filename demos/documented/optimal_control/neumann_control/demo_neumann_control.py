@@ -35,7 +35,7 @@ u = Function(V)
 
 e = inner(grad(y), grad(p)) * dx + y * p * dx - u * p * ds
 
-bcs = None
+bcs = []
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 alpha = 1e-6

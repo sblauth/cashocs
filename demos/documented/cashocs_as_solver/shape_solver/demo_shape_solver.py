@@ -24,7 +24,7 @@ from fenics import *
 import cashocs
 
 
-config = cashocs.create_config("./config.ini")
+config = cashocs.load_config("./config.ini")
 
 meshlevel = 15
 degree = 1
@@ -50,11 +50,16 @@ J = u * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
+
+def eps(u):
+    return Constant(0.5) * (grad(u) + grad(u).T)
+
+
 vector_field = sop.get_vector_field()
 dJ = (
     div(vector_field) * u * dx
     - inner(
-        (div(vector_field) * Identity(2) - 2 * sym(grad(vector_field))) * grad(u),
+        (div(vector_field) * Identity(2) - 2 * eps(vector_field)) * grad(u),
         grad(p),
     )
     * dx

@@ -1,0 +1,14 @@
+Iteration    0 -  Objective value:  1.224e-01    Gradient norm:  6.169e-03 (abs)
+
+Iteration    1 -  Objective value:  1.224e-01    Gradient norm:  9.998e-01 (rel)    Step size:  1.000e+00
+Iteration    2 -  Objective value:  4.065e-02    Gradient norm:  2.308e+00 (rel)    Step size:  1.000e+00
+Iteration    3 -  Objective value:  8.569e-03    Gradient norm:  4.848e-01 (rel)    Step size:  5.000e-01
+Iteration    4 -  Objective value:  7.846e-04    Gradient norm:  2.605e-03 (rel)    Step size:  1.000e+00
+Iteration    5 -  Objective value:  7.842e-04    Gradient norm:  2.149e-03 (rel)    Step size:  1.000e+00
+Iteration    6 -  Objective value:  7.831e-04    Gradient norm:  1.065e-03 (rel)    Step size:  1.000e+00
+Iteration    7 -  Objective value:  7.831e-04    Gradient norm:  6.823e-03 (rel)    Step size:  1.000e+00
+Iteration    8 -  Objective value:  7.828e-04    Gradient norm:  1.588e-03 (rel)    Step size:  1.000e+00
+Iteration    9 -  Objective value:  7.827e-04    Gradient norm:  7.597e-04 (rel)    Step size:  1.000e+00
+
+Statistics --- Total iterations:     9 --- Final objective value:  7.827e-04 --- Final gradient norm:  7.597e-04 (rel)
+           --- State equations solved:  11 --- Adjoint equations solved:  10

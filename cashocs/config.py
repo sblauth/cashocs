@@ -236,6 +236,12 @@ class Config(ConfigParser):
                 "target_barycenter": {"type": "list"},
                 "use_initial_barycenter": {"type": "bool"},
                 "measure_hole": {"type": "bool"},
+                "x_start": {"type": "float"},
+                "x_end": {"type": "float"},
+                "y_start": {"type": "float"},
+                "y_end": {"type": "float"},
+                "z_start": {"type": "float"},
+                "z_end": {"type": "float"},
                 "use_relative_scaling": {"type": "bool"},
             },
             "MeshQuality": {

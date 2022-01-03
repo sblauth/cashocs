@@ -1,0 +1,16 @@
+Iteration    0 -  Objective value:  -1.102e-02    Gradient norm:  6.330e-01 (abs)    Mesh Quality:  0.48 (condition_number)
+
+Iteration    1 -  Objective value:  -5.901e-02    Gradient norm:  2.896e-01 (rel)    Mesh Quality:  0.47 (condition_number)    Step size:  2.500e-01
+Iteration    2 -  Objective value:  -6.567e-02    Gradient norm:  2.450e-01 (rel)    Mesh Quality:  0.45 (condition_number)    Step size:  1.000e+00
+Iteration    3 -  Objective value:  -9.209e-02    Gradient norm:  5.075e-02 (rel)    Mesh Quality:  0.32 (condition_number)    Step size:  1.000e+00
+Iteration    4 -  Objective value:  -9.338e-02    Gradient norm:  1.730e-02 (rel)    Mesh Quality:  0.31 (condition_number)    Step size:  1.000e+00
+Iteration    5 -  Objective value:  -9.351e-02    Gradient norm:  3.901e-02 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration    6 -  Objective value:  -9.362e-02    Gradient norm:  1.010e-02 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration    7 -  Objective value:  -9.364e-02    Gradient norm:  8.655e-03 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration    8 -  Objective value:  -9.369e-02    Gradient norm:  9.190e-03 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration    9 -  Objective value:  -9.374e-02    Gradient norm:  6.695e-03 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration   10 -  Objective value:  -9.375e-02    Gradient norm:  2.055e-02 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+Iteration   11 -  Objective value:  -9.378e-02    Gradient norm:  3.929e-03 (rel)    Mesh Quality:  0.30 (condition_number)    Step size:  1.000e+00
+
+Statistics --- Total iterations:    11 --- Final objective value:  -9.378e-02 --- Final gradient norm:  3.929e-03 (rel)
+           --- State equations solved:  14 --- Adjoint equations solved:  12

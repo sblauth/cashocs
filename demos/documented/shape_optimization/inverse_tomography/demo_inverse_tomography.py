@@ -115,7 +115,7 @@ e = [e1, e2, e3]
 u = [uc1, uc2, uc3]
 p = [pd1, pd2, pd3]
 
-bcs = None
+bcs = [[], [], []]
 
 J1 = Constant(0.5) * pow(u1 - measurements[0], 2) * ds
 J2 = Constant(0.5) * pow(u2 - measurements[1], 2) * ds
