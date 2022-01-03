@@ -16,7 +16,7 @@ in development
 
 
 1.5.0 (December 22, 2021)
-----------------------
+-------------------------
 
 * Major performance increase (particularly for large problems)
 
