@@ -87,7 +87,7 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["less_than_one", "positive"],
                 },
-                "newton_atol": {"type": "float", "attributes": ["positive"]},
+                "newton_atol": {"type": "float", "attributes": ["non_negative"]},
                 "newton_iter": {"type": "int", "attributes": ["non_negative"]},
                 "newton_damped": {"type": "bool"},
                 "newton_inexact": {"type": "bool"},
@@ -97,7 +97,7 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
                 },
-                "picard_atol": {"type": "float", "attributes": ["positive"]},
+                "picard_atol": {"type": "float", "attributes": ["non_negative"]},
                 "picard_iter": {"type": "int", "attributes": ["non_negative"]},
                 "picard_verbose": {"type": "bool"},
             },
@@ -159,10 +159,11 @@ class Config(ConfigParser):
             },
             "AlgoTNM": {
                 "inner_newton": {"type": "str", "possible_options": {"cg", "cr"}},
-                "inner_newton_tolerance": {
+                "inner_newton_rtol": {
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
                 },
+                "inner_newton_atol": {"type": "float", "attributes": ["non_negative"]},
                 "max_it_inner_newton": {"type": "int", "attributes": ["non_negative"]},
             },
             "AlgoPDAS": {

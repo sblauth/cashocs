@@ -351,10 +351,17 @@ initial guess is further away from the optimum. The default value is ``inner_new
 
 Then, we have the following line ::
 
-    inner_newton_tolerance = 1e-15
+    inner_newton_rtol = 1e-15
 
 This determines the relative tolerance of the iterative Krylov solver for the
-Hessian problem. This is set to ``inner_newton_tolerance = 1e-15`` by default.
+Hessian problem. This is set to ``inner_newton_rtol = 1e-15`` by default.
+
+Moreover, we can also specify the absolute tolerance for the iterative solver for the
+Hessian problem, with the line ::
+
+    inner_newton_atol = 1e-15
+
+analogously to the relative tolerance above.
 
 In the final line, the paramter ``max_it_inner_newton`` is defined via ::
 
@@ -654,9 +661,12 @@ in the following.
     * - inner_newton
       - ``cr``
       - inner iterative solver for the truncated Newton method
-    * - inner_newton_tolerance
+    * - inner_newton_rtol
       - ``1e-15``
       - relative tolerance for the inner iterative solver
+    * - inner_newton_atol
+      - ``0.0``
+      - absolute tolerance for the inner iterative solver
     * - max_it_inner_newton
       - ``50``
       - maximum iterations for the inner iterative solver

@@ -54,7 +54,8 @@ cg_restart_tol			(0.25)
 
 [AlgoTNM]
 inner_newton			(cr)
-inner_newton_tolerance	(1e-15)
+inner_newton_rtol   	(1e-15)
+inner_newton_atol   	(0.0)
 max_it_inner_newton		(50)
 
 

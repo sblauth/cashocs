@@ -67,9 +67,11 @@ class BaseHessianProblem(abc.ABC):
         self.max_it_inner_newton = self.config.getint(
             "AlgoTNM", "max_it_inner_newton", fallback=50
         )
-        # TODO: Add absolute tolerance, too
-        self.inner_newton_tolerance = self.config.getfloat(
-            "AlgoTNM", "inner_newton_tolerance", fallback=1e-15
+        self.inner_newton_rtol = self.config.getfloat(
+            "AlgoTNM", "inner_newton_rtol", fallback=1e-15
+        )
+        self.inner_newton_atol = self.config.getfloat(
+            "AlgoTNM", "inner_newton_atol", fallback=0.0
         )
 
         self.test_directions = self.form_handler.test_directions
@@ -501,7 +503,7 @@ class HessianProblem(BaseHessianProblem):
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
             debug(f"Residual of the CG method: {self.eps/self.eps_0:.3e} (relative)")
-            if self.eps / self.eps_0 < self.inner_newton_tolerance:
+            if self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0:
                 break
 
             self.beta = self.rsnew / self.rsold
@@ -571,7 +573,7 @@ class HessianProblem(BaseHessianProblem):
             )
             debug(f"Residual of the CR method: {self.eps/self.eps_0:.3e} (relative)")
             if (
-                self.eps / self.eps_0 < self.inner_newton_tolerance
+                self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0
                 or i == self.max_it_inner_newton - 1
             ):
                 break
@@ -724,7 +726,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             self.eps = np.sqrt(self.rsnew)
             debug(f"Residual of the CG method: {self.eps/self.eps_0:.3e} (relative)")
-            if self.eps / self.eps_0 < self.inner_newton_tolerance:
+            if self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0:
                 break
 
             self.beta = self.rsnew / self.rsold
@@ -782,7 +784,7 @@ class UnconstrainedHessianProblem(BaseHessianProblem):
             )
             debug(f"Residual of the CR method: {self.eps/self.eps_0:.3e} (relative)")
             if (
-                self.eps / self.eps_0 < self.inner_newton_tolerance
+                self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0
                 or i == self.max_it_inner_newton - 1
             ):
                 break
