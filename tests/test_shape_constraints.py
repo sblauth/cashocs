@@ -1,10 +1,4 @@
-"""
-Created on 18/11/2021, 08.48
-
-@author: blauths
-"""
-
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -27,7 +21,6 @@ import numpy as np
 from fenics import *
 
 import cashocs
-
 
 
 rng = np.random.RandomState(300696)

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -23,7 +23,6 @@ import numpy as np
 from fenics import *
 
 import cashocs
-
 
 
 def test_newton_solver():

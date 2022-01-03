@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -18,7 +18,6 @@
 from fenics import *
 
 import cashocs
-
 
 
 # load the config

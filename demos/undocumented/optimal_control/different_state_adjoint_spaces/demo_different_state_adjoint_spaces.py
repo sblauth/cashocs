@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
 # This file is part of CASHOCS.
 #
@@ -23,7 +23,6 @@ adjoint system.
 from fenics import *
 
 import cashocs
-
 
 
 set_log_level(LogLevel.CRITICAL)
