@@ -402,9 +402,9 @@ class OptimizationProblem(abc.ABC):
                     "The TestFunction has to be chosen from the same space as the corresponding adjoint.",
                 )
 
-        self.form_handler.adjoint_picard_forms = mod_forms
         self.form_handler.bcs_list_ad = mod_bcs_list
 
+        self.form_handler.adjoint_eq_forms = mod_forms
         # replace the adjoint function by a TrialFunction for internal use
         repl_forms = [
             replace(
@@ -413,13 +413,13 @@ class OptimizationProblem(abc.ABC):
             )
             for i in range(self.state_dim)
         ]
-        self.form_handler.adjoint_eq_forms = repl_forms
+        self.form_handler.linear_adjoint_eq_forms = repl_forms
 
         self.form_handler.adjoint_eq_lhs = []
         self.form_handler.adjoint_eq_rhs = []
 
         for i in range(self.state_dim):
-            a, L = fenics.system(self.form_handler.adjoint_eq_forms[i])
+            a, L = fenics.system(self.form_handler.linear_adjoint_eq_forms[i])
             self.form_handler.adjoint_eq_lhs.append(a)
             if L.empty():
                 zero_form = (

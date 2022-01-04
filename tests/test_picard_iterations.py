@@ -50,6 +50,14 @@ e1 = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
 e2 = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
 e = [e1, e2]
 
+e1_nonlinear = (
+    inner(grad(y), grad(p)) * dx + pow(y, 3) * p * dx + z * p * dx - u * p * dx
+)
+e2_nonlinear = (
+    inner(grad(z), grad(q)) * dx + pow(z, 3) * q * dx + y * q * dx - v * q * dx
+)
+e_nonlinear = [e1_nonlinear, e2_nonlinear]
+
 bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 bcs = [bcs1, bcs2]
@@ -164,9 +172,6 @@ def test_picard_state_solver():
 
 
 def test_picard_solver_for_optimization():
-    # it is sufficient to test the behavior with the newton method, as this includes
-    # all kinds of solves
-
     u_picard = Function(V)
     v_picard = Function(V)
 
@@ -191,3 +196,20 @@ def test_picard_solver_for_optimization():
         / np.max(np.abs(u.vector()[:]))
         <= 1e-8
     )
+
+
+def test_picard_nonlinear():
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    config.set("StateSystem", "is_linear", "False")
+
+    ocp_nonlinear = cashocs.OptimalControlProblem(
+        e_nonlinear, bcs, J, states, controls, adjoints, config
+    )
+
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+
+    ocp_nonlinear.solve("newton", 1e-6, 0.0, 10)
+    assert ocp_nonlinear.solver.relative_norm < 1e-6

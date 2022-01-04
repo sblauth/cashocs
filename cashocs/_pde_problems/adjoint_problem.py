@@ -26,6 +26,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from ..nonlinear_solvers import picard_iteration
 from .._exceptions import NotConvergedError
 from .._interfaces import PDEProblem
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
@@ -67,9 +68,15 @@ class AdjointProblem(PDEProblem):
         self.adjoints = self.form_handler.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-        self.rtol = self.config.getfloat("StateSystem", "picard_rtol", fallback=1e-10)
-        self.atol = self.config.getfloat("StateSystem", "picard_atol", fallback=1e-12)
-        self.maxiter = self.config.getint("StateSystem", "picard_iter", fallback=50)
+        self.picard_rtol = self.config.getfloat(
+            "StateSystem", "picard_rtol", fallback=1e-10
+        )
+        self.picard_atol = self.config.getfloat(
+            "StateSystem", "picard_atol", fallback=1e-12
+        )
+        self.picard_max_iter = self.config.getint(
+            "StateSystem", "picard_iter", fallback=50
+        )
         self.picard_verbose = self.config.getboolean(
             "StateSystem", "picard_verbose", fallback=False
         )
@@ -129,59 +136,25 @@ class AdjointProblem(PDEProblem):
                     self.adjoints[-1 - i].vector().apply("")
 
             else:
-                for i in range(self.maxiter + 1):
-                    res = 0.0
-                    for j in range(self.form_handler.state_dim):
-                        fenics.assemble(
-                            self.form_handler.adjoint_picard_forms[j],
-                            tensor=self.res_j_tensors[j],
-                        )
-                        [
-                            bc.apply(self.res_j_tensors[j])
-                            for bc in self.form_handler.bcs_list_ad[j]
-                        ]
-                        res += pow(self.res_j_tensors[j].norm("l2"), 2)
+                picard_iteration(
+                    self.form_handler.adjoint_eq_forms,
+                    self.adjoints,
+                    self.bcs_list_ad,
+                    max_iter=self.picard_max_iter,
+                    rtol=self.picard_rtol,
+                    atol=self.picard_atol,
+                    verbose=self.picard_verbose,
+                    inner_damped=False,
+                    inner_inexact=False,
+                    inner_verbose=False,
+                    inner_max_its=2,
+                    ksps=self.ksps,
+                    ksp_options=self.form_handler.adjoint_ksp_options,
+                    A_tensors=self.A_tensors,
+                    b_tensors=self.b_tensors,
+                    inner_is_linear=True,
+                )
 
-                    if res == 0:
-                        break
-
-                    res = np.sqrt(res)
-
-                    if i == 0:
-                        res_0 = res
-
-                    if self.picard_verbose:
-                        print(
-                            f"Iteration {i:d}: ||res|| (abs) = {res:.3e}   ||res|| (rel) = {res/res_0:.3e}"
-                        )
-
-                    if res / res_0 < self.rtol or res < self.atol:
-                        break
-
-                    if i == self.maxiter:
-                        raise NotConvergedError(
-                            "Picard iteration for the adjoint system"
-                        )
-
-                    for j in range(self.form_handler.state_dim):
-                        _assemble_petsc_system(
-                            self.form_handler.adjoint_eq_lhs[-1 - j],
-                            self.form_handler.adjoint_eq_rhs[-1 - j],
-                            self.bcs_list_ad[-1 - j],
-                            A_tensor=self.A_tensors[-1 - j],
-                            b_tensor=self.b_tensors[-1 - j],
-                        )
-                        _solve_linear_problem(
-                            self.ksps[-1 - j],
-                            self.A_tensors[-1 - j].mat(),
-                            self.b_tensors[-1 - j].vec(),
-                            self.adjoints[-1 - j].vector().vec(),
-                            self.form_handler.adjoint_ksp_options[-1 - j],
-                        )
-                        self.adjoints[-1 - j].vector().apply("")
-
-            if self.picard_verbose and self.form_handler.state_is_picard:
-                print("")
             self.has_solution = True
             self.number_of_solves += 1
 

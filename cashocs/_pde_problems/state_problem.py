@@ -29,7 +29,7 @@ from petsc4py import PETSc
 
 from .._exceptions import NotConvergedError
 from .._interfaces import PDEProblem
-from ..nonlinear_solvers import newton_solve
+from ..nonlinear_solvers import newton_solve, picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 
@@ -66,9 +66,15 @@ class StateProblem(PDEProblem):
         self.bcs_list = self.form_handler.bcs_list
         self.states = self.form_handler.states
 
-        self.rtol = self.config.getfloat("StateSystem", "picard_rtol", fallback=1e-10)
-        self.atol = self.config.getfloat("StateSystem", "picard_atol", fallback=1e-20)
-        self.maxiter = self.config.getint("StateSystem", "picard_iter", fallback=50)
+        self.picard_rtol = self.config.getfloat(
+            "StateSystem", "picard_rtol", fallback=1e-10
+        )
+        self.picard_atol = self.config.getfloat(
+            "StateSystem", "picard_atol", fallback=1e-20
+        )
+        self.picard_max_iter = self.config.getint(
+            "StateSystem", "picard_iter", fallback=50
+        )
         self.picard_verbose = self.config.getboolean(
             "StateSystem", "picard_verbose", fallback=False
         )
@@ -177,87 +183,25 @@ class StateProblem(PDEProblem):
                         )
 
             else:
-                for i in range(self.maxiter + 1):
-                    res = 0.0
-                    for j in range(self.form_handler.state_dim):
-                        fenics.assemble(
-                            self.form_handler.state_picard_forms[j],
-                            tensor=self.res_j_tensors[j],
-                        )
+                picard_iteration(
+                    self.form_handler.state_eq_forms,
+                    self.states,
+                    self.bcs_list,
+                    max_iter=self.picard_max_iter,
+                    rtol=self.picard_rtol,
+                    atol=self.picard_atol,
+                    verbose=self.picard_verbose,
+                    inner_damped=self.newton_damped,
+                    inner_inexact=self.newton_inexact,
+                    inner_verbose=self.newton_verbose,
+                    inner_max_its=self.newton_iter,
+                    ksps=self.ksps,
+                    ksp_options=self.form_handler.state_ksp_options,
+                    A_tensors=self.A_tensors,
+                    b_tensors=self.b_tensors,
+                    inner_is_linear=self.form_handler.state_is_linear,
+                )
 
-                        [
-                            bc.apply(self.res_j_tensors[j])
-                            for bc in self.form_handler.bcs_list_ad[j]
-                        ]
-
-                        if self.number_of_solves == 0 and i == 0:
-                            self.newton_atols[j] = (
-                                self.res_j_tensors[j].norm("l2") * self.newton_atol
-                            )
-                            if self.res_j_tensors[j].norm("l2") == 0.0:
-                                self.newton_atols[j] = self.newton_atol
-
-                        res += pow(self.res_j_tensors[j].norm("l2"), 2)
-
-                    if res == 0:
-                        break
-                    res = np.sqrt(res)
-                    if i == 0:
-                        res_0 = res
-                    if self.picard_verbose:
-                        print(
-                            f"Iteration {i:d}: ||res|| (abs): {res:.3e}   ||res|| (rel): {res/res_0:.3e}"
-                        )
-                    if res / res_0 < self.rtol or res < self.atol:
-                        break
-
-                    if i == self.maxiter:
-                        raise NotConvergedError("Picard iteration for the state system")
-
-                    for j in range(self.form_handler.state_dim):
-                        if self.initial_guess is not None:
-                            fenics.assign(self.states[j], self.initial_guess[j])
-
-                        # adapt tolerances so that a solution is possible
-                        if not self.form_handler.state_is_linear:
-                            self.ksps[j].setTolerances(
-                                rtol=np.minimum(0.9 * res, 0.9) / 100,
-                                atol=self.newton_atols[j] / 100,
-                            )
-
-                            self.states[j] = newton_solve(
-                                self.form_handler.state_eq_forms[j],
-                                self.states[j],
-                                self.bcs_list[j],
-                                rtol=np.minimum(0.9 * res, 0.9),
-                                atol=self.newton_atols[j],
-                                max_iter=self.newton_iter,
-                                damped=self.newton_damped,
-                                verbose=self.newton_verbose,
-                                ksp=self.ksps[j],
-                                ksp_options=self.form_handler.state_ksp_options[j],
-                                A_tensor=self.A_tensors[j],
-                                b_tensor=self.b_tensors[j],
-                            )
-                        else:
-                            _assemble_petsc_system(
-                                self.form_handler.state_eq_forms_lhs[j],
-                                self.form_handler.state_eq_forms_rhs[j],
-                                self.bcs_list[j],
-                                A_tensor=self.A_tensors[j],
-                                b_tensor=self.b_tensors[j],
-                            )
-                            _solve_linear_problem(
-                                self.ksps[j],
-                                self.A_tensors[j].mat(),
-                                self.b_tensors[j].vec(),
-                                self.states[j].vector().vec(),
-                                self.form_handler.state_ksp_options[j],
-                            )
-                            self.states[j].vector().apply("")
-
-            if self.picard_verbose and self.form_handler.state_is_picard:
-                print("")
             self.has_solution = True
             self.number_of_solves += 1
 

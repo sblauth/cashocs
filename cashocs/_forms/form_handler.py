@@ -183,40 +183,27 @@ class FormHandler(abc.ABC):
         None
         """
 
+        self.state_eq_forms = [
+            fenics.derivative(
+                self.state_forms[i], self.adjoints[i], self.test_functions_state[i]
+            )
+            for i in range(self.state_dim)
+        ]
+
         if self.state_is_linear:
-            self.state_eq_forms = [
+            self.linear_state_eq_forms = [
                 replace(
-                    self.state_forms[i],
-                    {
-                        self.states[i]: self.trial_functions_state[i],
-                        self.adjoints[i]: self.test_functions_state[i],
-                    },
+                    self.state_eq_forms[i],
+                    {self.states[i]: self.trial_functions_state[i]},
                 )
                 for i in range(self.state_dim)
             ]
 
-        else:
-            self.state_eq_forms = [
-                fenics.derivative(
-                    self.state_forms[i], self.adjoints[i], self.test_functions_state[i]
-                )
-                for i in range(self.state_dim)
-            ]
-
-        if self.state_is_picard:
-            self.state_picard_forms = [
-                fenics.derivative(
-                    self.state_forms[i], self.adjoints[i], self.test_functions_state[i]
-                )
-                for i in range(self.state_dim)
-            ]
-
-        if self.state_is_linear:
             self.state_eq_forms_lhs = []
             self.state_eq_forms_rhs = []
             for i in range(self.state_dim):
                 try:
-                    a, L = fenics.system(self.state_eq_forms[i])
+                    a, L = fenics.system(self.linear_state_eq_forms[i])
                 except UFLException:
                     raise CashocsException(
                         "The state system could not be transferred to a linear system.\n"
@@ -246,82 +233,18 @@ class FormHandler(abc.ABC):
         None
         """
 
-        # Use replace -> derivative to speed up computations
-        self.lagrangian_temp_forms = [
-            replace(
-                self.lagrangian_form,
-                {self.adjoints[i]: self.trial_functions_adjoint[i]},
-            )
-            for i in range(self.state_dim)
-        ]
-
-        if self.state_is_picard:
-            self.adjoint_picard_forms = [
-                fenics.derivative(
-                    self.lagrangian_form,
-                    self.states[i],
-                    self.test_functions_adjoint[i],
-                )
-                for i in range(self.state_dim)
-            ]
-
-            if self.use_scalar_tracking:
-                for i in range(self.state_dim):
-                    for j in range(self.no_scalar_tracking_terms):
-                        self.adjoint_picard_forms[i] += self.scalar_weights[j](
-                            self.scalar_cost_functional_integrand_values[j]
-                            - fenics.Constant(self.scalar_tracking_goals[j])
-                        ) * fenics.derivative(
-                            self.scalar_cost_functional_integrands[j],
-                            self.states[i],
-                            self.test_functions_adjoint[i],
-                        )
-
-            if self.use_min_max_terms:
-                for i in range(self.state_dim):
-                    for j in range(self.no_min_max_terms):
-
-                        if self.min_max_lower_bounds[j] is not None:
-                            term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                                self.min_max_integrand_values[j]
-                                - self.min_max_lower_bounds[j]
-                            )
-                            self.adjoint_picard_forms[i] += _min(
-                                fenics.Constant(0.0), term_lower
-                            ) * fenics.derivative(
-                                self.min_max_integrands[j],
-                                self.states[i],
-                                self.test_functions_adjoint[i],
-                            )
-
-                        if self.min_max_upper_bounds[j] is not None:
-                            term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                                self.min_max_integrand_values[j]
-                                - self.min_max_upper_bounds[j]
-                            )
-                            self.adjoint_picard_forms[i] += _max(
-                                fenics.Constant(0.0), term_upper
-                            ) * fenics.derivative(
-                                self.min_max_integrands[j],
-                                self.states[i],
-                                self.test_functions_adjoint[i],
-                            )
-
         self.adjoint_eq_forms = [
             fenics.derivative(
-                self.lagrangian_temp_forms[i],
+                self.lagrangian_form,
                 self.states[i],
                 self.test_functions_adjoint[i],
             )
             for i in range(self.state_dim)
         ]
+
         if self.use_scalar_tracking:
             for i in range(self.state_dim):
                 for j in range(self.no_scalar_tracking_terms):
-                    self.temp_form = replace(
-                        self.scalar_cost_functional_integrands[j],
-                        {self.adjoints[i]: self.trial_functions_adjoint[i]},
-                    )
                     self.adjoint_eq_forms[i] += (
                         self.scalar_weights[j]
                         * (
@@ -329,7 +252,7 @@ class FormHandler(abc.ABC):
                             - fenics.Constant(self.scalar_tracking_goals[j])
                         )
                         * fenics.derivative(
-                            self.temp_form,
+                            self.scalar_cost_functional_integrands[j],
                             self.states[i],
                             self.test_functions_adjoint[i],
                         )
@@ -338,10 +261,6 @@ class FormHandler(abc.ABC):
         if self.use_min_max_terms:
             for i in range(self.state_dim):
                 for j in range(self.no_min_max_terms):
-                    self.temp_form = replace(
-                        self.min_max_integrands[j],
-                        {self.adjoints[i]: self.trial_functions_adjoint[i]},
-                    )
                     if self.min_max_lower_bounds[j] is not None:
                         term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
                             self.min_max_integrand_values[j]
@@ -350,7 +269,7 @@ class FormHandler(abc.ABC):
                         self.adjoint_eq_forms[i] += _min(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
-                            self.temp_form,
+                            self.min_max_integrands[j],
                             self.states[i],
                             self.test_functions_adjoint[i],
                         )
@@ -363,16 +282,24 @@ class FormHandler(abc.ABC):
                         self.adjoint_eq_forms[i] += _max(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
-                            self.temp_form,
+                            self.min_max_integrands[j],
                             self.states[i],
                             self.test_functions_adjoint[i],
                         )
+
+        self.linear_adjoint_eq_forms = [
+            replace(
+                self.adjoint_eq_forms[i],
+                {self.adjoints[i]: self.trial_functions_adjoint[i]},
+            )
+            for i in range(self.state_dim)
+        ]
 
         self.adjoint_eq_lhs = []
         self.adjoint_eq_rhs = []
 
         for i in range(self.state_dim):
-            a, L = fenics.system(self.adjoint_eq_forms[i])
+            a, L = fenics.system(self.linear_adjoint_eq_forms[i])
             self.adjoint_eq_lhs.append(a)
             if L.empty():
                 zero_form = (

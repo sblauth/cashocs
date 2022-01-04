@@ -31,6 +31,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from ..nonlinear_solvers import picard_iteration
 from .._exceptions import CashocsException, NotConvergedError
 from .._loggers import debug
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
@@ -80,6 +81,19 @@ class BaseHessianProblem(abc.ABC):
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
 
+        self.state_A_tensors = [
+            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+        ]
+        self.state_b_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+        self.adjoint_A_tensors = [
+            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+        ]
+        self.adjoint_b_tensors = [
+            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+        ]
+
         self.state_dim = self.form_handler.state_dim
         self.control_dim = self.form_handler.control_dim
 
@@ -107,9 +121,15 @@ class BaseHessianProblem(abc.ABC):
 
         self.controls = self.form_handler.controls
 
-        self.rtol = self.config.getfloat("StateSystem", "picard_rtol", fallback=1e-10)
-        self.atol = self.config.getfloat("StateSystem", "picard_atol", fallback=1e-12)
-        self.maxiter = self.config.getint("StateSystem", "picard_iter", fallback=50)
+        self.picard_rtol = self.config.getfloat(
+            "StateSystem", "picard_rtol", fallback=1e-10
+        )
+        self.picard_atol = self.config.getfloat(
+            "StateSystem", "picard_atol", fallback=1e-12
+        )
+        self.picard_max_iter = self.config.getint(
+            "StateSystem", "picard_iter", fallback=50
+        )
         self.picard_verbose = self.config.getboolean(
             "StateSystem", "picard_verbose", fallback=False
         )
@@ -207,101 +227,43 @@ class BaseHessianProblem(abc.ABC):
                 self.adjoints_prime[-1 - i].vector().apply("")
 
         else:
-            for i in range(self.maxiter + 1):
-                res = 0.0
-                for j in range(self.form_handler.state_dim):
-                    res_j = fenics.assemble(self.form_handler.sensitivity_eqs_picard[j])
-                    [bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
-                    res += pow(res_j.norm("l2"), 2)
+            picard_iteration(
+                self.form_handler.sensitivity_eqs_picard,
+                self.states_prime,
+                self.form_handler.bcs_list_ad,
+                max_iter=self.picard_max_iter,
+                rtol=self.picard_rtol,
+                atol=self.picard_atol,
+                verbose=self.picard_verbose,
+                inner_damped=False,
+                inner_inexact=False,
+                inner_verbose=False,
+                inner_max_its=2,
+                ksps=self.state_ksps,
+                ksp_options=self.form_handler.state_ksp_options,
+                A_tensors=self.state_A_tensors,
+                b_tensors=self.state_b_tensors,
+                inner_is_linear=True,
+            )
 
-                if res == 0:
-                    break
-
-                res = np.sqrt(res)
-
-                if i == 0:
-                    res_0 = res
-
-                if self.picard_verbose:
-                    print(
-                        f"Picard Sensitivity 1 Iteration {i:d}: ||res|| (abs) = {res:.3e}   ||res|| (rel) = {res/res_0:.3e}"
-                    )
-
-                if res / res_0 < self.rtol or res < self.atol:
-                    break
-
-                if i == self.maxiter:
-                    raise NotConvergedError(
-                        "Picard iteration for the computation of the state sensitivity",
-                        "Maximum number of iterations were exceeded.",
-                    )
-
-                for j in range(self.form_handler.state_dim):
-                    A, b = _assemble_petsc_system(
-                        self.form_handler.sensitivity_eqs_lhs[j],
-                        self.form_handler.sensitivity_eqs_rhs[j],
-                        self.bcs_list_ad[j],
-                    )
-                    _solve_linear_problem(
-                        self.state_ksps[j],
-                        A,
-                        b,
-                        self.states_prime[j].vector().vec(),
-                        self.form_handler.state_ksp_options[j],
-                    )
-                    self.states_prime[j].vector().apply("")
-
-            if self.picard_verbose:
-                print("")
-
-            for i in range(self.maxiter + 1):
-                res = 0.0
-                for j in range(self.form_handler.state_dim):
-                    res_j = fenics.assemble(
-                        self.form_handler.adjoint_sensitivity_eqs_picard[j]
-                    )
-                    [bc.apply(res_j) for bc in self.form_handler.bcs_list_ad[j]]
-                    res += pow(res_j.norm("l2"), 2)
-
-                if res == 0:
-                    break
-
-                res = np.sqrt(res)
-
-                if i == 0:
-                    res_0 = res
-
-                if self.picard_verbose:
-                    print(
-                        f"Picard Sensitivity 2 Iteration {i:d}: ||res|| (abs) = {res:.3e}   ||res|| (rel) = {res/res_0:.3e}"
-                    )
-
-                if res / res_0 < self.rtol or res < self.atol:
-                    break
-
-                if i == self.maxiter:
-                    raise NotConvergedError(
-                        "Picard iteration for the computation of the adjoint sensitivity",
-                        "Maximum number of iterations were exceeded.",
-                    )
-
-                for j in range(self.form_handler.state_dim):
-                    A, b = _assemble_petsc_system(
-                        self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - j],
-                        self.form_handler.w_1[-1 - j],
-                        self.bcs_list_ad[-1 - j],
-                    )
-                    _solve_linear_problem(
-                        self.adjoint_ksps[-1 - j],
-                        A,
-                        b,
-                        self.adjoints_prime[-1 - j].vector().vec(),
-                        self.form_handler.adjoint_ksp_options[-1 - j],
-                    )
-                    self.adjoints_prime[-1 - j].vector().apply("")
-
-            if self.picard_verbose:
-                print("")
+            picard_iteration(
+                self.form_handler.adjoint_sensitivity_eqs_picard,
+                self.adjoints_prime,
+                self.form_handler.bcs_list_ad,
+                max_iter=self.picard_max_iter,
+                rtol=self.picard_rtol,
+                atol=self.picard_atol,
+                verbose=self.picard_verbose,
+                inner_damped=False,
+                inner_inexact=False,
+                inner_verbose=False,
+                inner_max_its=2,
+                ksps=self.adjoint_ksps,
+                ksp_options=self.form_handler.adjoint_ksp_options,
+                A_tensors=self.adjoint_A_tensors,
+                b_tensors=self.adjoint_b_tensors,
+                inner_is_linear=True,
+            )
 
         for i in range(self.control_dim):
             b = fenics.as_backend_type(

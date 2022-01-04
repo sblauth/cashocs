@@ -22,13 +22,11 @@
 from __future__ import annotations
 
 import abc
-import subprocess
 from typing import TYPE_CHECKING
 
 import fenics
 
 from .._interfaces import OptimizationAlgorithm
-from ..utils import write_out_mesh
 
 
 if TYPE_CHECKING:

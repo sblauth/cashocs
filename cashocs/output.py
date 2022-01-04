@@ -131,7 +131,6 @@ class HistoryManager:
             mesh_quality_measure = solver.mesh_handler.mesh_quality_measure
         except AttributeError:
             mesh_quality = None
-            mesh_quality_measure = None
 
         strs = []
         strs.append(f"Iteration {iteration:4d} - ")
