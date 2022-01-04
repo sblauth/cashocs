@@ -6,7 +6,7 @@ Scaling of the Cost Functional
 Problem Formulation
 -------------------
 
-In this demo, we take a look at how CASHOCS can be used to scale cost functionals,
+In this demo, we take a look at how cashocs can be used to scale cost functionals,
 which is particularly useful in case one uses multiple terms to define the cost functional
 and wants to weight them appropriately, e.g., if there are multiple competing objectives.
 This demo investigates this problem by considering a slightly modified version of
@@ -85,7 +85,7 @@ where :math:`\Omega_0` is the intial geometry. Here, we choose the value :math:`
 This would then achieve our goal of having the second term (a volume regularization)
 being twice as large as the first term in magnitude.
 
-To implement this in CASHOCS, we do not specify a single UFL form for the cost functional
+To implement this in cashocs, we do not specify a single UFL form for the cost functional
 as in all previous demos, instead we supply a list of UFL forms into which we
 put every single term of the cost functional. These are then scaled automatically
 by cashocs and then added to obtain the actual cost functional.
@@ -124,7 +124,7 @@ enters the optimization problem as keyword argument of the same name, i.e., ::
 
     If a cost functional is close to zero for the initial domain, the scaling is
     disabled for this term, and instead the respective term is just multiplied
-    by the corresponding factor in ``desired_weights``. CASHOCS issues an info message
+    by the corresponding factor in ``desired_weights``. cashocs issues an info message
     in this case.
 
 .. note::

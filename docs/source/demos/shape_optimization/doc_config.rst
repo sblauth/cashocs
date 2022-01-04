@@ -25,7 +25,7 @@ sections and each parameter in them in the following.
 As in :ref:`config_optimal_control`, we refer to the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_ for
 a detailed description of how these config files can be structured. Moreover,
-we remark that CASHOCS has a default behavior for almost all of these
+we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
 and we will discuss this behavior for each parameter in this tutorial. For a
 summary over all parameters and their default values look at
@@ -46,7 +46,7 @@ As first parameter, we have ::
 
     mesh_file = ./mesh/mesh.xdmf
 
-This specifies a path to a .xdmf file containing the discretized geometry. For all purposes, CASHOCS assumes that this .xdmf file was generated via conversion from a
+This specifies a path to a .xdmf file containing the discretized geometry. For all purposes, cashocs assumes that this .xdmf file was generated via conversion from a
 GMSH file using the command line command :ref:`cashocs-convert <cashocs_convert>`.
 
 Note, that the corresponding files for the boundaries and subdomains are generated
@@ -248,7 +248,7 @@ as ``beta_armijo = 2``.
 The following parameter, ``soft_exit``, is a boolean flag which determines how
 the optimization algorithm is terminated in case it does not converge. If ``soft_exit = True``, then an
 error message is printed, but code after the :py:meth:`solve <cashocs.ShapeOptimizationProblem.solve>` call of the
-optimization problem will still be executed. However, when ``soft_exit = False``, CASHOCS
+optimization problem will still be executed. However, when ``soft_exit = False``, cashocs
 raises an exception and terminates. This is set via ::
 
     soft_exit = False
@@ -361,7 +361,7 @@ problem
 
 For PDE constrained shape optimization, it is common to use a bilinear form based on
 the linear elasticity equations, which enables smooth mesh deformations. This bilinear
-form is given as follows, in a general form, that is also implemented in CASHOCS
+form is given as follows, in a general form, that is also implemented in cashocs
 
 .. math::
 
@@ -375,7 +375,7 @@ to include certain geometrical constraints of the shape optimization problem, wh
 certain boundaries, into the shape gradient. For a detailed description of this
 setting we refer to the preprint `Blauth, Nonlinear Conjugate Gradient Methods for PDE
 Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics <https://arxiv.org/abs/2007.12891>`_.
-Moreover, we note that for the second Lamé parameter :math:`\mu`, CASHOCS implements
+Moreover, we note that for the second Lamé parameter :math:`\mu`, cashocs implements
 an idea from `Schulz and Siebenborn, Computational Comparison of Surface Metric for PDE Constrained Shape Optimization
 <https://doi.org/10.1515/cmam-2016-0009>`_: There, it is proposed to compute :math:`\mu`
 as the solution of the Laplace problem
@@ -393,10 +393,10 @@ propose to use the solution of this Laplace equation directly for 2D problems,
 and to use :math:`\sqrt{\mu}` for 3D problems.
 
 Moreover, let us take a look at the possible types of boundaries that can be used
-with CASHOCS. In principle, there exist
+with cashocs. In principle, there exist
 two types: deformable and fixed boundaries. On fixed boundaries, we
 impose homogeneous Dirichlet boundary conditions for the shape gradient, so that
-these are not moved under the corresponding deformation. In CASHOCS, we define what boundaries
+these are not moved under the corresponding deformation. In cashocs, we define what boundaries
 are fixed and deformable via their markers, which are either defined in the
 corresponding python script, or in the GMSH file, if such a mesh is imported.
 
@@ -421,7 +421,7 @@ for the fixed boundaries is empty ::
 
     shape_bdry_fix = []
 
-Note, that CASHOCS also gives you the possibility of defining partially constrainted
+Note, that cashocs also gives you the possibility of defining partially constrainted
 boundaries, where only one axial component is fixed, whereas the other two are
 not. These are defined in ::
 
@@ -514,7 +514,7 @@ Moreover, the parameter ::
 can be used to update the local mesh size after each mesh deformation, in case this is ``True``, so that elements which become smaller also obtain a higher stiffness and vice versa. The default is ``False``.
 
 There is also a different possibility to define the stiffness parameter :math:`\mu`
-using CASHOCS, namely to define :math:`\mu` in terms of how close a point of the
+using cashocs, namely to define :math:`\mu` in terms of how close a point of the
 computational domain is to a boundary. In the following we will explain this
 alternative way of defining :math:`\mu`.
 To do so, we must first set the boolean parameter ::
@@ -547,7 +547,7 @@ This means, that only boundaries marked with 1, 2, and 3 are considered for comp
 the distance, and all others are ignored. The default behavior is that all (outer) boundaries
 are considered.
 
-There is also another possibility to compute the shape gradient in CASHOCS, namely using the :math:`p`-Laplacian, as proposed by `Müller, Kühl, Siebenborn, Deckelnick, Hinze, and Rung <https://doi.org/10.1007/s00158-021-03030-x>`_. In order to do so, we have the following line ::
+There is also another possibility to compute the shape gradient in cashocs, namely using the :math:`p`-Laplacian, as proposed by `Müller, Kühl, Siebenborn, Deckelnick, Hinze, and Rung <https://doi.org/10.1007/s00158-021-03030-x>`_. In order to do so, we have the following line ::
 
    use_p_laplacian = False
 
@@ -790,7 +790,7 @@ The next line in the config file is ::
     save_pvd = False
 
 Here, the parameter ``save_pvd`` is set. This is a boolean flag, which can be set to
-``True`` to enable that CASHOCS generates .pvd files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
+``True`` to enable that cashocs generates .pvd files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
 steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
 Note, that for visualizing these files, you need `Paraview <https://www.paraview.org/>`_.
 
@@ -798,7 +798,7 @@ The next parameter, ``save_pvd_adjoint`` works analogously, and is given in the 
 
     save_pvd_adjoint = False
 
-If this is set to True, CASHOCS generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
+If this is set to True, cashocs generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
 Its main purpose is for debugging.
 
 The next parameter is given by ``save_pvd_gradient``, which is given in the line ::

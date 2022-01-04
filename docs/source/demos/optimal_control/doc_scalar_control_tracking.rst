@@ -7,7 +7,7 @@ Tracking of the Cost Functional for Optimal Control Problems
 Problem Formulation
 -------------------
 
-In this demo we investigate CASHOCS functionality of tracking scalar-type
+In this demo we investigate cashocs functionality of tracking scalar-type
 terms such as cost functional values and other quanitites, which typically
 arise after integration. For this, we investigate the problem
 
@@ -25,10 +25,10 @@ arise after integration. For this, we investigate the problem
 For this example, we do not consider control constraints,
 but search for an optimal control u in the entire space :math:`L^2(\Omega)`,
 for the sake of simplicitiy. For the domain under consideration, we use the unit square
-:math:`\Omega = (0, 1)^2`, since this is built into CASHOCS.
+:math:`\Omega = (0, 1)^2`, since this is built into cashocs.
 
 In the following, we will describe how to solve this problem
-using CASHOCS. Moreover,
+using cashocs. Moreover,
 we also detail alternative / equivalent FEniCS code which could
 be used to define the problem instead.
 
@@ -70,7 +70,7 @@ and its setup are completely analogous to :ref:`demo_poisson` ::
 Definition of the scalar tracking type cost functional
 ******************************************************
 
-Next, we define the cost functional. To do this in CASHOCS, we first have to set
+Next, we define the cost functional. To do this in cashocs, we first have to set
 the usual cost functional to :math:`0` by writing the line ::
 
     J = Constant(0)*dx
@@ -82,7 +82,7 @@ This ensures that only the other terms will be active
     In case ``J`` is not defined as ``Constant(0)*dx`` but, e.g., like in
     :ref:`demo_poisson`, the terms will be added on top of each other.
 
-To define the desired tracking type functional, note that CASHOCS implements the
+To define the desired tracking type functional, note that cashocs implements the
 functional for the following kind of cost functionals
 
 .. math::

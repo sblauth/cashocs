@@ -7,7 +7,7 @@ Using Multiple Variables and PDEs
 Problem Formulation
 -------------------
 
-In this demo we show how CASHOCS can be used to treat multiple
+In this demo we show how cashocs can be used to treat multiple
 state equations as constraint. Additionally, this also highlights
 how the case of multiple controls can be treated. As model example, we consider the
 following problem
@@ -79,7 +79,7 @@ Next, we define the second state equation (which is for the state :math:`z`) via
 
 Here, ``q`` is the adjoint state corresponding to ``z``.
 
-In order to treat this one-way coupled with CASHOCS, we now have to specify what
+In order to treat this one-way coupled with cashocs, we now have to specify what
 the state, adjoint, and control variables are. This is done by putting the
 corresponding :py:class:`fenics.Function` objects into ordered lists ::
 

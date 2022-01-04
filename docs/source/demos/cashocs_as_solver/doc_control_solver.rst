@@ -1,6 +1,6 @@
 .. _demo_control_solver:
 
-CASHOCS as Solver for Optimal Control Problems
+cashocs as Solver for Optimal Control Problems
 ==============================================
 
 Problem Formulation
@@ -38,7 +38,7 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Recapitulation of :ref:`demo_poisson`
 *************************************
 
-For using CASHOCS exclusively as solver, the procedure is very similar to regularly
+For using cashocs exclusively as solver, the procedure is very similar to regularly
 using it, with a few additions after defining the optimization problem. In particular,
 up to the initialization of the optimization problem, our code is exactly the same as
 in :ref:`demo_poisson`, i.e., we use ::
@@ -131,10 +131,10 @@ via ::
     However, this is potentially dangerous, due to the following. The adjoint system
     is a linear system, and there is no fixed convention for the sign of the adjoint state.
     Hence, supplying, e.g., only the adjoint system, might not be compatible with the
-    derivative of the cost functional which CASHOCS computes. In effect, the sign
+    derivative of the cost functional which cashocs computes. In effect, the sign
     is specified by the choice of adding or subtracting the PDE constraint from the
     cost functional for the definition of a Lagrangian function, which is used to
-    determine the adjoint system and derivative. CASHOCS internally uses the convention
+    determine the adjoint system and derivative. cashocs internally uses the convention
     that the PDE constraint is added, so that, internally, it computes not the adjoint state
     :math:`p` as defined by the equations given above, but :math:`-p` instead.
     Hence, it is recommended to either specify all respective quantities with the
@@ -155,7 +155,7 @@ follows
 
     In case we have multiple state equations as in :ref:`demo_multiple_variables`,
     one has to supply ordered lists of adjoint equations and boundary conditions,
-    analogously to the usual procedure for CASHOCS.
+    analogously to the usual procedure for cashocs.
 
     In the case of multiple control variables, the derivatives of the reduced cost functional
     w.r.t. each of these have to be specified, again using an ordered list.

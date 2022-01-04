@@ -20,7 +20,7 @@ structure of such config files is explained in-depth in the `documentation of th
 configparser module <https://docs.python.org/3/library/configparser.html>`_.
 In particular, the order of the entries in each section is arbitrary.
 
-Moreover, we remark that CASHOCS has a default behavior for almost all of these
+Moreover, we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
 and we will discuss this behavior for each parameter in this tutorial.
 A summary of all parameters as well as their default values
@@ -443,7 +443,7 @@ supplied by the user.
 Section Output
 --------------
 
-This section determines the behavior of CASHOCS regarding output, both in the
+This section determines the behavior of cashocs regarding output, both in the
 terminal and w.r.t. output files. The first line of this section reads ::
 
     verbose = True

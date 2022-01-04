@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-This is CASHOCS' change log. Note, that only major and minor releases are covered
+This is cashocs' change log. Note, that only major and minor releases are covered
 here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
@@ -131,13 +131,13 @@ in development
 
   * Section Output:
 
-    * ``result_dir`` can be used to specify where CASHOCS' output files should be placed.
+    * ``result_dir`` can be used to specify where cashocs' output files should be placed.
 
 
 1.0.0 (September 18, 2020)
 --------------------------
 
 
-* Initial release of CASHOCS.
+* Initial release of cashocs.
 
 

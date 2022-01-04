@@ -6,7 +6,7 @@ Iterative Solvers for State and Adjoint Systems
 Problem Formulation
 -------------------
 
-CASHOCS is also capable of using iterative solvers through the linear algebra
+cashocs is also capable of using iterative solvers through the linear algebra
 backend PETSc. In this demo we show how this can be used. For the sake of simplicitiy,
 we consider the same setting as in :ref:`demo_poisson`, i.e.
 

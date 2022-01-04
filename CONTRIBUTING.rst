@@ -1,12 +1,12 @@
 Contributing Guidelines
 =======================
 
-First off, thanks a lot for taking the time to contribute to CASHOCS.
+First off, thanks a lot for taking the time to contribute to cashocs.
 
 Code of conduct
 ---------------
 
-The project and everyone that participates in it is governed by the :ref:`CASHOCS
+The project and everyone that participates in it is governed by the :ref:`cashocs
 Code of Conduct <code_of_conduct>`. In particular, this also applies to all
 interactions with the project, including issues and pull requests.
 
@@ -28,7 +28,7 @@ Reporting a bug
 Fixing a bug
 ------------
 
-- CASHOCS uses the `black coding style <https://github.com/psf/black>`_, so please also use that for your suggested fix.
+- cashocs uses the `black coding style <https://github.com/psf/black>`_, so please also use that for your suggested fix.
 
 - Make sure that all tests still pass with your fix.
 

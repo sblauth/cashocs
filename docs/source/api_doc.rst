@@ -8,13 +8,13 @@ Here, we detail the (public) API of cashocs.
 
 For a more hands-on approach, we recommend the :ref:`tutorial <tutorial_index>`, which
 shows many examples from PDE constrained optimization that can be efficiently
-solved with CASHOCS.
+solved with cashocs.
 
 
 PDE Constrained Optimization Problems
 -------------------------------------
 
-If you are using CASHOCS to solve PDE constrained optimization problems, you should
+If you are using cashocs to solve PDE constrained optimization problems, you should
 use the following two classes, for either optimal control or shape optimization
 problems.
 
@@ -76,7 +76,7 @@ InequalityConstraint
 Command Line Interface
 ----------------------
 
-For the command line interface of CASHOCS, we have a mesh conversion tool which
+For the command line interface of cashocs, we have a mesh conversion tool which
 converts GMSH .msh files to .xdmf ones, which can be read with the :py:func:`import mesh
 <cashocs.import_mesh>` functionality. It's usage is detailed in the following.
 
@@ -168,7 +168,7 @@ create_bcs_list
 Sub-Modules
 -----------
 
-CASHOCS' sub-modules include several additional classes and methods that could be
+cashocs' sub-modules include several additional classes and methods that could be
 potentially useful for the user. For the corresponding API documentation, we
 include the previously detailed objects, too, as to give a complete documentation
 of the sub-module.

@@ -1,12 +1,12 @@
 .. _demo_shape_solver:
 
-CASHOCS as Solver for Shape Optimization Problems
+cashocs as Solver for Shape Optimization Problems
 =================================================
 
 Problem Formulation
 -------------------
 
-Let us now investigate how CASHOCS can be used exclusively as a solver for shape optimization
+Let us now investigate how cashocs can be used exclusively as a solver for shape optimization
 problems. The procedure is very similar to the one discussed in :ref:`demo_control_solver`,
 but with some minor variations tailored to shape optimization.
 
@@ -35,7 +35,7 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Recapitulation of :ref:`demo_shape_poisson`
 *******************************************
 
-Analogously to :ref:`demo_control_solver`, the code we use in case CASHOCS is treated as
+Analogously to :ref:`demo_control_solver`, the code we use in case cashocs is treated as
 a solver only is identical to the one of :ref:`demo_shape_poisson` up to the definition
 of the optimization problem. For the sake of completeness we recall the corresponding code in the
 following ::
@@ -97,7 +97,7 @@ where :math:`\varepsilon(\mathcal{V})` is the symmetric part of the gradient of 
 given by :math:`\varepsilon(\mathcal{V}) = \frac{1}{2} \left( D\mathcal{V} + D\mathcal{V}^\top \right)`.
 For details, we refer the reader to, e.g., `Delfour and Zolesio, Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_.
 
-To supply these weak forms to CASHOCS, we can use the following code. For the
+To supply these weak forms to cashocs, we can use the following code. For the
 shape derivative, we write ::
 
     vector_field = sop.get_vector_field()
@@ -128,7 +128,7 @@ and we have the following code ::
 Again, the format is analogous to the format of the state system, but now we have to
 specify a :py:class:`fenics.TestFunction` object for the adjoint equation.
 
-Finally, the weak forms are supplied to CASHOCS with the line ::
+Finally, the weak forms are supplied to cashocs with the line ::
 
     sop.supply_custom_forms(dJ, adjoint_form, adjoint_bcs)
 
@@ -144,10 +144,10 @@ and the optimization problem is solved with ::
     However, this is potentially dangerous, due to the following. The adjoint system
     is a linear system, and there is no fixed convention for the sign of the adjoint state.
     Hence, supplying, e.g., only the adjoint system, might not be compatible with the
-    derivative of the cost functional which CASHOCS computes. In effect, the sign
+    derivative of the cost functional which cashocs computes. In effect, the sign
     is specified by the choice of adding or subtracting the PDE constraint from the
     cost functional for the definition of a Lagrangian function, which is used to
-    determine the adjoint system and derivative. CASHOCS internally uses the convention
+    determine the adjoint system and derivative. cashocs internally uses the convention
     that the PDE constraint is added, so that, internally, it computes not the adjoint state
     :math:`p` as defined by the equations given above, but :math:`-p` instead.
     Hence, it is recommended to either specify all respective quantities with the

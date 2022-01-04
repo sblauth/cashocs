@@ -6,7 +6,7 @@ Distributed Control for Time Dependent Problems
 Problem Formulation
 -------------------
 
-In this demo  we take a look at how time dependent problems can be treated with CASHOCS.
+In this demo  we take a look at how time dependent problems can be treated with cashocs.
 To do so, we investigate a problem with a heat equation as PDE constraint, which
 was considered in `Blauth, Optimal Control and Asymptotic Analysis of the Cattaneo Model
 <https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727>`_.
@@ -27,7 +27,7 @@ Since FEniCS does not have any direct built-in support for time dependent proble
 we first have to perform a semi-discretization of the PDE system in the temporal
 component (e.g. via finite differences), and then solve the resulting sequence of PDEs.
 
-In particular, for the use with CASHOCS, we have to create not a single weak form and
+In particular, for the use with cashocs, we have to create not a single weak form and
 :py:class:`fenics.Function`, that can be re-used, like one would in classical FEniCS programs, but
 we have to create the corresponding objects a-priori for each time step.
 
@@ -66,7 +66,7 @@ rectangle rule. This means we approximate the cost functional via
 
 Here, :math:`(y_d)_k` is an approximation of the desired state at time :math:`t_k`.
 
-Let us now investigate how to solve this problem with CASHOCS.
+Let us now investigate how to solve this problem with cashocs.
 
 
 Implementation
@@ -196,7 +196,7 @@ Next, we have the following for loop, which we describe in detail after stating 
     and directly append this to the cost functional list.
 
 To sum up over all elements of
-this list, CASHOCS includes the function :py:func:`cashocs.utils.summation`, which we call ::
+this list, cashocs includes the function :py:func:`cashocs.utils.summation`, which we call ::
 
     J = cashocs.utils.summation(J_list)
 

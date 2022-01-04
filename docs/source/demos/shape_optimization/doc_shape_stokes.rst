@@ -39,7 +39,7 @@ This problem is supplemented with the geometrical constraints
 
 where :math:`\Omega_0` denotes the initial geometry. This models that both the volume
 and the barycenter of the geometry should remain fixed during the optimization.
-To treat this problem with CASHOCS, we regularize the constraints in the sense
+To treat this problem with cashocs, we regularize the constraints in the sense
 of a quadratic penalty function. See :ref:`the corresponding section in the documentation
 of the config files for shape optimization <config_shape_regularization>` as well
 as :ref:`demo_regularization`. In particular, the regularized problem reads
@@ -86,7 +86,7 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Initialization
 **************
 
-As for the previous tutorial problems, we start by importing FEniCS and CASHOCS::
+As for the previous tutorial problems, we start by importing FEniCS and cashocs::
 
     config = cashocs.load_config('./config.ini')
 
