@@ -31,9 +31,9 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from ..nonlinear_solvers import picard_iteration
-from .._exceptions import CashocsException, NotConvergedError
+from .._exceptions import CashocsException
 from .._loggers import debug
+from ..nonlinear_solvers import picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
 

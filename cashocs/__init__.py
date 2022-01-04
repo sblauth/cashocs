@@ -38,7 +38,7 @@ from .geometry import (
     regular_box_mesh,
     regular_mesh,
 )
-from .nonlinear_solvers import newton_solve, damped_newton_solve
+from .nonlinear_solvers import newton_solve, damped_newton_solve, picard_iteration
 from .utils import (
     create_bcs_list,
     create_dirichlet_bcs,
@@ -56,6 +56,7 @@ __all__ = [
     "DeformationHandler",
     "MeshQuality",
     "newton_solve",
+    "picard_iteration",
     "OptimalControlProblem",
     "ShapeOptimizationProblem",
     "create_config",

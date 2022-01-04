@@ -30,12 +30,12 @@ from ufl.algorithms import expand_derivatives
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .form_handler import FormHandler
+from .shape_regularization import ShapeRegularization
 from .._exceptions import (
     InputError,
     IncompatibleConfigurationError,
 )
 from .._loggers import warning
-from .shape_regularization import ShapeRegularization
 from ..geometry import compute_boundary_distance
 from ..utils import (
     _assemble_petsc_system,

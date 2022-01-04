@@ -29,6 +29,7 @@ import numpy as np
 from ._exceptions import InputError
 from ._loggers import warning
 
+
 if TYPE_CHECKING:
     from ._optimal_control.optimal_control_problem import OptimalControlProblem
     from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem

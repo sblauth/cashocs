@@ -24,10 +24,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import fenics
-import numpy as np
 from petsc4py import PETSc
 
-from .._exceptions import NotConvergedError
 from .._interfaces import PDEProblem
 from ..nonlinear_solvers import newton_solve, picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
