@@ -19,6 +19,7 @@ import os
 import sys
 import shutil
 import subprocess
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -168,9 +169,12 @@ def test_first_remeshing_step():
 
     from cashocs._exceptions import CashocsDebugException
 
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    with pytest.raises(CashocsDebugException):
-        sop.solve(max_iter=10)
+    with patch.object(sys, "argv", [os.path.realpath(__file__)]):
+        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+        try:
+            sop.solve(max_iter=10)
+        except CashocsDebugException:
+            pass
 
     assert any(
         s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")

@@ -657,7 +657,7 @@ class _MeshHandler:
 
                 return arg_list
 
-            if not self.config.getboolean("Debug", "restart", fallback="False"):
+            if not self.config.getboolean("Debug", "restart", fallback=False):
                 os.execv(
                     sys.executable,
                     [sys.executable]
