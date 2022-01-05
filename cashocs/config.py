@@ -285,7 +285,10 @@ class Config(ConfigParser):
                 "result_dir": {"type": "str"},
                 "time_suffix": {"type": "bool"},
             },
-            "Debug": {"remeshing": {"type": "bool"}},
+            "Debug": {
+                "remeshing": {"type": "bool"},
+                "restart": {"type": "bool"},
+            },
             "DEFAULT": {},
         }
         self.config_errors = []

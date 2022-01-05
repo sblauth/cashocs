@@ -31,7 +31,12 @@ from petsc4py import PETSc
 
 from .deformation_handler import DeformationHandler
 from .mesh_quality import compute_mesh_quality
-from .._exceptions import CashocsException, InputError, IncompatibleConfigurationError
+from .._exceptions import (
+    CashocsException,
+    InputError,
+    IncompatibleConfigurationError,
+    CashocsDebugException,
+)
 from .._loggers import debug, warning
 from ..io import write_out_mesh
 from ..utils.linalg import (
@@ -614,6 +619,7 @@ class _MeshHandler:
                 list[str]
                     The filtered list of command line arguments
                 """
+
                 arg_list = sys.argv.copy()
                 idx_cashocs_remesh_flag = [
                     i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
@@ -651,7 +657,7 @@ class _MeshHandler:
 
                 return arg_list
 
-            if not self.form_handler.has_cashocs_remesh_flag:
+            if not self.config.getboolean("Debug", "restart", fallback="False"):
                 os.execv(
                     sys.executable,
                     [sys.executable]
@@ -661,11 +667,6 @@ class _MeshHandler:
                     + [self.temp_dir],
                 )
             else:
-                os.execv(
-                    sys.executable,
-                    [sys.executable]
-                    + filter_sys_argv()
-                    + ["--cashocs_remesh"]
-                    + ["--temp_dir"]
-                    + [self.temp_dir],
+                raise CashocsDebugException(
+                    "Debug flag detected. Restart of script with remeshed geometry is cancelled."
                 )

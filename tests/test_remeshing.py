@@ -141,6 +141,64 @@ def test_remeshing_functionality():
     subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
 
 
+def test_first_remeshing_step():
+
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+    config.set("Output", "result_dir", dir_path + "/temp/")
+    config.add_section("Debug")
+    config.set("Debug", "remeshing", "True")
+    config.set("Debug", "restart", "True")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
+
+    V = FunctionSpace(mesh, "CG", 1)
+    u = Function(V)
+    p = Function(V)
+
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+
+    J = u * dx
+
+    from cashocs._exceptions import CashocsDebugException
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    with pytest.raises(CashocsDebugException):
+        sop.solve(max_iter=10)
+
+    assert any(
+        s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")
+    )
+    assert any(
+        s.startswith("._cashocs_remesh_temp_") for s in os.listdir(f"{dir_path}")
+    )
+
+    assert os.path.isdir(dir_path + "/temp")
+    assert os.path.isdir(dir_path + "/temp/pvd")
+    assert os.path.isfile(dir_path + "/temp/history.txt")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0.pvd")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.vtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0.pvd")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0000003.vtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient.pvd")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu")
+
+    subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+
+    subprocess.run(
+        [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+    )
+    subprocess.run(
+        [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
+    )
+
+
 def test_reentry():
     old_sys_argv = sys.argv[:]
     sys.argv.append("--cashocs_remesh")

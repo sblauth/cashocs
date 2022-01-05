@@ -29,6 +29,10 @@ class CashocsException(Exception):
     pass
 
 
+class CashocsDebugException(CashocsException):
+    pass
+
+
 class NotConvergedError(CashocsException):
     """This exception is raised when a solver does not converge.
 
