@@ -36,7 +36,7 @@ from .._exceptions import (
     IncompatibleConfigurationError,
 )
 from .._loggers import warning
-from ..geometry import compute_boundary_distance
+from ..geometry.boundary_distance import compute_boundary_distance
 from ..utils import (
     _assemble_petsc_system,
     _setup_petsc_options,
