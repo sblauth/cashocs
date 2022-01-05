@@ -166,9 +166,6 @@ def _parse_remesh() -> Tuple[bool, str]:
 
     """
 
-    temp_dir = None
-    cashocs_remesh_flag = False
-
     parser = argparse.ArgumentParser(description="test argument parser")
     parser.add_argument(
         "--temp_dir", type=str, help="Location of the temp directory for remeshing"
@@ -180,33 +177,8 @@ def _parse_remesh() -> Tuple[bool, str]:
     )
     args = parser.parse_args()
 
-    if args.temp_dir is not None:
-        if os.path.isdir(os.path.realpath(args.temp_dir)):
-            temp_dir = args.temp_dir
-        else:
-            raise InputError(
-                "Command line options",
-                "--temp_dir",
-                "The temporary directory for remeshing does not exist.",
-            )
-
-    if args.cashocs_remesh:
-        cashocs_remesh_flag = True
-        if args.temp_dir is None:
-            raise InputError(
-                "Command line options",
-                "--temp_dir",
-                "Cannot use command line option --cashocs_remesh without specifying --temp_dir.",
-            )
-        elif not os.path.isfile(os.path.realpath(f"{temp_dir}/temp_dict.json")):
-            raise InputError
-    else:
-        if args.temp_dir is not None:
-            raise InputError(
-                "Command line options",
-                "--temp_dir",
-                "Should not specify --temp_dir when not using --cashocs_remesh.",
-            )
+    temp_dir = args.temp_dir or None
+    cashocs_remesh_flag = True if args.cashocs_remesh else False
 
     return cashocs_remesh_flag, temp_dir
 
@@ -239,13 +211,6 @@ def _optimization_algorithm_configuration(
     else:
         overwrite = False
         algorithm = config.get("OptimizationRoutine", "algorithm", fallback="none")
-
-    if not isinstance(algorithm, str):
-        raise InputError(
-            "cashocs.utils._optimization_algorithm_configuration",
-            "algorithm",
-            "Not a valid input type for algorithm. Has to be a string.",
-        )
 
     if algorithm in ["gradient_descent", "gd"]:
         internal_algorithm = "gradient_descent"

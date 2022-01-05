@@ -310,14 +310,17 @@ class Config(ConfigParser):
     def _check_keys(self):
         for section_name, section in self.items():
             for key in section.keys():
-                if key not in self.config_scheme[section_name].keys():
-                    self.config_errors.append(
-                        f"Key {key} is not valid for section {section_name}.\n"
-                    )
-                else:
-                    self._check_key_type(section_name, key)
-                    self._check_possible_options(section_name, key)
-                    self._check_attributes(section_name, key)
+                try:
+                    if key not in self.config_scheme[section_name].keys():
+                        self.config_errors.append(
+                            f"Key {key} is not valid for section {section_name}.\n"
+                        )
+                    else:
+                        self._check_key_type(section_name, key)
+                        self._check_possible_options(section_name, key)
+                        self._check_attributes(section_name, key)
+                except KeyError:
+                    pass
 
     def _check_key_type(self, section, key):
         key_type = self.config_scheme[section][key]["type"]

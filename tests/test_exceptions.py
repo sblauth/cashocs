@@ -116,6 +116,17 @@ def test_config_error():
     )
 
 
+def test_incorrect_configs():
+    with pytest.raises(ConfigError) as e_info:
+        config = cashocs.load_config(f"{dir_path}/test_config.ini")
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+
+    assert (
+        "The following section is not valid: <Section: A>\nThe following section is not valid: <Section: B>\nKey algorithm is not valid for section StateSystem."
+        in str(e_info.value)
+    )
+
+
 def test_incompatible_config():
     with pytest.raises(IncompatibleConfigurationError) as e_info:
         config = cashocs.load_config(f"{dir_path}/config_sop.ini")

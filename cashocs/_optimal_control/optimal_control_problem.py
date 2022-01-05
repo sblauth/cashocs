@@ -244,6 +244,7 @@ class OptimalControlProblem(OptimizationProblem):
         # recast floats into functions for compatibility
         temp_constraints = self.control_constraints[:]
         self.control_constraints = []
+        wrong_type = False
         for idx, pair in enumerate(temp_constraints):
             if isinstance(pair[0], (float, int)):
                 lower_bound = fenics.Function(self.controls[idx].function_space())
@@ -251,11 +252,7 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
             else:
-                raise InputError(
-                    "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
-                    "control_constraints",
-                    "Wrong type for the control constraints",
-                )
+                wrong_type = True
 
             if isinstance(pair[1], (float, int)):
                 upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -263,12 +260,14 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
+                wrong_type = True
+
+            if wrong_type:
                 raise InputError(
                     "cashocs._optimal_control.optimal_control_problem.OptimalControlProblem",
                     "control_constraints",
                     "Wrong type for the control constraints",
                 )
-
             self.control_constraints.append([lower_bound, upper_bound])
 
         ### Check whether the control constraints are feasible, and whether they are actually present

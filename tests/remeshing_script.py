@@ -46,4 +46,4 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 J = u * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-sop.solve(max_iter=4)
+sop.solve(max_iter=8)

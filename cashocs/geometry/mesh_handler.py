@@ -430,19 +430,12 @@ class _MeshHandler:
         Parameters
         ----------
         mesh_file : str
-            Path to the Gmsh file.
+            Path to the Gmsh file, has to end in .msh
 
         Returns
         -------
         None
         """
-
-        if not mesh_file[-4:] == ".msh":
-            raise InputError(
-                "cashocs.geometry.__remove_gmsh_parametrizations",
-                "mesh_file",
-                "Format for mesh_file is wrong, has to end in .msh",
-            )
 
         temp_location = f"{mesh_file[:-4]}_temp.msh"
 

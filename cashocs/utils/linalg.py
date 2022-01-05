@@ -100,13 +100,6 @@ def _setup_petsc_options(
     None
     """
 
-    if not len(ksps) == len(ksp_options):
-        raise InputError(
-            "cashocs.utils._setup_petsc_options",
-            "ksps",
-            "Length of ksp_options and ksps does not match.",
-        )
-
     opts = fenics.PETScOptions
 
     for i in range(len(ksps)):

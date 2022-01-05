@@ -86,12 +86,15 @@ def test_remeshing():
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.vtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0000003.vtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.vtu")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
     assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu")
 
     subprocess.run(
         [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True

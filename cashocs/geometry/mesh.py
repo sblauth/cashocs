@@ -144,14 +144,7 @@ def import_mesh(
             "Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.",
         )
 
-    if mesh_file[-5:] == ".xdmf":
-        file_string = mesh_file[:-5]
-    else:
-        raise InputError(
-            "cashocs.geometry.import_mesh",
-            "input_arg",
-            "Not a suitable mesh file format. Has to end in .xdmf.",
-        )
+    file_string = mesh_file[:-5]
 
     mesh = Mesh()
     xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
@@ -371,7 +364,7 @@ def regular_mesh(
 
     if not n > 0:
         raise InputError(
-            "cashocs.geometry.regular_mesh", "n", "This needs to be positive."
+            "cashocs.geometry.regular_mesh", "n", "n needs to be positive."
         )
     if not L_x > 0.0:
         raise InputError(

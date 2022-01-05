@@ -54,19 +54,6 @@ def write_out_mesh(
     but this is not tested or ensured in any way.
     """
 
-    if not original_msh_file[-4:] == ".msh":
-        raise InputError(
-            "cashocs.utils.write_out_mesh",
-            "original_msh_file",
-            "Format for original_mesh_file is wrong, has to end in .msh",
-        )
-    if not out_msh_file[-4:] == ".msh":
-        raise InputError(
-            "cashocs.utils.write_out_mesh",
-            "out_msh_file",
-            "Format for out_mesh_file is wrong, has to end in .msh",
-        )
-
     dim = mesh.geometric_dimension()
 
     if not Path(out_msh_file).parent.is_dir():
@@ -109,12 +96,7 @@ def write_out_mesh(
                             mod_line = f"{points[idcs[subwrite_counter]][0]:.16f} {points[idcs[subwrite_counter]][1]:.16f} 0\n"
                         elif dim == 3:
                             mod_line = f"{points[idcs[subwrite_counter]][0]:.16f} {points[idcs[subwrite_counter]][1]:.16f} {points[idcs[subwrite_counter]][2]:.16f}\n"
-                        else:
-                            raise InputError(
-                                "cashocs.utils.write_out_mesh",
-                                "mesh",
-                                "Not a valid dimension for the mesh.",
-                            )
+
                         new_file.write(mod_line)
                         subwrite_counter += 1
 

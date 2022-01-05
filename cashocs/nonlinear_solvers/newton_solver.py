@@ -322,13 +322,11 @@ def newton_solve(
             u.vector().vec().axpy(1.0, du.vector().vec())
 
         if breakdown:
-            raise NotConvergedError(
-                "Newton solver (state system)", "Stepsize for increment too low."
-            )
+            raise NotConvergedError("Newton solver", "Stepsize for increment too low.")
 
         if iterations == max_iter:
             raise NotConvergedError(
-                "Newton solver (state system)",
+                "Newton solver",
                 "Maximum number of iterations were exceeded.",
             )
 
