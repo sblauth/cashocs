@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, List
 import fenics
 import numpy as np
 
+from ..._interfaces.optimization_methods import NCGMixin
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem
 
 
-class NCG(ControlOptimizationAlgorithm):
+class NCG(NCGMixin, ControlOptimizationAlgorithm):
     """Nonlinear conjugate gradient method."""
 
     def __init__(self, optimization_problem: OptimalControlProblem):
@@ -47,29 +48,7 @@ class NCG(ControlOptimizationAlgorithm):
         super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
-
-        self.gradient_prev = [
-            fenics.Function(V) for V in optimization_problem.control_spaces
-        ]
-        self.differences = [
-            fenics.Function(V) for V in optimization_problem.control_spaces
-        ]
-        self.temp_HZ = [fenics.Function(V) for V in optimization_problem.control_spaces]
         self.control_constraints = optimization_problem.control_constraints
-
-        self.cg_method = self.config.get("AlgoCG", "cg_method", fallback="FR")
-        self.cg_periodic_restart = self.config.getboolean(
-            "AlgoCG", "cg_periodic_restart", fallback=False
-        )
-        self.cg_periodic_its = self.config.getint(
-            "AlgoCG", "cg_periodic_its", fallback=10
-        )
-        self.cg_relative_restart = self.config.getboolean(
-            "AlgoCG", "cg_relative_restart", fallback=False
-        )
-        self.cg_restart_tol = self.config.getfloat(
-            "AlgoCG", "cg_restart_tol", fallback=0.25
-        )
 
     def project_direction(self, a: List[fenics.Function]) -> None:
         """Restricts the search direction to the inactive set.
@@ -110,12 +89,8 @@ class NCG(ControlOptimizationAlgorithm):
         None
         """
 
-        self.iteration = 0
+        self.initialize_solver()
         self.memory = 0
-        self.relative_norm = 1.0
-        self.state_problem.has_solution = False
-        for i in range(len(self.gradient)):
-            self.gradient[i].vector().vec().set(1.0)
 
         while True:
 
@@ -124,150 +99,18 @@ class NCG(ControlOptimizationAlgorithm):
                     0.0, self.gradient[i].vector().vec()
                 )
 
-            self.adjoint_problem.has_solution = False
-            self.gradient_problem.has_solution = False
-            self.gradient_problem.solve()
+            self.compute_gradient()
 
             self.gradient_norm = np.sqrt(self._stationary_measure_squared())
-            if self.iteration > 0:
-                if self.cg_method == "FR":
-                    self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradient, self.gradient
-                    )
-                    self.beta_denominator = self.form_handler.scalar_product(
-                        self.gradient_prev, self.gradient_prev
-                    )
-                    self.beta = self.beta_numerator / self.beta_denominator
+            self.compute_beta()
 
-                elif self.cg_method == "PR":
-                    for i in range(len(self.gradient)):
-                        self.differences[i].vector().vec().aypx(
-                            0.0,
-                            self.gradient[i].vector().vec()
-                            - self.gradient_prev[i].vector().vec(),
-                        )
-
-                    self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradient, self.differences
-                    )
-                    self.beta_denominator = self.form_handler.scalar_product(
-                        self.gradient_prev, self.gradient_prev
-                    )
-                    self.beta = self.beta_numerator / self.beta_denominator
-
-                elif self.cg_method == "HS":
-                    for i in range(len(self.gradient)):
-                        self.differences[i].vector().vec().aypx(
-                            0.0,
-                            self.gradient[i].vector().vec()
-                            - self.gradient_prev[i].vector().vec(),
-                        )
-
-                    self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradient, self.differences
-                    )
-                    self.beta_denominator = self.form_handler.scalar_product(
-                        self.differences, self.search_direction
-                    )
-                    self.beta = self.beta_numerator / self.beta_denominator
-
-                elif self.cg_method == "DY":
-                    for i in range(len(self.gradient)):
-                        self.differences[i].vector().vec().aypx(
-                            0.0,
-                            self.gradient[i].vector().vec()
-                            - self.gradient_prev[i].vector().vec(),
-                        )
-
-                    self.beta_numerator = self.form_handler.scalar_product(
-                        self.gradient, self.gradient
-                    )
-                    self.beta_denominator = self.form_handler.scalar_product(
-                        self.search_direction, self.differences
-                    )
-                    self.beta = self.beta_numerator / self.beta_denominator
-
-                elif self.cg_method == "HZ":
-                    for i in range(len(self.gradient)):
-                        self.differences[i].vector().vec().aypx(
-                            0.0,
-                            self.gradient[i].vector().vec()
-                            - self.gradient_prev[i].vector().vec(),
-                        )
-
-                    dy = self.form_handler.scalar_product(
-                        self.search_direction, self.differences
-                    )
-                    y2 = self.form_handler.scalar_product(
-                        self.differences, self.differences
-                    )
-
-                    for i in range(len(self.gradient)):
-                        self.differences[i].vector().vec().axpy(
-                            -2 * y2 / dy, self.search_direction[i].vector().vec()
-                        )
-
-                    self.beta = (
-                        self.form_handler.scalar_product(
-                            self.differences, self.gradient
-                        )
-                        / dy
-                    )
-
-            if self.iteration == 0:
-                self.gradient_norm_initial = self.gradient_norm
-                if self.gradient_norm_initial == 0:
-                    self.objective_value = self.cost_functional.evaluate()
-                    self.converged = True
-                    break
-                self.beta = 0.0
-
-            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
-                if self.iteration == 0:
-                    self.objective_value = self.cost_functional.evaluate()
-                self.converged = True
+            if self.convergence_test():
                 break
 
-            for i in range(self.form_handler.control_dim):
-                self.search_direction[i].vector().vec().aypx(
-                    self.beta, -self.gradient[i].vector().vec()
-                )
-
-            if self.cg_periodic_restart:
-                if self.memory < self.cg_periodic_its:
-                    self.memory += 1
-                else:
-                    for i in range(len(self.gradient)):
-                        self.search_direction[i].vector().vec().aypx(
-                            0.0, -self.gradient[i].vector().vec()
-                        )
-                    self.memory = 0
-            if self.cg_relative_restart:
-                if (
-                    abs(
-                        self.form_handler.scalar_product(
-                            self.gradient, self.gradient_prev
-                        )
-                    )
-                    / pow(self.gradient_norm, 2)
-                    >= self.cg_restart_tol
-                ):
-                    for i in range(len(self.gradient)):
-                        self.search_direction[i].vector().vec().aypx(
-                            0.0, -self.gradient[i].vector().vec()
-                        )
-
+            self.compute_search_direction()
+            self.restart()
             self.project_direction(self.search_direction)
-            self.directional_derivative = self.form_handler.scalar_product(
-                self.gradient, self.search_direction
-            )
-
-            if self.directional_derivative >= 0:
-                for i in range(len(self.gradient)):
-                    self.search_direction[i].vector().vec().aypx(
-                        0.0, -self.gradient[i].vector().vec()
-                    )
+            self.check_for_ascent()
 
             self.objective_value = self.cost_functional.evaluate()
             self.output()

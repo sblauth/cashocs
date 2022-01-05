@@ -29,13 +29,13 @@ import numpy as np
 
 from ..._loggers import debug
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
-
+from ..._interfaces.optimization_methods import LBFGSMixin
 
 if TYPE_CHECKING:
     from ..shape_optimization_problem import ShapeOptimizationProblem
 
 
-class LBFGS(ShapeOptimizationAlgorithm):
+class LBFGS(LBFGSMixin, ShapeOptimizationAlgorithm):
     """A limited memory BFGS (L-BFGS) method for solving shape optimization problems"""
 
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
@@ -50,8 +50,6 @@ class LBFGS(ShapeOptimizationAlgorithm):
         super().__init__(optimization_problem)
 
         self.line_search = ArmijoLineSearch(self)
-
-        self.temp = fenics.Function(self.form_handler.deformation_space)
 
         self.bfgs_memory_size = self.config.getint(
             "AlgoLBFGS", "bfgs_memory_size", fallback=5
@@ -69,62 +67,6 @@ class LBFGS(ShapeOptimizationAlgorithm):
             self.gradient_prev = fenics.Function(self.form_handler.deformation_space)
             self.y_k = [fenics.Function(self.form_handler.deformation_space)]
             self.s_k = [fenics.Function(self.form_handler.deformation_space)]
-
-    def compute_search_direction(
-        self, grad: List[fenics.Function]
-    ) -> List[fenics.Function]:
-        """Computes the search direction for the BFGS method with the so-called double loop
-
-        Parameters
-        ----------
-        grad : list[fenics.Function]
-            the current gradient
-
-        Returns
-        -------
-        list[fenics.Function]
-            a function corresponding to the current / next search direction
-        """
-
-        if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
-            history_alpha = deque()
-            self.search_direction[0].vector().vec().aypx(0.0, grad[0].vector().vec())
-
-            for i, _ in enumerate(self.history_s):
-                alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.search_direction, self.history_s[i]
-                )
-                history_alpha.append(alpha)
-                self.search_direction[0].vector().vec().axpy(
-                    -alpha, self.history_y[i][0].vector().vec()
-                )
-
-            if self.use_bfgs_scaling and self.iteration > 0:
-                factor = self.form_handler.scalar_product(
-                    self.history_y[0], self.history_s[0]
-                ) / self.form_handler.scalar_product(
-                    self.history_y[0], self.history_y[0]
-                )
-            else:
-                factor = 1.0
-
-            self.search_direction[0].vector().vec().scale(factor)
-
-            for i, _ in enumerate(self.history_s):
-                beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
-                    self.history_y[-1 - i], self.search_direction
-                )
-
-                self.search_direction[0].vector().vec().axpy(
-                    history_alpha[-1 - i] - beta,
-                    self.history_s[-1 - i][0].vector().vec(),
-                )
-
-            self.search_direction[0].vector().vec().scale(-1)
-        else:
-            self.search_direction[0].vector().vec().aypx(0.0, -grad[0].vector().vec())
-
-        return self.search_direction
 
     def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method

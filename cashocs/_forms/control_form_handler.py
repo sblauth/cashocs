@@ -325,7 +325,7 @@ class ControlFormHandler(FormHandler):
 
         Returns
         -------
-        b : list[fenics.Function]
+        list[fenics.Function]
             The result of the projection of a onto the inactive set (overwrites input b).
         """
 

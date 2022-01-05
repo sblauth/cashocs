@@ -183,3 +183,53 @@ class OptimizationAlgorithm(abc.ABC):
             return True
         else:
             return False
+
+    def convergence_test(self) -> bool:
+
+        if self.iteration == 0:
+            self.gradient_norm_initial = self.gradient_norm
+        try:
+            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+        except ZeroDivisionError:
+            self.relative_norm = 0.0
+        if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
+            if self.iteration == 0:
+                self.objective_value = self.cost_functional.evaluate()
+            self.converged = True
+            return True
+
+        return False
+
+    def compute_gradient(self) -> None:
+
+        self.adjoint_problem.has_solution = False
+        self.gradient_problem.has_solution = False
+        self.gradient_problem.solve()
+
+    def check_for_ascent(self) -> None:
+
+        directional_derivative = self.form_handler.scalar_product(
+            self.gradient, self.search_direction
+        )
+
+        if directional_derivative >= 0:
+            for i in range(len(self.gradient)):
+                self.search_direction[i].vector().vec().aypx(
+                    0.0, -self.gradient[i].vector().vec()
+                )
+
+    def initialize_solver(self) -> None:
+
+        try:
+            self.iteration = self.temp_dict["OptimizationRoutine"].get(
+                "iteration_counter", 0
+            )
+            self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
+                "gradient_norm_initial", 0.0
+            )
+        except (TypeError, AttributeError):
+            self.iteration = 0
+            self.gradient_norm_initial = 0.0
+
+        self.relative_norm = 1.0
+        self.state_problem.has_solution = False

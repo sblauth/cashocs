@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ..._interfaces.optimization_methods import GradientDescentMixin
+
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
 
 
@@ -32,7 +34,7 @@ if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem
 
 
-class GradientDescent(ControlOptimizationAlgorithm):
+class GradientDescent(GradientDescentMixin, ControlOptimizationAlgorithm):
     """A gradient descent method"""
 
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
@@ -55,38 +57,20 @@ class GradientDescent(ControlOptimizationAlgorithm):
         None
         """
 
-        self.iteration = 0
-        self.relative_norm = 1.0
-        self.state_problem.has_solution = False
+        self.initialize_solver()
 
         while True:
 
-            self.adjoint_problem.has_solution = False
-            self.gradient_problem.has_solution = False
-            self.gradient_problem.solve()
+            self.compute_gradient()
             self.gradient_norm = np.sqrt(self._stationary_measure_squared())
 
-            if self.iteration == 0:
-                self.gradient_norm_initial = self.gradient_norm
-                if self.gradient_norm_initial == 0:
-                    self.converged = True
-                    break
-
-            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
-                if self.iteration == 0:
-                    self.objective_value = self.cost_functional.evaluate()
-                self.converged = True
+            if self.convergence_test():
                 break
-
-            for i in range(len(self.controls)):
-                self.search_direction[i].vector().vec().aypx(
-                    0.0, -self.gradient[i].vector().vec()
-                )
 
             self.objective_value = self.cost_functional.evaluate()
             self.output()
 
+            self.compute_search_direction()
             self.line_search.search(self.search_direction, self.has_curvature_info)
 
             self.iteration += 1

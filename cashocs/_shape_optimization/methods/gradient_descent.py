@@ -26,13 +26,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from ..._shape_optimization import ArmijoLineSearch, ShapeOptimizationAlgorithm
-
+from ..._interfaces.optimization_methods import GradientDescentMixin
 
 if TYPE_CHECKING:
     from ..shape_optimization_problem import ShapeOptimizationProblem
 
 
-class GradientDescent(ShapeOptimizationAlgorithm):
+class GradientDescent(GradientDescentMixin, ShapeOptimizationAlgorithm):
     """A gradient descent method for shape optimization"""
 
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
@@ -61,45 +61,20 @@ class GradientDescent(ShapeOptimizationAlgorithm):
         None
         """
 
-        try:
-            self.iteration = self.temp_dict["OptimizationRoutine"].get(
-                "iteration_counter", 0
-            )
-            self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
-                "gradient_norm_initial", 0.0
-            )
-        except TypeError:
-            self.iteration = 0
-            self.gradient_norm_initial = 0.0
-
-        self.relative_norm = 1.0
-        self.state_problem.has_solution = False
+        self.initialize_solver()
 
         while True:
 
-            self.adjoint_problem.has_solution = False
-            self.gradient_problem.has_solution = False
-            self.gradient_problem.solve()
+            self.compute_gradient()
             self.gradient_norm = np.sqrt(self.gradient_problem.gradient_norm_squared)
 
-            if self.iteration == 0:
-                self.gradient_norm_initial = self.gradient_norm
-                if self.gradient_norm_initial == 0:
-                    self.converged = True
-                    break
-
-            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
-            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
-                self.converged = True
+            if self.convergence_test():
                 break
-
-            self.search_direction[0].vector().vec().aypx(
-                0.0, -self.gradient[0].vector().vec()
-            )
 
             self.objective_value = self.cost_functional.evaluate()
             self.output()
-
+            
+            self.compute_search_direction()
             self.line_search.search(self.search_direction, self.has_curvature_info)
 
             self.iteration += 1

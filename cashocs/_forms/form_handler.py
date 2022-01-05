@@ -387,3 +387,17 @@ class FormHandler(abc.ABC):
     @abc.abstractmethod
     def scalar_product(self, a, b) -> float:
         pass
+
+    def restrict_to_inactive_set(self, a, b):
+        for j in range(len(self.gradient)):
+            if not b[j].vector().vec().equal(a[j].vector().vec()):
+                b[j].vector().vec().aypx(0.0, a[j].vector().vec())
+
+        return b
+
+    def restrict_to_active_set(self, a, b):
+
+        for j in range(len(self.gradient)):
+            b[j].vector().vec().set(0.0)
+
+        return b

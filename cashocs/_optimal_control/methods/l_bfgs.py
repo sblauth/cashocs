@@ -29,13 +29,14 @@ import numpy as np
 
 from ..._loggers import debug
 from ..._optimal_control import ArmijoLineSearch, ControlOptimizationAlgorithm
+from ..._interfaces.optimization_methods import LBFGSMixin
 
 
 if TYPE_CHECKING:
     from ..optimal_control_problem import OptimalControlProblem
 
 
-class LBFGS(ControlOptimizationAlgorithm):
+class LBFGS(LBFGSMixin, ControlOptimizationAlgorithm):
     """A limited memory BFGS method"""
 
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
@@ -51,114 +52,12 @@ class LBFGS(ControlOptimizationAlgorithm):
 
         self.line_search = ArmijoLineSearch(self)
 
-        self.temp = [fenics.Function(V) for V in optimization_problem.control_spaces]
         self.storage_y = [
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
         self.storage_s = [
             fenics.Function(V) for V in optimization_problem.control_spaces
         ]
-
-        self.bfgs_memory_size = self.config.getint(
-            "AlgoLBFGS", "bfgs_memory_size", fallback=5
-        )
-        self.use_bfgs_scaling = self.config.getboolean(
-            "AlgoLBFGS", "use_bfgs_scaling", fallback=True
-        )
-
-        self.has_curvature_info = False
-
-        if self.bfgs_memory_size > 0:
-            self.history_s = deque()
-            self.history_y = deque()
-            self.history_rho = deque()
-            self.gradients_prev = [
-                fenics.Function(V) for V in optimization_problem.control_spaces
-            ]
-            self.y_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
-            self.s_k = [fenics.Function(V) for V in optimization_problem.control_spaces]
-
-    def compute_search_direction(
-        self, grad: List[fenics.Function]
-    ) -> List[fenics.Function]:
-        """Computes the search direction for the BFGS method with a double loop
-
-        Parameters
-        ----------
-        grad : list[fenics.Function]
-            The current gradient
-
-        Returns
-        -------
-        search_direction : list[fenics.Function]
-            A function corresponding to the current / next search direction
-        """
-
-        if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
-            history_alpha = deque()
-            for j in range(len(self.controls)):
-                self.search_direction[j].vector().vec().aypx(
-                    0.0, grad[j].vector().vec()
-                )
-
-            self.form_handler.restrict_to_inactive_set(
-                self.search_direction, self.search_direction
-            )
-
-            for i, _ in enumerate(self.history_s):
-                alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.history_s[i], self.search_direction
-                )
-                history_alpha.append(alpha)
-                for j in range(len(self.controls)):
-                    self.search_direction[j].vector().vec().axpy(
-                        -alpha, self.history_y[i][j].vector().vec()
-                    )
-
-            if self.use_bfgs_scaling and self.iteration > 0:
-                factor = self.form_handler.scalar_product(
-                    self.history_y[0], self.history_s[0]
-                ) / self.form_handler.scalar_product(
-                    self.history_y[0], self.history_y[0]
-                )
-            else:
-                factor = 1.0
-
-            for j in range(len(self.controls)):
-                self.search_direction[j].vector().vec().scale(factor)
-
-            self.form_handler.restrict_to_inactive_set(
-                self.search_direction, self.search_direction
-            )
-
-            for i, _ in enumerate(self.history_s):
-                beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
-                    self.history_y[-1 - i], self.search_direction
-                )
-
-                for j in range(len(self.controls)):
-                    self.search_direction[j].vector().vec().axpy(
-                        history_alpha[-1 - i] - beta,
-                        self.history_s[-1 - i][j].vector().vec(),
-                    )
-
-            self.form_handler.restrict_to_inactive_set(
-                self.search_direction, self.search_direction
-            )
-            self.form_handler.restrict_to_active_set(self.gradient, self.temp)
-            for j in range(len(self.controls)):
-                self.search_direction[j].vector().vec().axpy(
-                    1.0, self.temp[j].vector().vec()
-                )
-                self.search_direction[j].vector().vec().scale(-1.0)
-
-        else:
-            for j in range(len(self.controls)):
-                self.search_direction[j].vector().vec().aypx(
-                    0.0, -grad[j].vector().vec()
-                )
-
-        return self.search_direction
 
     def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method
