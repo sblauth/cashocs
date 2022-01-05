@@ -33,7 +33,7 @@ from .deformation_handler import DeformationHandler
 from .mesh_quality import compute_mesh_quality
 from .._exceptions import CashocsException, InputError, IncompatibleConfigurationError
 from .._loggers import debug, warning
-from ..utils.io import write_out_mesh
+from ..io import write_out_mesh
 from ..utils.linalg import (
     _assemble_petsc_system,
     _setup_petsc_options,

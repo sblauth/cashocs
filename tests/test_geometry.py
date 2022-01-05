@@ -251,7 +251,7 @@ def test_write_mesh():
         dir_path + "/mesh/mesh.xdmf"
     )
 
-    cashocs.utils.write_out_mesh(
+    cashocs.io.write_out_mesh(
         mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
     )
 

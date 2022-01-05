@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Custom solvers for nonlinear equations.
-
-This module has custom solvers for nonlinear PDEs, including a damped
-Newton methd. This is the only function at the moment, others might
-follow.
-"""
 
 from __future__ import annotations
 
@@ -32,13 +26,11 @@ import ufl
 from petsc4py import PETSc
 from typing_extensions import Literal
 
-from ._exceptions import InputError, NotConvergedError
-from ._loggers import warning
-from .utils import (
+from .._exceptions import InputError, NotConvergedError
+from .._loggers import warning
+from ..utils import (
     _setup_petsc_options,
     _solve_linear_problem,
-    enlist,
-    _check_and_enlist_bcs,
 )
 
 
@@ -363,110 +355,6 @@ def newton_solve(
             break
 
     return u
-
-
-def picard_iteration(
-    F_list: Union[List[ufl.form], ufl.Form],
-    u_list: Union[List[fenics.Function], fenics.Function],
-    bcs_list: Union[List[fenics.DirichletBC], List[List[fenics.DirichletBC]]],
-    max_iter: int = 50,
-    rtol: float = 1e-10,
-    atol: float = 1e-10,
-    verbose: bool = True,
-    inner_damped: bool = True,
-    inner_inexact: bool = True,
-    inner_verbose: bool = False,
-    inner_max_its: int = 25,
-    ksps: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[List[str]]]] = None,
-    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
-    b_tensors: Optional[List[fenics.PETScVector]] = None,
-    inner_is_linear: bool = False,
-) -> None:
-
-    F_list = enlist(F_list)
-    u_list = enlist(u_list)
-    bcs_list = _check_and_enlist_bcs(bcs_list)
-
-    if not len(F_list) == len(u_list):
-        raise InputError(
-            "cashocs.picard_iteration",
-            "F_list",
-            "Length of F_list and u_list does not match.",
-        )
-
-    if not len(bcs_list) == len(u_list):
-        raise InputError(
-            "cashocs.picard_iteration",
-            "bcs_list",
-            "Lenght of bcs_list and u_list does not match.",
-        )
-
-    if ksps is None:
-        ksps = [None for i in range(len(u_list))]
-    if ksp_options is None:
-        ksp_options = [None for i in range(len(u_list))]
-    if A_tensors is None:
-        A_tensors = [None for i in range(len(u_list))]
-    if b_tensors is None:
-        b_tensors = [None for i in range(len(u_list))]
-
-    res_tensor = [fenics.PETScVector() for j in range(len(u_list))]
-    eta_max = 0.9
-    gamma = 0.9
-
-    for i in range(max_iter + 1):
-        res = 0.0
-        for j in range(len(u_list)):
-            fenics.assemble(F_list[j], tensor=res_tensor[j])
-            [bc.apply(res_tensor[j]) for bc in bcs_list[j]]
-
-            # TODO: Include very first solve to adjust absolute tolerance
-            res += pow(res_tensor[j].norm("l2"), 2)
-
-        if res == 0:
-            break
-
-        res = np.sqrt(res)
-        if i == 0:
-            res_0 = res
-            tol = atol + rtol * res_0
-        if verbose:
-            print(
-                f"Picard iteration {i:d}: ||res|| (abs): {res:.3e}   ||res|| (rel): {res/res_0:.3e}"
-            )
-        if res <= tol:
-            break
-
-        if i == max_iter:
-            raise NotConvergedError("Picard iteration")
-
-        for j in range(len(u_list)):
-            eta = np.minimum(gamma * res, eta_max)
-            eta = np.minimum(
-                eta_max,
-                np.maximum(eta, 0.5 * tol / res),
-            )
-
-            newton_solve(
-                F_list[j],
-                u_list[j],
-                bcs_list[j],
-                rtol=eta,
-                atol=atol * 1e-1,
-                max_iter=inner_max_its,
-                damped=inner_damped,
-                inexact=inner_inexact,
-                verbose=inner_verbose,
-                ksp=ksps[j],
-                ksp_options=ksp_options[j],
-                A_tensor=A_tensors[j],
-                b_tensor=b_tensors[j],
-                is_linear=inner_is_linear,
-            )
-
-    if verbose:
-        print("")
 
 
 # deprecated

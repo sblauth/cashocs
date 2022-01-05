@@ -42,9 +42,8 @@ from .nonlinear_solvers import newton_solve, damped_newton_solve, picard_iterati
 from .utils import (
     create_bcs_list,
     create_dirichlet_bcs,
-    create_config,
-    load_config,
 )
+from .io import create_config, load_config
 
 
 __version__ = "1.5.1"

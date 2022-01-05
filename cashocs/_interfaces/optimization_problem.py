@@ -38,7 +38,7 @@ from ufl import replace
 from .._exceptions import InputError
 from .._loggers import warning, info
 from ..config import Config
-from ..output import OutputManager
+from ..io import OutputManager
 from ..utils import (
     _parse_remesh,
     summation,

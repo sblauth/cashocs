@@ -16,29 +16,22 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""
-module for output handling
-"""
-
 from __future__ import annotations
 
 import json
-import os
 import subprocess
-from datetime import datetime
-from pathlib import Path
 from typing import List, Union, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
-from ._forms import ControlFormHandler
-from .utils import write_out_mesh
+from .mesh import write_out_mesh
+from .._forms import ControlFormHandler
 
 
 if TYPE_CHECKING:
-    from ._interfaces import OptimizationProblem
-    from ._interfaces import OptimizationAlgorithm
+    from .._interfaces import OptimizationProblem
+    from .._interfaces import OptimizationAlgorithm
 
 
 class ResultManager:
@@ -187,6 +180,43 @@ class HistoryManager:
         if self.save_txt:
             with open(f"{self.result_dir}/history.txt", "a") as file:
                 file.write(self.generate_summary_str(solver))
+
+
+class TempFileManager:
+    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        self.config = optimization_problem.config
+
+    def clear_temp_files(self, solver: OptimizationAlgorithm) -> None:
+
+        try:
+            if not self.config.getboolean("Debug", "remeshing", fallback=False):
+                subprocess.run(["rm", "-r", solver.temp_dir], check=True)
+                subprocess.run(
+                    ["rm", "-r", solver.mesh_handler.remesh_directory], check=True
+                )
+        except AttributeError:
+            pass
+
+
+class MeshManager:
+    def __init__(
+        self, optimization_problem: OptimizationProblem, result_dir: str
+    ) -> None:
+
+        self.config = optimization_problem.config
+        self.result_dir = result_dir
+
+    def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
+
+        try:
+            if solver.mesh_handler.save_optimized_mesh:
+                write_out_mesh(
+                    solver.mesh_handler.mesh,
+                    solver.mesh_handler.gmsh_file,
+                    f"{self.result_dir}/optimized_mesh.msh",
+                )
+        except AttributeError:
+            pass
 
 
 class PVDFileManager:
@@ -388,110 +418,3 @@ class PVDFileManager:
                     self.gradient_pvd_list[i] << self.form_handler.gradient[
                         i
                     ], iteration
-
-
-class TempFileManager:
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
-        self.config = optimization_problem.config
-
-    def clear_temp_files(self, solver: OptimizationAlgorithm) -> None:
-
-        try:
-            if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                subprocess.run(["rm", "-r", solver.temp_dir], check=True)
-                subprocess.run(
-                    ["rm", "-r", solver.mesh_handler.remesh_directory], check=True
-                )
-        except AttributeError:
-            pass
-
-
-class MeshManager:
-    def __init__(
-        self, optimization_problem: OptimizationProblem, result_dir: str
-    ) -> None:
-
-        self.config = optimization_problem.config
-        self.result_dir = result_dir
-
-    def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
-
-        try:
-            if solver.mesh_handler.save_optimized_mesh:
-                write_out_mesh(
-                    solver.mesh_handler.mesh,
-                    solver.mesh_handler.gmsh_file,
-                    f"{self.result_dir}/optimized_mesh.msh",
-                )
-        except AttributeError:
-            pass
-
-
-class OutputManager:
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
-
-        self.config = optimization_problem.config
-        self.result_dir = self.config.get("Output", "result_dir", fallback="./results")
-
-        self.time_suffix = self.config.getboolean(
-            "Output", "time_suffix", fallback=False
-        )
-        if self.time_suffix:
-            dt = datetime.now()
-            self.suffix = (
-                f"{dt.year}_{dt.month}_{dt.day}_{dt.hour}_{dt.minute}_{dt.second}"
-            )
-            if self.result_dir[-1] == "/":
-                self.result_dir = f"{self.result_dir[:-1]}_{self.suffix}"
-            else:
-                self.result_dir = f"{self.result_dir}_{self.suffix}"
-
-        save_txt = self.config.getboolean("Output", "save_txt", fallback=True)
-        save_results = self.config.getboolean("Output", "save_results", fallback=True)
-        save_pvd = self.config.getboolean("Output", "save_pvd", fallback=False)
-        save_pvd_adjoint = self.config.getboolean(
-            "Output", "save_pvd_adjoint", fallback=False
-        )
-        save_pvd_gradient = self.config.getboolean(
-            "Output", "save_pvd_gradient", fallback=False
-        )
-        has_output = (
-            save_txt
-            or save_results
-            or save_pvd
-            or save_pvd_gradient
-            or save_pvd_adjoint
-        )
-
-        if not os.path.isdir(self.result_dir):
-            if has_output:
-                Path(self.result_dir).mkdir(parents=True, exist_ok=True)
-
-        self.history_manager = HistoryManager(optimization_problem, self.result_dir)
-        self.pvd_file_manager = PVDFileManager(optimization_problem, self.result_dir)
-        self.result_manager = ResultManager(optimization_problem, self.result_dir)
-        self.mesh_manager = MeshManager(optimization_problem, self.result_dir)
-        self.temp_file_manager = TempFileManager(optimization_problem)
-
-    def output(self, solver: OptimizationAlgorithm) -> None:
-
-        self.history_manager.print_to_console(solver)
-        self.history_manager.print_to_file(solver)
-
-        self.pvd_file_manager.save_to_file(solver)
-
-        self.result_manager.save_to_dict(solver)
-
-    def output_summary(self, solver: OptimizationAlgorithm) -> None:
-
-        self.history_manager.print_console_summary(solver)
-        self.history_manager.print_file_summary(solver)
-
-        self.result_manager.save_to_json(solver)
-
-        self.mesh_manager.save_optimized_mesh(solver)
-
-        self.temp_file_manager.clear_temp_files(solver)
-
-    def set_remesh(self, remesh_counter: int) -> None:
-        self.pvd_file_manager.set_remesh(remesh_counter)

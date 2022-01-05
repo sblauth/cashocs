@@ -40,7 +40,6 @@ from .helpers import (
     _parse_remesh,
     _optimization_algorithm_configuration,
 )
-from .io import create_config, load_config, write_out_mesh
 from .linalg import (
     _assemble_petsc_system,
     _setup_petsc_options,

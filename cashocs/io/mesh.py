@@ -15,80 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-
 from __future__ import annotations
 
-import configparser
-import os
 from pathlib import Path
 
 import fenics
 import numpy as np
 
 from .._exceptions import InputError
-from .._loggers import warning
-from ..config import Config
-
-
-# deprecated
-def create_config(path: str) -> configparser.ConfigParser:
-    """Loads a config object from a config file.
-
-    Loads the config from a .ini file via the
-    configparser package.
-
-    Parameters
-    ----------
-    path : str
-        The path to the .ini file storing the configuration.
-
-    Returns
-    -------
-    configparser.ConfigParser
-        The output config file, which includes the path
-        to the .ini file.
-
-
-    .. deprecated:: 1.1.0
-        This is replaced by :py:func:`load_config <cashocs.load_config>`
-        and will be removed in the future.
-    """
-
-    warning(
-        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config and will be removed in the future."
-    )
-    config = load_config(path)
-
-    return config
-
-
-def load_config(path: str) -> configparser.ConfigParser:
-    """Loads a config object from a config file.
-
-    Loads the config from a .ini file via the
-    configparser package.
-
-    Parameters
-    ----------
-    path : str
-        The path to the .ini file storing the configuration.
-
-    Returns
-    -------
-    configparser.ConfigParser
-        The output config file, which includes the path
-        to the .ini file.
-    """
-    if os.path.isfile(path):
-        config = Config(path)
-    else:
-        raise InputError(
-            "cashocs.utils.load_config",
-            "path",
-            "The file you specified does not exist.",
-        )
-
-    return config
 
 
 def write_out_mesh(
