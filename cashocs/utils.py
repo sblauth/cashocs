@@ -53,8 +53,7 @@ class Interpolator:
     -----
 
     This class only works properly for continuous Lagrange elements and
-    constant, discontinuous Lagrange elements. All other elements raise
-    an Exception.
+    constant, discontinuous Lagrange elements.
 
     Examples
     --------
@@ -460,19 +459,7 @@ def create_bcs_list(
         "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by cashocs.create_dirichlet_bcs and will be removed in the future."
     )
 
-    bcs_list = []
-    if isinstance(idcs, list):
-        for i in idcs:
-            bcs_list.append(
-                fenics.DirichletBC(function_space, value, boundaries, i, **kwargs)
-            )
-
-    elif isinstance(idcs, int):
-        bcs_list.append(
-            fenics.DirichletBC(function_space, value, boundaries, idcs, **kwargs)
-        )
-
-    return bcs_list
+    return create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs)
 
 
 def _assemble_petsc_system(

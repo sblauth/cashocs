@@ -201,8 +201,7 @@ def newton_solve(
         ksp.setFromOptions()
 
     # Calculate the Jacobian.
-    if dF is None:
-        dF = fenics.derivative(F, u)
+    dF = dF or fenics.derivative(F, u)
 
     # Setup increment and function for monotonicity test
     V = u.function_space()
@@ -226,15 +225,8 @@ def newton_solve(
     assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
     assembler.keep_diagonal = True
 
-    if A_tensor is None:
-        A_fenics = fenics.PETScMatrix()
-    else:
-        A_fenics = A_tensor
-
-    if b_tensor is None:
-        residual = fenics.PETScVector()
-    else:
-        residual = b_tensor
+    A_fenics = A_tensor or fenics.PETScMatrix()
+    residual = b_tensor or fenics.PETScVector()
 
     # Compute the initial residual
     assembler.assemble(residual)

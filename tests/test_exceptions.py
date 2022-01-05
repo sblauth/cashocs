@@ -32,6 +32,7 @@ from cashocs._exceptions import (
     NotConvergedError,
     PETScKSPError,
     ConfigError,
+    IncompatibleConfigurationError,
 )
 
 
@@ -102,8 +103,31 @@ def test_petsc_error():
 
 
 def test_config_error():
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError) as e_info:
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
         config.set("Mesh", "remesh", "1.0")
 
         ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+
+    assert "You have an error in your config file" in str(e_info.value)
+    assert (
+        "Key remesh in section Mesh has the wrong type. Required type is bool."
+        in str(e_info.value)
+    )
+
+
+def test_incompatible_config():
+    with pytest.raises(IncompatibleConfigurationError) as e_info:
+        config = cashocs.load_config(f"{dir_path}/config_sop.ini")
+        config.set("MeshQuality", "tol_lower", "0.5")
+        config.set("MeshQuality", "tol_upper", "0.1")
+
+        sop = cashocs.ShapeOptimizationProblem(
+            F, bcs, J, y, p, boundaries, config=config
+        )
+
+    assert "Incompatible configuration file parameters" in str(e_info.value)
+    assert (
+        "The conflicting parameters are tol_lower in section MeshQuality and tol_upper in section MeshQuality"
+        in str(e_info.value)
+    )

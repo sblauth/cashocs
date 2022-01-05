@@ -42,10 +42,9 @@ class NotConvergedError(CashocsException):
         self.message = message
 
     def __str__(self) -> str:
-        if self.message is None:
-            return f"The {self.solver} failed to converge."
-        else:
-            return f"The {self.solver} failed to converge.\n{self.message}"
+        main_msg = f"The {self.solver} failed to converge."
+        post_msg = f"\n{self.message}" if self.message is not None else ""
+        return main_msg + post_msg
 
 
 class PETScKSPError(CashocsException):
@@ -98,10 +97,9 @@ class InputError(CashocsException):
         self.message = message
 
     def __str__(self) -> str:
-        if self.message is None:
-            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
-        else:
-            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.\n{self.message}"
+        main_msg = f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
+        post_msg = f"\n{self.message}" if self.message is not None else ""
+        return main_msg + post_msg
 
 
 class ConfigError(CashocsException):
@@ -139,20 +137,6 @@ class IncompatibleConfigurationError(CashocsException):
         self.post_message = post_message
 
     def __str__(self) -> str:
-        if self.post_message is None:
-            return f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}."
-        else:
-            return f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}.\n{self.post_message}"
-
-
-class GeometryError(CashocsException):
-    """This exception gets raised when there is a problem with the finite element mesh."""
-
-    def __init__(self, message: Optional[str] = None) -> None:
-        self.message = message
-
-    def __str__(self) -> str:
-        if self.message is None:
-            return f"The finite element mesh is not valid anymore."
-        else:
-            return f"The finite element mesh is not valid anymore.\n{self.message}"
+        main_msg = f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}."
+        post_msg = f"\n{self.post_message}" if self.post_message is not None else ""
+        return main_msg + post_msg

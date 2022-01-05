@@ -30,6 +30,7 @@ import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
@@ -57,6 +58,7 @@ def test_summation():
     assert cashocs.utils.summation(a) == 10
     assert abs(cashocs.utils.summation(b) - np.sum(b)) < 1e-14
     assert np.allclose(b, b_exact)
+    assert fenics.assemble(pow(cashocs.utils.summation([]), 2) * dx) == 0.0
 
 
 def test_multiplication():
@@ -80,6 +82,10 @@ def test_multiplication():
     assert cashocs.utils.multiplication(a) == 24
     assert abs(cashocs.utils.multiplication(b) - np.prod(b)) < 1e-14
     assert np.allclose(b, b_exact)
+    assert (
+        fenics.assemble(cashocs.utils.multiplication([]) * dx) / fenics.assemble(1 * dx)
+        == 1.0
+    )
 
 
 def test_create_bcs():
@@ -194,3 +200,18 @@ def test_create_named_bcs():
     subprocess.run(
         ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
     )
+
+
+def test_deprecated():
+    cfg1 = cashocs.create_config(f"{dir_path}/config_ocp.ini")
+    cfg2 = cashocs.load_config(f"{dir_path}/config_ocp.ini")
+
+    assert cfg1 == cfg2
+
+    zero = fenics.Constant(0.0)
+    bcs1 = cashocs.create_dirichlet_bcs(V, zero, boundaries, [1])
+    bcs2 = cashocs.create_bcs_list(V, zero, boundaries, [1])
+
+    assert bcs1[0].value() == bcs2[0].value()
+    assert bcs1[0].function_space() == bcs2[0].function_space()
+    assert bcs1[0].domain_args == bcs2[0].domain_args

@@ -100,10 +100,9 @@ class ShapeFormHandler(FormHandler):
             "ShapeGradient", "update_inhomogeneous", fallback=False
         )
 
-        if deformation_space is None:
-            self.deformation_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
-        else:
-            self.deformation_space = deformation_space
+        self.deformation_space = deformation_space or fenics.VectorFunctionSpace(
+            self.mesh, "CG", 1
+        )
 
         self.control_spaces = [self.deformation_space]
 
