@@ -169,9 +169,6 @@ class FormHandler(abc.ABC):
         )
         self.opt_algo = _optimization_algorithm_configuration(self.config)
 
-        if self.opt_algo == "pdas":
-            self.inner_pdas = self.config.get("AlgoPDAS", "inner_pdas")
-
         self.__compute_state_equations()
         self.__compute_adjoint_equations()
 

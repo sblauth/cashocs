@@ -94,9 +94,7 @@ class ControlFormHandler(FormHandler):
         # Compute the necessary equations
         self.__compute_gradient_equations()
 
-        if self.opt_algo == "newton" or (
-            self.opt_algo == "pdas" and self.inner_pdas == "newton"
-        ):
+        if self.opt_algo == "newton":
             self.__compute_newton_forms()
 
         # Initialize the scalar products

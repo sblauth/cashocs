@@ -13,7 +13,7 @@ First of all, the config is divided into the sections: :ref:`Mesh
 <config_ocp_mesh>`, :ref:`StateSystem <config_ocp_state_system>`,
 :ref:`OptimizationRoutine <config_ocp_optimization_routine>`, :ref:`AlgoLBFGS
 <config_ocp_algolbfgs>`, :ref:`AlgoCG <config_ocp_algocg>`, :ref:`AlgoTNM
-<config_ocp_algonewton>`, :ref:`AlgoPDAS <config_ocp_algopdas>`, and :ref:`Output <config_ocp_output>`.
+<config_ocp_algonewton>`, and :ref:`Output <config_ocp_output>`.
 These manage the settings for the mesh, the state equation of the optimization
 problem, the solution algorithms, and the output, respectively. Note, that the
 structure of such config files is explained in-depth in the `documentation of the
@@ -161,8 +161,6 @@ The possible choices are given by
   - ``lbfgs`` or ``bfgs`` : limited memory BFGS method
 
   - ``newton`` : a truncated Newton method
-
-  - ``pdas`` or ``primal_dual_active_set`` : a primal dual active set method (for control constraints)
 
 Note, that there is no default value, so that this always has to be specified by
 the user.
@@ -371,71 +369,6 @@ This parameter determines how many iterations of the Krylov solver are performed
 before the inner iteration is terminated. Note, that the approximate solution
 of the Hessian problem is used after ``max_it_inner_newton`` iterations regardless
 of whether this is converged or not. This defaults to ``max_it_inner_newton = 50``.
-
-
-
-.. _config_ocp_algopdas:
-
-Section AlgoPDAS
-----------------
-
-
-Let us now take a look at the parameters for the primal dual active set method.
-Its first parameter is ``inner_pdas``, which is set as follows ::
-
-    inner_pdas = newton
-
-This parameter determines which solution algorithm is used for the inner
-(unconstrained) optimization problem in the primal dual active set method.
-Can be one of
-
-- ``gd`` or ``gradient_descent`` : A gradient descent method
-
-- ``cg``, ``conjugate_gradient``, ``ncg``, or ``nonlinear_cg`` : A nonlinear conjugate gradient method
-
-- ``lbfgs`` or ``bfgs`` : A limited memory BFGS method
-
-- ``newton`` : A truncated newton method
-
-Note, that the parameters for these inner solvers are determined via the same
-interfaces used for the solution algorithms, i.e, setting ::
-
-    [OptimizationRoutine]
-    algorithm = pdas
-
-    [AlgoLBFGS]
-    bfgs_memory_size = 2
-
-    [AlgoPDAS]
-    inner_pdas = bfgs
-
-(where we do not show additional parameters) uses the limited memory BFGS method
-with memory size 2 as inner solver for the primal dual active set method.
-Moreover, this parameter has to be specified by the user, there is no default value.
-
-Moreover, we have the parameter ::
-
-    pdas_inner_tolerance = 1e-2
-
-This parameter determines the relative tolerance used for the inner
-solution algorithms.
-
-The maximum number of (inner) iterations for the primal dual active set method are
-defined via ::
-
-    maximum_iterations_inner_pdas = 100
-
-and this defaults to ``maximum_iterations_inner_pdas = 50``.
-
-Finally, we have the following line ::
-
-    pdas_regularization_parameter = 1e-4
-
-This determines the regularization parameter for the determination of the active and
-inactive sets, and should be positive. This comes from
-the interpretation as semi-smooth Newton method with Moreau Yosida regularization
-of the constraints. There is no default value for this parameter, it has to be
-supplied by the user.
 
 
 .. _config_ocp_output:
@@ -670,30 +603,6 @@ in the following.
     * - max_it_inner_newton
       - ``50``
       - maximum iterations for the inner iterative solver
-
-[AlgoPDAS]
-**********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter
-      - Default value
-      - Remarks
-    * - inner_pdas
-      -
-      - has to be specified; determines  the optimization algorithm used to
-        solve the inner sub-problems for the PDAS method
-    * - pdas_inner_tolerance
-      - ``1e-2``
-      - relative tolerance for the inner optimization problems
-    * - maximum_iterations_inner_pdas
-      - ``50``
-      - maximum iterations for the inner optimization algorithm
-    * - pdas_regularization_parameter
-      -
-      - has to be specified; needs to be positive
-
 
 [Output]
 ********

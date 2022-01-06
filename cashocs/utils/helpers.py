@@ -219,8 +219,6 @@ def _optimization_algorithm_configuration(
         internal_algorithm = "lbfgs"
     elif algorithm in ["newton"]:
         internal_algorithm = "newton"
-    elif algorithm in ["pdas", "primal_dual_active_set"]:
-        internal_algorithm = "pdas"
     elif algorithm == "none":
         internal_algorithm = "none"
     else:
@@ -231,8 +229,7 @@ def _optimization_algorithm_configuration(
             "	For a gradient descent method, use 'gradient_descent' or 'gd'.\n"
             "	For a nonlinear conjugate gradient method use 'cg', 'conjugate_gradient', 'ncg', or 'nonlinear_cg'.\n"
             "	For a limited memory BFGS method use 'bfgs' or 'lbfgs'.\n"
-            "	For a truncated Newton method use 'newton' (optimal control only).\n"
-            "	For a primal dual active set method use 'pdas' or 'primal dual active set' (optimal control only).",
+            "	For a truncated Newton method use 'newton' (optimal control only).\n",
         )
 
     if overwrite:

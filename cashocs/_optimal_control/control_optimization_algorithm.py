@@ -45,7 +45,6 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
     methods.cg.CG
     methods.l_bfgs.LBFGS
     methods.newton.Newton
-    methods.primal_dual_active_set_method.PDAS
     """
 
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
@@ -75,8 +74,6 @@ class ControlOptimizationAlgorithm(OptimizationAlgorithm):
         self.require_control_constraints = (
             optimization_problem.require_control_constraints
         )
-
-        self.pdas_solver = False
 
     @abc.abstractmethod
     def run(self) -> None:

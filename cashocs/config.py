@@ -114,8 +114,6 @@ class Config(ConfigParser):
                         "nonlinear_conjugate_gradient",
                         "conjugate_gradient",
                         "newton",
-                        "pdas",
-                        "primal_dual_active_set",
                     },
                 },
                 "rtol": {"type": "float", "attributes": ["less_than_one", "positive"]},
@@ -165,35 +163,6 @@ class Config(ConfigParser):
                 },
                 "inner_newton_atol": {"type": "float", "attributes": ["non_negative"]},
                 "max_it_inner_newton": {"type": "int", "attributes": ["non_negative"]},
-            },
-            "AlgoPDAS": {
-                "inner_pdas": {
-                    "type": "str",
-                    "possible_options": {
-                        "gd",
-                        "gradient_descent",
-                        "bfgs",
-                        "lbfgs",
-                        "nonlinear_cg",
-                        "ncg",
-                        "cg",
-                        "nonlinear_conjugate_gradient",
-                        "conjugate_gradient",
-                        "newton",
-                    },
-                },
-                "pdas_inner_tolerance": {
-                    "type": "float",
-                    "attributes": ["positive", "less_than_one"],
-                },
-                "maximum_iterations_inner_pdas": {
-                    "type": "int",
-                    "attributes": ["non_negative"],
-                },
-                "pdas_regularization_parameter": {
-                    "type": "float",
-                    "attributes": ["non_negative"],
-                },
             },
             "ShapeGradient": {
                 "shape_bdry_def": {"type": "list"},

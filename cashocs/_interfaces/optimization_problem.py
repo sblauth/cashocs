@@ -557,9 +557,7 @@ class OptimizationProblem(abc.ABC):
             limited memory BFGS methods. This overwrites the value specified
             in the config file. If this is ``None``, then the value in the
             config file is used. Default is ``None``. In addition, for optimal control problems,
-            one can use ``'newton'`` for a truncated Newton method,
-            and ``'pdas'`` or ``'primal_dual_active_set'`` for a
-            primal dual active set method.
+            one can use ``'newton'`` for a truncated Newton method.
         rtol : float or None, optional
             The relative tolerance used for the termination criterion.
             Overwrites the value specified in the config file. If this

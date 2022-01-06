@@ -29,7 +29,7 @@ import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from .methods import NCG, GradientDescent, LBFGS, Newton, PDAS
+from .methods import NCG, GradientDescent, LBFGS, Newton
 from .. import verification
 from .._exceptions import InputError
 from .._forms import ControlFormHandler
@@ -40,7 +40,6 @@ from .._pde_problems import (
     ControlGradientProblem,
     HessianProblem,
     StateProblem,
-    UnconstrainedHessianProblem,
 )
 from ..utils import (
     _optimization_algorithm_configuration,
@@ -394,8 +393,6 @@ class OptimalControlProblem(OptimizationProblem):
                 "lbfgs",
                 "bfgs",
                 "newton",
-                "pdas",
-                "primal_dual_active_set",
             ]
         ] = None,
         rtol: Optional[float] = None,
@@ -414,10 +411,8 @@ class OptimalControlProblem(OptimizationProblem):
             ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
             ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
             for nonlinear conjugate gradient methods, ``'lbfgs'`` or ``'bfgs'`` for
-            limited memory BFGS methods, ``'newton'`` for a truncated Newton method,
-            and ``'pdas'`` or ``'primal_dual_active_set'`` for a
-            primal dual active set method. This overwrites
-            the value specified in the config file. If this is ``None``,
+            limited memory BFGS methods, and ``'newton'`` for a truncated Newton method.
+            This overwrites the value specified in the config file. If this is ``None``,
             then the value in the config file is used. Default is
             ``None``.
         rtol : float or None, optional
@@ -460,18 +455,11 @@ class OptimalControlProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        if self.algorithm == "newton" or (
-            self.algorithm == "pdas"
-            and self.config.get("AlgoPDAS", "inner_pdas") == "newton"
-        ):
+        if self.algorithm == "newton":
             self.form_handler._ControlFormHandler__compute_newton_forms()
 
         if self.algorithm == "newton":
             self.hessian_problem = HessianProblem(
-                self.form_handler, self.gradient_problem
-            )
-        if self.algorithm == "pdas":
-            self.unconstrained_hessian = UnconstrainedHessianProblem(
                 self.form_handler, self.gradient_problem
             )
 
@@ -483,8 +471,6 @@ class OptimalControlProblem(OptimizationProblem):
             self.solver = NCG(self)
         elif self.algorithm == "newton":
             self.solver = Newton(self)
-        elif self.algorithm == "pdas":
-            self.solver = PDAS(self)
         elif self.algorithm == "none":
             raise InputError(
                 "cashocs.OptimalControlProblem.solve",
@@ -492,7 +478,7 @@ class OptimalControlProblem(OptimizationProblem):
                 "You did not specify a solution algorithm in your config file. You have to specify one in the solve "
                 "method. Needs to be one of"
                 "'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' ('cg'), "
-                "'newton', or 'primal_dual_active_set' ('pdas').",
+                "or 'newton'.",
             )
 
         self.solver.run()

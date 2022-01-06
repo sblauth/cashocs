@@ -25,7 +25,6 @@ from .gradient_descent import GradientDescent
 from .l_bfgs import LBFGS
 from .ncg import NCG
 from .newton import Newton
-from .pdas import PDAS
 
 
-__all__ = ["GradientDescent", "NCG", "LBFGS", "Newton", "PDAS"]
+__all__ = ["GradientDescent", "NCG", "LBFGS", "Newton"]
