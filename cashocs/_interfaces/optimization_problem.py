@@ -28,7 +28,7 @@ import abc
 import configparser
 import copy
 import json
-from typing import Dict, List, Union, Optional, Callable
+from typing import Dict, List, Union, Optional, Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -47,6 +47,10 @@ from ..utils import (
     _check_and_enlist_bcs,
     _check_and_enlist_ksp_options,
 )
+from .._line_search import ArmijoLineSearch
+
+if TYPE_CHECKING:
+    from .._optimization_variables import OptimizationVariableHandler
 
 
 class OptimizationProblem(abc.ABC):
@@ -290,6 +294,10 @@ class OptimizationProblem(abc.ABC):
         self.has_custom_derivative = False
         self.reduced_cost_functional = None
         self.uses_custom_scalar_product = False
+
+        self.optimization_variable_handler: OptimizationVariableHandler = None
+        self.is_shape_problem = False
+        self.is_control_problem = False
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

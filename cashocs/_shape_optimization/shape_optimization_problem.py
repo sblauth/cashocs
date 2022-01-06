@@ -46,6 +46,9 @@ from .._loggers import debug, warning
 from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
+from .._optimization_variables import ShapeOptimizationVariableHandler
+from .._optimization_algorithms import GradientDescentMethod
+from .._line_search import ArmijoLineSearch
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -351,6 +354,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             self.form_handler, self.state_problem
         )
 
+        self.is_shape_problem = True
         self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
 
@@ -439,8 +443,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
+        self.optimization_variable_handler = ShapeOptimizationVariableHandler(self)
+        self.line_search = ArmijoLineSearch(self)
+
         if self.algorithm == "gradient_descent":
-            self.solver = GradientDescent(self)
+            # self.solver = GradientDescent(self)
+            self.solver = GradientDescentMethod(self, self.line_search)
         elif self.algorithm == "lbfgs":
             self.solver = LBFGS(self)
         elif self.algorithm == "conjugate_gradient":

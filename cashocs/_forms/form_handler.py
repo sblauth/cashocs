@@ -401,3 +401,6 @@ class FormHandler(abc.ABC):
 
     def compute_active_sets(self):
         pass
+
+    def update_scalar_product(self):
+        pass

@@ -29,7 +29,7 @@ import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from .methods import NCG, GradientDescent, LBFGS, Newton
+from .methods import NCG, LBFGS, Newton, GradientDescent
 from .. import verification
 from .._exceptions import InputError
 from .._forms import ControlFormHandler
@@ -41,6 +41,9 @@ from .._pde_problems import (
     HessianProblem,
     StateProblem,
 )
+from .._line_search import ArmijoLineSearch
+from .._optimization_variables import ControlOptimizationVariableHandler
+from .._optimization_algorithms import GradientDescentMethod
 from ..utils import (
     _optimization_algorithm_configuration,
     enlist,
@@ -364,6 +367,7 @@ class OptimalControlProblem(OptimizationProblem):
             self.form_handler, self.state_problem
         )
 
+        self.is_control_problem = True
         self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
 
@@ -455,6 +459,9 @@ class OptimalControlProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
+        self.optimization_variable_handler = ControlOptimizationVariableHandler(self)
+        self.line_search = ArmijoLineSearch(self)
+
         if self.algorithm == "newton":
             self.form_handler._ControlFormHandler__compute_newton_forms()
 
@@ -464,7 +471,8 @@ class OptimalControlProblem(OptimizationProblem):
             )
 
         if self.algorithm == "gradient_descent":
-            self.solver = GradientDescent(self)
+            self.solver = GradientDescentMethod(self, self.line_search)
+            # self.solver = GradientDescent(self)
         elif self.algorithm == "lbfgs":
             self.solver = LBFGS(self)
         elif self.algorithm == "conjugate_gradient":
