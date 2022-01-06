@@ -32,8 +32,8 @@ from .managers import (
 
 
 if TYPE_CHECKING:
-    from .._interfaces import OptimizationProblem
-    from .._interfaces import OptimizationAlgorithm
+    from .._optimization.optimization_problem import OptimizationProblem
+    from .._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
 class OutputManager:

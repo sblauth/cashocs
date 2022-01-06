@@ -33,8 +33,12 @@ from typing_extensions import Literal
 from .constraints import EqualityConstraint, InequalityConstraint
 from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
 from .._exceptions import InputError
-from .._optimal_control.optimal_control_problem import OptimalControlProblem
-from .._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
+from .._optimization.optimal_control.optimal_control_problem import (
+    OptimalControlProblem,
+)
+from .._optimization.shape_optimization.shape_optimization_problem import (
+    ShapeOptimizationProblem,
+)
 from ..utils import enlist
 
 

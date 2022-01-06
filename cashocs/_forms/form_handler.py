@@ -38,7 +38,7 @@ from ..utils import (
 
 
 if TYPE_CHECKING:
-    from .._interfaces.optimization_problem import OptimizationProblem
+    from .._optimization.optimization_problem import OptimizationProblem
 
 
 class FormHandler(abc.ABC):
@@ -74,6 +74,9 @@ class FormHandler(abc.ABC):
         self.use_min_max_terms = optimization_problem.use_min_max_terms
         self.min_max_forms = optimization_problem.min_max_terms
         self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
+
+        self.is_shape_problem = optimization_problem.is_shape_problem
+        self.is_control_problem = optimization_problem.is_control_problem
 
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms

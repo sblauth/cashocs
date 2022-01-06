@@ -48,7 +48,7 @@ from ..utils import (
 
 
 if TYPE_CHECKING:
-    from .._shape_optimization.shape_optimization_problem import (
+    from .._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
     )
 

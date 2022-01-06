@@ -36,7 +36,9 @@ from ..utils import (
 
 
 if TYPE_CHECKING:
-    from .._optimal_control.optimal_control_problem import OptimalControlProblem
+    from .._optimization.optimal_control import (
+        OptimalControlProblem,
+    )
 
 
 class ControlFormHandler(FormHandler):

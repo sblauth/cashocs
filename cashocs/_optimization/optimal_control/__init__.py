@@ -15,23 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Several PDE problems for optimization (shape and optimal control).
+"""Module for treatment of optimal control problems.
 
+This module is used for the treatment of optimal control problems.
+It includes the optimization problem, the solution algorithms and
+the line search needed for this.
 """
 
-from .adjoint_problem import AdjointProblem
-from .control_gradient_problem import ControlGradientProblem
-from .hessian_problems import HessianProblem
-from .pde_problem import PDEProblem
-from .shape_gradient_problem import ShapeGradientProblem
-from .state_problem import StateProblem
-
+from .optimal_control_problem import OptimalControlProblem
 
 __all__ = [
-    "PDEProblem",
-    "AdjointProblem",
-    "ControlGradientProblem",
-    "HessianProblem",
-    "ShapeGradientProblem",
-    "StateProblem",
+    "OptimalControlProblem",
 ]

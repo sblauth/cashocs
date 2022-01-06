@@ -47,12 +47,10 @@ from ..utils.linalg import (
 
 
 if TYPE_CHECKING:
-    from .._shape_optimization.shape_optimization_problem import (
+    from .._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
     )
-    from .._shape_optimization.shape_optimization_algorithm import (
-        ShapeOptimizationAlgorithm,
-    )
+    from .._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
 class _MeshHandler:
@@ -513,7 +511,7 @@ class _MeshHandler:
         if os.path.isfile(subdomains_xdmf_file):
             subprocess.run(["rm", subdomains_xdmf_file], check=True)
 
-    def remesh(self, solver: ShapeOptimizationAlgorithm):
+    def remesh(self, solver: OptimizationAlgorithm):
         """Remeshes the current geometry with GMSH.
 
         Performs a remeshing of the geometry, and then restarts

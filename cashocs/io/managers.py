@@ -30,8 +30,8 @@ from .._forms import ControlFormHandler
 
 
 if TYPE_CHECKING:
-    from .._interfaces import OptimizationProblem
-    from .._optimization_algorithms import OptimizationAlgorithm
+    from .._optimization.optimization_problem import OptimizationProblem
+    from .._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
 class ResultManager:

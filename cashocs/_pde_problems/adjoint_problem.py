@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Dict, List
 import fenics
 from petsc4py import PETSc
 
-from .._interfaces import PDEProblem
+from .._pde_problems.pde_problem import PDEProblem
 from ..nonlinear_solvers import picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 

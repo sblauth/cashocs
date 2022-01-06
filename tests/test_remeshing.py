@@ -34,7 +34,6 @@ from fenics import (
 )
 
 import cashocs
-import cashocs.config
 from cashocs._exceptions import CashocsDebugException
 
 

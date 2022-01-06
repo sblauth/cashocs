@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, List
 import fenics
 from petsc4py import PETSc
 
-from .._interfaces.pde_problem import PDEProblem
+from .._pde_problems.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
 

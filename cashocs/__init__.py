@@ -22,15 +22,17 @@ and uses its high-level unified form language UFL to treat general PDE constrain
 optimization problems, in particular, shape optimization and optimal control problems.
 """
 
-from . import verification
 from ._constraints.constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
 from ._constraints.constraints import EqualityConstraint, InequalityConstraint
 from ._loggers import LogLevel, set_log_level
-from ._optimal_control.optimal_control_problem import OptimalControlProblem
-from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
+from ._optimization import verification
+from ._optimization.optimal_control.optimal_control_problem import OptimalControlProblem
+from ._optimization.shape_optimization.shape_optimization_problem import (
+    ShapeOptimizationProblem,
+)
 from .geometry import (
     DeformationHandler,
     MeshQuality,
@@ -38,12 +40,12 @@ from .geometry import (
     regular_box_mesh,
     regular_mesh,
 )
+from .io import create_config, load_config
 from .nonlinear_solvers import newton_solve, damped_newton_solve, picard_iteration
 from .utils import (
     create_bcs_list,
     create_dirichlet_bcs,
 )
-from .io import create_config, load_config
 
 
 __version__ = "1.5.1"

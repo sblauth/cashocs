@@ -31,7 +31,7 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from .._interfaces.pde_problem import PDEProblem
+from .._pde_problems.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
