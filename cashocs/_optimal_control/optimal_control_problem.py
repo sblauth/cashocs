@@ -43,7 +43,11 @@ from .._pde_problems import (
 )
 from .._line_search import ArmijoLineSearch
 from .._optimization_variables import ControlVariableHandler
-from .._optimization_algorithms import GradientDescentMethod, NonlinearCGMethod
+from .._optimization_algorithms import (
+    GradientDescentMethod,
+    NonlinearCGMethod,
+    LBFGSMethod,
+)
 from ..utils import (
     _optimization_algorithm_configuration,
     enlist,
@@ -474,7 +478,8 @@ class OptimalControlProblem(OptimizationProblem):
             self.solver = GradientDescentMethod(self, self.line_search)
             # self.solver = GradientDescent(self)
         elif self.algorithm == "lbfgs":
-            self.solver = LBFGS(self)
+            # self.solver = LBFGS(self)
+            self.solver = LBFGSMethod(self, self.line_search)
         elif self.algorithm == "conjugate_gradient":
             # self.solver = NCG(self)
             self.solver = NonlinearCGMethod(self, self.line_search)

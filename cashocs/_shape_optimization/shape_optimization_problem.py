@@ -47,7 +47,11 @@ from .._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from .._shape_optimization import ReducedShapeCostFunctional
 from ..geometry import _MeshHandler
 from .._optimization_variables import ShapeVariableHandler
-from .._optimization_algorithms import GradientDescentMethod, NonlinearCGMethod
+from .._optimization_algorithms import (
+    GradientDescentMethod,
+    NonlinearCGMethod,
+    LBFGSMethod,
+)
 from .._line_search import ArmijoLineSearch
 
 
@@ -451,7 +455,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
             # self.solver = GradientDescent(self)
             self.solver = GradientDescentMethod(self, self.line_search)
         elif self.algorithm == "lbfgs":
-            self.solver = LBFGS(self)
+            # self.solver = LBFGS(self)
+            self.solver = LBFGSMethod(self, self.line_search)
         elif self.algorithm == "conjugate_gradient":
             # self.solver = NCG(self)
             self.solver = NonlinearCGMethod(self, self.line_search)

@@ -78,6 +78,12 @@ class OptimizationAlgorithm(abc.ABC):
             "OptimizationRoutine", "soft_exit", fallback=False
         )
 
+        try:
+            if optimization_problem.is_shape_problem:
+                self.temp_dict = optimization_problem.temp_dict
+        except AttributeError:
+            self.temp_dict = None
+
         self.output_manager = optimization_problem.output_manager
 
     @abc.abstractmethod
@@ -157,9 +163,9 @@ class OptimizationAlgorithm(abc.ABC):
             # Mesh Quality is too low
             elif self.converged_reason == -3:
                 self.iteration -= 1
-                if self.mesh_handler.do_remesh:
+                if self.optimization_variable_handler.mesh_handler.do_remesh:
                     info("Mesh quality too low. Performing a remeshing operation.\n")
-                    self.mesh_handler.remesh(self)
+                    self.optimization_variable_handler.mesh_handler.remesh(self)
                 else:
                     self.output_summary()
                     if self.soft_exit:

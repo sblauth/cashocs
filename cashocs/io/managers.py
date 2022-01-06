@@ -31,7 +31,7 @@ from .._forms import ControlFormHandler
 
 if TYPE_CHECKING:
     from .._interfaces import OptimizationProblem
-    from .._interfaces import OptimizationAlgorithm
+    from .._optimization_algorithms import OptimizationAlgorithm
 
 
 class ResultManager:
@@ -213,10 +213,10 @@ class MeshManager:
     def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
 
         try:
-            if solver.mesh_handler.save_optimized_mesh:
+            if solver.optimization_variable_handler.mesh_handler.save_optimized_mesh:
                 write_out_mesh(
-                    solver.mesh_handler.mesh,
-                    solver.mesh_handler.gmsh_file,
+                    solver.optimization_variable_handler.mesh_handler.mesh,
+                    solver.optimization_variable_handler.mesh_handler.gmsh_file,
                     f"{self.result_dir}/optimized_mesh.msh",
                 )
         except AttributeError:

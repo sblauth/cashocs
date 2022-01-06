@@ -18,3 +18,4 @@
 from .gradient_descent import GradientDescentMethod
 from .optimization_algorithm import OptimizationAlgorithm
 from .ncg import NonlinearCGMethod
+from .l_bfgs import LBFGSMethod
