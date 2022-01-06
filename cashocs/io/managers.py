@@ -120,8 +120,12 @@ class HistoryManager:
             gradient_str = "Stationarity measure"
 
         try:
-            mesh_quality = solver.mesh_handler.current_mesh_quality
-            mesh_quality_measure = solver.mesh_handler.mesh_quality_measure
+            mesh_quality = (
+                solver.optimization_variable_handler.mesh_handler.current_mesh_quality
+            )
+            mesh_quality_measure = (
+                solver.optimization_variable_handler.mesh_handler.mesh_quality_measure
+            )
         except AttributeError:
             mesh_quality = None
 

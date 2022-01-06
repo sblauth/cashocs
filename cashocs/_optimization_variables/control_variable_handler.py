@@ -17,63 +17,19 @@
 
 from __future__ import annotations
 
-import abc
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 import numpy as np
 
+from .optimization_variable_handler import OptimizationVariableHandler
+
+
 if TYPE_CHECKING:
-    from .._interfaces import OptimizationProblem
     from .._optimal_control.optimal_control_problem import OptimalControlProblem
-    from .._shape_optimization.shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
 
 
-class OptimizationVariableHandler(abc.ABC):
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
-
-        self.gradient = optimization_problem.gradient
-        self.form_handler = optimization_problem.form_handler
-
-    @abc.abstractmethod
-    def compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]] = None
-    ) -> float:
-
-        pass
-
-    @abc.abstractmethod
-    def revert_variable_update(self) -> None:
-
-        pass
-
-    @abc.abstractmethod
-    def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
-    ) -> float:
-
-        pass
-
-    @abc.abstractmethod
-    def compute_gradient_norm(self) -> float:
-
-        pass
-
-    @abc.abstractmethod
-    def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
-    ) -> float:
-
-        pass
-
-    @abc.abstractmethod
-    def requires_remeshing(self) -> bool:
-        pass
-
-
-class ControlOptimizationVariableHandler(OptimizationVariableHandler):
+class ControlVariableHandler(OptimizationVariableHandler):
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
 
         super().__init__(optimization_problem)
@@ -86,6 +42,8 @@ class ControlOptimizationVariableHandler(OptimizationVariableHandler):
             self.control_temp[i].vector().vec().aypx(
                 0.0, self.controls[i].vector().vec()
             )
+
+        self.control_constraints = optimization_problem.control_constraints
 
         self.projected_difference = [
             fenics.Function(V) for V in self.form_handler.control_spaces
@@ -191,75 +149,35 @@ class ControlOptimizationVariableHandler(OptimizationVariableHandler):
 
         return False
 
-
-class ShapeOptimizationVariableHandler(OptimizationVariableHandler):
-    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
-
-        super().__init__(optimization_problem)
-        self.mesh_handler = optimization_problem.mesh_handler
-        self.deformation = fenics.Function(self.form_handler.deformation_space)
-
-    def compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]] = None
-    ) -> float:
-        """Computes the measure of decrease needed for the Armijo test
+    def project_ncg_search_direction(
+        self, search_direction: List[fenics.Function]
+    ) -> None:
+        """Restricts the search direction to the inactive set.
 
         Parameters
         ----------
-        search_direction : list[fenics.Function]
-            The current search direction
+        a : list[fenics.Function]
+            A function that shall be projected / restricted (will be overwritten)
 
         Returns
         -------
-        float
-            the decrease measure for the Armijo rule
+        None
         """
 
-        return self.form_handler.scalar_product(self.gradient, search_direction)
+        for j in range(self.form_handler.control_dim):
+            idx = np.asarray(
+                np.logical_or(
+                    np.logical_and(
+                        self.controls[j].vector()[:]
+                        <= self.control_constraints[j][0].vector()[:],
+                        search_direction[j].vector()[:] < 0.0,
+                    ),
+                    np.logical_and(
+                        self.controls[j].vector()[:]
+                        >= self.control_constraints[j][1].vector()[:],
+                        search_direction[j].vector()[:] > 0.0,
+                    ),
+                )
+            ).nonzero()[0]
 
-    def compute_gradient_norm(self) -> float:
-
-        return np.sqrt(self.form_handler.scalar_product(self.gradient, self.gradient))
-
-    def revert_variable_update(self) -> None:
-
-        self.mesh_handler.revert_transformation()
-
-    def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
-    ) -> float:
-
-        while True:
-            self.deformation.vector().vec().aypx(
-                0.0, stepsize * search_direction[0].vector().vec()
-            )
-            if self.mesh_handler.move_mesh(self.deformation):
-                if (
-                    self.mesh_handler.current_mesh_quality
-                    < self.mesh_handler.mesh_quality_tol_lower
-                ):
-                    stepsize /= beta
-                    self.mesh_handler.revert_transformation()
-                    continue
-                else:
-                    break
-            else:
-                stepsize /= beta
-
-        return stepsize
-
-    def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
-    ) -> float:
-
-        return self.mesh_handler.compute_decreases(search_direction, stepsize)
-
-    def requires_remeshing(self) -> bool:
-
-        if (
-            self.mesh_handler.current_mesh_quality
-            < self.mesh_handler.mesh_quality_tol_upper
-        ):
-            return True
-        else:
-            return False
+            search_direction[j].vector()[idx] = 0.0

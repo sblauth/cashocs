@@ -50,7 +50,9 @@ class OptimizationAlgorithm(abc.ABC):
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
 
-        self.opt_var_handler = optimization_problem.optimization_variable_handler
+        self.optimization_variable_handler = (
+            optimization_problem.optimization_variable_handler
+        )
 
         self.gradient_norm = 1.0
         self.iteration = 0
@@ -84,7 +86,7 @@ class OptimizationAlgorithm(abc.ABC):
 
     def compute_gradient_norm(self) -> float:
 
-        return self.opt_var_handler.compute_gradient_norm()
+        return self.optimization_variable_handler.compute_gradient_norm()
 
     def output(self):
         self.output_manager.output(self)

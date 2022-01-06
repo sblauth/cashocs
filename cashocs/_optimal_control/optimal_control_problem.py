@@ -42,8 +42,8 @@ from .._pde_problems import (
     StateProblem,
 )
 from .._line_search import ArmijoLineSearch
-from .._optimization_variables import ControlOptimizationVariableHandler
-from .._optimization_algorithms import GradientDescentMethod
+from .._optimization_variables import ControlVariableHandler
+from .._optimization_algorithms import GradientDescentMethod, NonlinearCGMethod
 from ..utils import (
     _optimization_algorithm_configuration,
     enlist,
@@ -459,7 +459,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_handler = ControlOptimizationVariableHandler(self)
+        self.optimization_variable_handler = ControlVariableHandler(self)
         self.line_search = ArmijoLineSearch(self)
 
         if self.algorithm == "newton":
@@ -476,7 +476,8 @@ class OptimalControlProblem(OptimizationProblem):
         elif self.algorithm == "lbfgs":
             self.solver = LBFGS(self)
         elif self.algorithm == "conjugate_gradient":
-            self.solver = NCG(self)
+            # self.solver = NCG(self)
+            self.solver = NonlinearCGMethod(self, self.line_search)
         elif self.algorithm == "newton":
             self.solver = Newton(self)
         elif self.algorithm == "none":
