@@ -22,8 +22,6 @@ from pathlib import Path
 import fenics
 import numpy as np
 
-from .._exceptions import InputError
-
 
 def write_out_mesh(
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str

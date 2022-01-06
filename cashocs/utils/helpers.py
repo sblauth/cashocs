@@ -20,12 +20,12 @@ from __future__ import annotations
 
 import argparse
 import configparser
-import os
 from typing import Union, List, Tuple, Optional
 
 import fenics
 
 from .._exceptions import InputError
+
 
 
 def enlist(arg: Union[object, List]) -> List:
