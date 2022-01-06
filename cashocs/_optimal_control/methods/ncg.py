@@ -94,13 +94,9 @@ class NCG(NCGMixin, ControlOptimizationAlgorithm):
 
         while True:
 
-            for i in range(self.form_handler.control_dim):
-                self.gradient_prev[i].vector().vec().aypx(
-                    0.0, self.gradient[i].vector().vec()
-                )
+            self.store_previous_gradient()
 
             self.compute_gradient()
-
             self.gradient_norm = np.sqrt(self._stationary_measure_squared())
             self.compute_beta()
 

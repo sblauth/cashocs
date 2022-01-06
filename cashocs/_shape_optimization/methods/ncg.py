@@ -66,12 +66,9 @@ class NCG(NCGMixin, ShapeOptimizationAlgorithm):
 
         while True:
 
-            self.gradient_prev[0].vector().vec().aypx(
-                0.0, self.gradient[0].vector().vec()
-            )
+            self.store_previous_gradient()
 
             self.compute_gradient()
-
             self.gradient_norm = np.sqrt(self.gradient_problem.gradient_norm_squared)
             self.compute_beta()
 

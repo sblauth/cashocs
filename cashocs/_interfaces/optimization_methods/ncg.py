@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import fenics
 
@@ -163,3 +163,8 @@ class NCGMixin:
                     self.search_direction[i].vector().vec().aypx(
                         0.0, -self.gradient[i].vector().vec()
                     )
+
+    def store_previous_gradient(self) -> None:
+
+        for i in range(len(self.gradient)):
+            self.gradient_prev[i].vector().vec().aypx(0.0, self.gradient[i].vector().vec())

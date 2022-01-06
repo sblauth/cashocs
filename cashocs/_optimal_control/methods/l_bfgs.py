@@ -52,13 +52,6 @@ class LBFGS(LBFGSMixin, ControlOptimizationAlgorithm):
 
         self.line_search = ArmijoLineSearch(self)
 
-        self.storage_y = [
-            fenics.Function(V) for V in optimization_problem.control_spaces
-        ]
-        self.storage_s = [
-            fenics.Function(V) for V in optimization_problem.control_spaces
-        ]
-
     def run(self) -> None:
         """Performs the optimization via the limited memory BFGS method
 
@@ -67,33 +60,16 @@ class LBFGS(LBFGSMixin, ControlOptimizationAlgorithm):
         None
         """
 
-        self.converged = False
-
-        self.iteration = 0
-        self.relative_norm = 1.0
-        self.state_problem.has_solution = False
-
-        self.adjoint_problem.has_solution = False
-        self.gradient_problem.has_solution = False
-        self.gradient_problem.solve()
-        self.gradient_norm = np.sqrt(self._stationary_measure_squared())
-        self.gradient_norm_initial = self.gradient_norm
-        if self.gradient_norm_initial == 0:
-            self.converged = True
+        self.initialize_solver()
+        self.compute_gradient()
         self.form_handler.compute_active_sets()
+        self.gradient_norm = np.sqrt(self._stationary_measure_squared())
+
+        self.converged = self.convergence_test()
 
         while not self.converged:
-            self.search_direction = self.compute_search_direction(self.gradient)
-
-            self.directional_derivative = self.form_handler.scalar_product(
-                self.search_direction, self.gradient
-            )
-            if self.directional_derivative > 0:
-                debug("No descent direction found with L-BFGS")
-                for j in range(self.form_handler.control_dim):
-                    self.search_direction[j].vector().vec().aypx(
-                        0.0, -self.gradient[j].vector().vec()
-                    )
+            self.compute_search_direction(self.gradient)
+            self.check_for_ascent()
 
             self.objective_value = self.cost_functional.evaluate()
             self.output()
@@ -104,65 +80,14 @@ class LBFGS(LBFGSMixin, ControlOptimizationAlgorithm):
             if self.nonconvergence():
                 break
 
-            if self.bfgs_memory_size > 0:
-                for i in range(len(self.gradient)):
-                    self.gradients_prev[i].vector().vec().aypx(
-                        0.0, self.gradient[i].vector().vec()
-                    )
+            self.store_previous_gradient()
 
-            self.adjoint_problem.has_solution = False
-            self.gradient_problem.has_solution = False
-            self.gradient_problem.solve()
+            self.compute_gradient()
             self.form_handler.compute_active_sets()
-
             self.gradient_norm = np.sqrt(self._stationary_measure_squared())
             self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
-            if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
-                self.converged = True
+            if self.convergence_test():
                 break
 
-            if self.bfgs_memory_size > 0:
-                for i in range(len(self.gradient)):
-                    self.storage_y[i].vector().vec().aypx(
-                        0.0,
-                        self.gradient[i].vector().vec()
-                        - self.gradients_prev[i].vector().vec(),
-                    )
-                    self.storage_s[i].vector().vec().aypx(
-                        0.0,
-                        self.stepsize * self.search_direction[i].vector().vec(),
-                    )
-
-                self.form_handler.restrict_to_inactive_set(self.storage_y, self.y_k)
-                self.form_handler.restrict_to_inactive_set(self.storage_s, self.s_k)
-
-                self.history_y.appendleft([x.copy(True) for x in self.y_k])
-                self.history_s.appendleft([x.copy(True) for x in self.s_k])
-                self.curvature_condition = self.form_handler.scalar_product(
-                    self.y_k, self.s_k
-                )
-
-                if (
-                    self.curvature_condition
-                    / np.sqrt(
-                        self.form_handler.scalar_product(self.s_k, self.s_k)
-                        * self.form_handler.scalar_product(self.y_k, self.y_k)
-                    )
-                    <= 1e-14
-                ):
-                    self.has_curvature_info = False
-
-                    self.history_s.clear()
-                    self.history_y.clear()
-                    self.history_rho.clear()
-
-                else:
-                    self.has_curvature_info = True
-                    rho = 1 / self.curvature_condition
-                    self.history_rho.appendleft(rho)
-
-                if len(self.history_s) > self.bfgs_memory_size:
-                    self.history_s.pop()
-                    self.history_y.pop()
-                    self.history_rho.pop()
+            self.update_hessian_approximation()

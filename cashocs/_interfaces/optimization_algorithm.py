@@ -25,7 +25,7 @@ ShapeOptimizationAlgorithm classes are based.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import fenics
 
@@ -219,6 +219,8 @@ class OptimizationAlgorithm(abc.ABC):
                 )
 
     def initialize_solver(self) -> None:
+
+        self.converged = False
 
         try:
             self.iteration = self.temp_dict["OptimizationRoutine"].get(

@@ -27,7 +27,6 @@ import fenics
 from .._exceptions import InputError
 
 
-
 def enlist(arg: Union[object, List]) -> List:
     """Wraps the input argument into a list, if it isn't a list already.
 

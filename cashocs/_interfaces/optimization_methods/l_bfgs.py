@@ -22,6 +22,7 @@ from _collections import deque
 from typing import TYPE_CHECKING, List
 
 import fenics
+import numpy as np
 
 if TYPE_CHECKING:
     from ..optimization_problem import OptimizationProblem
@@ -46,15 +47,13 @@ class LBFGSMixin:
             self.history_s = deque()
             self.history_y = deque()
             self.history_rho = deque()
-            self.gradients_prev = [
+            self.gradient_prev = [
                 fenics.Function(V) for V in self.form_handler.control_spaces
             ]
             self.y_k = [fenics.Function(V) for V in self.form_handler.control_spaces]
             self.s_k = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
-    def compute_search_direction(
-        self, grad: List[fenics.Function]
-    ) -> List[fenics.Function]:
+    def compute_search_direction(self, grad: List[fenics.Function]) -> None:
         """Computes the search direction for the BFGS method with a double loop
 
         Parameters
@@ -132,4 +131,57 @@ class LBFGSMixin:
                     0.0, -grad[j].vector().vec()
                 )
 
-        return self.search_direction
+    def store_previous_gradient(self):
+
+        if self.bfgs_memory_size > 0:
+            for i in range(len(self.gradient)):
+                self.gradient_prev[i].vector().vec().aypx(
+                    0.0, self.gradient[i].vector().vec()
+                )
+
+    def update_hessian_approximation(self):
+
+        if self.bfgs_memory_size > 0:
+            for i in range(len(self.gradient)):
+                self.y_k[i].vector().vec().aypx(
+                    0.0,
+                    self.gradient[i].vector().vec()
+                    - self.gradient_prev[i].vector().vec(),
+                )
+                self.s_k[i].vector().vec().aypx(
+                    0.0,
+                    self.stepsize * self.search_direction[i].vector().vec(),
+                )
+
+            self.form_handler.restrict_to_inactive_set(self.y_k, self.y_k)
+            self.form_handler.restrict_to_inactive_set(self.s_k, self.s_k)
+
+            self.history_y.appendleft([x.copy(True) for x in self.y_k])
+            self.history_s.appendleft([x.copy(True) for x in self.s_k])
+            self.curvature_condition = self.form_handler.scalar_product(
+                self.y_k, self.s_k
+            )
+
+            if (
+                self.curvature_condition
+                / np.sqrt(
+                    self.form_handler.scalar_product(self.s_k, self.s_k)
+                    * self.form_handler.scalar_product(self.y_k, self.y_k)
+                )
+                <= 1e-14
+            ):
+                self.has_curvature_info = False
+
+                self.history_s.clear()
+                self.history_y.clear()
+                self.history_rho.clear()
+
+            else:
+                self.has_curvature_info = True
+                rho = 1 / self.curvature_condition
+                self.history_rho.appendleft(rho)
+
+            if len(self.history_s) > self.bfgs_memory_size:
+                self.history_s.pop()
+                self.history_y.pop()
+                self.history_rho.pop()

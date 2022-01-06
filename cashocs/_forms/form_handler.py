@@ -401,3 +401,6 @@ class FormHandler(abc.ABC):
             b[j].vector().vec().set(0.0)
 
         return b
+
+    def compute_active_sets(self):
+        pass
