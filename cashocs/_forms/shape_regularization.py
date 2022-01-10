@@ -31,7 +31,6 @@ import fenics
 import ufl
 from fenics import Constant, div, inner
 
-from .._exceptions import IncompatibleConfigurationError
 from .._loggers import info
 from ..utils import _solve_linear_problem
 
@@ -117,42 +116,18 @@ class ShapeRegularization:
                 "Regularization", "x_start", fallback=0.0
             )
             self.x_end = self.config.getfloat("Regularization", "x_end", fallback=1.0)
-            if not self.x_end >= self.x_start:
-                raise IncompatibleConfigurationError(
-                    "x_start",
-                    "Regularization",
-                    "x_end",
-                    "Regularization",
-                    "Reason: x_end must not be smaller than x_start.",
-                )
             self.delta_x = self.x_end - self.x_start
 
             self.y_start = self.config.getfloat(
                 "Regularization", "y_start", fallback=0.0
             )
             self.y_end = self.config.getfloat("Regularization", "y_end", fallback=1.0)
-            if not self.y_end >= self.y_start:
-                raise IncompatibleConfigurationError(
-                    "y_start",
-                    "Regularization",
-                    "y_end",
-                    "Regularization",
-                    "Reason: y_end must not be smaller than y_start.",
-                )
             self.delta_y = self.y_end - self.y_start
 
             self.z_start = self.config.getfloat(
                 "Regularization", "z_start", fallback=0.0
             )
             self.z_end = self.config.getfloat("Regularization", "z_end", fallback=1.0)
-            if not self.z_end >= self.z_start:
-                raise IncompatibleConfigurationError(
-                    "z_start",
-                    "Regularization",
-                    "z_end",
-                    "Regularization",
-                    "Reason: z_end must not be smaller than z_start.",
-                )
             self.delta_z = self.z_end - self.z_start
             if self.geometric_dimension == 2:
                 self.delta_z = 1.0

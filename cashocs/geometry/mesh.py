@@ -29,7 +29,7 @@ from typing_extensions import Literal
 
 from .measure import _NamedMeasure
 from .mesh_quality import MeshQuality
-from .._exceptions import InputError, IncompatibleConfigurationError
+from .._exceptions import InputError
 from .._loggers import info, warning
 from ..utils.helpers import (
     _parse_remesh,
@@ -209,15 +209,6 @@ def import_mesh(
         mesh_quality_tol_upper = input_arg.getfloat(
             "MeshQuality", "tol_upper", fallback=1e-15
         )
-
-        if not mesh_quality_tol_lower < mesh_quality_tol_upper:
-            raise IncompatibleConfigurationError(
-                "tol_lower",
-                "MeshQuality",
-                "tol_upper",
-                "MeshQuality",
-                "Reason: tol_lower has to be strictly smaller than tol_upper",
-            )
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
             warning(

@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import configparser
 import json
 import os
 import subprocess
@@ -34,7 +33,6 @@ from .mesh_quality import compute_mesh_quality
 from .._exceptions import (
     CashocsException,
     InputError,
-    IncompatibleConfigurationError,
     CashocsDebugException,
 )
 from .._loggers import debug, warning
@@ -92,14 +90,6 @@ class _MeshHandler:
         self.mesh_quality_tol_upper = self.config.getfloat(
             "MeshQuality", "tol_upper", fallback=1e-15
         )
-        if not self.mesh_quality_tol_lower < self.mesh_quality_tol_upper:
-            raise IncompatibleConfigurationError(
-                "tol_lower",
-                "MeshQuality",
-                "tol_upper",
-                "MeshQuality",
-                "Reason: tol_lower has to be strictly smaller than tol_upper",
-            )
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             warning(

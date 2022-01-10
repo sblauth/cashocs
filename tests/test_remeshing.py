@@ -16,9 +16,9 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import sys
 import shutil
 import subprocess
+import sys
 from unittest.mock import patch
 
 import numpy as np

@@ -33,7 +33,6 @@ from .form_handler import FormHandler
 from .shape_regularization import ShapeRegularization
 from .._exceptions import (
     InputError,
-    IncompatibleConfigurationError,
 )
 from .._loggers import warning
 from ..geometry.boundary_distance import compute_boundary_distance
@@ -122,17 +121,6 @@ class ShapeFormHandler(FormHandler):
                 self.deformation_space.sub(i).dofmap().dofs() for i in fixed_dimensions
             ]
             self.fixed_indices = list(itertools.chain(*unpack_list))
-
-        if (
-            self.use_fixed_dimensions
-            and self.config.getboolean(
-                "ShapeGradient", "use_p_laplacian", fallback=False
-            )
-            and not self.form_handler.uses_custom_scalar_product
-        ):
-            raise IncompatibleConfigurationError(
-                "use_p_laplacian", "ShapeGradient", "fixed_dimensions", "ShapeGradient"
-            )
 
         # Calculate the necessary UFL forms
         self.inhomogeneous_mu = False
@@ -530,14 +518,6 @@ class ShapeFormHandler(FormHandler):
                 self.dist_max = self.config.getfloat(
                     "ShapeGradient", "dist_max", fallback=1.0
                 )
-                if self.dist_min > self.dist_max:
-                    raise IncompatibleConfigurationError(
-                        "dist_max",
-                        "ShapeGradient",
-                        "dist_min",
-                        "ShapeGradient",
-                        "Reason: dist_max has to be larger than dist_min",
-                    )
 
                 self.bdry_idcs = json.loads(
                     self.config.get("ShapeGradient", "boundaries_dist", fallback="[]")

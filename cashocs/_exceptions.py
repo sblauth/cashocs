@@ -119,28 +119,3 @@ class ConfigError(CashocsException):
         for error in self.config_errors:
             except_str += error
         return except_str
-
-
-class IncompatibleConfigurationError(CashocsException):
-    """This exception gets raised when parameters in the config file are in conflict."""
-
-    pre_message = "Incompatible configuration file parameters.\n"
-
-    def __init__(
-        self,
-        key1: str,
-        section1: str,
-        key2: str,
-        section2: str,
-        post_message: Optional[str] = None,
-    ) -> None:
-        self.key1 = key1
-        self.section1 = section1
-        self.key2 = key2
-        self.section2 = section2
-        self.post_message = post_message
-
-    def __str__(self) -> str:
-        main_msg = f"{self.pre_message}The conflicting parameters are {self.key1} in section {self.section1} and {self.key2} in section {self.section2}."
-        post_msg = f"\n{self.post_message}" if self.post_message is not None else ""
-        return main_msg + post_msg

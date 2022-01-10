@@ -32,7 +32,6 @@ from cashocs._exceptions import (
     NotConvergedError,
     PETScKSPError,
     ConfigError,
-    IncompatibleConfigurationError,
 )
 
 
@@ -128,18 +127,16 @@ def test_incorrect_configs():
 
 
 def test_incompatible_config():
-    with pytest.raises(IncompatibleConfigurationError) as e_info:
-        config = cashocs.load_config(f"{dir_path}/config_sop.ini")
-        config.set("MeshQuality", "tol_lower", "0.5")
-        config.set("MeshQuality", "tol_upper", "0.1")
-
+    config = cashocs.load_config(f"{dir_path}/config_sop.ini")
+    config.set("MeshQuality", "tol_lower", "0.5")
+    config.set("MeshQuality", "tol_upper", "0.1")
+    with pytest.raises(ConfigError) as e_info:
         sop = cashocs.ShapeOptimizationProblem(
             F, bcs, J, y, p, boundaries, config=config
         )
 
-    assert "Incompatible configuration file parameters" in str(e_info.value)
     assert (
-        "The conflicting parameters are tol_lower in section MeshQuality and tol_upper in section MeshQuality"
+        "The value of key tol_upper in section MeshQuality is smaller than the value of key tol_lower in section MeshQuality, but it should be larger."
         in str(e_info.value)
     )
 

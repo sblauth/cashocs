@@ -30,6 +30,7 @@ import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
 
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 rng = np.random.RandomState(300696)

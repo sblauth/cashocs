@@ -18,9 +18,11 @@
 import os
 
 import numpy as np
+import pytest
 from fenics import *
 
 import cashocs
+from cashocs._exceptions import ConfigError
 
 
 rng = np.random.RandomState(300696)
@@ -112,3 +114,20 @@ def test_p_laplacian():
     sop.solve(algorithm="gd", rtol=1e-1, max_iter=6)
 
     assert sop.solver.relative_norm <= 1e-1
+
+
+def test_config_conflict():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("ShapeGradient", "fixed_dimensions", "[0]")
+    config.set("ShapeGradient", "use_p_laplacian", "True")
+
+    with pytest.raises(ConfigError) as e_info:
+        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+    assert (
+        "Key use_p_laplacian in section ShapeGradient conflicts with key fixed_dimensions in section ShapeGradient"
+        in str(e_info.value)
+    )
