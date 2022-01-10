@@ -141,7 +141,7 @@ class Config(ConfigParser):
                     "attributes": ["file"],
                     "file_extension": "geo",
                 },
-                "remesh": {"type": "bool"},
+                "remesh": {"type": "bool", "requires": [("Mesh", "gmsh_file")]},
                 "show_gmsh_output": {"type": "bool"},
             },
             "StateSystem": {
@@ -177,6 +177,7 @@ class Config(ConfigParser):
                         "nonlinear_conjugate_gradient",
                         "conjugate_gradient",
                         "newton",
+                        "none",
                     },
                 },
                 "rtol": {"type": "float", "attributes": ["less_than_one", "positive"]},
@@ -313,7 +314,7 @@ class Config(ConfigParser):
                 "save_pvd": {"type": "bool"},
                 "save_pvd_adjoint": {"type": "bool"},
                 "save_pvd_gradient": {"type": "bool"},
-                "save_mesh": {"type": "bool"},
+                "save_mesh": {"type": "bool", "requires": [("Mesh", "gmsh_file")]},
                 "result_dir": {"type": "str"},
                 "time_suffix": {"type": "bool"},
             },
@@ -354,6 +355,7 @@ class Config(ConfigParser):
                         self._check_key_type(section_name, key)
                         self._check_possible_options(section_name, key)
                         self._check_attributes(section_name, key)
+                        self._check_key_requirements(section_name, key)
                 except KeyError:
                     pass
 
@@ -375,6 +377,19 @@ class Config(ConfigParser):
             self.config_errors.append(
                 f"Key {key} in section {section} has the wrong type. Required type is {key_type}.\n"
             )
+
+    def _check_key_requirements(self, section, key):
+        if (
+            self.config_scheme[section][key]["type"] == "bool"
+            and self[section][key].lower() == "true"
+        ):
+            if "requires" in self.config_scheme[section][key].keys():
+                requirements = self.config_scheme[section][key]["requires"]
+                for req in requirements:
+                    if not self.has_option(req[0], req[1]):
+                        self.config_errors.append(
+                            f"Key {key} in section {section} requires key {req[1]} in section {req[0]} to be present.\n"
+                        )
 
     def _check_possible_options(self, section, key):
         if "possible_options" in self.config_scheme[section][key].keys():

@@ -171,23 +171,22 @@ class _NamedMeasure(Measure):
             )
 
         elif isinstance(subdomain_id, str):
-            try:
-                if (
-                    subdomain_id in self.physical_groups["dx"].keys()
-                    and self._integral_type == "cell"
-                ):
-                    integer_id = self.physical_groups["dx"][subdomain_id]
-                elif subdomain_id in self.physical_groups[
-                    "ds"
-                ].keys() and self._integral_type in [
-                    "exterior_facet",
-                    "interior_facet",
-                ]:
-                    integer_id = self.physical_groups["ds"][subdomain_id]
-                else:
-                    raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
-            except:
-                raise InputError("cashocs.geometry.NamedMeasure", "subdomain_id")
+            if (
+                subdomain_id in self.physical_groups["dx"].keys()
+                and self._integral_type == "cell"
+            ):
+                integer_id = self.physical_groups["dx"][subdomain_id]
+            elif subdomain_id in self.physical_groups[
+                "ds"
+            ].keys() and self._integral_type in [
+                "exterior_facet",
+                "interior_facet",
+            ]:
+                integer_id = self.physical_groups["ds"][subdomain_id]
+            else:
+                raise InputError(
+                    "cashocs.geometry.measure._NamedMeasure", "subdomain_id"
+                )
 
             return super().__call__(
                 subdomain_id=integer_id,

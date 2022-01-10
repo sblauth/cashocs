@@ -179,10 +179,6 @@ def test_create_named_bcs():
             e_info.value
         )
 
-    with pytest.raises(InputError) as e_info:
-        cashocs.create_dirichlet_bcs(V, fenics.Constant(0.0), boundaries, "inlet")
-        assert "does not support string type boundary conditions" in str(e_info.value)
-
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")

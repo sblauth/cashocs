@@ -127,28 +127,9 @@ class _MeshHandler:
         )
 
         if self.do_remesh or self.save_optimized_mesh:
-            try:
-                self.mesh_directory = os.path.dirname(
-                    os.path.realpath(self.config.get("Mesh", "gmsh_file"))
-                )
-            except configparser.Error:
-                if self.do_remesh:
-                    raise IncompatibleConfigurationError(
-                        "gmsh_file",
-                        "Mesh",
-                        "remesh",
-                        "Mesh",
-                        "Reason: Remeshing is only available with gmsh meshes. Please specify gmsh_file.",
-                    )
-                elif self.save_optimized_mesh:
-                    raise IncompatibleConfigurationError(
-                        "save_mesh",
-                        "Mesh",
-                        "gmsh_file",
-                        "Mesh",
-                        "Reason: The config option OptimizationRoutine.save_mesh is only available for gmsh meshes. \n"
-                        "If you already use a gmsh mesh, please specify gmsh_file.",
-                    )
+            self.mesh_directory = os.path.dirname(
+                os.path.realpath(self.config.get("Mesh", "gmsh_file"))
+            )
 
         if self.do_remesh:
             self.temp_dict = shape_optimization_problem.temp_dict

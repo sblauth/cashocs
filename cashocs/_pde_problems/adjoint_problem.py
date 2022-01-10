@@ -93,11 +93,11 @@ class AdjointProblem(PDEProblem):
             fenics.PETScVector() for i in range(self.form_handler.state_dim)
         ]
 
-        try:
+        if self.form_handler.is_shape_problem and self.temp_dict is not None:
             self.number_of_solves = self.temp_dict["output_dict"].get(
                 "adjoint_solves", 0
             )
-        except TypeError:
+        else:
             self.number_of_solves = 0
 
     def solve(self) -> List[fenics.Function]:

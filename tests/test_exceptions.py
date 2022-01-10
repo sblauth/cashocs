@@ -142,3 +142,17 @@ def test_incompatible_config():
         "The conflicting parameters are tol_lower in section MeshQuality and tol_upper in section MeshQuality"
         in str(e_info.value)
     )
+
+
+def test_incomplete_requirements_config():
+    with pytest.raises(ConfigError) as e_info:
+        config = cashocs.load_config(f"{dir_path}/config_sop.ini")
+        config.set("Output", "save_mesh", "True")
+        sop = cashocs.ShapeOptimizationProblem(
+            F, bcs, J, y, p, boundaries, config=config
+        )
+
+    assert (
+        "Key save_mesh in section Output requires key gmsh_file in section Mesh to be present."
+        in str(e_info.value)
+    )

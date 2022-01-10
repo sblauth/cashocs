@@ -47,7 +47,11 @@ class ResultManager:
         )
 
         self.output_dict = dict()
-        try:
+        if (
+            optimization_problem.is_shape_problem
+            and optimization_problem.temp_dict is not None
+            and optimization_problem.has_cashocs_remesh_flag
+        ):
             self.temp_dict = optimization_problem.temp_dict
             self.output_dict["cost_function_value"] = self.temp_dict["output_dict"][
                 "cost_function_value"
@@ -59,7 +63,7 @@ class ResultManager:
             self.output_dict["MeshQuality"] = self.temp_dict["output_dict"][
                 "MeshQuality"
             ]
-        except (TypeError, KeyError, AttributeError):
+        else:
             self.output_dict["cost_function_value"] = []
             self.output_dict["gradient_norm"] = []
             self.output_dict["stepsize"] = []
@@ -69,12 +73,10 @@ class ResultManager:
 
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
-        try:
+        if solver.form_handler.is_shape_problem:
             self.output_dict["MeshQuality"].append(
-                solver.mesh_handler.current_mesh_quality
+                solver.optimization_variable_handler.mesh_handler.current_mesh_quality
             )
-        except AttributeError:
-            pass
         self.output_dict["stepsize"].append(solver.stepsize)
 
     def save_to_json(self, solver: OptimizationAlgorithm) -> None:
@@ -119,14 +121,14 @@ class HistoryManager:
         else:
             gradient_str = "Stationarity measure"
 
-        try:
+        if solver.form_handler.is_shape_problem:
             mesh_quality = (
                 solver.optimization_variable_handler.mesh_handler.current_mesh_quality
             )
             mesh_quality_measure = (
                 solver.optimization_variable_handler.mesh_handler.mesh_quality_measure
             )
-        except AttributeError:
+        else:
             mesh_quality = None
 
         strs = []
@@ -189,17 +191,23 @@ class HistoryManager:
 class TempFileManager:
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
         self.config = optimization_problem.config
+        self.is_shape_problem = optimization_problem.is_shape_problem
 
     def clear_temp_files(self, solver: OptimizationAlgorithm) -> None:
 
-        try:
-            if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                subprocess.run(["rm", "-r", solver.temp_dir], check=True)
+        if self.is_shape_problem:
+            mesh_handler = solver.optimization_variable_handler.mesh_handler
+            if mesh_handler.do_remesh and not self.config.getboolean(
+                "Debug", "remeshing", fallback=False
+            ):
                 subprocess.run(
-                    ["rm", "-r", solver.mesh_handler.remesh_directory], check=True
+                    ["rm", "-r", mesh_handler.temp_dir],
+                    check=True,
                 )
-        except AttributeError:
-            pass
+                subprocess.run(
+                    ["rm", "-r", mesh_handler.remesh_directory],
+                    check=True,
+                )
 
 
 class MeshManager:
@@ -212,15 +220,13 @@ class MeshManager:
 
     def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
 
-        try:
+        if solver.form_handler.is_shape_problem:
             if solver.optimization_variable_handler.mesh_handler.save_optimized_mesh:
                 write_out_mesh(
                     solver.optimization_variable_handler.mesh_handler.mesh,
                     solver.optimization_variable_handler.mesh_handler.gmsh_file,
                     f"{self.result_dir}/optimized_mesh.msh",
                 )
-        except AttributeError:
-            pass
 
 
 class PVDFileManager:

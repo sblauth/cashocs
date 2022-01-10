@@ -328,29 +328,22 @@ def create_dirichlet_bcs(
                 fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
             )
         elif isinstance(entry, str):
-            try:
-                physical_groups = mesh._physical_groups
-                if entry in physical_groups["ds"].keys():
-                    bcs_list.append(
-                        fenics.DirichletBC(
-                            function_space,
-                            value,
-                            boundaries,
-                            physical_groups["ds"][entry],
-                            **kwargs,
-                        )
+            physical_groups = mesh._physical_groups
+            if entry in physical_groups["ds"].keys():
+                bcs_list.append(
+                    fenics.DirichletBC(
+                        function_space,
+                        value,
+                        boundaries,
+                        physical_groups["ds"][entry],
+                        **kwargs,
                     )
-                else:
-                    raise InputError(
-                        "cashocs.create_dirichlet_bcs",
-                        "idcs",
-                        "The string you have supplied is not associated with a boundary.",
-                    )
-            except AttributeError:
+                )
+            else:
                 raise InputError(
                     "cashocs.create_dirichlet_bcs",
-                    "mesh",
-                    "The mesh you are using does not support string type boundary conditions. These have to be set in the .msh file.",
+                    "idcs",
+                    "The string you have supplied is not associated with a boundary.",
                 )
 
     return bcs_list

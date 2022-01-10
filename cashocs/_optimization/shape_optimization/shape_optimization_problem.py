@@ -538,7 +538,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         try:
-            if not (isinstance(shape_derivative, ufl.form.Form)):
+            if not (isinstance(shape_derivative, ufl.Form)):
                 raise InputError(
                     "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
                     "shape_derivative",

@@ -695,3 +695,27 @@ def test_scaling_all():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_no_config():
+    u.vector()[:] = 0.0
+    cwd = os.getcwd()
+    try:
+        os.chdir("./tests")
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p)
+        with pytest.raises(InputError) as e_info:
+            ocp.solve(rtol=1e-2, atol=0.0, max_iter=7)
+        assert "You did not specify a solution algorithm in your config file." in str(
+            e_info.value
+        )
+        ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+        assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+        assert os.path.isdir(dir_path + "/results")
+        assert os.path.isfile(dir_path + "/results/history.txt")
+        assert os.path.isfile(dir_path + "/results/history.json")
+        subprocess.run(["rm", "-r", f"{dir_path}/results"], check=True)
+    except:
+        raise Exception("Failed to change the working directory")
+    finally:
+        os.chdir(cwd)

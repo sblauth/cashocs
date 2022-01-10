@@ -185,12 +185,11 @@ class OptimizationProblem(abc.ABC):
         else:
             self.ksp_options = _check_and_enlist_ksp_options(ksp_options)
 
-        if adjoint_ksp_options is None:
-            self.adjoint_ksp_options = self.ksp_options[:]
-        else:
-            self.adjoint_ksp_options = _check_and_enlist_ksp_options(
-                adjoint_ksp_options
-            )
+        self.adjoint_ksp_options = (
+            self.ksp_options[:]
+            if adjoint_ksp_options is None
+            else _check_and_enlist_ksp_options(adjoint_ksp_options)
+        )
 
         self.use_scalar_tracking = False
         if scalar_tracking_forms is None:
