@@ -63,27 +63,27 @@ class PETScKSPError(CashocsException):
         self.message = message
         self.error_code = error_code
 
-        if self.error_code == -2:  # pragma: nocover
+        if self.error_code == -2:  # pragma: no cover
             self.error_reason = " (ksp_diverged_null)"
-        elif self.error_code == -3:  # pragma: nocover
+        elif self.error_code == -3:  # pragma: no cover
             self.error_reason = " (ksp_diverged_its, reached maximum iterations)"
-        elif self.error_code == -4:  # pragma: nocover
+        elif self.error_code == -4:  # pragma: no cover
             self.error_reason = " (ksp_diverged_dtol, reached divergence tolerance)"
-        elif self.error_code == -5:  # pragma: nocover
+        elif self.error_code == -5:  # pragma: no cover
             self.error_reason = " (ksp_diverged_breakdown, krylov method breakdown)"
-        elif self.error_code == -6:  # pragma: nocover
+        elif self.error_code == -6:  # pragma: no cover
             self.error_reason = " (ksp_diverged_breakdown_bicg)"
-        elif self.error_code == -7:  # pragma: nocover
+        elif self.error_code == -7:  # pragma: no cover
             self.error_reason = " (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)"
-        elif self.error_code == -8:  # pragma: nocover
+        elif self.error_code == -8:  # pragma: no cover
             self.error_reason = " (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)"
-        elif self.error_code == -9:  # pragma: nocover
+        elif self.error_code == -9:  # pragma: no cover
             self.error_reason = " (ksp_diverged_nanorinf)"
-        elif self.error_code == -10:  # pragma: nocover
+        elif self.error_code == -10:  # pragma: no cover
             self.error_reason = " (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)"
-        elif self.error_code == -11:  # pragma: nocover
+        elif self.error_code == -11:  # pragma: no cover
             self.error_reason = " (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)"
-        else:  # pragma: nocover
+        else:  # pragma: no cover
             self.error_reason = " (unknown)"
 
     def __str__(self) -> str:
