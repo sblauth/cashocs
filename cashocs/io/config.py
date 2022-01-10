@@ -29,7 +29,7 @@ from .._loggers import warning
 
 
 # deprecated
-def create_config(path: str) -> ConfigParser:
+def create_config(path: str) -> ConfigParser:  # pragma: no cover
     """Loads a config object from a config file.
 
     Loads the config from a .ini file via the
@@ -190,7 +190,7 @@ class Config(ConfigParser):
                 "algorithm": {
                     "type": "str",
                     "fallback": "none",
-                    "possible_options": {
+                    "possible_options": [
                         "gd",
                         "gradient_descent",
                         "bfgs",
@@ -201,7 +201,7 @@ class Config(ConfigParser):
                         "conjugate_gradient",
                         "newton",
                         "none",
-                    },
+                    ],
                 },
                 "rtol": {
                     "type": "float",
@@ -236,7 +236,7 @@ class Config(ConfigParser):
                 "gradient_method": {
                     "type": "str",
                     "fallback": "direct",
-                    "possible_options": {"direct", "iterative"},
+                    "possible_options": ["direct", "iterative"],
                 },
                 "gradient_tol": {
                     "type": "float",
@@ -257,7 +257,7 @@ class Config(ConfigParser):
                 "cg_method": {
                     "type": "str",
                     "fallback": "FR",
-                    "possible_options": {"FR", "PR", "HS", "DY", "HZ"},
+                    "possible_options": ["FR", "PR", "HS", "DY", "HZ"],
                 },
                 "cg_periodic_restart": {"type": "bool", "fallback": False},
                 "cg_periodic_its": {
@@ -276,7 +276,7 @@ class Config(ConfigParser):
                 "inner_newton": {
                     "type": "str",
                     "fallback": "cr",
-                    "possible_options": {"cg", "cr"},
+                    "possible_options": ["cg", "cr"],
                 },
                 "inner_newton_rtol": {
                     "type": "float",
@@ -402,19 +402,19 @@ class Config(ConfigParser):
                 "x_end": {
                     "type": "float",
                     "fallback": 1.0,
-                    "larger_than": ("MeshQuality", "x_start"),
+                    "larger_than": ("Regularization", "x_start"),
                 },
                 "y_start": {"type": "float", "fallback": 0.0},
                 "y_end": {
                     "type": "float",
                     "fallback": 1.0,
-                    "larger_than": ("MeshQuality", "y_start"),
+                    "larger_than": ("Regularization", "y_start"),
                 },
                 "z_start": {"type": "float", "fallback": 0.0},
                 "z_end": {
                     "type": "float",
                     "fallback": 1.0,
-                    "larger_than": ("MeshQuality", "z_start"),
+                    "larger_than": ("Regularization", "z_start"),
                 },
                 "use_relative_scaling": {"type": "bool", "fallback": False},
             },
@@ -443,17 +443,17 @@ class Config(ConfigParser):
                 "measure": {
                     "type": "str",
                     "fallback": "skewness",
-                    "possible_options": {
+                    "possible_options": [
                         "skewness",
                         "radius_ratios",
                         "maximum_angle",
                         "condition_number",
-                    },
+                    ],
                 },
                 "type": {
                     "type": "str",
                     "fallback": "min",
-                    "possible_options": {"min", "avg", "minimum", "average"},
+                    "possible_options": ["min", "avg", "minimum", "average"],
                 },
             },
             "Output": {
@@ -599,6 +599,7 @@ class Config(ConfigParser):
             self._check_non_negative_attribute(section, key, key_attributes)
             self._check_positive_attribute(section, key, key_attributes)
             self._check_less_than_one_attribute(section, key, key_attributes)
+            self._check_larger_than_one_attribute(section, key, key_attributes)
 
     def _check_file_attribute(self, section, key, key_attributes):
         if "file" in key_attributes:
@@ -616,7 +617,7 @@ class Config(ConfigParser):
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
-                f"Key {key} in section {section} has the wrong file extension, it should end in {extension}.\n"
+                f"Key {key} in section {section} has the wrong file extension, it should end in .{extension}.\n"
             )
 
     def _check_non_negative_attribute(self, section, key, key_attributes):

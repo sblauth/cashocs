@@ -28,7 +28,7 @@ import numpy as np
 from typing_extensions import Literal
 
 from .measure import _NamedMeasure
-from .mesh_quality import MeshQuality
+from .mesh_quality import MeshQuality, compute_mesh_quality
 from .._exceptions import InputError
 from .._loggers import info, warning
 from ..utils.helpers import (
@@ -220,25 +220,9 @@ def import_mesh(
         )
         mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
 
-        if mesh_quality_type in ["min", "minimum"]:
-            if mesh_quality_measure == "skewness":
-                current_mesh_quality = MeshQuality.min_skewness(mesh)
-            elif mesh_quality_measure == "maximum_angle":
-                current_mesh_quality = MeshQuality.min_maximum_angle(mesh)
-            elif mesh_quality_measure == "radius_ratios":
-                current_mesh_quality = MeshQuality.min_radius_ratios(mesh)
-            elif mesh_quality_measure == "condition_number":
-                current_mesh_quality = MeshQuality.min_condition_number(mesh)
-
-        else:
-            if mesh_quality_measure == "skewness":
-                current_mesh_quality = MeshQuality.avg_skewness(mesh)
-            elif mesh_quality_measure == "maximum_angle":
-                current_mesh_quality = MeshQuality.avg_maximum_angle(mesh)
-            elif mesh_quality_measure == "radius_ratios":
-                current_mesh_quality = MeshQuality.avg_radius_ratios(mesh)
-            elif mesh_quality_measure == "condition_number":
-                current_mesh_quality = MeshQuality.avg_condition_number(mesh)
+        current_mesh_quality = compute_mesh_quality(
+            mesh, mesh_quality_type, mesh_quality_measure
+        )
 
         if not cashocs_remesh_flag:
             if current_mesh_quality < mesh_quality_tol_lower:

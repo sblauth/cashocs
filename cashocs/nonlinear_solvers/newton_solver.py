@@ -232,7 +232,7 @@ def newton_solve(
     b = fenics.as_backend_type(residual).vec()
 
     res_0 = residual.norm(norm_type)
-    if res_0 == 0.0:
+    if res_0 == 0.0:  # pragma: no cover
         if verbose:
             print("Residual vanishes, input is already a solution.")
         return u
@@ -370,7 +370,7 @@ def damped_newton_solve(
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[str]]] = None,
-) -> fenics.Function:
+) -> fenics.Function:  # pragma: no cover
     """Damped Newton solve interface, only here for compatibility reasons.
 
     Parameters

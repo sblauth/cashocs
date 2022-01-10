@@ -233,3 +233,18 @@ def test_remeshing_functionality():
         assert file_contents == test_contents
 
     subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
+
+
+def test_remesh_scaling():
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+
+    with patch.object(sys, "argv", [os.path.realpath(__file__)]):
+        w_des = rng.rand(1)[0]
+        sop = cashocs.ShapeOptimizationProblem(
+            e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]
+        )
+        val = sop.reduced_cost_functional.evaluate()
+        assert np.abs(np.abs(val) - w_des) < 1e-14

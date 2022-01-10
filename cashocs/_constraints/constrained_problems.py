@@ -240,7 +240,14 @@ class ConstrainedOptimizationProblem(abc.ABC):
         None
         """
 
-        pass
+        self.rtol = inner_rtol or tol
+
+        if inner_atol is not None:
+            atol = inner_atol
+        else:
+            if self.iterations == 1:
+                self.initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
+            atol = self.initial_norm * tol / 10.0
 
     def _pre_hook(self) -> None:
         pass
@@ -424,6 +431,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         None
         """
 
+        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+
         ocp = OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -446,20 +455,16 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        if inner_rtol is not None:
-            rtol = inner_rtol
-        else:
-            rtol = tol
-
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
-                ocp.compute_gradient()
-                self.initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
+                self.initial_norm = (
+                    ocp.optimization_variable_handler.compute_gradient_norm()
+                )
             atol = self.initial_norm * tol / 10.0
 
-        ocp.solve(rtol=rtol, atol=atol)
+        ocp.solve(rtol=self.rtol, atol=atol)
 
 
 class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
@@ -574,6 +579,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         None
         """
 
+        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+
         sop = ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -594,17 +601,13 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        if inner_rtol is not None:
-            rtol = inner_rtol
-        else:
-            rtol = tol
-
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
-                sop.compute_shape_gradient()
-                self.initial_norm = np.sqrt(sop.gradient_problem.gradient_norm_squared)
+                self.initial_norm = (
+                    sop.optimization_variable_handler.compute_gradient_norm()
+                )
             atol = self.initial_norm * tol / 10.0
 
-        sop.solve(rtol=rtol, atol=atol)
+        sop.solve(rtol=self.rtol, atol=atol)

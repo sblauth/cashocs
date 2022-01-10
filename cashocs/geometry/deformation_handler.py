@@ -243,63 +243,6 @@ class DeformationHandler:
 
             return self.__test_a_posteriori()
 
-    def move_mesh_ale(
-        self,
-        transformation: Union[fenics.Function, np.ndarray],
-        validated_a_priori: bool = False,
-    ) -> bool:
-        r"""Transforms the mesh by perturbation of identity.
-
-        Moves the mesh according to the deformation given by
-
-        .. math:: \text{id} + \mathcal{V}(x),
-
-        where :math:`\mathcal{V}` is the transformation. This
-        represents the perturbation of identity.
-
-        Parameters
-        ----------
-        transformation : fenics.Function or np.ndarray
-            The transformation for the mesh, a vector CG1 Function.
-        validated_a_priori : bool
-            A boolean flag, which indicates whether an a-priori check has
-            already been performed before moving the mesh. Default is
-            ``False``
-
-        Returns
-        -------
-        bool
-            ``True`` if the mesh movement was successful, ``False`` otherwise.
-        """
-
-        if isinstance(transformation, np.ndarray):
-            transformation = self.coordinate_to_dof(transformation)
-
-        if not (
-            transformation.ufl_element().family() == "Lagrange"
-            and transformation.ufl_element().degree() == 1
-        ):
-            raise CashocsException("Not a valid mesh transformation")
-
-        if not validated_a_priori:
-            if not self.__test_a_priori(transformation):
-                debug(
-                    "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
-                )
-                return False
-            else:
-                self.old_coordinates = self.mesh.coordinates().copy()
-                fenics.ALE.move(self.mesh, transformation)
-                self.bbtree.build(self.mesh)
-
-                return self.__test_a_posteriori()
-        else:
-            self.old_coordinates = self.mesh.coordinates().copy()
-            fenics.ALE.move(self.mesh, transformation)
-            self.bbtree.build(self.mesh)
-
-            return self.__test_a_posteriori()
-
     def coordinate_to_dof(self, coordinate_deformation: np.ndarray) -> fenics.Function:
         """Converts a coordinate deformation to a deformation vector field (dof based)
 

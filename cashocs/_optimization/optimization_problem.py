@@ -704,12 +704,10 @@ class OptimizationProblem(abc.ABC):
                 ]
 
         for i in range(len(self.cost_functional_list)):
-            self.cost_functional_list[i] = (
-                fenics.Constant(
-                    abs(self.desired_weights[i] / self.initial_function_values[i])
-                )
-                * self.cost_functional_list[i]
+            const = fenics.Constant(
+                np.abs(self.desired_weights[i] / self.initial_function_values[i])
             )
+            self.cost_functional_list[i] = const * self.cost_functional_list[i]
 
         if self.use_scalar_tracking:
             for i in range(len(self.scalar_tracking_forms)):

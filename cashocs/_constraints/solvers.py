@@ -392,6 +392,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         None
         """
 
+        convergence_tol = constraint_tol or tol / 10.0
+
         self.iterations = 0
         while True:
             self.iterations += 1
@@ -415,14 +417,9 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             if self.constraint_violation > self.gamma * self.constraint_violation_prev:
                 self.mu *= self.beta
 
-            if constraint_tol is None:
-                if self.constraint_violation <= tol / 10.0:
-                    print("Converged successfully.")
-                    break
-            else:
-                if self.constraint_violation <= constraint_tol:
-                    print("Converged successfully.")
-                    break
+            if self.constraint_violation <= convergence_tol:
+                print("Converged successfully.")
+                break
 
             if self.iterations >= max_iter:
                 print("Augmented Lagrangian did not converge.")
@@ -481,6 +478,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         None
         """
 
+        convergence_tol = constraint_tol or tol / 10.0
+
         self.iterations = 0
         while True:
             self.iterations += 1
@@ -496,14 +495,9 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             )
             self.mu *= self.beta
 
-            if constraint_tol is None:
-                if self.constraint_violation <= tol / 10.0:
-                    print("Converged successfully.")
-                    break
-            else:
-                if self.constraint_violation <= constraint_tol:
-                    print("Converged successfully.")
-                    break
+            if self.constraint_violation <= convergence_tol:
+                print("Converged successfully.")
+                break
 
             if self.iterations >= max_iter:
                 print("Quadratic Penalty Method did not converge")

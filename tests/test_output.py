@@ -19,10 +19,11 @@ import os
 import subprocess
 
 from fenics import *
+import numpy as np
 
 import cashocs
 
-
+rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
@@ -50,3 +51,90 @@ def test_time_suffix():
     assert os.path.isdir(dir_path + f"/results_{suffix}")
     assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
     subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
+
+
+def test_save_pvd_files_ocp():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_results", "True")
+    config.set("Output", "save_txt", "True")
+    config.set("Output", "save_pvd_adjoint", "True")
+    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "result_dir", dir_path + "/out")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve(algorithm="bfgs", rtol=1e-1)
+    assert os.path.isdir(dir_path + "/out")
+    assert os.path.isdir(dir_path + "/out/pvd")
+    assert os.path.isfile(dir_path + "/out/history.txt")
+    assert os.path.isfile(dir_path + "/out/history.json")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
+
+    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+
+
+def test_save_pvd_files_mixed():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_results", "True")
+    config.set("Output", "save_txt", "True")
+    config.set("Output", "save_pvd_adjoint", "True")
+    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "result_dir", dir_path + "/out")
+    elem1 = VectorElement("CG", mesh.ufl_cell(), 2)
+    elem2 = FiniteElement("CG", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, MixedElement([elem1, elem2]))
+
+    up = Function(V)
+    u, p = split(up)
+    vq = Function(V)
+    v, q = split(vq)
+    c = Function(V.sub(0).collapse())
+    F = (
+        inner(grad(u), grad(v)) * dx
+        - p * div(v) * dx
+        - q * div(u) * dx
+        - inner(c, v) * dx
+    )
+    bcs = cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0.0, 0.0)), boundaries, [1, 2, 3, 4]
+    )
+
+    u_d = Expression(
+        ("sin(2*pi*x[0])*sin(2*pi*x[1])", "sin(2*pi*x[0])*sin(2*pi*x[1])"),
+        degree=1,
+        domain=mesh,
+    )
+    J = Constant(0.5) * inner(u - u_d, u - u_d) * dx
+
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, up, c, vq, config)
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
+    ocp.solve(rtol=1e-1)
+
+    assert os.path.isdir(dir_path + "/out")
+    assert os.path.isdir(dir_path + "/out/pvd")
+    assert os.path.isfile(dir_path + "/out/history.txt")
+    assert os.path.isfile(dir_path + "/out/history.json")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_1.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_1000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_1.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_1000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
+
+    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)

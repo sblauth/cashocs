@@ -375,21 +375,7 @@ class PVDFileManager:
 
             if self.is_control_problem:
                 for i in range(self.form_handler.control_dim):
-                    if (
-                        self.form_handler.control_spaces[i].num_sub_spaces() > 0
-                        and self.form_handler.control_spaces[i].ufl_element().family()
-                        == "Mixed"
-                    ):
-                        for j in range(
-                            self.form_handler.control_spaces[i].num_sub_spaces()
-                        ):
-                            self.control_pvd_list[i][j] << self.form_handler.controls[
-                                i
-                            ].sub(j, True), iteration
-                    else:
-                        self.control_pvd_list[i] << self.form_handler.controls[
-                            i
-                        ], iteration
+                    self.control_pvd_list[i] << self.form_handler.controls[i], iteration
 
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
@@ -413,18 +399,4 @@ class PVDFileManager:
 
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
-                if (
-                    self.form_handler.control_spaces[i].num_sub_spaces() > 0
-                    and self.form_handler.control_spaces[i].ufl_element().family()
-                    == "Mixed"
-                ):
-                    for j in range(
-                        self.form_handler.control_spaces[i].num_sub_spaces()
-                    ):
-                        self.gradient_pvd_list[i][j] << self.form_handler.gradient[
-                            i
-                        ].sub(j, True), iteration
-                else:
-                    self.gradient_pvd_list[i] << self.form_handler.gradient[
-                        i
-                    ], iteration
+                self.gradient_pvd_list[i] << self.form_handler.gradient[i], iteration

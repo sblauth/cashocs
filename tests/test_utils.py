@@ -22,7 +22,7 @@
 import os
 import subprocess
 
-import fenics
+from fenics import *
 import numpy as np
 import pytest
 
@@ -32,10 +32,23 @@ from cashocs._exceptions import InputError
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
+config = cashocs.load_config(dir_path + "/config_ocp.ini")
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
-V = fenics.FunctionSpace(mesh, "CG", 1)
+V = FunctionSpace(mesh, "CG", 1)
+
+y = Function(V)
+p = Function(V)
+u = Function(V)
+
+F = inner(grad(y), grad(p)) * dx - u * p * dx
+bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
+alpha = 1e-6
+J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+
+ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 
 
 def test_summation():
@@ -43,23 +56,23 @@ def test_summation():
 
     dim = 3
     funcs = []
-    test = fenics.TestFunction(V)
+    test = TestFunction(V)
 
     for i in range(dim):
-        temp = fenics.Function(V)
+        temp = Function(V)
         temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
     F = cashocs.utils.summation([funcs[i] * test * dx for i in range(dim)])
     F_exact = (funcs[0] + funcs[1] + funcs[2]) * test * dx
 
-    b = fenics.assemble(F)[:]
-    b_exact = fenics.assemble(F_exact)[:]
+    b = assemble(F)[:]
+    b_exact = assemble(F_exact)[:]
 
     assert cashocs.utils.summation(a) == 10
     assert abs(cashocs.utils.summation(b) - np.sum(b)) < 1e-14
     assert np.allclose(b, b_exact)
-    assert fenics.assemble(pow(cashocs.utils.summation([]), 2) * dx) == 0.0
+    assert assemble(pow(cashocs.utils.summation([]), 2) * dx) == 0.0
 
 
 def test_multiplication():
@@ -67,66 +80,61 @@ def test_multiplication():
 
     dim = 3
     funcs = []
-    test = fenics.TestFunction(V)
+    test = TestFunction(V)
 
     for i in range(dim):
-        temp = fenics.Function(V)
+        temp = Function(V)
         temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
     F = cashocs.utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
     F_exact = (funcs[0] * funcs[1] * funcs[2]) * test * dx
 
-    b = fenics.assemble(F)[:]
-    b_exact = fenics.assemble(F_exact)[:]
+    b = assemble(F)[:]
+    b_exact = assemble(F_exact)[:]
 
     assert cashocs.utils.multiplication(a) == 24
     assert abs(cashocs.utils.multiplication(b) - np.prod(b)) < 1e-14
     assert np.allclose(b, b_exact)
-    assert (
-        fenics.assemble(cashocs.utils.multiplication([]) * dx) / fenics.assemble(1 * dx)
-        == 1.0
-    )
+    assert assemble(cashocs.utils.multiplication([]) * dx) / assemble(1 * dx) == 1.0
 
 
 def test_create_bcs():
-    trial = fenics.TrialFunction(V)
-    test = fenics.TestFunction(V)
-    a = fenics.inner(fenics.grad(trial), fenics.grad(test)) * dx
-    L = fenics.Constant(1) * test * dx
+    trial = TrialFunction(V)
+    test = TestFunction(V)
+    a = inner(grad(trial), grad(test)) * dx
+    L = Constant(1) * test * dx
 
     bc_val = rng.rand()
-    bc1 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 1)
-    bc2 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 2)
-    bc3 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 3)
-    bc4 = fenics.DirichletBC(V, fenics.Constant(bc_val), boundaries, 4)
+    bc1 = DirichletBC(V, Constant(bc_val), boundaries, 1)
+    bc2 = DirichletBC(V, Constant(bc_val), boundaries, 2)
+    bc3 = DirichletBC(V, Constant(bc_val), boundaries, 3)
+    bc4 = DirichletBC(V, Constant(bc_val), boundaries, 4)
     bcs_ex = [bc1, bc2, bc3, bc4]
-    bcs = cashocs.create_dirichlet_bcs(
-        V, fenics.Constant(bc_val), boundaries, [1, 2, 3, 4]
-    )
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(bc_val), boundaries, [1, 2, 3, 4])
 
-    u_ex = fenics.Function(V)
-    u = fenics.Function(V)
+    u_ex = Function(V)
+    u = Function(V)
 
-    fenics.solve(a == L, u_ex, bcs_ex)
-    fenics.solve(a == L, u, bcs)
+    solve(a == L, u_ex, bcs_ex)
+    solve(a == L, u, bcs)
 
     assert np.allclose(u_ex.vector()[:], u.vector()[:])
     assert abs(u(0, 0) - bc_val) < 1e-14
 
 
 def test_interpolator():
-    W = fenics.FunctionSpace(mesh, "CG", 2)
-    X = fenics.FunctionSpace(mesh, "DG", 0)
+    W = FunctionSpace(mesh, "CG", 2)
+    X = FunctionSpace(mesh, "DG", 0)
 
     interp_W = cashocs.utils.Interpolator(V, W)
     interp_X = cashocs.utils.Interpolator(V, X)
 
-    func_V = fenics.Function(V)
+    func_V = Function(V)
     func_V.vector()[:] = rng.rand(V.dim())
 
-    fen_W = fenics.interpolate(func_V, W)
-    fen_X = fenics.interpolate(func_V, X)
+    fen_W = interpolate(func_V, W)
+    fen_X = interpolate(func_V, X)
 
     cas_W = interp_W.interpolate(func_V)
     cas_X = interp_X.interpolate(func_V)
@@ -144,25 +152,23 @@ def test_create_named_bcs():
     mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
     )
-    V_ = fenics.FunctionSpace(mesh_, "CG", 1)
+    V_ = FunctionSpace(mesh_, "CG", 1)
 
     bcs_str = cashocs.create_dirichlet_bcs(
-        V_, fenics.Constant(0.0), boundaries, ["inlet", "wall", "outlet"]
+        V_, Constant(0.0), boundaries, ["inlet", "wall", "outlet"]
     )
-    bcs_int = cashocs.create_dirichlet_bcs(
-        V_, fenics.Constant(0.0), boundaries, [1, 2, 3]
-    )
+    bcs_int = cashocs.create_dirichlet_bcs(V_, Constant(0.0), boundaries, [1, 2, 3])
     bcs_mixed = cashocs.create_dirichlet_bcs(
-        V_, fenics.Constant(0.0), boundaries, ["inlet", 2, "outlet"]
+        V_, Constant(0.0), boundaries, ["inlet", 2, "outlet"]
     )
 
-    fun1 = fenics.Function(V_)
+    fun1 = Function(V_)
     fun1.vector()[:] = rng.rand(V_.dim())
 
-    fun2 = fenics.Function(V_)
+    fun2 = Function(V_)
     fun2.vector()[:] = fun1.vector()[:]
 
-    fun3 = fenics.Function(V_)
+    fun3 = Function(V_)
     fun3.vector()[:] = fun1.vector()[:]
 
     [bc.apply(fun1.vector()) for bc in bcs_int]
@@ -175,7 +181,7 @@ def test_create_named_bcs():
         assert np.max(np.abs(fun2.vector()[:] - fun3.vector()[:])) <= 1e-14
 
     with pytest.raises(InputError) as e_info:
-        cashocs.create_dirichlet_bcs(V_, fenics.Constant(0.0), boundaries, "fantasy")
+        cashocs.create_dirichlet_bcs(V_, Constant(0.0), boundaries, "fantasy")
         assert "The string you have supplied is not associated with a boundary" in str(
             e_info.value
         )
@@ -199,16 +205,22 @@ def test_create_named_bcs():
     )
 
 
-def test_deprecated():
-    cfg1 = cashocs.create_config(f"{dir_path}/config_ocp.ini")
-    cfg2 = cashocs.load_config(f"{dir_path}/config_ocp.ini")
+def test_moreau_yosida_regularization():
 
-    assert cfg1 == cfg2
+    u.vector()[:] = 1e3
+    y_bar = 1e-1
+    y_low = 1e-2
+    gamma = 1e3
+    reg = cashocs.utils.moreau_yosida_regularization(
+        y, gamma, dx, upper_treshold=y_bar, lower_threshold=y_low
+    )
 
-    zero = fenics.Constant(0.0)
-    bcs1 = cashocs.create_dirichlet_bcs(V, zero, boundaries, [1])
-    bcs2 = cashocs.create_bcs_list(V, zero, boundaries, [1])
+    max = cashocs.utils._max
+    min = cashocs.utils._min
+    reg_ana = (
+        1 / (2 * gamma) * pow(max(gamma * (y - y_bar), 0.0), 2) * dx
+        + 1 / (2 * gamma) * pow(min(gamma * (y - y_low), 0.0), 2) * dx
+    )
 
-    assert bcs1[0].value() == bcs2[0].value()
-    assert bcs1[0].function_space() == bcs2[0].function_space()
-    assert bcs1[0].domain_args == bcs2[0].domain_args
+    ocp.compute_state_variables()
+    assert np.abs(assemble(reg) - assemble(reg_ana)) < 1e-14

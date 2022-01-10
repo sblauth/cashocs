@@ -65,8 +65,6 @@ def compute_mesh_quality(
         1 the best possible quality.
     """
 
-    wrong_measure = False
-
     if type in ["min", "minimum"]:
         if measure == "skewness":
             quality = MeshQuality.min_skewness(mesh)
@@ -76,8 +74,6 @@ def compute_mesh_quality(
             quality = MeshQuality.min_radius_ratios(mesh)
         elif measure == "condition_number":
             quality = MeshQuality.min_condition_number(mesh)
-        else:
-            wrong_measure = True
 
     elif type in ["avg", "average"]:
         if measure == "skewness":
@@ -88,21 +84,6 @@ def compute_mesh_quality(
             quality = MeshQuality.avg_radius_ratios(mesh)
         elif measure == "condition_number":
             quality = MeshQuality.avg_condition_number(mesh)
-        else:
-            wrong_measure = True
-    else:
-        raise InputError(
-            "cashocs.geometry.compute_mesh_quality",
-            "type",
-            "The parameter `type` has to be one of 'skewness', 'maximum_angle', 'radius_ratios', or 'condition_number'",
-        )
-
-    if wrong_measure:
-        raise InputError(
-            "cashocs.geometry.compute_mesh_quality",
-            "measure",
-            "The parameter `measure` has to be either 'min', 'minimum' or 'avg', 'average'",
-        )
 
     return quality
 

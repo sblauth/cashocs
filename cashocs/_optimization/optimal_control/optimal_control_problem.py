@@ -30,7 +30,7 @@ import ufl
 from typing_extensions import Literal
 
 from .control_variable_handler import ControlVariableHandler
-from .. import verification
+from ..verification import control_gradient_test
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -258,7 +258,11 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
             else:
-                wrong_type = True
+                raise InputError(
+                    "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem",
+                    "control_constraints",
+                    "Wrong type for the control constraints",
+                )
 
             if isinstance(pair[1], (float, int)):
                 upper_bound = fenics.Function(self.controls[idx].function_space())
@@ -266,14 +270,12 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
-                wrong_type = True
-
-            if wrong_type:
                 raise InputError(
                     "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem",
                     "control_constraints",
                     "Wrong type for the control constraints",
                 )
+
             self.control_constraints.append([lower_bound, upper_bound])
 
         ### Check whether the control constraints are feasible, and whether they are actually present
@@ -298,7 +300,7 @@ class OptimalControlProblem(OptimizationProblem):
                 if control_element.family() == "Mixed":
                     for j in range(control_element.value_size()):
                         sub_elem = control_element.extract_component(j)[1]
-                        if (
+                        if not (
                             sub_elem.family() == "Real"
                             or (
                                 sub_elem.family() == "Lagrange"
@@ -309,8 +311,6 @@ class OptimalControlProblem(OptimizationProblem):
                                 and sub_elem.degree() == 0
                             )
                         ):
-                            pass
-                        else:
                             raise InputError(
                                 "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem",
                                 "controls",
@@ -318,7 +318,7 @@ class OptimalControlProblem(OptimizationProblem):
                             )
 
                 else:
-                    if (
+                    if not (
                         control_element.family() == "Real"
                         or (
                             control_element.family() == "Lagrange"
@@ -329,8 +329,6 @@ class OptimalControlProblem(OptimizationProblem):
                             and control_element.degree() == 0
                         )
                     ):
-                        pass
-                    else:
                         raise InputError(
                             "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem",
                             "controls",
@@ -528,27 +526,20 @@ class OptimalControlProblem(OptimizationProblem):
         None
         """
 
-        try:
-            if isinstance(derivatives, list) and len(derivatives) > 0:
-                for i in range(len(derivatives)):
-                    if isinstance(derivatives[i], ufl.form.Form):
-                        pass
-                    else:
-                        raise InputError(
-                            "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives",
-                            "derivatives",
-                            "derivatives have to be ufl forms",
-                        )
-                mod_derivatives = derivatives
-            elif isinstance(derivatives, ufl.form.Form):
-                mod_derivatives = [derivatives]
-            else:
-                raise InputError(
-                    "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives",
-                    "derivatives",
-                    "derivatives have to be ufl forms",
-                )
-        except:
+        if isinstance(derivatives, list) and len(derivatives) > 0:
+            for i in range(len(derivatives)):
+                if isinstance(derivatives[i], ufl.form.Form):
+                    pass
+                else:
+                    raise InputError(
+                        "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives",
+                        "derivatives",
+                        "derivatives have to be ufl forms",
+                    )
+            mod_derivatives = derivatives
+        elif isinstance(derivatives, ufl.form.Form):
+            mod_derivatives = [derivatives]
+        else:
             raise InputError(
                 "cashocs._optimization.optimal_control.optimal_control_problem.OptimalControlProblem.supply_derivatives",
                 "derivatives",
@@ -651,4 +642,4 @@ class OptimalControlProblem(OptimizationProblem):
              everything works as expected.
         """
 
-        return verification.control_gradient_test(self, u, h, rng)
+        return control_gradient_test(self, u, h, rng)

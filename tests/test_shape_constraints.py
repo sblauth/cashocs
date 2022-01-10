@@ -74,7 +74,7 @@ def test_int_ineq_constraints():
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
-    constraint = cashocs.InequalityConstraint(1 * dx, upper_bound=1.5)
+    constraint = cashocs.InequalityConstraint(1 * dx, upper_bound=1.5, lower_bound=0.0)
     problem = cashocs.ConstrainedShapeOptimizationProblem(
         e, bcs, J, u, p, boundaries, constraint, config=cfg
     )

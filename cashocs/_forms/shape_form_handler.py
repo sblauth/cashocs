@@ -128,7 +128,16 @@ class ShapeFormHandler(FormHandler):
         self.__compute_shape_gradient_forms()
         self.__setup_mu_computation()
 
-        if self.degree_estimation:
+        retry_assembler_setup = False
+        if not self.degree_estimation:
+            try:
+                self.assembler = fenics.SystemAssembler(
+                    self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
+                )
+            except (AssertionError, ValueError):
+                retry_assembler_setup = True
+
+        if retry_assembler_setup or self.degree_estimation:
             self.estimated_degree = np.maximum(
                 estimate_total_polynomial_degree(self.riesz_scalar_product),
                 estimate_total_polynomial_degree(self.shape_derivative),
@@ -139,24 +148,6 @@ class ShapeFormHandler(FormHandler):
                 self.bcs_shape,
                 form_compiler_parameters={"quadrature_degree": self.estimated_degree},
             )
-        else:
-            try:
-                self.assembler = fenics.SystemAssembler(
-                    self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
-                )
-            except (AssertionError, ValueError):
-                self.estimated_degree = np.maximum(
-                    estimate_total_polynomial_degree(self.riesz_scalar_product),
-                    estimate_total_polynomial_degree(self.shape_derivative),
-                )
-                self.assembler = fenics.SystemAssembler(
-                    self.riesz_scalar_product,
-                    self.shape_derivative,
-                    self.bcs_shape,
-                    form_compiler_parameters={
-                        "quadrature_degree": self.estimated_degree
-                    },
-                )
 
         self.assembler.keep_diagonal = True
         self.fe_scalar_product_matrix = fenics.PETScMatrix()

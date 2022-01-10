@@ -79,10 +79,9 @@ class OptimizationAlgorithm(abc.ABC):
             "OptimizationRoutine", "soft_exit", fallback=False
         )
 
-        try:
-            if optimization_problem.is_shape_problem:
-                self.temp_dict = optimization_problem.temp_dict
-        except AttributeError:
+        if optimization_problem.is_shape_problem:
+            self.temp_dict = optimization_problem.temp_dict
+        else:
             self.temp_dict = None
 
         self.output_manager = optimization_problem.output_manager

@@ -63,27 +63,27 @@ class PETScKSPError(CashocsException):
         self.message = message
         self.error_code = error_code
 
-        if self.error_code == -2:
+        if self.error_code == -2:  # pragma: nocover
             self.error_reason = " (ksp_diverged_null)"
-        elif self.error_code == -3:
+        elif self.error_code == -3:  # pragma: nocover
             self.error_reason = " (ksp_diverged_its, reached maximum iterations)"
-        elif self.error_code == -4:
+        elif self.error_code == -4:  # pragma: nocover
             self.error_reason = " (ksp_diverged_dtol, reached divergence tolerance)"
-        elif self.error_code == -5:
+        elif self.error_code == -5:  # pragma: nocover
             self.error_reason = " (ksp_diverged_breakdown, krylov method breakdown)"
-        elif self.error_code == -6:
+        elif self.error_code == -6:  # pragma: nocover
             self.error_reason = " (ksp_diverged_breakdown_bicg)"
-        elif self.error_code == -7:
+        elif self.error_code == -7:  # pragma: nocover
             self.error_reason = " (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)"
-        elif self.error_code == -8:
+        elif self.error_code == -8:  # pragma: nocover
             self.error_reason = " (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)"
-        elif self.error_code == -9:
+        elif self.error_code == -9:  # pragma: nocover
             self.error_reason = " (ksp_diverged_nanorinf)"
-        elif self.error_code == -10:
+        elif self.error_code == -10:  # pragma: nocover
             self.error_reason = " (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)"
-        elif self.error_code == -11:
+        elif self.error_code == -11:  # pragma: nocover
             self.error_reason = " (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)"
-        else:
+        else:  # pragma: nocover
             self.error_reason = " (unknown)"
 
     def __str__(self) -> str:
@@ -109,7 +109,7 @@ class InputError(CashocsException):
 class ConfigError(CashocsException):
     """This exception gets raised when parameters in the config file are wrong."""
 
-    pre_message = "You have an error in your config file.\n"
+    pre_message = "You have some error(s) in your config file.\n"
 
     def __init__(self, config_errors: List[str]) -> None:
         self.config_errors = config_errors

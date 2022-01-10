@@ -105,7 +105,6 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
 x = SpatialCoordinate(mesh)
 f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-# f = Expression('2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1', degree=4, domain=mesh)
 
 u = Function(V)
 p = Function(V)
@@ -244,6 +243,19 @@ def test_shape_derivative_constrained():
 
 def test_shape_gradient():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+
+def test_shape_gradient_iterative():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("OptimizationRoutine", "gradient_method", "iterative")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

@@ -116,6 +116,24 @@ def test_p_laplacian():
     assert sop.solver.relative_norm <= 1e-1
 
 
+def test_p_laplacian_iterative():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("ShapeGradient", "mu_def", "1.0")
+    config.set("ShapeGradient", "mu_fix", "1.0")
+    config.set("ShapeGradient", "damping_factor", "1.0")
+    config.set("ShapeGradient", "use_p_laplacian", "True")
+    config.set("ShapeGradient", "p_laplacian_power", "10")
+    config.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+
+
 def test_config_conflict():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     mesh.coordinates()[:, :] = initial_coordinates

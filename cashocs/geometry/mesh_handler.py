@@ -580,7 +580,7 @@ class _MeshHandler:
             with open(f"{self.temp_dir}/temp_dict.json", "w") as file:
                 json.dump(self.temp_dict, file)
 
-            def filter_sys_argv():
+            def filter_sys_argv():  # pragma: no cover
                 """Filters the command line arguments for the cashocs remesh flag
 
                 Returns

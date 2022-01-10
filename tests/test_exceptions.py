@@ -31,7 +31,6 @@ from cashocs._exceptions import (
     InputError,
     NotConvergedError,
     PETScKSPError,
-    ConfigError,
 )
 
 
@@ -99,57 +98,3 @@ def test_petsc_error():
         u.vector()[:] = rng.rand(V.dim())
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
-
-
-def test_config_error():
-    with pytest.raises(ConfigError) as e_info:
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "remesh", "1.0")
-
-        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
-
-    assert "You have an error in your config file" in str(e_info.value)
-    assert (
-        "Key remesh in section Mesh has the wrong type. Required type is bool."
-        in str(e_info.value)
-    )
-
-
-def test_incorrect_configs():
-    with pytest.raises(ConfigError) as e_info:
-        config = cashocs.load_config(f"{dir_path}/test_config.ini")
-        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-
-    assert (
-        "The following section is not valid: <Section: A>\nThe following section is not valid: <Section: B>\nKey algorithm is not valid for section StateSystem."
-        in str(e_info.value)
-    )
-
-
-def test_incompatible_config():
-    config = cashocs.load_config(f"{dir_path}/config_sop.ini")
-    config.set("MeshQuality", "tol_lower", "0.5")
-    config.set("MeshQuality", "tol_upper", "0.1")
-    with pytest.raises(ConfigError) as e_info:
-        sop = cashocs.ShapeOptimizationProblem(
-            F, bcs, J, y, p, boundaries, config=config
-        )
-
-    assert (
-        "The value of key tol_upper in section MeshQuality is smaller than the value of key tol_lower in section MeshQuality, but it should be larger."
-        in str(e_info.value)
-    )
-
-
-def test_incomplete_requirements_config():
-    with pytest.raises(ConfigError) as e_info:
-        config = cashocs.load_config(f"{dir_path}/config_sop.ini")
-        config.set("Output", "save_mesh", "True")
-        sop = cashocs.ShapeOptimizationProblem(
-            F, bcs, J, y, p, boundaries, config=config
-        )
-
-    assert (
-        "Key save_mesh in section Output requires key gmsh_file in section Mesh to be present."
-        in str(e_info.value)
-    )

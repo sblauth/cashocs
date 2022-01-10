@@ -490,33 +490,6 @@ def test_nonlinear_state_eq():
     cashocs.verification.control_gradient_test(ocp, rng=rng)
 
 
-def test_save_pvd_files():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("Output", "save_pvd", "True")
-    config.set("Output", "save_results", "True")
-    config.set("Output", "save_txt", "True")
-    config.set("Output", "save_pvd_adjoint", "True")
-    config.set("Output", "save_pvd_gradient", "True")
-    config.set("Output", "result_dir", dir_path + "/out")
-    u.vector()[:] = 0.0
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve(algorithm="bfgs", rtol=1e-1)
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
-
-    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
-
-
 def test_riesz_scalar_products():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
     u.vector()[:] = 0.0
@@ -697,36 +670,12 @@ def test_scaling_all():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
-def test_no_config():
-    u.vector()[:] = 0.0
-    cwd = os.getcwd()
-    try:
-        os.chdir("./tests")
-        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p)
-        with pytest.raises(InputError) as e_info:
-            ocp.solve(rtol=1e-2, atol=0.0, max_iter=7)
-        assert "You did not specify a solution algorithm in your config file." in str(
-            e_info.value
-        )
-        ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
-        assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-        assert os.path.isdir(dir_path + "/results")
-        assert os.path.isfile(dir_path + "/results/history.txt")
-        assert os.path.isfile(dir_path + "/results/history.json")
-        subprocess.run(["rm", "-r", f"{dir_path}/results"], check=True)
-    except:
-        raise Exception("Failed to change the working directory")
-    finally:
-        os.chdir(cwd)
-
-
 def test_iterative_gradient():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("OptimizationRoutine", "gradient_method", "iterative")
     u.vector()[:] = 0.0
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9

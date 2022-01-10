@@ -358,7 +358,7 @@ def create_bcs_list(
     boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
     **kwargs,
-) -> List[fenics.DirichletBC]:
+) -> List[fenics.DirichletBC]:  # pragma: no cover
     """Create several Dirichlet boundary conditions at once.
 
     Wraps multiple Dirichlet boundary conditions into a list, in case

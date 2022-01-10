@@ -38,7 +38,7 @@ from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .shape_variable_handler import ShapeVariableHandler
-from .. import verification
+from ..verification import shape_gradient_test
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -257,7 +257,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                         "arg",
                         "You must specify a config file as input for remeshing.",
                     )
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
                 raise InputError(
                     "cashocs.import_mesh",
                     "arg",
@@ -290,7 +290,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                             self.temp_dict[
                                 "initial_scalar_tracking_values"
                             ] = self.initial_scalar_tracking_values
-                except AttributeError:
+                except AttributeError:  # this happens for the unscaled problem
                     pass
 
             else:
@@ -479,7 +479,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         None
         """
 
-        def custom_except_hook(exctype, value, traceback):
+        def custom_except_hook(exctype, value, traceback):  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
             Parameters
@@ -537,18 +537,11 @@ class ShapeOptimizationProblem(OptimizationProblem):
         None
         """
 
-        try:
-            if not (isinstance(shape_derivative, ufl.Form)):
-                raise InputError(
-                    "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
-                    "shape_derivative",
-                    "shape_derivative have to be a ufl form",
-                )
-        except:
+        if not (isinstance(shape_derivative, ufl.Form)):
             raise InputError(
                 "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
-                "shape_derivative has to be a ufl form",
+                "shape_derivative have to be a ufl form",
             )
 
         if len(shape_derivative.arguments()) == 2:
@@ -583,7 +576,18 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 {shape_derivative.arguments()[0]: self.form_handler.test_vector_field},
             )
 
-        if self.form_handler.degree_estimation:
+        retry_assembler_setup = False
+        if not self.form_handler.degree_estimation:
+            try:
+                self.form_handler.assembler = fenics.SystemAssembler(
+                    self.form_handler.riesz_scalar_product,
+                    shape_derivative,
+                    self.form_handler.bcs_shape,
+                )
+            except (AssertionError, ValueError):
+                retry_assembler_setup = True
+
+        if retry_assembler_setup or self.form_handler.degree_estimation:
             estimated_degree = np.maximum(
                 estimate_total_polynomial_degree(
                     self.form_handler.riesz_scalar_product
@@ -596,26 +600,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 self.form_handler.bcs_shape,
                 form_compiler_parameters={"quadrature_degree": estimated_degree},
             )
-        else:
-            try:
-                self.form_handler.assembler = fenics.SystemAssembler(
-                    self.form_handler.riesz_scalar_product,
-                    shape_derivative,
-                    self.form_handler.bcs_shape,
-                )
-            except (AssertionError, ValueError):
-                estimated_degree = np.maximum(
-                    estimate_total_polynomial_degree(
-                        self.form_handler.riesz_scalar_product
-                    ),
-                    estimate_total_polynomial_degree(shape_derivative),
-                )
-                self.form_handler.assembler = fenics.SystemAssembler(
-                    self.form_handler.riesz_scalar_product,
-                    shape_derivative,
-                    self.form_handler.bcs_shape,
-                    form_compiler_parameters={"quadrature_degree": estimated_degree},
-                )
 
         self.has_custom_derivative = True
 
@@ -691,4 +675,4 @@ class ShapeOptimizationProblem(OptimizationProblem):
             everything works as expected.
         """
 
-        return verification.shape_gradient_test(self, h, rng)
+        return shape_gradient_test(self, h, rng)
