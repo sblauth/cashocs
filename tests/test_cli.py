@@ -19,10 +19,12 @@ import os
 import subprocess
 
 import fenics
+import pytest
 import numpy as np
 
 import cashocs
 import cashocs._cli
+from cashocs._exceptions import InputError
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -74,3 +76,48 @@ def test_cli():
     subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
     subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
     subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+
+
+def test_convert3D():
+    cashocs._cli.convert([f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf"])
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        dir_path + "/mesh/mesh3.xdmf"
+    )
+
+    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds) - 6) < 1e-14
+
+    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(5)) - 1) < 1e-14
+    assert abs(fenics.assemble(1 * ds(6)) - 1) < 1e-14
+
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3_subdomains.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3_subdomains.h5")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3_boundaries.xdmf")
+    assert os.path.isfile(f"{dir_path}/mesh/mesh3_boundaries.h5")
+
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.h5"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.xdmf"], check=True)
+    subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.h5"], check=True)
+
+
+def test_wrong_formats():
+    with pytest.raises(Exception) as e_info:
+        cashocs._cli.convert(
+            [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
+        )
+    assert "Cannot use the input file due to wrong format." in str(e_info.value)
+
+    with pytest.raises(Exception) as e_info:
+        cashocs._cli.convert(
+            [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
+        )
+    assert "Cannot use the output file due to wrong format." in str(e_info.value)

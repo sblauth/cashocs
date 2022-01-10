@@ -1,0 +1,15 @@
+[report]
+exclude_lines = 
+    pragma: no cover
+    if TYPE_CHECKING:
+
+    # Don't complain about defensive Exceptions
+    raise InputError
+    raise CashocsException
+    raise CashocsDebugException
+
+    # Don't complain if warnings aren't raised
+    warning
+
+    # Don't complain about abstract methods
+	@(abc\.)?abstractmethod

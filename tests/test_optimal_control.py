@@ -719,3 +719,14 @@ def test_no_config():
         raise Exception("Failed to change the working directory")
     finally:
         os.chdir(cwd)
+
+
+def test_iterative_gradient():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    config.set("OptimizationRoutine", "gradient_method", "iterative")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9

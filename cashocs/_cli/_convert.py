@@ -70,15 +70,17 @@ def convert(argv: Optional[List[str]] = None) -> None:
     outputfile = args.outfile
     # Check that the inputfile has .msh file format
     if not (inputfile[-4:] == ".msh"):
-        print("Error: Cannot use the current file format as input.")
-        sys.exit(2)
+        raise Exception(
+            "Cannot use the input file due to wrong format.",
+        )
 
     # Check that the outputfile has .xdmf format
     if outputfile[-5:] == ".xdmf":
         ostring = outputfile[:-5]
     else:
-        print("Error: Cannot use the current file format as output.")
-        sys.exit(2)
+        raise Exception(
+            "Cannot use the output file due to wrong format.",
+        )
 
     mesh_collection = meshio.read(inputfile)
 
@@ -88,13 +90,11 @@ def convert(argv: Optional[List[str]] = None) -> None:
 
     # Check, whether we have a 2D or 3D mesh:
     keyvals = cells_dict.keys()
+    meshdim = 2
     if "tetra" in keyvals:
         meshdim = 3
     elif "triangle" in keyvals:
         meshdim = 2
-    else:
-        print("Error: This is not a valid input mesh.")
-        sys.exit(2)
 
     if meshdim == 2:
         points = points[:, :2]
