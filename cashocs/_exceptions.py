@@ -18,9 +18,11 @@
 """Exceptions raised by cashocs.
 
 """
+
 from __future__ import annotations
 
 from typing import Optional, List
+
 
 
 class CashocsException(Exception):
@@ -30,6 +32,8 @@ class CashocsException(Exception):
 
 
 class CashocsDebugException(CashocsException):
+    """Exception that can get raised for debugging."""
+
     pass
 
 
@@ -96,11 +100,13 @@ class InputError(CashocsException):
     """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
 
     def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
+
         self.obj = obj
         self.param = param
         self.message = message
 
     def __str__(self) -> str:
+
         main_msg = f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
         post_msg = f"\n{self.message}" if self.message is not None else ""
         return main_msg + post_msg
@@ -112,9 +118,11 @@ class ConfigError(CashocsException):
     pre_message = "You have some error(s) in your config file.\n"
 
     def __init__(self, config_errors: List[str]) -> None:
+
         self.config_errors = config_errors
 
     def __str__(self) -> str:
+
         except_str = f"{self.pre_message}"
         for error in self.config_errors:
             except_str += error

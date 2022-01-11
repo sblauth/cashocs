@@ -20,7 +20,6 @@
 """
 
 import os
-import subprocess
 
 import numpy as np
 import pytest
@@ -28,6 +27,7 @@ from fenics import *
 
 import cashocs
 from cashocs._exceptions import InputError, NotConvergedError
+
 
 
 rng = np.random.RandomState(300696)

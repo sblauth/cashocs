@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for managing config files.
+
+"""
 
 from __future__ import annotations
 
@@ -26,6 +29,7 @@ from typing import Optional
 from .._exceptions import ConfigError
 from .._exceptions import InputError
 from .._loggers import warning
+
 
 
 # deprecated

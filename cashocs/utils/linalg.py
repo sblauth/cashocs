@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for performing linear algebra tasks.
+
+"""
 
 from __future__ import annotations
 
@@ -25,6 +28,7 @@ import ufl
 from petsc4py import PETSc
 
 from .._exceptions import InputError, PETScKSPError
+
 
 
 def _assemble_petsc_system(

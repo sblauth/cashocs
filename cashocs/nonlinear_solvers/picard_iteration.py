@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Picard iteration for coupled PDEs
+
+"""
 
 from __future__ import annotations
 
@@ -31,6 +34,7 @@ from ..utils import (
     enlist,
     _check_and_enlist_bcs,
 )
+
 
 
 def picard_iteration(

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Nonlinear CG method.
+"""Nonlinear CG method for PDE constrained optimization
 
 """
 
@@ -24,6 +24,7 @@ from __future__ import annotations
 import fenics
 
 from .optimization_algorithm import OptimizationAlgorithm
+
 
 
 class NonlinearCGMethod(OptimizationAlgorithm):

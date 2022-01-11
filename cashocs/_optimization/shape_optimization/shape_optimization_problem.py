@@ -37,7 +37,7 @@ from typing_extensions import Literal
 from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
-from .shape_variable_handler import ShapeVariableHandler
+from .shape_variable_abstractions import ShapeVariableAbstractions
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -52,6 +52,7 @@ from ..._forms import ShapeFormHandler
 from ..._loggers import debug, warning
 from ..._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from ...geometry import _MeshHandler
+
 
 
 class ShapeOptimizationProblem(OptimizationProblem):
@@ -446,7 +447,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_handler = ShapeVariableHandler(self)
+        self.optimization_variable_handler = ShapeVariableAbstractions(self)
         self.line_search = ArmijoLineSearch(self)
 
         # TODO: Do not pass the line search (uneccessary)

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of the Hessian problem.
+"""Abstract implementation of an Hessian problem.
 
 This uses Krylov subspace methods to iteratively solve
 the "Hessian problems" occurring in the truncated Newton
@@ -35,6 +35,7 @@ from .._exceptions import CashocsException
 from .._loggers import debug
 from ..nonlinear_solvers import picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+
 
 
 if TYPE_CHECKING:

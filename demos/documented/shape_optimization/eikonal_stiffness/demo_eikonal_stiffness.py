@@ -24,6 +24,7 @@ from fenics import *
 import cashocs
 
 
+
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 

@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for computing the mesh quality.
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -31,6 +35,7 @@ from ..utils.linalg import (
     _setup_petsc_options,
     _solve_linear_problem,
 )
+
 
 
 if TYPE_CHECKING:

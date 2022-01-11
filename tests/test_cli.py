@@ -19,12 +19,12 @@ import os
 import subprocess
 
 import fenics
-import pytest
 import numpy as np
+import pytest
 
 import cashocs
 import cashocs._cli
-from cashocs._exceptions import InputError
+
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

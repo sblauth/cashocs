@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for the Armijo line search.
+
+"""
+
 from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
@@ -23,6 +27,7 @@ import fenics
 
 from .line_search import LineSearch
 from ..._loggers import error
+
 
 
 if TYPE_CHECKING:

@@ -42,6 +42,7 @@ from .._optimization.shape_optimization.shape_optimization_problem import (
 from ..utils import enlist
 
 
+
 class ConstrainedOptimizationProblem(abc.ABC):
     """A PDE constrained optimization problem with additional equality and inequality constraints."""
 

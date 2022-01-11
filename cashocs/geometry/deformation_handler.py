@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for managing mesh deformations.
+
+"""
+
 from __future__ import annotations
 
 from collections import Counter
@@ -32,6 +36,7 @@ from ..utils.linalg import (
     _setup_petsc_options,
     _solve_linear_problem,
 )
+
 
 
 class DeformationHandler:

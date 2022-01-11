@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-module for equality and inequality constraints
+"""Module for equality and inequality constraints
+
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ import ufl.core.expr
 
 from .._exceptions import InputError
 from ..utils import _max, _min
+
 
 
 class Constraint(abc.ABC):

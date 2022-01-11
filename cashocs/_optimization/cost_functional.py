@@ -15,12 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for general reduced cost functionals.
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
+
 
 
 if TYPE_CHECKING:

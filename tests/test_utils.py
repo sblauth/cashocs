@@ -22,13 +22,14 @@
 import os
 import subprocess
 
-from fenics import *
 import numpy as np
 import pytest
+from fenics import *
 
 import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
+
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

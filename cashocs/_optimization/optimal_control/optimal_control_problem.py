@@ -29,7 +29,7 @@ import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from .control_variable_handler import ControlVariableHandler
+from .control_variable_abstractions import ControlVariableAbstractions
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -53,6 +53,7 @@ from ...utils import (
     enlist,
     _check_and_enlist_control_constraints,
 )
+
 
 
 class OptimalControlProblem(OptimizationProblem):
@@ -461,7 +462,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_handler = ControlVariableHandler(self)
+        self.optimization_variable_handler = ControlVariableAbstractions(self)
         self.line_search = ArmijoLineSearch(self)
 
         if self.algorithm == "newton":

@@ -15,12 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for handling mesh output.
+
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import fenics
 import numpy as np
+
 
 
 def write_out_mesh(

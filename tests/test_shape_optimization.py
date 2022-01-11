@@ -30,6 +30,7 @@ import cashocs
 from cashocs._exceptions import NotConvergedError
 
 
+
 def eps(u):
     """Computes the symmetric gradient of u
 

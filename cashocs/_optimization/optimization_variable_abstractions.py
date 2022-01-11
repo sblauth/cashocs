@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for managing optimization variables.
+
+This is used to update, restore, and manipulate optimization with abstractions, so that
+the same optimization algorithms can be used for different types of problems.
+"""
+
 from __future__ import annotations
 
 import abc
@@ -23,11 +29,12 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 
 
+
 if TYPE_CHECKING:
     from .optimization_problem import OptimizationProblem
 
 
-class OptimizationVariableHandler(abc.ABC):
+class OptimizationVariableAbstractions(abc.ABC):
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
 
         self.gradient = optimization_problem.gradient

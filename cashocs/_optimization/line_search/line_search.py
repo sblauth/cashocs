@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for the parent class of all line searches.
+
+"""
+
 from __future__ import annotations
 
 import abc
@@ -23,6 +27,7 @@ from typing import TYPE_CHECKING, List
 import fenics
 
 from ...utils import _optimization_algorithm_configuration
+
 
 
 if TYPE_CHECKING:

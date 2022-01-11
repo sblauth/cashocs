@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for handling the output
+
+"""
 
 from __future__ import annotations
 
@@ -27,6 +30,7 @@ import numpy as np
 
 from .mesh import write_out_mesh
 from .._forms import ControlFormHandler
+
 
 
 if TYPE_CHECKING:

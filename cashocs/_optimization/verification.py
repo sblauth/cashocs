@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""This module includes finite difference Taylor tests to verify the correctness of computed gradients.
+"""This module includes Taylor tests to verify the correctness of computed gradients.
 
 """
 
@@ -28,6 +28,7 @@ import numpy as np
 
 from .._exceptions import InputError
 from .._loggers import warning
+
 
 
 if TYPE_CHECKING:

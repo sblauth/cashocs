@@ -18,6 +18,7 @@
 """Abstract implementation of an adjoint problem.
 
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List
@@ -28,6 +29,7 @@ from petsc4py import PETSc
 from .._pde_problems.pde_problem import PDEProblem
 from ..nonlinear_solvers import picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+
 
 
 if TYPE_CHECKING:

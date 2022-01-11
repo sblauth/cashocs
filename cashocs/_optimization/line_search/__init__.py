@@ -15,5 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for line searches used in optimization algorithms.
+
+"""
+
 from .armijo_line_search import ArmijoLineSearch
 from .line_search import LineSearch

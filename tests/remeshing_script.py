@@ -22,6 +22,7 @@ from fenics import *
 import cashocs
 
 
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")

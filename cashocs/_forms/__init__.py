@@ -18,7 +18,7 @@
 """Private module forms of cashocs.
 
 This is used to carry out form manipulations such as generating the UFL
- forms for the adjoint system and for the Riesz gradient identificiation
+forms for the adjoint system and for the Riesz gradient identificiation
 problems.
 """
 

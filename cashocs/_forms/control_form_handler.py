@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for managing UFL forms for optimal control problems
+
+"""
 
 from __future__ import annotations
 
@@ -33,6 +36,7 @@ from ..utils import (
     _max,
     _min,
 )
+
 
 
 if TYPE_CHECKING:

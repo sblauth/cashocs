@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Several PDE problems for optimization (shape and optimal control).
+"""Module for PDE problems
 
 """
 

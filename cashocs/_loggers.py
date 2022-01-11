@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import logging
 
-from typing_extensions import Literal
 
 
 class ColorFormatter(logging.Formatter):
@@ -51,9 +50,11 @@ class ColorFormatter(logging.Formatter):
     }
 
     def __init__(self, *args, **kwargs) -> None:
+
         super().__init__(*args, **kwargs)
 
     def format(self, record):
+
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
 
@@ -84,15 +85,7 @@ _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
 
-def set_log_level(
-    level: Literal[
-        LogLevel.DEBUG,
-        LogLevel.INFO,
-        LogLevel.WARNING,
-        LogLevel.ERROR,
-        LogLevel.CRITICAL,
-    ]
-) -> None:
+def set_log_level(level: int) -> None:
     """Determines the log level of cashocs.
 
     Can be used to show, e.g., info and warning messages or to hide them.

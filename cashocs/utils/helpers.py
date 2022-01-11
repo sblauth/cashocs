@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for various helper functions.
+
+"""
 
 from __future__ import annotations
 
@@ -25,6 +28,7 @@ from typing import Union, List, Tuple, Optional
 import fenics
 
 from .._exceptions import InputError
+
 
 
 def enlist(arg: Union[object, List]) -> List:

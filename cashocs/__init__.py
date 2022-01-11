@@ -20,6 +20,8 @@ r"""cashocs is a computational, adjoint based shape optimization and optimal con
 cashocs is based on the finite element package `FEniCS <https://fenicsproject.org>`_
 and uses its high-level unified form language UFL to treat general PDE constrained
 optimization problems, in particular, shape optimization and optimal control problems.
+
+The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
 from ._constraints.constrained_problems import (

@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for abstractions of optimization variables in the case of shape optimization
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
@@ -22,7 +26,8 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 import numpy as np
 
-from ..optimization_variable_handler import OptimizationVariableHandler
+from ..optimization_variable_abstractions import OptimizationVariableAbstractions
+
 
 
 if TYPE_CHECKING:
@@ -31,7 +36,7 @@ if TYPE_CHECKING:
     )
 
 
-class ShapeVariableHandler(OptimizationVariableHandler):
+class ShapeVariableAbstractions(OptimizationVariableAbstractions):
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
 
         super().__init__(optimization_problem)

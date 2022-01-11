@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for abstractions of optimization variables in the case of optimal control
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
@@ -22,14 +26,15 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 import numpy as np
 
-from ..optimization_variable_handler import OptimizationVariableHandler
+from ..optimization_variable_abstractions import OptimizationVariableAbstractions
+
 
 
 if TYPE_CHECKING:
     from .optimal_control_problem import OptimalControlProblem
 
 
-class ControlVariableHandler(OptimizationVariableHandler):
+class ControlVariableAbstractions(OptimizationVariableAbstractions):
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
 
         super().__init__(optimization_problem)

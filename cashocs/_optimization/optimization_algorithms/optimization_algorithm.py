@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Gradient descent methods.
+"""Parent class for optimization algorithms for PDE constrained optimization
 
 """
 
@@ -28,6 +28,7 @@ import fenics
 
 from ..._exceptions import NotConvergedError
 from ..._loggers import error, info
+
 
 
 if TYPE_CHECKING:

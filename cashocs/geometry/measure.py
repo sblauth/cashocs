@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for extending the measure functionality.
+
+"""
+
 from __future__ import annotations
 
 from typing import Union, List, Optional, Dict
@@ -25,6 +29,7 @@ from typing_extensions import Literal
 from ufl.measure import Measure
 
 from .._exceptions import InputError
+
 
 
 class _EmptyMeasure(Measure):

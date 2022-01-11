@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Limited Memory BFGS method
+"""Limited Memory BFGS method for PDE constrained optimization
 
 """
 
@@ -28,6 +28,7 @@ import fenics
 import numpy as np
 
 from .optimization_algorithm import OptimizationAlgorithm
+
 
 
 if TYPE_CHECKING:

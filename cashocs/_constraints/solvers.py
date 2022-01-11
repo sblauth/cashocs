@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Solvers for PDE constrained optimization problems with additional constraints.
+
+"""
 
 from __future__ import annotations
 
@@ -28,6 +31,7 @@ import ufl.core.expr
 from .constraints import EqualityConstraint, InequalityConstraint
 from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
+
 
 
 if TYPE_CHECKING:

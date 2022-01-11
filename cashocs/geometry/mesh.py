@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for mesh importing and generation.
+
+"""
+
 from __future__ import annotations
 
 import configparser
@@ -34,6 +38,7 @@ from .._loggers import info, warning
 from ..utils.helpers import (
     _parse_remesh,
 )
+
 
 
 if TYPE_CHECKING:

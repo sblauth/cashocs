@@ -17,9 +17,6 @@
 
 """Module for treatment of optimal control problems.
 
-This module is used for the treatment of optimal control problems.
-It includes the optimization problem, the solution algorithms and
-the line search needed for this.
 """
 
 from .optimal_control_problem import OptimalControlProblem

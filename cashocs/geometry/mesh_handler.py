@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+
+"""Module for managing a finite element mesh.
+
+"""
+
 from __future__ import annotations
 
 import json
@@ -42,6 +47,7 @@ from ..utils.linalg import (
     _setup_petsc_options,
     _solve_linear_problem,
 )
+
 
 
 if TYPE_CHECKING:

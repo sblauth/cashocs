@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module managing the output of cashocs.
+
+"""
+
 from __future__ import annotations
 
 import os
@@ -29,6 +33,7 @@ from .managers import (
     MeshManager,
     HistoryManager,
 )
+
 
 
 if TYPE_CHECKING:

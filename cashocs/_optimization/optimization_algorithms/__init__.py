@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Optimization algorithms for PDE constrained optimization
+
+"""
+
 from .gradient_descent import GradientDescentMethod
 from .l_bfgs import LBFGSMethod
 from .ncg import NonlinearCGMethod

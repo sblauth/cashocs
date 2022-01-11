@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Newton solver for nonlinear PDEs
+
+"""
 
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ from ..utils import (
     _setup_petsc_options,
     _solve_linear_problem,
 )
+
 
 
 def newton_solve(
