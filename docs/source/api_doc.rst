@@ -99,6 +99,14 @@ MeshQuality
 	:undoc-members:
 	:inherited-members:
 
+DeformationHandler
+------------------
+
+.. autoclass:: cashocs.DeformationHandler
+	:members:
+	:undoc-members:
+	:inherited-members:
+
 Functions
 ---------
 
@@ -177,6 +185,7 @@ of the sub-module.
    :maxdepth: 5
 
    sub_modules/geometry
+   sub_modules/io
    sub_modules/nonlinear_solvers
    sub_modules/utils
    sub_modules/verification
