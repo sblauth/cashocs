@@ -28,7 +28,7 @@ import numpy as np
 from typing_extensions import Literal
 
 from .measure import _NamedMeasure
-from .mesh_quality import MeshQuality, compute_mesh_quality
+from .mesh_quality import compute_mesh_quality
 from .._exceptions import InputError
 from .._loggers import info, warning
 from ..utils.helpers import (

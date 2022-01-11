@@ -38,7 +38,6 @@ from ufl import replace
 from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
 from .shape_variable_handler import ShapeVariableHandler
-from ..verification import shape_gradient_test
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -47,6 +46,7 @@ from ..optimization_algorithms import (
     LBFGSMethod,
 )
 from ..optimization_problem import OptimizationProblem
+from ..verification import shape_gradient_test
 from ..._exceptions import CashocsException, InputError
 from ..._forms import ShapeFormHandler
 from ..._loggers import debug, warning

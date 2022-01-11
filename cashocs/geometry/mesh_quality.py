@@ -26,7 +26,6 @@ from typing_extensions import Literal
 from ufl import Jacobian, JacobianInverse
 
 from .measure import _NamedMeasure
-from .._exceptions import InputError
 from ..utils.linalg import (
     _assemble_petsc_system,
     _setup_petsc_options,

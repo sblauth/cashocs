@@ -30,7 +30,6 @@ import ufl
 from typing_extensions import Literal
 
 from .control_variable_handler import ControlVariableHandler
-from ..verification import control_gradient_test
 from ..cost_functional import ReducedCostFunctional
 from ..line_search import ArmijoLineSearch
 from ..optimization_algorithms import (
@@ -40,6 +39,7 @@ from ..optimization_algorithms import (
     NewtonMethod,
 )
 from ..optimization_problem import OptimizationProblem
+from ..verification import control_gradient_test
 from ..._exceptions import InputError
 from ..._forms import ControlFormHandler
 from ..._pde_problems import (
