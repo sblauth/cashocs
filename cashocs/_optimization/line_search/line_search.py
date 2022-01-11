@@ -61,17 +61,15 @@ class LineSearch(abc.ABC):
         solver: OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
-    ) -> int:
+    ) -> None:
 
-        out = self.search(solver, search_direction, has_curvature_info)
+        self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
-
-        return out
 
     @abc.abstractmethod
     def search(
         self, solver, search_direction: List[fenics.Function], has_curvature_info: bool
-    ) -> int:
+    ) -> None:
         pass
 
     def post_line_search(self) -> None:

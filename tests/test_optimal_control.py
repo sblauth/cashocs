@@ -27,7 +27,7 @@ import pytest
 from fenics import *
 
 import cashocs
-from cashocs._exceptions import InputError
+from cashocs._exceptions import InputError, NotConvergedError
 
 
 rng = np.random.RandomState(300696)
@@ -679,3 +679,13 @@ def test_iterative_gradient():
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
+
+
+def test_small_stepsize1():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("OptimizationRoutine", "initial_stepsize", "1e-8")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    with pytest.raises(NotConvergedError) as e_info:
+        ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=2)
+    assert "Failed to compute a feasible Armijo step." in str(e_info.value)

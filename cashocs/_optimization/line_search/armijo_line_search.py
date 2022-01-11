@@ -54,7 +54,7 @@ class ArmijoLineSearch(LineSearch):
         solver: OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
-    ) -> int:
+    ) -> None:
 
         self.search_direction_inf = np.max(
             [
@@ -75,27 +75,20 @@ class ArmijoLineSearch(LineSearch):
 
             if solver.iteration >= solver.maximum_iterations:
                 solver.remeshing_its = True
-                exit_code = -4
-                return exit_code
+                return None
 
             if self.stepsize * self.search_direction_inf <= 1e-8:
                 error("Stepsize too small.")
-                # TODO: Investigate: Do we need this?
-                self.optimization_variable_handler.revert_variable_update()
                 solver.line_search_broken = True
-                exit_code = -1
-                return exit_code
+                return None
             elif (
                 not self.is_newton_like
                 and not self.is_newton
                 and self.stepsize / self.armijo_stepsize_initial <= 1e-8
             ):
                 error("Stepsize too small.")
-                # TODO: Investigate: Do we need this?
-                self.optimization_variable_handler.revert_variable_update()
                 solver.line_search_broken = True
-                exit_code = -1
-                return exit_code
+                return None
 
             if self.is_shape_problem:
                 decrease_measure_w_o_step = (
@@ -129,12 +122,10 @@ class ArmijoLineSearch(LineSearch):
             ):
                 if self.optimization_variable_handler.requires_remeshing():
                     solver.requires_remeshing = True
-                    exit_code = -3
-                    return exit_code
+                    return None
 
                 if solver.iteration == 0:
                     self.armijo_stepsize_initial = self.stepsize
-                exit_code = 0
                 break
 
             else:
@@ -146,4 +137,4 @@ class ArmijoLineSearch(LineSearch):
         if not has_curvature_info:
             self.stepsize *= self.beta_armijo
 
-        return exit_code
+        return None

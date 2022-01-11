@@ -27,6 +27,7 @@ import pytest
 from fenics import *
 
 import cashocs
+from cashocs._exceptions import NotConvergedError
 
 
 def eps(u):
@@ -1018,3 +1019,15 @@ def test_check_config_list():
             "Key shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
             in str(e_info.value)
         )
+
+
+def test_stepsize2():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("OptimizationRoutine", "initial_stepsize", "1.0")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    with pytest.raises(NotConvergedError) as e_info:
+        sop.solve("cg", rtol=1e-3, atol=0.0, max_iter=1000)
+    assert "Failed to compute a feasible Armijo step." in str(e_info.value)

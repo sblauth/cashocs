@@ -231,14 +231,12 @@ class DeformationHandler:
             else:
                 self.old_coordinates = self.mesh.coordinates().copy()
                 self.coordinates += coordinate_transformation
-                # fenics.ALE.move(self.mesh, transformation)
                 self.bbtree.build(self.mesh)
 
                 return self.__test_a_posteriori()
         else:
             self.old_coordinates = self.mesh.coordinates().copy()
             self.coordinates += coordinate_transformation
-            # fenics.ALE.move(self.mesh, transformation)
             self.bbtree.build(self.mesh)
 
             return self.__test_a_posteriori()
