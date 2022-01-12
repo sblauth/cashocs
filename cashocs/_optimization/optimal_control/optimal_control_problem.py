@@ -55,7 +55,6 @@ from ...utils import (
 )
 
 
-
 class OptimalControlProblem(OptimizationProblem):
     """Implements an optimal control problem.
 
@@ -251,7 +250,6 @@ class OptimalControlProblem(OptimizationProblem):
         # recast floats into functions for compatibility
         temp_constraints = self.control_constraints[:]
         self.control_constraints = []
-        wrong_type = False
         for idx, pair in enumerate(temp_constraints):
             if isinstance(pair[0], (float, int)):
                 lower_bound = fenics.Function(self.controls[idx].function_space())

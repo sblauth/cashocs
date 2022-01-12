@@ -42,7 +42,6 @@ from .._optimization.shape_optimization.shape_optimization_problem import (
 from ..utils import enlist
 
 
-
 class ConstrainedOptimizationProblem(abc.ABC):
     """A PDE constrained optimization problem with additional equality and inequality constraints."""
 
@@ -242,13 +241,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
 
         self.rtol = inner_rtol or tol
-
-        if inner_atol is not None:
-            atol = inner_atol
-        else:
-            if self.iterations == 1:
-                self.initial_norm = np.sqrt(ocp.gradient_problem.gradient_norm_squared)
-            atol = self.initial_norm * tol / 10.0
 
     def _pre_hook(self) -> None:
         pass
