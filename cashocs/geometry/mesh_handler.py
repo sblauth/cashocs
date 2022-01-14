@@ -97,7 +97,8 @@ class _MeshHandler:
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             warning(
-                "You are using a lower remesh tolerance (tol_lower) close to the upper one (tol_upper). This may slow down the optimization considerably."
+                "You are using a lower remesh tolerance (tol_lower) close to the upper "
+                "one (tol_upper). This may slow down the optimization considerably."
             )
 
         self.mesh_quality_measure = self.config.get(
@@ -151,7 +152,7 @@ class _MeshHandler:
             subprocess.run(["cp", self.gmsh_file, self.gmsh_file_init], check=True)
             self.gmsh_file = self.gmsh_file_init
 
-    def move_mesh(self, transformation: fenics.Function) -> None:
+    def move_mesh(self, transformation: fenics.Function) -> bool:
         r"""Transforms the mesh by perturbation of identity.
 
         Moves the mesh according to the deformation given by
@@ -399,7 +400,8 @@ class _MeshHandler:
                     if line[:5] == "Mesh.":
                         file.write(line)
 
-    def __remove_gmsh_parametrizations(self, mesh_file: str) -> None:
+    @staticmethod
+    def _remove_gmsh_parametrizations(mesh_file: str) -> None:
         """Removes the parametrizations section from a Gmsh file.
 
         This is needed in case several remeshing iterations have to be
@@ -437,7 +439,7 @@ class _MeshHandler:
         subprocess.run(["mv", temp_location, mesh_file], check=True)
 
     def clean_previous_gmsh_files(self) -> None:
-        """Removes the gmsh files from the previous remeshing iterations to save disk space
+        """Removes the gmsh files from the previous remeshing iterations to save space
 
         Returns
         -------
@@ -504,11 +506,11 @@ class _MeshHandler:
 
         if self.do_remesh:
             self.remesh_counter += 1
-            self.temp_file = (
+            temp_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
-            write_out_mesh(self.mesh, self.gmsh_file, self.temp_file)
-            self.__generate_remesh_geo(self.temp_file)
+            write_out_mesh(self.mesh, self.gmsh_file, temp_file)
+            self.__generate_remesh_geo(temp_file)
 
             # save the output dict (without the last entries since they are "remeshed")
             self.temp_dict["output_dict"] = {}
@@ -532,16 +534,14 @@ class _MeshHandler:
 
             dim = self.mesh.geometric_dimension()
 
-            self.new_gmsh_file = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
-            )
+            new_gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
 
             gmsh_cmd_list = [
                 "gmsh",
                 self.remesh_geo_file,
                 f"-{int(dim):d}",
                 "-o",
-                self.new_gmsh_file,
+                new_gmsh_file,
             ]
             if not self.config.getboolean("Mesh", "show_gmsh_output", fallback=False):
                 subprocess.run(
@@ -552,25 +552,23 @@ class _MeshHandler:
             else:
                 subprocess.run(gmsh_cmd_list, check=True)
 
-            self.__remove_gmsh_parametrizations(self.new_gmsh_file)
+            self._remove_gmsh_parametrizations(new_gmsh_file)
 
             self.temp_dict["remesh_counter"] = self.remesh_counter
             self.temp_dict["remesh_directory"] = self.remesh_directory
             self.temp_dict["result_dir"] = solver.output_manager.result_dir
 
-            self.new_xdmf_file = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
-            )
+            new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
             subprocess.run(
-                ["cashocs-convert", self.new_gmsh_file, self.new_xdmf_file],
+                ["cashocs-convert", new_gmsh_file, new_xdmf_file],
                 check=True,
             )
 
             self.clean_previous_gmsh_files()
 
-            self.temp_dict["mesh_file"] = self.new_xdmf_file
-            self.temp_dict["gmsh_file"] = self.new_gmsh_file
+            self.temp_dict["mesh_file"] = new_xdmf_file
+            self.temp_dict["gmsh_file"] = new_gmsh_file
 
             self.temp_dict["OptimizationRoutine"]["iteration_counter"] = (
                 solver.iteration + 1
@@ -579,9 +577,9 @@ class _MeshHandler:
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 
-            self.temp_dir = self.temp_dict["temp_dir"]
+            temp_dir = self.temp_dict["temp_dir"]
 
-            with open(f"{self.temp_dir}/temp_dict.json", "w") as file:
+            with open(f"{temp_dir}/temp_dict.json", "w") as file:
                 json.dump(self.temp_dict, file)
 
             def filter_sys_argv():  # pragma: no cover
@@ -606,7 +604,7 @@ class _MeshHandler:
                 elif len(idx_cashocs_remesh_flag) == 1:
                     arg_list.pop(idx_cashocs_remesh_flag[0])
 
-                idx_temp_dir = [i for i, s in enumerate(arg_list) if s == self.temp_dir]
+                idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
                 if len(idx_temp_dir) > 1:
                     raise InputError(
                         "Command line options",
@@ -637,9 +635,10 @@ class _MeshHandler:
                     + filter_sys_argv()
                     + ["--cashocs_remesh"]
                     + ["--temp_dir"]
-                    + [self.temp_dir],
+                    + [temp_dir],
                 )
             else:
                 raise CashocsDebugException(
-                    "Debug flag detected. Restart of script with remeshed geometry is cancelled."
+                    "Debug flag detected. "
+                    "Restart of script with remeshed geometry is cancelled."
                 )

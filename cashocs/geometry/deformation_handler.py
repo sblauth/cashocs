@@ -229,7 +229,8 @@ class DeformationHandler:
                 dof_transformation = transformation
             if not self.__test_a_priori(dof_transformation):
                 debug(
-                    "Mesh transformation rejected due to a priori check. \nReason: Transformation would result in inverted mesh elements."
+                    "Mesh transformation rejected due to a priori check.\n"
+                    "Reason: Transformation would result in inverted mesh elements."
                 )
                 return False
             else:
@@ -264,7 +265,10 @@ class DeformationHandler:
             raise InputError(
                 "cashocs.geometry.DeformationHandler.coordinate_to_dof",
                 "coordinate_deformation",
-                "Shape of coordinate deformation has to be the same as self.mesh.coordinates().shape",
+                (
+                    "Shape of coordinate deformation has to be the same as "
+                    "self.mesh.coordinates().shape"
+                ),
             )
 
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
@@ -274,7 +278,7 @@ class DeformationHandler:
         return dof_deformation
 
     def dof_to_coordinate(self, dof_deformation: fenics.Function) -> np.ndarray:
-        """Converts a deformation vector field (dof-based) to a coordinate based deformation.
+        """Converts a deformation vector field to a coordinate based deformation.
 
         Parameters
         ----------

@@ -50,11 +50,12 @@ class AdjointProblem(PDEProblem):
         """
         Parameters
         ----------
-        form_handler : FormHandler
+        form_handler
             The FormHandler object for the optimization problem.
-        state_problem : StateProblem
-            The StateProblem object used to get the point where we linearize the problem.
-        temp_dict : dict
+        state_problem
+            The StateProblem object used to get the point where we linearize the
+            problem.
+        temp_dict
             A dictionary used for reinitializations when remeshing is performed.
         """
 
@@ -79,18 +80,18 @@ class AdjointProblem(PDEProblem):
             "StateSystem", "picard_verbose", fallback=False
         )
 
-        self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
+        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
         _setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
         self.rhs_tensors = [
-            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.lhs_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
         self.res_j_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
         if self.form_handler.is_shape_problem and self.temp_dict is not None:

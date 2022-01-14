@@ -101,15 +101,15 @@ def import_mesh(
 
     Notes
     -----
-    In case the boundaries in the Gmsh .msh file are not only marked with numbers (as pyhsical
-    groups), but also with names (i.e. strings), these strings can be used with the integration
-    measures ``dx`` and ``ds`` returned by this method. E.g., if one specified the
-    following in a 2D Gmsh .geo file ::
+    In case the boundaries in the Gmsh .msh file are not only marked with numbers (as
+    pyhsical groups), but also with names (i.e. strings), these strings can be used with
+    the integration measures ``dx`` and ``ds`` returned by this method. E.g., if one
+    specified the following in a 2D Gmsh .geo file ::
 
         Physical Surface("domain", 1) = {i,j,k};
 
-    where i,j,k are representative for some integers, then this can be used in the measure
-    ``dx`` (as we are 2D) as follows. The command ::
+    where i,j,k are representative for some integers, then this can be used in the
+    measure ``dx`` (as we are 2D) as follows. The command ::
 
         dx(1)
 
@@ -129,7 +129,7 @@ def import_mesh(
     if isinstance(input_arg, str):
         mesh_file = input_arg
     elif isinstance(input_arg, configparser.ConfigParser):
-        ### overloading for remeshing
+        # overloading for remeshing
         if not input_arg.getboolean("Mesh", "remesh", fallback=False):
             mesh_file = input_arg.get("Mesh", "mesh_file")
         else:
@@ -144,7 +144,10 @@ def import_mesh(
         raise InputError(
             "cashocs.geometry.import_mesh",
             "input_arg",
-            "Not a valid argument for import_mesh. Has to be either a path to a mesh file (str) or a config.",
+            (
+                "Not a valid argument for import_mesh. "
+                "Has to be either a path to a mesh file (str) or a config."
+            ),
         )
 
     file_string = mesh_file[:-5]
@@ -195,7 +198,8 @@ def import_mesh(
     end_time = time.time()
     info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")
     info(
-        f"Mesh contains {mesh.num_vertices():,} vertices and {mesh.num_cells():,} cells of type {mesh.ufl_cell().cellname()}.\n"
+        f"Mesh contains {mesh.num_vertices():,} vertices"
+        f" and {mesh.num_cells():,} cells of type {mesh.ufl_cell().cellname()}.\n"
     )
 
     # Add an attribute to the mesh to show with what procedure it was generated
@@ -215,7 +219,9 @@ def import_mesh(
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
             warning(
-                "You are using a lower remesh tolerance (tol_lower) close to the upper one (tol_upper). This may slow down the optimization considerably."
+                "You are using a lower remesh tolerance (tol_lower) close to "
+                "the upper one (tol_upper). This may slow down the "
+                "optimization considerably."
             )
 
         mesh_quality_measure = input_arg.get(
@@ -232,16 +238,20 @@ def import_mesh(
                 raise InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
-                    "The quality of the mesh file you have specified is not sufficient for evaluating the cost functional.\n"
-                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
+                    "The quality of the mesh file you have specified is not "
+                    "sufficient for evaluating the cost functional.\n"
+                    f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
                 raise InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
-                    "The quality of the mesh file you have specified is not sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
+                    "The quality of the mesh file you have specified is not "
+                    "sufficient for computing the shape gradient.\n "
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
         else:
@@ -250,8 +260,10 @@ def import_mesh(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing is not sufficient for evaluating the cost functional.\n"
-                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_lower:.3e}.",
+                    "The quality of the mesh file generated through remeshing is "
+                    "not sufficient for evaluating the cost functional.\n"
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
@@ -259,8 +271,10 @@ def import_mesh(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing is not sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to be at least {mesh_quality_tol_upper:.3e}.",
+                    "The quality of the mesh file generated through remeshing "
+                    "is not sufficient for computing the shape gradient.\n "
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_upper:.3e}.",
                 )
 
     return mesh, subdomains, boundaries, dx, ds, dS
@@ -534,7 +548,8 @@ def regular_box_mesh(
         raise InputError(
             "cashocs.geometry.regular_box_mesh",
             "S_z",
-            "Incorrect input for the z-coordinate. S_z has to be smaller than E_z, or only one of them is specified.",
+            "Incorrect input for the z-coordinate. S_z has to be smaller than E_z, "
+            "or only one of them is specified.",
         )
 
     if S_z is None:

@@ -86,6 +86,19 @@ class FormHandler(abc.ABC):
 
         self.gradient = None
         self.shape_regularization: Optional[ShapeRegularization] = None
+        self.control_dim = None
+        self.riesz_projection_matrices = None
+        self.gradient_forms_rhs = None
+        self.uses_custom_scalar_product = False
+        self.shape_derivative = None
+        self.bcs_shape = None
+        self.assembler = None
+        self.fe_shape_derivative_vector = None
+        self.use_fixed_dimensions = False
+        self.fixed_indices = None
+        self.scalar_product_matrix = None
+        self.test_vector_field = None
+        self.mu_lame = None
 
         self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
         self.cost_functional_shift = 0.0

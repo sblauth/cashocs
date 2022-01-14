@@ -50,23 +50,25 @@ class ControlGradientProblem(PDEProblem):
         """
         Parameters
         ----------
-        form_handler : ControlFormHandler
+        form_handler
             The FormHandler object of the optimization problem.
-        state_problem : StateProblem
+        state_problem
             The StateProblem object used to solve the state equations.
-        adjoint_problem : AdjointProblem
+        adjoint_problem
             The AdjointProblem used to solve the adjoint equations.
         """
 
         super().__init__(form_handler)
 
+        self.form_handler: ControlFormHandler
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
         self.gradient = self.form_handler.gradient
+        self.gradient_norm_squared = 1.0
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
-        self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.control_dim)]
+        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.control_dim)]
 
         gradient_tol = self.config.getfloat(
             "OptimizationRoutine", "gradient_tol", fallback=1e-9
@@ -76,6 +78,7 @@ class ControlGradientProblem(PDEProblem):
             "OptimizationRoutine", "gradient_method", fallback="direct"
         )
 
+        option = []
         if gradient_method == "direct":
             option = [
                 ["ksp_type", "preonly"],
@@ -103,11 +106,11 @@ class ControlGradientProblem(PDEProblem):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
         self.lhs_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.control_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.control_dim)
         ]
 
     def solve(self) -> List[fenics.Function]:
-        """Solves the Riesz projection problem to obtain the gradient of the (reduced) cost functional.
+        """Solves the Riesz projection problem to obtain the gradient
 
         Returns
         -------

@@ -18,10 +18,12 @@
 """Mesh generation and import tools.
 
 This module consists of tools for for the fast generation
-or import of meshes into fenics. The :py:func:`import_mesh <cashocs.geometry.import_mesh>` function
-is used to import (converted) GMSH mesh files, and the :py:func:`regular_mesh <cashocs.geometry.regular_mesh>`
-and :py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands create 2D and 3D box meshes
-which are great for testing.
+or import of meshes into fenics. The
+:py:func:`import_mesh <cashocs.geometry.import_mesh>` function is used to import
+(converted) GMSH mesh files, and the
+:py:func:`regular_mesh <cashocs.geometry.regular_mesh>` and
+:py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands create 2D and
+3D box meshes which are great for testing.
 """
 
 from .boundary_distance import compute_boundary_distance

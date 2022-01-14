@@ -104,7 +104,7 @@ class ShapeGradientProblem(PDEProblem):
             self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
             and not self.form_handler.uses_custom_scalar_product
         ):
-            self.p_laplace_projector = _PLaplacProjector(
+            self.p_laplace_projector = _PLaplaceProjector(
                 self,
                 self.gradient,
                 self.form_handler.shape_derivative,
@@ -113,12 +113,13 @@ class ShapeGradientProblem(PDEProblem):
             )
 
     def solve(self) -> fenics.Function:
-        """Solves the Riesz projection problem to obtain the shape gradient of the cost functional.
+        """Solves the Riesz projection problem to obtain the shape gradient
 
         Returns
         -------
         fenics.Function
-            The function representing the shape gradient of the (reduced) cost functional.
+            The function representing the shape gradient of the (reduced) cost
+            functional.
         """
 
         self.state_problem.solve()
@@ -169,7 +170,7 @@ class ShapeGradientProblem(PDEProblem):
         return self.gradient
 
 
-class _PLaplacProjector:
+class _PLaplaceProjector:
     """A class for computing the gradient deformation with a p-Laplace projection"""
 
     def __init__(

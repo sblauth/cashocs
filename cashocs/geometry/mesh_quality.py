@@ -51,20 +51,20 @@ def compute_mesh_quality(
 
     Parameters
     ----------
-    mesh : fenics.Mesh
+    mesh
         The mesh whose quality shall be computed
-    type : {'min', 'minimum', 'avg', 'average'}, optional
+    type
         The type of measurement for the mesh quality, either minimum quality or average
         quality over all mesh cells, default is 'min'
-    measure : {'skewness', 'maximum_angle', 'radius_ratios', 'condition_number'}, optional
-        The type of quality measure which is used to compute the quality measure, default
-        is 'skewness'
+    measure
+        The type of quality measure which is used to compute the quality measure,
+        default is 'skewness'
 
     Returns
     -------
     float
-        The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst, and
-        1 the best possible quality.
+        The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
+        and 1 the best possible quality.
     """
 
     if type in ["min", "minimum"]:
@@ -122,169 +122,169 @@ class MeshQuality:
     """
 
     _cpp_code_mesh_quality = """
-			#include <pybind11/pybind11.h>
-			#include <pybind11/eigen.h>
-			namespace py = pybind11;
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+namespace py = pybind11;
 
-			#include <dolfin/mesh/Mesh.h>
-			#include <dolfin/mesh/Vertex.h>
-			#include <dolfin/mesh/MeshFunction.h>
-			#include <dolfin/mesh/Cell.h>
-			#include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Vertex.h>
 
-			using namespace dolfin;
-
-
-			void angles_triangle(const Cell& cell, std::vector<double>& angs)
-			{
-			  const Mesh& mesh = cell.mesh();
-			  angs.resize(3);
-			  const std::size_t i0 = cell.entities(0)[0];
-			  const std::size_t i1 = cell.entities(0)[1];
-			  const std::size_t i2 = cell.entities(0)[2];
-
-			  const Point p0 = Vertex(mesh, i0).point();
-			  const Point p1 = Vertex(mesh, i1).point();
-			  const Point p2 = Vertex(mesh, i2).point();
-			  Point e0 = p1 - p0;
-			  Point e1 = p2 - p0;
-			  Point e2 = p2 - p1;
-
-			  e0 /= e0.norm();
-			  e1 /= e1.norm();
-			  e2 /= e2.norm();
-
-			  angs[0] = acos(e0.dot(e1));
-			  angs[1] = acos(e0.dot(e2));
-			  angs[2] = acos(e1.dot(e2));
-			}
+using namespace dolfin;
 
 
+void angles_triangle(const Cell& cell, std::vector<double>& angs)
+{
+  const Mesh& mesh = cell.mesh();
+  angs.resize(3);
+  const std::size_t i0 = cell.entities(0)[0];
+  const std::size_t i1 = cell.entities(0)[1];
+  const std::size_t i2 = cell.entities(0)[2];
 
-			void dihedral_angles(const Cell& cell, std::vector<double>& angs)
-			{
-			  const Mesh& mesh = cell.mesh();
-			  angs.resize(6);
+  const Point p0 = Vertex(mesh, i0).point();
+  const Point p1 = Vertex(mesh, i1).point();
+  const Point p2 = Vertex(mesh, i2).point();
+  Point e0 = p1 - p0;
+  Point e1 = p2 - p0;
+  Point e2 = p2 - p1;
 
-			  const std::size_t i0 = cell.entities(0)[0];
-			  const std::size_t i1 = cell.entities(0)[1];
-			  const std::size_t i2 = cell.entities(0)[2];
-			  const std::size_t i3 = cell.entities(0)[3];
+  e0 /= e0.norm();
+  e1 /= e1.norm();
+  e2 /= e2.norm();
 
-			  const Point p0 = Vertex(mesh, i0).point();
-			  const Point p1 = Vertex(mesh, i1).point();
-			  const Point p2 = Vertex(mesh, i2).point();
-			  const Point p3 = Vertex(mesh, i3).point();
-
-			  const Point e0 = p1 - p0;
-			  const Point e1 = p2 - p0;
-			  const Point e2 = p3 - p0;
-			  const Point e3 = p2 - p1;
-			  const Point e4 = p3 - p1;
-
-			  Point n0 = e0.cross(e1);
-			  Point n1 = e0.cross(e2);
-			  Point n2 = e1.cross(e2);
-			  Point n3 = e3.cross(e4);
-
-			  n0 /= n0.norm();
-			  n1 /= n1.norm();
-			  n2 /= n2.norm();
-			  n3 /= n3.norm();
-
-			  angs[0] = acos(n0.dot(n1));
-			  angs[1] = acos(-n0.dot(n2));
-			  angs[2] = acos(n1.dot(n2));
-			  angs[3] = acos(n0.dot(n3));
-			  angs[4] = acos(n1.dot(-n3));
-			  angs[5] = acos(n2.dot(n3));
-			}
+  angs[0] = acos(e0.dot(e1));
+  angs[1] = acos(e0.dot(e2));
+  angs[2] = acos(e1.dot(e2));
+}
 
 
 
-			dolfin::MeshFunction<double>
-			skewness(std::shared_ptr<const Mesh> mesh)
-			{
-			  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+void dihedral_angles(const Cell& cell, std::vector<double>& angs)
+{
+  const Mesh& mesh = cell.mesh();
+  angs.resize(6);
 
-			  double opt_angle;
-			  std::vector<double> angs;
-			  std::vector<double> quals;
+  const std::size_t i0 = cell.entities(0)[0];
+  const std::size_t i1 = cell.entities(0)[1];
+  const std::size_t i2 = cell.entities(0)[2];
+  const std::size_t i3 = cell.entities(0)[3];
 
-			  for (CellIterator cell(*mesh); !cell.end(); ++cell)
-			  {
-				if (cell->dim() == 2)
-				{
-				  quals.resize(3);
-				  angles_triangle(*cell, angs);
-				  opt_angle = DOLFIN_PI / 3.0;
-				}
-				else if (cell->dim() == 3)
-				{
-				  quals.resize(6);
-				  dihedral_angles(*cell, angs);
-				  opt_angle = acos(1.0/3.0);
-				}
-				else
-				{
-				  dolfin_error("cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh.");
-				}
+  const Point p0 = Vertex(mesh, i0).point();
+  const Point p1 = Vertex(mesh, i1).point();
+  const Point p2 = Vertex(mesh, i2).point();
+  const Point p3 = Vertex(mesh, i3).point();
 
-				for (unsigned int i = 0; i < angs.size(); ++i)
-				{
-				  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), (opt_angle - angs[i]) / opt_angle);
-				}
-				cf[*cell] = *std::min_element(quals.begin(), quals.end());
-			  }
-			  return cf;
-			}
+  const Point e0 = p1 - p0;
+  const Point e1 = p2 - p0;
+  const Point e2 = p3 - p0;
+  const Point e3 = p2 - p1;
+  const Point e4 = p3 - p1;
+
+  Point n0 = e0.cross(e1);
+  Point n1 = e0.cross(e2);
+  Point n2 = e1.cross(e2);
+  Point n3 = e3.cross(e4);
+
+  n0 /= n0.norm();
+  n1 /= n1.norm();
+  n2 /= n2.norm();
+  n3 /= n3.norm();
+
+  angs[0] = acos(n0.dot(n1));
+  angs[1] = acos(-n0.dot(n2));
+  angs[2] = acos(n1.dot(n2));
+  angs[3] = acos(n0.dot(n3));
+  angs[4] = acos(n1.dot(-n3));
+  angs[5] = acos(n2.dot(n3));
+}
 
 
 
-			dolfin::MeshFunction<double>
-			maximum_angle(std::shared_ptr<const Mesh> mesh)
-			{
-			  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+dolfin::MeshFunction<double>
+skewness(std::shared_ptr<const Mesh> mesh)
+{
+  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
 
-			  double opt_angle;
-			  std::vector<double> angs;
-			  std::vector<double> quals;
+  double opt_angle;
+  std::vector<double> angs;
+  std::vector<double> quals;
 
-			  for (CellIterator cell(*mesh); !cell.end(); ++cell)
-			  {
-				if (cell->dim() == 2)
-				{
-				  quals.resize(3);
-				  angles_triangle(*cell, angs);
-				  opt_angle = DOLFIN_PI / 3.0;
-				}
-				else if (cell->dim() == 3)
-				{
-				  quals.resize(6);
-				  dihedral_angles(*cell, angs);
-				  opt_angle = acos(1.0/3.0);
-				}
-				else
-				{
-				  dolfin_error("cashocs_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh.");
-				}
+  for (CellIterator cell(*mesh); !cell.end(); ++cell)
+  {
+    if (cell->dim() == 2)
+    {
+      quals.resize(3);
+      angles_triangle(*cell, angs);
+      opt_angle = DOLFIN_PI / 3.0;
+    }
+    else if (cell->dim() == 3)
+    {
+      quals.resize(6);
+      dihedral_angles(*cell, angs);
+      opt_angle = acos(1.0/3.0);
+    }
+    else
+    {
+      dolfin_error("cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh.");
+    }
 
-				for (unsigned int i = 0; i < angs.size(); ++i)
-				{
-				  quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
-				}
-				cf[*cell] = *std::min_element(quals.begin(), quals.end());
-			  }
-			  return cf;
-			}
+    for (unsigned int i = 0; i < angs.size(); ++i)
+    {
+      quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), (opt_angle - angs[i]) / opt_angle);
+    }
+    cf[*cell] = *std::min_element(quals.begin(), quals.end());
+  }
+  return cf;
+}
 
-			PYBIND11_MODULE(SIGNATURE, m)
-			{
-			  m.def("skewness", &skewness);
-			  m.def("maximum_angle", &maximum_angle);
-			}
 
-		"""
+
+dolfin::MeshFunction<double>
+maximum_angle(std::shared_ptr<const Mesh> mesh)
+{
+  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+
+  double opt_angle;
+  std::vector<double> angs;
+  std::vector<double> quals;
+
+  for (CellIterator cell(*mesh); !cell.end(); ++cell)
+  {
+    if (cell->dim() == 2)
+    {
+      quals.resize(3);
+      angles_triangle(*cell, angs);
+      opt_angle = DOLFIN_PI / 3.0;
+    }
+    else if (cell->dim() == 3)
+    {
+      quals.resize(6);
+      dihedral_angles(*cell, angs);
+      opt_angle = acos(1.0/3.0);
+    }
+    else
+    {
+      dolfin_error("cashocs_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh.");
+    }
+
+    for (unsigned int i = 0; i < angs.size(); ++i)
+    {
+      quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
+    }
+    cf[*cell] = *std::min_element(quals.begin(), quals.end());
+  }
+  return cf;
+}
+
+PYBIND11_MODULE(SIGNATURE, m)
+{
+  m.def("skewness", &skewness);
+  m.def("maximum_angle", &maximum_angle);
+}
+
+"""
     _quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
 
     def __init__(self) -> None:
@@ -303,7 +303,10 @@ class MeshQuality:
         element. The skewness corresponding to some (dihedral) angle
         :math:`\alpha` is defined as
 
-        .. math:: 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+        .. math::
+
+            1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \
+            \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 
         where :math:`\alpha^*` is the corresponding angle of the reference
         element. To compute the quality measure, the minimum of this expression
@@ -316,8 +319,7 @@ class MeshQuality:
 
         Returns
         -------
-        float
-            The skewness of the mesh.
+        The skewness of the mesh.
         """
 
         return np.min(cls._quality_object.skewness(mesh).array())

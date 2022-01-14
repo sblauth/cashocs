@@ -81,16 +81,16 @@ class BaseHessianProblem(abc.ABC):
         ]
 
         self.state_rhs_tensors = [
-            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.state_lhs_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
         self.adjoint_rhs_tensors = [
-            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.adjoint_lhs_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
         self.state_dim = self.form_handler.state_dim
@@ -133,18 +133,22 @@ class BaseHessianProblem(abc.ABC):
             "StateSystem", "picard_verbose", fallback=False
         )
 
+        self.states_prime = None
+        self.adjoints_prime = None
+        self.bcs_list_ad = None
+
         self.no_sensitivity_solves = 0
         self.state_ksps = [
-            PETSc.KSP().create() for i in range(self.form_handler.state_dim)
+            PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
         _setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
         self.adjoint_ksps = [
-            PETSc.KSP().create() for i in range(self.form_handler.state_dim)
+            PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
         _setup_petsc_options(self.adjoint_ksps, self.form_handler.adjoint_ksp_options)
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
-        self.ksps = [PETSc.KSP().create() for i in range(self.control_dim)]
+        self.ksps = [PETSc.KSP().create() for _ in range(self.control_dim)]
 
         option = [
             ["ksp_type", "cg"],
@@ -196,30 +200,30 @@ class BaseHessianProblem(abc.ABC):
         if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 
             for i in range(self.state_dim):
-                A, b = _assemble_petsc_system(
+                system_matrix, system_rhs = _assemble_petsc_system(
                     self.form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
                 )
                 _solve_linear_problem(
                     self.state_ksps[i],
-                    A,
-                    b,
+                    system_matrix,
+                    system_rhs,
                     self.states_prime[i].vector().vec(),
                     self.form_handler.state_ksp_options[i],
                 )
                 self.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
-                A, b = _assemble_petsc_system(
+                system_matrix, system_rhs = _assemble_petsc_system(
                     self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i],
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
                 )
                 _solve_linear_problem(
                     self.adjoint_ksps[-1 - i],
-                    A,
-                    b,
+                    system_matrix,
+                    system_rhs,
                     self.adjoints_prime[-1 - i].vector().vec(),
                     self.form_handler.adjoint_ksp_options[-1 - i],
                 )
@@ -437,8 +441,8 @@ class HessianProblem(BaseHessianProblem):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
-        self.rsold = self.form_handler.scalar_product(self.residual, self.residual)
-        self.eps_0 = np.sqrt(self.rsold)
+        rsold = self.form_handler.scalar_product(self.residual, self.residual)
+        eps_0 = np.sqrt(rsold)
 
         for i in range(self.max_it_inner_newton):
 
@@ -451,30 +455,26 @@ class HessianProblem(BaseHessianProblem):
             self.form_handler.restrict_to_inactive_set(self.q, self.temp2)
             sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
             sp_val = sp_val1 + sp_val2
-            self.alpha = self.rsold / sp_val
+            alpha = rsold / sp_val
 
             for j in range(self.control_dim):
                 self.delta_control[j].vector().vec().axpy(
-                    self.alpha, self.p[j].vector().vec()
+                    alpha, self.p[j].vector().vec()
                 )
-                self.residual[j].vector().vec().axpy(
-                    -self.alpha, self.q[j].vector().vec()
-                )
+                self.residual[j].vector().vec().axpy(-alpha, self.q[j].vector().vec())
 
-            self.rsnew = self.form_handler.scalar_product(self.residual, self.residual)
-            self.eps = np.sqrt(self.rsnew)
-            debug(f"Residual of the CG method: {self.eps/self.eps_0:.3e} (relative)")
-            if self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0:
+            rsnew = self.form_handler.scalar_product(self.residual, self.residual)
+            eps = np.sqrt(rsnew)
+            debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
+            if eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0:
                 break
 
-            self.beta = self.rsnew / self.rsold
+            beta = rsnew / rsold
 
             for j in range(self.control_dim):
-                self.p[j].vector().vec().aypx(
-                    self.beta, self.residual[j].vector().vec()
-                )
+                self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
 
-            self.rsold = self.rsnew
+            rsold = rsnew
 
     def cr(self, idx_active: Optional[List[int]] = None) -> None:
         """Solves the (truncated) Newton step with a CR method
@@ -493,9 +493,7 @@ class HessianProblem(BaseHessianProblem):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
 
-        self.eps_0 = np.sqrt(
-            self.form_handler.scalar_product(self.residual, self.residual)
-        )
+        eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
         self.reduced_hessian_application(self.residual, self.s)
 
@@ -509,7 +507,7 @@ class HessianProblem(BaseHessianProblem):
         self.form_handler.restrict_to_inactive_set(self.s, self.temp2)
         sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
 
-        self.rAr = sp_val1 + sp_val2
+        rar = sp_val1 + sp_val2
 
         for i in range(self.max_it_inner_newton):
 
@@ -519,22 +517,20 @@ class HessianProblem(BaseHessianProblem):
             denom2 = self.form_handler.scalar_product(self.temp2, self.temp2)
             denominator = denom1 + denom2
 
-            self.alpha = self.rAr / denominator
+            alpha = rar / denominator
 
             for j in range(self.control_dim):
                 self.delta_control[j].vector().vec().axpy(
-                    self.alpha, self.p[j].vector().vec()
+                    alpha, self.p[j].vector().vec()
                 )
-                self.residual[j].vector().vec().axpy(
-                    -self.alpha, self.q[j].vector().vec()
-                )
+                self.residual[j].vector().vec().axpy(-alpha, self.q[j].vector().vec())
 
-            self.eps = np.sqrt(
+            eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            debug(f"Residual of the CR method: {self.eps/self.eps_0:.3e} (relative)")
+            debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
             if (
-                self.eps < self.inner_newton_atol + self.inner_newton_rtol * self.eps_0
+                eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0
                 or i == self.max_it_inner_newton - 1
             ):
                 break
@@ -548,13 +544,11 @@ class HessianProblem(BaseHessianProblem):
             self.form_handler.restrict_to_inactive_set(self.s, self.temp2)
             sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
 
-            self.rAr_new = sp_val1 + sp_val2
-            self.beta = self.rAr_new / self.rAr
+            rar_new = sp_val1 + sp_val2
+            beta = rar_new / rar
 
             for j in range(self.control_dim):
-                self.p[j].vector().vec().aypx(
-                    self.beta, self.residual[j].vector().vec()
-                )
-                self.q[j].vector().vec().aypx(self.beta, self.s[j].vector().vec())
+                self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
+                self.q[j].vector().vec().aypx(beta, self.s[j].vector().vec())
 
-            self.rAr = self.rAr_new
+            rar = rar_new

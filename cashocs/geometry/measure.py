@@ -86,17 +86,17 @@ def generate_measure(
 ) -> Union[fenics.Measure, _EmptyMeasure]:
     """Generates a measure based on indices.
 
-    Generates a :py:class:`fenics.MeasureSum` or :py:class:`_EmptyMeasure <cashocs.geometry._EmptyMeasure>`
-    object corresponding to ``measure`` and the subdomains / boundaries specified in idx. This
-    is a convenient shortcut to writing ``dx(1) + dx(2) + dx(3)``
-    in case many measures are involved.
+    Generates a :py:class:`fenics.MeasureSum` or
+    :py:class:`_EmptyMeasure <cashocs.geometry._EmptyMeasure>` object corresponding to
+    ``measure`` and the subdomains / boundaries specified in idx. This is a convenient
+    shortcut to writing ``dx(1) + dx(2) + dx(3)`` in case many measures are involved.
 
     Parameters
     ----------
-    idx : list[int]
+    idx
         A list of indices for the boundary / volume markers that
         define the (new) measure.
-    measure : fenics.Measure
+    measure
         The corresponding UFL measure.
 
     Returns

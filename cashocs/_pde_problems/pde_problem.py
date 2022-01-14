@@ -35,7 +35,7 @@ class PDEProblem(abc.ABC):
         """
         Parameters
         ----------
-        form_handler: FormHandler
+        form_handler
             The form handler for the problem
         """
 

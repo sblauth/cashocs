@@ -47,11 +47,12 @@ class StateProblem(PDEProblem):
 
         Parameters
         ----------
-        form_handler : FormHandler
+        form_handler
             The FormHandler of the optimization problem.
-        initial_guess : list[fenics.Function]
-            An initial guess for the state variables, used to initialize them in each iteration.
-        temp_dict : dict or None, optional
+        initial_guess
+            An initial guess for the state variables, used to initialize them in each
+            iteration.
+        temp_dict
             A dict used for reinitialization when remeshing is performed.
         """
 
@@ -92,12 +93,12 @@ class StateProblem(PDEProblem):
         )
         self.newton_iter = self.config.getint("StateSystem", "newton_iter", fallback=50)
 
-        self.newton_atols = [1 for i in range(self.form_handler.state_dim)]
+        self.newton_atols = [1] * self.form_handler.state_dim
 
-        self.ksps = [PETSc.KSP().create() for i in range(self.form_handler.state_dim)]
+        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
         _setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
-        # adapt the tolerances so that the Newton system can be solved sucessfully
+        # adapt the tolerances so that the Newton system can be solved successfully
         if not self.form_handler.state_is_linear:
             for ksp in self.ksps:
                 ksp.setTolerances(
@@ -105,13 +106,13 @@ class StateProblem(PDEProblem):
                 )
 
         self.rhs_tensors = [
-            fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.lhs_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
         self.res_j_tensors = [
-            fenics.PETScVector() for i in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
         try:
