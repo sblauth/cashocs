@@ -30,7 +30,6 @@ import fenics
 from .._exceptions import InputError
 
 
-
 def enlist(arg: Union[object, List]) -> List:
     """Wraps the input argument into a list, if it isn't a list already.
 
@@ -41,7 +40,7 @@ def enlist(arg: Union[object, List]) -> List:
 
     Returns
     -------
-    list
+    collection
         The object wrapped into a list
 
     """
@@ -163,9 +162,10 @@ def _parse_remesh() -> Tuple[bool, str]:
 
     Returns
     -------
-    bool, str
-        A boolean indicating, whether a remeshing was performed and a string which
-        points to the remeshing directory.
+    bool
+        A boolean indicating, whether a remeshing was performed
+    str
+        A string which points to the remeshing directory.
 
     """
 
@@ -183,7 +183,7 @@ def _parse_remesh() -> Tuple[bool, str]:
     temp_dir = args.temp_dir or None
     cashocs_remesh_flag = True if args.cashocs_remesh else False
 
-    return cashocs_remesh_flag, temp_dir
+    return (cashocs_remesh_flag, temp_dir)
 
 
 def _optimization_algorithm_configuration(

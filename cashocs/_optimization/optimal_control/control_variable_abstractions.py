@@ -28,8 +28,6 @@ import numpy as np
 
 from ..optimization_variable_abstractions import OptimizationVariableAbstractions
 
-
-
 if TYPE_CHECKING:
     from .optimal_control_problem import OptimalControlProblem
 
@@ -161,7 +159,7 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
 
         Parameters
         ----------
-        a : list[fenics.Function]
+        search_direction : list[fenics.Function]
             A function that shall be projected / restricted (will be overwritten)
 
         Returns

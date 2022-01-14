@@ -39,8 +39,6 @@ from ..utils import (
     _min,
 )
 
-
-
 if TYPE_CHECKING:
     from .._optimization.optimization_problem import OptimizationProblem
 

@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-import fenics
+import fenics  # type: ignore
 import numpy as np
 from ufl import replace
 
@@ -36,8 +36,6 @@ from ..utils import (
     _max,
     _min,
 )
-
-
 
 if TYPE_CHECKING:
     from .._optimization.optimal_control import (
@@ -376,7 +374,7 @@ class ControlFormHandler(FormHandler):
                             self.test_functions_control[i],
                         )
 
-    def __compute_newton_forms(self) -> None:
+    def _compute_newton_forms(self) -> None:
         """Calculates the needed forms for the truncated Newton method.
 
         Returns

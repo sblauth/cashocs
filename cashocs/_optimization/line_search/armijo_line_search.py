@@ -28,8 +28,6 @@ import fenics
 from .line_search import LineSearch
 from ..._loggers import error
 
-
-
 if TYPE_CHECKING:
     from ..optimization_algorithms import OptimizationAlgorithm
     from ..optimization_problem import OptimizationProblem
@@ -71,8 +69,10 @@ class ArmijoLineSearch(LineSearch):
         if has_curvature_info:
             self.stepsize = 1.0
 
-        num_decreases = self.optimization_variable_handler.compute_a_priori_decreases(
-            search_direction, self.stepsize
+        num_decreases = (
+            self.optimization_variable_abstractions.compute_a_priori_decreases(
+                search_direction, self.stepsize
+            )
         )
         self.stepsize /= pow(self.beta_armijo, num_decreases)
 
@@ -97,12 +97,12 @@ class ArmijoLineSearch(LineSearch):
 
             if self.is_shape_problem:
                 decrease_measure_w_o_step = (
-                    self.optimization_variable_handler.compute_decrease_measure(
+                    self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
                     )
                 )
             self.stepsize = (
-                self.optimization_variable_handler.update_optimization_variables(
+                self.optimization_variable_abstractions.update_optimization_variables(
                     search_direction, self.stepsize, self.beta_armijo
                 )
             )
@@ -114,7 +114,7 @@ class ArmijoLineSearch(LineSearch):
 
             if self.is_control_problem:
                 decrease_measure = (
-                    self.optimization_variable_handler.compute_decrease_measure(
+                    self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
                     )
                 )
@@ -125,7 +125,7 @@ class ArmijoLineSearch(LineSearch):
                 self.objective_step
                 < current_function_value + self.epsilon_armijo * decrease_measure
             ):
-                if self.optimization_variable_handler.requires_remeshing():
+                if self.optimization_variable_abstractions.requires_remeshing():
                     solver.requires_remeshing = True
                     return None
 
@@ -135,7 +135,7 @@ class ArmijoLineSearch(LineSearch):
 
             else:
                 self.stepsize /= self.beta_armijo
-                self.optimization_variable_handler.revert_variable_update()
+                self.optimization_variable_abstractions.revert_variable_update()
 
         solver.stepsize = self.stepsize
 

@@ -54,7 +54,6 @@ from ..._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
 from ...geometry import _MeshHandler
 
 
-
 class ShapeOptimizationProblem(OptimizationProblem):
     r"""A shape optimization problem.
 
@@ -447,7 +446,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_handler = ShapeVariableAbstractions(self)
+        self.optimization_variable_abstractions = ShapeVariableAbstractions(self)
         self.line_search = ArmijoLineSearch(self)
 
         # TODO: Do not pass the line search (uneccessary)

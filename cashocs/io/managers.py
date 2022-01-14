@@ -31,8 +31,6 @@ import numpy as np
 from .mesh import write_out_mesh
 from .._forms import ControlFormHandler
 
-
-
 if TYPE_CHECKING:
     from .._optimization.optimization_problem import OptimizationProblem
     from .._optimization.optimization_algorithms import OptimizationAlgorithm
@@ -79,7 +77,7 @@ class ResultManager:
         self.output_dict["gradient_norm"].append(solver.relative_norm)
         if solver.form_handler.is_shape_problem:
             self.output_dict["MeshQuality"].append(
-                solver.optimization_variable_handler.mesh_handler.current_mesh_quality
+                solver.optimization_variable_abstractions.mesh_handler.current_mesh_quality
             )
         self.output_dict["stepsize"].append(solver.stepsize)
 
@@ -127,10 +125,10 @@ class HistoryManager:
 
         if solver.form_handler.is_shape_problem:
             mesh_quality = (
-                solver.optimization_variable_handler.mesh_handler.current_mesh_quality
+                solver.optimization_variable_abstractions.mesh_handler.current_mesh_quality
             )
             mesh_quality_measure = (
-                solver.optimization_variable_handler.mesh_handler.mesh_quality_measure
+                solver.optimization_variable_abstractions.mesh_handler.mesh_quality_measure
             )
         else:
             mesh_quality = None
@@ -200,7 +198,7 @@ class TempFileManager:
     def clear_temp_files(self, solver: OptimizationAlgorithm) -> None:
 
         if self.is_shape_problem:
-            mesh_handler = solver.optimization_variable_handler.mesh_handler
+            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if mesh_handler.do_remesh and not self.config.getboolean(
                 "Debug", "remeshing", fallback=False
             ):
@@ -225,10 +223,12 @@ class MeshManager:
     def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
 
         if solver.form_handler.is_shape_problem:
-            if solver.optimization_variable_handler.mesh_handler.save_optimized_mesh:
+            if (
+                solver.optimization_variable_abstractions.mesh_handler.save_optimized_mesh
+            ):
                 write_out_mesh(
-                    solver.optimization_variable_handler.mesh_handler.mesh,
-                    solver.optimization_variable_handler.mesh_handler.gmsh_file,
+                    solver.optimization_variable_abstractions.mesh_handler.mesh,
+                    solver.optimization_variable_abstractions.mesh_handler.gmsh_file,
                     f"{self.result_dir}/optimized_mesh.msh",
                 )
 

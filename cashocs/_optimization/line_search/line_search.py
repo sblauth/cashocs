@@ -29,7 +29,6 @@ import fenics
 from ...utils import _optimization_algorithm_configuration
 
 
-
 if TYPE_CHECKING:
     from ..optimization_problem import OptimizationProblem
     from ..optimization_algorithms import OptimizationAlgorithm
@@ -42,8 +41,8 @@ class LineSearch(abc.ABC):
         self.form_handler = optimization_problem.form_handler
         self.gradient = optimization_problem.gradient
         self.state_problem = optimization_problem.state_problem
-        self.optimization_variable_handler = (
-            optimization_problem.optimization_variable_handler
+        self.optimization_variable_abstractions = (
+            optimization_problem.optimization_variable_abstractions
         )
         self.cost_functional = optimization_problem.reduced_cost_functional
 

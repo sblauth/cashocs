@@ -453,7 +453,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    ocp.optimization_variable_handler.compute_gradient_norm()
+                    ocp.optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 
@@ -599,7 +599,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    sop.optimization_variable_handler.compute_gradient_norm()
+                    sop.optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 

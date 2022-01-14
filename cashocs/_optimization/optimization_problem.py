@@ -48,10 +48,8 @@ from ..utils import (
     _check_and_enlist_ksp_options,
 )
 
-
-
 if TYPE_CHECKING:
-    from .optimization_variables import OptimizationVariableHandler
+    from .optimization_variable_abstractions import OptimizationVariableAbstractions
 
 
 class OptimizationProblem(abc.ABC):
@@ -288,6 +286,9 @@ class OptimizationProblem(abc.ABC):
         self.gradient_problem = None
 
         self.algorithm = None
+        self.line_search = None
+        self.hessian_problem = None
+        self.solver = None
 
         self.form_handler = None
         self.has_custom_adjoint = False
@@ -295,7 +296,7 @@ class OptimizationProblem(abc.ABC):
         self.reduced_cost_functional = None
         self.uses_custom_scalar_product = False
 
-        self.optimization_variable_handler: OptimizationVariableHandler = None
+        self.optimization_variable_abstractions: OptimizationVariableAbstractions = None
         self.is_shape_problem = False
         self.is_control_problem = False
 

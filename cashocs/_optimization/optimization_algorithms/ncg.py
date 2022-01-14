@@ -26,7 +26,6 @@ import fenics
 from .optimization_algorithm import OptimizationAlgorithm
 
 
-
 class NonlinearCGMethod(OptimizationAlgorithm):
     def __init__(self, optimization_problem, line_search):
         super().__init__(optimization_problem)
@@ -208,6 +207,6 @@ class NonlinearCGMethod(OptimizationAlgorithm):
 
     def project_ncg_search_direction(self) -> None:
 
-        self.optimization_variable_handler.project_ncg_search_direction(
+        self.optimization_variable_abstractions.project_ncg_search_direction(
             self.search_direction
         )

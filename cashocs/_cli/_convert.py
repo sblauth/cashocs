@@ -29,7 +29,6 @@ from typing import List, Optional
 import meshio
 
 
-
 def _generate_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
@@ -180,7 +179,8 @@ def convert(argv: Optional[List[str]] = None) -> None:
 
     end_time = time.time()
     print(
-        f"cashocs - info: Successfully converted {inputfile} to {outputfile} in {end_time - start_time:.2f} s"
+        f"cashocs - info: Successfully converted {inputfile} to {outputfile} "
+        f"in {end_time - start_time:.2f} s"
     )
 
 

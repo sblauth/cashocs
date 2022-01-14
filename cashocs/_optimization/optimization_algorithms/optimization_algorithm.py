@@ -29,8 +29,6 @@ import fenics
 from ..._exceptions import NotConvergedError
 from ..._loggers import error, info
 
-
-
 if TYPE_CHECKING:
     from ..optimization_problem import OptimizationProblem
 
@@ -52,8 +50,8 @@ class OptimizationAlgorithm(abc.ABC):
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
 
-        self.optimization_variable_handler = (
-            optimization_problem.optimization_variable_handler
+        self.optimization_variable_abstractions = (
+            optimization_problem.optimization_variable_abstractions
         )
 
         self.gradient_norm = 1.0
@@ -93,7 +91,7 @@ class OptimizationAlgorithm(abc.ABC):
 
     def compute_gradient_norm(self) -> float:
 
-        return self.optimization_variable_handler.compute_gradient_norm()
+        return self.optimization_variable_abstractions.compute_gradient_norm()
 
     def output(self):
         self.output_manager.output(self)
@@ -164,9 +162,9 @@ class OptimizationAlgorithm(abc.ABC):
             # Mesh Quality is too low
             elif self.converged_reason == -3:
                 self.iteration -= 1
-                if self.optimization_variable_handler.mesh_handler.do_remesh:
+                if self.optimization_variable_abstractions.mesh_handler.do_remesh:
                     info("Mesh quality too low. Performing a remeshing operation.\n")
-                    self.optimization_variable_handler.mesh_handler.remesh(self)
+                    self.optimization_variable_abstractions.mesh_handler.remesh(self)
                 else:
                     self.output_summary()
                     if self.soft_exit:

@@ -29,8 +29,6 @@ import numpy as np
 
 from .optimization_algorithm import OptimizationAlgorithm
 
-
-
 if TYPE_CHECKING:
     from ..optimization_problem import OptimizationProblem
     from ..line_search import LineSearch
@@ -70,7 +68,9 @@ class LBFGSMethod(OptimizationAlgorithm):
         self.initialize_solver()
         self.compute_gradient()
         self.form_handler.compute_active_sets()
-        self.gradient_norm = self.optimization_variable_handler.compute_gradient_norm()
+        self.gradient_norm = (
+            self.optimization_variable_abstractions.compute_gradient_norm()
+        )
 
         self.converged = self.convergence_test()
 
@@ -93,7 +93,7 @@ class LBFGSMethod(OptimizationAlgorithm):
             self.compute_gradient()
             self.form_handler.compute_active_sets()
             self.gradient_norm = (
-                self.optimization_variable_handler.compute_gradient_norm()
+                self.optimization_variable_abstractions.compute_gradient_norm()
             )
             self.relative_norm = self.gradient_norm / self.gradient_norm_initial
 
