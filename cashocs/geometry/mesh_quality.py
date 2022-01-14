@@ -36,8 +36,6 @@ from ..utils.linalg import (
     _solve_linear_problem,
 )
 
-
-
 if TYPE_CHECKING:
     pass
 

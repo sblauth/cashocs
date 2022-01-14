@@ -32,8 +32,6 @@ from petsc4py import PETSc
 from .._pde_problems.pde_problem import PDEProblem
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
-
-
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
     from .state_problem import StateProblem
@@ -104,7 +102,7 @@ class ControlGradientProblem(PDEProblem):
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
-        self.b_tensors = [
+        self.lhs_tensors = [
             fenics.PETScVector() for i in range(self.form_handler.control_dim)
         ]
 
@@ -123,11 +121,11 @@ class ControlGradientProblem(PDEProblem):
         if not self.has_solution:
             for i in range(self.form_handler.control_dim):
                 fenics.assemble(
-                    self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
+                    self.form_handler.gradient_forms_rhs[i], tensor=self.lhs_tensors[i]
                 )
                 _solve_linear_problem(
                     ksp=self.ksps[i],
-                    b=self.b_tensors[i].vec(),
+                    b=self.lhs_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
                 )

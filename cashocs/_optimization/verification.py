@@ -29,8 +29,6 @@ import numpy as np
 from .._exceptions import InputError
 from .._loggers import warning
 
-
-
 if TYPE_CHECKING:
     from .optimal_control.optimal_control_problem import OptimalControlProblem
     from .shape_optimization.shape_optimization_problem import (
@@ -44,7 +42,7 @@ def control_gradient_test(
     h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
 ) -> float:
-    """Taylor test to verify that the computed gradient is correct for optimal control problems.
+    """Taylor test to verify that the computed gradient is correct.
 
     Parameters
     ----------
@@ -64,8 +62,8 @@ def control_gradient_test(
     Returns
     -------
     float
-        The convergence order from the Taylor test. If this is (approximately) 2 or larger,
-        everything works as expected.
+        The convergence order from the Taylor test. If this is (approximately) 2 or
+        larger, everything works as expected.
     """
 
     initial_state = []
@@ -117,9 +115,9 @@ def control_gradient_test(
         scaling = 1.0
 
     ocp._erase_pde_memory()
-    Ju = ocp.reduced_cost_functional.evaluate()
-    grad_Ju = ocp.compute_gradient()
-    grad_Ju_h = ocp.form_handler.scalar_product(grad_Ju, h)
+    cost_functional_at_u = ocp.reduced_cost_functional.evaluate()
+    gradient_at_u = ocp.compute_gradient()
+    directional_derivative = ocp.form_handler.scalar_product(gradient_at_u, h)
 
     epsilons = [scaling * 1e-2 / 2 ** i for i in range(4)]
     residuals = []
@@ -129,9 +127,11 @@ def control_gradient_test(
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
         ocp._erase_pde_memory()
-        Jv = ocp.reduced_cost_functional.evaluate()
+        cost_functional_at_v = ocp.reduced_cost_functional.evaluate()
 
-        res = abs(Jv - Ju - eps * grad_Ju_h)
+        res = abs(
+            cost_functional_at_v - cost_functional_at_u - eps * directional_derivative
+        )
         residuals.append(res)
 
     if np.min(residuals) < 1e-14:
@@ -165,8 +165,8 @@ def shape_gradient_test(
     Returns
     -------
     float
-        The convergence order from the Taylor test. If this is (approximately) 2 or larger,
-        everything works as expected.
+        The convergence order from the Taylor test. If this is (approximately) 2 or
+        larger, everything works as expected.
     """
 
     if h is None:
@@ -185,7 +185,7 @@ def shape_gradient_test(
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
     sop._erase_pde_memory()
-    J_curr = sop.reduced_cost_functional.evaluate()
+    current_cost_functional = sop.reduced_cost_functional.evaluate()
     shape_grad = sop.compute_shape_gradient()
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
@@ -201,14 +201,19 @@ def shape_gradient_test(
         transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):
             sop._erase_pde_memory()
-            J_pert = sop.reduced_cost_functional.evaluate()
+            perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
 
-            res = abs(J_pert - J_curr - eps * shape_derivative_h)
+            res = abs(
+                perturbed_cost_functional
+                - current_cost_functional
+                - eps * shape_derivative_h
+            )
             residuals.append(res)
             sop.mesh_handler.revert_transformation()
         else:
             warning(
-                "Deformation did not yield a valid finite element mesh. Results of the test are probably not accurate."
+                "Deformation did not yield a valid finite element mesh. "
+                "Results of the test are probably not accurate."
             )
             residuals.append(float("inf"))
 

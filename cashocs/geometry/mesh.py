@@ -39,8 +39,6 @@ from ..utils.helpers import (
     _parse_remesh,
 )
 
-
-
 if TYPE_CHECKING:
     pass
 

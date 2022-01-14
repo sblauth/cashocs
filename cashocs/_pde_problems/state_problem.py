@@ -30,8 +30,6 @@ from .._pde_problems.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve, picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
-
-
 if TYPE_CHECKING:
     from .._forms import FormHandler
 
@@ -106,10 +104,10 @@ class StateProblem(PDEProblem):
                     rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
                 )
 
-        self.A_tensors = [
+        self.rhs_tensors = [
             fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
         ]
-        self.b_tensors = [
+        self.lhs_tensors = [
             fenics.PETScVector() for i in range(self.form_handler.state_dim)
         ]
         self.res_j_tensors = [
@@ -148,13 +146,13 @@ class StateProblem(PDEProblem):
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
-                            A_tensor=self.A_tensors[i],
-                            b_tensor=self.b_tensors[i],
+                            rhs_tensor=self.rhs_tensors[i],
+                            lhs_tensor=self.lhs_tensors[i],
                         )
                         _solve_linear_problem(
                             self.ksps[i],
-                            self.A_tensors[i].mat(),
-                            self.b_tensors[i].vec(),
+                            self.rhs_tensors[i].mat(),
+                            self.lhs_tensors[i].vec(),
                             self.states[i].vector().vec(),
                             self.form_handler.state_ksp_options[i],
                         )
@@ -177,8 +175,8 @@ class StateProblem(PDEProblem):
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
-                            A_tensor=self.A_tensors[i],
-                            b_tensor=self.b_tensors[i],
+                            rhs_tensor=self.rhs_tensors[i],
+                            lhs_tensor=self.lhs_tensors[i],
                         )
 
             else:
@@ -196,8 +194,8 @@ class StateProblem(PDEProblem):
                     inner_max_its=self.newton_iter,
                     ksps=self.ksps,
                     ksp_options=self.form_handler.state_ksp_options,
-                    A_tensors=self.A_tensors,
-                    b_tensors=self.b_tensors,
+                    rhs_tensors=self.rhs_tensors,
+                    lhs_tensors=self.lhs_tensors,
                     inner_is_linear=self.form_handler.state_is_linear,
                 )
 

@@ -32,8 +32,6 @@ from .constraints import EqualityConstraint, InequalityConstraint
 from .._loggers import debug
 from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
 
-
-
 if TYPE_CHECKING:
     from .constrained_problems import ConstrainedOptimizationProblem
 
@@ -48,12 +46,13 @@ class ConstrainedSolver(abc.ABC):
         """
         Parameters
         ----------
-        constrained_problem : ConstrainedOptimizationProblem
+        constrained_problem
             The constrained optimization problem which shall be solved.
-        mu_0 : float or None, optional
-            Initial value for the penalty parameter, defaults to 1 (when ``None`` is given).
-        lambda_0 : list[float] or None, optional
-            Initial guess for the Lagrange multpliers (in AugmentedLagrangian method)
+        mu_0
+            Initial value for the penalty parameter, defaults to 1 (when ``None`` is
+            given).
+        lambda_0
+            Initial guess for the Lagrange multipliers (in AugmentedLagrangian method)
             Defaults to zero initial guess, when ``None`` is given.
         """
 
@@ -148,41 +147,42 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """
         Parameters
         ----------
-        constrained_problem : ConstrainedOptimizationProblem
+        constrained_problem
             The constrained optimization problem which shall be solved.
-        mu_0 : float or None, optional
-            Initial value for the penalty parameter, defaults to 1 (when ``None`` is given).
-        lambda_0 : list[float] or None, optional
-            Initial guess for the Lagrange multpliers (in AugmentedLagrangian method)
+        mu_0
+            Initial value for the penalty parameter, defaults to 1 (when ``None`` is
+            given).
+        lambda_0
+            Initial guess for the Lagrange multipliers (in AugmentedLagrangian method)
             Defaults to zero initial guess, when ``None`` is given.
         """
 
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
-        self.A_tensors = [fenics.PETScMatrix() for i in range(self.constraint_dim)]
-        self.b_tensors = [fenics.PETScVector() for i in range(self.constraint_dim)]
+        self.rhs_tensors = [fenics.PETScMatrix()] * self.constraint_dim
+        self.lhs_tensors = [fenics.PETScVector()] * self.constraint_dim
 
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
         measure: fenics.Measure,
         multiplier: fenics.Function,
-        A_tensor: fenics.PETScMatrix,
-        b_tensor: fenics.PETScVector,
+        rhs_tensor: fenics.PETScMatrix,
+        lhs_tensor: fenics.PETScVector,
     ) -> None:
         """Project the multiplier for a pointwise constraint to a FE function space.
 
         Parameters
         ----------
-        project_terms : ufl.core.expr.Expr or list[ufl.core.expr.Expr]
+        project_terms
             The ufl expression of the Lagrange multiplier (guess)
-        measure : fenics.Measure
+        measure
             The measure, where the pointwise constraint is posed.
-        multiplier : fenics.Function
+        multiplier
             The function representing the Lagrange multiplier (guess)
-        A_tensor : fenics.PETScMatrix
+        rhs_tensor
             A matrix, into which the form is assembled for speed up
-        b_tensor : fenics.PETScVector
+        lhs_tensor
             A vector, into which the form is assembled for speed up
 
         Returns
@@ -198,12 +198,12 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         trial = fenics.TrialFunction(self.CG)
         test = fenics.TestFunction(self.CG)
 
-        a = trial * test * measure
-        L = project_term * test * measure
+        lhs = trial * test * measure
+        rhs = project_term * test * measure
 
-        _assemble_petsc_system(a, L, A_tensor=A_tensor, b_tensor=b_tensor)
+        _assemble_petsc_system(lhs, rhs, rhs_tensor=rhs_tensor, lhs_tensor=lhs_tensor)
         _solve_linear_problem(
-            A=A_tensor.mat(), b=b_tensor.vec(), x=multiplier.vector().vec()
+            A=rhs_tensor.mat(), b=lhs_tensor.vec(), x=multiplier.vector().vec()
         )
 
     def _update_cost_functional(self) -> None:
@@ -296,8 +296,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         project_term,
                         self.constraints[i].measure,
                         self.lmbd[i],
-                        self.A_tensors[i],
-                        self.b_tensors[i],
+                        self.rhs_tensors[i],
+                        self.lhs_tensors[i],
                     )
 
             elif isinstance(self.constraints[i], InequalityConstraint):
@@ -360,8 +360,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         project_terms,
                         self.constraints[i].measure,
                         self.lmbd[i],
-                        self.A_tensors[i],
-                        self.b_tensors[i],
+                        self.rhs_tensors[i],
+                        self.lhs_tensors[i],
                     )
 
     def solve(

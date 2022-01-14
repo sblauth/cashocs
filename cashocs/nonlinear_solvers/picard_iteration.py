@@ -36,7 +36,6 @@ from ..utils import (
 )
 
 
-
 def picard_iteration(
     F_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -51,8 +50,8 @@ def picard_iteration(
     inner_max_its: int = 25,
     ksps: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
-    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
-    b_tensors: Optional[List[fenics.PETScVector]] = None,
+    rhs_tensors: Optional[List[fenics.PETScMatrix]] = None,
+    lhs_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
 
@@ -78,10 +77,10 @@ def picard_iteration(
         ksps = [None for i in range(len(u_list))]
     if ksp_options is None:
         ksp_options = [None for i in range(len(u_list))]
-    if A_tensors is None:
-        A_tensors = [None for i in range(len(u_list))]
-    if b_tensors is None:
-        b_tensors = [None for i in range(len(u_list))]
+    if rhs_tensors is None:
+        rhs_tensors = [None for i in range(len(u_list))]
+    if lhs_tensors is None:
+        lhs_tensors = [None for i in range(len(u_list))]
 
     res_tensor = [fenics.PETScVector() for j in range(len(u_list))]
     eta_max = 0.9
@@ -132,8 +131,8 @@ def picard_iteration(
                 verbose=inner_verbose,
                 ksp=ksps[j],
                 ksp_options=ksp_options[j],
-                A_tensor=A_tensors[j],
-                b_tensor=b_tensors[j],
+                rhs_tensor=rhs_tensors[j],
+                lhs_tensor=lhs_tensors[j],
                 is_linear=inner_is_linear,
             )
 

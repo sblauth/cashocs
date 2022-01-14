@@ -207,12 +207,10 @@ class LBFGSMethod(OptimizationAlgorithm):
 
             self.history_y.appendleft([x.copy(True) for x in self.y_k])
             self.history_s.appendleft([x.copy(True) for x in self.s_k])
-            self.curvature_condition = self.form_handler.scalar_product(
-                self.y_k, self.s_k
-            )
+            curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
 
             if (
-                self.curvature_condition
+                curvature_condition
                 / np.sqrt(
                     self.form_handler.scalar_product(self.s_k, self.s_k)
                     * self.form_handler.scalar_product(self.y_k, self.y_k)
@@ -227,7 +225,7 @@ class LBFGSMethod(OptimizationAlgorithm):
 
             else:
                 self.has_curvature_info = True
-                rho = 1 / self.curvature_condition
+                rho = 1 / curvature_condition
                 self.history_rho.appendleft(rho)
 
             if len(self.history_s) > self.bfgs_memory_size:

@@ -26,8 +26,6 @@ from typing import TYPE_CHECKING, List, Union
 
 import fenics
 
-
-
 if TYPE_CHECKING:
     from .._forms import FormHandler
 

@@ -24,7 +24,6 @@ from __future__ import annotations
 import logging
 
 
-
 class ColorFormatter(logging.Formatter):
     """Logging Formatter for colored output."""
 

@@ -58,13 +58,13 @@ class ShapeOptimizationProblem(OptimizationProblem):
     r"""A shape optimization problem.
 
     This class is used to define a shape optimization problem, and to solve
-    it subsequently. For a detailed documentation, we refer to the :ref:`tutorial <tutorial_index>`.
-    For easier input, when consider single (state or control) variables,
-    these do not have to be wrapped into a list.
-    Note, that in the case of multiple variables these have to be grouped into
-    ordered lists, where state_forms, bcs_list, states, adjoints have to have
-    the same order (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1``
-    and so on.
+    it subsequently. For a detailed documentation, we refer to the
+    :ref:`tutorial <tutorial_index>`. For easier input, when consider single (state or
+    control) variables, these do not have to be wrapped into a list. Note, that in the
+    case of multiple variables these have to be grouped into ordered lists, where
+    ``state_forms``, ``bcs_list``, ``states``, ``adjoints`` have to have the same order
+    (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1`` and so
+    on).
     """
 
     def __new__(
@@ -113,7 +113,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 min_max_terms=min_max_terms,
                 desired_weights=desired_weights,
             )
-            unscaled_problem._scale_cost_functional()  # overwrites the cost functional list
+            unscaled_problem._scale_cost_functional()  # overwrites the list
 
             problem = super().__new__(cls)
             if not unscaled_problem.has_cashocs_remesh_flag:
@@ -165,56 +165,61 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
         Parameters
         ----------
-        state_forms : ufl.Form or list[ufl.Form]
+        state_forms
             The weak form of the state equation (user implemented). Can be either
             a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-            The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-            If this is ``None``, then no Dirichlet boundary conditions are imposed.
-        cost_functional_form : ufl.Form or list[ufl.Form]
+        bcs_list
+            The list of DirichletBC objects describing Dirichlet (essential) boundary
+            conditions. If this is ``None``, then no Dirichlet boundary conditions are
+            imposed.
+        cost_functional_form
             UFL form of the cost functional.
-        states : fenics.Function or list[fenics.Function]
-            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : fenics.Function or list[fenics.Function]
-            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        boundaries : fenics.MeshFunction
+        states
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a
+            list of these.
+        adjoints
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a
+            (ordered) list of these.
+        boundaries
             :py:class:`fenics.MeshFunction` that indicates the boundary markers.
-        config : configparser.ConfigParser or None, optional
-            The config file for the problem, generated via :py:func:`cashocs.create_config`.
-            Alternatively, this can also be ``None``, in which case the default configurations
-            are used, except for the optimization algorithm. This has then to be specified
-            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-            default is ``None``.
-        shape_scalar_product : ufl.form.Form or None, optional
-            The bilinear form for computing the shape gradient (or gradient deformation).
-            This has to use :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
-            objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
-            of continuous, linear Lagrange finite elements. Moreover, this form is required to be
-            symmetric.
-        initial_guess : list[fenics.Function] or None, optional
-            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-            Defaults to ``None``, which means a zero initial guess.
-        ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
-            A list of strings corresponding to command line options for PETSc,
-            used to solve the state systems. If this is ``None``, then the direct solver
-            mumps is used (default is ``None``).
-        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
-            A list of strings corresponding to command line options for PETSc,
-            used to solve the adjoint systems. If this is ``None``, then the same options
-            as for the state systems are used (default is ``None``).
-        scalar_tracking_forms : dict or list[dict] or None, optional
+        config
+            The config file for the problem, generated via
+            :py:func:`cashocs.create_config`. Alternatively, this can also be ``None``,
+            in which case the default configurations are used, except for the
+            optimization algorithm. This has then to be specified in the
+            :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The default
+            is ``None``.
+        shape_scalar_product
+            The bilinear form for computing the shape gradient (or gradient
+            deformation). This has to use :py:class:`fenics.TrialFunction` and
+            :py:class:`fenics.TestFunction` objects to define the weak form, which have
+            to be in a :py:class:`fenics.VectorFunctionSpace` of continuous, linear
+            Lagrange finite elements. Moreover, this form is required to be symmetric.
+        initial_guess
+            List of functions that act as initial guess for the state variables, should
+            be valid input for :py:func:`fenics.assign`. Defaults to ``None``, which
+            means a zero initial guess.
+        ksp_options
+            A list of strings corresponding to command line options for PETSc, used to
+            solve the state systems. If this is ``None``, then the direct solver mumps
+            is used (default is ``None``).
+        adjoint_ksp_options
+            A list of strings corresponding to command line options for PETSc, used to
+            solve the adjoint systems. If this is ``None``, then the same options as for
+            the state systems are used (default is ``None``).
+        scalar_tracking_forms
             A list of dictionaries that define scalar tracking type cost functionals,
-            where an integral value should be brought to a desired value. Each dict needs
-            to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
-            i.e., no scalar tracking terms are considered.
-        min_max_terms : dict or list[dict] or None, optional
+            where an integral value should be brought to a desired value. Each dict
+            needs to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is
+            ``None``, i.e., no scalar tracking terms are considered.
+        min_max_terms
             Additional terms for the cost functional, not to be used directly.
-        desired_weights : list[float] or None, optional
+        desired_weights
             A list of values for scaling the cost functional terms. If this is supplied,
-            the cost functional has to be given as list of summands. The individual terms
-            are then scaled, so that term `i` has the magnitude of `desired_weights[i]`
-            for the initial iteration. In case that `desired_weights` is `None`, no scaling
-            is performed. Default is `None`.
+            the cost functional has to be given as list of summands. The individual
+            terms are then scaled, so that term `i` has the magnitude of
+            `desired_weights[i]` for the initial iteration. In case that
+            `desired_weights` is `None`, no scaling is performed. Default is `None`.
         """
 
         super().__init__(
@@ -232,23 +237,16 @@ class ShapeOptimizationProblem(OptimizationProblem):
             desired_weights,
         )
 
-        ### Initialize the remeshing behavior, and a temp file
+        # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
         self.temp_dict = None
         if self.do_remesh:
 
             if not os.path.isfile(os.path.realpath(sys.argv[0])):
                 raise CashocsException(
-                    "Not a valid configuration. The script has to be the first command line argument."
+                    "Not a valid configuration. "
+                    "The script has to be the first command line argument."
                 )
-
-            try:
-                if __IPYTHON__:
-                    warning(
-                        "You are running a shape optimization problem with remeshing from ipython. Rather run this using the python command."
-                    )
-            except NameError:
-                pass
 
             try:
                 if not self.states[0].function_space().mesh()._config_flag:
@@ -298,12 +296,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     self.temp_dict = json.load(file)
 
-        ### boundaries
+        # boundaries
         if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
             self.boundaries = boundaries
         else:
             raise InputError(
-                "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem",
+                "cashocs.ShapeOptimizationProblem",
                 "boundaries",
                 "Not a valid type for boundaries.",
             )
@@ -324,8 +322,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
             "ShapeGradient", "use_p_laplacian", fallback=False
         ):
             warning(
-                "You have supplied a custom scalar product and set the parameter ``use_p_laplacian`` in the config file."
-                "cashocs will use the supplied scalar product and not the p-Laplacian to compute the shape gradient."
+                (
+                    "You have supplied a custom scalar product and set the parameter "
+                    "``use_p_laplacian`` in the config file."
+                    "cashocs will use the supplied scalar product and not the "
+                    "p-Laplacian to compute the shape gradient."
+                )
             )
 
         self.is_shape_problem = True
@@ -398,7 +400,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         Parameters
         ----------
-        algorithm : str or None, optional
+        algorithm
             Selects the optimization algorithm. Valid choices are
             ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
             ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
@@ -406,17 +408,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
             limited memory BFGS methods. This overwrites the value specified
             in the config file. If this is ``None``, then the value in the
             config file is used. Default is ``None``.
-        rtol : float or None, optional
+        rtol
             The relative tolerance used for the termination criterion.
             Overwrites the value specified in the config file. If this
             is ``None``, the value from the config file is taken. Default
             is ``None``.
-        atol : float or None, optional
+        atol
             The absolute tolerance used for the termination criterion.
             Overwrites the value specified in the config file. If this
             is ``None``, the value from the config file is taken. Default
             is ``None``.
-        max_iter : int or None, optional
+        max_iter
             The maximum number of iterations the optimization algorithm
             can carry out before it is terminated. Overwrites the value
             specified in the config file. If this is ``None``, the value from
@@ -441,7 +443,9 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
           - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
 
-          .. math:: || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
+          .. math::
+
+            || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
         """
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
@@ -449,7 +453,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.optimization_variable_abstractions = ShapeVariableAbstractions(self)
         self.line_search = ArmijoLineSearch(self)
 
-        # TODO: Do not pass the line search (uneccessary)
+        # TODO: Do not pass the line search (unnecessary)
         if self.algorithm == "gradient_descent":
             self.solver = GradientDescentMethod(self, self.line_search)
         elif self.algorithm == "lbfgs":
@@ -460,9 +464,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
             raise InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",
-                "You did not specify a solution algorithm in your config file. You have to specify one in the solve "
-                "method. Needs to be one of 'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), "
-                "or 'conjugate_gradient' ('cg').",
+                "You did not specify a solution algorithm in your config file. "
+                "You have to specify one in the solve "
+                "method. Needs to be one of 'gradient_descent' ('gd'), "
+                "'lbfgs' ('bfgs'), or 'conjugate_gradient' ('cg').",
             )
 
         self.solver.run()
@@ -493,7 +498,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
             """
             debug(
-                "An exception was raised by cashocs, deleting the created temporary files."
+                "An exception was raised by cashocs, "
+                "deleting the created temporary files."
             )
             if not self.config.getboolean("Debug", "remeshing", fallback=False):
                 subprocess.run(["rm", "-r", self.temp_dir], check=True)
@@ -539,20 +545,20 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         if not (isinstance(shape_derivative, ufl.Form)):
             raise InputError(
-                "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
+                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "shape_derivative have to be a ufl form",
             )
 
         if len(shape_derivative.arguments()) == 2:
             raise InputError(
-                "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
+                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "Do not use TrialFunction for the shape_derivative.",
             )
         elif len(shape_derivative.arguments()) == 0:
             raise InputError(
-                "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
+                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "The specified shape_derivative must include a TestFunction object.",
             )
@@ -562,9 +568,12 @@ class ShapeOptimizationProblem(OptimizationProblem):
             == self.form_handler.deformation_space.ufl_element()
         ):
             raise InputError(
-                "cashocs._optimization.shape_optimization.shape_optimization_problem.ShapeOptimizationProblem.supply_shape_derivative",
+                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
-                "The TestFunction has to be chosen from the same space as the corresponding adjoint.",
+                (
+                    "The TestFunction has to be chosen from the same "
+                    "space as the corresponding adjoint."
+                ),
             )
 
         if (
@@ -613,21 +622,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
     ) -> None:
         """Overrides both adjoint system and shape derivative with user input.
 
-        This allows the user to specify both the shape_derivative of the reduced cost functional
-        and the corresponding adjoint system, and allows them to use cashocs as a solver.
-
-        See Also
-        --------
-        supply_shape_derivative
-        supply_adjoint_forms
+        This allows the user to specify both the shape_derivative of the reduced cost
+        functional and the corresponding adjoint system, and allows them to use cashocs
+        as a solver.
 
         Parameters
         ----------
-        shape_derivative : ufl.Form
+        shape_derivative
             The shape derivative of the reduced (!) cost functional.
-        adjoint_forms : ufl.Form or list[ufl.Form]
+        adjoint_forms
             The UFL forms of the adjoint system(s).
-        adjoint_bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
+        adjoint_bcs_list
             The list of Dirichlet boundary conditions for the adjoint system(s).
 
         Returns
@@ -671,8 +676,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
         Returns
         -------
          float
-            The convergence order from the Taylor test. If this is (approximately) 2 or larger,
-            everything works as expected.
+            The convergence order from the Taylor test. If this is (approximately) 2
+            or larger, everything works as expected.
         """
 
         return shape_gradient_test(self, h, rng)

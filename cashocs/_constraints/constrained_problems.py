@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Constrained Optimization Problems, with additional equality and inequality constraints.
+"""Constrained optimization problems, with additional equality / inequality constraints.
 
 """
 
@@ -43,7 +43,7 @@ from ..utils import enlist
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
-    """A PDE constrained optimization problem with additional equality and inequality constraints."""
+    """An optimization problem with additional equality / inequality constraints."""
 
     def __init__(
         self,
@@ -68,42 +68,48 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         Parameters
         ----------
-        state_forms : ufl.form.Form or list[ufl.form.Form]
+        state_forms
             The weak form of the state equation (user implemented). Can be either
             a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-            The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet (essential) boundary conditions.
-            If this is ``None``, then no Dirichlet boundary conditions are imposed.
-        cost_functional_form : ufl.form.Form or list[ufl.form.Form]
-            UFL form of the cost functional. Can also be a list of summands of the cost functional
-        states : fenics.Function or list[fenics.Function]
-            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : fenics.Function or list[fenics.Function]
-            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        constraints : EqualityConstraint or InequalityConstraint or list[EqualityConstraint, InequalityConstraint]
+        bcs_list
+            The list of :py:class:`fenics.DirichletBC` objects describing Dirichlet
+            (essential) boundary conditions. If this is ``None``, then no Dirichlet
+            boundary conditions are imposed.
+        cost_functional_form
+            UFL form of the cost functional. Can also be a list of summands of the cost
+            functional
+        states
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a
+            list of these.
+        adjoints
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a
+            (ordered) list of these.
+        constraints
             (A list of) additional equality and inequality constraints for the problem.
-        config : configparser.ConfigParser or None, optional
-            The config file for the problem, generated via :py:func:`cashocs.create_config`.
-            Alternatively, this can also be ``None``, in which case the default configurations
-            are used, except for the optimization algorithm. This has then to be specified
-            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-            default is ``None``.
-        initial_guess : list[fenics.Function] or None, optional
-            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-            Defaults to ``None``, which means a zero initial guess.
-        ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
-            A list of strings corresponding to command line options for PETSc,
-            used to solve the state systems. If this is ``None``, then the direct solver
-            mumps is used (default is ``None``).
-        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
-            A list of strings corresponding to command line options for PETSc,
-            used to solve the adjoint systems. If this is ``None``, then the same options
-            as for the state systems are used (default is ``None``).
-        scalar_tracking_forms : dict or list[dict] or None, optional
+        config
+            The config file for the problem, generated via
+            :py:func:`cashocs.create_config`. Alternatively, this can also be ``None``,
+            in which case the default configurations are used, except for the
+            optimization algorithm. This has then to be specified in the
+            :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The default
+            is ``None``.
+        initial_guess
+            List of functions that act as initial guess for the state variables, should
+            be valid input for :py:func:`fenics.assign`. Defaults to ``None``, which
+            means a zero initial guess.
+        ksp_options
+            A list of strings corresponding to command line options for PETSc, used to
+            solve the state systems. If this is ``None``, then the direct solver mumps
+            is used (default is ``None``).
+        adjoint_ksp_options
+            A list of strings corresponding to command line options for PETSc, used to
+            solve the adjoint systems. If this is ``None``, then the same options as for
+            the state systems are used (default is ``None``).
+        scalar_tracking_forms
             A list of dictionaries that define scalar tracking type cost functionals,
-            where an integral value should be brought to a desired value. Each dict needs
-            to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
-            i.e., no scalar tracking terms are considered.
+            where an integral value should be brought to a desired value. Each dict
+            needs to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is
+            ``None``, i.e., no scalar tracking terms are considered.
         """
 
         self.state_forms = state_forms
@@ -150,27 +156,28 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Parameters
         ----------
-        method : str, optional
-            The solution algorithm, either an augmented Lagrangian method ("Augmented Lagrangian",
-            "AL") or quadratic penalty method ("Quadratic Penalty", "QP")
-        tol : float, optional
+        method
+            The solution algorithm, either an augmented Lagrangian method
+            ("Augmented Lagrangian", "AL") or quadratic penalty method
+            ("Quadratic Penalty", "QP")
+        tol
             An overall tolerance to be used in the algorithm. This will set the relative
             tolerance for the inner optimization problems to ``tol``. Default is 1e-2.
-        max_iter : int, optional
+        max_iter
             Maximum number of iterations for the outer solver. Default is 25.
-        inner_rtol : float or None, optional
+        inner_rtol
             Relative tolerance for the inner problem. Default is ``None``, so that
             ``inner_rtol = tol`` is used.
-        inner_atol : float or None, optional
+        inner_atol
             Absolute tolerance for the inner problem. Default is ``None``, so that
             ``inner_atol = tol/10`` is used.
-        constraint_tol : float or None, optional
+        constraint_tol
             The tolerance for the constraint violation, which is desired. If this is
             ``None`` (default), then this is specified as ``tol/10``.
-        mu_0 : float or None, optional
+        mu_0
             Initial value of the penalty parameter. Default is ``None``, which means
             that ``mu_0 = 1`` is used.
-        lambda_0 : list[float] or None, optional
+        lambda_0
             Initial guess for the Lagrange multipliers. Default is ``None``, which
             corresponds to a zero guess.
 
@@ -185,9 +192,15 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.solver = QuadraticPenaltyMethod(self, mu_0=mu_0, lambda_0=lambda_0)
         else:
             raise InputError(
-                "cashocs._constraints.constrained_problems.ConstrainedOptimizationProblem.solve",
+                (
+                    "cashocs._constraints.constrained_problems."
+                    "ConstrainedOptimizationProblem.solve"
+                ),
                 "method",
-                "The parameter `method` should be either 'AL' or 'Augmented Lagrangian' or 'QP' or 'Quadratic Penalty'",
+                (
+                    "The parameter `method` should be either 'AL' or "
+                    "'Augmented Lagrangian' or 'QP' or 'Quadratic Penalty'"
+                ),
             )
 
         self.solver.solve(
@@ -271,9 +284,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Parameters
         ----------
-        function : function
-            A custom function without arguments, which will be called after the computation
-            of the gradient(s)
+        function
+            A custom function without arguments, which will be called after the
+            computation of the gradient(s)
 
         Returns
         -------
@@ -286,7 +299,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self, pre_function: Callable, post_function: Callable
     ) -> None:
         """
-        Changes the a-priori (pre) and a-posteriori (post) hook of the OptimizationProblem
+        Changes the a-priori (pre) and a-posteriori (post) hook of the problem
 
         Parameters
         ----------
@@ -294,8 +307,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
             A function without arguments, which is to be called before each solve of the
             state system
         post_function : function
-            A function without arguments, which is to be called after each computation of
-            the (shape) gradient
+            A function without arguments, which is to be called after each computation
+            of the (shape) gradient
 
         Returns
         -------
@@ -333,52 +346,59 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         r"""
         Parameters
         ----------
-        state_forms : ufl.form.Form or list[ufl.form.Form]
+        state_forms
             The weak form of the state equation (user implemented). Can be either
             a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-            The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-            If this is ``None``, then no Dirichlet boundary conditions are imposed.
-        cost_functional_form : ufl.form.Form or list[ufl.form.Form]
+        bcs_list
+            The list of DirichletBC objects describing Dirichlet (essential) boundary
+            conditions. If this is ``None``, then no Dirichlet boundary conditions are
+            imposed.
+        cost_functional_form
             UFL form of the cost functional.
-        states : fenics.Function or list[fenics.Function]
-            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        controls : fenics.Function or list[fenics.Function]
-            The control variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : fenics.Function or list[fenics.Function]
-            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        constraints : EqualityConstraint or InequalityConstraint or list[EqualityConstraint, InequalityConstraint]
+        states
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a
+            list of these.
+        controls
+            The control variable(s), can either be a :py:class:`fenics.Function`, or a
+            list of these.
+        adjoints
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a
+            (ordered) list of these.
+        constraints
             (A list of) additional equality and inequality constraints for the problem.
-        config : configparser.ConfigParser or None, optional
-            The config file for the problem, generated via :py:func:`cashocs.create_config`.
-            Alternatively, this can also be ``None``, in which case the default configurations
-            are used, except for the optimization algorithm. This has then to be specified
-            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-            default is ``None``.
-        riesz_scalar_products : None or ufl.form.Form or list[ufl.form.Form], optional
-            The scalar products of the control space. Can either be None, a single UFL form, or a
-            (ordered) list of UFL forms. If ``None``, the :math:`L^2(\Omega)` product is used.
-            (default is ``None``).
-        control_constraints : None or list[fenics.Function] or list[float] or list[list[fenics.Function]] or list[list[float]], optional
-            Box constraints posed on the control, ``None`` means that there are none (default is ``None``).
-            The (inner) lists should contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the lower,
-            and ``u_b`` the upper bound.
-        initial_guess : list[fenics.Function], optional
-            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-            Defaults to ``None``, which means a zero initial guess.
-        ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+        config
+            The config file for the problem, generated via
+            :py:func:`cashocs.create_config`. Alternatively, this can also be ``None``,
+            in which case the default configurations are used, except for the
+            optimization algorithm. This has then to be specified in the
+            :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The default
+            is ``None``.
+        riesz_scalar_products
+            The scalar products of the control space. Can either be None, a single UFL
+            form, or a (ordered) list of UFL forms. If ``None``, the :math:`L^2(\Omega)`
+            product is used (default is ``None``).
+        control_constraints
+            Box constraints posed on the control, ``None`` means that there are none
+            (default is ``None``). The (inner) lists should contain two elements of the
+            form ``[u_a, u_b]``, where ``u_a`` is the lower, and ``u_b`` the upper
+            bound.
+        initial_guess
+            List of functions that act as initial guess for the state variables, should
+            be valid input for :py:func:`fenics.assign`. Defaults to ``None``, which
+            means a zero initial guess.
+        ksp_options
             A list of strings corresponding to command line options for PETSc,
             used to solve the state systems. If this is ``None``, then the direct solver
             mumps is used (default is ``None``).
-        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+        adjoint_ksp_options
             A list of strings corresponding to command line options for PETSc,
-            used to solve the adjoint systems. If this is ``None``, then the same options
-            as for the state systems are used (default is ``None``).
-        scalar_tracking_forms : dict or list[dict] or None, optional
+            used to solve the adjoint systems. If this is ``None``, then the same
+            options as for the state systems are used (default is ``None``).
+        scalar_tracking_forms
             A list of dictionaries that define scalar tracking type cost functionals,
-            where an integral value should be brought to a desired value. Each dict needs
-            to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is ``None``,
-            i.e., no scalar tracking terms are considered.
+            where an integral value should be brought to a desired value. Each dict
+            needs to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is
+            ``None``, i.e., no scalar tracking terms are considered.
         """
 
         super().__init__(
@@ -444,9 +464,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         )
 
         ocp.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        ocp._OptimizationProblem__shift_cost_functional(
-            self.solver.inner_cost_functional_shift
-        )
+        ocp._shift_cost_functional(self.solver.inner_cost_functional_shift)
 
         if inner_atol is not None:
             atol = inner_atol
@@ -489,45 +507,50 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         """
         Parameters
         ----------
-        state_forms : ufl.Form or list[ufl.Form]
+        state_forms
             The weak form of the state equation (user implemented). Can be either
             a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list : list[fenics.DirichletBC] or list[list[fenics.DirichletBC]] or fenics.DirichletBC or None
-            The list of DirichletBC objects describing Dirichlet (essential) boundary conditions.
-            If this is ``None``, then no Dirichlet boundary conditions are imposed.
-        cost_functional_form : ufl.Form or list[ufl.Form]
+        bcs_list
+            The list of DirichletBC objects describing Dirichlet (essential) boundary
+            conditions. If this is ``None``, then no Dirichlet boundary conditions are
+            imposed.
+        cost_functional_form
             UFL form of the cost functional.
-        states : fenics.Function or list[fenics.Function]
-            The state variable(s), can either be a :py:class:`fenics.Function`, or a list of these.
-        adjoints : fenics.Function or list[fenics.Function]
-            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a (ordered) list of these.
-        boundaries : fenics.MeshFunction
+        states
+            The state variable(s), can either be a :py:class:`fenics.Function`, or a
+            list of these.
+        adjoints
+            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a
+            (ordered) list of these.
+        boundaries
             :py:class:`fenics.MeshFunction` that indicates the boundary markers.
-        constraints : EqualityConstraint or InequalityConstraint or list[EqualityConstraint, InequalityConstraint]
+        constraints
             (A list of) additional equality and inequality constraints for the problem.
-        config : configparser.ConfigParser or None, optional
-            The config file for the problem, generated via :py:func:`cashocs.create_config`.
-            Alternatively, this can also be ``None``, in which case the default configurations
-            are used, except for the optimization algorithm. This has then to be specified
-            in the :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-            default is ``None``.
-        shape_scalar_product : ufl.form.Form or None, optional
-            The bilinear form for computing the shape gradient (or gradient deformation).
-            This has to use :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
-            objects to define the weak form, which have to be in a :py:class:`fenics.VectorFunctionSpace`
-            of continuous, linear Lagrange finite elements. Moreover, this form is required to be
-            symmetric.
-        initial_guess : list[fenics.Function] or None, optional
-            List of functions that act as initial guess for the state variables, should be valid input for :py:func:`fenics.assign`.
-            Defaults to ``None``, which means a zero initial guess.
-        ksp_options : list[list[str]] or list[list[list[str]]] or None, optional
+        config
+            The config file for the problem, generated via
+            :py:func:`cashocs.create_config`. Alternatively, this can also be ``None``,
+            in which case the default configurations are used, except for the
+            optimization algorithm. This has then to be specified in the
+            :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The default
+            is ``None``.
+        shape_scalar_product
+            The bilinear form for computing the shape gradient (or gradient
+            deformation). This has to use :py:class:`fenics.TrialFunction` and
+            :py:class:`fenics.TestFunction` objects to define the weak form, which have
+            to be in a :py:class:`fenics.VectorFunctionSpace` of continuous, linear
+            Lagrange finite elements. Moreover, this form is required to be symmetric.
+        initial_guess
+            List of functions that act as initial guess for the state variables, should
+            be valid input for :py:func:`fenics.assign`. Defaults to ``None``, which
+            means a zero initial guess.
+        ksp_options
             A list of strings corresponding to command line options for PETSc,
             used to solve the state systems. If this is ``None``, then the direct solver
             mumps is used (default is ``None``).
-        adjoint_ksp_options : list[list[str]] or list[list[list[str]]] or None
+        adjoint_ksp_options
             A list of strings corresponding to command line options for PETSc,
-            used to solve the adjoint systems. If this is ``None``, then the same options
-            as for the state systems are used (default is ``None``).
+            used to solve the adjoint systems. If this is ``None``, then the same
+            options as for the state systems are used (default is ``None``).
         """
 
         super().__init__(
@@ -590,9 +613,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             min_max_terms=self.solver.inner_min_max_terms,
         )
         sop.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        sop._OptimizationProblem__shift_cost_functional(
-            self.solver.inner_cost_functional_shift
-        )
+        sop._shift_cost_functional(self.solver.inner_cost_functional_shift)
 
         if inner_atol is not None:
             atol = inner_atol

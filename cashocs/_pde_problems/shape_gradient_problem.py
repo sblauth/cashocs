@@ -35,8 +35,6 @@ from .._pde_problems.pde_problem import PDEProblem
 from ..nonlinear_solvers import newton_solve
 from ..utils import _setup_petsc_options, _solve_linear_problem
 
-
-
 if TYPE_CHECKING:
     from .state_problem import StateProblem
     from .adjoint_problem import AdjointProblem
@@ -211,8 +209,8 @@ class _PLaplacProjector:
         dx = gradient_problem.form_handler.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.A_tensor = fenics.PETScMatrix()
-        self.b_tensor = fenics.PETScVector()
+        self.rhs_tensor = fenics.PETScMatrix()
+        self.lhs_tensor = fenics.PETScVector()
 
         self.F_list = []
         for p in self.p_list:
@@ -273,6 +271,6 @@ class _PLaplacProjector:
                 inexact=True,
                 verbose=False,
                 ksp_options=self.ksp_options,
-                A_tensor=self.A_tensor,
-                b_tensor=self.b_tensor,
+                rhs_tensor=self.rhs_tensor,
+                lhs_tensor=self.lhs_tensor,
             )

@@ -59,7 +59,7 @@ class ArmijoLineSearch(LineSearch):
         has_curvature_info: bool,
     ) -> None:
 
-        self.search_direction_inf = np.max(
+        search_direction_inf = np.max(
             [
                 np.max(np.abs(search_direction[i].vector()[:]))
                 for i in range(len(self.gradient))
@@ -82,7 +82,7 @@ class ArmijoLineSearch(LineSearch):
                 solver.remeshing_its = True
                 return None
 
-            if self.stepsize * self.search_direction_inf <= 1e-8:
+            if self.stepsize * search_direction_inf <= 1e-8:
                 error("Stepsize too small.")
                 solver.line_search_broken = True
                 return None
@@ -101,6 +101,8 @@ class ArmijoLineSearch(LineSearch):
                         search_direction
                     )
                 )
+            else:
+                decrease_measure_w_o_step = 1.0
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
                     search_direction, self.stepsize, self.beta_armijo
@@ -110,7 +112,7 @@ class ArmijoLineSearch(LineSearch):
             current_function_value = solver.objective_value
 
             self.state_problem.has_solution = False
-            self.objective_step = self.cost_functional.evaluate()
+            objective_step = self.cost_functional.evaluate()
 
             if self.is_control_problem:
                 decrease_measure = (
@@ -118,11 +120,13 @@ class ArmijoLineSearch(LineSearch):
                         search_direction
                     )
                 )
-            if self.is_shape_problem:
+            elif self.is_shape_problem:
                 decrease_measure = decrease_measure_w_o_step * self.stepsize
+            else:
+                decrease_measure = 1.0
 
             if (
-                self.objective_step
+                objective_step
                 < current_function_value + self.epsilon_armijo * decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():

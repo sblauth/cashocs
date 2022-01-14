@@ -31,7 +31,6 @@ from .._exceptions import InputError
 from .._loggers import warning
 
 
-
 # deprecated
 def create_config(path: str) -> ConfigParser:  # pragma: no cover
     """Loads a config object from a config file.

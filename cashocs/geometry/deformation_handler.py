@@ -38,7 +38,6 @@ from ..utils.linalg import (
 )
 
 
-
 class DeformationHandler:
     """A class, which implements mesh deformations.
 

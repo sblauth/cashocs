@@ -31,7 +31,6 @@ from ufl.measure import Measure
 from .._exceptions import InputError
 
 
-
 class _EmptyMeasure(Measure):
     """Implements an empty measure (e.g. of a null set).
 

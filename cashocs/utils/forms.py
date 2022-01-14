@@ -30,7 +30,6 @@ from .._exceptions import InputError
 from .._loggers import warning
 
 
-
 def summation(
     x: List[Union[ufl.core.expr.Expr, int, float]]
 ) -> Union[ufl.core.expr.Expr, int, float]:

@@ -36,7 +36,6 @@ from ..utils.linalg import (
 )
 
 
-
 def compute_boundary_distance(
     mesh: fenics.Mesh,
     boundaries: Optional[fenics.MeshFunction] = None,

@@ -48,8 +48,6 @@ from ..utils.linalg import (
     _solve_linear_problem,
 )
 
-
-
 if TYPE_CHECKING:
     from .._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,

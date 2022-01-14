@@ -34,8 +34,6 @@ from .managers import (
     HistoryManager,
 )
 
-
-
 if TYPE_CHECKING:
     from .._optimization.optimization_problem import OptimizationProblem
     from .._optimization.optimization_algorithms import OptimizationAlgorithm

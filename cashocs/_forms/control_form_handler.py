@@ -53,7 +53,8 @@ class ControlFormHandler(FormHandler):
 
     See Also
     --------
-    ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape optimization problems
+    ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape
+        optimization problems
     """
 
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
@@ -74,6 +75,11 @@ class ControlFormHandler(FormHandler):
         self.require_control_constraints = (
             optimization_problem.require_control_constraints
         )
+
+        self.idx_active = None
+        self.idx_active_lower = None
+        self.idx_active_upper = None
+        self.idx_inactive = None
 
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
@@ -99,12 +105,11 @@ class ControlFormHandler(FormHandler):
         self.__compute_gradient_equations()
 
         if self.opt_algo == "newton":
-            self.__compute_newton_forms()
+            self._compute_newton_forms()
 
         # Initialize the scalar products
-        fenics_scalar_product_matrices = [
-            fenics.PETScMatrix() for i in range(self.control_dim)
-        ]
+        fenics_scalar_product_matrices = [fenics.PETScMatrix()] * self.control_dim
+
         [
             fenics.assemble(
                 self.riesz_scalar_products[i],
@@ -186,16 +191,20 @@ class ControlFormHandler(FormHandler):
 
             if self.require_control_constraints[j]:
                 self.idx_active_lower.append(
-                    (
-                        self.controls[j].vector()[:]
-                        <= self.control_constraints[j][0].vector()[:]
-                    ).nonzero()[0]
+                    np.nonzero(
+                        (
+                            self.controls[j].vector()[:]
+                            <= self.control_constraints[j][0].vector()[:]
+                        )
+                    )[0]
                 )
                 self.idx_active_upper.append(
-                    (
-                        self.controls[j].vector()[:]
-                        >= self.control_constraints[j][1].vector()[:]
-                    ).nonzero()[0]
+                    np.nonzero(
+                        (
+                            self.controls[j].vector()[:]
+                            >= self.control_constraints[j][1].vector()[:]
+                        )
+                    )[0]
                 )
             else:
                 self.idx_active_lower.append([])
@@ -256,15 +265,16 @@ class ControlFormHandler(FormHandler):
 
         Parameters
         ----------
-        a : list[fenics.Function]
+        a
             The control-type function that is to be projected onto the inactive set.
-        b : list[fenics.Function]
+        b
             The storage for the result of the projection (is overwritten).
 
         Returns
         -------
         list[fenics.Function]
-            The result of the projection of a onto the inactive set (overwrites input b).
+            The result of the projection of a onto the inactive set (overwrites input
+            b).
         """
 
         for j in range(self.control_dim):
@@ -313,7 +323,7 @@ class ControlFormHandler(FormHandler):
         return a
 
     def __compute_gradient_equations(self) -> None:
-        """Calculates the variational form of the gradient equation, for the Riesz projection.
+        """Calculates the variational form of the gradient equation.
 
         Returns
         -------
@@ -386,7 +396,10 @@ class ControlFormHandler(FormHandler):
             raise InputError(
                 "cashocs._forms.ShapeFormHandler",
                 "__compute_newton_forms",
-                "Newton's method is not available with scalar tracking or min_max terms.",
+                (
+                    "Newton's method is not available with scalar tracking or"
+                    " min_max terms."
+                ),
             )
 
         # Use replace -> derivative to speed up the computations

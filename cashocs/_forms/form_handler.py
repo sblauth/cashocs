@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import fenics
 import numpy as np
@@ -41,6 +41,7 @@ from ..utils import (
 
 if TYPE_CHECKING:
     from .._optimization.optimization_problem import OptimizationProblem
+    from .shape_regularization import ShapeRegularization
 
 
 class FormHandler(abc.ABC):
@@ -84,6 +85,7 @@ class FormHandler(abc.ABC):
         self.state_forms = optimization_problem.state_forms
 
         self.gradient = None
+        self.shape_regularization: Optional[ShapeRegularization] = None
 
         self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
         self.cost_functional_shift = 0.0
@@ -205,15 +207,18 @@ class FormHandler(abc.ABC):
             self.state_eq_forms_rhs = []
             for i in range(self.state_dim):
                 try:
-                    a, L = fenics.system(self.linear_state_eq_forms[i])
+                    lhs, rhs = fenics.system(self.linear_state_eq_forms[i])
                 except UFLException:
                     raise CashocsException(
-                        "The state system could not be transferred to a linear system.\n"
-                        "Perhaps you specified that the system is linear, allthough it is not.\n"
-                        "In your config, in the StateSystem section, try using is_linear = False."
+                        "The state system could not be transferred to a linear "
+                        "system.\n"
+                        "Perhaps you specified that the system is linear, "
+                        "although it is not.\n"
+                        "In your config, in the StateSystem section, "
+                        "try using is_linear = False."
                     )
-                self.state_eq_forms_lhs.append(a)
-                if L.empty():
+                self.state_eq_forms_lhs.append(lhs)
+                if rhs.empty():
                     zero_form = (
                         fenics.inner(
                             fenics.Constant(
@@ -225,7 +230,7 @@ class FormHandler(abc.ABC):
                     )
                     self.state_eq_forms_rhs.append(zero_form)
                 else:
-                    self.state_eq_forms_rhs.append(L)
+                    self.state_eq_forms_rhs.append(rhs)
 
     def __compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics.
@@ -301,9 +306,9 @@ class FormHandler(abc.ABC):
         self.adjoint_eq_rhs = []
 
         for i in range(self.state_dim):
-            a, L = fenics.system(self.linear_adjoint_eq_forms[i])
-            self.adjoint_eq_lhs.append(a)
-            if L.empty():
+            lhs, rhs = fenics.system(self.linear_adjoint_eq_forms[i])
+            self.adjoint_eq_lhs.append(lhs)
+            if rhs.empty():
                 zero_form = (
                     fenics.inner(
                         fenics.Constant(
@@ -315,7 +320,7 @@ class FormHandler(abc.ABC):
                 )
                 self.adjoint_eq_rhs.append(zero_form)
             else:
-                self.adjoint_eq_rhs.append(L)
+                self.adjoint_eq_rhs.append(rhs)
 
         # Compute the  adjoint boundary conditions
         if self.state_adjoint_equal_spaces:
@@ -329,54 +334,57 @@ class FormHandler(abc.ABC):
             ]
         else:
 
-            def get_subdx(V, idx, ls):
-                if V.id() == idx:
+            def get_subdx(function_space, index, ls):
+                if function_space.id() == index:
                     return ls
-                if V.num_sub_spaces() > 1:
-                    for i in range(V.num_sub_spaces()):
-                        ans = get_subdx(V.sub(i), idx, ls + [i])
+                if function_space.num_sub_spaces() > 1:
+                    for i in range(function_space.num_sub_spaces()):
+                        ans = get_subdx(function_space.sub(i), index, ls + [i])
                         if ans is not None:
                             return ans
                 else:
                     return None
 
             self.bcs_list_ad = [
-                [1 for bc in range(len(self.bcs_list[i]))]
-                for i in range(self.state_dim)
+                [1] * len(self.bcs_list[i]) for i in range(self.state_dim)
             ]
 
             for i in range(self.state_dim):
                 for j, bc in enumerate(self.bcs_list[i]):
                     idx = bc.function_space().id()
                     subdx = get_subdx(self.state_spaces[i], idx, ls=[])
-                    W = self.adjoint_spaces[i]
+                    adjoint_space = self.adjoint_spaces[i]
                     for num in subdx:
-                        W = W.sub(num)
-                    shape = W.ufl_element().value_shape()
+                        adjoint_space = adjoint_space.sub(num)
+                    shape = adjoint_space.ufl_element().value_shape()
                     try:
                         if shape == ():
                             self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                W,
+                                adjoint_space,
                                 fenics.Constant(0),
                                 bc.domain_args[0],
                                 bc.domain_args[1],
                             )
                         else:
                             self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                W,
-                                fenics.Constant([0] * W.ufl_element().value_size()),
+                                adjoint_space,
+                                fenics.Constant(
+                                    [0] * adjoint_space.ufl_element().value_size()
+                                ),
                                 bc.domain_args[0],
                                 bc.domain_args[1],
                             )
                     except AttributeError:
                         if shape == ():
                             self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                W, fenics.Constant(0), bc.sub_domain
+                                adjoint_space, fenics.Constant(0), bc.sub_domain
                             )
                         else:
                             self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                W,
-                                fenics.Constant([0] * W.ufl_element().value_size()),
+                                adjoint_space,
+                                fenics.Constant(
+                                    [0] * adjoint_space.ufl_element().value_size()
+                                ),
                                 bc.sub_domain,
                             )
 

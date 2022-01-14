@@ -52,6 +52,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
         )
 
         self.memory = 0
+        self.beta = 0.0
 
     def run(self):
 
@@ -88,13 +89,13 @@ class NonlinearCGMethod(OptimizationAlgorithm):
 
         if self.iteration > 0:
             if self.cg_method == "FR":
-                self.beta_numerator = self.form_handler.scalar_product(
+                beta_numerator = self.form_handler.scalar_product(
                     self.gradient, self.gradient
                 )
-                self.beta_denominator = self.form_handler.scalar_product(
+                beta_denominator = self.form_handler.scalar_product(
                     self.gradient_prev, self.gradient_prev
                 )
-                self.beta = self.beta_numerator / self.beta_denominator
+                self.beta = beta_numerator / beta_denominator
 
             elif self.cg_method == "PR":
                 for i in range(len(self.gradient)):
@@ -104,13 +105,13 @@ class NonlinearCGMethod(OptimizationAlgorithm):
                         - self.gradient_prev[i].vector().vec(),
                     )
 
-                self.beta_numerator = self.form_handler.scalar_product(
+                beta_numerator = self.form_handler.scalar_product(
                     self.gradient, self.difference
                 )
-                self.beta_denominator = self.form_handler.scalar_product(
+                beta_denominator = self.form_handler.scalar_product(
                     self.gradient_prev, self.gradient_prev
                 )
-                self.beta = self.beta_numerator / self.beta_denominator
+                self.beta = beta_numerator / beta_denominator
 
             elif self.cg_method == "HS":
                 for i in range(len(self.gradient)):
@@ -120,13 +121,13 @@ class NonlinearCGMethod(OptimizationAlgorithm):
                         - self.gradient_prev[i].vector().vec(),
                     )
 
-                self.beta_numerator = self.form_handler.scalar_product(
+                beta_numerator = self.form_handler.scalar_product(
                     self.gradient, self.difference
                 )
-                self.beta_denominator = self.form_handler.scalar_product(
+                beta_denominator = self.form_handler.scalar_product(
                     self.difference, self.search_direction
                 )
-                self.beta = self.beta_numerator / self.beta_denominator
+                self.beta = beta_numerator / beta_denominator
 
             elif self.cg_method == "DY":
                 for i in range(len(self.gradient)):
@@ -136,13 +137,13 @@ class NonlinearCGMethod(OptimizationAlgorithm):
                         - self.gradient_prev[i].vector().vec(),
                     )
 
-                self.beta_numerator = self.form_handler.scalar_product(
+                beta_numerator = self.form_handler.scalar_product(
                     self.gradient, self.gradient
                 )
-                self.beta_denominator = self.form_handler.scalar_product(
+                beta_denominator = self.form_handler.scalar_product(
                     self.search_direction, self.difference
                 )
-                self.beta = self.beta_numerator / self.beta_denominator
+                self.beta = beta_numerator / beta_denominator
 
             elif self.cg_method == "HZ":
                 for i in range(len(self.gradient)):

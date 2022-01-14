@@ -28,8 +28,6 @@ import numpy as np
 
 from ..optimization_variable_abstractions import OptimizationVariableAbstractions
 
-
-
 if TYPE_CHECKING:
     from shape_optimization_problem import (
         ShapeOptimizationProblem,

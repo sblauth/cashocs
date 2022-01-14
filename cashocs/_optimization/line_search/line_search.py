@@ -28,7 +28,6 @@ import fenics
 
 from ...utils import _optimization_algorithm_configuration
 
-
 if TYPE_CHECKING:
     from ..optimization_problem import OptimizationProblem
     from ..optimization_algorithms import OptimizationAlgorithm

@@ -26,8 +26,6 @@ from typing import TYPE_CHECKING
 import fenics
 import numpy as np
 
-
-
 if TYPE_CHECKING:
     from .._forms import FormHandler
     from .._pde_problems import StateProblem

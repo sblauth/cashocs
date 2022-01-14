@@ -25,8 +25,6 @@ from typing import TYPE_CHECKING
 
 from .optimization_algorithm import OptimizationAlgorithm
 
-
-
 if TYPE_CHECKING:
     from ..line_search import LineSearch
     from ..optimization_problem import OptimizationProblem

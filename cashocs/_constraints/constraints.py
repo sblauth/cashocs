@@ -33,7 +33,6 @@ from .._exceptions import InputError
 from ..utils import _max, _min
 
 
-
 class Constraint(abc.ABC):
     """Base class for additional equality and inequality constraints."""
 

@@ -36,8 +36,6 @@ from .._loggers import debug
 from ..nonlinear_solvers import picard_iteration
 from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
 
-
-
 if TYPE_CHECKING:
     from .._forms import ControlFormHandler
     from .control_gradient_problem import ControlGradientProblem
@@ -82,16 +80,16 @@ class BaseHessianProblem(abc.ABC):
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
 
-        self.state_A_tensors = [
+        self.state_rhs_tensors = [
             fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
         ]
-        self.state_b_tensors = [
+        self.state_lhs_tensors = [
             fenics.PETScVector() for i in range(self.form_handler.state_dim)
         ]
-        self.adjoint_A_tensors = [
+        self.adjoint_rhs_tensors = [
             fenics.PETScMatrix() for i in range(self.form_handler.state_dim)
         ]
-        self.adjoint_b_tensors = [
+        self.adjoint_lhs_tensors = [
             fenics.PETScVector() for i in range(self.form_handler.state_dim)
         ]
 
@@ -242,8 +240,8 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.state_ksps,
                 ksp_options=self.form_handler.state_ksp_options,
-                A_tensors=self.state_A_tensors,
-                b_tensors=self.state_b_tensors,
+                rhs_tensors=self.state_rhs_tensors,
+                lhs_tensors=self.state_lhs_tensors,
                 inner_is_linear=True,
             )
 
@@ -261,8 +259,8 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.adjoint_ksps,
                 ksp_options=self.form_handler.adjoint_ksp_options,
-                A_tensors=self.adjoint_A_tensors,
-                b_tensors=self.adjoint_b_tensors,
+                rhs_tensors=self.adjoint_rhs_tensors,
+                lhs_tensors=self.adjoint_lhs_tensors,
                 inner_is_linear=True,
             )
 

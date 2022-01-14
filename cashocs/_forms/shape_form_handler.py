@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import itertools
 import json
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 
 import fenics
 import numpy as np
@@ -48,8 +48,6 @@ from ..utils import (
     _min,
 )
 
-
-
 if TYPE_CHECKING:
     from .._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
@@ -65,7 +63,8 @@ class ShapeFormHandler(FormHandler):
 
     See Also
     --------
-    ControlFormHandler : Derives adjoint and gradient equations for optimal control problems
+    ControlFormHandler : Derives adjoint and gradient equations for optimal control
+        problems
     """
 
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
@@ -87,6 +86,8 @@ class ShapeFormHandler(FormHandler):
             optimization_problem.uses_custom_scalar_product
         )
         deformation_space = optimization_problem.deformation_space
+
+        self.scalar_product_matrix: Optional[fenics.PETScMatrix] = None
 
         self.control_dim = 1
 
@@ -279,8 +280,10 @@ class ShapeFormHandler(FormHandler):
 
             if len(self.material_derivative_coeffs) > 0:
                 warning(
-                    "Shape derivative might be wrong, if differential operators act on variables other than states and adjoints. \n"
-                    "You can check for correctness of the shape derivative with cashocs.verification.shape_gradient_test\n"
+                    "Shape derivative might be wrong, if differential operators "
+                    "act on variables other than states and adjoints. \n"
+                    "You can check for correctness of the shape derivative "
+                    "with cashocs.verification.shape_gradient_test\n"
                 )
 
             for coeff in self.material_derivative_coeffs:
@@ -422,7 +425,7 @@ class ShapeFormHandler(FormHandler):
                 self.volumes = fenics.Constant(1.0)
 
             def eps(u):
-                """Computes the symmetrized gradient of a vector field ``u``.
+                """Computes the symmetric gradient of a vector field ``u``.
 
                 Parameters
                 ----------
@@ -432,7 +435,7 @@ class ShapeFormHandler(FormHandler):
                 Returns
                 -------
                 ufl.core.expr.Expr
-                    The symmetrized gradient of ``u``
+                    The symmetric gradient of ``u``
 
 
                 """
@@ -523,8 +526,11 @@ class ShapeFormHandler(FormHandler):
                 self.distance = fenics.Function(self.CG1)
                 if not self.smooth_mu:
                     self.mu_expression = fenics.Expression(
-                        "(dist <= dist_min) ? mu_min : "
-                        + "(dist <= dist_max) ? mu_min + (dist - dist_min)/(dist_max - dist_min)*(mu_max - mu_min) : mu_max",
+                        (
+                            "(dist <= dist_min) ? mu_min : "
+                            "(dist <= dist_max) ? mu_min + (dist - dist_min)/"
+                            "(dist_max - dist_min)*(mu_max - mu_min) : mu_max"
+                        ),
                         degree=1,
                         dist=self.distance,
                         dist_min=self.dist_min,
@@ -534,11 +540,16 @@ class ShapeFormHandler(FormHandler):
                     )
                 else:
                     self.mu_expression = fenics.Expression(
-                        "(dist <= dist_min) ? mu_min :"
-                        + "(dist <= dist_max) ? mu_min + (mu_max - mu_min)/(dist_max - dist_min)*(dist - dist_min) "
-                        + "- (mu_max - mu_min)/pow(dist_max - dist_min, 2)*(dist - dist_min)*(dist - dist_max) "
-                        + "- 2*(mu_max - mu_min)/pow(dist_max - dist_min, 3)*(dist - dist_min)*pow(dist - dist_max, 2)"
-                        + " : mu_max",
+                        (
+                            "(dist <= dist_min) ? mu_min :"
+                            "(dist <= dist_max) ? mu_min + "
+                            "(mu_max - mu_min)/(dist_max - dist_min)*(dist - dist_min) "
+                            "- (mu_max - mu_min)/pow(dist_max - dist_min, 2)"
+                            "*(dist - dist_min)*(dist - dist_max) "
+                            "- 2*(mu_max - mu_min)/pow(dist_max - dist_min, 3)"
+                            "*(dist - dist_min)*pow(dist - dist_max, 2)"
+                            " : mu_max"
+                        ),
                         degree=3,
                         dist=self.distance,
                         dist_min=self.dist_min,
@@ -566,8 +577,8 @@ class ShapeFormHandler(FormHandler):
                         self.a_mu,
                         self.L_mu,
                         self.bcs_mu,
-                        A_tensor=self.A_mu,
-                        b_tensor=self.b_mu,
+                        rhs_tensor=self.A_mu,
+                        lhs_tensor=self.b_mu,
                     )
                     x = _solve_linear_problem(
                         self.ksp_mu,
@@ -668,10 +679,10 @@ class ShapeFormHandler(FormHandler):
             self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
             and not self.uses_custom_scalar_product
         ):
-            self.form = replace(
+            form = replace(
                 self.F_p_laplace, {self.gradient[0]: a[0], self.test_vector_field: b[0]}
             )
-            result = fenics.assemble(self.form)
+            result = fenics.assemble(form)
 
         else:
 
@@ -685,7 +696,7 @@ class ShapeFormHandler(FormHandler):
         return result
 
     def __compute_p_laplacian_forms(self) -> None:
-        """Computes the weak forms for the p-Laplace equations, for computing the shape derivative
+        """Computes the weak forms for the p-Laplace equations.
 
         Returns
         -------

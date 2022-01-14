@@ -28,10 +28,9 @@ from typing import TYPE_CHECKING, List, Optional
 
 import fenics
 
-
-
 if TYPE_CHECKING:
     from .optimization_problem import OptimizationProblem
+    from ..geometry.mesh_handler import _MeshHandler
 
 
 class OptimizationVariableAbstractions(abc.ABC):
@@ -39,6 +38,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
+        self.mesh_handler: Optional[_MeshHandler] = None
 
     @abc.abstractmethod
     def compute_decrease_measure(

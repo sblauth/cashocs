@@ -174,7 +174,8 @@ class OptimizationAlgorithm(abc.ABC):
                             "Optimization Algorithm", "Mesh quality is too low."
                         )
 
-            # Iteration for remeshing is the one exceeding the maximum number of iterations
+            # Iteration for remeshing is the one exceeding the maximum number
+            # of iterations
             elif self.converged_reason == -4:
                 self.output_summary()
                 if self.soft_exit:

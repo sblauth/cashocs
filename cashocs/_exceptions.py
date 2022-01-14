@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import Optional, List
 
 
-
 class CashocsException(Exception):
     """Base class for exceptions raised by cashocs."""
 

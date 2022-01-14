@@ -30,13 +30,12 @@ from petsc4py import PETSc
 from .._exceptions import InputError, PETScKSPError
 
 
-
 def _assemble_petsc_system(
     A_form: ufl.Form,
     b_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,
-    b_tensor: Optional[fenics.PETScVector] = None,
+    rhs_tensor: Optional[fenics.PETScMatrix] = None,
+    lhs_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
@@ -48,9 +47,9 @@ def _assemble_petsc_system(
         The UFL form for the right-hand side of the linear equation.
     bcs : None or fenics.DirichletBC or list[fenics.DirichletBC], optional
         A list of Dirichlet boundary conditions.
-    A_tensor : fenics.PETScMatrix or None, optional
+    rhs_tensor : fenics.PETScMatrix or None, optional
         A matrix into which the result is assembled. Default is ``None``
-    b_tensor : fenics.PETScVector or None, optional
+    lhs_tensor : fenics.PETScVector or None, optional
         A vector into which the result is assembled. Default is ``None``
 
     Returns
@@ -67,17 +66,22 @@ def _assemble_petsc_system(
     boundary etc.
     """
 
-    if A_tensor is None:
-        A_tensor = fenics.PETScMatrix()
-    if b_tensor is None:
-        b_tensor = fenics.PETScVector()
+    if rhs_tensor is None:
+        rhs_tensor = fenics.PETScMatrix()
+    if lhs_tensor is None:
+        lhs_tensor = fenics.PETScVector()
     fenics.assemble_system(
-        A_form, b_form, bcs, keep_diagonal=True, A_tensor=A_tensor, b_tensor=b_tensor
+        A_form,
+        b_form,
+        bcs,
+        keep_diagonal=True,
+        A_tensor=rhs_tensor,
+        b_tensor=lhs_tensor,
     )
-    A_tensor.ident_zeros()
+    rhs_tensor.ident_zeros()
 
-    A = A_tensor.mat()
-    b = b_tensor.vec()
+    A = rhs_tensor.mat()
+    b = lhs_tensor.vec()
 
     return A, b
 
