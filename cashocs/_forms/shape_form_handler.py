@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing UFL forms for shape optimization problems.
-
-"""
+"""Module for managing UFL forms for shape optimization problems."""
 
 from __future__ import annotations
 
@@ -60,20 +58,12 @@ class ShapeFormHandler(FormHandler):
     This class is used analogously to the ControlFormHandler class, but for
     shape optimization problems, where it is used to derive the adjoint equations
     and the shape derivatives.
-
-    See Also
-    --------
-    ControlFormHandler : Derives adjoint and gradient equations for optimal control
-        problems
     """
 
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
-        """Initializes the ShapeFormHandler object.
-
-        Parameters
-        ----------
-        optimization_problem : ShapeOptimizationProblem
-            The corresponding shape optimization problem
+        """
+        Args:
+            optimization_problem: The corresponding shape optimization problem.
         """
 
         super().__init__(optimization_problem)
@@ -187,14 +177,8 @@ class ShapeFormHandler(FormHandler):
             )
 
     def __compute_shape_derivative(self) -> None:
-        """Computes the shape derivative.
+        """Calculates the shape derivative.
 
-        Returns
-        -------
-        None
-
-        Notes
-        -----
         This only works properly if differential operators only
         act on state and adjoint variables, else the results are incorrect.
         A corresponding warning whenever this could be the case is issued.
@@ -340,12 +324,7 @@ class ShapeFormHandler(FormHandler):
         self.shape_derivative += self.shape_regularization.compute_shape_derivative()
 
     def __compute_shape_gradient_forms(self) -> None:
-        """Calculates the necessary left-hand-sides for the shape gradient problem.
-
-        Returns
-        -------
-        None
-        """
+        """Calculates the necessary left-hand-sides for the shape gradient problem."""
 
         shape_bdry_temp = self.config.get(
             "ShapeGradient", "shape_bdry_def", fallback="[]"
@@ -466,6 +445,7 @@ class ShapeFormHandler(FormHandler):
             self.riesz_scalar_product = self.shape_scalar_product
 
     def __setup_mu_computation(self) -> None:
+        """Sets up the computation of the elasticity parameter mu."""
 
         if not self.use_distance_mu:
             self.mu_def = self.config.getfloat("ShapeGradient", "mu_def", fallback=1.0)
@@ -559,14 +539,10 @@ class ShapeFormHandler(FormHandler):
                     )
 
     def __compute_mu_elas(self) -> None:
-        """Computes the second lame parameter mu_elas, based on `Schulz and
-        Siebenborn, Computational Comparison of Surface Metrics for
-        PDE Constrained Shape Optimization
-        <https://doi.org/10.1515/cmam-2016-0009>`_
+        """Computes the elasticity parameter mu.
 
-        Returns
-        -------
-        None
+        Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
+        PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
         """
 
         if self.shape_scalar_product is None:
@@ -614,13 +590,8 @@ class ShapeFormHandler(FormHandler):
             self.mu_lame.vector().apply("")
 
     def _project_scalar_product(self) -> None:
-        """Ensures, that only free dimensions can be deformed.
+        """Ensures, that only free dimensions can be deformed."""
 
-        Returns
-        -------
-        None
-
-        """
         if self.use_fixed_dimensions:
 
             copy_mat = self.fe_scalar_product_matrix.copy()
@@ -637,10 +608,6 @@ class ShapeFormHandler(FormHandler):
 
         Updates the left-hand-side of the linear elasticity equations
         (needed when the geometry changes).
-
-        Returns
-        -------
-        None
         """
 
         self.__compute_mu_elas()
@@ -660,19 +627,14 @@ class ShapeFormHandler(FormHandler):
     def scalar_product(
         self, a: List[fenics.Function], b: List[fenics.Function]
     ) -> float:
-        """Computes the scalar product between two deformation functions.
+        """Computes the scalar product between two deformation functions a and b.
 
-        Parameters
-        ----------
-        a : list[fenics.Function]
-            The first argument.
-        b : list[fenics.Function]
-            The second argument.
+        Args:
+            a: The first argument.
+            b: The second argument.
 
-        Returns
-        -------
-        float
-            The value of the scalar product.
+        Returns:
+            The scalar product of a and b.
         """
 
         if (
@@ -696,13 +658,7 @@ class ShapeFormHandler(FormHandler):
         return result
 
     def __compute_p_laplacian_forms(self) -> None:
-        """Computes the weak forms for the p-Laplace equations.
-
-        Returns
-        -------
-        None
-
-        """
+        """Computes the weak forms for the p-Laplace equations."""
 
         if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):
             p = self.config.getint("ShapeGradient", "p_laplacian_power", fallback=2)

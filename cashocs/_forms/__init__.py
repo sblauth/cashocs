@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Private module forms of cashocs.
+"""Module for UFL form manipulations.
 
 This is used to carry out form manipulations such as generating the UFL
 forms for the adjoint system and for the Riesz gradient identificiation

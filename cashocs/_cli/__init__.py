@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Command line interface of cashocs.
-
-"""
+"""Command line interface of cashocs."""
 
 from ._convert import convert

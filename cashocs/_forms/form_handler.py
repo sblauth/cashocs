@@ -15,14 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing UFL forms for PDE constrained optimization.
-
-"""
+"""Module for managing UFL forms for PDE constrained optimization."""
 
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 import fenics
 import numpy as np
@@ -51,20 +49,12 @@ class FormHandler(abc.ABC):
     optimal control or shape optimization. The base class is
     used to determine common objects and to derive the UFL forms
     for the state and adjoint systems.
-
-    See Also
-    --------
-    ControlFormHandler : FormHandler for optimal control problems
-    ShapeFormHandler : FormHandler for shape optimization problems
     """
 
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
-        """Initializes the form handler.
-
-        Parameters
-        ----------
-        optimization_problem : OptimizationProblem
-            The corresponding optimization problem
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem
         """
 
         self.bcs_list = optimization_problem.bcs_list
@@ -193,12 +183,7 @@ class FormHandler(abc.ABC):
         self.__compute_adjoint_equations()
 
     def __compute_state_equations(self) -> None:
-        """Calculates the weak form of the state equation for the use with fenics.
-
-        Returns
-        -------
-        None
-        """
+        """Calculates the weak form of the state equation for the use with fenics."""
 
         self.state_eq_forms = [
             fenics.derivative(
@@ -246,12 +231,7 @@ class FormHandler(abc.ABC):
                     self.state_eq_forms_rhs.append(rhs)
 
     def __compute_adjoint_equations(self) -> None:
-        """Calculates the weak form of the adjoint equation for use with fenics.
-
-        Returns
-        -------
-        None
-        """
+        """Calculates the weak form of the adjoint equation for use with fenics."""
 
         self.adjoint_eq_forms = [
             fenics.derivative(
@@ -408,25 +388,70 @@ class FormHandler(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def scalar_product(self, a, b) -> float:
+    def scalar_product(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> float:
+        """Computes the scalar product between a and b.
+
+        Args:
+            a: The first argument.
+            b: The second argument.
+
+        Returns:
+            The scalar product of a and b.
+        """
+
         pass
 
-    def restrict_to_inactive_set(self, a, b):
+    def restrict_to_inactive_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the inactive set.
+
+        Note, that nothing will happen if the type of the optimization problem does not
+        support box constraints.
+
+        Args:
+            a: The function, which shall be restricted to the inactive set
+            b: The output function, which will contain the result and is overridden.
+
+        Returns:
+            The result of the restriction (overrides input b)
+        """
+
         for j in range(len(self.gradient)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
                 b[j].vector().vec().aypx(0.0, a[j].vector().vec())
 
         return b
 
-    def restrict_to_active_set(self, a, b):
+    def restrict_to_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the active set.
+
+        Note, that nothing will happen if the type of the optimization problem does not
+        support box constraints.
+
+        Args:
+            a: The function, which shall be restricted to the active set
+            b: The output function, which will contain the result and is overridden.
+
+        Returns:
+            The result of the restriction (overrides input b)
+        """
 
         for j in range(len(self.gradient)):
             b[j].vector().vec().set(0.0)
 
         return b
 
-    def compute_active_sets(self):
+    def compute_active_sets(self) -> None:
+        """Computes the active set for problems with box constraints."""
+
         pass
 
-    def update_scalar_product(self):
+    def update_scalar_product(self) -> None:
+        """Updates the scalar product."""
+
         pass
