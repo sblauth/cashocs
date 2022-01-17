@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Nonlinear CG method for PDE constrained optimization
-
-"""
+"""Nonlinear CG method for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -27,7 +25,15 @@ from .optimization_algorithm import OptimizationAlgorithm
 
 
 class NonlinearCGMethod(OptimizationAlgorithm):
+    """Nonlinear CG methods for PDE constrained optimization."""
+
     def __init__(self, optimization_problem, line_search):
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
+        """
+
         super().__init__(optimization_problem)
         self.line_search = line_search
 
@@ -54,7 +60,8 @@ class NonlinearCGMethod(OptimizationAlgorithm):
         self.memory = 0
         self.beta = 0.0
 
-    def run(self):
+    def run(self) -> None:
+        """Solves the optimization problem with the NCG method."""
 
         self.initialize_solver()
         self.memory = 0
@@ -86,6 +93,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
                 break
 
     def compute_beta(self) -> None:
+        """Computes the NCG update parameter beta."""
 
         if self.iteration > 0:
             if self.cg_method == "FR":
@@ -171,6 +179,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
             self.beta = 0.0
 
     def compute_search_direction(self) -> None:
+        """Computes the search direction for the NCG method."""
 
         for i in range(len(self.gradient)):
             self.search_direction[i].vector().vec().aypx(
@@ -178,6 +187,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
             )
 
     def restart(self) -> None:
+        """Checks, whether the NCG method should be restarted and does the restart."""
 
         if self.cg_periodic_restart:
             if self.memory < self.cg_periodic_its:
@@ -200,6 +210,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
                     )
 
     def store_previous_gradient(self) -> None:
+        """Stores a copy of the gradient of the previous iteration."""
 
         for i in range(len(self.gradient)):
             self.gradient_prev[i].vector().vec().aypx(
@@ -207,6 +218,7 @@ class NonlinearCGMethod(OptimizationAlgorithm):
             )
 
     def project_ncg_search_direction(self) -> None:
+        """Projects the search direction according to the box constraints."""
 
         self.optimization_variable_abstractions.project_ncg_search_direction(
             self.search_direction

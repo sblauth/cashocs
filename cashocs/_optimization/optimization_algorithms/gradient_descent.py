@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Gradient descent method for PDE constrained optimization.
-
-"""
+"""Gradient descent method for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -31,14 +29,22 @@ if TYPE_CHECKING:
 
 
 class GradientDescentMethod(OptimizationAlgorithm):
+    """A gradient descent method."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, line_search: LineSearch
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
+        """
 
         super().__init__(optimization_problem)
         self.line_search = line_search
 
     def run(self) -> None:
+        """Performs the optimization with the gradient descent method."""
 
         self.initialize_solver()
 
@@ -63,6 +69,8 @@ class GradientDescentMethod(OptimizationAlgorithm):
                 break
 
     def compute_search_direction(self) -> None:
+        """Computes the search direction for the gradient descent method."""
+
         for i in range(len(self.gradient)):
             self.search_direction[i].vector().vec().aypx(
                 0.0, -self.gradient[i].vector().vec()

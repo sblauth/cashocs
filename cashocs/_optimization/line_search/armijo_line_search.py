@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the Armijo line search.
-
-"""
+"""Module for the Armijo line search."""
 
 from __future__ import annotations
 
@@ -37,10 +35,16 @@ import numpy as np
 
 
 class ArmijoLineSearch(LineSearch):
+    """Implementation of the Armijo line search procedure."""
+
     def __init__(
         self,
         optimization_problem: OptimizationProblem,
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         super().__init__(optimization_problem)
 
@@ -58,6 +62,14 @@ class ArmijoLineSearch(LineSearch):
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
+        """Performs the line search.
+
+        Args:
+            solver: The optimization algorithm.
+            search_direction: The current search direction.
+            has_curvature_info: A flag, which indicates whether the direction is
+                (presumably) scaled.
+        """
 
         search_direction_inf = np.max(
             [

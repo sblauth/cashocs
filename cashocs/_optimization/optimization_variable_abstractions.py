@@ -34,7 +34,13 @@ if TYPE_CHECKING:
 
 
 class OptimizationVariableAbstractions(abc.ABC):
+    """Base class for abstracting optimization variables."""
+
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
@@ -44,11 +50,20 @@ class OptimizationVariableAbstractions(abc.ABC):
     def compute_decrease_measure(
         self, search_direction: Optional[List[fenics.Function]] = None
     ) -> float:
+        """Computes the measure of decrease needed for the Armijo test.
+
+        Args:
+            search_direction: The search direction.
+
+        Returns:
+            The decrease measure for the Armijo test.
+        """
 
         pass
 
     @abc.abstractmethod
     def revert_variable_update(self) -> None:
+        """Reverts the optimization variables to the current iterate."""
 
         pass
 
@@ -56,28 +71,64 @@ class OptimizationVariableAbstractions(abc.ABC):
     def update_optimization_variables(
         self, search_direction, stepsize: float, beta: float
     ) -> float:
+        """Updates the optimization variables based on a line search.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current (trial) stepsize.
+            beta: The parameter for the line search, which "halves" the stepsize if the
+                test was not successful.
+
+        Returns:
+            The stepsize which was found to be acceptable.
+        """
 
         pass
 
     @abc.abstractmethod
     def compute_gradient_norm(self) -> float:
+        """Computes the norm of the gradient.
+
+        Returns:
+            The norm of the gradient.
+        """
 
         pass
 
     @abc.abstractmethod
     def compute_a_priori_decreases(
         self, search_direction: List[fenics.Function], stepsize: float
-    ) -> float:
+    ) -> int:
+        """Computes the number of times the stepsize has to be "halved" a priori.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current stepsize.
+
+        Returns:
+            The number of times the stepsize has to be "halved" before the actual trial.
+        """
 
         pass
 
     @abc.abstractmethod
     def requires_remeshing(self) -> bool:
+        """Checks, if remeshing is needed.
+
+        Returns:
+            A boolean, which indicates whether remeshing is required.
+        """
+
         pass
 
     @abc.abstractmethod
     def project_ncg_search_direction(
         self, search_direction: List[fenics.Function]
     ) -> None:
+        """Restricts the search direction to the inactive set.
+
+        Args:
+            search_direction: The current search direction (will be overwritten).
+        """
 
         pass

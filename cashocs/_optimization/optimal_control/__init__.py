@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for treatment of optimal control problems.
-
-"""
+"""Module for treatment of optimal control problems."""
 
 from .optimal_control_problem import OptimalControlProblem
 

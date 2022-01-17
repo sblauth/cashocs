@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Parent class for optimization algorithms for PDE constrained optimization
-
-"""
+"""Parent class for optimization algorithms for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -34,7 +32,14 @@ if TYPE_CHECKING:
 
 
 class OptimizationAlgorithm(abc.ABC):
+    """Base class for optimization algorithms."""
+
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
+
         self.line_search_broken = False
         self.has_curvature_info = False
 
@@ -86,25 +91,34 @@ class OptimizationAlgorithm(abc.ABC):
         self.output_manager = optimization_problem.output_manager
 
     @abc.abstractmethod
-    def run(self):
+    def run(self) -> None:
+        """Solves the optimization problem."""
+
         pass
 
     def compute_gradient_norm(self) -> float:
+        """Computes the norm of the gradient.
+
+        Returns:
+            The computed gradient norm.
+        """
 
         return self.optimization_variable_abstractions.compute_gradient_norm()
 
-    def output(self):
+    def output(self) -> None:
+        """Writes the output (to console and files)."""
+
         self.output_manager.output(self)
 
     def output_summary(self) -> None:
+        """Writes the summary of the optimization (to files and console)."""
+
         self.output_manager.output_summary(self)
 
     def nonconvergence(self) -> bool:
-        """Checks for nonconvergence of the solution algorithm
+        """Checks for nonconvergence of the solution algorithm.
 
-        Returns
-        -------
-        bool
+        Returns:
             A flag which is True, when the algorithm did not converge
         """
 
@@ -123,12 +137,7 @@ class OptimizationAlgorithm(abc.ABC):
             return False
 
     def post_processing(self) -> None:
-        """Does a post processing after the optimization algorithm terminates.
-
-        Returns
-        -------
-        None
-        """
+        """Does a post processing after the optimization algorithm terminates."""
 
         if self.converged:
             self.output()
@@ -187,6 +196,11 @@ class OptimizationAlgorithm(abc.ABC):
                     )
 
     def convergence_test(self) -> bool:
+        """Checks, whether the algorithm converged successfully.
+
+        Returns:
+            A flag, which is True if the algorithm converged.
+        """
 
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
@@ -203,12 +217,17 @@ class OptimizationAlgorithm(abc.ABC):
         return False
 
     def compute_gradient(self) -> None:
+        """Computes the gradient of the reduced cost functional."""
 
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
         self.gradient_problem.solve()
 
     def check_for_ascent(self) -> None:
+        """Checks, whether the current search direction is an ascent direction.
+
+        Reverts the direction to the negative gradient if an ascent direction is found.
+        """
 
         directional_derivative = self.form_handler.scalar_product(
             self.gradient, self.search_direction
@@ -222,6 +241,7 @@ class OptimizationAlgorithm(abc.ABC):
             self.has_curvature_info = False
 
     def initialize_solver(self) -> None:
+        """Initializes the solver."""
 
         self.converged = False
 
