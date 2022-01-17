@@ -17,9 +17,8 @@
 
 """Abstract implementation of an Hessian problem.
 
-This uses Krylov subspace methods to iteratively solve
-the "Hessian problems" occurring in the truncated Newton
-method.
+This uses Krylov subspace methods to iteratively solve the "Hessian problems" occurring 
+in the truncated Newton method.
 """
 
 from __future__ import annotations
@@ -48,13 +47,10 @@ class BaseHessianProblem(abc.ABC):
         self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
         """
-        Parameters
-        ----------
-        form_handler : ControlFormHandler
-            The FormHandler object for the optimization problem.
-        gradient_problem : ControlGradientProblem
-            The ControlGradientProblem object (this is needed for the computation
-            of the Hessian).
+        Args:
+            form_handler: The FormHandler object for the optimization problem.
+            gradient_problem: The ControlGradientProblem object (this is needed for the
+                computation of the Hessian).
         """
 
         self.form_handler = form_handler
@@ -178,16 +174,9 @@ class BaseHessianProblem(abc.ABC):
 
         via iterative methods (conjugate gradient or conjugate residual method)
 
-        Parameters
-        ----------
-        h : list[fenics.Function]
-            A function to which we want to apply the Hessian to.
-        out : list[fenics.Function]
-            A list of functions into which the result is saved.
-
-        Returns
-        -------
-        None
+        Args:
+            h: A function to which we want to apply the Hessian to.
+            out: A list of functions into which the result is saved.
         """
 
         for i in range(self.control_dim):
@@ -288,16 +277,11 @@ class BaseHessianProblem(abc.ABC):
     ) -> List[fenics.Function]:
         """Solves the problem with a truncated Newton method.
 
-        Parameters
-        ----------
-        idx_active : list[int] or None, optional
-            List of active indices
+        Args:
+            idx_active: List of active indices.
 
-        Returns
-        -------
-        list[fenics.Function]
-            The Newton increment
-
+        Returns:
+            A list containing the Newton increment.
         """
 
         self.gradient_problem.solve()
@@ -315,32 +299,20 @@ class BaseHessianProblem(abc.ABC):
 
     @abc.abstractmethod
     def cg(self, idx_active: Optional[List[int]] = None) -> None:
-        """Solves the (truncated) Newton step with a CG method
+        """Solves the (truncated) Newton step with a CG method.
 
-        Parameters
-        ----------
-        idx_active : list[int] or None, optional
-            The list of active indices
-
-        Returns
-        -------
-        None
+        Args:
+            idx_active: The list of active indices
         """
 
         pass
 
     @abc.abstractmethod
     def cr(self, idx_active: Optional[List[int]] = None) -> None:
-        """Solves the (truncated) Newton step with a CR method
+        """Solves the (truncated) Newton step with a CR method.
 
-        Parameters
-        ----------
-        idx_active : list[int] or None, optional
-            The list of active indices
-
-        Returns
-        -------
-        None
+        Args:
+            idx_active: The list of active indices
         """
 
         pass
@@ -352,15 +324,11 @@ class HessianProblem(BaseHessianProblem):
     def __init__(
         self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
     ) -> None:
-        """Initializes self.
-
-        Parameters
-        ----------
-        form_handler : ControlFormHandler
-            The FormHandler object for the optimization problem.
-        gradient_problem : ControlGradientProblem
-            The ControlGradientProblem object (this is needed for the computation
-            of the Hessian).
+        """
+        Args:
+            form_handler: The FormHandler object for the optimization problem.
+            gradient_problem: The ControlGradientProblem object (this is needed for the
+                computation of the Hessian).
         """
 
         super().__init__(form_handler, gradient_problem)
@@ -372,16 +340,9 @@ class HessianProblem(BaseHessianProblem):
 
         This is needed to solve the Newton step with iterative solvers.
 
-        Parameters
-        ----------
-        h : list[fenics.Function]
-            The direction, onto which the reduced Hessian is applied
-        out : list[fenics.Function]
-            The output of the application of the (linear) operator
-
-        Returns
-        -------
-        None
+        Args:
+            h: The direction, onto which the reduced Hessian is applied.
+            out: The output of the application of the (linear) operator.
         """
 
         for j in range(self.control_dim):
@@ -404,17 +365,13 @@ class HessianProblem(BaseHessianProblem):
     def newton_solve(
         self, idx_active: Optional[List[List[int]]] = None
     ) -> List[fenics.Function]:
-        """Solves the Newton step with an iterative method
+        """Solves the Newton step with an iterative method.
 
-        Parameters
-        ----------
-        idx_active : list[list[int]] or None, optional
-            The list of active indices
+        Args:
+            idx_active: The list of active indices
 
-        Returns
-        -------
-        list[fenics.Function]
-            The Newton increment
+        Returns:
+            A list containing the Newton increment.
         """
 
         if idx_active is not None:
@@ -423,18 +380,10 @@ class HessianProblem(BaseHessianProblem):
         return super().newton_solve()
 
     def cg(self, idx_active: Optional[List[int]] = None) -> None:
-        """Solves the (truncated) Newton step with a CG method
+        """Solves the (truncated) Newton step with a CG method.
 
-        Parameters
-        ----------
-        idx_active : list[int] or None, optional
-            The list of active indices
-
-        Returns
-        -------
-        list[fenics.Function]
-            The Newton increment
-
+        Args:
+            idx_active: The list of active indices
         """
 
         for j in range(self.control_dim):
@@ -477,16 +426,10 @@ class HessianProblem(BaseHessianProblem):
             rsold = rsnew
 
     def cr(self, idx_active: Optional[List[int]] = None) -> None:
-        """Solves the (truncated) Newton step with a CR method
+        """Solves the (truncated) Newton step with a CR method.
 
-        Parameters
-        ----------
-        idx_active : list[int] or None, optional
-            The list of active indices
-
-        Returns
-        -------
-        None
+        Args:
+            idx_active: The list of active indices.
         """
 
         for j in range(self.control_dim):

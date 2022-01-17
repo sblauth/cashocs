@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Parent class for all PDE problems.
-
-"""
+"""Base class for all PDE problems."""
 
 from __future__ import annotations
 
@@ -31,12 +29,12 @@ if TYPE_CHECKING:
 
 
 class PDEProblem(abc.ABC):
+    """Base class for a PDE problem."""
+
     def __init__(self, form_handler: FormHandler) -> None:
         """
-        Parameters
-        ----------
-        form_handler
-            The form handler for the problem
+        Args:
+            form_handler: The form handler for the problem.
         """
 
         self.form_handler = form_handler
@@ -46,12 +44,10 @@ class PDEProblem(abc.ABC):
 
     @abc.abstractmethod
     def solve(self) -> Union[fenics.Function, List[fenics.Function]]:
-        """
+        """Solves the PDE.
 
-        Returns
-        -------
-        fenics.Function or list[fenics.Function]
-            The solution of the PDE
+        Returns:
+            The solution of the PDE.
         """
 
         pass

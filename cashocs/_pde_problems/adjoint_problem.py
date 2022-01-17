@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of an adjoint problem.
-
-"""
+"""Abstract implementation of an adjoint problem."""
 
 from __future__ import annotations
 
@@ -36,10 +34,7 @@ if TYPE_CHECKING:
 
 
 class AdjointProblem(PDEProblem):
-    """The adjoint problem.
-
-    This class implements the adjoint problem as well as its solver.
-    """
+    """This class implements the adjoint problem as well as its solver."""
 
     def __init__(
         self,
@@ -48,15 +43,12 @@ class AdjointProblem(PDEProblem):
         temp_dict: Dict = None,
     ) -> None:
         """
-        Parameters
-        ----------
-        form_handler
-            The FormHandler object for the optimization problem.
-        state_problem
-            The StateProblem object used to get the point where we linearize the
-            problem.
-        temp_dict
-            A dictionary used for reinitializations when remeshing is performed.
+        Args:
+            form_handler: The FormHandler object for the optimization problem.
+            state_problem: The StateProblem object used to get the point where we
+                linearize the problem.
+            temp_dict: A dictionary used for reinitializations when remeshing is
+                performed.
         """
 
         super().__init__(form_handler)
@@ -104,9 +96,7 @@ class AdjointProblem(PDEProblem):
     def solve(self) -> List[fenics.Function]:
         """Solves the adjoint system.
 
-        Returns
-        -------
-        list[fenics.Function]
+        Returns:
             The list of adjoint variables.
         """
 
