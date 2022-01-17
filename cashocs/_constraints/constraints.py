@@ -112,7 +112,7 @@ class EqualityConstraint(Constraint):
                 fenics.Constant(0.5) * pow(variable_function - target, 2) * measure
             )
 
-    def constraint_violation(self):
+    def constraint_violation(self) -> float:
         """Computes the constraint violation for the problem.
 
         Returns:
@@ -138,7 +138,7 @@ class InequalityConstraint(Constraint):
         lower_bound: Optional[Union[float, fenics.Function]] = None,
         upper_bound: Optional[Union[float, fenics.Function]] = None,
         measure: Optional[fenics.Measure] = None,
-    ):
+    ) -> None:
         """
         Args:
             variable_function: Either a ufl Form (when we have a scalar / integral

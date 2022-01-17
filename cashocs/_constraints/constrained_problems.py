@@ -16,7 +16,6 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Constrained optimization problems, with additional equality / inequality constraints.
-
 """
 
 from __future__ import annotations
@@ -283,7 +282,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         constraints: Union[
             EqualityConstraint,
             InequalityConstraint,
-            List[EqualityConstraint, InequalityConstraint],
+            List[Union[EqualityConstraint, InequalityConstraint]],
         ],
         config: Optional[configparser.ConfigParser] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,

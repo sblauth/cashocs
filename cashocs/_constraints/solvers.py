@@ -42,7 +42,7 @@ class ConstrainedSolver(abc.ABC):
         constrained_problem: ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
-    ):
+    ) -> None:
         """
         Args:
             constrained_problem: The constrained optimization problem which shall be
@@ -414,7 +414,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
         constraint_tol: Optional[float] = None,
-    ):
+    ) -> None:
         """Solves the constrained problem.
 
         Args:
