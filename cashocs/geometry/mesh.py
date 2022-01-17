@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for mesh importing and generation.
-
-"""
+"""Module for mesh importing and generation."""
 
 from __future__ import annotations
 
@@ -39,16 +37,19 @@ from ..utils.helpers import (
     _parse_remesh,
 )
 
-if TYPE_CHECKING:
-    pass
-
 
 class Mesh(fenics.Mesh):
+    """A finite element mesh."""
+
     def __init__(self, *args, **kwargs) -> None:
+        """See base class."""
+
         super().__init__(*args, **kwargs)
         self._config_flag = False
 
     def _set_config_flag(self) -> None:
+        """Indicates, that the mesh has been loaded via a config file."""
+
         self._config_flag = True
 
 
@@ -70,54 +71,36 @@ def import_mesh(
     to the subdomains and boundaries output of this function and can also be directly
     accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.
 
-    Parameters
-    ----------
-    input_arg : str or configparser.ConfigParser
-        This is either a string, in which case it corresponds to the location
-        of the mesh file in .xdmf file format, or a config file that
-        has this path stored in its settings, under the section Mesh, as
-        parameter ``mesh_file``.
+    Args:
+        input_arg: This is either a string, in which case it corresponds to the location
+            of the mesh file in .xdmf file format, or a config file that
+            has this path stored in its settings, under the section Mesh, as
+            parameter ``mesh_file``.
 
-    Returns
-    -------
-    mesh : Mesh
-        The imported (computational) mesh.
-    subdomains : fenics.MeshFunction
-        A :py:class:`fenics.MeshFunction` object containing the subdomains,
-        i.e., the Physical regions marked in the GMSH file.
-    boundaries : fenics.MeshFunction
-        A MeshFunction object containing the boundaries,
-        i.e., the Physical regions marked in the GMSH file. Can, e.g., be used to set
-        up boundary conditions.
-    dx : fenics.Measure
-        The volume measure of the mesh corresponding to
-        the subdomains (i.e. GMSH Physical region indices).
-    ds : fenics.Measure
-        The surface measure of the mesh corresponding to
-        the boundaries (i.e. GMSH Physical region indices).
-    dS : fenics.Measure
-        The interior facet measure of the mesh corresponding
-        to boundaries (i.e. GMSH Physical region indices).
+    Returns:
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
+        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
+        function for the boundaries, dx is a volume measure, ds is a surface measure,
+        and dS is a measure for the interior facets.
 
-    Notes
-    -----
-    In case the boundaries in the Gmsh .msh file are not only marked with numbers (as
-    pyhsical groups), but also with names (i.e. strings), these strings can be used with
-    the integration measures ``dx`` and ``ds`` returned by this method. E.g., if one
-    specified the following in a 2D Gmsh .geo file ::
+    Notes:
+        In case the boundaries in the Gmsh .msh file are not only marked with numbers
+        (as pyhsical groups), but also with names (i.e. strings), these strings can be
+        used with the integration measures ``dx`` and ``ds`` returned by this method.
+        E.g., if one specified the following in a 2D Gmsh .geo file ::
 
-        Physical Surface("domain", 1) = {i,j,k};
+            Physical Surface("domain", 1) = {i,j,k};
 
-    where i,j,k are representative for some integers, then this can be used in the
-    measure ``dx`` (as we are 2D) as follows. The command ::
+        where i,j,k are representative for some integers, then this can be used in the
+        measure ``dx`` (as we are 2D) as follows. The command ::
 
-        dx(1)
+            dx(1)
 
-    is completely equivalent to ::
+        is completely equivalent to ::
 
-       dx("domain")
+           dx("domain")
 
-    and both can be used interchangeably.
+        and both can be used interchangeably.
     """
 
     start_time = time.time()
@@ -296,11 +279,10 @@ def regular_mesh(
 ]:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
-    This function creates a uniform mesh of either a rectangle
-    or a cube, starting at the origin and having length specified
-    in ``L_x``, ``L_y``, and ``L_z``. The resulting mesh uses ``n`` elements along the
-    shortest direction and accordingly many along the longer ones.
-    The resulting domain is
+    This function creates a uniform mesh of either a rectangle or a cube, starting at 
+    the origin and having length specified in ``L_x``, ``L_y``, and ``L_z``. The 
+    resulting mesh uses ``n`` elements along the shortest direction and accordingly many 
+    along the longer ones. The resulting domain is
 
     .. math::
         \begin{alignedat}{2}
@@ -321,37 +303,22 @@ def regular_mesh(
       - 5 corresponds to :math:`z=0` (only in 3D).
 
       - 6 corresponds to :math:`z=L_z` (only in 3D).
+    
+    Args:
+        n: Number of elements in the shortest coordinate direction.
+        L_x: Length in x-direction.
+        L_y: Length in y-direction.
+        L_z: Length in z-direction, if this is ``None``, then the geometry will be 
+            two-dimensional (default is ``None``).
+        diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
+            This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
+            ``"right/left"`` or ``"crossed"``.
 
-    Parameters
-    ----------
-    n : int
-        Number of elements in the shortest coordinate direction.
-    L_x : float
-        Length in x-direction.
-    L_y : float
-        Length in y-direction.
-    L_z : float or None, optional
-        Length in z-direction, if this is ``None``, then the geometry
-        will be two-dimensional (default is ``None``).
-    diagonal : str, optional
-        This defines the type of diagonal used to create the box mesh in 2D. This can be
-        one of ``"right"``, ``"left"``, ``"left/right"``, ``"right/left"`` or
-        ``"crossed"``.
-
-    Returns
-    -------
-    mesh : fenics.Mesh
-        The computational mesh.
-    subdomains : fenics.MeshFunction
-        A :py:class:`fenics.MeshFunction` object containing the subdomains.
-    boundaries : fenics.MeshFunction
-        A MeshFunction object containing the boundaries.
-    dx : fenics.Measure
-        The volume measure of the mesh corresponding to subdomains.
-    ds : fenics.Measure
-        The surface measure of the mesh corresponding to boundaries.
-    dS : fenics.Measure
-        The interior facet measure of the mesh corresponding to boundaries.
+    Returns:
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported 
+        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
+        function for the boundaries, dx is a volume measure, ds is a surface measure, 
+        and dS is a measure for the interior facets.
     """
 
     if not n > 0:
@@ -485,44 +452,26 @@ def regular_box_mesh(
       - 5 corresponds to :math:`z=S_z` (only in 3D).
 
       - 6 corresponds to :math:`z=E_z` (only in 3D).
+    
+    Args:
+        n: Number of elements in the shortest coordinate direction.
+        S_x: Start of the x-interval.
+        S_y: Start of the y-interval.
+        S_z: Start of the z-interval, mesh is 2D if this is ``None`` (default is 
+            ``None``).
+        E_x: End of the x-interval.
+        E_y: End of the y-interval.
+        E_z: End of the z-interval, mesh is 2D if this is ``None`` (default is 
+            ``None``).
+        diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
+            This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
+            ``"right/left"`` or ``"crossed"``.
 
-    Parameters
-    ----------
-    n : int
-        Number of elements in the shortest coordinate direction.
-    S_x : float
-        Start of the x-interval.
-    S_y : float
-        Start of the y-interval.
-    S_z : float or None, optional
-        Start of the z-interval, mesh is 2D if this is ``None``
-        (default is ``None``).
-    E_x : float
-        End of the x-interval.
-    E_y : float
-        End of the y-interval.
-    E_z : float or None, optional
-        End of the z-interval, mesh is 2D if this is ``None``
-        (default is ``None``).
-    diagonal : str, optional
-        This defines the type of diagonal used to create the box mesh in 2D. This can be
-        one of ``"right"``, ``"left"``, ``"left/right"``, ``"right/left"`` or
-        ``"crossed"``.
-
-    Returns
-    -------
-    mesh : fenice.Mesh
-        The computational mesh.
-    subdomains : fenics.MeshFunction
-        A MeshFunction object containing the subdomains.
-    boundaries : fenics.MeshFunction
-        A MeshFunction object containing the boundaries.
-    dx : fenics.Measure
-        The volume measure of the mesh corresponding to subdomains.
-    ds : fenics.Measure
-        The surface measure of the mesh corresponding to boundaries.
-    dS : fenics.Measure
-        The interior facet measure of the mesh corresponding to boundaries.
+    Returns:
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported 
+        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
+        function for the boundaries, dx is a volume measure, ds is a surface measure, 
+        and dS is a measure for the interior facets.
     """
 
     n = int(n)

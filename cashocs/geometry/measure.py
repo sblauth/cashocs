@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for extending the measure functionality.
-
-"""
+"""Module for extending the measure functionality."""
 
 from __future__ import annotations
 
@@ -34,31 +32,26 @@ from .._exceptions import InputError
 class _EmptyMeasure(Measure):
     """Implements an empty measure (e.g. of a null set).
 
-    This is used for automatic measure generation, e.g., if
-    the fixed boundary is empty for a shape optimization problem,
-    and is used to avoid case distinctions.
+    This is used for automatic measure generation, e.g., if the fixed boundary is empty
+    for a shape optimization problem, and is used to avoid case distinctions.
 
-    Examples
-    --------
-    The code ::
+    Examples:
+        The code ::
 
-        dm = _EmptyMeasure(dx)
-        u*dm
+            dm = _EmptyMeasure(dx)
+            u*dm
 
-    is equivalent to ::
+        is equivalent to ::
 
-        Constant(0)*u*dm
+            Constant(0)*u*dm
 
-    so that ``fenics.assemble(u*dm)`` generates zeros.
+        so that ``fenics.assemble(u*dm)`` generates zeros.
     """
 
     def __init__(self, measure: fenics.Measure) -> None:
-        """Initializes self.
-
-        Parameters
-        ----------
-        measure : fenics.Measure
-            The underlying UFL measure.
+        """
+        Args:
+            measure: The underlying UFL measure.
         """
 
         super().__init__(measure.integral_type())
@@ -67,14 +60,10 @@ class _EmptyMeasure(Measure):
     def __rmul__(self, other: ufl.core.expr.Expr) -> ufl.Form:
         """Multiplies the empty measure to the right.
 
-        Parameters
-        ----------
-        other : ufl.core.expr.Expr
-            A UFL expression to be integrated over an empty measure.
+        Args:
+            other: A UFL expression to be integrated over an empty measure.
 
-        Returns
-        -------
-        ufl.Form
+        Returns:
             The resulting UFL form.
         """
 
@@ -91,29 +80,23 @@ def generate_measure(
     ``measure`` and the subdomains / boundaries specified in idx. This is a convenient
     shortcut to writing ``dx(1) + dx(2) + dx(3)`` in case many measures are involved.
 
-    Parameters
-    ----------
-    idx
-        A list of indices for the boundary / volume markers that
-        define the (new) measure.
-    measure
-        The corresponding UFL measure.
+    Args:
+        idx: A list of indices for the boundary / volume markers that define the (new)
+            measure.
+        measure: The corresponding UFL measure.
 
-    Returns
-    -------
-    fenics.Measure or cashocs.geometry._EmptyMeasure
+    Returns:
         The corresponding sum of the measures or an empty measure.
 
-    Examples
-    --------
-    Here, we create a wrapper for the surface measure on the top and bottom of
-    the unit square::
+    Examples:
+        Here, we create a wrapper for the surface measure on the top and bottom of
+        the unit square::
 
-        from fenics import *
-        import cashocs
-        mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
-        top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
-        assemble(1*top_bottom_measure)
+            from fenics import *
+            import cashocs
+            mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
+            top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
+            assemble(1*top_bottom_measure)
     """
 
     if len(idx) == 0:
@@ -129,10 +112,7 @@ def generate_measure(
 
 
 class _NamedMeasure(Measure):
-    """A named integration measure, which can use names for subdomains defined in a gmsh
-    .msh file.
-
-    """
+    """A named integration measure, which can use strings for defining subdomains."""
 
     def __init__(
         self,
@@ -143,6 +123,8 @@ class _NamedMeasure(Measure):
         subdomain_data: Optional[fenics.MeshFunction] = None,
         physical_groups=None,
     ) -> None:
+        """See base class."""
+
         super().__init__(
             integral_type,
             domain=domain,
@@ -162,6 +144,10 @@ class _NamedMeasure(Measure):
         scheme=None,
         rule=None,
     ):
+        """See base class.
+
+        This implementation also allows strings for subdomain id.
+        """
 
         if isinstance(subdomain_id, int):
             return super().__call__(
