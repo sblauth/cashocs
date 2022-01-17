@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing UFL forms for optimal control problems
-
-"""
+"""Module for managing UFL forms for optimal control problems."""
 
 from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-import fenics  # type: ignore
+import fenics
 import numpy as np
 from ufl import replace
 
@@ -50,20 +48,12 @@ class ControlFormHandler(FormHandler):
     adjoint and gradient equations (via UFL) , that are later used in the
     solvers for the equations later on. These are needed as subroutines for
      the optimization (solution) algorithms.
-
-    See Also
-    --------
-    ShapeFormHandler : Derives the adjoint equations and shape derivatives for shape
-        optimization problems
     """
 
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
-        """Initializes the ControlFormHandler class.
-
-        Parameters
-        ----------
-        optimization_problem : OptimalControlProblem
-            The corresponding optimal control problem
+        """
+        Args:
+            optimization_problem: The corresponding optimal control problem
         """
 
         super().__init__(optimization_problem)
@@ -149,16 +139,11 @@ class ControlFormHandler(FormHandler):
     ) -> float:
         """Computes the scalar product between control type functions a and b.
 
-        Parameters
-        ----------
-        a : list[fenics.Function]
-            The first argument.
-        b : list[fenics.Function]
-            The second argument.
+        Args:
+            a: The first argument.
+            b: The second argument.
 
-        Returns
-        -------
-        float
+        Returns:
             The value of the scalar product.
         """
 
@@ -175,12 +160,7 @@ class ControlFormHandler(FormHandler):
         return result
 
     def compute_active_sets(self) -> None:
-        """Computes the indices corresponding to active and inactive sets.
-
-        Returns
-        -------
-        None
-        """
+        """Computes the indices corresponding to active and inactive sets."""
 
         self.idx_active_lower = []
         self.idx_active_upper = []
@@ -229,16 +209,11 @@ class ControlFormHandler(FormHandler):
         Restricts a control type function a onto the active set,
         which is returned via the function b,  i.e., b is zero on the inactive set.
 
-        Parameters
-        ----------
-        a : list[fenics.Function]
-            The first argument, to be projected onto the active set.
-        b : list[fenics.Function]
-            The second argument, which stores the result (is overwritten).
+        Args:
+            a: The first argument, to be projected onto the active set.
+            b: The second argument, which stores the result (is overwritten).
 
-        Returns
-        -------
-        b : list[fenics.Function]
+        Returns:
             The result of the projection (overwrites input b).
         """
 
@@ -263,16 +238,11 @@ class ControlFormHandler(FormHandler):
         Restricts a control type function a onto the inactive set,
         which is returned via the function b, i.e., b is zero on the active set.
 
-        Parameters
-        ----------
-        a
-            The control-type function that is to be projected onto the inactive set.
-        b
-            The storage for the result of the projection (is overwritten).
+        Args:
+            a: The control-type function that is to be projected onto the inactive set.
+            b: The storage for the result of the projection (is overwritten).
 
-        Returns
-        -------
-        list[fenics.Function]
+        Returns:
             The result of the projection of a onto the inactive set (overwrites input
             b).
         """
@@ -299,15 +269,11 @@ class ControlFormHandler(FormHandler):
         Projects a control type function a onto the set of admissible controls
         (given by the box constraints).
 
-        Parameters
-        ----------
-        a : list[fenics.Function]
-            The function which is to be projected onto the set of admissible
-            controls (is overwritten)
+        Args:
+            a: The function which is to be projected onto the set of admissible
+                controls (is overwritten)
 
-        Returns
-        -------
-        a : list[fenics.Function]
+        Returns:
             The result of the projection (overwrites input a)
         """
 
@@ -323,12 +289,7 @@ class ControlFormHandler(FormHandler):
         return a
 
     def __compute_gradient_equations(self) -> None:
-        """Calculates the variational form of the gradient equation.
-
-        Returns
-        -------
-        None
-        """
+        """Calculates the variational form of the gradient equation."""
 
         self.gradient_forms_rhs = [
             fenics.derivative(
@@ -385,12 +346,7 @@ class ControlFormHandler(FormHandler):
                         )
 
     def _compute_newton_forms(self) -> None:
-        """Calculates the needed forms for the truncated Newton method.
-
-        Returns
-        -------
-        None
-        """
+        """Calculates the needed forms for the truncated Newton method."""
 
         if self.use_scalar_tracking or self.use_min_max_terms:
             raise InputError(

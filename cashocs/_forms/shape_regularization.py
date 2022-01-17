@@ -39,53 +39,40 @@ if TYPE_CHECKING:
 
 
 def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
-    """Computes the tangential gradient of u
+    """Computes the tangential gradient of u.
 
-    Parameters
-    ----------
-    u : fenics.Function
-        the argument
-    n : fenics.FacetNormal
-        the unit outer normal vector
+    Args:
+        u: The argument, whose tangential gradient is to be computed.
+        n: The unit outer normal vector.
 
-    Returns
-    -------
-    ufl.core.expr.Expr
-        the tangential gradient of u
+    Returns:
+        The tangential gradient of u.
     """
 
     return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
 
 
 def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
-    """Computes the tangential divergence of u
+    """Computes the tangential divergence of u.
 
-    Parameters
-    ----------
-    u : fenics.Function
-        the argument
-    n : fenics.FacetNormal
-        the outer unit normal vector
+    Args:
+        u: The argument, whose tangential divergence is to be computed.
+        n: The unit outer normal vector.
 
-    Returns
-    -------
-    ufl.core.expr.Expr
-        the tangential divergence of u
+    Returns:
+        The tangential divergence of u.
     """
 
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
 
 
 class ShapeRegularization:
-    """Regularization terms for shape optimization problems"""
+    """Regularization terms for shape optimization problems."""
 
     def __init__(self, form_handler: ShapeFormHandler) -> None:
-        """Initializes the regularization
-
-        Parameters
-        ----------
-        form_handler : ShapeFormHandler
-            the corresponding shape form handler object
+        """
+        Args:
+            form_handler: The corresponding shape form handler object.
         """
 
         self.test_vector_field = form_handler.test_vector_field
@@ -260,14 +247,10 @@ class ShapeRegularization:
         self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
 
     def update_geometric_quantities(self) -> None:
-        """Updates the geometric quantities
+        """Updates the geometric quantities.
 
         Updates the volume, surface area, and barycenters (after the
-        mesh is updated)
-
-        Returns
-        -------
-        None
+        mesh is updated).
         """
 
         if not self.measure_hole:
@@ -325,12 +308,7 @@ class ShapeRegularization:
         self.compute_curvature()
 
     def compute_curvature(self) -> None:
-        """Computes the mean curvature vector of the geometry.
-
-        Returns
-        -------
-        None
-        """
+        """Computes the mean curvature vector of the geometry."""
 
         if self.mu_curvature > 0.0:
             fenics.assemble(
@@ -350,13 +328,10 @@ class ShapeRegularization:
             pass
 
     def compute_objective(self) -> float:
-        """Computes the part of the objective value that comes from the regularization
+        """Computes the part of the objective value that comes from the regularization.
 
-        Returns
-        -------
-        float
+        Returns:
             Part of the objective value coming from the regularization
-
         """
 
         if self.has_regularization:
@@ -451,13 +426,10 @@ class ShapeRegularization:
             return 0.0
 
     def compute_shape_derivative(self) -> ufl.Form:
-        """Computes the part of the shape derivative that comes from the regularization
+        """Computes the part of the shape derivative that comes from the regularization.
 
-        Returns
-        -------
-        ufl.Form
+        Returns:
             The weak form of the shape derivative coming from the regularization
-
         """
 
         vector_field = self.test_vector_field
@@ -623,13 +595,8 @@ class ShapeRegularization:
             dim = self.geometric_dimension
             return inner(fenics.Constant([0] * dim), vector_field) * self.dx
 
-    def _scale_weights(self):
-        """Scales the terms of the regularization by the weights given in the config
-
-        Returns
-        -------
-        None
-        """
+    def _scale_weights(self) -> None:
+        """Scales the terms of the regularization by the weights given in the config."""
 
         if self.use_relative_scaling and self.has_regularization:
 

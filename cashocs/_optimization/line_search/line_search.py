@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the parent class of all line searches.
-
-"""
+"""Module for the parent class of all line searches."""
 
 from __future__ import annotations
 
@@ -34,7 +32,13 @@ if TYPE_CHECKING:
 
 
 class LineSearch(abc.ABC):
+    """Abstract implementation of a line search."""
+
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         self.config = optimization_problem.config
         self.form_handler = optimization_problem.form_handler
@@ -65,6 +69,18 @@ class LineSearch(abc.ABC):
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
+        """Performs a line search for the new iterate.
+
+        Notes:
+            This is the function that should be called in the optimization algorithm,
+            it consists of a call to self.search and self.post_line_search afterwards.
+
+        Args:
+            solver: The optimization algorithm.
+            search_direction: The current search direction.
+            has_curvature_info: A flag, which indicates, whether the search direction
+                is (presumably) scaled.
+        """
 
         self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
@@ -73,8 +89,18 @@ class LineSearch(abc.ABC):
     def search(
         self, solver, search_direction: List[fenics.Function], has_curvature_info: bool
     ) -> None:
+        """Performs a line search.
+
+        Args:
+            solver: The optimization algorithm.
+            search_direction: The current search direction.
+            has_curvature_info: A flag, which indicates, whether the search direction
+                is (presumably) scaled.
+        """
+
         pass
 
     def post_line_search(self) -> None:
+        """Performs tasks after the line search was successful."""
 
         self.form_handler.update_scalar_product()

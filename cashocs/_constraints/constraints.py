@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for equality and inequality constraints
-
-"""
+"""Module for equality and inequality constraints."""
 
 from __future__ import annotations
 
@@ -42,14 +40,12 @@ class Constraint(abc.ABC):
         measure: Optional[fenics.Measure] = None,
     ) -> None:
         """
-        Parameters
-        ----------
-        variable_function : ufl.Form or ufl.core.expr.Expr
-            Either a ufl Form (when we have a scalar / integral constraint) or an ufl
-            expression (when we have a pointwise constraint), which models the part
-            that is to be constrained
-        measure : fenics.Measure or None, optional
-            A measure indicating where a pointwise constraint should be satisfied.
+        Args:
+            variable_function: Either a ufl Form (when we have a scalar / integral
+                constraint) or an ufl expression (when we have a pointwise constraint),
+                which models the part that is to be constrained.
+            measure: A measure indicating where a pointwise constraint should be
+                satisfied.
         """
 
         self.variable_function = variable_function
@@ -68,11 +64,9 @@ class Constraint(abc.ABC):
 
     @abc.abstractmethod
     def constraint_violation(self) -> float:
-        """Computes the constraint violation for self
+        """Computes the constraint violation for the problem.
 
-        Returns
-        -------
-        float
+        Returns:
             The computed violation
         """
 
@@ -89,16 +83,13 @@ class EqualityConstraint(Constraint):
         measure: Optional[fenics.Measure] = None,
     ) -> None:
         """
-        Parameters
-        ----------
-        variable_function : ufl.Form or ufl.core.expr.Expr
-            Either a ufl Form (when we have a scalar / integral constraint) or an ufl
-            expression (when we have a pointwise constraint), which models the part
-            that is to be constrained
-        target : float
-            The target (rhs) of the equality constraint.
-        measure : fenics.Measure or None, optional
-            A measure indicating where a pointwise constraint should be satisfied.
+        Args:
+            variable_function: Either a ufl Form (when we have a scalar / integral
+                constraint) or an ufl expression (when we have a pointwise constraint),
+                which models the part that is to be constrained.
+            target: The target (rhs) of the equality constraint.
+            measure: A measure indicating where a pointwise constraint should be
+                satisfied.
         """
 
         super().__init__(variable_function, measure=measure)
@@ -121,7 +112,13 @@ class EqualityConstraint(Constraint):
                 fenics.Constant(0.5) * pow(variable_function - target, 2) * measure
             )
 
-    def constraint_violation(self):
+    def constraint_violation(self) -> float:
+        """Computes the constraint violation for the problem.
+
+        Returns:
+            The computed violation
+        """
+
         if self.is_integral_constraint:
             return np.abs(fenics.assemble(self.variable_function) - self.target)
         elif self.is_pointwise_constraint:
@@ -133,26 +130,24 @@ class EqualityConstraint(Constraint):
 
 
 class InequalityConstraint(Constraint):
+    """Models an (additional) inequality constraint."""
+
     def __init__(
         self,
         variable_function: Union[ufl.Form, ufl.core.expr.Expr],
         lower_bound: Optional[Union[float, fenics.Function]] = None,
         upper_bound: Optional[Union[float, fenics.Function]] = None,
         measure: Optional[fenics.Measure] = None,
-    ):
+    ) -> None:
         """
-        Parameters
-        ----------
-        variable_function : ufl.Form or ufl.core.expr.Expr
-            Either a ufl Form (when we have a scalar / integral constraint) or an ufl
-            expression (when we have a pointwise constraint), which models the part
-            that is to be constrained
-        lower_bound : float or fenics.Function or None, optional
-            The lower bound for the inequality constraint
-        upper_bound : float or fenics.Function or None, optional
-            The upper bound for the inequality constraint
-        measure : fenics.Measure or None, optional
-            A measure indicating where a pointwise constraint should be satisfied.
+        Args:
+            variable_function: Either a ufl Form (when we have a scalar / integral
+                constraint) or an ufl expression (when we have a pointwise constraint),
+                which models the part that is to be constrained
+            lower_bound: The lower bound for the inequality constraint
+            upper_bound: The upper bound for the inequality constraint
+            measure: A measure indicating where a pointwise constraint should be
+                satisfied.
         """
 
         super().__init__(variable_function, measure=measure)
@@ -214,12 +209,10 @@ class InequalityConstraint(Constraint):
                 )
 
     def constraint_violation(self) -> float:
-        """Computes the constraint violation of self
+        """Computes the constraint violation for the problem.
 
-        Returns
-        -------
-        float
-            The computed constraint violation.
+        Returns:
+            The computed violation
         """
 
         violation = 0.0

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-r"""cashocs is a computational, adjoint based shape optimization and optimal control software for python.
+r"""cashocs is a shape optimization and optimal control software for python.
 
 cashocs is based on the finite element package `FEniCS <https://fenicsproject.org>`_
 and uses its high-level unified form language UFL to treat general PDE constrained

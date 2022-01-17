@@ -17,9 +17,8 @@
 
 """Abstract implementation of a gradient problem.
 
-This class is used to solve the Riesz projection to obtain
-the gradient of the reduced cost functional.
-
+This class is used to solve the Riesz projection to obtain the gradient of the reduced 
+cost functional.
 """
 
 from __future__ import annotations
@@ -48,14 +47,10 @@ class ControlGradientProblem(PDEProblem):
         adjoint_problem: AdjointProblem,
     ) -> None:
         """
-        Parameters
-        ----------
-        form_handler
-            The FormHandler object of the optimization problem.
-        state_problem
-            The StateProblem object used to solve the state equations.
-        adjoint_problem
-            The AdjointProblem used to solve the adjoint equations.
+        Args:
+            form_handler: The FormHandler object of the optimization problem.
+            state_problem: The StateProblem object used to solve the state equations.
+            adjoint_problem: The AdjointProblem used to solve the adjoint equations.
         """
 
         super().__init__(form_handler)
@@ -110,12 +105,10 @@ class ControlGradientProblem(PDEProblem):
         ]
 
     def solve(self) -> List[fenics.Function]:
-        """Solves the Riesz projection problem to obtain the gradient
+        """Solves the Riesz projection problem to obtain the gradient.
 
-        Returns
-        -------
-        list[fenics.Function]
-            The list of gradient of the cost functional.
+        Returns:
+            The list containing the (components of the) gradient of the cost functional.
         """
 
         self.state_problem.solve()

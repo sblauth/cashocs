@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""This module includes Taylor tests to verify the correctness of computed gradients.
-
-"""
+"""This module includes tests to verify the correctness of computed gradients."""
 
 from __future__ import annotations
 
@@ -42,26 +40,19 @@ def control_gradient_test(
     h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
 ) -> float:
-    """Taylor test to verify that the computed gradient is correct.
+    """Performs a Taylor test to verify that the computed gradient is correct.
 
-    Parameters
-    ----------
-    ocp : cashocs.OptimalControlProblem
-        The underlying optimal control problem, for which the gradient
-        of the reduced cost function shall be verified.
-    u : list[fenics.Function] or None, optional
-        The point, at which the gradient shall be verified. If this is ``None``,
-        then the current controls of the optimization problem are used. Default is
-        ``None``.
-    h : list[fenics.Function] or None, optional
-        The direction(s) for the directional (Gateaux) derivative. If this is ``None``,
-        one random direction is chosen. Default is ``None``.
-    rng : numpy.random.RandomState or None, optional
-        A numpy random state for calculating a random direction
+    Args:
+        ocp: The underlying optimal control problem, for which the gradient
+            of the reduced cost function shall be verified.
+        u: The point, at which the gradient shall be verified. If this is ``None``,
+            then the current controls of the optimization problem are used. Default is
+            ``None``.
+        h: The direction(s) for the directional (Gateaux) derivative. If this is
+            ``None``, one random direction is chosen. Default is ``None``.
+        rng: A numpy random state for calculating a random direction
 
-    Returns
-    -------
-    float
+    Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
     """
@@ -150,21 +141,15 @@ def shape_gradient_test(
     h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
 ) -> float:
-    """Taylor test to verify that the computed shape gradient is correct.
+    """Performs a Taylor test to verify that the computed shape gradient is correct.
 
-    Parameters
-    ----------
-    sop : cashocs.ShapeOptimizationProblem
-        The underlying shape optimization problem.
-    h : list[fenics.Function] or None, optional
-        The direction used to compute the directional derivative. If this is
-        ``None``, then a random direction is used (default is ``None``).
-    rng : numpy.random.RandomState or None, optional
-        A numpy random state for calculating a random direction
+    Args:
+        sop: The underlying shape optimization problem.
+        h: The direction used to compute the directional derivative. If this is
+            ``None``, then a random direction is used (default is ``None``).
+        rng: A numpy random state for calculating a random direction
 
-    Returns
-    -------
-    float
+    Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
     """
@@ -230,18 +215,12 @@ def compute_convergence_rates(
 ) -> List[float]:
     """Computes the convergence rate of the Taylor test.
 
-    Parameters
-    ----------
-    epsilons : list[float]
-        The step sizes
-    residuals : list[float]
-        The corresponding residuals
-    verbose : bool, optional
-        Prints the result to the console, if ``True``. Default is ``True``
+    Args:
+        epsilons: The step sizes.
+        residuals: The corresponding residuals.
+        verbose: Prints the result to the console, if ``True``. Default is ``True``.
 
-    Returns
-    -------
-    list[float]
+    Returns:
         The computed convergence rates
     """
 

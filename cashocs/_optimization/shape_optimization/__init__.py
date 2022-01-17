@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Methods and classes for shape optimization problems
-
-"""
+"""Methods and classes for shape optimization problems."""
 
 from .shape_optimization_problem import ShapeOptimizationProblem
 

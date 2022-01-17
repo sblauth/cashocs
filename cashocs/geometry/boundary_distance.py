@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Function for computing the distance to the boundary.
-
-"""
+"""Function for computing the distance to the boundary."""
 
 from __future__ import annotations
 
@@ -52,28 +50,21 @@ def compute_boundary_distance(
     by specifying the parameters `boundaries` and `boundary_idcs`. Default is to
     consider all boundaries.
 
-    Parameters
-    ----------
-    mesh : fenics.Mesh
-        The dolfin mesh object, representing the computational domain
-    boundaries : fenics.MeshFunction or None, optional
-        A meshfunction for the boundaries, which is needed in case specific boundaries
-        are targeted for the distance computation (while others are ignored), default
-        is `None` (all boundaries are used)
-    boundary_idcs : list[int] or None, optional
-        A list of indices which indicate, which parts of the boundaries should be used
-        for the distance computation, default is `None` (all boundaries are used).
-    tol : float, optional
-        A tolerance for the iterative solution of the eikonal equation. Default is 1e-1.
-    max_iter : int, optional
-        Number of iterations for the iterative solution of the eikonal equation. Default
-        is 10.
+    Args:
+        mesh: The dolfin mesh object, representing the computational domain
+        boundaries: A meshfunction for the boundaries, which is needed in case specific
+            boundaries are targeted for the distance computation (while others are
+            ignored), default is `None` (all boundaries are used).
+        boundary_idcs: A list of indices which indicate, which parts of the boundaries
+            should be used for the distance computation, default is `None` (all
+            boundaries are used).
+        tol: A tolerance for the iterative solution of the eikonal equation. Default is
+            1e-1.
+        max_iter: Number of iterations for the iterative solution of the eikonal
+            equation. Default is 10.
 
-    Returns
-    -------
-    fenics.Function
+    Returns:
         A fenics function representing an approximation of the distance to the boundary.
-
     """
 
     V = fenics.FunctionSpace(mesh, "CG", 1)

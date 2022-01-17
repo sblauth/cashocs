@@ -16,9 +16,7 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""Module for managing a finite element mesh.
-
-"""
+"""Module for managing a finite element mesh."""
 
 from __future__ import annotations
 
@@ -58,18 +56,14 @@ if TYPE_CHECKING:
 class _MeshHandler:
     """Handles the mesh for shape optimization problems.
 
-    This class implements all mesh related things for the shape optimization,
-     such as transformations and remeshing. Also includes mesh quality control
-     checks.
+    This class implements all mesh related things for the shape optimization, such as
+    transformations and remeshing. Also includes mesh quality control checks.
     """
 
     def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
-        """Initializes the MeshHandler object.
-
-        Parameters
-        ----------
-        shape_optimization_problem : ShapeOptimizationProblem
-            The corresponding shape optimization problem.
+        """
+        Args:
+            shape_optimization_problem: The corresponding shape optimization problem.
         """
 
         self.form_handler = shape_optimization_problem.form_handler
@@ -162,14 +156,8 @@ class _MeshHandler:
         where :math:`\mathcal{V}` is the transformation. This
         represents the perturbation of identity.
 
-        Parameters
-        ----------
-        transformation : fenics.Function
-            The transformation for the mesh, a vector CG1 Function.
-
-        Returns
-        -------
-        None
+        Args:
+            transformation: The transformation for the mesh, a vector CG1 Function.
         """
 
         if not (
@@ -196,21 +184,12 @@ class _MeshHandler:
         This is used when the mesh quality for the resulting deformed mesh
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
-
-        Returns
-        -------
-        None
         """
 
         self.deformation_handler.revert_transformation()
 
     def __setup_decrease_computation(self) -> None:
-        """Initializes attributes and solver for the frobenius norm check.
-
-        Returns
-        -------
-        None
-        """
+        """Initializes attributes and solver for the frobenius norm check."""
 
         self.options_frobenius = [
             ["ksp_type", "preonly"],
@@ -256,17 +235,13 @@ class _MeshHandler:
         of the norm this has to be done only once, all smaller stepsizes are
         feasible w.r.t. this criterion as well.
 
-        Parameters
-        ----------
-        search_direction : list[fenics.Function]
-            The search direction in the optimization routine / descent algorithm.
-        stepsize : float
-            The stepsize in the descent algorithm.
+        Args:
+            search_direction: The search direction in the optimization routine / descent
+                algorithm.
+            stepsize: The stepsize in the descent algorithm.
 
-        Returns
-        -------
-        int
-            A guess for the number of "Armijo halvings" to get a better stepsize
+        Returns:
+            A guess for the number of "Armijo halvings" to get a better stepsize.
         """
 
         if self.angle_change == float("inf"):
@@ -297,12 +272,7 @@ class _MeshHandler:
             )
 
     def __setup_a_priori(self) -> None:
-        """Sets up the attributes and petsc solver for the a priori quality check.
-
-        Returns
-        -------
-        None
-        """
+        """Sets up the attributes and petsc solver for the a priori quality check."""
 
         self.options_prior = [
             ["ksp_type", "preonly"],
@@ -339,15 +309,11 @@ class _MeshHandler:
         should neither be too large nor too small in order to achieve the best
         transformations.
 
-        Parameters
-        ----------
-        transformation : fenics.Function
-            The transformation for the mesh.
+        Args:
+            transformation: The transformation for the mesh.
 
-        Returns
-        -------
-        bool
-            A boolean that indicates whether the desired transformation is feasible
+        Returns:
+            A boolean that indicates whether the desired transformation is feasible.
         """
 
         self.transformation_container.vector().vec().aypx(
@@ -364,18 +330,12 @@ class _MeshHandler:
     def __generate_remesh_geo(self, input_mesh_file: str) -> None:
         """Generates a .geo file used for remeshing.
 
-        The .geo file is generated via the original .geo file for the
-        initial geometry, so that mesh size fields are correctly given
-        for the remeshing.
+        The .geo file is generated via the original .geo file for the initial geometry,
+        so that mesh size fields are correctly given for the remeshing.
 
-        Parameters
-        ----------
-        input_mesh_file : str
-            Path to the mesh file used for generating the new .geo file
-
-        Returns
-        -------
-        None
+        Args:
+            input_mesh_file: Path to the mesh file used for generating the new .geo
+                file.
         """
 
         with open(self.remesh_geo_file, "w") as file:
@@ -404,17 +364,10 @@ class _MeshHandler:
     def _remove_gmsh_parametrizations(mesh_file: str) -> None:
         """Removes the parametrizations section from a Gmsh file.
 
-        This is needed in case several remeshing iterations have to be
-        executed.
+        This is needed in case several remeshing iterations have to be executed.
 
-        Parameters
-        ----------
-        mesh_file : str
-            Path to the Gmsh file, has to end in .msh
-
-        Returns
-        -------
-        None
+        Args:
+            mesh_file: Path to the Gmsh file, has to end in .msh.
         """
 
         temp_location = f"{mesh_file[:-4]}_temp.msh"
@@ -439,12 +392,7 @@ class _MeshHandler:
         subprocess.run(["mv", temp_location, mesh_file], check=True)
 
     def clean_previous_gmsh_files(self) -> None:
-        """Removes the gmsh files from the previous remeshing iterations to save space
-
-        Returns
-        -------
-        None
-        """
+        """Removes the gmsh files from the previous remeshing iterations."""
 
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file):
@@ -489,19 +437,13 @@ class _MeshHandler:
             subprocess.run(["rm", subdomains_xdmf_file], check=True)
 
     def remesh(self, solver: OptimizationAlgorithm):
-        """Remeshes the current geometry with GMSH.
+        """Remeshes the current geometry with Gmsh.
 
-        Performs a remeshing of the geometry, and then restarts
-        the optimization problem with the new mesh.
+        Performs a remeshing of the geometry, and then restarts the optimization problem
+        with the new mesh.
 
-        Parameters
-        ----------
-        solver : ShapeOptimizationAlgorithm
-            The optimization algorithm used to solve the problem.
-
-        Returns
-        -------
-        None
+        Args:
+            solver: The optimization algorithm used to solve the problem.
         """
 
         if self.do_remesh:

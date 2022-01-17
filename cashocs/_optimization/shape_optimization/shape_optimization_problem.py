@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Implementation of a shape optimization problem.
-
-"""
+"""Implementation of a shape optimization problem."""
 
 from __future__ import annotations
 
@@ -163,63 +161,55 @@ class ShapeOptimizationProblem(OptimizationProblem):
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         """
-        Parameters
-        ----------
-        state_forms
-            The weak form of the state equation (user implemented). Can be either
-            a single UFL form, or a (ordered) list of UFL forms.
-        bcs_list
-            The list of DirichletBC objects describing Dirichlet (essential) boundary
-            conditions. If this is ``None``, then no Dirichlet boundary conditions are
-            imposed.
-        cost_functional_form
-            UFL form of the cost functional.
-        states
-            The state variable(s), can either be a :py:class:`fenics.Function`, or a
-            list of these.
-        adjoints
-            The adjoint variable(s), can either be a :py:class:`fenics.Function`, or a
-            (ordered) list of these.
-        boundaries
-            :py:class:`fenics.MeshFunction` that indicates the boundary markers.
-        config
-            The config file for the problem, generated via
-            :py:func:`cashocs.create_config`. Alternatively, this can also be ``None``,
-            in which case the default configurations are used, except for the
-            optimization algorithm. This has then to be specified in the
-            :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The default
-            is ``None``.
-        shape_scalar_product
-            The bilinear form for computing the shape gradient (or gradient
-            deformation). This has to use :py:class:`fenics.TrialFunction` and
-            :py:class:`fenics.TestFunction` objects to define the weak form, which have
-            to be in a :py:class:`fenics.VectorFunctionSpace` of continuous, linear
-            Lagrange finite elements. Moreover, this form is required to be symmetric.
-        initial_guess
-            List of functions that act as initial guess for the state variables, should
-            be valid input for :py:func:`fenics.assign`. Defaults to ``None``, which
-            means a zero initial guess.
-        ksp_options
-            A list of strings corresponding to command line options for PETSc, used to
-            solve the state systems. If this is ``None``, then the direct solver mumps
-            is used (default is ``None``).
-        adjoint_ksp_options
-            A list of strings corresponding to command line options for PETSc, used to
-            solve the adjoint systems. If this is ``None``, then the same options as for
-            the state systems are used (default is ``None``).
-        scalar_tracking_forms
-            A list of dictionaries that define scalar tracking type cost functionals,
-            where an integral value should be brought to a desired value. Each dict
-            needs to have the keys ``'integrand'`` and ``'tracking_goal'``. Default is
-            ``None``, i.e., no scalar tracking terms are considered.
-        min_max_terms
-            Additional terms for the cost functional, not to be used directly.
-        desired_weights
-            A list of values for scaling the cost functional terms. If this is supplied,
-            the cost functional has to be given as list of summands. The individual
-            terms are then scaled, so that term `i` has the magnitude of
-            `desired_weights[i]` for the initial iteration. In case that
-            `desired_weights` is `None`, no scaling is performed. Default is `None`.
+        Args:
+            state_forms: The weak form of the state equation (user implemented). Can be
+                either a single UFL form, or a (ordered) list of UFL forms.
+            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
+                Dirichlet (essential) boundary conditions. If this is ``None``, then no
+                Dirichlet boundary conditions are imposed.
+            cost_functional_form: UFL form of the cost functional. Can also be a list of
+                summands of the cost functional
+            states: The state variable(s), can either be a :py:class:`fenics.Function`,
+                or a list of these.
+            adjoints: The adjoint variable(s), can either be a
+                :py:class:`fenics.Function`, or a (ordered) list of these.
+            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
+                markers.
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
+            shape_scalar_product: The bilinear form for computing the shape gradient
+                (or gradient deformation). This has to use
+                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
+                objects to define the weak form, which have to be in a
+                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
+                finite elements. Moreover, this form is required to be symmetric.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`. Defaults
+                to ``None``, which means a zero initial guess.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems. If this is ``None``, then the
+                direct solver mumps is used (default is ``None``).
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems. If this is ``None``, then
+                the same options as for the state systems are used (default is
+                ``None``).
+            scalar_tracking_forms: A list of dictionaries that define scalar tracking
+                type cost functionals, where an integral value should be brought to a
+                desired value. Each dict needs to have the keys ``'integrand'`` and
+                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
+                are considered.
+            min_max_terms: Additional terms for the cost functional, not to be used
+                directly.
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration. In case
+                that `desired_weights` is `None`, no scaling is performed. Default is
+                `None`.
         """
 
         super().__init__(
@@ -368,10 +358,6 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         This sets the value of has_solution to False for all relevant PDE problems,
         where memory is stored.
-
-        Returns
-        -------
-        None
         """
 
         super()._erase_pde_memory()
@@ -398,54 +384,46 @@ class ShapeOptimizationProblem(OptimizationProblem):
     ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
-        Parameters
-        ----------
-        algorithm
-            Selects the optimization algorithm. Valid choices are
-            ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-            ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-            for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'`` for
-            limited memory BFGS methods. This overwrites the value specified
-            in the config file. If this is ``None``, then the value in the
-            config file is used. Default is ``None``.
-        rtol
-            The relative tolerance used for the termination criterion.
-            Overwrites the value specified in the config file. If this
-            is ``None``, the value from the config file is taken. Default
-            is ``None``.
-        atol
-            The absolute tolerance used for the termination criterion.
-            Overwrites the value specified in the config file. If this
-            is ``None``, the value from the config file is taken. Default
-            is ``None``.
-        max_iter
-            The maximum number of iterations the optimization algorithm
-            can carry out before it is terminated. Overwrites the value
-            specified in the config file. If this is ``None``, the value from
-            the config file is taken. Default is ``None``.
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
+                for limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``.
+            rtol: The relative tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+            atol: The absolute tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm
+                can carry out before it is terminated. Overwrites the value
+                specified in the config file. If this is ``None``, the value from
+                the config file is taken. Default is ``None``.
 
-        Returns
-        -------
-        None
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            call, the termination criterion changes to:
 
-        Notes
-        -----
-        If either ``rtol`` or ``atol`` are specified as arguments to the solve
-        call, the termination criterion changes to:
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
 
-          - a purely relative one (if only ``rtol`` is specified), i.e.,
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
 
-          .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
 
-          - a purely absolute one (if only ``atol`` is specified), i.e.,
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
 
-          .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
 
-          - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+            .. math::
 
-          .. math::
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
 
-            || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} || \nabla J(u_0) ||
         """
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
@@ -474,14 +452,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
         self.solver.post_processing()
 
     def __change_except_hook(self) -> None:
-        """Ensures that temp files are deleted when an exception occurs.
+        """Ensures that temporary files are deleted when an exception occurs.
 
         This modifies the sys.excepthook command so that it also deletes temp files
         (only needed for remeshing)
-
-        Returns
-        -------
-        None
         """
 
         def custom_except_hook(exctype, value, traceback):  # pragma: no cover
@@ -510,17 +484,15 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         sys.excepthook = custom_except_hook
 
-    def compute_shape_gradient(self) -> fenics.Function:
+    def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.
 
         This can be used for debugging, or code validation.
         The necessary solutions of the state and adjoint systems
         are carried out automatically.
 
-        Returns
-        -------
-        fenics.Function
-            The shape gradient.
+        Returns:
+            A list containing the shape gradient.
         """
 
         self.gradient_problem.solve()
@@ -533,14 +505,8 @@ class ShapeOptimizationProblem(OptimizationProblem):
         This allows users to implement their own shape derivative and use cashocs as a
         solver library only.
 
-        Parameters
-        ----------
-        shape_derivative : ufl.Form
-            The shape_derivative of the reduced (!) cost functional w.r.t. controls.
-
-        Returns
-        -------
-        None
+        Args:
+            shape_derivative: The shape_derivative of the reduced cost functional.
         """
 
         if not (isinstance(shape_derivative, ufl.Form)):
@@ -626,18 +592,11 @@ class ShapeOptimizationProblem(OptimizationProblem):
         functional and the corresponding adjoint system, and allows them to use cashocs
         as a solver.
 
-        Parameters
-        ----------
-        shape_derivative
-            The shape derivative of the reduced (!) cost functional.
-        adjoint_forms
-            The UFL forms of the adjoint system(s).
-        adjoint_bcs_list
-            The list of Dirichlet boundary conditions for the adjoint system(s).
-
-        Returns
-        -------
-        None
+        Args:
+            shape_derivative: The shape derivative of the reduced (!) cost functional.
+            adjoint_forms: The UFL forms of the adjoint system(s).
+            adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
+            system(s).
         """
 
         self.supply_shape_derivative(shape_derivative)
@@ -646,13 +605,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
     def get_vector_field(self) -> dolfin.function.argument.Argument:
         """Returns the TestFunction for defining shape derivatives.
 
-        See Also
-        --------
-        supply_shape_derivative
-
-        Returns
-        -------
-        dolfin.function.argument.Argument
+        Returns:
             The TestFunction object.
         """
 
@@ -663,21 +616,17 @@ class ShapeOptimizationProblem(OptimizationProblem):
         h: Optional[fenics.Function] = None,
         rng: Optional[np.random.RandomState] = None,
     ) -> float:
-        """Taylor test to verify that the computed shape gradient is correct.
+        """Performs a Taylor test to verify that the computed shape gradient is correct.
 
-        Parameters
-        ----------
-        h : fenics.Function or None, optional
-            The direction used to compute the directional derivative. If this is
-            ``None``, then a random direction is used (default is ``None``).
-        rng : numpy.random.RandomState or None, optional
-            A numpy random state for calculating a random direction
+        Args:
+            h: The direction used to compute the directional derivative. If this is
+                ``None``, then a random direction is used (default is ``None``).
+            rng: A numpy random state for calculating a random direction
 
-        Returns
-        -------
-         float
+        Returns:
             The convergence order from the Taylor test. If this is (approximately) 2
             or larger, everything works as expected.
+
         """
 
         return shape_gradient_test(self, h, rng)

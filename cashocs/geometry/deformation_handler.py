@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing mesh deformations.
-
-"""
+"""Module for managing mesh deformations."""
 
 from __future__ import annotations
 
@@ -43,16 +41,12 @@ class DeformationHandler:
 
     The deformations can be due to a deformation vector field or a (piecewise) update of
     the mesh coordinates.
-
     """
 
     def __init__(self, mesh: fenics.Mesh) -> None:
         """
-
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The fenics mesh which is to be deformed
+        Args:
+            mesh: The fenics mesh which is to be deformed.
         """
 
         self.mesh = mesh
@@ -77,12 +71,7 @@ class DeformationHandler:
         self.coordinates = self.mesh.coordinates()
 
     def __setup_a_priori(self) -> None:
-        """Sets up the attributes and petsc solver for the a priori quality check.
-
-        Returns
-        -------
-        None
-        """
+        """Sets up the attributes and petsc solver for the a priori quality check."""
 
         self.options_prior = [
             ["ksp_type", "preonly"],
@@ -119,15 +108,11 @@ class DeformationHandler:
         should neither be too large nor too small in order to achieve the best
         transformations.
 
-        Parameters
-        ----------
-        transformation : fenics.Function
-            The transformation for the mesh.
+        Args:
+            transformation: The transformation for the mesh.
 
-        Returns
-        -------
-        bool
-            A boolean that indicates whether the desired transformation is feasible
+        Returns:
+            A boolean that indicates whether the desired transformation is feasible.
         """
 
         self.transformation_container.vector().vec().aypx(
@@ -146,15 +131,12 @@ class DeformationHandler:
         after it has been moved, i.e., if there are no overlapping
         or self intersecting elements.
 
-        Returns
-        -------
-        bool
-            True if the test is successful, False otherwise
+        Returns:
+            True if the test is successful, False otherwise.
 
-        Notes
-        -----
-        fenics itself does not check whether the used mesh is a valid finite
-        element mesh, so this check has to be done manually.
+        Notes:
+            fenics itself does not check whether the used mesh is a valid finite
+            element mesh, so this check has to be done manually.
         """
 
         self_intersections = False
@@ -175,10 +157,6 @@ class DeformationHandler:
         This is used when the mesh quality for the resulting deformed mesh
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
-
-        Returns
-        -------
-        None
         """
 
         self.mesh.coordinates()[:, :] = self.old_coordinates
@@ -199,18 +177,13 @@ class DeformationHandler:
         where :math:`\mathcal{V}` is the transformation. This
         represents the perturbation of identity.
 
-        Parameters
-        ----------
-        transformation : fenics.Function or np.ndarray
-            The transformation for the mesh, a vector CG1 Function.
-        validated_a_priori : bool, optional
-            A boolean flag, which indicates whether an a-priori check has
-            already been performed before moving the mesh. Default is
-            ``False``
+        Args:
+            transformation: The transformation for the mesh, a vector CG1 Function.
+            validated_a_priori: A boolean flag, which indicates whether an a-priori
+                check has already been performed before moving the mesh. Default is
+                ``False``
 
-        Returns
-        -------
-        bool
+        Returns:
             ``True`` if the mesh movement was successful, ``False`` otherwise.
         """
 
@@ -247,18 +220,13 @@ class DeformationHandler:
             return self.__test_a_posteriori()
 
     def coordinate_to_dof(self, coordinate_deformation: np.ndarray) -> fenics.Function:
-        """Converts a coordinate deformation to a deformation vector field (dof based)
+        """Converts a coordinate deformation to a deformation vector field (dof based).
 
-        Parameters
-        ----------
-        coordinate_deformation : np.ndarray
-            The deformation for the mesh coordinates.
+        Args:
+            coordinate_deformation: The deformation for the mesh coordinates.
 
-        Returns
-        -------
-        dof_deformation : fenics.Function
+        Returns:
             The deformation vector field.
-
         """
 
         if not (coordinate_deformation.shape == self.shape_coordinates):
@@ -280,16 +248,11 @@ class DeformationHandler:
     def dof_to_coordinate(self, dof_deformation: fenics.Function) -> np.ndarray:
         """Converts a deformation vector field to a coordinate based deformation.
 
-        Parameters
-        ----------
-        dof_deformation : fenics.Function
-            The deformation vector field.
+        Args:
+            dof_deformation: The deformation vector field.
 
-        Returns
-        -------
-        coordinate_deformation : np.ndarray
+        Returns:
             The array which can be used to deform the mesh coordinates.
-
         """
 
         if not (
@@ -309,16 +272,11 @@ class DeformationHandler:
     def assign_coordinates(self, coordinates: np.ndarray) -> bool:
         """Assigns coordinates to self.mesh.
 
-        Parameters
-        ----------
-        coordinates : np.ndarray
-            Array of mesh coordinates, which you want to assign.
+        Args:
+            coordinates: Array of mesh coordinates, which you want to assign.
 
-        Returns
-        -------
-        bool
-            ``True`` if the assignment was possible, ``False`` if not
-
+        Returns:
+            ``True`` if the assignment was possible, ``False`` if not.
         """
 
         if not self.mesh.geometric_dimension() == coordinates.shape[1]:
@@ -341,6 +299,7 @@ class DeformationHandler:
 
 
 class CollisionCounter:
+    """Class for testing, whether a given mesh is a valid FEM mesh."""
 
     _cpp_code = """
     #include <pybind11/pybind11.h>
@@ -387,4 +346,14 @@ class CollisionCounter:
 
     @classmethod
     def compute_collisions(cls, mesh: fenics.Mesh) -> np.ndarray:
+        """Computes the cells which (potentially) contain self intersections.
+
+        Args:
+            mesh: A FEM mesh.
+
+        Returns:
+            An array of cell indices, where array[i] contains the indices of all cells
+            that vertex i collides with.
+        """
+
         return cls._cpp_object.compute_collisions(mesh)

@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for treatment of additional equality or inequality constraints
-
-"""
+"""Module for treatment of additional (in-)equality constraints for optimization."""
 
 from .constrained_problems import (
     ConstrainedOptimalControlProblem,

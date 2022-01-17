@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for performing linear algebra tasks.
-
-"""
+"""Module for performing linear algebra tasks."""
 
 from __future__ import annotations
 
@@ -39,31 +37,21 @@ def _assemble_petsc_system(
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
-    Parameters
-    ----------
-    A_form : ufl.form.Form
-        The UFL form for the left-hand side of the linear equation.
-    b_form : ufl.form.Form
-        The UFL form for the right-hand side of the linear equation.
-    bcs : None or fenics.DirichletBC or list[fenics.DirichletBC], optional
-        A list of Dirichlet boundary conditions.
-    rhs_tensor : fenics.PETScMatrix or None, optional
-        A matrix into which the result is assembled. Default is ``None``
-    lhs_tensor : fenics.PETScVector or None, optional
-        A vector into which the result is assembled. Default is ``None``
+    Args:
+        A_form: The UFL form for the left-hand side of the linear equation.
+        b_form: The UFL form for the right-hand side of the linear equation.
+        bcs: A list of Dirichlet boundary conditions.
+        rhs_tensor: A matrix into which the result is assembled. Default is ``None``.
+        lhs_tensor: A vector into which the result is assembled. Default is ``None``.
 
-    Returns
-    -------
-    petsc4py.PETSc.Mat
-        The petsc matrix for the left-hand side of the linear equation.
-    petsc4py.PETSc.Vec
-        The petsc vector for the right-hand side of the linear equation.
+    Returns:
+        A tuple (A, b), where A is the matrix of the linear system, and b is the vector
+        of the linear system.
 
-    Notes
-    -----
-    This function always uses the ident_zeros method of the matrix in order to add a one to the diagonal
-    in case the corresponding row only consists of zeros. This allows for well-posed problems on the
-    boundary etc.
+    Notes:
+        This function always uses the ident_zeros method of the matrix in order to add a
+        one to the diagonal in case the corresponding row only consists of zeros. This
+        allows for well-posed problems on the boundary etc.
     """
 
     if rhs_tensor is None:
@@ -92,20 +80,13 @@ def _setup_petsc_options(
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
-    to the PETSc KSP objects. Here, options[i] is applied to ksps[i]
+    to the PETSc KSP objects. Here, options[i] is applied to ksps[i].
 
-    Parameters
-    ----------
-    ksps : list[petsc4py.PETSc.KSP]
-        A list of PETSc KSP objects (linear solvers) to which the (command line)
-        options are applied to.
-    ksp_options : list[list[list[str]]]
-        A list of command line options that specify the iterative solver
-        from PETSc.
-
-    Returns
-    -------
-    None
+    Args:
+        ksps: A list of PETSc KSP objects (linear solvers) to which the (command line)
+            options are applied to.
+        ksp_options: A list of command line options that specify the iterative solver
+            from PETSc.
     """
 
     opts = fenics.PETScOptions
@@ -130,35 +111,27 @@ def _solve_linear_problem(
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
-    Parameters
-    ----------
-    ksp : petsc4py.PETSc.KSP or None, optional
-        The PETSc KSP object used to solve the problem. None means that the solver
-        mumps is used (default is None).
-    A : petsc4py.PETSc.Mat or None, optional
-        The PETSc matrix corresponding to the left-hand side of the problem. If
-        this is None, then the matrix stored in the ksp object is used. Raises
-        an error if no matrix is stored. Default is None.
-    b : petsc4py.PETSc.Vec or None, optional
-        The PETSc vector corresponding to the right-hand side of the problem.
-        If this is None, then a zero right-hand side is assumed, and a zero
-        vector is returned. Default is None.
-    x : petsc4py.PETSc.Vec or None, optional
-        The PETSc vector that stores the solution of the problem. If this is
-        None, then a new vector will be created (and returned)
-    ksp_options : list or None, optional
-        The options for the PETSc ksp object. If this is None (the default) a direct
-        method is used
-    rtol : float or None, optional
-        The relative tolerance used in case an iterative solver is used for solving the
-        linear problem. Overrides the specification in the ksp object and ksp_options.
-    atol : float or None, optional
-        The absolute tolerance used in case an iterative solver is used for solving the
-        linear problem. Overrides the specification in the ksp object and ksp_options.
+    Args:
+        ksp: The PETSc KSP object used to solve the problem. None means that the solver
+            mumps is used (default is None).
+        A: The PETSc matrix corresponding to the left-hand side of the problem. If
+            this is None, then the matrix stored in the ksp object is used. Raises
+            an error if no matrix is stored. Default is None.
+        b: The PETSc vector corresponding to the right-hand side of the problem.
+            If this is None, then a zero right-hand side is assumed, and a zero vector
+            is returned. Default is None.
+        x: The PETSc vector that stores the solution of the problem. If this is
+            None, then a new vector will be created (and returned).
+        ksp_options: The options for the PETSc ksp object. If this is None (the default)
+            a direct method is used.
+        rtol: The relative tolerance used in case an iterative solver is used for
+            solving the linear problem. Overrides the specification in the ksp object
+            and ksp_options.
+        atol: The absolute tolerance used in case an iterative solver is used for
+            solving the linear problem. Overrides the specification in the ksp object
+            and ksp_options.
 
-    Returns
-    -------
-    petsc4py.PETSc.Vec
+    Returns:
         The solution vector.
     """
 
@@ -214,43 +187,36 @@ def _solve_linear_problem(
 class Interpolator:
     """Efficient interpolation between two function spaces.
 
-    This is very useful, if multiple interpolations have to be
-    carried out between the same spaces, which is made significantly
-    faster by computing the corresponding matrix.
-    The function spaces can even be defined on different meshes.
+    This is very useful, if multiple interpolations have to be carried out between the
+    same spaces, which is made significantly faster by computing the corresponding
+    matrix. The function spaces can even be defined on different meshes.
 
-    Notes
-    -----
+    Notes:
+        This class only works properly for continuous Lagrange elements and constant,
+        discontinuous Lagrange elements.
 
-    This class only works properly for continuous Lagrange elements and
-    constant, discontinuous Lagrange elements.
+    Examples:
+        Here, we consider interpolating from CG1 elements to CG2 elements ::
 
-    Examples
-    --------
-    Here, we consider interpolating from CG1 elements to CG2 elements ::
+            from fenics import *
+            import cashocs
 
-        from fenics import *
-        import cashocs
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
+            V1 = FunctionSpace(mesh, 'CG', 1)
+            V2 = FunctionSpace(mesh, 'CG', 2)
 
-        mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
-        V1 = FunctionSpace(mesh, 'CG', 1)
-        V2 = FunctionSpace(mesh, 'CG', 2)
+            expr = Expression('sin(2*pi*x[0])', degree=1)
+            u = interpolate(expr, V1)
 
-        expr = Expression('sin(2*pi*x[0])', degree=1)
-        u = interpolate(expr, V1)
-
-        interp = cashocs.utils.Interpolator(V1, V2)
-        interp.interpolate(u)
+            interp = cashocs.utils.Interpolator(V1, V2)
+            interp.interpolate(u)
     """
 
     def __init__(self, V: fenics.FunctionSpace, W: fenics.FunctionSpace) -> None:
         """
-        Parameters
-        ----------
-        V : fenics.FunctionSpace
-            The function space whose objects shall be interpolated.
-        W : fenics.FunctionSpace
-            The space into which they shall be interpolated.
+        Args:
+            V: The function space whose objects shall be interpolated.
+            W: The space into which they shall be interpolated.
         """
 
         if not (
@@ -292,14 +258,10 @@ class Interpolator:
         second argument of __init__. There is no need to call set_allow_extrapolation
         on the function (this is done automatically due to the method).
 
-        Parameters
-        ----------
-        u : fenics.Function
-            The function that shall be interpolated.
+        Args:
+            u: The function that shall be interpolated.
 
-        Returns
-        -------
-        fenics.Function
+        Returns:
             The result of the interpolation.
         """
 

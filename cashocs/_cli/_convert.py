@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Mesh conversion from GMSH .msh to .xdmf.
-
-"""
+"""Mesh conversion from GMSH .msh to .xdmf."""
 
 import argparse
 import json
@@ -30,6 +28,8 @@ import meshio
 
 
 def _generate_parser() -> argparse.ArgumentParser:
+    """Returns a parser for command line arguments."""
+
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
     )
@@ -46,18 +46,11 @@ def _generate_parser() -> argparse.ArgumentParser:
 
 
 def convert(argv: Optional[List[str]] = None) -> None:
-    """Converts a Gmsh .msh file to a .xdmf mesh file
+    """Converts a Gmsh .msh file to a .xdmf mesh file.
 
-    Parameters
-    ----------
-    argv : list[str]
-        Command line options. The first parameter is the input .msh file,
-        the second is the output .xdmf file
-
-    Returns
-    -------
-    None
-
+    Args:
+        argv: Command line options. The first parameter is the input .msh file,
+            the second is the output .xdmf file
     """
 
     start_time = time.time()

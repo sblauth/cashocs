@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module managing the output of cashocs.
-
-"""
+"""Module managing the output of cashocs."""
 
 from __future__ import annotations
 
@@ -40,7 +38,13 @@ if TYPE_CHECKING:
 
 
 class OutputManager:
+    """Class handling all of the output."""
+
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         self.config = optimization_problem.config
         self.result_dir = self.config.get("Output", "result_dir", fallback="./results")
@@ -84,6 +88,11 @@ class OutputManager:
         self.temp_file_manager = TempFileManager(optimization_problem)
 
     def output(self, solver: OptimizationAlgorithm) -> None:
+        """Writes the desired output to files and console.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         self.history_manager.print_to_console(solver)
         self.history_manager.print_to_file(solver)
@@ -93,6 +102,11 @@ class OutputManager:
         self.result_manager.save_to_dict(solver)
 
     def output_summary(self, solver: OptimizationAlgorithm) -> None:
+        """Writes the summary to files and console.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         self.history_manager.print_console_summary(solver)
         self.history_manager.print_file_summary(solver)
@@ -104,4 +118,10 @@ class OutputManager:
         self.temp_file_manager.clear_temp_files(solver)
 
     def set_remesh(self, remesh_counter: int) -> None:
+        """Sets the remesh prefix for pvd files.
+
+        Args:
+            remesh_counter: Number of times remeshing has been performed.
+        """
+
         self.pvd_file_manager.set_remesh(remesh_counter)

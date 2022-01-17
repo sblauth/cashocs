@@ -17,8 +17,8 @@
 
 """Abstract implementation of a shape gradient problem.
 
-This class uses the linear elasticity equations to project the
-shape derivative to the shape gradient with a Riesz projection.
+This class uses the linear elasticity equations to project the shape derivative to the 
+shape gradient with a Riesz projection.
 """
 
 from __future__ import annotations
@@ -50,16 +50,12 @@ class ShapeGradientProblem(PDEProblem):
         state_problem: StateProblem,
         adjoint_problem: AdjointProblem,
     ) -> None:
-        """Initialize the ShapeGradientProblem.
-
-        Parameters
-        ----------
-        form_handler : ShapeFormHandler
-            The ShapeFormHandler object corresponding to the shape optimization problem.
-        state_problem : StateProblem
-            The corresponding state problem.
-        adjoint_problem : AdjointProblem
-            The corresponding adjoint problem.
+        """
+        Args:
+            form_handler: The ShapeFormHandler object corresponding to the shape
+                optimization problem.
+            state_problem: The corresponding state problem.
+            adjoint_problem: The corresponding adjoint problem.
         """
 
         super().__init__(form_handler)
@@ -112,12 +108,10 @@ class ShapeGradientProblem(PDEProblem):
                 self.config,
             )
 
-    def solve(self) -> fenics.Function:
-        """Solves the Riesz projection problem to obtain the shape gradient
+    def solve(self) -> List[fenics.Function]:
+        """Solves the Riesz projection problem to obtain the shape gradient.
 
-        Returns
-        -------
-        fenics.Function
+        Returns:
             The function representing the shape gradient of the (reduced) cost
             functional.
         """
@@ -182,19 +176,12 @@ class _PLaplaceProjector:
         config: configparser.ConfigParser,
     ) -> None:
         """
-
-        Parameters
-        ----------
-        gradient_problem : ShapeGradientProblem
-            The shape gradient problem
-        gradient : list[fenics.Function]
-            The fenics Function representing the gradient deformation
-        shape_derivative : ufl.Form
-            The ufl Form of the shape derivative
-        bcs_shape : list[fenics.DirichletBC]
-            The boundary conditions for computing the gradient deformation
-        config : configparser.ConfigParser
-            The config for the optimization problem
+        Args:
+            gradient_problem: The shape gradient problem
+            gradient: The fenics Function representing the gradient deformation
+            shape_derivative: The ufl Form of the shape derivative
+            bcs_shape: The boundary conditions for computing the gradient deformation
+            config: The config for the optimization problem
         """
 
         self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
@@ -254,12 +241,7 @@ class _PLaplaceProjector:
                 ]
 
     def solve(self) -> None:
-        """Solves the p-Laplace problem for computing the shape gradient
-
-        Returns
-        -------
-        None
-        """
+        """Solves the p-Laplace problem for computing the shape gradient."""
 
         self.solution.vector().vec().set(0.0)
         for F in self.F_list:

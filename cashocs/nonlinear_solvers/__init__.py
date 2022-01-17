@@ -17,9 +17,8 @@
 
 """Custom solvers for nonlinear equations.
 
-This module has custom solvers for nonlinear PDEs, including a damped
-Newton methd. This is the only function at the moment, others might
-follow.
+This module has custom solvers for nonlinear PDEs, including a damped Newton methd and a
+Picard iteration for coupled problems.
 """
 
 from .newton_solver import newton_solve, damped_newton_solve

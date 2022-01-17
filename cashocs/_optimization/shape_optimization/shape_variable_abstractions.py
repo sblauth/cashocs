@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for abstractions of optimization variables in the case of shape optimization
-
-"""
+"""Abstractions of optimization variables in the case of shape optimization."""
 
 from __future__ import annotations
 
@@ -35,7 +33,13 @@ if TYPE_CHECKING:
 
 
 class ShapeVariableAbstractions(OptimizationVariableAbstractions):
+    """Abstractions for optimization variables in the case of shape optimization."""
+
     def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         super().__init__(optimization_problem)
         self.mesh_handler = optimization_problem.mesh_handler
@@ -50,32 +54,45 @@ class ShapeVariableAbstractions(OptimizationVariableAbstractions):
     def compute_decrease_measure(
         self, search_direction: Optional[List[fenics.Function]] = None
     ) -> float:
-        """Computes the measure of decrease needed for the Armijo test
+        """Computes the measure of decrease needed for the Armijo test.
 
-        Parameters
-        ----------
-        search_direction : list[fenics.Function]
-            The current search direction
+        Args:
+            search_direction: The search direction.
 
-        Returns
-        -------
-        float
-            the decrease measure for the Armijo rule
+        Returns:
+            The decrease measure for the Armijo test.
         """
 
         return self.form_handler.scalar_product(self.gradient, search_direction)
 
     def compute_gradient_norm(self) -> float:
+        """Computes the norm of the gradient.
+
+        Returns:
+            The norm of the gradient.
+        """
 
         return np.sqrt(self.form_handler.scalar_product(self.gradient, self.gradient))
 
     def revert_variable_update(self) -> None:
+        """Reverts the optimization variables to the current iterate."""
 
         self.mesh_handler.revert_transformation()
 
     def update_optimization_variables(
         self, search_direction, stepsize: float, beta: float
     ) -> float:
+        """Updates the optimization variables based on a line search.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current (trial) stepsize.
+            beta: The parameter for the line search, which "halves" the stepsize if the
+                test was not successful.
+
+        Returns:
+            The stepsize which was found to be acceptable.
+        """
 
         while True:
             self.deformation.vector().vec().aypx(
@@ -98,11 +115,25 @@ class ShapeVariableAbstractions(OptimizationVariableAbstractions):
 
     def compute_a_priori_decreases(
         self, search_direction: List[fenics.Function], stepsize: float
-    ) -> float:
+    ) -> int:
+        """Computes the number of times the stepsize has to be "halved" a priori.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current stepsize.
+
+        Returns:
+            The number of times the stepsize has to be "halved" before the actual trial.
+        """
 
         return self.mesh_handler.compute_decreases(search_direction, stepsize)
 
     def requires_remeshing(self) -> bool:
+        """Checks, if remeshing is needed.
+
+        Returns:
+            A boolean, which indicates whether remeshing is required.
+        """
 
         if (
             self.mesh_handler.current_mesh_quality
@@ -115,5 +146,10 @@ class ShapeVariableAbstractions(OptimizationVariableAbstractions):
     def project_ncg_search_direction(
         self, search_direction: List[fenics.Function]
     ) -> None:
+        """Restricts the search direction to the inactive set.
+
+        Args:
+            search_direction: The current search direction (will be overwritten).
+        """
 
         pass

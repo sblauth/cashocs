@@ -15,34 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for various helper functions.
-
-"""
+"""Module for various helper functions."""
 
 from __future__ import annotations
 
 import argparse
 import configparser
-from typing import Union, List, Tuple, Optional
+from typing import Union, List, Tuple, Optional, Any
 
 import fenics
 
 from .._exceptions import InputError
 
 
-def enlist(arg: Union[object, List]) -> List:
+def enlist(arg: Union[Any, List]) -> List:
     """Wraps the input argument into a list, if it isn't a list already.
 
-    Parameters
-    ----------
-    arg : list or object
-        The input argument, which is to wrapped into a list
+    Args:
+        arg: The input argument, which is to wrapped into a list.
 
-    Returns
-    -------
-    collection
-        The object wrapped into a list
-
+    Returns:
+        The object wrapped into a list.
     """
 
     if isinstance(arg, list):
@@ -56,16 +49,12 @@ def _check_and_enlist_bcs(
         fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
     ]
 ) -> List[List[fenics.DirichletBC]]:
-    """Enlists DirichletBC objects for cashocs
+    """Enlists DirichletBC objects for cashocs.
 
-    Parameters
-    ----------
-    bcs_list : fenics.DirichletBC or list[fenics.DirichletBC] or list[list[fenics.DirichletBC]]
-        The list of DirichletBC objects
+    Args:
+        bcs_list: The list of DirichletBC objects
 
-    Returns
-    -------
-    list[list[fenics.DirichletBC]]
+    Returns:
         The wrapped list of DirichletBC objects
     """
 
@@ -93,15 +82,11 @@ def _check_and_enlist_control_constraints(
 ) -> List[List[Union[float, int, fenics.Function]]]:
     """Wraps control constraints into a list suitable for cashocs.
 
-    Parameters
-    ----------
-    control_constraints : list[float or int or fenics.Function] or list[list[float or int or fenics.Function]]
-        The list of control constraints
+    Args:
+        control_constraints: The list of control constraints.
 
-    Returns
-    -------
-    list[list[float or int or fenics.Function]]
-        The wrapped list of control constraints
+    Returns:
+        The wrapped list of control constraints.
     """
 
     if isinstance(control_constraints, list) and isinstance(
@@ -125,15 +110,11 @@ def _check_and_enlist_ksp_options(
 ) -> List[List[List[str]]]:
     """Wraps ksp options into a list suitable for cashocs.
 
-    Parameters
-    ----------
-    ksp_options : list[list[str]] or list[list[list[str]]]
-        The list of ksp options
+    Args:
+        ksp_options: The list of ksp options.
 
-    Returns
-    -------
-    list[list[list[str]]]
-        The wrapped list of ksp options
+    Returns:
+        The wrapped list of ksp options.
     """
 
     if (
@@ -158,15 +139,12 @@ def _check_and_enlist_ksp_options(
 
 
 def _parse_remesh() -> Tuple[bool, str]:
-    """Parses command line arguments for the remeshing flag
+    """Parses command line arguments for the remeshing flag.
 
-    Returns
-    -------
-    bool
-        A boolean indicating, whether a remeshing was performed
-    str
-        A string which points to the remeshing directory.
-
+    Returns:
+        A tuple (cashocs_remesh_flag, temp_dir), where cashocs_remesh_flag is a boolean,
+        which indicates whether remeshing is used, and temp_dir is the path to the
+        directory containing the temporary files for reinitialization.
     """
 
     parser = argparse.ArgumentParser(description="test argument parser")
@@ -191,19 +169,14 @@ def _optimization_algorithm_configuration(
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
-    Parameters
-    ----------
-    config : configparser.ConfigParser or None
-        The config of the problem.
-    algorithm : str or None, optional
-        A string representing user input for the optimization algorithm
-        if this is set via keywords in the .solve() call. If this is
-        ``None``, then the config is used to return a consistent value
-        for internal use. (Default is None).
+    Args:
+        config: The config of the problem.
+        algorithm: A string representing user input for the optimization algorithm
+            if this is set via keywords in the .solve() call. If this is ``None``, then
+            the config is used to return a consistent value for internal use. (Default
+            is None).
 
-    Returns
-    -------
-    str
+    Returns:
         Internal name of the algorithms.
     """
 

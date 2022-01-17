@@ -98,6 +98,7 @@ MeshQuality
 	:members:
 	:undoc-members:
 	:inherited-members:
+	:noindex:
 
 DeformationHandler
 ------------------
@@ -106,6 +107,7 @@ DeformationHandler
 	:members:
 	:undoc-members:
 	:inherited-members:
+	:noindex:
 
 Functions
 ---------

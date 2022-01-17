@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a state equation.
-
-"""
+"""Abstract implementation of a state equation."""
 
 from __future__ import annotations
 
@@ -43,17 +41,12 @@ class StateProblem(PDEProblem):
         initial_guess: List[fenics.Function],
         temp_dict: Optional[Dict] = None,
     ) -> None:
-        """Initializes the state system.
-
-        Parameters
-        ----------
-        form_handler
-            The FormHandler of the optimization problem.
-        initial_guess
-            An initial guess for the state variables, used to initialize them in each
-            iteration.
-        temp_dict
-            A dict used for reinitialization when remeshing is performed.
+        """
+        Args:
+            form_handler: The FormHandler of the optimization problem.
+            initial_guess: An initial guess for the state variables, used to initialize
+                them in each iteration.
+            temp_dict: A dict used for reinitialization when remeshing is performed.
         """
 
         super().__init__(form_handler)
@@ -123,9 +116,7 @@ class StateProblem(PDEProblem):
     def solve(self) -> List[fenics.Function]:
         """Solves the state system.
 
-        Returns
-        -------
-        list[fenics.Function]
+        Returns:
             The solution of the state system.
         """
 

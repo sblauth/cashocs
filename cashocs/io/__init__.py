@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for inputs and outputs.
-
-"""
+"""Module for inputs and outputs."""
 
 from .config import load_config, create_config
 from .mesh import write_out_mesh

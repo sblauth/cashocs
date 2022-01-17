@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Limited Memory BFGS method for PDE constrained optimization
-
-"""
+"""Limited Memory BFGS method for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -35,9 +33,16 @@ if TYPE_CHECKING:
 
 
 class LBFGSMethod(OptimizationAlgorithm):
+    """A limited memory BFGS method."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, line_search: LineSearch
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
+        """
 
         super().__init__(optimization_problem)
         self.line_search = line_search
@@ -64,6 +69,7 @@ class LBFGSMethod(OptimizationAlgorithm):
             self.s_k = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
     def run(self) -> None:
+        """Solves the optimization problem with the L-BFGS method."""
 
         self.initialize_solver()
         self.compute_gradient()
@@ -103,16 +109,12 @@ class LBFGSMethod(OptimizationAlgorithm):
             self.update_hessian_approximation()
 
     def compute_search_direction(self, grad: List[fenics.Function]) -> None:
-        """Computes the search direction for the BFGS method with a double loop
+        """Computes the search direction for the BFGS method with a double loop.
 
-        Parameters
-        ----------
-        grad : list[fenics.Function]
-            The current gradient
+        Args:
+            grad: The current gradient
 
-        Returns
-        -------
-        search_direction : list[fenics.Function]
+        Returns:
             A function corresponding to the current / next search direction
         """
 
@@ -180,7 +182,8 @@ class LBFGSMethod(OptimizationAlgorithm):
                     0.0, -grad[j].vector().vec()
                 )
 
-    def store_previous_gradient(self):
+    def store_previous_gradient(self) -> None:
+        """Stores a copy of the gradient in the previous iteration."""
 
         if self.bfgs_memory_size > 0:
             for i in range(len(self.gradient)):
@@ -188,7 +191,8 @@ class LBFGSMethod(OptimizationAlgorithm):
                     0.0, self.gradient[i].vector().vec()
                 )
 
-    def update_hessian_approximation(self):
+    def update_hessian_approximation(self) -> None:
+        """Updates the approximation of the inverse Hessian."""
 
         if self.bfgs_memory_size > 0:
             for i in range(len(self.gradient)):

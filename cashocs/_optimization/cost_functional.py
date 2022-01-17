@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for general reduced cost functionals.
-
-"""
+"""Module for general reduced cost functionals."""
 
 from __future__ import annotations
 
@@ -32,15 +30,13 @@ if TYPE_CHECKING:
 
 
 class ReducedCostFunctional:
-    def __init__(self, form_handler: FormHandler, state_problem: StateProblem) -> None:
-        """Initialize the reduced cost functional
+    """Reduced cost functional for PDE constrained optimization."""
 
-        Parameters
-        ----------
-        form_handler : FormHandler
-            The FormHandler object for the optimization problem
-        state_problem : StateProblem
-            The StateProblem object corresponding to the state system
+    def __init__(self, form_handler: FormHandler, state_problem: StateProblem) -> None:
+        """
+        Args:
+            form_handler: The FormHandler object for the optimization problem.
+            state_problem: The StateProblem object corresponding to the state system.
         """
 
         self.form_handler = form_handler
@@ -53,9 +49,7 @@ class ReducedCostFunctional:
         and then evaluates the reduced cost functional by assembling the corresponding
         UFL form.
 
-        Returns
-        -------
-        float
+        Returns:
             The value of the reduced cost functional
         """
 

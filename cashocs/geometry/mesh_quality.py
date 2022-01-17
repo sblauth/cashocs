@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for computing the mesh quality.
-
-"""
+"""Module for computing the mesh quality."""
 
 from __future__ import annotations
 
@@ -49,20 +47,14 @@ def compute_mesh_quality(
 ) -> float:
     """This computes the mesh quality of a given mesh.
 
-    Parameters
-    ----------
-    mesh
-        The mesh whose quality shall be computed
-    type
-        The type of measurement for the mesh quality, either minimum quality or average
-        quality over all mesh cells, default is 'min'
-    measure
-        The type of quality measure which is used to compute the quality measure,
-        default is 'skewness'
+    Args:
+        mesh: The mesh whose quality shall be computed.
+        type: The type of measurement for the mesh quality, either minimum quality or
+            average quality over all mesh cells, default is 'min'.
+        measure: The type of quality measure which is used to compute the quality
+            measure, default is 'skewness'
 
-    Returns
-    -------
-    float
+    Returns:
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
         and 1 the best possible quality.
     """
@@ -93,32 +85,31 @@ def compute_mesh_quality(
 class MeshQuality:
     r"""A class used to compute the quality of a mesh.
 
-    This class implements either a skewness quality measure, one based
-    on the maximum angle of the elements, or one based on the radius ratios.
-    All quality measures have values in :math:`[0,1]`, where 1 corresponds
-    to the reference (optimal) element, and 0 corresponds to degenerate elements.
+    This class implements either a skewness quality measure, one based on the maximum
+    angle of the elements, or one based on the radius ratios. All quality measures have
+    values in :math:`[0,1]`, where 1 corresponds to the reference (optimal) element, and
+    0 corresponds to degenerate elements.
 
-    Examples
-    --------
-    This class can be directly used, without any instantiation, as shown here ::
+    Examples:
+        This class can be directly used, without any instantiation, as shown here ::
 
-        import cashocs
+            import cashocs
 
-        mesh, _, _, _, _, _ = cashocs.regular_mesh(10)
+            mesh, _, _, _, _, _ = cashocs.regular_mesh(10)
 
-        min_skew = cashocs.MeshQuality.min_skewness(mesh)
-        avg_skew = cashocs.MeshQuality.avg_skewness(mesh)
+            min_skew = cashocs.MeshQuality.min_skewness(mesh)
+            avg_skew = cashocs.MeshQuality.avg_skewness(mesh)
 
-        min_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
-        avg_angle = cashocs.MeshQuality.avg_maximum_angle(mesh)
+            min_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
+            avg_angle = cashocs.MeshQuality.avg_maximum_angle(mesh)
 
-        min_rad = cashocs.MeshQuality.min_radius_ratios(mesh)
-        avg_rad = cashocs.MeshQuality.avg_radius_ratios(mesh)
+            min_rad = cashocs.MeshQuality.min_radius_ratios(mesh)
+            avg_rad = cashocs.MeshQuality.avg_radius_ratios(mesh)
 
-        min_cond = cashocs.MeshQuality.min_condition_number(mesh)
-        avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
+            min_cond = cashocs.MeshQuality.min_condition_number(mesh)
+            avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
 
-    This works analogously for any mesh compatible with FEniCS.
+        This works analogously for any mesh compatible with FEniCS.
     """
 
     _cpp_code_mesh_quality = """
@@ -311,15 +302,12 @@ PYBIND11_MODULE(SIGNATURE, m)
         where :math:`\alpha^*` is the corresponding angle of the reference
         element. To compute the quality measure, the minimum of this expression
         over all elements and all of their (dihedral) angles is computed.
+        
+        Args:
+            mesh: The mesh whose quality shall be computed.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh whose quality shall be computed.
-
-        Returns
-        -------
-        The skewness of the mesh.
+        Returns:
+            The minimum skewness of the mesh.
         """
 
         return np.min(cls._quality_object.skewness(mesh).array())
@@ -337,20 +325,19 @@ PYBIND11_MODULE(SIGNATURE, m)
         element. The skewness corresponding to some (dihedral) angle
         :math:`\alpha` is defined as
 
-        .. math:: 1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} , \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
+        .. math::
+
+            1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} ,
+            \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 
         where :math:`\alpha^*` is the corresponding angle of the reference
         element. To compute the quality measure, the average of this expression
         over all elements and all of their (dihedral) angles is computed.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The average skewness of the mesh.
         """
 
@@ -372,15 +359,11 @@ PYBIND11_MODULE(SIGNATURE, m)
         element. To compute the quality measure, the minimum of this expression
         over all elements and all of their (dihedral) angles is computed.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-                The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
-                The minimum value of the maximum angle quality measure.
+        Returns:
+            The minimum value of the maximum angle quality measure.
         """
 
         return np.min(cls._quality_object.maximum_angle(mesh).array())
@@ -401,14 +384,10 @@ PYBIND11_MODULE(SIGNATURE, m)
         element. To compute the quality measure, the average of this expression
         over all elements and all of their (dihedral) angles is computed.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The average quality, based on the maximum angle measure.
         """
 
@@ -427,14 +406,10 @@ PYBIND11_MODULE(SIGNATURE, m)
         the circumradius. To compute the (global) quality measure, the minimum
         of this expression over all elements is returned.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The minimal radius ratio of the mesh.
         """
 
@@ -453,14 +428,10 @@ PYBIND11_MODULE(SIGNATURE, m)
         the circumradius. To compute the (global) quality measure, the average
         of this expression over all elements is returned.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The average radius ratio of the mesh.
         """
 
@@ -468,20 +439,16 @@ PYBIND11_MODULE(SIGNATURE, m)
 
     @staticmethod
     def min_condition_number(mesh: fenics.Mesh) -> float:
-        r"""Computes minimal mesh quality based on the condition number of the reference mapping.
+        r"""Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
-        (linear) mapping from the elements of the mesh to the reference element. Computes
-        the minimum of the condition number over all elements.
+        (linear) mapping from the elements of the mesh to the reference element.
+        Computes the minimum of the condition number over all elements.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The minimal condition number quality measure.
         """
 
@@ -521,20 +488,16 @@ PYBIND11_MODULE(SIGNATURE, m)
 
     @staticmethod
     def avg_condition_number(mesh):
-        """Computes average mesh quality based on the condition number of the reference mapping.
+        """Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
-        (linear) mapping from the elements of the mesh to the reference element. Computes
-        the average of the condition number over all elements.
+        (linear) mapping from the elements of the mesh to the reference element.
+        Computes the average of the condition number over all elements.
 
-        Parameters
-        ----------
-        mesh : fenics.Mesh
-            The mesh, whose quality shall be computed.
+        Args:
+            mesh: The mesh, whose quality shall be computed.
 
-        Returns
-        -------
-        float
+        Returns:
             The average mesh quality based on the condition number.
         """
 

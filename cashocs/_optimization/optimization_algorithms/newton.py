@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Truncated Newton method for PDE constrained optimization.
-
-"""
+"""Truncated Newton method for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -36,6 +34,12 @@ class NewtonMethod(OptimizationAlgorithm):
     def __init__(
         self, optimization_problem: OptimizationProblem, line_search: LineSearch
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
+        """
+
         super().__init__(optimization_problem)
         self.line_search = line_search
         self.hessian_problem = optimization_problem.hessian_problem
@@ -46,6 +50,7 @@ class NewtonMethod(OptimizationAlgorithm):
         self.armijo_broken = False
 
     def run(self) -> None:
+        """Solves the optimization problem with the truncated Newton method."""
 
         self.initialize_solver()
 
@@ -83,5 +88,7 @@ class NewtonMethod(OptimizationAlgorithm):
                 break
 
     def compute_search_direction(self) -> None:
+        """Computes the search direction for the Newton method."""
+
         self.search_direction = self.hessian_problem.newton_solve()
         self.has_curvature_info = True

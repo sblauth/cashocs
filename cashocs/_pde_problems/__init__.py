@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for PDE problems
-
-"""
+"""Base classes for PDE problems."""
 
 from .adjoint_problem import AdjointProblem
 from .control_gradient_problem import ControlGradientProblem

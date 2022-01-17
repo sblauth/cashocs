@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for abstractions of optimization variables in the case of optimal control
-
-"""
+"""Module for abstractions of optimization variables in the case of optimal control."""
 
 from __future__ import annotations
 
@@ -33,7 +31,13 @@ if TYPE_CHECKING:
 
 
 class ControlVariableAbstractions(OptimizationVariableAbstractions):
+    """Abstractions for optimization variables in the case of optimal control."""
+
     def __init__(self, optimization_problem: OptimalControlProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
 
         super().__init__(optimization_problem)
 
@@ -55,17 +59,13 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
     def compute_decrease_measure(
         self, search_direction: Optional[List[fenics.Function]] = None
     ) -> float:
-        """Computes the measure of decrease needed for the Armijo test
+        """Computes the measure of decrease needed for the Armijo test.
 
-        Parameters
-        ----------
-        search_direction : list[fenics.Function] or None, optional
-            The search direction (not required)
+        Args:
+            search_direction: The search direction.
 
-        Returns
-        -------
-        float
-            The decrease measure for the Armijo test
+        Returns:
+            The decrease measure for the Armijo test.
         """
 
         for j in range(self.form_handler.control_dim):
@@ -79,6 +79,7 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
         )
 
     def store_optimization_variables(self) -> None:
+        """Saves a copy of the current iterate of the optimization variables."""
 
         for i in range(len(self.controls)):
             self.control_temp[i].vector().vec().aypx(
@@ -86,6 +87,7 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
             )
 
     def revert_variable_update(self) -> None:
+        """Reverts the optimization variables to the current iterate."""
 
         for i in range(len(self.controls)):
             self.controls[i].vector().vec().aypx(
@@ -95,6 +97,17 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
     def update_optimization_variables(
         self, search_direction, stepsize: float, beta: float
     ) -> float:
+        """Updates the optimization variables based on a line search.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current (trial) stepsize.
+            beta: The parameter for the line search, which "halves" the stepsize if the
+                test was not successful.
+
+        Returns:
+            The stepsize which was found to be acceptable.
+        """
 
         self.store_optimization_variables()
 
@@ -108,20 +121,22 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
         return stepsize
 
     def compute_gradient_norm(self) -> float:
+        """Computes the norm of the gradient.
+
+        Returns:
+            The norm of the gradient.
+        """
 
         return np.sqrt(self._stationary_measure_squared())
 
     def _stationary_measure_squared(self) -> float:
-        """Computes the stationary measure (squared) corresponding to box-constraints
+        """Computes the stationary measure (squared) corresponding to box-constraints.
 
         In case there are no box constraints this reduces to the classical gradient
         norm.
 
-        Returns
-        -------
-         float
+        Returns:
             The square of the stationary measure
-
         """
 
         for j in range(self.form_handler.control_dim):
@@ -144,11 +159,25 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
 
     def compute_a_priori_decreases(
         self, search_direction: List[fenics.Function], stepsize: float
-    ) -> float:
+    ) -> int:
+        """Computes the number of times the stepsize has to be "halved" a priori.
 
-        return 0.0
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current stepsize.
+
+        Returns:
+            The number of times the stepsize has to be "halved" before the actual trial.
+        """
+
+        return 0
 
     def requires_remeshing(self) -> bool:
+        """Checks, if remeshing is needed.
+
+        Returns:
+            A boolean, which indicates whether remeshing is required.
+        """
 
         return False
 
@@ -157,14 +186,8 @@ class ControlVariableAbstractions(OptimizationVariableAbstractions):
     ) -> None:
         """Restricts the search direction to the inactive set.
 
-        Parameters
-        ----------
-        search_direction : list[fenics.Function]
-            A function that shall be projected / restricted (will be overwritten)
-
-        Returns
-        -------
-        None
+        Args:
+            search_direction: The current search direction (will be overwritten).
         """
 
         for j in range(self.form_handler.control_dim):
