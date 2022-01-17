@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing config files.
-
-"""
+"""Module for managing config files."""
 
 from __future__ import annotations
 
 import os
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from .._exceptions import ConfigError
 from .._exceptions import InputError
@@ -35,20 +33,13 @@ from .._loggers import warning
 def create_config(path: str) -> ConfigParser:  # pragma: no cover
     """Loads a config object from a config file.
 
-    Loads the config from a .ini file via the
-    configparser package.
+    Loads the config from a .ini file via the configparser package.
 
-    Parameters
-    ----------
-    path : str
-        The path to the .ini file storing the configuration.
+    Args:
+        path: The path to the .ini file storing the configuration.
 
-    Returns
-    -------
-    configparser.ConfigParser
-        The output config file, which includes the path
-        to the .ini file.
-
+    Returns:
+        The output config file, which includes the path to the .ini file.
 
     .. deprecated:: 1.1.0
         This is replaced by :py:func:`load_config <cashocs.load_config>`
@@ -56,7 +47,8 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
     """
 
     warning(
-        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config and will be removed in the future."
+        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
+        "and will be removed in the future."
     )
     config = load_config(path)
 
@@ -66,20 +58,15 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
 def load_config(path: str) -> ConfigParser:
     """Loads a config object from a config file.
 
-    Loads the config from a .ini file via the
-    configparser package.
+    Loads the config from a .ini file via the configparser package.
 
-    Parameters
-    ----------
-    path : str
-        The path to the .ini file storing the configuration.
+    Args:
+        path: The path to the .ini file storing the configuration.
 
-    Returns
-    -------
-    configparser.ConfigParser
-        The output config file, which includes the path
-        to the .ini file.
+    Returns:
+        The output config file, which includes the pathto the .ini file.
     """
+
     if os.path.isfile(path):
         config = Config(path)
     else:
@@ -93,18 +80,13 @@ def load_config(path: str) -> ConfigParser:
 
 
 def _check_for_config_list(string: str) -> bool:
-    """Checks, whether a given string is a valid representation of a list of numbers (floats)
+    """Checks, if string is a valid python list consisting of numbers.
 
-    Parameters
-    ----------
-    string : str
-        The input string.
+    Args:
+        string: The input string.
 
-    Returns
-    -------
-    bool
+    Returns:
         ``True`` if the string is valid, ``False`` otherwise
-
     """
 
     result = False
@@ -124,7 +106,14 @@ def _check_for_config_list(string: str) -> bool:
 
 
 class Config(ConfigParser):
-    def __init__(self, config_file: Optional[str] = None):
+    """Class for handling the config in cashocs."""
+
+    def __init__(self, config_file: Optional[str] = None) -> None:
+        """
+        Args:
+            config_file: Path to the config file.
+        """
+
         super().__init__()
 
         self.config_scheme = {
@@ -485,21 +474,27 @@ class Config(ConfigParser):
         if config_file is not None:
             self.read(config_file)
 
-    def validate_config(self):
+    def validate_config(self) -> None:
+        """Validates the configuration file."""
+
         self._check_sections()
         self._check_keys()
 
         if len(self.config_errors) > 0:
             raise ConfigError(self.config_errors)
 
-    def _check_sections(self):
+    def _check_sections(self) -> None:
+        """Checks whether all sections are valid."""
+
         for section_name, section in self.items():
             if section_name not in self.config_scheme.keys():
                 self.config_errors.append(
                     f"The following section is not valid: {section}\n"
                 )
 
-    def _check_keys(self):
+    def _check_keys(self) -> None:
+        """Checks the keys of the sections."""
+
         for section_name, section in self.items():
             for key in section.keys():
                 if section_name in self.config_scheme.keys():
@@ -516,7 +511,14 @@ class Config(ConfigParser):
                         self._check_larger_than_relation(section_name, key)
                         self._check_larger_equal_than_relation(section_name, key)
 
-    def _check_key_type(self, section, key):
+    def _check_key_type(self, section: str, key: str) -> None:
+        """Checks if the type of the key is correct.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         key_type = self.config_scheme[section][key]["type"]
         try:
             if key_type == "str":
@@ -535,7 +537,14 @@ class Config(ConfigParser):
                 f"Key {key} in section {section} has the wrong type. Required type is {key_type}.\n"
             )
 
-    def _check_key_requirements(self, section, key):
+    def _check_key_requirements(self, section: str, key: str) -> None:
+        """Checks, whether the requirements for the key are satisfied.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if (
             self.config_scheme[section][key]["type"] == "bool"
             and self[section][key].lower() == "true"
@@ -548,7 +557,14 @@ class Config(ConfigParser):
                             f"Key {key} in section {section} requires key {req[1]} in section {req[0]} to be present.\n"
                         )
 
-    def _check_key_conflicts(self, section, key):
+    def _check_key_conflicts(self, section: str, key: str) -> None:
+        """Checks, whether conflicting keys are present.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if self.has_option(section, key):
             if "conflicts" in self.config_scheme[section][key].keys():
                 conflicts = self.config_scheme[section][key]["conflicts"]
@@ -559,7 +575,14 @@ class Config(ConfigParser):
                                 f"Key {conflict[1]} in section {conflict[0]} conflicts with key {key} in section {section}.\n"
                             )
 
-    def _check_possible_options(self, section, key):
+    def _check_possible_options(self, section: str, key: str) -> None:
+        """Checks, whether the given option is possible.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if "possible_options" in self.config_scheme[section][key].keys():
             if (
                 self[section][key]
@@ -569,7 +592,14 @@ class Config(ConfigParser):
                     f"Key {key} in section {section} has a wrong value. Possible options are {self.config_scheme[section][key]['possible_options']}.\n"
                 )
 
-    def _check_larger_than_relation(self, section, key):
+    def _check_larger_than_relation(self, section: str, key: str) -> None:
+        """Checks, whether a given option is larger than one.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if "larger_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_than"]
@@ -582,7 +612,14 @@ class Config(ConfigParser):
                     f"The value of key {key} in section {section} is smaller than the value of key {partner[1]} in section {partner[0]}, but it should be larger.\n"
                 )
 
-    def _check_larger_equal_than_relation(self, section, key):
+    def _check_larger_equal_than_relation(self, section: str, key: str) -> None:
+        """Checks, whether a given option is larger or equal to another.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if "larger_equal_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_equal_than"]
@@ -595,7 +632,14 @@ class Config(ConfigParser):
                     f"The value of key {key} in section {section} is smaller than the value of key {partner[1]} in section {partner[0]}, but it should be larger.\n"
                 )
 
-    def _check_attributes(self, section, key):
+    def _check_attributes(self, section: str, key: str) -> None:
+        """Checks the attributes of a key.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+        """
+
         if "attributes" in self.config_scheme[section][key].keys():
             key_attributes = self.config_scheme[section][key]["attributes"]
             self._check_file_attribute(section, key, key_attributes)
@@ -604,7 +648,17 @@ class Config(ConfigParser):
             self._check_less_than_one_attribute(section, key, key_attributes)
             self._check_larger_than_one_attribute(section, key, key_attributes)
 
-    def _check_file_attribute(self, section, key, key_attributes):
+    def _check_file_attribute(
+        self, section: str, key: str, key_attributes: List[str]
+    ) -> None:
+        """Checks, whether a file specified in key exists.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         if "file" in key_attributes:
             file = Path(self.get(section, key))
             if not file.is_file():
@@ -616,35 +670,83 @@ class Config(ConfigParser):
                 section, key, self.config_scheme[section][key]["file_extension"]
             )
 
-    def _check_file_extension(self, section, key, extension):
+    def _check_file_extension(self, section: str, key: str, extension: str) -> None:
+        """Checks, whether key has the correct file extension.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
                 f"Key {key} in section {section} has the wrong file extension, it should end in .{extension}.\n"
             )
 
-    def _check_non_negative_attribute(self, section, key, key_attributes):
+    def _check_non_negative_attribute(
+        self, section: str, key: str, key_attributes: List[str]
+    ) -> None:
+        """Checks, whether key is nonnegative.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         if "non_negative" in key_attributes:
             if self.getfloat(section, key) < 0:
                 self.config_errors.append(
                     f"Key {key} in section {section} is negative, but it must not be.\n"
                 )
 
-    def _check_positive_attribute(self, section, key, key_attributes):
+    def _check_positive_attribute(
+        self, section: str, key: str, key_attributes: List[str]
+    ) -> None:
+        """Checks, whether key is positive.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         if "positive" in key_attributes:
             if self.getfloat(section, key) <= 0:
                 self.config_errors.append(
                     f"Key {key} in section {section} is non-positive, but it most be positive.\n"
                 )
 
-    def _check_less_than_one_attribute(self, section, key, key_attributes):
+    def _check_less_than_one_attribute(
+        self, section: str, key: str, key_attributes: List[str]
+    ) -> None:
+        """Checks, whether key is less than one.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         if "less_than_one" in key_attributes:
             if self.getfloat(section, key) >= 1:
                 self.config_errors.append(
                     f"Key {key} in section {section} is larger than one, but it must be smaller.\n"
                 )
 
-    def _check_larger_than_one_attribute(self, section, key, key_attributes):
+    def _check_larger_than_one_attribute(
+        self, section: str, key: str, key_attributes: List[str]
+    ) -> None:
+        """Checks, whether key is larger than one.
+
+        Args:
+            section: The corresponding section
+            key: The corresponding key
+            key_attributes: The list of attributes for key.
+        """
+
         if "larger_than_one" in key_attributes:
             if self.getfloat(section, key) <= 1:
                 self.config_errors.append(

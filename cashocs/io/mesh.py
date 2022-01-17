@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for handling mesh output.
-
-"""
+"""Module for handling mesh output."""
 
 from __future__ import annotations
 
@@ -30,30 +28,21 @@ import numpy as np
 def write_out_mesh(
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
-    """Writes out the current mesh as .msh file.
+    """Writes out mesh as Gmsh .msh file.
 
     This method updates the vertex positions in the ``original_gmsh_file``, the
     topology of the mesh and its connections are the same. The original GMSH
     file is kept, and a new one is generated under ``out_mesh_file``.
 
-    Parameters
-    ----------
-    mesh : fenics.Mesh
-        The mesh object in fenics that should be saved as GMSH file.
-    original_msh_file : str
-        Path to the original GMSH mesh file of the mesh object, has to
-        end with .msh.
-    out_msh_file : str
-        Path (and name) of the output mesh file, has to end with .msh.
+    Args:
+        mesh: The mesh object in fenics that should be saved as Gmsh file.
+        original_msh_file: Path to the original GMSH mesh file of the mesh object, has
+            to end with .msh.
+        out_msh_file: Path to the output mesh file, has to end with .msh.
 
-    Returns
-    -------
-    None
-
-    Notes
-    -----
-    The method only works with GMSH 4.1 file format. Others might also work,
-    but this is not tested or ensured in any way.
+    Notes:
+        The method only works with GMSH 4.1 file format. Others might also work, but
+        this is not tested or ensured in any way.
     """
 
     dim = mesh.geometric_dimension()

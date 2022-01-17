@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for handling the output
-
-"""
+"""Module for handling the output of cashocs."""
 
 from __future__ import annotations
 
@@ -37,9 +35,16 @@ if TYPE_CHECKING:
 
 
 class ResultManager:
+    """Class for managing the output of the optimization history."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, result_dir: str
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            result_dir: Path to the directory, where the results are saved.
+        """
 
         self.config = optimization_problem.config
         self.result_dir = result_dir
@@ -72,6 +77,11 @@ class ResultManager:
             self.output_dict["MeshQuality"] = []
 
     def save_to_dict(self, solver: OptimizationAlgorithm) -> None:
+        """Saves the optimization history to a dictionary.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
@@ -82,6 +92,11 @@ class ResultManager:
         self.output_dict["stepsize"].append(solver.stepsize)
 
     def save_to_json(self, solver: OptimizationAlgorithm) -> None:
+        """Saves the history of the optimization to a .json file.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         self.output_dict["initial_gradient_norm"] = solver.gradient_norm_initial
         self.output_dict["state_solves"] = solver.state_problem.number_of_solves
@@ -93,9 +108,16 @@ class ResultManager:
 
 
 class HistoryManager:
+    """Class for managing the human readable output of cashocs."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, result_dir: str
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            result_dir: Path to the directory, where the results are saved.
+        """
 
         self.result_dir = result_dir
 
@@ -108,6 +130,14 @@ class HistoryManager:
 
     @staticmethod
     def generate_output_str(solver: OptimizationAlgorithm) -> str:
+        """Generates the string which can be written to console and file.
+
+        Args:
+            solver: The optimization algorithm.
+
+        Returns:
+            The output string, which is used later.
+        """
 
         iteration = solver.iteration
         objective_value = solver.objective_value
@@ -149,10 +179,22 @@ class HistoryManager:
         return "".join(strs)
 
     def print_to_console(self, solver: OptimizationAlgorithm) -> None:
+        """Prints the output string to the console.
+
+        Args:
+            solver: The optimization algorithm.
+        """
+
         if self.verbose:
             print(self.generate_output_str(solver))
 
     def print_to_file(self, solver: OptimizationAlgorithm) -> None:
+        """Saves the output string in a file.
+
+        Args:
+            solver: The optimization algorithm.
+        """
+
         if self.save_txt:
             if solver.iteration == 0:
                 file_attr = "w"
@@ -164,6 +206,15 @@ class HistoryManager:
 
     @staticmethod
     def generate_summary_str(solver: OptimizationAlgorithm) -> str:
+        """Generates a string for the summary of the optimization.
+
+        Args:
+            solver: The optimization algorithm.
+
+        Returns:
+            The summary string.
+        """
+
         strs = []
         strs.append("\n")
         strs.append(f"Statistics --- Total iterations:  {solver.iteration:4d}")
@@ -181,21 +232,45 @@ class HistoryManager:
         return "".join(strs)
 
     def print_console_summary(self, solver: OptimizationAlgorithm) -> None:
+        """Prints the summary in the console.
+
+        Args:
+            solver: The optimization algorithm.
+        """
+
         if self.verbose:
             print(self.generate_summary_str(solver))
 
     def print_file_summary(self, solver: OptimizationAlgorithm) -> None:
+        """Save the summary in a file.
+
+        Args:
+            solver: The optimization algorithm.
+        """
+
         if self.save_txt:
             with open(f"{self.result_dir}/history.txt", "a") as file:
                 file.write(self.generate_summary_str(solver))
 
 
 class TempFileManager:
+    """Class for managing temporary files."""
+
     def __init__(self, optimization_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+        """
+
         self.config = optimization_problem.config
         self.is_shape_problem = optimization_problem.is_shape_problem
 
     def clear_temp_files(self, solver: OptimizationAlgorithm) -> None:
+        """Deletes temporary files.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         if self.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
@@ -213,14 +288,26 @@ class TempFileManager:
 
 
 class MeshManager:
+    """Manages the output of meshes."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, result_dir: str
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            result_dir: Path to the directory, where the output is saved to.
+        """
 
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
     def save_optimized_mesh(self, solver: OptimizationAlgorithm) -> None:
+        """Saves a copy of the optimized mesh in Gmsh format.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         if solver.form_handler.is_shape_problem:
             if (
@@ -234,9 +321,16 @@ class MeshManager:
 
 
 class PVDFileManager:
+    """Class for managing paraview .pvd files."""
+
     def __init__(
         self, optimization_problem: OptimizationProblem, result_dir: str
     ) -> None:
+        """
+        Args:
+            optimization_problem: The corresponding optimization problem.
+            result_dir: Path to the directory, where the output files are saved in.
+        """
 
         self.form_handler = optimization_problem.form_handler
         self.config = optimization_problem.config
@@ -271,6 +365,7 @@ class PVDFileManager:
         self.gradient_pvd_list = []
 
     def _initialize_pvd_lists(self) -> None:
+        """Initializes the lists of pvd files."""
 
         if not self.is_initialized:
             if self.save_pvd:
@@ -320,7 +415,13 @@ class PVDFileManager:
 
             self.is_initialized = True
 
-    def set_remesh(self, remesh_counter) -> None:
+    def set_remesh(self, remesh_counter: int) -> None:
+        """Sets the prefix of the pvd files with the remeshing iteration.
+
+        Args:
+            remesh_counter: The number of times remeshing has been performed.
+        """
+
         self.pvd_prefix = f"remesh_{remesh_counter:d}_"
 
     def _generate_pvd_file(
@@ -328,18 +429,12 @@ class PVDFileManager:
     ) -> Union[fenics.File, List[fenics.File]]:
         """Generate a fenics.File for saving Functions
 
-        Parameters
-        ----------
-        space : fenics.FunctionSpace
-            The FEM function space where the function is taken from.
-        name : str
-            The name of the function / file
-        prefix : str, optional
-            A prefix for the file name, used for remeshing
+        Args:
+            space: The FEM function space where the function is taken from.
+            name: The name of the function / file
+            prefix: A prefix for the file name, used for remeshing
 
-        Returns
-        -------
-        fenics.File or list[fenics.File]
+        Returns:
             A .pvd fenics.File object, into which a Function can be written
         """
 
@@ -354,6 +449,11 @@ class PVDFileManager:
             return fenics.File(f"{self.result_dir}/pvd/{prefix}{name}.pvd")
 
     def save_to_file(self, solver: OptimizationAlgorithm) -> None:
+        """Saves the variables to pvd files.
+
+        Args:
+            solver: The optimization algorithm.
+        """
 
         self._initialize_pvd_lists()
 
