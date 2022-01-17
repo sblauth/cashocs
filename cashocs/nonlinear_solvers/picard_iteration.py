@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Picard iteration for coupled PDEs
-
-"""
+"""Picard iteration for coupled PDEs."""
 
 from __future__ import annotations
 
@@ -48,12 +46,42 @@ def picard_iteration(
     inner_inexact: bool = True,
     inner_verbose: bool = False,
     inner_max_its: int = 25,
-    ksps: Optional[PETSc.KSP] = None,
+    ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
     rhs_tensors: Optional[List[fenics.PETScMatrix]] = None,
     lhs_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
+    """Solves a system of coupled PDEs via a Picard iteration.
+
+    Args:
+        F_list: List of the coupled PDEs.
+        u_list: List of the state variables (to be solved for).
+        bcs_list: List of boundary conditions for the PDEs.
+        max_iter: The maximum number of iterations for the Picard iteration.
+        rtol: The relative tolerance for the Picard iteration, default is 1e-10.
+        atol: The absolute tolerance for the Picard iteration, default is 1e-10.
+        verbose: Boolean flag, if ``True``, output is written to stdout, default is
+            ``True``.
+        inner_damped: Boolean flag, if ``True``, the inner problems are solved with a
+            damped Newton method, default is ``True``
+        inner_inexact: Boolean flag, if ``True``, the inner problems are solved with a
+            inexact Newton method, default is ``True``
+        inner_verbose: Boolean flag, if ``True``, the inner problems write the history
+            to stdout, default is ``False``.
+        inner_max_its: Maximum number of iterations for the inner Newton solver; default
+            is 25.
+        ksps: List of PETSc KSP objects for solving the inner (linearized) problems,
+            optional. Default is ``None``, in which case the direct solver mumps is
+            used.
+        ksp_options: List of options for the KSP objects.
+        rhs_tensors: List of matrices for the right-hand sides of the inner (linearized)
+            equations.
+        lhs_tensors: List of vectors for the left-hand sides of the inner (linearized)
+            equations.
+        inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
+            linear ones, and only a linear solver is used.
+    """
 
     F_list = enlist(F_list)
     u_list = enlist(u_list)
