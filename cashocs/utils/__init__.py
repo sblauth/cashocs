@@ -17,10 +17,9 @@
 
 """Module including utility and helper functions.
 
-This module includes utility and helper functions used in cashocs. They
-might also be interesting for users, so they are part of the public API.
-Includes wrappers that allow to shorten the coding for often recurring
-actions.
+This module includes utility and helper functions used in cashocs. They might also be
+interesting for users, so they are part of the public API. Includes wrappers that allow
+to shorten the coding for often recurring actions.
 """
 
 from .forms import (
