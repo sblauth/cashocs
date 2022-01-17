@@ -126,8 +126,8 @@ def newton_solve(
 
         .. math::
             \begin{alignedat}{2}
-            - \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
-            u &= 0 \quad &&\text{ on } \Gamma.
+                - \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2, \\
+                u &= 0 \quad &&\text{ on } \Gamma.
             \end{alignedat}
         
         This is solved with the code ::

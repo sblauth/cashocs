@@ -88,8 +88,8 @@ def set_log_level(level: int) -> None:
 
     Args:
         level: Should be one of ``cashocs.LogLevel.DEBUG``, ``cashocs.LogLevel.INFO``,
-        ``cashocs.LogLevel.WARNING``, ``cashocs.LogLevel.ERROR``,
-        ``cashocs.LogLevel.CRITICAL``
+            ``cashocs.LogLevel.WARNING``, ``cashocs.LogLevel.ERROR``,
+            ``cashocs.LogLevel.CRITICAL``
 
     Notes:
         The log level setting is global, so if you use this interactively, you have to
@@ -99,12 +99,12 @@ def set_log_level(level: int) -> None:
         To set the log level of cashocs, use this method as follows::
 
             import cashocs
-
             cashocs.set_log_level(cashocs.LogLevel.WARNING)
 
         which only shows messages with a level of ``WARNING`` or higher.
         To use a different level, replace ``WARNING`` by ``DEBUG``, ``INFO``, ``ERROR``,
         or ``CRITICAL``.
+
     """
 
     _cashocs_logger.setLevel(level)

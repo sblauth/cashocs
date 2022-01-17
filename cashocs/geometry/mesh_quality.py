@@ -47,20 +47,14 @@ def compute_mesh_quality(
 ) -> float:
     """This computes the mesh quality of a given mesh.
 
-    Parameters
-    ----------
-    mesh
-        The mesh whose quality shall be computed
-    type
-        The type of measurement for the mesh quality, either minimum quality or average
-        quality over all mesh cells, default is 'min'
-    measure
-        The type of quality measure which is used to compute the quality measure,
-        default is 'skewness'
+    Args:
+        mesh: The mesh whose quality shall be computed.
+        type: The type of measurement for the mesh quality, either minimum quality or
+            average quality over all mesh cells, default is 'min'.
+        measure: The type of quality measure which is used to compute the quality
+            measure, default is 'skewness'
 
-    Returns
-    -------
-    float
+    Returns:
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
         and 1 the best possible quality.
     """

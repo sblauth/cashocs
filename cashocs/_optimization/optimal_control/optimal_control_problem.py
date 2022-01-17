@@ -425,7 +425,7 @@ class OptimalControlProblem(OptimizationProblem):
         atol: Optional[float] = None,
         max_iter: Optional[int] = None,
     ) -> None:
-        """Solves the optimization problem by the method specified in the config file.
+        r"""Solves the optimization problem by the method specified in the config file.
 
         Updates / overwrites states, controls, and adjoints according
         to the optimization method, i.e., the user-input :py:func:`fenics.Function`
@@ -461,14 +461,15 @@ class OptimalControlProblem(OptimizationProblem):
 
             - a purely absolute one (if only ``atol`` is specified), i.e.,
 
-            .. math:: || \nabla J(u_k) || \leq \texttt{atol}.
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
 
             - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
 
             .. math::
 
-                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol} ||
-                \nabla J(u_0) ||.
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
         """
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
