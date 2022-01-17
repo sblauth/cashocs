@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Exceptions raised by cashocs.
-
-"""
+"""Exceptions raised by cashocs."""
 
 from __future__ import annotations
 
@@ -45,10 +43,18 @@ class NotConvergedError(CashocsException):
     """
 
     def __init__(self, solver: str, message: Optional[str] = None) -> None:
+        """
+        Args:
+            solver: The solver which raised the exception.
+            message: A message indicating why the solver did not converge.
+        """
+
         self.solver = solver
         self.message = message
 
     def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+
         main_msg = f"The {self.solver} failed to converge."
         post_msg = f"\n{self.message}" if self.message is not None else ""
         return main_msg + post_msg
@@ -63,6 +69,12 @@ class PETScKSPError(CashocsException):
     def __init__(
         self, error_code: int, message: str = "PETSc linear solver did not converge."
     ) -> None:
+        """
+        Args:
+            error_code: The error code issued by PETSc.
+            message: The message, detailing why PETSc issued an error.
+        """
+
         self.message = message
         self.error_code = error_code
 
@@ -90,6 +102,8 @@ class PETScKSPError(CashocsException):
             self.error_reason = " (unknown)"
 
     def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+
         return (
             f"{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}"
         )
@@ -99,12 +113,19 @@ class InputError(CashocsException):
     """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
 
     def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
+        """
+        Args:
+            obj: The object which raises the exception.
+            param: The faulty input parameter.
+            message: A message detailing what went wrong.
+        """
 
         self.obj = obj
         self.param = param
         self.message = message
 
     def __str__(self) -> str:
+        """Returns the string representation of the exception."""
 
         main_msg = f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
         post_msg = f"\n{self.message}" if self.message is not None else ""
@@ -117,10 +138,16 @@ class ConfigError(CashocsException):
     pre_message = "You have some error(s) in your config file.\n"
 
     def __init__(self, config_errors: List[str]) -> None:
+        """
+        Args:
+            config_errors: The list of errors that occurred while trying to validate
+                the config.
+        """
 
         self.config_errors = config_errors
 
     def __str__(self) -> str:
+        """Returns the string representation of the exception."""
 
         except_str = f"{self.pre_message}"
         for error in self.config_errors:
