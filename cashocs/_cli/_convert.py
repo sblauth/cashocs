@@ -25,6 +25,7 @@ import time
 from typing import List, Optional
 
 import meshio
+import numpy as np
 
 
 def _generate_parser() -> argparse.ArgumentParser:
@@ -45,101 +46,114 @@ def _generate_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def convert(argv: Optional[List[str]] = None) -> None:
-    """Converts a Gmsh .msh file to a .xdmf mesh file.
+def check_file_extension(file: str, required_extension: str) -> None:
+    if not file.split(".")[-1] == required_extension:
+        raise Exception(
+            f"Cannot use {file} due to wrong format.",
+        )
+
+
+def write_mesh(
+    meshdim: int, points: np.ndarray, cells_dict: dict, ostring: str
+) -> None:
+    """Write out the main mesh with meshio.
 
     Args:
-        argv: Command line options. The first parameter is the input .msh file,
-            the second is the output .xdmf file
+        meshdim: The dimension of the mesh.
+        points: The array of points.
+        cells_dict: The cells_dict of the mesh.
+        ostring: The output string, containing the name and path to the output file,
+            without extension.
     """
 
-    start_time = time.time()
-
-    parser = _generate_parser()
-    args = parser.parse_args(argv)
-
-    inputfile = args.infile
-    outputfile = args.outfile
-    # Check that the inputfile has .msh file format
-    if not (inputfile[-4:] == ".msh"):
-        raise Exception(
-            "Cannot use the input file due to wrong format.",
-        )
-
-    # Check that the outputfile has .xdmf format
-    if outputfile[-5:] == ".xdmf":
-        ostring = outputfile[:-5]
-    else:
-        raise Exception(
-            "Cannot use the output file due to wrong format.",
-        )
-
-    mesh_collection = meshio.read(inputfile)
-
-    points = mesh_collection.points
-    cells_dict = mesh_collection.cells_dict
-    cell_data_dict = mesh_collection.cell_data_dict
-
-    # Check, whether we have a 2D or 3D mesh:
-    keyvals = cells_dict.keys()
-    meshdim = 2
-    if "tetra" in keyvals:
-        meshdim = 3
-    elif "triangle" in keyvals:
-        meshdim = 2
-
+    cells_str = "triangle"
     if meshdim == 2:
-        points = points[:, :2]
-        xdmf_mesh = meshio.Mesh(
-            points=points, cells={"triangle": cells_dict["triangle"]}
-        )
-        meshio.write(f"{ostring}.xdmf", xdmf_mesh)
-
-        if "gmsh:physical" in cell_data_dict.keys():
-            if "triangle" in cell_data_dict["gmsh:physical"].keys():
-                subdomains = meshio.Mesh(
-                    points=points,
-                    cells={"triangle": cells_dict["triangle"]},
-                    cell_data={
-                        "subdomains": [cell_data_dict["gmsh:physical"]["triangle"]]
-                    },
-                )
-                meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
-
-            if "line" in cell_data_dict["gmsh:physical"].keys():
-                xdmf_boundaries = meshio.Mesh(
-                    points=points,
-                    cells={"line": cells_dict["line"]},
-                    cell_data={"boundaries": [cell_data_dict["gmsh:physical"]["line"]]},
-                )
-                meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
-
+        cells_str = "triangle"
     elif meshdim == 3:
-        xdmf_mesh = meshio.Mesh(points=points, cells={"tetra": cells_dict["tetra"]})
-        meshio.write(f"{ostring}.xdmf", xdmf_mesh)
+        cells_str = "tetra"
 
-        if "gmsh:physical" in cell_data_dict.keys():
-            if "tetra" in cell_data_dict["gmsh:physical"].keys():
-                subdomains = meshio.Mesh(
-                    points=points,
-                    cells={"tetra": cells_dict["tetra"]},
-                    cell_data={
-                        "subdomains": [cell_data_dict["gmsh:physical"]["tetra"]]
-                    },
-                )
-                meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
+    xdmf_mesh = meshio.Mesh(points=points, cells={cells_str: cells_dict[cells_str]})
+    meshio.write(f"{ostring}.xdmf", xdmf_mesh)
 
-            if "triangle" in cell_data_dict["gmsh:physical"].keys():
-                xdmf_boundaries = meshio.Mesh(
-                    points=points,
-                    cells={"triangle": cells_dict["triangle"]},
-                    cell_data={
-                        "boundaries": [cell_data_dict["gmsh:physical"]["triangle"]]
-                    },
-                )
-                meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
 
-    # Check for physical names
+def write_subdomains(
+    meshdim: int,
+    cell_data_dict: dict,
+    points: np.ndarray,
+    cells_dict: dict,
+    ostring: str,
+) -> None:
+    """Write out an xdmf file with meshio corresponding to the subdomains.
+
+    Args:
+        meshdim: The dimension of the mesh.
+        cell_data_dict: The cell_data_dict of the mesh.
+        points: The array of points.
+        cells_dict: The cells_dict of the mesh.
+        ostring: The output string, containing the name and path to the output file,
+            without extension.
+    """
+
+    cells_str = "triangle"
+    if meshdim == 2:
+        cells_str = "triangle"
+    elif meshdim == 3:
+        cells_str = "tetra"
+
+    if "gmsh:physical" in cell_data_dict.keys():
+        if cells_str in cell_data_dict["gmsh:physical"].keys():
+            subdomains = meshio.Mesh(
+                points=points,
+                cells={cells_str: cells_dict[cells_str]},
+                cell_data={"subdomains": [cell_data_dict["gmsh:physical"][cells_str]]},
+            )
+            meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
+
+
+def write_boundaries(
+    meshdim: int,
+    cell_data_dict: dict,
+    points: np.ndarray,
+    cells_dict: dict,
+    ostring: str,
+) -> None:
+    """Write out an xdmf file with meshio corresponding to the boundaries.
+
+    Args:
+        meshdim: The dimension of the mesh.
+        cell_data_dict: The cell_data_dict of the mesh.
+        points: The array of points.
+        cells_dict: The cells_dict of the mesh.
+        ostring: The output string, containing the name and path to the output file,
+            without extension.
+    """
+
+    facet_str = "line"
+    if meshdim == 2:
+        facet_str = "line"
+    elif meshdim == 3:
+        facet_str = "triangle"
+
+    if "gmsh:physical" in cell_data_dict.keys():
+        if facet_str in cell_data_dict["gmsh:physical"].keys():
+            xdmf_boundaries = meshio.Mesh(
+                points=points,
+                cells={facet_str: cells_dict[facet_str]},
+                cell_data={"boundaries": [cell_data_dict["gmsh:physical"][facet_str]]},
+            )
+            meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
+
+
+def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None:
+    """Checks and extracts physical tags if they are given as strings.
+
+    Args:
+        inputfile: Path to the input file.
+        meshdim: The dimension of the mesh.
+        ostring: The output string, containing the name and path to the output file,
+            without extension.
+    """
+
     physical_groups = {"dx": {}, "ds": {}}
     has_physical_groups = False
     with open(inputfile, "r") as infile:
@@ -169,6 +183,47 @@ def convert(argv: Optional[List[str]] = None) -> None:
         if has_physical_groups:
             with open(f"{ostring}_physical_groups.json", "w") as ofile:
                 json.dump(physical_groups, ofile)
+
+
+def convert(argv: Optional[List[str]] = None) -> None:
+    """Converts a Gmsh .msh file to a .xdmf mesh file.
+
+    Args:
+        argv: Command line options. The first parameter is the input .msh file,
+            the second is the output .xdmf file
+    """
+
+    start_time = time.time()
+
+    parser = _generate_parser()
+    args = parser.parse_args(argv)
+
+    inputfile = args.infile
+    outputfile = args.outfile
+    check_file_extension(inputfile, "msh")
+    check_file_extension(outputfile, "xdmf")
+
+    ostring = outputfile.split(".")[0]
+
+    mesh_collection = meshio.read(inputfile)
+
+    points = mesh_collection.points
+    cells_dict = mesh_collection.cells_dict
+    cell_data_dict = mesh_collection.cell_data_dict
+
+    # Check, whether we have a 2D or 3D mesh:
+    keyvals = cells_dict.keys()
+    meshdim = 2
+    if "tetra" in keyvals:
+        meshdim = 3
+    elif "triangle" in keyvals:
+        meshdim = 2
+        points = points[:, :2]
+
+    write_mesh(meshdim, points, cells_dict, ostring)
+    write_subdomains(meshdim, cell_data_dict, points, cells_dict, ostring)
+    write_boundaries(meshdim, cell_data_dict, points, cells_dict, ostring)
+    check_for_physical_names(inputfile, meshdim, ostring)
 
     end_time = time.time()
     print(

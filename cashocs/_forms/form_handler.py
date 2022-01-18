@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Union
 
 import fenics
 import numpy as np
@@ -32,6 +32,31 @@ from cashocs import utils
 if TYPE_CHECKING:
     from cashocs import _optimization
     from cashocs._forms import shape_regularization
+
+
+def _get_subdx(
+    function_space: fenics.FunctionSpace, index: int, ls: List
+) -> Union[None, List[int]]:
+    """Computes the sub-indices for mixed function spaces based on the id of a subspace.
+
+    Args:
+        function_space: The function space, whose substructure is to be investigated.
+        index: The id of the target function space.
+        ls: A list of indices for the sub-spaces.
+
+    Returns:
+        The list of the sub-indices.
+    """
+
+    if function_space.id() == index:
+        return ls
+    if function_space.num_sub_spaces() > 1:
+        for i in range(function_space.num_sub_spaces()):
+            ans = _get_subdx(function_space.sub(i), index, ls + [i])
+            if ans is not None:
+                return ans
+    else:
+        return None
 
 
 class FormHandler(abc.ABC):
@@ -229,17 +254,53 @@ class FormHandler(abc.ABC):
                 else:
                     self.state_eq_forms_rhs.append(rhs)
 
-    def __compute_adjoint_equations(self) -> None:
-        """Calculates the weak form of the adjoint equation for use with fenics."""
+    def __compute_adjoint_boundary_conditions(self) -> None:
+        """Computes the boundary conditions for the adjoint systems."""
 
-        self.adjoint_eq_forms = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.states[i],
-                self.test_functions_adjoint[i],
-            )
-            for i in range(self.state_dim)
-        ]
+        if self.state_adjoint_equal_spaces:
+            self.bcs_list_ad = [
+                [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
+                for i in range(self.state_dim)
+            ]
+            [
+                [bc.homogenize() for bc in self.bcs_list_ad[i]]
+                for i in range(self.state_dim)
+            ]
+        else:
+
+            self.bcs_list_ad = [
+                [1] * len(self.bcs_list[i]) for i in range(self.state_dim)
+            ]
+
+            for i in range(self.state_dim):
+                for j, bc in enumerate(self.bcs_list[i]):
+                    idx = bc.function_space().id()
+                    subdx = _get_subdx(self.state_spaces[i], idx, ls=[])
+                    adjoint_space = self.adjoint_spaces[i]
+                    for num in subdx:
+                        adjoint_space = adjoint_space.sub(num)
+                    shape = adjoint_space.ufl_element().value_shape()
+                    if shape == ():
+                        bdry_value = fenics.Constant(0)
+                    else:
+                        bdry_value = fenics.Constant(
+                            [0] * adjoint_space.ufl_element().value_size()
+                        )
+
+                    try:
+                        self.bcs_list_ad[i][j] = fenics.DirichletBC(
+                            adjoint_space,
+                            bdry_value,
+                            bc.domain_args[0],
+                            bc.domain_args[1],
+                        )
+                    except AttributeError:
+                        self.bcs_list_ad[i][j] = fenics.DirichletBC(
+                            adjoint_space, bdry_value, bc.sub_domain
+                        )
+
+    def __compute_adjoint_scalar_tracking_forms(self) -> None:
+        """Compute the part arising due to scalar_tracking_terms."""
 
         if self.use_scalar_tracking:
             for i in range(self.state_dim):
@@ -256,6 +317,9 @@ class FormHandler(abc.ABC):
                             self.test_functions_adjoint[i],
                         )
                     )
+
+    def __compute_adjoint_min_max_forms(self) -> None:
+        """Compute the part arising due to min_max_terms."""
 
         if self.use_min_max_terms:
             for i in range(self.state_dim):
@@ -286,6 +350,21 @@ class FormHandler(abc.ABC):
                             self.test_functions_adjoint[i],
                         )
 
+    def __compute_adjoint_equations(self) -> None:
+        """Calculates the weak form of the adjoint equation for use with fenics."""
+
+        self.adjoint_eq_forms = [
+            fenics.derivative(
+                self.lagrangian_form,
+                self.states[i],
+                self.test_functions_adjoint[i],
+            )
+            for i in range(self.state_dim)
+        ]
+
+        self.__compute_adjoint_scalar_tracking_forms()
+        self.__compute_adjoint_min_max_forms()
+
         self.linear_adjoint_eq_forms = [
             ufl.replace(
                 self.adjoint_eq_forms[i],
@@ -314,71 +393,7 @@ class FormHandler(abc.ABC):
             else:
                 self.adjoint_eq_rhs.append(rhs)
 
-        # Compute the  adjoint boundary conditions
-        if self.state_adjoint_equal_spaces:
-            self.bcs_list_ad = [
-                [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
-                for i in range(self.state_dim)
-            ]
-            [
-                [bc.homogenize() for bc in self.bcs_list_ad[i]]
-                for i in range(self.state_dim)
-            ]
-        else:
-
-            def get_subdx(function_space, index, ls):
-                if function_space.id() == index:
-                    return ls
-                if function_space.num_sub_spaces() > 1:
-                    for i in range(function_space.num_sub_spaces()):
-                        ans = get_subdx(function_space.sub(i), index, ls + [i])
-                        if ans is not None:
-                            return ans
-                else:
-                    return None
-
-            self.bcs_list_ad = [
-                [1] * len(self.bcs_list[i]) for i in range(self.state_dim)
-            ]
-
-            for i in range(self.state_dim):
-                for j, bc in enumerate(self.bcs_list[i]):
-                    idx = bc.function_space().id()
-                    subdx = get_subdx(self.state_spaces[i], idx, ls=[])
-                    adjoint_space = self.adjoint_spaces[i]
-                    for num in subdx:
-                        adjoint_space = adjoint_space.sub(num)
-                    shape = adjoint_space.ufl_element().value_shape()
-                    try:
-                        if shape == ():
-                            self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                adjoint_space,
-                                fenics.Constant(0),
-                                bc.domain_args[0],
-                                bc.domain_args[1],
-                            )
-                        else:
-                            self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                adjoint_space,
-                                fenics.Constant(
-                                    [0] * adjoint_space.ufl_element().value_size()
-                                ),
-                                bc.domain_args[0],
-                                bc.domain_args[1],
-                            )
-                    except AttributeError:
-                        if shape == ():
-                            self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                adjoint_space, fenics.Constant(0), bc.sub_domain
-                            )
-                        else:
-                            self.bcs_list_ad[i][j] = fenics.DirichletBC(
-                                adjoint_space,
-                                fenics.Constant(
-                                    [0] * adjoint_space.ufl_element().value_size()
-                                ),
-                                bc.sub_domain,
-                            )
+        self.__compute_adjoint_boundary_conditions()
 
     def _pre_hook(self) -> None:
         pass

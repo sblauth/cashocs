@@ -339,18 +339,8 @@ class ControlFormHandler(form_handler.FormHandler):
                             self.test_functions_control[i],
                         )
 
-    def _compute_newton_forms(self) -> None:
-        """Calculates the needed forms for the truncated Newton method."""
-
-        if self.use_scalar_tracking or self.use_min_max_terms:
-            raise _exceptions.InputError(
-                "cashocs._forms.ShapeFormHandler",
-                "__compute_newton_forms",
-                (
-                    "Newton's method is not available with scalar tracking or"
-                    " min_max terms."
-                ),
-            )
+    def _compute_sensitivity_equations(self) -> None:
+        """Calculates the forms for the (forward) sensitivity equations."""
 
         # Use replace -> derivative to speed up the computations
         self.sensitivity_eqs_temp = [
@@ -422,7 +412,9 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.state_dim):
                 self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
-        # Compute forms for the truncated Newton method
+    def _compute_first_order_lagrangian_derivatives(self) -> None:
+        """Computes the derivative of the Lagrangian w.r.t. the state and control."""
+
         self.L_y = [
             fenics.derivative(
                 self.lagrangian_form,
@@ -439,6 +431,9 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(self.control_dim)
         ]
+
+    def _compute_secon_order_lagrangian_derivatives(self) -> None:
+        """Compute the second order derivatives of the Lagrangian w.r.t. y and u."""
 
         self.L_yy = [
             [
@@ -473,16 +468,8 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.control_dim)
         ]
 
-        self.w_1 = [
-            utils.summation([self.L_yy[i][j] for j in range(self.state_dim)])
-            + utils.summation([self.L_uy[i][j] for j in range(self.control_dim)])
-            for i in range(self.state_dim)
-        ]
-        self.w_2 = [
-            utils.summation([self.L_yu[i][j] for j in range(self.state_dim)])
-            + utils.summation([self.L_uu[i][j] for j in range(self.control_dim)])
-            for i in range(self.control_dim)
-        ]
+    def _compute_adjoint_sensitivity_equations(self) -> None:
+        """Computes the adjoint sensitivity equations for the Newton method."""
 
         # Use replace -> derivative for faster computations
         self.adjoint_sensitivity_eqs_diag_temp = [
@@ -553,6 +540,36 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(self.control_dim)
         ]
+
+    def _compute_newton_forms(self) -> None:
+        """Calculates the needed forms for the truncated Newton method."""
+
+        if self.use_scalar_tracking or self.use_min_max_terms:
+            raise _exceptions.InputError(
+                "cashocs._forms.ShapeFormHandler",
+                "__compute_newton_forms",
+                (
+                    "Newton's method is not available with scalar tracking or"
+                    " min_max terms."
+                ),
+            )
+
+        self._compute_sensitivity_equations()
+        self._compute_first_order_lagrangian_derivatives()
+        self._compute_secon_order_lagrangian_derivatives()
+
+        self.w_1 = [
+            utils.summation([self.L_yy[i][j] for j in range(self.state_dim)])
+            + utils.summation([self.L_uy[i][j] for j in range(self.control_dim)])
+            for i in range(self.state_dim)
+        ]
+        self.w_2 = [
+            utils.summation([self.L_yu[i][j] for j in range(self.state_dim)])
+            + utils.summation([self.L_uu[i][j] for j in range(self.control_dim)])
+            for i in range(self.control_dim)
+        ]
+
+        self._compute_adjoint_sensitivity_equations()
 
         self.w_3 = [
             -self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)

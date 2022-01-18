@@ -26,7 +26,6 @@ import cashocs
 import cashocs._cli
 
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -114,10 +113,10 @@ def test_wrong_formats():
         cashocs._cli.convert(
             [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
         )
-    assert "Cannot use the input file due to wrong format." in str(e_info.value)
+    assert "due to wrong format." in str(e_info.value)
 
     with pytest.raises(Exception) as e_info:
         cashocs._cli.convert(
             [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
         )
-    assert "Cannot use the output file due to wrong format." in str(e_info.value)
+    assert "due to wrong format." in str(e_info.value)

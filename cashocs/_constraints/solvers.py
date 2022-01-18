@@ -88,11 +88,30 @@ class ConstrainedSolver(abc.ABC):
         self.beta = 10.0
         self.inner_cost_functional_shift = 0.0
 
+        self.inner_scalar_tracking_forms = []
+        self.inner_min_max_terms = []
+
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
 
         pass
+
+    def _post_process_cost_functional(self) -> None:
+        """Ensures that scalar_tracking_forms and min_max_terms are correct."""
+
+        if len(self.inner_scalar_tracking_forms) == 0:
+            self.inner_scalar_tracking_forms = (
+                self.constrained_problem.scalar_tracking_forms_initial
+            )
+        else:
+            if self.constrained_problem.scalar_tracking_forms_initial is not None:
+                self.inner_scalar_tracking_forms += (
+                    self.constrained_problem.scalar_tracking_forms_initial
+                )
+
+        if len(self.inner_min_max_terms) == 0:
+            self.inner_min_max_terms = None
 
     @abc.abstractmethod
     def solve(
@@ -228,109 +247,114 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     constraint.weight.vector().vec().set(self.mu)
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
-        if len(self.inner_scalar_tracking_forms) == 0:
-            self.inner_scalar_tracking_forms = (
-                self.constrained_problem.scalar_tracking_forms_initial
+        self._post_process_cost_functional()
+        self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
+
+    def _update_equality_multipliers(self, index: int) -> None:
+        """Performs an update of the Lagrange multipliers for equality constraints.
+
+        Args:
+            index: The index of the equality constraint.
+        """
+
+        if self.constraints[index].is_integral_constraint:
+            self.lmbd[index] += self.mu * (
+                fenics.assemble(self.constraints[index].variable_function)
+                - self.constraints[index].target
             )
-        else:
-            if self.constrained_problem.scalar_tracking_forms_initial is not None:
-                self.inner_scalar_tracking_forms += (
-                    self.constrained_problem.scalar_tracking_forms_initial
+        elif self.constraints[index].is_pointwise_constraint:
+            project_term = self.lmbd[index] + self.mu * (
+                self.constraints[index].variable_function
+                - self.constraints[index].target
+            )
+            # noinspection PyTypeChecker
+            self._project_pointwise_multiplier(
+                project_term,
+                self.constraints[index].measure,
+                self.lmbd[index],
+                self.rhs_tensors[index],
+                self.lhs_tensors[index],
+            )
+
+    def _update_inequality_mulitpliers(self, index: int) -> None:
+        """Performs an update of the Lagrange multipliers for equality constraints.
+
+        Args:
+            index: The index of the equality constraint.
+        """
+        if self.constraints[index].is_integral_constraint:
+            lower_term = 0.0
+            upper_term = 0.0
+
+            min_max_integral = fenics.assemble(
+                self.constraints[index].min_max_term["integrand"]
+            )
+
+            if self.constraints[index].lower_bound is not None:
+                lower_term = np.minimum(
+                    self.lmbd[index]
+                    + self.mu
+                    * (min_max_integral - self.constraints[index].lower_bound),
+                    0.0,
                 )
 
-        if len(self.inner_min_max_terms) == 0:
-            self.inner_min_max_terms = None
+            if self.constraints[index].upper_bound is not None:
+                upper_term = np.maximum(
+                    self.lmbd[index]
+                    + self.mu
+                    * (min_max_integral - self.constraints[index].upper_bound),
+                    0.0,
+                )
 
-        self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
+            self.lmbd[index] = lower_term + upper_term
+            self.constraints[index].min_max_term["lambda"] = self.lmbd[index]
+
+        elif self.constraints[index].is_pointwise_constraint:
+            project_terms = []
+            if self.constraints[index].upper_bound is not None:
+                project_terms.append(
+                    utils._max(
+                        self.lmbd[index]
+                        + self.mu
+                        * (
+                            self.constraints[index].variable_function
+                            - self.constraints[index].upper_bound
+                        ),
+                        fenics.Constant(0.0),
+                    )
+                )
+
+            if self.constraints[index].lower_bound is not None:
+                project_terms.append(
+                    utils._min(
+                        self.lmbd[index]
+                        + self.mu
+                        * (
+                            self.constraints[index].variable_function
+                            - self.constraints[index].lower_bound
+                        ),
+                        fenics.Constant(0.0),
+                    )
+                )
+
+            # noinspection PyTypeChecker
+            self._project_pointwise_multiplier(
+                project_terms,
+                self.constraints[index].measure,
+                self.lmbd[index],
+                self.rhs_tensors[index],
+                self.lhs_tensors[index],
+            )
 
     def _update_lagrange_multiplier_estimates(self) -> None:
         """Performs an update of the Lagrange multiplier estimates."""
 
         for i in range(self.constraint_dim):
             if isinstance(self.constraints[i], constraints.EqualityConstraint):
-                if self.constraints[i].is_integral_constraint:
-                    self.lmbd[i] += self.mu * (
-                        fenics.assemble(self.constraints[i].variable_function)
-                        - self.constraints[i].target
-                    )
-                elif self.constraints[i].is_pointwise_constraint:
-                    project_term = self.lmbd[i] + self.mu * (
-                        self.constraints[i].variable_function
-                        - self.constraints[i].target
-                    )
-                    # noinspection PyTypeChecker
-                    self._project_pointwise_multiplier(
-                        project_term,
-                        self.constraints[i].measure,
-                        self.lmbd[i],
-                        self.rhs_tensors[i],
-                        self.lhs_tensors[i],
-                    )
+                self._update_equality_multipliers(i)
 
             elif isinstance(self.constraints[i], constraints.InequalityConstraint):
-                if self.constraints[i].is_integral_constraint:
-                    lower_term = 0.0
-                    upper_term = 0.0
-
-                    min_max_integral = fenics.assemble(
-                        self.constraints[i].min_max_term["integrand"]
-                    )
-
-                    if self.constraints[i].lower_bound is not None:
-                        lower_term = np.minimum(
-                            self.lmbd[i]
-                            + self.mu
-                            * (min_max_integral - self.constraints[i].lower_bound),
-                            0.0,
-                        )
-
-                    if self.constraints[i].upper_bound is not None:
-                        upper_term = np.maximum(
-                            self.lmbd[i]
-                            + self.mu
-                            * (min_max_integral - self.constraints[i].upper_bound),
-                            0.0,
-                        )
-
-                    self.lmbd[i] = lower_term + upper_term
-                    self.constraints[i].min_max_term["lambda"] = self.lmbd[i]
-
-                elif self.constraints[i].is_pointwise_constraint:
-                    project_terms = []
-                    if self.constraints[i].upper_bound is not None:
-                        project_terms.append(
-                            utils._max(
-                                self.lmbd[i]
-                                + self.mu
-                                * (
-                                    self.constraints[i].variable_function
-                                    - self.constraints[i].upper_bound
-                                ),
-                                fenics.Constant(0.0),
-                            )
-                        )
-
-                    if self.constraints[i].lower_bound is not None:
-                        project_terms.append(
-                            utils._min(
-                                self.lmbd[i]
-                                + self.mu
-                                * (
-                                    self.constraints[i].variable_function
-                                    - self.constraints[i].lower_bound
-                                ),
-                                fenics.Constant(0.0),
-                            )
-                        )
-
-                    # noinspection PyTypeChecker
-                    self._project_pointwise_multiplier(
-                        project_terms,
-                        self.constraints[i].measure,
-                        self.lmbd[i],
-                        self.rhs_tensors[i],
-                        self.lhs_tensors[i],
-                    )
+                self._update_inequality_mulitpliers(i)
 
     def solve(
         self,
@@ -491,14 +515,4 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                     constraint.multiplier.vector().vec().set(0.0)
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
-        if len(self.inner_scalar_tracking_forms) == 0:
-            self.inner_scalar_tracking_forms = (
-                self.constrained_problem.scalar_tracking_forms_initial
-            )
-        else:
-            if self.constrained_problem.scalar_tracking_forms_initial is not None:
-                self.inner_scalar_tracking_forms += (
-                    self.constrained_problem.scalar_tracking_forms_initial
-                )
-        if len(self.inner_min_max_terms) == 0:
-            self.inner_min_max_terms = None
+        self._post_process_cost_functional()

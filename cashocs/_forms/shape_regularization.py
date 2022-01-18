@@ -119,6 +119,32 @@ class ShapeRegularization:
             if self.geometric_dimension == 2:
                 self.delta_z = 1.0
 
+        self._init_volume_regularization()
+        self._init_surface_regularization()
+        self._init_curvature_regularization(form_handler)
+        self._init_barycenter_regularization()
+
+        if (
+            self.mu_volume > 0.0
+            or self.mu_surface > 0.0
+            or self.mu_curvature > 0.0
+            or self.mu_barycenter > 0.0
+        ):
+            self.has_regularization = True
+        else:
+            self.has_regularization = False
+
+        self._scale_weights()
+
+        self.current_volume = fenics.Expression("val", degree=0, val=1.0)
+        self.current_surface = fenics.Expression("val", degree=0, val=1.0)
+        self.current_barycenter_x = fenics.Expression("val", degree=0, val=0.0)
+        self.current_barycenter_y = fenics.Expression("val", degree=0, val=0.0)
+        self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
+
+    def _init_volume_regularization(self) -> None:
+        """Initializes the terms corresponding to the volume regularization."""
+
         self.mu_volume = self.config.getfloat(
             "Regularization", "factor_volume", fallback=0.0
         )
@@ -136,6 +162,9 @@ class ShapeRegularization:
                     - fenics.assemble(fenics.Constant(1.0) * self.dx)
                 )
 
+    def _init_surface_regularization(self) -> None:
+        """Initializes the terms corresponding to the surface regularization."""
+
         self.mu_surface = self.config.getfloat(
             "Regularization", "factor_surface", fallback=0.0
         )
@@ -146,6 +175,15 @@ class ShapeRegularization:
             "Regularization", "use_initial_surface", fallback=False
         ):
             self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
+
+    def _init_curvature_regularization(
+        self, form_handler: shape_form_handler.ShapeFormHandler
+    ) -> None:
+        """Initializes the terms corresponding to the surface regularization.
+
+        Args:
+            form_handler: The form handler of the problem.
+        """
 
         self.mu_curvature = self.config.getfloat(
             "Regularization", "factor_curvature", fallback=0.0
@@ -168,6 +206,9 @@ class ShapeRegularization:
                 )
                 * self.ds
             )
+
+    def _init_barycenter_regularization(self) -> None:
+        """Initializes the terms corresponding to the barycenter regularization."""
 
         self.mu_barycenter = self.config.getfloat(
             "Regularization", "factor_barycenter", fallback=0.0
@@ -228,24 +269,6 @@ class ShapeRegularization:
                     ) / volume
                 else:
                     self.target_barycenter_list[2] = 0.0
-
-        if (
-            self.mu_volume > 0.0
-            or self.mu_surface > 0.0
-            or self.mu_curvature > 0.0
-            or self.mu_barycenter > 0.0
-        ):
-            self.has_regularization = True
-        else:
-            self.has_regularization = False
-
-        self._scale_weights()
-
-        self.current_volume = fenics.Expression("val", degree=0, val=1.0)
-        self.current_surface = fenics.Expression("val", degree=0, val=1.0)
-        self.current_barycenter_x = fenics.Expression("val", degree=0, val=0.0)
-        self.current_barycenter_y = fenics.Expression("val", degree=0, val=0.0)
-        self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
 
     def update_geometric_quantities(self) -> None:
         """Updates the geometric quantities.
@@ -596,127 +619,136 @@ class ShapeRegularization:
             dim = self.geometric_dimension
             return fenics.inner(fenics.Constant([0] * dim), vector_field) * self.dx
 
+    def _scale_volume_term(self) -> None:
+        """Scales the volume regularization parameter."""
+
+        if self.mu_volume > 0.0:
+            if not self.measure_hole:
+                volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
+            else:
+                volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
+                    fenics.Constant(1) * self.dx
+                )
+
+            value = 0.5 * pow(volume - self.target_volume, 2)
+
+            if abs(value) < 1e-15:
+                _loggers.info(
+                    "The volume regularization vanishes for the initial "
+                    "iteration. Multiplying this term with the factor you "
+                    "supplied as weight."
+                )
+            else:
+                self.mu_volume /= abs(value)
+
+    def _scale_surface_term(self) -> None:
+        """Scales the surface regularization term."""
+
+        if self.mu_surface > 0.0:
+            surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
+            value = 0.5 * pow(surface - self.target_surface, 2)
+
+            if abs(value) < 1e-15:
+                _loggers.info(
+                    "The surface regularization vanishes for the initial "
+                    "iteration. Multiplying this term with the factor you "
+                    "supplied as weight."
+                )
+            else:
+                self.mu_surface /= abs(value)
+
+    def _scale_curvature_term(self) -> None:
+        """Scales the curvature regularization term."""
+
+        if self.mu_curvature > 0.0:
+            self.compute_curvature()
+            value = 0.5 * fenics.assemble(
+                fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+            )
+
+            if abs(value) < 1e-15:
+                _loggers.info(
+                    "The curvature regularization vanishes for the initial "
+                    "iteration. Multiplying this term with the factor you "
+                    "supplied as weight."
+                )
+            else:
+                self.mu_curvature /= abs(value)
+
+    def _scale_barycenter_term(self) -> None:
+        """Scales the barycenter regularization term."""
+
+        if self.mu_barycenter > 0.0:
+            if not self.measure_hole:
+                volume = fenics.assemble(fenics.Constant(1) * self.dx)
+
+                barycenter_x = (
+                    fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
+                )
+                barycenter_y = (
+                    fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
+                )
+                if self.geometric_dimension == 3:
+                    barycenter_z = (
+                        fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
+                    )
+                else:
+                    barycenter_z = 0.0
+
+            else:
+                volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
+                    fenics.Constant(1) * self.dx
+                )
+
+                barycenter_x = (
+                    0.5
+                    * (pow(self.x_end, 2) - pow(self.x_start, 2))
+                    * self.delta_y
+                    * self.delta_z
+                    - fenics.assemble(self.spatial_coordinate[0] * self.dx)
+                ) / volume
+                barycenter_y = (
+                    0.5
+                    * (pow(self.y_end, 2) - pow(self.y_start, 2))
+                    * self.delta_x
+                    * self.delta_z
+                    - fenics.assemble(self.spatial_coordinate[1] * self.dx)
+                ) / volume
+                if self.geometric_dimension == 3:
+                    barycenter_z = (
+                        0.5
+                        * (pow(self.z_end, 2) - pow(self.z_start, 2))
+                        * self.delta_x
+                        * self.delta_y
+                        - fenics.assemble(self.spatial_coordinate[2] * self.dx)
+                    ) / volume
+                else:
+                    barycenter_z = 0.0
+
+            value = 0.5 * (
+                pow(barycenter_x - self.target_barycenter_list[0], 2)
+                + pow(barycenter_y - self.target_barycenter_list[1], 2)
+                + pow(barycenter_z - self.target_barycenter_list[2], 2)
+            )
+
+            if abs(value) < 1e-15:
+                _loggers.info(
+                    "The barycenter regularization vanishes for the initial "
+                    "iteration. Multiplying this term with the factor you "
+                    "supplied as weight."
+                )
+            else:
+                self.mu_barycenter /= abs(value)
+
     def _scale_weights(self) -> None:
         """Scales the terms of the regularization by the weights given in the config."""
 
         if self.use_relative_scaling and self.has_regularization:
-
             if not self.has_cashocs_remesh_flag:
-
-                if self.mu_volume > 0.0:
-                    if not self.measure_hole:
-                        volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
-                    else:
-                        volume = (
-                            self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(fenics.Constant(1) * self.dx)
-                        )
-
-                    value = 0.5 * pow(volume - self.target_volume, 2)
-
-                    if abs(value) < 1e-15:
-                        _loggers.info(
-                            "The volume regularization vanishes for the initial "
-                            "iteration. Multiplying this term with the factor you "
-                            "supplied as weight."
-                        )
-                    else:
-                        self.mu_volume /= abs(value)
-
-                if self.mu_surface > 0.0:
-                    surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
-                    value = 0.5 * pow(surface - self.target_surface, 2)
-
-                    if abs(value) < 1e-15:
-                        _loggers.info(
-                            "The surface regularization vanishes for the initial "
-                            "iteration. Multiplying this term with the factor you "
-                            "supplied as weight."
-                        )
-                    else:
-                        self.mu_surface /= abs(value)
-
-                if self.mu_curvature > 0.0:
-                    self.compute_curvature()
-                    value = 0.5 * fenics.assemble(
-                        fenics.inner(self.kappa_curvature, self.kappa_curvature)
-                        * self.ds
-                    )
-
-                    if abs(value) < 1e-15:
-                        _loggers.info(
-                            "The curvature regularization vanishes for the initial "
-                            "iteration. Multiplying this term with the factor you "
-                            "supplied as weight."
-                        )
-                    else:
-                        self.mu_curvature /= abs(value)
-
-                if self.mu_barycenter > 0.0:
-                    if not self.measure_hole:
-                        volume = fenics.assemble(fenics.Constant(1) * self.dx)
-
-                        barycenter_x = (
-                            fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                            / volume
-                        )
-                        barycenter_y = (
-                            fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                            / volume
-                        )
-                        if self.geometric_dimension == 3:
-                            barycenter_z = (
-                                fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                                / volume
-                            )
-                        else:
-                            barycenter_z = 0.0
-
-                    else:
-                        volume = (
-                            self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(fenics.Constant(1) * self.dx)
-                        )
-
-                        barycenter_x = (
-                            0.5
-                            * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                            * self.delta_y
-                            * self.delta_z
-                            - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                        ) / volume
-                        barycenter_y = (
-                            0.5
-                            * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                            * self.delta_x
-                            * self.delta_z
-                            - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                        ) / volume
-                        if self.geometric_dimension == 3:
-                            barycenter_z = (
-                                0.5
-                                * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                                * self.delta_x
-                                * self.delta_y
-                                - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                            ) / volume
-                        else:
-                            barycenter_z = 0.0
-
-                    value = 0.5 * (
-                        pow(barycenter_x - self.target_barycenter_list[0], 2)
-                        + pow(barycenter_y - self.target_barycenter_list[1], 2)
-                        + pow(barycenter_z - self.target_barycenter_list[2], 2)
-                    )
-
-                    if abs(value) < 1e-15:
-                        _loggers.info(
-                            "The barycenter regularization vanishes for the initial "
-                            "iteration. Multiplying this term with the factor you "
-                            "supplied as weight."
-                        )
-                    else:
-                        self.mu_barycenter /= abs(value)
+                self._scale_volume_term()
+                self._scale_surface_term()
+                self._scale_curvature_term()
+                self._scale_barycenter_term()
 
             else:
 
