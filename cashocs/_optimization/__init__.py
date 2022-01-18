@@ -18,3 +18,5 @@
 """Module gathering all core functionality for PDE constrained optimization."""
 
 from cashocs._optimization.optimization_problem import OptimizationProblem
+
+__all__ = ["OptimizationProblem"]

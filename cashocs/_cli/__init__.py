@@ -18,3 +18,5 @@
 """Command line interface of cashocs."""
 
 from cashocs._cli._convert import convert
+
+__all__ = ["convert"]

@@ -60,11 +60,13 @@ __version__ = "1.5.2"
 
 __all__ = [
     "import_mesh",
+    "LogLevel",
     "regular_mesh",
     "regular_box_mesh",
     "DeformationHandler",
     "MeshQuality",
     "newton_solve",
+    "damped_newton_solve",
     "picard_iteration",
     "OptimalControlProblem",
     "ShapeOptimizationProblem",
@@ -77,4 +79,5 @@ __all__ = [
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
+    "set_log_level",
 ]

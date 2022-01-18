@@ -17,7 +17,7 @@
 
 """Abstract implementation of a gradient problem.
 
-This class is used to solve the Riesz projection to obtain the gradient of the reduced 
+This class is used to solve the Riesz projection to obtain the gradient of the reduced
 cost functional.
 """
 

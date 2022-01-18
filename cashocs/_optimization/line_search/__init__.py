@@ -19,3 +19,5 @@
 
 from cashocs._optimization.line_search.armijo_line_search import ArmijoLineSearch
 from cashocs._optimization.line_search.line_search import LineSearch
+
+__all__ = ["ArmijoLineSearch", "LineSearch"]

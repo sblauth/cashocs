@@ -23,3 +23,12 @@ from cashocs._pde_problems.hessian_problems import HessianProblem
 from cashocs._pde_problems.pde_problem import PDEProblem
 from cashocs._pde_problems.shape_gradient_problem import ShapeGradientProblem
 from cashocs._pde_problems.state_problem import StateProblem
+
+__all__ = [
+    "AdjointProblem",
+    "ControlGradientProblem",
+    "HessianProblem",
+    "PDEProblem",
+    "ShapeGradientProblem",
+    "StateProblem",
+]

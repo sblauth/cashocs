@@ -17,7 +17,7 @@
 
 """Abstract implementation of a shape gradient problem.
 
-This class uses the linear elasticity equations to project the shape derivative to the 
+This class uses the linear elasticity equations to project the shape derivative to the
 shape gradient with a Riesz projection.
 """
 

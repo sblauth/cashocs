@@ -45,3 +45,23 @@ from cashocs.utils.linalg import (
     _solve_linear_problem,
     Interpolator,
 )
+
+__all__ = [
+    "summation",
+    "multiplication",
+    "create_dirichlet_bcs",
+    "_max",
+    "_min",
+    "moreau_yosida_regularization",
+    "_check_and_enlist_ksp_options",
+    "_check_and_enlist_control_constraints",
+    "_check_and_enlist_bcs",
+    "enlist",
+    "_parse_remesh",
+    "_optimization_algorithm_configuration",
+    "_assemble_petsc_system",
+    "_setup_petsc_options",
+    "_solve_linear_problem",
+    "Interpolator",
+    "create_bcs_list",
+]

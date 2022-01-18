@@ -420,7 +420,7 @@ class PVDFileManager:
                     if self.is_control_problem:
                         gradient_str = f"gradient_{i:d}"
                     else:
-                        gradient_str = f"shape_gradient"
+                        gradient_str = "shape_gradient"
                     self.gradient_pvd_list.append(
                         self._generate_pvd_file(
                             self.form_handler.control_spaces[i],

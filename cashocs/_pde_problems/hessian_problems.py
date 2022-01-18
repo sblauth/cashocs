@@ -17,7 +17,7 @@
 
 """Abstract implementation of an Hessian problem.
 
-This uses Krylov subspace methods to iteratively solve the "Hessian problems" occurring 
+This uses Krylov subspace methods to iteratively solve the "Hessian problems" occurring
 in the truncated Newton method.
 """
 

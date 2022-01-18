@@ -219,7 +219,7 @@ skewness(std::shared_ptr<const Mesh> mesh)
     for (unsigned int i = 0; i < angs.size(); ++i)
     {
       quals[i] = 1 - std::max(
-        (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 
+        (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle),
         (opt_angle - angs[i]) / opt_angle
       );
     }
@@ -302,7 +302,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         where :math:`\alpha^*` is the corresponding angle of the reference
         element. To compute the quality measure, the minimum of this expression
         over all elements and all of their (dihedral) angles is computed.
-        
+
         Args:
             mesh: The mesh whose quality shall be computed.
 

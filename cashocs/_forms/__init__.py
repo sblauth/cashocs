@@ -26,3 +26,10 @@ from cashocs._forms.control_form_handler import ControlFormHandler
 from cashocs._forms.form_handler import FormHandler
 from cashocs._forms.shape_form_handler import ShapeFormHandler
 from cashocs._forms.shape_regularization import ShapeRegularization
+
+__all__ = [
+    "ControlFormHandler",
+    "FormHandler",
+    "ShapeFormHandler",
+    "ShapeRegularization",
+]

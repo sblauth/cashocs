@@ -303,45 +303,45 @@ class CollisionCounter:
     """Class for testing, whether a given mesh is a valid FEM mesh."""
 
     _cpp_code = """
-    #include <pybind11/pybind11.h>
-    #include <pybind11/eigen.h>
-    #include <pybind11/stl.h>
-    namespace py = pybind11;
-    
-    #include <dolfin/mesh/Mesh.h>
-    #include <dolfin/mesh/Vertex.h>
-    #include <dolfin/geometry/BoundingBoxTree.h>
-    #include <dolfin/geometry/Point.h>
-    
-    using namespace dolfin;
-    
-    Eigen::VectorXi
-    compute_collisions(std::shared_ptr<const Mesh> mesh)
-    {
-      int num_vertices;
-      std::vector<unsigned int> colliding_cells;
-      
-      num_vertices = mesh->num_vertices();
-      Eigen::VectorXi collisions(num_vertices);
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <pybind11/stl.h>
+namespace py = pybind11;
 
-      int i = 0;
-      for (VertexIterator v(*mesh); !v.end(); ++v)
-      {
-        colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(
-          v->point()
-        );
-        collisions[i] = colliding_cells.size();
-        
-        ++i;
-      }
-      return collisions;
-    }
-    
-    PYBIND11_MODULE(SIGNATURE, m)
-    {
-      m.def("compute_collisions", &compute_collisions);
-    }
-    """
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/Vertex.h>
+#include <dolfin/geometry/BoundingBoxTree.h>
+#include <dolfin/geometry/Point.h>
+
+using namespace dolfin;
+
+Eigen::VectorXi
+compute_collisions(std::shared_ptr<const Mesh> mesh)
+{
+  int num_vertices;
+  std::vector<unsigned int> colliding_cells;
+
+  num_vertices = mesh->num_vertices();
+  Eigen::VectorXi collisions(num_vertices);
+
+  int i = 0;
+  for (VertexIterator v(*mesh); !v.end(); ++v)
+  {
+    colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(
+      v->point()
+    );
+    collisions[i] = colliding_cells.size();
+
+    ++i;
+  }
+  return collisions;
+}
+
+PYBIND11_MODULE(SIGNATURE, m)
+{
+  m.def("compute_collisions", &compute_collisions);
+}
+"""
     _cpp_object = fenics.compile_cpp_code(_cpp_code)
 
     def __init__(self) -> None:

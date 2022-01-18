@@ -279,9 +279,9 @@ def regular_mesh(
 ]:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
-    This function creates a uniform mesh of either a rectangle or a cube, starting at 
-    the origin and having length specified in ``length_x``, ``length_y``, and 
-    ``length_z``. The resulting mesh uses ``n`` elements along the shortest direction 
+    This function creates a uniform mesh of either a rectangle or a cube, starting at
+    the origin and having length specified in ``length_x``, ``length_y``, and
+    ``length_z``. The resulting mesh uses ``n`` elements along the shortest direction
     and accordingly many along the longer ones. The resulting domain is
 
     .. math::
@@ -303,21 +303,21 @@ def regular_mesh(
       - 5 corresponds to :math:`z=0` (only in 3D).
 
       - 6 corresponds to :math:`z=length_z` (only in 3D).
-    
+
     Args:
         n: Number of elements in the shortest coordinate direction.
         length_x: Length in x-direction.
         length_y: Length in y-direction.
-        length_z: Length in z-direction, if this is ``None``, then the geometry will be 
+        length_z: Length in z-direction, if this is ``None``, then the geometry will be
             two-dimensional (default is ``None``).
-        diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
-            This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
+        diagonal: This defines the type of diagonal used to create the box mesh in 2D.
+            This can be one of ``"right"``, ``"left"``, ``"left/right"``,
             ``"right/left"`` or ``"crossed"``.
 
     Returns:
-        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported 
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
         FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
-        function for the boundaries, dx is a volume measure, ds is a surface measure, 
+        function for the boundaries, dx is a volume measure, ds is a surface measure,
         and dS is a measure for the interior facets.
     """
 
@@ -454,25 +454,25 @@ def regular_box_mesh(
       - 5 corresponds to :math:`z=start_z` (only in 3D).
 
       - 6 corresponds to :math:`z=end_z` (only in 3D).
-    
+
     Args:
         n: Number of elements in the shortest coordinate direction.
         start_x: Start of the x-interval.
         start_y: Start of the y-interval.
-        start_z: Start of the z-interval, mesh is 2D if this is ``None`` (default is 
+        start_z: Start of the z-interval, mesh is 2D if this is ``None`` (default is
             ``None``).
         end_x: End of the x-interval.
         end_y: End of the y-interval.
-        end_z: End of the z-interval, mesh is 2D if this is ``None`` (default is 
+        end_z: End of the z-interval, mesh is 2D if this is ``None`` (default is
             ``None``).
-        diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
-            This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
+        diagonal: This defines the type of diagonal used to create the box mesh in 2D.
+            This can be one of ``"right"``, ``"left"``, ``"left/right"``,
             ``"right/left"`` or ``"crossed"``.
 
     Returns:
-        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported 
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
         FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
-        function for the boundaries, dx is a volume measure, ds is a surface measure, 
+        function for the boundaries, dx is a volume measure, ds is a surface measure,
         and dS is a measure for the interior facets.
     """
 

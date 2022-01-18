@@ -23,3 +23,5 @@ a Picard iteration for coupled problems.
 
 from cashocs.nonlinear_solvers.newton_solver import newton_solve, damped_newton_solve
 from cashocs.nonlinear_solvers.picard_iteration import picard_iteration
+
+__all__ = ["newton_solve", "damped_newton_solve", "picard_iteration"]

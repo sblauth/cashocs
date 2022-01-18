@@ -21,3 +21,5 @@ from cashocs.io.config import Config
 from cashocs.io.config import load_config, create_config
 from cashocs.io.mesh import write_out_mesh
 from cashocs.io.output import OutputManager
+
+__all__ = ["Config", "load_config", "create_config", "write_out_mesh", "OutputManager"]

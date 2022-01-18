@@ -26,3 +26,11 @@ from cashocs._optimization.optimization_algorithms.newton import NewtonMethod
 from cashocs._optimization.optimization_algorithms.optimization_algorithm import (
     OptimizationAlgorithm,
 )
+
+__all__ = [
+    "OptimizationAlgorithm",
+    "GradientDescentMethod",
+    "LBFGSMethod",
+    "NonlinearCGMethod",
+    "NewtonMethod",
+]

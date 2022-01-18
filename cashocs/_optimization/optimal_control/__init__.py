@@ -23,3 +23,5 @@ from cashocs._optimization.optimal_control.control_variable_abstractions import 
 from cashocs._optimization.optimal_control.optimal_control_problem import (
     OptimalControlProblem,
 )
+
+__all__ = ["ControlVariableAbstractions", "OptimalControlProblem"]
