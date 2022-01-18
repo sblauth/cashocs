@@ -16,3 +16,5 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module gathering all core functionality for PDE constrained optimization."""
+
+from cashocs._optimization.optimization_problem import OptimizationProblem

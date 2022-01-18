@@ -29,14 +29,14 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 
 if TYPE_CHECKING:
-    from .optimization_problem import OptimizationProblem
-    from ..geometry.mesh_handler import _MeshHandler
+    from cashocs._optimization import optimization_problem as op
+    from cashocs import geometry
 
 
 class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.
@@ -44,7 +44,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
-        self.mesh_handler: Optional[_MeshHandler] = None
+        self.mesh_handler: Optional[geometry._MeshHandler] = None
 
     @abc.abstractmethod
     def compute_decrease_measure(

@@ -24,17 +24,17 @@ from typing import TYPE_CHECKING, List
 
 import fenics
 
-from ...utils import _optimization_algorithm_configuration
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from ..optimization_problem import OptimizationProblem
-    from ..optimization_algorithms import OptimizationAlgorithm
+    from cashocs._optimization import optimization_problem as op
+    from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.
@@ -56,7 +56,7 @@ class LineSearch(abc.ABC):
             "OptimizationRoutine", "initial_stepsize", fallback=1.0
         )
 
-        algorithm = _optimization_algorithm_configuration(self.config)
+        algorithm = utils._optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm == "lbfgs"
         self.is_newton = algorithm == "newton"
         self.is_steepest_descent = algorithm == "gradient_descent"
@@ -65,7 +65,7 @@ class LineSearch(abc.ABC):
 
     def perform(
         self,
-        solver: OptimizationAlgorithm,
+        solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:

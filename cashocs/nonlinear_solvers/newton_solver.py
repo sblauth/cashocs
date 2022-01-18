@@ -27,12 +27,9 @@ import ufl
 from petsc4py import PETSc
 from typing_extensions import Literal
 
-from .._exceptions import InputError, NotConvergedError
-from .._loggers import warning
-from ..utils import (
-    _setup_petsc_options,
-    _solve_linear_problem,
-)
+from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import utils
 
 
 def newton_solve(
@@ -132,16 +129,21 @@ def newton_solve(
         
         This is solved with the code ::
     
-            from fenics import *
+            import fenics as fe
             import cashocs
     
             mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
-            V = FunctionSpace(mesh, 'CG', 1)
+            V = fe.FunctionSpace(mesh, 'CG', 1)
     
-            u = Function(V)
-            v = TestFunction(V)
-            F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-            bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
+            u = fe.Function(V)
+            v = fe.TestFunction(V)
+            F = (
+                fe.inner(fe.grad(u), fe.grad(v))*dx + pow(u,3)*v*dx
+                - fe.Constant(1)*v*dx
+            )
+            bcs = cashocs.create_dirichlet_bcs(
+                V, fe.Constant(0.0), boundaries, [1,2,3,4]
+            )
             cashocs.newton_solve(F, u, bcs)
     """
 
@@ -149,14 +151,14 @@ def newton_solve(
         bcs = [bcs]
 
     if not convergence_type in ["rel", "abs", "combined"]:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.nonlinear_solvers.damped_newton_solve",
             "convergence_type",
             "Input convergence_type has to be one of 'rel', 'abs', or 'combined'.",
         )
 
     if not norm_type in ["l2", "linf"]:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.nonlinear_solvers.damped_newton_solve",
             "norm_type",
             "Input norm_type has to be one of 'l2' or 'linf'.",
@@ -173,7 +175,7 @@ def newton_solve(
             ]
 
         ksp = PETSc.KSP().create()
-        _setup_petsc_options([ksp], [ksp_options])
+        utils._setup_petsc_options([ksp], [ksp_options])
         ksp.setFromOptions()
 
     # Calculate the Jacobian.
@@ -267,7 +269,7 @@ def newton_solve(
         if is_linear:
             eta = rtol * 1e-1
 
-        _solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options, rtol=eta)
+        utils._solve_linear_problem(ksp, A, b, du.vector().vec(), ksp_options, rtol=eta)
         du.vector().apply("")
 
         if is_linear:
@@ -283,7 +285,7 @@ def newton_solve(
                     assembler_shift.assemble(residual_shift)
                     residual[:] += residual_shift[:]
                 b = fenics.as_backend_type(residual).vec()
-                _solve_linear_problem(
+                utils._solve_linear_problem(
                     ksp=ksp,
                     b=b,
                     x=ddu.vector().vec(),
@@ -306,10 +308,12 @@ def newton_solve(
             u.vector().vec().axpy(1.0, du.vector().vec())
 
         if breakdown:
-            raise NotConvergedError("Newton solver", "Stepsize for increment too low.")
+            raise _exceptions.NotConvergedError(
+                "Newton solver", "Stepsize for increment too low."
+            )
 
         if iterations == max_iter:
-            raise NotConvergedError(
+            raise _exceptions.NotConvergedError(
                 "Newton solver",
                 "Maximum number of iterations were exceeded.",
             )
@@ -355,7 +359,7 @@ def damped_newton_solve(
     ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[str]]] = None,
 ) -> fenics.Function:  # pragma: no cover
-    """Damped Newton solve interface, only here for compatibility reasons.
+    r"""Damped Newton solve interface, only here for compatibility reasons.
     
     Args:
         F: The variational form of the nonlinear problem to be solved by Newton's 
@@ -425,7 +429,7 @@ def damped_newton_solve(
         This is replaced by cashocs.newton_solve and will be removed in the future.
     """
 
-    warning(
+    _loggers.warning(
         "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced by cashocs.newton_solve and will be removed in the future."
     )
 

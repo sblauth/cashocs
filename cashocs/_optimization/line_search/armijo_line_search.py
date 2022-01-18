@@ -22,24 +22,22 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 import fenics
-
-from .line_search import LineSearch
-from ..._loggers import error
-
-if TYPE_CHECKING:
-    from ..optimization_algorithms import OptimizationAlgorithm
-    from ..optimization_problem import OptimizationProblem
-
-
 import numpy as np
 
+from cashocs import _loggers
+from cashocs._optimization.line_search import line_search
 
-class ArmijoLineSearch(LineSearch):
+if TYPE_CHECKING:
+    from cashocs._optimization import optimization_algorithms
+    from cashocs._optimization import optimization_problem as op
+
+
+class ArmijoLineSearch(line_search.LineSearch):
     """Implementation of the Armijo line search procedure."""
 
     def __init__(
         self,
-        optimization_problem: OptimizationProblem,
+        optimization_problem: op.OptimizationProblem,
     ) -> None:
         """
         Args:
@@ -58,7 +56,7 @@ class ArmijoLineSearch(LineSearch):
 
     def search(
         self,
-        solver: OptimizationAlgorithm,
+        solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
@@ -95,7 +93,7 @@ class ArmijoLineSearch(LineSearch):
                 return None
 
             if self.stepsize * search_direction_inf <= 1e-8:
-                error("Stepsize too small.")
+                _loggers.error("Stepsize too small.")
                 solver.line_search_broken = True
                 return None
             elif (
@@ -103,7 +101,7 @@ class ArmijoLineSearch(LineSearch):
                 and not self.is_newton
                 and self.stepsize / self.armijo_stepsize_initial <= 1e-8
             ):
-                error("Stepsize too small.")
+                _loggers.error("Stepsize too small.")
                 solver.line_search_broken = True
                 return None
 

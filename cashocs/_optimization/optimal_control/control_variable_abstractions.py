@@ -24,16 +24,20 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 import numpy as np
 
-from ..optimization_variable_abstractions import OptimizationVariableAbstractions
+from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
-    from .optimal_control_problem import OptimalControlProblem
+    from cashocs._optimization import optimal_control
 
 
-class ControlVariableAbstractions(OptimizationVariableAbstractions):
+class ControlVariableAbstractions(
+    optimization_variable_abstractions.OptimizationVariableAbstractions
+):
     """Abstractions for optimization variables in the case of optimal control."""
 
-    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
+    def __init__(
+        self, optimization_problem: optimal_control.OptimalControlProblem
+    ) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.

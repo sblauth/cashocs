@@ -31,26 +31,18 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .deformation_handler import DeformationHandler
-from .mesh_quality import compute_mesh_quality
-from .._exceptions import (
-    CashocsException,
-    InputError,
-    CashocsDebugException,
-)
-from .._loggers import debug, warning
-from ..io import write_out_mesh
-from ..utils.linalg import (
-    _assemble_petsc_system,
-    _setup_petsc_options,
-    _solve_linear_problem,
-)
+from cashocs.geometry import deformation_handler
+from cashocs.geometry import mesh_quality
+from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import io
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._optimization.shape_optimization.shape_optimization_problem import (
+    from cashocs._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
     )
-    from .._optimization.optimization_algorithms import OptimizationAlgorithm
+    from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
 class _MeshHandler:
@@ -69,7 +61,7 @@ class _MeshHandler:
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
         self.mesh = self.form_handler.mesh
-        self.deformation_handler = DeformationHandler(self.mesh)
+        self.deformation_handler = deformation_handler.DeformationHandler(self.mesh)
         self.dx = self.form_handler.dx
         self.bbtree = self.mesh.bounding_box_tree()
         self.config = self.form_handler.config
@@ -90,7 +82,7 @@ class _MeshHandler:
         )
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
-            warning(
+            _loggers.warning(
                 "You are using a lower remesh tolerance (tol_lower) close to the upper "
                 "one (tol_upper). This may slow down the optimization considerably."
             )
@@ -102,7 +94,7 @@ class _MeshHandler:
         self.mesh_quality_type = self.config.get("MeshQuality", "type", fallback="min")
 
         self.current_mesh_quality = 1.0
-        self.current_mesh_quality = compute_mesh_quality(
+        self.current_mesh_quality = mesh_quality.compute_mesh_quality(
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
@@ -164,16 +156,16 @@ class _MeshHandler:
             transformation.ufl_element().family() == "Lagrange"
             and transformation.ufl_element().degree() == 1
         ):
-            raise CashocsException("Not a valid mesh transformation")
+            raise _exceptions.CashocsException("Not a valid mesh transformation")
 
         if not self.__test_a_priori(transformation):
-            debug("Mesh transformation rejected due to a priori check.")
+            _loggers.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(
                 transformation, validated_a_priori=True
             )
-            self.current_mesh_quality = compute_mesh_quality(
+            self.current_mesh_quality = mesh_quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
             )
             return success_flag
@@ -200,7 +192,7 @@ class _MeshHandler:
             ["ksp_max_it", 1000],
         ]
         self.ksp_frobenius = PETSc.KSP().create()
-        _setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
+        utils._setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
         self.trial_dg0 = fenics.TrialFunction(self.form_handler.DG0)
         self.test_dg0 = fenics.TestFunction(self.form_handler.DG0)
@@ -251,8 +243,8 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
-            A, b = _assemble_petsc_system(self.a_frobenius, self.L_frobenius)
-            x = _solve_linear_problem(
+            A, b = utils._assemble_petsc_system(self.a_frobenius, self.L_frobenius)
+            x = utils._solve_linear_problem(
                 self.ksp_frobenius, A, b, ksp_options=self.options_frobenius
             )
 
@@ -283,7 +275,7 @@ class _MeshHandler:
             ["ksp_max_it", 1000],
         ]
         self.ksp_prior = PETSc.KSP().create()
-        _setup_petsc_options([self.ksp_prior], [self.options_prior])
+        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(
             self.form_handler.deformation_space
@@ -319,8 +311,10 @@ class _MeshHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
-        x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
+        A, b = utils._assemble_petsc_system(self.a_prior, self.L_prior)
+        x = utils._solve_linear_problem(
+            self.ksp_prior, A, b, ksp_options=self.options_prior
+        )
 
         min_det = np.min(x[:])
         max_det = np.max(x[:])
@@ -451,7 +445,7 @@ class _MeshHandler:
             temp_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
-            write_out_mesh(self.mesh, self.gmsh_file, temp_file)
+            io.write_out_mesh(self.mesh, self.gmsh_file, temp_file)
             self.__generate_remesh_geo(temp_file)
 
             # save the output dict (without the last entries since they are "remeshed")
@@ -538,7 +532,7 @@ class _MeshHandler:
                     i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
                 ]
                 if len(idx_cashocs_remesh_flag) > 1:
-                    raise InputError(
+                    raise _exceptions.InputError(
                         "Command line options",
                         "--cashocs_remesh",
                         "The --cashocs_remesh flag should only be present once.",
@@ -548,7 +542,7 @@ class _MeshHandler:
 
                 idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
                 if len(idx_temp_dir) > 1:
-                    raise InputError(
+                    raise _exceptions.InputError(
                         "Command line options",
                         "--temp_dir",
                         "The --temp_dir flag should only be present once.",
@@ -560,7 +554,7 @@ class _MeshHandler:
                     i for i, s in enumerate(arg_list) if s == "--temp_dir"
                 ]
                 if len(idx_temp_dir) > 1:
-                    raise InputError(
+                    raise _exceptions.InputError(
                         "Command line options",
                         "--temp_dir",
                         "The --temp_dir flag should only be present once.",
@@ -580,7 +574,7 @@ class _MeshHandler:
                     + [temp_dir],
                 )
             else:
-                raise CashocsDebugException(
+                raise _exceptions.CashocsDebugException(
                     "Debug flag detected. "
                     "Restart of script with remeshed geometry is cancelled."
                 )

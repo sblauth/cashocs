@@ -30,21 +30,23 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .._exceptions import CashocsException
-from .._loggers import debug
-from ..nonlinear_solvers import picard_iteration
-from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import nonlinear_solvers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._forms import ControlFormHandler
-    from .control_gradient_problem import ControlGradientProblem
+    from cashocs import _forms
+    from cashocs._pde_problems import control_gradient_problem
 
 
 class BaseHessianProblem(abc.ABC):
     """Base class for derived Hessian problems."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
+        self,
+        form_handler: _forms.ControlFormHandler,
+        gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
         """
         Args:
@@ -137,11 +139,13 @@ class BaseHessianProblem(abc.ABC):
         self.state_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
-        _setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
+        utils._setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
         self.adjoint_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
-        _setup_petsc_options(self.adjoint_ksps, self.form_handler.adjoint_ksp_options)
+        utils._setup_petsc_options(
+            self.adjoint_ksps, self.form_handler.adjoint_ksp_options
+        )
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
         self.ksps = [PETSc.KSP().create() for _ in range(self.control_dim)]
@@ -159,7 +163,7 @@ class BaseHessianProblem(abc.ABC):
         for i in range(self.control_dim):
             self.riesz_ksp_options.append(option)
 
-        _setup_petsc_options(self.ksps, self.riesz_ksp_options)
+        utils._setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -189,12 +193,12 @@ class BaseHessianProblem(abc.ABC):
         if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 
             for i in range(self.state_dim):
-                system_matrix, system_rhs = _assemble_petsc_system(
+                system_matrix, system_rhs = utils._assemble_petsc_system(
                     self.form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
                 )
-                _solve_linear_problem(
+                utils._solve_linear_problem(
                     self.state_ksps[i],
                     system_matrix,
                     system_rhs,
@@ -204,12 +208,12 @@ class BaseHessianProblem(abc.ABC):
                 self.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
-                system_matrix, system_rhs = _assemble_petsc_system(
+                system_matrix, system_rhs = utils._assemble_petsc_system(
                     self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i],
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
                 )
-                _solve_linear_problem(
+                utils._solve_linear_problem(
                     self.adjoint_ksps[-1 - i],
                     system_matrix,
                     system_rhs,
@@ -219,7 +223,7 @@ class BaseHessianProblem(abc.ABC):
                 self.adjoints_prime[-1 - i].vector().apply("")
 
         else:
-            picard_iteration(
+            nonlinear_solvers.picard_iteration(
                 self.form_handler.sensitivity_eqs_picard,
                 self.states_prime,
                 self.form_handler.bcs_list_ad,
@@ -238,7 +242,7 @@ class BaseHessianProblem(abc.ABC):
                 inner_is_linear=True,
             )
 
-            picard_iteration(
+            nonlinear_solvers.picard_iteration(
                 self.form_handler.adjoint_sensitivity_eqs_picard,
                 self.adjoints_prime,
                 self.form_handler.bcs_list_ad,
@@ -262,7 +266,7 @@ class BaseHessianProblem(abc.ABC):
                 fenics.assemble(self.form_handler.hessian_rhs[i])
             ).vec()
 
-            _solve_linear_problem(
+            utils._solve_linear_problem(
                 self.ksps[i],
                 b=b,
                 x=out[i].vector().vec(),
@@ -322,7 +326,9 @@ class HessianProblem(BaseHessianProblem):
     """PDE Problem used to solve the (reduced) Hessian problem."""
 
     def __init__(
-        self, form_handler: ControlFormHandler, gradient_problem: ControlGradientProblem
+        self,
+        form_handler: _forms.ControlFormHandler,
+        gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
         """
         Args:
@@ -375,7 +381,9 @@ class HessianProblem(BaseHessianProblem):
         """
 
         if idx_active is not None:
-            raise CashocsException("Must not pass idx_active to HessianProblem.")
+            raise _exceptions.CashocsException(
+                "Must not pass idx_active to HessianProblem."
+            )
 
         return super().newton_solve()
 
@@ -414,7 +422,7 @@ class HessianProblem(BaseHessianProblem):
 
             rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             eps = np.sqrt(rsnew)
-            debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
+            _loggers.debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
             if eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0:
                 break
 
@@ -471,7 +479,7 @@ class HessianProblem(BaseHessianProblem):
             eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
+            _loggers.debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
             if (
                 eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0
                 or i == self.max_it_inner_newton - 1

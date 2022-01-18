@@ -17,5 +17,5 @@
 
 """Module for line searches used in optimization algorithms."""
 
-from .armijo_line_search import ArmijoLineSearch
-from .line_search import LineSearch
+from cashocs._optimization.line_search.armijo_line_search import ArmijoLineSearch
+from cashocs._optimization.line_search.line_search import LineSearch

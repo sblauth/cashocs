@@ -22,7 +22,7 @@ forms for the adjoint system and for the Riesz gradient identificiation
 problems.
 """
 
-from .control_form_handler import ControlFormHandler
-from .form_handler import FormHandler
-from .shape_form_handler import ShapeFormHandler
-from .shape_regularization import ShapeRegularization
+from cashocs._forms.control_form_handler import ControlFormHandler
+from cashocs._forms.form_handler import FormHandler
+from cashocs._forms.shape_form_handler import ShapeFormHandler
+from cashocs._forms.shape_regularization import ShapeRegularization

@@ -24,22 +24,22 @@ from typing import TYPE_CHECKING, Dict, List
 import fenics
 from petsc4py import PETSc
 
-from .._pde_problems.pde_problem import PDEProblem
-from ..nonlinear_solvers import picard_iteration
-from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+from cashocs._pde_problems import pde_problem
+from cashocs import nonlinear_solvers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._forms import FormHandler
-    from .state_problem import StateProblem
+    from cashocs import _forms
+    from cashocs._pde_problems import state_problem as sp
 
 
-class AdjointProblem(PDEProblem):
+class AdjointProblem(pde_problem.PDEProblem):
     """This class implements the adjoint problem as well as its solver."""
 
     def __init__(
         self,
-        form_handler: FormHandler,
-        state_problem: StateProblem,
+        form_handler: _forms.FormHandler,
+        state_problem: sp.StateProblem,
         temp_dict: Dict = None,
     ) -> None:
         """
@@ -73,7 +73,7 @@ class AdjointProblem(PDEProblem):
         )
 
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        _setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
+        utils._setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
         self.rhs_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
@@ -108,14 +108,14 @@ class AdjointProblem(PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
-                    _assemble_petsc_system(
+                    utils._assemble_petsc_system(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
                         rhs_tensor=self.rhs_tensors[-1 - i],
                         lhs_tensor=self.lhs_tensors[-1 - i],
                     )
-                    _solve_linear_problem(
+                    utils._solve_linear_problem(
                         self.ksps[-1 - i],
                         self.rhs_tensors[-1 - i].mat(),
                         self.lhs_tensors[-1 - i].vec(),
@@ -125,7 +125,7 @@ class AdjointProblem(PDEProblem):
                     self.adjoints[-1 - i].vector().apply("")
 
             else:
-                picard_iteration(
+                nonlinear_solvers.picard_iteration(
                     self.form_handler.adjoint_eq_forms,
                     self.adjoints,
                     self.bcs_list_ad,

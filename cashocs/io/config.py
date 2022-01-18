@@ -24,9 +24,8 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import Optional, List
 
-from .._exceptions import ConfigError
-from .._exceptions import InputError
-from .._loggers import warning
+from cashocs import _exceptions
+from cashocs import _loggers
 
 
 # deprecated
@@ -46,7 +45,7 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
         and will be removed in the future.
     """
 
-    warning(
+    _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
         "and will be removed in the future."
     )
@@ -64,13 +63,13 @@ def load_config(path: str) -> ConfigParser:
         path: The path to the .ini file storing the configuration.
 
     Returns:
-        The output config file, which includes the pathto the .ini file.
+        The output config file, which includes the path to the .ini file.
     """
 
     if os.path.isfile(path):
         config = Config(path)
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils.load_config",
             "path",
             "The file you specified does not exist.",
@@ -481,7 +480,7 @@ class Config(ConfigParser):
         self._check_keys()
 
         if len(self.config_errors) > 0:
-            raise ConfigError(self.config_errors)
+            raise _exceptions.ConfigError(self.config_errors)
 
     def _check_sections(self) -> None:
         """Checks whether all sections are valid."""

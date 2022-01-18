@@ -25,9 +25,9 @@ import (converted) GMSH mesh files, and the :py:func:`regular_mesh
 great for testing.
 """
 
-from .boundary_distance import compute_boundary_distance
-from .deformation_handler import DeformationHandler
-from .measure import generate_measure, _EmptyMeasure
-from .mesh import import_mesh, regular_box_mesh, regular_mesh
-from .mesh_handler import _MeshHandler
-from .mesh_quality import compute_mesh_quality, MeshQuality
+from cashocs.geometry.boundary_distance import compute_boundary_distance
+from cashocs.geometry.deformation_handler import DeformationHandler
+from cashocs.geometry.measure import generate_measure, _EmptyMeasure
+from cashocs.geometry.mesh import import_mesh, regular_box_mesh, regular_mesh
+from cashocs.geometry.mesh_handler import _MeshHandler
+from cashocs.geometry.mesh_quality import compute_mesh_quality, MeshQuality

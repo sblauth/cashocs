@@ -17,19 +17,9 @@
 
 """Base classes for PDE problems."""
 
-from .adjoint_problem import AdjointProblem
-from .control_gradient_problem import ControlGradientProblem
-from .hessian_problems import HessianProblem
-from .pde_problem import PDEProblem
-from .shape_gradient_problem import ShapeGradientProblem
-from .state_problem import StateProblem
-
-
-__all__ = [
-    "PDEProblem",
-    "AdjointProblem",
-    "ControlGradientProblem",
-    "HessianProblem",
-    "ShapeGradientProblem",
-    "StateProblem",
-]
+from cashocs._pde_problems.adjoint_problem import AdjointProblem
+from cashocs._pde_problems.control_gradient_problem import ControlGradientProblem
+from cashocs._pde_problems.hessian_problems import HessianProblem
+from cashocs._pde_problems.pde_problem import PDEProblem
+from cashocs._pde_problems.shape_gradient_problem import ShapeGradientProblem
+from cashocs._pde_problems.state_problem import StateProblem

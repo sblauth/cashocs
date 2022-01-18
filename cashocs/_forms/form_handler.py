@@ -24,22 +24,15 @@ from typing import TYPE_CHECKING, Optional, List
 
 import fenics
 import numpy as np
-from ufl import replace
-from ufl.log import UFLException
+import ufl
 
-from .._exceptions import (
-    CashocsException,
-)
-from ..utils import (
-    _optimization_algorithm_configuration,
-    summation,
-    _max,
-    _min,
-)
+from cashocs import _exceptions
+from cashocs import utils
+
 
 if TYPE_CHECKING:
-    from .._optimization.optimization_problem import OptimizationProblem
-    from .shape_regularization import ShapeRegularization
+    from cashocs import _optimization
+    from cashocs._forms import shape_regularization
 
 
 class FormHandler(abc.ABC):
@@ -51,7 +44,7 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _optimization.OptimizationProblem) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem
@@ -75,7 +68,9 @@ class FormHandler(abc.ABC):
         self.state_forms = optimization_problem.state_forms
 
         self.gradient = None
-        self.shape_regularization: Optional[ShapeRegularization] = None
+        self.shape_regularization: Optional[
+            shape_regularization.ShapeRegularization
+        ] = None
         self.control_dim = None
         self.riesz_projection_matrices = None
         self.gradient_forms_rhs = None
@@ -90,7 +85,9 @@ class FormHandler(abc.ABC):
         self.test_vector_field = None
         self.mu_lame = None
 
-        self.lagrangian_form = self.cost_functional_form + summation(self.state_forms)
+        self.lagrangian_form = self.cost_functional_form + utils.summation(
+            self.state_forms
+        )
         self.cost_functional_shift = 0.0
 
         if self.use_scalar_tracking:
@@ -177,7 +174,7 @@ class FormHandler(abc.ABC):
         self.state_is_picard = self.config.getboolean(
             "StateSystem", "picard_iteration", fallback=False
         )
-        self.opt_algo = _optimization_algorithm_configuration(self.config)
+        self.opt_algo = utils._optimization_algorithm_configuration(self.config)
 
         self.__compute_state_equations()
         self.__compute_adjoint_equations()
@@ -194,7 +191,7 @@ class FormHandler(abc.ABC):
 
         if self.state_is_linear:
             self.linear_state_eq_forms = [
-                replace(
+                ufl.replace(
                     self.state_eq_forms[i],
                     {self.states[i]: self.trial_functions_state[i]},
                 )
@@ -206,8 +203,8 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim):
                 try:
                     lhs, rhs = fenics.system(self.linear_state_eq_forms[i])
-                except UFLException:
-                    raise CashocsException(
+                except ufl.log.UFLException:
+                    raise _exceptions.CashocsException(
                         "The state system could not be transferred to a linear "
                         "system.\n"
                         "Perhaps you specified that the system is linear, "
@@ -266,7 +263,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_lower_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += _min(
+                        self.adjoint_eq_forms[i] += utils._min(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -279,7 +276,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_upper_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += _max(
+                        self.adjoint_eq_forms[i] += utils._max(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -288,7 +285,7 @@ class FormHandler(abc.ABC):
                         )
 
         self.linear_adjoint_eq_forms = [
-            replace(
+            ufl.replace(
                 self.adjoint_eq_forms[i],
                 {self.adjoints[i]: self.trial_functions_adjoint[i]},
             )

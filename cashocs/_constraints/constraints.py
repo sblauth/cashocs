@@ -27,8 +27,8 @@ import numpy as np
 import ufl
 import ufl.core.expr
 
-from .._exceptions import InputError
-from ..utils import _max, _min
+from cashocs import _exceptions
+from cashocs import utils
 
 
 class Constraint(abc.ABC):
@@ -155,7 +155,7 @@ class InequalityConstraint(Constraint):
         self.upper_bound = upper_bound
 
         if self.lower_bound is None and self.upper_bound is None:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs._constraints.constraints.InequalityConstraint",
                 "lower_bound and upper_bound",
                 "You have to specify at least one bound for the inequality constraint.",
@@ -183,7 +183,7 @@ class InequalityConstraint(Constraint):
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
-                        _max(
+                        utils._max(
                             fenics.Constant(0.0),
                             self.multiplier
                             + self.weight * (self.variable_function - self.upper_bound),
@@ -198,7 +198,7 @@ class InequalityConstraint(Constraint):
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
-                        _min(
+                        utils._min(
                             fenics.Constant(0.0),
                             self.multiplier
                             + self.weight * (self.variable_function - self.lower_bound),
@@ -234,7 +234,7 @@ class InequalityConstraint(Constraint):
             if self.upper_bound is not None:
                 violation += fenics.assemble(
                     pow(
-                        _max(
+                        utils._max(
                             self.variable_function - self.upper_bound,
                             fenics.Constant(0.0),
                         ),
@@ -246,7 +246,7 @@ class InequalityConstraint(Constraint):
             if self.lower_bound is not None:
                 violation += fenics.assemble(
                     pow(
-                        _min(
+                        utils._min(
                             self.variable_function - self.lower_bound,
                             fenics.Constant(0.0),
                         ),

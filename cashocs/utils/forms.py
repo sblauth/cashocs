@@ -24,8 +24,8 @@ from typing import Union, List, Tuple, Optional
 import fenics
 import ufl
 
-from .._exceptions import InputError
-from .._loggers import warning
+from cashocs import _exceptions
+from cashocs import _loggers
 
 
 def summation(
@@ -51,7 +51,7 @@ def summation(
 
     if len(x) == 0:
         y = fenics.Constant(0.0)
-        warning("Empty list handed to summation, returning 0.")
+        _loggers.warning("Empty list handed to summation, returning 0.")
     else:
         y = x[0]
 
@@ -77,7 +77,7 @@ def multiplication(
 
     if len(x) == 0:
         y = fenics.Constant(1.0)
-        warning("Empty list handed to multiplication, returning 1.")
+        _loggers.warning("Empty list handed to multiplication, returning 1.")
     else:
         y = x[0]
 
@@ -162,7 +162,7 @@ def moreau_yosida_regularization(
     """
 
     if lower_threshold is None and upper_treshold is None:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils.moreau_yosida_regularization",
             "upper_threshold, lower_threshold",
             "At least one of the threshold parameters has to be defined.",
@@ -243,12 +243,13 @@ def create_dirichlet_bcs(
         Generate homogeneous Dirichlet boundary conditions for all 4 sides of
         the unit square ::
 
-            from fenics import *
+            import fenics
             import cashocs
 
             mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
-            V = FunctionSpace(mesh, 'CG', 1)
-            bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+            V = fenics.FunctionSpace(mesh, 'CG', 1)
+            bcs = cashocs.create_dirichlet_bcs(V, fenics.Constant(0), boundaries,
+                [1,2,3,4])
     """
 
     mesh = function_space.mesh()
@@ -275,7 +276,7 @@ def create_dirichlet_bcs(
                     )
                 )
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.create_dirichlet_bcs",
                     "idcs",
                     "The string you have supplied is not associated with a boundary.",
@@ -320,7 +321,7 @@ def create_bcs_list(
         This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.
     """
 
-    warning(
+    _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by cashocs.create_dirichlet_bcs and will be removed in the future."
     )
 

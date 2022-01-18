@@ -27,15 +27,14 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-import fenics
 import ufl
-from fenics import Constant, div, inner
+import fenics
 
-from .._loggers import info
-from ..utils import _solve_linear_problem
+from cashocs import _loggers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._forms import ShapeFormHandler
+    from cashocs._forms import shape_form_handler
 
 
 def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
@@ -69,7 +68,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
 class ShapeRegularization:
     """Regularization terms for shape optimization problems."""
 
-    def __init__(self, form_handler: ShapeFormHandler) -> None:
+    def __init__(self, form_handler: shape_form_handler.ShapeFormHandler) -> None:
         """
         Args:
             form_handler: The corresponding shape form handler object.
@@ -128,11 +127,11 @@ class ShapeRegularization:
             "Regularization", "use_initial_volume", fallback=False
         ):
             if not self.measure_hole:
-                self.target_volume = fenics.assemble(Constant(1) * self.dx)
+                self.target_volume = fenics.assemble(fenics.Constant(1) * self.dx)
             else:
                 self.target_volume = (
                     self.delta_x * self.delta_y * self.delta_z
-                    - fenics.assemble(Constant(1.0) * self.dx)
+                    - fenics.assemble(fenics.Constant(1.0) * self.dx)
                 )
 
         self.mu_surface = self.config.getfloat(
@@ -144,7 +143,7 @@ class ShapeRegularization:
         if self.config.getboolean(
             "Regularization", "use_initial_surface", fallback=False
         ):
-            self.target_surface = fenics.assemble(Constant(1) * self.ds)
+            self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
         self.mu_curvature = self.config.getfloat(
             "Regularization", "factor_curvature", fallback=0.0
@@ -154,14 +153,14 @@ class ShapeRegularization:
             n = fenics.FacetNormal(self.mesh)
             x = fenics.SpatialCoordinate(self.mesh)
             self.a_curvature = (
-                inner(
+                fenics.inner(
                     fenics.TrialFunction(form_handler.deformation_space),
                     fenics.TestFunction(form_handler.deformation_space),
                 )
                 * self.ds
             )
             self.L_curvature = (
-                inner(
+                fenics.inner(
                     t_grad(x, n),
                     t_grad(fenics.TestFunction(form_handler.deformation_space), n),
                 )
@@ -185,7 +184,7 @@ class ShapeRegularization:
         ):
             self.target_barycenter_list = [0.0, 0.0, 0.0]
             if not self.measure_hole:
-                volume = fenics.assemble(Constant(1) * self.dx)
+                volume = fenics.assemble(fenics.Constant(1) * self.dx)
                 self.target_barycenter_list[0] = (
                     fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
                 )
@@ -201,7 +200,7 @@ class ShapeRegularization:
 
             else:
                 volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                    Constant(1) * self.dx
+                    fenics.Constant(1) * self.dx
                 )
                 self.target_barycenter_list[0] = (
                     0.5
@@ -254,7 +253,7 @@ class ShapeRegularization:
         """
 
         if not self.measure_hole:
-            volume = fenics.assemble(Constant(1) * self.dx)
+            volume = fenics.assemble(fenics.Constant(1) * self.dx)
             barycenter_x = (
                 fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
             )
@@ -270,7 +269,7 @@ class ShapeRegularization:
 
         else:
             volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                Constant(1) * self.dx
+                fenics.Constant(1) * self.dx
             )
             barycenter_x = (
                 0.5
@@ -297,7 +296,7 @@ class ShapeRegularization:
             else:
                 barycenter_z = 0.0
 
-        surface = fenics.assemble(Constant(1) * self.ds)
+        surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
         self.current_volume.val = volume
         self.current_surface.val = surface
@@ -318,7 +317,7 @@ class ShapeRegularization:
 
             fenics.assemble(self.L_curvature, tensor=self.b_curvature)
 
-            _solve_linear_problem(
+            utils._solve_linear_problem(
                 A=self.A_curvature.mat(),
                 b=self.b_curvature.vec(),
                 x=self.kappa_curvature.vector().vec(),
@@ -340,17 +339,17 @@ class ShapeRegularization:
 
             if self.mu_volume > 0.0:
                 if not self.measure_hole:
-                    volume = fenics.assemble(Constant(1.0) * self.dx)
+                    volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
                 else:
                     volume = (
                         self.delta_x * self.delta_y * self.delta_z
-                        - fenics.assemble(Constant(1) * self.dx)
+                        - fenics.assemble(fenics.Constant(1) * self.dx)
                     )
 
                 value += 0.5 * self.mu_volume * pow(volume - self.target_volume, 2)
 
             if self.mu_surface > 0.0:
-                surface = fenics.assemble(Constant(1.0) * self.ds)
+                surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
                 # self.current_surface.val = surface
                 value += 0.5 * self.mu_surface * pow(surface - self.target_surface, 2)
 
@@ -363,7 +362,7 @@ class ShapeRegularization:
 
             if self.mu_barycenter > 0.0:
                 if not self.measure_hole:
-                    volume = fenics.assemble(Constant(1) * self.dx)
+                    volume = fenics.assemble(fenics.Constant(1) * self.dx)
 
                     barycenter_x = (
                         fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
@@ -382,7 +381,7 @@ class ShapeRegularization:
                 else:
                     volume = (
                         self.delta_x * self.delta_y * self.delta_z
-                        - fenics.assemble(Constant(1) * self.dx)
+                        - fenics.assemble(fenics.Constant(1) * self.dx)
                     )
 
                     barycenter_x = (
@@ -440,20 +439,20 @@ class ShapeRegularization:
             identity = fenics.Identity(self.geometric_dimension)
 
             shape_form = (
-                Constant(self.mu_surface)
-                * (self.current_surface - Constant(self.target_surface))
+                fenics.Constant(self.mu_surface)
+                * (self.current_surface - fenics.Constant(self.target_surface))
                 * t_div(vector_field, n)
                 * self.ds
             )
 
-            shape_form += Constant(self.mu_curvature) * (
-                inner(
+            shape_form += fenics.Constant(self.mu_curvature) * (
+                fenics.inner(
                     (identity - (t_grad(x, n) + (t_grad(x, n)).T))
                     * t_grad(vector_field, n),
                     t_grad(self.kappa_curvature, n),
                 )
                 * self.ds
-                + Constant(0.5)
+                + fenics.Constant(0.5)
                 * t_div(vector_field, n)
                 * t_div(self.kappa_curvature, n)
                 * self.ds
@@ -461,43 +460,43 @@ class ShapeRegularization:
 
             if not self.measure_hole:
                 shape_form += (
-                    Constant(self.mu_volume)
-                    * (self.current_volume - Constant(self.target_volume))
-                    * div(vector_field)
+                    fenics.Constant(self.mu_volume)
+                    * (self.current_volume - fenics.Constant(self.target_volume))
+                    * fenics.div(vector_field)
                     * self.dx
                 )
                 shape_form += (
-                    Constant(self.mu_barycenter)
+                    fenics.Constant(self.mu_barycenter)
                     * (
                         self.current_barycenter_x
-                        - Constant(self.target_barycenter_list[0])
+                        - fenics.Constant(self.target_barycenter_list[0])
                     )
                     * (
                         self.current_barycenter_x
                         / self.current_volume
-                        * div(vector_field)
+                        * fenics.div(vector_field)
                         + 1
                         / self.current_volume
                         * (
                             vector_field[0]
-                            + self.spatial_coordinate[0] * div(vector_field)
+                            + self.spatial_coordinate[0] * fenics.div(vector_field)
                         )
                     )
                     * self.dx
-                    + Constant(self.mu_barycenter)
+                    + fenics.Constant(self.mu_barycenter)
                     * (
                         self.current_barycenter_y
-                        - Constant(self.target_barycenter_list[1])
+                        - fenics.Constant(self.target_barycenter_list[1])
                     )
                     * (
                         self.current_barycenter_y
                         / self.current_volume
-                        * div(vector_field)
+                        * fenics.div(vector_field)
                         + 1
                         / self.current_volume
                         * (
                             vector_field[1]
-                            + self.spatial_coordinate[1] * div(vector_field)
+                            + self.spatial_coordinate[1] * fenics.div(vector_field)
                         )
                     )
                     * self.dx
@@ -505,20 +504,20 @@ class ShapeRegularization:
 
                 if self.geometric_dimension == 3:
                     shape_form += (
-                        Constant(self.mu_barycenter)
+                        fenics.Constant(self.mu_barycenter)
                         * (
                             self.current_barycenter_z
-                            - Constant(self.target_barycenter_list[2])
+                            - fenics.Constant(self.target_barycenter_list[2])
                         )
                         * (
                             self.current_barycenter_z
                             / self.current_volume
-                            * div(vector_field)
+                            * fenics.div(vector_field)
                             + 1
                             / self.current_volume
                             * (
                                 vector_field[2]
-                                + self.spatial_coordinate[2] * div(vector_field)
+                                + self.spatial_coordinate[2] * fenics.div(vector_field)
                             )
                         )
                         * self.dx
@@ -526,43 +525,43 @@ class ShapeRegularization:
 
             else:
                 shape_form -= (
-                    Constant(self.mu_volume)
-                    * (self.current_volume - Constant(self.target_volume))
-                    * div(vector_field)
+                    fenics.Constant(self.mu_volume)
+                    * (self.current_volume - fenics.Constant(self.target_volume))
+                    * fenics.div(vector_field)
                     * self.dx
                 )
                 shape_form += (
-                    Constant(self.mu_barycenter)
+                    fenics.Constant(self.mu_barycenter)
                     * (
                         self.current_barycenter_x
-                        - Constant(self.target_barycenter_list[0])
+                        - fenics.Constant(self.target_barycenter_list[0])
                     )
                     * (
                         self.current_barycenter_x
                         / self.current_volume
-                        * div(vector_field)
+                        * fenics.div(vector_field)
                         - 1
                         / self.current_volume
                         * (
                             vector_field[0]
-                            + self.spatial_coordinate[0] * div(vector_field)
+                            + self.spatial_coordinate[0] * fenics.div(vector_field)
                         )
                     )
                     * self.dx
-                    + Constant(self.mu_barycenter)
+                    + fenics.Constant(self.mu_barycenter)
                     * (
                         self.current_barycenter_y
-                        - Constant(self.target_barycenter_list[1])
+                        - fenics.Constant(self.target_barycenter_list[1])
                     )
                     * (
                         self.current_barycenter_y
                         / self.current_volume
-                        * div(vector_field)
+                        * fenics.div(vector_field)
                         - 1
                         / self.current_volume
                         * (
                             vector_field[1]
-                            + self.spatial_coordinate[1] * div(vector_field)
+                            + self.spatial_coordinate[1] * fenics.div(vector_field)
                         )
                     )
                     * self.dx
@@ -570,20 +569,20 @@ class ShapeRegularization:
 
                 if self.geometric_dimension == 3:
                     shape_form += (
-                        Constant(self.mu_barycenter)
+                        fenics.Constant(self.mu_barycenter)
                         * (
                             self.current_barycenter_z
-                            - Constant(self.target_barycenter_list[2])
+                            - fenics.Constant(self.target_barycenter_list[2])
                         )
                         * (
                             self.current_barycenter_z
                             / self.current_volume
-                            * div(vector_field)
+                            * fenics.div(vector_field)
                             - 1
                             / self.current_volume
                             * (
                                 vector_field[2]
-                                + self.spatial_coordinate[2] * div(vector_field)
+                                + self.spatial_coordinate[2] * fenics.div(vector_field)
                             )
                         )
                         * self.dx
@@ -593,7 +592,7 @@ class ShapeRegularization:
 
         else:
             dim = self.geometric_dimension
-            return inner(fenics.Constant([0] * dim), vector_field) * self.dx
+            return fenics.inner(fenics.Constant([0] * dim), vector_field) * self.dx
 
     def _scale_weights(self) -> None:
         """Scales the terms of the regularization by the weights given in the config."""
@@ -604,17 +603,17 @@ class ShapeRegularization:
 
                 if self.mu_volume > 0.0:
                     if not self.measure_hole:
-                        volume = fenics.assemble(Constant(1.0) * self.dx)
+                        volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
                     else:
                         volume = (
                             self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(Constant(1) * self.dx)
+                            - fenics.assemble(fenics.Constant(1) * self.dx)
                         )
 
                     value = 0.5 * pow(volume - self.target_volume, 2)
 
                     if abs(value) < 1e-15:
-                        info(
+                        _loggers.info(
                             "The volume regularization vanishes for the initial "
                             "iteration. Multiplying this term with the factor you "
                             "supplied as weight."
@@ -623,11 +622,11 @@ class ShapeRegularization:
                         self.mu_volume /= abs(value)
 
                 if self.mu_surface > 0.0:
-                    surface = fenics.assemble(Constant(1.0) * self.ds)
+                    surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
                     value = 0.5 * pow(surface - self.target_surface, 2)
 
                     if abs(value) < 1e-15:
-                        info(
+                        _loggers.info(
                             "The surface regularization vanishes for the initial "
                             "iteration. Multiplying this term with the factor you "
                             "supplied as weight."
@@ -643,7 +642,7 @@ class ShapeRegularization:
                     )
 
                     if abs(value) < 1e-15:
-                        info(
+                        _loggers.info(
                             "The curvature regularization vanishes for the initial "
                             "iteration. Multiplying this term with the factor you "
                             "supplied as weight."
@@ -653,7 +652,7 @@ class ShapeRegularization:
 
                 if self.mu_barycenter > 0.0:
                     if not self.measure_hole:
-                        volume = fenics.assemble(Constant(1) * self.dx)
+                        volume = fenics.assemble(fenics.Constant(1) * self.dx)
 
                         barycenter_x = (
                             fenics.assemble(self.spatial_coordinate[0] * self.dx)
@@ -674,7 +673,7 @@ class ShapeRegularization:
                     else:
                         volume = (
                             self.delta_x * self.delta_y * self.delta_z
-                            - fenics.assemble(Constant(1) * self.dx)
+                            - fenics.assemble(fenics.Constant(1) * self.dx)
                         )
 
                         barycenter_x = (
@@ -709,7 +708,7 @@ class ShapeRegularization:
                     )
 
                     if abs(value) < 1e-15:
-                        info(
+                        _loggers.info(
                             "The barycenter regularization vanishes for the initial "
                             "iteration. Multiplying this term with the factor you "
                             "supplied as weight."

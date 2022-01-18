@@ -25,7 +25,7 @@ from typing import Union, List, Tuple, Optional, Any
 
 import fenics
 
-from .._exceptions import InputError
+from cashocs import _exceptions
 
 
 def enlist(arg: Union[Any, List]) -> List:
@@ -67,7 +67,7 @@ def _check_and_enlist_bcs(
     elif isinstance(bcs_list, list) and isinstance(bcs_list[0], list):
         return bcs_list
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils._check_and_enlist_bcs",
             "bcs_list",
             "Type of bcs_list is wrong",
@@ -98,7 +98,7 @@ def _check_and_enlist_control_constraints(
     ):
         return [control_constraints]
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils._check_and_enlist_control_constraints",
             "control_constraints",
             "Type of control_constraints is wrong",
@@ -131,7 +131,7 @@ def _check_and_enlist_ksp_options(
     ):
         return ksp_options[:]
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils._check_and_enlist_ksp_options",
             "ksp_options",
             "Type of ksp_options is wrong.",
@@ -161,7 +161,7 @@ def _parse_remesh() -> Tuple[bool, str]:
     temp_dir = args.temp_dir or None
     cashocs_remesh_flag = True if args.cashocs_remesh else False
 
-    return (cashocs_remesh_flag, temp_dir)
+    return cashocs_remesh_flag, temp_dir
 
 
 def _optimization_algorithm_configuration(
@@ -199,12 +199,13 @@ def _optimization_algorithm_configuration(
     elif algorithm == "none":
         internal_algorithm = "none"
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.utils._optimization_algorithm_configuration",
             "algorithm",
             "Not a valid choice for the optimization algorithm.\n"
             "	For a gradient descent method, use 'gradient_descent' or 'gd'.\n"
-            "	For a nonlinear conjugate gradient method use 'cg', 'conjugate_gradient', 'ncg', or 'nonlinear_cg'.\n"
+            "	For a nonlinear conjugate gradient method use 'cg', "
+            "'conjugate_gradient', 'ncg', or 'nonlinear_cg'.\n"
             "	For a limited memory BFGS method use 'bfgs' or 'lbfgs'.\n"
             "	For a truncated Newton method use 'newton' (optimal control only).\n",
         )

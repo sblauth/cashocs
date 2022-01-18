@@ -31,24 +31,24 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from .._pde_problems.pde_problem import PDEProblem
-from ..nonlinear_solvers import newton_solve
-from ..utils import _setup_petsc_options, _solve_linear_problem
+from cashocs._pde_problems import pde_problem
+from cashocs import nonlinear_solvers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .state_problem import StateProblem
-    from .adjoint_problem import AdjointProblem
-    from .._forms import ShapeFormHandler
+    from cashocs._pde_problems import state_problem as sp
+    from cashocs._pde_problems import adjoint_problem as ap
+    from cashocs import _forms
 
 
-class ShapeGradientProblem(PDEProblem):
+class ShapeGradientProblem(pde_problem.PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
 
     def __init__(
         self,
-        form_handler: ShapeFormHandler,
-        state_problem: StateProblem,
-        adjoint_problem: AdjointProblem,
+        form_handler: _forms.ShapeFormHandler,
+        state_problem: sp.StateProblem,
+        adjoint_problem: ap.AdjointProblem,
     ) -> None:
         """
         Args:
@@ -94,7 +94,7 @@ class ShapeGradientProblem(PDEProblem):
                 ["ksp_max_it", 250],
             ]
 
-        _setup_petsc_options([self.ksp], [self.ksp_options])
+        utils._setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
@@ -144,7 +144,7 @@ class ShapeGradientProblem(PDEProblem):
                     self.form_handler.fe_shape_derivative_vector[
                         self.form_handler.fixed_indices
                     ] = 0.0
-                _solve_linear_problem(
+                utils._solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,
                     self.form_handler.fe_shape_derivative_vector.vec(),
@@ -245,7 +245,7 @@ class _PLaplaceProjector:
 
         self.solution.vector().vec().set(0.0)
         for F in self.F_list:
-            newton_solve(
+            nonlinear_solvers.newton_solve(
                 F,
                 self.solution,
                 self.bcs_shape,

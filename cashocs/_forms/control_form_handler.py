@@ -23,25 +23,17 @@ from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from ufl import replace
+import ufl
 
-from .form_handler import FormHandler
-from .._exceptions import (
-    InputError,
-)
-from ..utils import (
-    summation,
-    _max,
-    _min,
-)
+from cashocs import _exceptions
+from cashocs._forms import form_handler
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._optimization.optimal_control import (
-        OptimalControlProblem,
-    )
+    from cashocs._optimization import optimal_control
 
 
-class ControlFormHandler(FormHandler):
+class ControlFormHandler(form_handler.FormHandler):
     """Class for UFL form manipulation for optimal control problems.
 
     This is used to symbolically derive the corresponding weak forms of the
@@ -50,7 +42,9 @@ class ControlFormHandler(FormHandler):
      the optimization (solution) algorithms.
     """
 
-    def __init__(self, optimization_problem: OptimalControlProblem) -> None:
+    def __init__(
+        self, optimization_problem: optimal_control.OptimalControlProblem
+    ) -> None:
         """
         Args:
             optimization_problem: The corresponding optimal control problem
@@ -128,7 +122,7 @@ class ControlFormHandler(FormHandler):
                         / self.riesz_projection_matrices[i].norm()
                         < 1e-15
                     ):
-                        raise InputError(
+                        raise _exceptions.InputError(
                             "cashocs._forms.ControlFormHandler",
                             "riesz_scalar_products",
                             "Supplied scalar product form is not symmetric.",
@@ -324,7 +318,7 @@ class ControlFormHandler(FormHandler):
                             self.min_max_integrand_values[j]
                             - self.min_max_lower_bounds[j]
                         )
-                        self.gradient_forms_rhs[i] += _min(
+                        self.gradient_forms_rhs[i] += utils._min(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -337,7 +331,7 @@ class ControlFormHandler(FormHandler):
                             self.min_max_integrand_values[j]
                             - self.min_max_upper_bounds[j]
                         )
-                        self.gradient_forms_rhs[i] += _max(
+                        self.gradient_forms_rhs[i] += utils._max(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -349,7 +343,7 @@ class ControlFormHandler(FormHandler):
         """Calculates the needed forms for the truncated Newton method."""
 
         if self.use_scalar_tracking or self.use_min_max_terms:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs._forms.ShapeFormHandler",
                 "__compute_newton_forms",
                 (
@@ -360,7 +354,7 @@ class ControlFormHandler(FormHandler):
 
         # Use replace -> derivative to speed up the computations
         self.sensitivity_eqs_temp = [
-            replace(
+            ufl.replace(
                 self.state_forms[i], {self.adjoints[i]: self.test_functions_state[i]}
             )
             for i in range(self.state_dim)
@@ -385,7 +379,7 @@ class ControlFormHandler(FormHandler):
         # Need to distinguish cases due to empty sum in case state_dim = 1
         if self.state_dim > 1:
             self.sensitivity_eqs_rhs = [
-                -summation(
+                -utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -396,7 +390,7 @@ class ControlFormHandler(FormHandler):
                         if j != i
                     ]
                 )
-                - summation(
+                - utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -410,7 +404,7 @@ class ControlFormHandler(FormHandler):
             ]
         else:
             self.sensitivity_eqs_rhs = [
-                -summation(
+                -utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -480,19 +474,19 @@ class ControlFormHandler(FormHandler):
         ]
 
         self.w_1 = [
-            summation([self.L_yy[i][j] for j in range(self.state_dim)])
-            + summation([self.L_uy[i][j] for j in range(self.control_dim)])
+            utils.summation([self.L_yy[i][j] for j in range(self.state_dim)])
+            + utils.summation([self.L_uy[i][j] for j in range(self.control_dim)])
             for i in range(self.state_dim)
         ]
         self.w_2 = [
-            summation([self.L_yu[i][j] for j in range(self.state_dim)])
-            + summation([self.L_uu[i][j] for j in range(self.control_dim)])
+            utils.summation([self.L_yu[i][j] for j in range(self.state_dim)])
+            + utils.summation([self.L_uu[i][j] for j in range(self.control_dim)])
             for i in range(self.control_dim)
         ]
 
         # Use replace -> derivative for faster computations
         self.adjoint_sensitivity_eqs_diag_temp = [
-            replace(
+            ufl.replace(
                 self.state_forms[i], {self.adjoints[i]: self.trial_functions_adjoint[i]}
             )
             for i in range(self.state_dim)
@@ -502,7 +496,8 @@ class ControlFormHandler(FormHandler):
             self.adjoints[j]: self.adjoints_prime[j] for j in range(self.state_dim)
         }
         self.adjoint_sensitivity_eqs_all_temp = [
-            replace(self.state_forms[i], mapping_dict) for i in range(self.state_dim)
+            ufl.replace(self.state_forms[i], mapping_dict)
+            for i in range(self.state_dim)
         ]
 
         self.adjoint_sensitivity_eqs_lhs = [
@@ -526,7 +521,7 @@ class ControlFormHandler(FormHandler):
         # Need cases distinction due to empty sum for state_dim == 1
         if self.state_dim > 1:
             for i in range(self.state_dim):
-                self.w_1[i] -= summation(
+                self.w_1[i] -= utils.summation(
                     [
                         fenics.derivative(
                             self.adjoint_sensitivity_eqs_all_temp[j],
@@ -546,7 +541,7 @@ class ControlFormHandler(FormHandler):
                 self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 
         self.adjoint_sensitivity_eqs_rhs = [
-            summation(
+            utils.summation(
                 [
                     fenics.derivative(
                         self.adjoint_sensitivity_eqs_all_temp[j],

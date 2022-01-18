@@ -25,13 +25,13 @@ from typing import TYPE_CHECKING, List, Union
 import fenics
 
 if TYPE_CHECKING:
-    from .._forms import FormHandler
+    from cashocs import _forms
 
 
 class PDEProblem(abc.ABC):
     """Base class for a PDE problem."""
 
-    def __init__(self, form_handler: FormHandler) -> None:
+    def __init__(self, form_handler: _forms.FormHandler) -> None:
         """
         Args:
             form_handler: The form handler for the problem.

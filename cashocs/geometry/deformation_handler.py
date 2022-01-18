@@ -19,21 +19,17 @@
 
 from __future__ import annotations
 
-from collections import Counter
+import collections
 from typing import Union
 
 import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .measure import _NamedMeasure
-from .._exceptions import CashocsException, InputError
-from .._loggers import debug
-from ..utils.linalg import (
-    _assemble_petsc_system,
-    _setup_petsc_options,
-    _solve_linear_problem,
-)
+from cashocs.geometry import measure
+from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import utils
 
 
 class DeformationHandler:
@@ -50,7 +46,7 @@ class DeformationHandler:
         """
 
         self.mesh = mesh
-        self.dx = _NamedMeasure("dx", self.mesh)
+        self.dx = measure._NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
         self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
@@ -64,7 +60,7 @@ class DeformationHandler:
 
         cells = self.mesh.cells()
         flat_cells = cells.flatten().tolist()
-        self.cell_counter = Counter(flat_cells)
+        self.cell_counter = collections.Counter(flat_cells)
         self.occurrences = np.array(
             [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
         )
@@ -82,7 +78,7 @@ class DeformationHandler:
             ["ksp_max_it", 1000],
         ]
         self.ksp_prior = PETSc.KSP().create()
-        _setup_petsc_options([self.ksp_prior], [self.options_prior])
+        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(self.VCG)
         dim = self.mesh.geometric_dimension()
@@ -118,8 +114,10 @@ class DeformationHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        A, b = _assemble_petsc_system(self.a_prior, self.L_prior)
-        x = _solve_linear_problem(self.ksp_prior, A, b, ksp_options=self.options_prior)
+        A, b = utils._assemble_petsc_system(self.a_prior, self.L_prior)
+        x = utils._solve_linear_problem(
+            self.ksp_prior, A, b, ksp_options=self.options_prior
+        )
         min_det = np.min(x[:])
 
         return min_det > 0
@@ -146,7 +144,7 @@ class DeformationHandler:
 
         if self_intersections:
             self.revert_transformation()
-            debug("Mesh transformation rejected due to a posteriori check.")
+            _loggers.debug("Mesh transformation rejected due to a posteriori check.")
             return False
         else:
             return True
@@ -189,7 +187,9 @@ class DeformationHandler:
 
         if isinstance(transformation, np.ndarray):
             if not transformation.shape == self.coordinates.shape:
-                raise CashocsException("Not a valid dimension for the transformation")
+                raise _exceptions.CashocsException(
+                    "Not a valid dimension for the transformation"
+                )
             else:
                 coordinate_transformation = transformation
         else:
@@ -201,7 +201,7 @@ class DeformationHandler:
             else:
                 dof_transformation = transformation
             if not self.__test_a_priori(dof_transformation):
-                debug(
+                _loggers.debug(
                     "Mesh transformation rejected due to a priori check.\n"
                     "Reason: Transformation would result in inverted mesh elements."
                 )
@@ -230,7 +230,7 @@ class DeformationHandler:
         """
 
         if not (coordinate_deformation.shape == self.shape_coordinates):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.geometry.DeformationHandler.coordinate_to_dof",
                 "coordinate_deformation",
                 (
@@ -259,7 +259,7 @@ class DeformationHandler:
             dof_deformation.ufl_element().family() == "Lagrange"
             and dof_deformation.ufl_element().degree() == 1
         ):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.geometry.DeformationHandler.dof_to_coordinate",
                 "dof_deformation",
                 "dof_deformation has to be a piecewise linear Lagrange vector field.",
@@ -280,13 +280,13 @@ class DeformationHandler:
         """
 
         if not self.mesh.geometric_dimension() == coordinates.shape[1]:
-            raise InputError(
+            raise _exceptions.InputError(
                 "DeformationHandler.assign_coordinates",
                 "coordinates",
                 "The dimension of coordinates is wrong.",
             )
         if not self.mesh.num_vertices() == coordinates.shape[0]:
-            raise InputError(
+            raise _exceptions.InputError(
                 "DeformationHandler.assign_coordinates",
                 "coordinates",
                 "The number of vertices is wrong.",

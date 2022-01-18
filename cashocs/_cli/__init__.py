@@ -17,4 +17,4 @@
 
 """Command line interface of cashocs."""
 
-from ._convert import convert
+from cashocs._cli._convert import convert

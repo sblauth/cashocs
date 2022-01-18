@@ -21,5 +21,5 @@ This module has custom solvers for nonlinear PDEs, including a damped Newton met
 Picard iteration for coupled problems.
 """
 
-from .newton_solver import newton_solve, damped_newton_solve
-from .picard_iteration import picard_iteration
+from cashocs.nonlinear_solvers.newton_solver import newton_solve, damped_newton_solve
+from cashocs.nonlinear_solvers.picard_iteration import picard_iteration

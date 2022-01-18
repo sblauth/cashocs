@@ -31,28 +31,23 @@ import dolfin.function.argument
 import fenics
 import numpy as np
 import ufl
+import ufl.algorithms
 from typing_extensions import Literal
-from ufl import replace
-from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
 
-from .shape_variable_abstractions import ShapeVariableAbstractions
-from ..cost_functional import ReducedCostFunctional
-from ..line_search import ArmijoLineSearch
-from ..optimization_algorithms import (
-    GradientDescentMethod,
-    NonlinearCGMethod,
-    LBFGSMethod,
-)
-from ..optimization_problem import OptimizationProblem
-from ..verification import shape_gradient_test
-from ..._exceptions import CashocsException, InputError
-from ..._forms import ShapeFormHandler
-from ..._loggers import debug, warning
-from ..._pde_problems import AdjointProblem, ShapeGradientProblem, StateProblem
-from ...geometry import _MeshHandler
+from cashocs import _exceptions
+from cashocs import _forms
+from cashocs import _loggers
+from cashocs._optimization import cost_functional
+from cashocs._optimization import line_search
+from cashocs._optimization import optimization_algorithms
+from cashocs._optimization import optimization_problem
+from cashocs._optimization.shape_optimization import shape_variable_abstractions
+from cashocs._optimization import verification
+from cashocs import _pde_problems
+from cashocs import geometry
 
 
-class ShapeOptimizationProblem(OptimizationProblem):
+class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A shape optimization problem.
 
     This class is used to define a shape optimization problem, and to solve
@@ -233,20 +228,20 @@ class ShapeOptimizationProblem(OptimizationProblem):
         if self.do_remesh:
 
             if not os.path.isfile(os.path.realpath(sys.argv[0])):
-                raise CashocsException(
+                raise _exceptions.CashocsException(
                     "Not a valid configuration. "
                     "The script has to be the first command line argument."
                 )
 
             try:
                 if not self.states[0].function_space().mesh()._config_flag:
-                    raise InputError(
+                    raise _exceptions.InputError(
                         "cashocs.import_mesh",
                         "arg",
                         "You must specify a config file as input for remeshing.",
                     )
             except AttributeError:  # pragma: no cover
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.import_mesh",
                     "arg",
                     "You must specify a config file as input for remeshing.",
@@ -290,7 +285,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
             self.boundaries = boundaries
         else:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem",
                 "boundaries",
                 "Not a valid type for boundaries.",
@@ -311,7 +306,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
         if self.uses_custom_scalar_product and self.config.getboolean(
             "ShapeGradient", "use_p_laplacian", fallback=False
         ):
-            warning(
+            _loggers.warning(
                 (
                     "You have supplied a custom scalar product and set the parameter "
                     "``use_p_laplacian`` in the config file."
@@ -321,7 +316,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             )
 
         self.is_shape_problem = True
-        self.form_handler = ShapeFormHandler(self)
+        self.form_handler = _forms.ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
             self.temp_dict["Regularization"] = {
@@ -331,22 +326,22 @@ class ShapeOptimizationProblem(OptimizationProblem):
                 "mu_barycenter": self.form_handler.shape_regularization.mu_barycenter,
             }
 
-        self.mesh_handler = _MeshHandler(self)
+        self.mesh_handler = geometry._MeshHandler(self)
 
         self.state_spaces = self.form_handler.state_spaces
         self.adjoint_spaces = self.form_handler.adjoint_spaces
 
-        self.state_problem = StateProblem(
+        self.state_problem = _pde_problems.StateProblem(
             self.form_handler, self.initial_guess, self.temp_dict
         )
-        self.adjoint_problem = AdjointProblem(
+        self.adjoint_problem = _pde_problems.AdjointProblem(
             self.form_handler, self.state_problem, self.temp_dict
         )
-        self.gradient_problem = ShapeGradientProblem(
+        self.gradient_problem = _pde_problems.ShapeGradientProblem(
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
-        self.reduced_cost_functional = ReducedCostFunctional(
+        self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
             self.form_handler, self.state_problem
         )
 
@@ -428,18 +423,24 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_abstractions = ShapeVariableAbstractions(self)
-        self.line_search = ArmijoLineSearch(self)
+        self.optimization_variable_abstractions = (
+            shape_variable_abstractions.ShapeVariableAbstractions(self)
+        )
+        self.line_search = line_search.ArmijoLineSearch(self)
 
         # TODO: Do not pass the line search (unnecessary)
         if self.algorithm == "gradient_descent":
-            self.solver = GradientDescentMethod(self, self.line_search)
+            self.solver = optimization_algorithms.GradientDescentMethod(
+                self, self.line_search
+            )
         elif self.algorithm == "lbfgs":
-            self.solver = LBFGSMethod(self, self.line_search)
+            self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
         elif self.algorithm == "conjugate_gradient":
-            self.solver = NonlinearCGMethod(self, self.line_search)
+            self.solver = optimization_algorithms.NonlinearCGMethod(
+                self, self.line_search
+            )
         elif self.algorithm == "none":
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",
                 "You did not specify a solution algorithm in your config file. "
@@ -471,7 +472,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             -------
 
             """
-            debug(
+            _loggers.debug(
                 "An exception was raised by cashocs, "
                 "deleting the created temporary files."
             )
@@ -510,20 +511,20 @@ class ShapeOptimizationProblem(OptimizationProblem):
         """
 
         if not (isinstance(shape_derivative, ufl.Form)):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "shape_derivative have to be a ufl form",
             )
 
         if len(shape_derivative.arguments()) == 2:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "Do not use TrialFunction for the shape_derivative.",
             )
         elif len(shape_derivative.arguments()) == 0:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 "The specified shape_derivative must include a TestFunction object.",
@@ -533,7 +534,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             not shape_derivative.arguments()[0].ufl_function_space().ufl_element()
             == self.form_handler.deformation_space.ufl_element()
         ):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
                 "shape_derivative",
                 (
@@ -546,7 +547,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             not shape_derivative.arguments()[0].ufl_function_space()
             == self.form_handler.deformation_space
         ):
-            shape_derivative = replace(
+            shape_derivative = ufl.replace(
                 shape_derivative,
                 {shape_derivative.arguments()[0]: self.form_handler.test_vector_field},
             )
@@ -564,10 +565,10 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         if retry_assembler_setup or self.form_handler.degree_estimation:
             estimated_degree = np.maximum(
-                estimate_total_polynomial_degree(
+                ufl.algorithms.estimate_total_polynomial_degree(
                     self.form_handler.riesz_scalar_product
                 ),
-                estimate_total_polynomial_degree(shape_derivative),
+                ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
             )
             self.form_handler.assembler = fenics.SystemAssembler(
                 self.form_handler.riesz_scalar_product,
@@ -596,7 +597,7 @@ class ShapeOptimizationProblem(OptimizationProblem):
             shape_derivative: The shape derivative of the reduced (!) cost functional.
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
-            system(s).
+                system(s).
         """
 
         self.supply_shape_derivative(shape_derivative)
@@ -629,4 +630,4 @@ class ShapeOptimizationProblem(OptimizationProblem):
 
         """
 
-        return shape_gradient_test(self, h, rng)
+        return verification.shape_gradient_test(self, h, rng)

@@ -25,13 +25,8 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from .measure import _NamedMeasure
-from ..utils.forms import create_dirichlet_bcs
-from ..utils.linalg import (
-    _setup_petsc_options,
-    _solve_linear_problem,
-    _assemble_petsc_system,
-)
+from cashocs.geometry import measure
+from cashocs import utils
 
 
 def compute_boundary_distance(
@@ -68,7 +63,7 @@ def compute_boundary_distance(
     """
 
     V = fenics.FunctionSpace(mesh, "CG", 1)
-    dx = _NamedMeasure("dx", mesh)
+    dx = measure._NamedMeasure("dx", mesh)
 
     ksp = PETSc.KSP().create()
     ksp_options = [
@@ -80,7 +75,7 @@ def compute_boundary_distance(
         ["ksp_atol", 1e-50],
         ["ksp_max_it", 1000],
     ]
-    _setup_petsc_options([ksp], [ksp_options])
+    utils._setup_petsc_options([ksp], [ksp_options])
 
     u = fenics.TrialFunction(V)
     v = fenics.TestFunction(V)
@@ -91,7 +86,7 @@ def compute_boundary_distance(
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
-            bcs = create_dirichlet_bcs(
+            bcs = utils.create_dirichlet_bcs(
                 V, fenics.Constant(0.0), boundaries, boundary_idcs
             )
         else:
@@ -106,8 +101,8 @@ def compute_boundary_distance(
     a = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
     L = fenics.Constant(1.0) * v * dx
 
-    A, b = _assemble_petsc_system(a, L, bcs)
-    _solve_linear_problem(ksp, A, b, u_curr.vector().vec())
+    A, b = utils._assemble_petsc_system(a, L, bcs)
+    utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
 
     L = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
@@ -124,8 +119,8 @@ def compute_boundary_distance(
 
     for i in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
-        A, b = _assemble_petsc_system(a, L, bcs)
-        _solve_linear_problem(ksp, A, b, u_curr.vector().vec())
+        A, b = utils._assemble_petsc_system(a, L, bcs)
+        utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
         res = np.sqrt(fenics.assemble(F_res))
 
         if res <= res_0 * tol:

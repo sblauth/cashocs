@@ -24,18 +24,20 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 import numpy as np
 
-from ..optimization_variable_abstractions import OptimizationVariableAbstractions
+from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
-    from shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
+    from cashocs._optimization import shape_optimization
 
 
-class ShapeVariableAbstractions(OptimizationVariableAbstractions):
+class ShapeVariableAbstractions(
+    optimization_variable_abstractions.OptimizationVariableAbstractions
+):
     """Abstractions for optimization variables in the case of shape optimization."""
 
-    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
+    def __init__(
+        self, optimization_problem: shape_optimization.ShapeOptimizationProblem
+    ) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.

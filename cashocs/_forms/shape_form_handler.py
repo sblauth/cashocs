@@ -26,33 +26,22 @@ from typing import List, TYPE_CHECKING, Optional
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from ufl import replace
-from ufl.algorithms import expand_derivatives
-from ufl.algorithms.estimate_degrees import estimate_total_polynomial_degree
+import ufl
+import ufl.algorithms
 
-from .form_handler import FormHandler
-from .shape_regularization import ShapeRegularization
-from .._exceptions import (
-    InputError,
-)
-from .._loggers import warning
-from ..geometry.boundary_distance import compute_boundary_distance
-from ..utils import (
-    _assemble_petsc_system,
-    _setup_petsc_options,
-    _solve_linear_problem,
-    create_dirichlet_bcs,
-    _max,
-    _min,
-)
+from cashocs import _exceptions
+from cashocs import utils
+from cashocs._forms import form_handler
+from cashocs._forms import shape_regularization
+from cashocs import _loggers
+from cashocs.geometry import boundary_distance
+
 
 if TYPE_CHECKING:
-    from .._optimization.shape_optimization.shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
+    from cashocs._optimization import shape_optimization
 
 
-class ShapeFormHandler(FormHandler):
+class ShapeFormHandler(form_handler.FormHandler):
     """Derives adjoint equations and shape derivatives.
 
     This class is used analogously to the ControlFormHandler class, but for
@@ -60,7 +49,9 @@ class ShapeFormHandler(FormHandler):
     and the shape derivatives.
     """
 
-    def __init__(self, optimization_problem: ShapeOptimizationProblem) -> None:
+    def __init__(
+        self, optimization_problem: shape_optimization.ShapeOptimizationProblem
+    ) -> None:
         """
         Args:
             optimization_problem: The corresponding shape optimization problem.
@@ -103,7 +94,7 @@ class ShapeFormHandler(FormHandler):
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
-        self.shape_regularization = ShapeRegularization(self)
+        self.shape_regularization = shape_regularization.ShapeRegularization(self)
 
         temp_fixed_dimensions = self.config.get(
             "ShapeGradient", "fixed_dimensions", fallback="[]"
@@ -134,8 +125,10 @@ class ShapeFormHandler(FormHandler):
 
         if retry_assembler_setup or self.degree_estimation:
             self.estimated_degree = np.maximum(
-                estimate_total_polynomial_degree(self.riesz_scalar_product),
-                estimate_total_polynomial_degree(self.shape_derivative),
+                ufl.algorithms.estimate_total_polynomial_degree(
+                    self.riesz_scalar_product
+                ),
+                ufl.algorithms.estimate_total_polynomial_degree(self.shape_derivative),
             )
             self.assembler = fenics.SystemAssembler(
                 self.riesz_scalar_product,
@@ -165,7 +158,7 @@ class ShapeFormHandler(FormHandler):
                     / self.scalar_product_matrix.norm()
                     < 1e-15
                 ):
-                    raise InputError(
+                    raise _exceptions.InputError(
                         "cashocs._forms.ShapeFormHandler",
                         "shape_scalar_product",
                         "Supplied scalar product form is not symmetric.",
@@ -211,7 +204,7 @@ class ShapeFormHandler(FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
                     )
                     self.shape_derivative += fenics.derivative(
-                        _min(fenics.Constant(0.0), term_lower)
+                        utils._min(fenics.Constant(0.0), term_lower)
                         * self.min_max_integrands[j],
                         fenics.SpatialCoordinate(self.mesh),
                         self.test_vector_field,
@@ -222,7 +215,7 @@ class ShapeFormHandler(FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
                     )
                     self.shape_derivative += fenics.derivative(
-                        _max(fenics.Constant(0.0), term_upper)
+                        utils._max(fenics.Constant(0.0), term_upper)
                         * self.min_max_integrands[j],
                         fenics.SpatialCoordinate(self.mesh),
                         self.test_vector_field,
@@ -263,7 +256,7 @@ class ShapeFormHandler(FormHandler):
                                 self.material_derivative_coeffs.append(coeff)
 
             if len(self.material_derivative_coeffs) > 0:
-                warning(
+                _loggers.warning(
                     "Shape derivative might be wrong, if differential operators "
                     "act on variables other than states and adjoints. \n"
                     "You can check for correctness of the shape derivative "
@@ -298,7 +291,7 @@ class ShapeFormHandler(FormHandler):
                                 - self.min_max_lower_bounds[j]
                             )
                             material_derivative += fenics.derivative(
-                                _min(fenics.Constant(0.0), term_lower)
+                                utils._min(fenics.Constant(0.0), term_lower)
                                 * self.min_max_integrands[j],
                                 coeff,
                                 fenics.dot(fenics.grad(coeff), self.test_vector_field),
@@ -310,13 +303,15 @@ class ShapeFormHandler(FormHandler):
                                 - self.min_max_upper_bounds[j]
                             )
                             material_derivative += fenics.derivative(
-                                _max(fenics.Constant(0.0), term_upper)
+                                utils._max(fenics.Constant(0.0), term_upper)
                                 * self.min_max_integrands[j],
                                 coeff,
                                 fenics.dot(fenics.grad(coeff), self.test_vector_field),
                             )
 
-                material_derivative = expand_derivatives(material_derivative)
+                material_derivative = ufl.algorithms.expand_derivatives(
+                    material_derivative
+                )
 
                 self.shape_derivative += material_derivative
 
@@ -352,26 +347,26 @@ class ShapeFormHandler(FormHandler):
         )
         self.shape_bdry_fix_z = json.loads(shape_bdry_temp)
 
-        self.bcs_shape = create_dirichlet_bcs(
+        self.bcs_shape = utils.create_dirichlet_bcs(
             self.deformation_space,
             fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
             self.boundaries,
             self.shape_bdry_fix,
         )
-        self.bcs_shape += create_dirichlet_bcs(
+        self.bcs_shape += utils.create_dirichlet_bcs(
             self.deformation_space.sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
-        self.bcs_shape += create_dirichlet_bcs(
+        self.bcs_shape += utils.create_dirichlet_bcs(
             self.deformation_space.sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
         if self.deformation_space.num_sub_spaces() == 3:
-            self.bcs_shape += create_dirichlet_bcs(
+            self.bcs_shape += utils.create_dirichlet_bcs(
                 self.deformation_space.sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
@@ -464,7 +459,7 @@ class ShapeFormHandler(FormHandler):
                     ["ksp_max_it", 100],
                 ]
                 self.ksp_mu = PETSc.KSP().create()
-                _setup_petsc_options([self.ksp_mu], [self.options_mu])
+                utils._setup_petsc_options([self.ksp_mu], [self.options_mu])
 
                 phi = fenics.TrialFunction(self.CG1)
                 psi = fenics.TestFunction(self.CG1)
@@ -472,13 +467,13 @@ class ShapeFormHandler(FormHandler):
                 self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.L_mu = fenics.Constant(0.0) * psi * self.dx
 
-                self.bcs_mu = create_dirichlet_bcs(
+                self.bcs_mu = utils.create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_fix),
                     self.boundaries,
                     self.shape_bdry_fix,
                 )
-                self.bcs_mu += create_dirichlet_bcs(
+                self.bcs_mu += utils.create_dirichlet_bcs(
                     self.CG1,
                     fenics.Constant(self.mu_def),
                     self.boundaries,
@@ -549,14 +544,14 @@ class ShapeFormHandler(FormHandler):
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
 
-                    _assemble_petsc_system(
+                    utils._assemble_petsc_system(
                         self.a_mu,
                         self.L_mu,
                         self.bcs_mu,
                         rhs_tensor=self.A_mu,
                         lhs_tensor=self.b_mu,
                     )
-                    x = _solve_linear_problem(
+                    x = utils._solve_linear_problem(
                         self.ksp_mu,
                         self.A_mu.mat(),
                         self.b_mu.vec(),
@@ -576,7 +571,7 @@ class ShapeFormHandler(FormHandler):
             else:
                 self.distance.vector().vec().aypx(
                     0.0,
-                    compute_boundary_distance(
+                    boundary_distance.compute_boundary_distance(
                         self.mesh, self.boundaries, self.bdry_idcs
                     )
                     .vector()
@@ -641,7 +636,7 @@ class ShapeFormHandler(FormHandler):
             self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
             and not self.uses_custom_scalar_product
         ):
-            form = replace(
+            form = ufl.replace(
                 self.F_p_laplace, {self.gradient[0]: a[0], self.test_vector_field: b[0]}
             )
             result = fenics.assemble(form)

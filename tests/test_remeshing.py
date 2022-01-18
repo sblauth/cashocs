@@ -37,7 +37,6 @@ import cashocs
 from cashocs._exceptions import CashocsDebugException
 
 
-
 rng = np.random.RandomState(300696)
 has_gmsh = False
 query = shutil.which("gmsh")
@@ -82,10 +81,16 @@ def test_verification_remeshing():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
+    subprocess.run(
+        [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+    )
+    subprocess.run(
+        [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
+    )
+
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 def test_first_remeshing_step():
-
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")

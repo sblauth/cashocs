@@ -4,12 +4,12 @@ exclude_lines =
     if TYPE_CHECKING:
 
     # Don't complain about defensive Exceptions
-    raise InputError
-    raise CashocsException
-    raise CashocsDebugException
+    raise _exceptions.InputError
+    raise _exceptions.CashocsException
+    raise _exceptions.CashocsDebugException
 
     # Don't complain if warnings aren't raised
-    warning
+    _loggers.warning
 
     # Don't complain about abstract methods
 	@(abc\.)?abstractmethod

@@ -17,8 +17,9 @@
 
 """Methods and classes for shape optimization problems."""
 
-from .shape_optimization_problem import ShapeOptimizationProblem
-
-__all__ = [
-    "ShapeOptimizationProblem",
-]
+from cashocs._optimization.shape_optimization.shape_optimization_problem import (
+    ShapeOptimizationProblem,
+)
+from cashocs._optimization.shape_optimization.shape_variable_abstractions import (
+    ShapeVariableAbstractions,
+)

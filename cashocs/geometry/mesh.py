@@ -29,13 +29,11 @@ import fenics
 import numpy as np
 from typing_extensions import Literal
 
-from .measure import _NamedMeasure
-from .mesh_quality import compute_mesh_quality
-from .._exceptions import InputError
-from .._loggers import info, warning
-from ..utils.helpers import (
-    _parse_remesh,
-)
+from cashocs.geometry import measure
+from cashocs.geometry import mesh_quality
+from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import utils
 
 
 class Mesh(fenics.Mesh):
@@ -85,7 +83,7 @@ def import_mesh(
 
     Notes:
         In case the boundaries in the Gmsh .msh file are not only marked with numbers
-        (as pyhsical groups), but also with names (i.e. strings), these strings can be
+        (as physical groups), but also with names (i.e. strings), these strings can be
         used with the integration measures ``dx`` and ``ds`` returned by this method.
         E.g., if one specified the following in a 2D Gmsh .geo file ::
 
@@ -104,9 +102,9 @@ def import_mesh(
     """
 
     start_time = time.time()
-    info("Importing mesh.")
+    _loggers.info("Importing mesh.")
 
-    cashocs_remesh_flag, temp_dir = _parse_remesh()
+    cashocs_remesh_flag, temp_dir = utils._parse_remesh()
 
     # Check for the file format
     if isinstance(input_arg, str):
@@ -124,7 +122,7 @@ def import_mesh(
                 mesh_file = temp_dict["mesh_file"]
 
     else:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.import_mesh",
             "input_arg",
             (
@@ -168,19 +166,19 @@ def import_mesh(
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = _NamedMeasure(
+    dx = measure._NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = _NamedMeasure(
+    ds = measure._NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    dS = _NamedMeasure(
+    dS = measure._NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
     end_time = time.time()
-    info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")
-    info(
+    _loggers.info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")
+    _loggers.info(
         f"Mesh contains {mesh.num_vertices():,} vertices"
         f" and {mesh.num_cells():,} cells of type {mesh.ufl_cell().cellname()}.\n"
     )
@@ -201,7 +199,7 @@ def import_mesh(
         )
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
-            warning(
+            _loggers.warning(
                 "You are using a lower remesh tolerance (tol_lower) close to "
                 "the upper one (tol_upper). This may slow down the "
                 "optimization considerably."
@@ -212,13 +210,13 @@ def import_mesh(
         )
         mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
 
-        current_mesh_quality = compute_mesh_quality(
+        current_mesh_quality = mesh_quality.compute_mesh_quality(
             mesh, mesh_quality_type, mesh_quality_measure
         )
 
         if not cashocs_remesh_flag:
             if current_mesh_quality < mesh_quality_tol_lower:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "The quality of the mesh file you have specified is not "
@@ -228,7 +226,7 @@ def import_mesh(
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "The quality of the mesh file you have specified is not "
@@ -239,7 +237,7 @@ def import_mesh(
 
         else:
             if current_mesh_quality < mesh_quality_tol_lower:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "Remeshing failed.\n"
@@ -250,7 +248,7 @@ def import_mesh(
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.geometry.import_mesh",
                     "input_arg",
                     "Remeshing failed.\n"
@@ -322,19 +320,19 @@ def regular_mesh(
     """
 
     if not n > 0:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "n", "n needs to be positive."
         )
     if not L_x > 0.0:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "L_x", "L_x needs to be positive"
         )
     if not L_y > 0.0:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "L_y", "L_y needs to be positive"
         )
     if not (L_z is None or L_z > 0.0):
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh",
             "L_z",
             "L_z needs to be positive or None (for 2D mesh)",
@@ -402,9 +400,9 @@ def regular_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = _NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = _NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    dS = _NamedMeasure("dS", mesh)
+    dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    dS = measure._NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS
 
@@ -477,24 +475,24 @@ def regular_box_mesh(
     n = int(n)
 
     if not n > 0:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh", "n", "This needs to be positive."
         )
 
     if not S_x < E_x:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "S_x",
             "Incorrect input for the x-coordinate. S_x has to be smaller than E_x.",
         )
     if not S_y < E_y:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "S_y",
             "Incorrect input for the y-coordinate. S_y has to be smaller than E_y.",
         )
     if not ((S_z is None and E_z is None) or (S_z < E_z)):
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "S_z",
             "Incorrect input for the z-coordinate. S_z has to be smaller than E_z, "
@@ -564,8 +562,8 @@ def regular_box_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = _NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = _NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    dS = _NamedMeasure("dS", mesh)
+    dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    dS = measure._NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS

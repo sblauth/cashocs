@@ -24,17 +24,17 @@ from typing import TYPE_CHECKING
 
 import fenics
 
-from ..._exceptions import NotConvergedError
-from ..._loggers import error, info
+from cashocs import _exceptions
+from cashocs import _loggers
 
 if TYPE_CHECKING:
-    from ..optimization_problem import OptimizationProblem
+    from cashocs._optimization import optimization_problem as op
 
 
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.
@@ -151,7 +151,7 @@ class OptimizationAlgorithm(abc.ABC):
                 if self.soft_exit:
                     print("Maximum number of iterations exceeded.")
                 else:
-                    raise NotConvergedError(
+                    raise _exceptions.NotConvergedError(
                         "Optimization Algorithm",
                         "Maximum number of iterations were exceeded.",
                     )
@@ -163,7 +163,7 @@ class OptimizationAlgorithm(abc.ABC):
                 if self.soft_exit:
                     print("Armijo rule failed.")
                 else:
-                    raise NotConvergedError(
+                    raise _exceptions.NotConvergedError(
                         "Armijo line search",
                         "Failed to compute a feasible Armijo step.",
                     )
@@ -172,14 +172,16 @@ class OptimizationAlgorithm(abc.ABC):
             elif self.converged_reason == -3:
                 self.iteration -= 1
                 if self.optimization_variable_abstractions.mesh_handler.do_remesh:
-                    info("Mesh quality too low. Performing a remeshing operation.\n")
+                    _loggers.info(
+                        "Mesh quality too low. Performing a remeshing operation.\n"
+                    )
                     self.optimization_variable_abstractions.mesh_handler.remesh(self)
                 else:
                     self.output_summary()
                     if self.soft_exit:
-                        error("Mesh quality is too low.")
+                        _loggers.error("Mesh quality is too low.")
                     else:
-                        raise NotConvergedError(
+                        raise _exceptions.NotConvergedError(
                             "Optimization Algorithm", "Mesh quality is too low."
                         )
 
@@ -190,7 +192,7 @@ class OptimizationAlgorithm(abc.ABC):
                 if self.soft_exit:
                     print("Maximum number of iterations exceeded.")
                 else:
-                    raise NotConvergedError(
+                    raise _exceptions.NotConvergedError(
                         "Optimization Algorithm",
                         "Maximum number of iterations were exceeded.",
                     )

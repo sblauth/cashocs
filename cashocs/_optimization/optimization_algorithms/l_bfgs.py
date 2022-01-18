@@ -25,18 +25,18 @@ from typing import TYPE_CHECKING, List
 import fenics
 import numpy as np
 
-from .optimization_algorithm import OptimizationAlgorithm
+from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from ..optimization_problem import OptimizationProblem
-    from ..line_search import LineSearch
+    from cashocs._optimization import optimization_problem as op
+    from cashocs._optimization import line_search as ls
 
 
-class LBFGSMethod(OptimizationAlgorithm):
+class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
     """A limited memory BFGS method."""
 
     def __init__(
-        self, optimization_problem: OptimizationProblem, line_search: LineSearch
+        self, optimization_problem: op.OptimizationProblem, line_search: ls.LineSearch
     ) -> None:
         """
         Args:

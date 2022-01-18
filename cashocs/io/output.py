@@ -20,27 +20,21 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime as dt
+import pathlib
 from typing import TYPE_CHECKING
 
-from .managers import (
-    PVDFileManager,
-    TempFileManager,
-    ResultManager,
-    MeshManager,
-    HistoryManager,
-)
+from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from .._optimization.optimization_problem import OptimizationProblem
-    from .._optimization.optimization_algorithms import OptimizationAlgorithm
+    from cashocs._optimization import optimization_problem as op
+    from cashocs._optimization import optimization_algorithms
 
 
 class OutputManager:
     """Class handling all of the output."""
 
-    def __init__(self, optimization_problem: OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.
@@ -54,10 +48,8 @@ class OutputManager:
             "Output", "time_suffix", fallback=False
         )
         if self.time_suffix:
-            dt = datetime.now()
-            self.suffix = (
-                f"{dt.year}_{dt.month}_{dt.day}_{dt.hour}_{dt.minute}_{dt.second}"
-            )
+            dt_current_time = dt.now()
+            self.suffix = f"{dt_current_time.year}_{dt_current_time.month}_{dt_current_time.day}_{dt_current_time.hour}_{dt_current_time.minute}_{dt_current_time.second}"
             self.result_dir = f"{self.result_dir}_{self.suffix}"
 
         save_txt = self.config.getboolean("Output", "save_txt", fallback=True)
@@ -79,15 +71,21 @@ class OutputManager:
 
         if not os.path.isdir(self.result_dir):
             if has_output:
-                Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
-        self.history_manager = HistoryManager(optimization_problem, self.result_dir)
-        self.pvd_file_manager = PVDFileManager(optimization_problem, self.result_dir)
-        self.result_manager = ResultManager(optimization_problem, self.result_dir)
-        self.mesh_manager = MeshManager(optimization_problem, self.result_dir)
-        self.temp_file_manager = TempFileManager(optimization_problem)
+        self.history_manager = managers.HistoryManager(
+            optimization_problem, self.result_dir
+        )
+        self.pvd_file_manager = managers.PVDFileManager(
+            optimization_problem, self.result_dir
+        )
+        self.result_manager = managers.ResultManager(
+            optimization_problem, self.result_dir
+        )
+        self.mesh_manager = managers.MeshManager(optimization_problem, self.result_dir)
+        self.temp_file_manager = managers.TempFileManager(optimization_problem)
 
-    def output(self, solver: OptimizationAlgorithm) -> None:
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Writes the desired output to files and console.
 
         Args:
@@ -101,7 +99,9 @@ class OutputManager:
 
         self.result_manager.save_to_dict(solver)
 
-    def output_summary(self, solver: OptimizationAlgorithm) -> None:
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
         """Writes the summary to files and console.
 
         Args:

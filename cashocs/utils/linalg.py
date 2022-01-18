@@ -25,7 +25,7 @@ import fenics
 import ufl
 from petsc4py import PETSc
 
-from .._exceptions import InputError, PETScKSPError
+from cashocs import _exceptions
 
 
 def _assemble_petsc_system(
@@ -151,7 +151,7 @@ def _solve_linear_problem(
     else:
         A = ksp.getOperators()[0]
         if A.size[0] == -1 and A.size[1] == -1:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.utils._solve_linear_problem",
                 "ksp",
                 "The KSP object has to be initialized with some Matrix in case A is None.",
@@ -179,7 +179,7 @@ def _solve_linear_problem(
     ksp.solve(b, x)
 
     if ksp.getConvergedReason() < 0:
-        raise PETScKSPError(ksp.getConvergedReason())
+        raise _exceptions.PETScKSPError(ksp.getConvergedReason())
 
     return x
 
@@ -198,15 +198,15 @@ class Interpolator:
     Examples:
         Here, we consider interpolating from CG1 elements to CG2 elements ::
 
-            from fenics import *
+            import fenics
             import cashocs
 
             mesh, _, _, _, _, _ = cashocs.regular_mesh(25)
-            V1 = FunctionSpace(mesh, 'CG', 1)
-            V2 = FunctionSpace(mesh, 'CG', 2)
+            V1 = fenics.FunctionSpace(mesh, 'CG', 1)
+            V2 = fenics.FunctionSpace(mesh, 'CG', 2)
 
-            expr = Expression('sin(2*pi*x[0])', degree=1)
-            u = interpolate(expr, V1)
+            expr = fenics.Expression('sin(2*pi*x[0])', degree=1)
+            u = fenics.interpolate(expr, V1)
 
             interp = cashocs.utils.Interpolator(V1, V2)
             interp.interpolate(u)
@@ -226,7 +226,7 @@ class Interpolator:
                 and V.ufl_element().degree() == 0
             )
         ):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.utils.Interpolator",
                 "V",
                 "The interpolator only works with CG n or DG 0 elements",
@@ -238,7 +238,7 @@ class Interpolator:
                 and W.ufl_element().degree() == 0
             )
         ):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.utils.Interpolator",
                 "W",
                 "The interpolator only works with CG n or DG 0 elements",
@@ -266,7 +266,7 @@ class Interpolator:
         """
 
         if not u.function_space() == self.V:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.utils.Interpolator.interpolate",
                 "u",
                 "The input does not belong to the correct function space.",

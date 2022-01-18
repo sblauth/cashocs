@@ -28,23 +28,23 @@ from typing import TYPE_CHECKING, List
 import fenics
 from petsc4py import PETSc
 
-from .._pde_problems.pde_problem import PDEProblem
-from ..utils import _setup_petsc_options, _solve_linear_problem
+from cashocs._pde_problems import pde_problem
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._forms import ControlFormHandler
-    from .state_problem import StateProblem
-    from .adjoint_problem import AdjointProblem
+    from cashocs import _forms
+    from cashocs._pde_problems import state_problem as sp
+    from cashocs._pde_problems import adjoint_problem as ap
 
 
-class ControlGradientProblem(PDEProblem):
+class ControlGradientProblem(pde_problem.PDEProblem):
     """A class representing the Riesz problem to determine the gradient."""
 
     def __init__(
         self,
-        form_handler: ControlFormHandler,
-        state_problem: StateProblem,
-        adjoint_problem: AdjointProblem,
+        form_handler: _forms.ControlFormHandler,
+        state_problem: sp.StateProblem,
+        adjoint_problem: ap.AdjointProblem,
     ) -> None:
         """
         Args:
@@ -55,7 +55,7 @@ class ControlGradientProblem(PDEProblem):
 
         super().__init__(form_handler)
 
-        self.form_handler: ControlFormHandler
+        self.form_handler: _forms.ControlFormHandler
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
@@ -96,7 +96,7 @@ class ControlGradientProblem(PDEProblem):
         for i in range(self.form_handler.control_dim):
             self.riesz_ksp_options.append(option)
 
-        _setup_petsc_options(self.ksps, self.riesz_ksp_options)
+        utils._setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -119,7 +119,7 @@ class ControlGradientProblem(PDEProblem):
                 fenics.assemble(
                     self.form_handler.gradient_forms_rhs[i], tensor=self.lhs_tensors[i]
                 )
-                _solve_linear_problem(
+                utils._solve_linear_problem(
                     ksp=self.ksps[i],
                     b=self.lhs_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),

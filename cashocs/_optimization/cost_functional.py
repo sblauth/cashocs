@@ -25,14 +25,18 @@ import fenics
 import numpy as np
 
 if TYPE_CHECKING:
-    from .._forms import FormHandler
-    from .._pde_problems import StateProblem
+    from cashocs import _forms
+    from cashocs import _pde_problems
 
 
 class ReducedCostFunctional:
     """Reduced cost functional for PDE constrained optimization."""
 
-    def __init__(self, form_handler: FormHandler, state_problem: StateProblem) -> None:
+    def __init__(
+        self,
+        form_handler: _forms.FormHandler,
+        state_problem: _pde_problems.StateProblem,
+    ) -> None:
         """
         Args:
             form_handler: The FormHandler object for the optimization problem.

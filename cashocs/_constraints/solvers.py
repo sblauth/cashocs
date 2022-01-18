@@ -26,12 +26,12 @@ import fenics
 import numpy as np
 import ufl.core.expr
 
-from .constraints import EqualityConstraint, InequalityConstraint
-from .._loggers import debug
-from ..utils import _max, _min, summation, _assemble_petsc_system, _solve_linear_problem
+from cashocs._constraints import constraints
+from cashocs import _loggers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .constrained_problems import ConstrainedOptimizationProblem
+    from cashocs._constraints import constrained_problems
 
 
 class ConstrainedSolver(abc.ABC):
@@ -39,7 +39,7 @@ class ConstrainedSolver(abc.ABC):
 
     def __init__(
         self,
-        constrained_problem: ConstrainedOptimizationProblem,
+        constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
     ) -> None:
@@ -127,7 +127,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def __init__(
         self,
-        constrained_problem: ConstrainedOptimizationProblem,
+        constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
     ) -> None:
@@ -165,7 +165,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """
 
         if isinstance(project_terms, list):
-            project_term = summation(project_terms)
+            project_term = utils.summation(project_terms)
         else:
             project_term = project_terms
 
@@ -175,8 +175,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        _assemble_petsc_system(lhs, rhs, rhs_tensor=rhs_tensor, lhs_tensor=lhs_tensor)
-        _solve_linear_problem(
+        utils._assemble_petsc_system(
+            lhs, rhs, rhs_tensor=rhs_tensor, lhs_tensor=lhs_tensor
+        )
+        utils._solve_linear_problem(
             A=rhs_tensor.mat(), b=lhs_tensor.vec(), x=multiplier.vector().vec()
         )
 
@@ -193,7 +195,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.inner_min_max_terms = []
 
         for i, constraint in enumerate(self.constraints):
-            if isinstance(constraint, EqualityConstraint):
+            if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
                     self.inner_cost_functional_form += [
                         fenics.Constant(self.lmbd[i]) * constraint.linear_term
@@ -216,7 +218,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         )
                     )
 
-            elif isinstance(constraint, InequalityConstraint):
+            elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.min_max_term["mu"] = self.mu
                     constraint.min_max_term["lambda"] = self.lmbd[i]
@@ -245,7 +247,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """Performs an update of the Lagrange multiplier estimates."""
 
         for i in range(self.constraint_dim):
-            if isinstance(self.constraints[i], EqualityConstraint):
+            if isinstance(self.constraints[i], constraints.EqualityConstraint):
                 if self.constraints[i].is_integral_constraint:
                     self.lmbd[i] += self.mu * (
                         fenics.assemble(self.constraints[i].variable_function)
@@ -264,7 +266,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         self.lhs_tensors[i],
                     )
 
-            elif isinstance(self.constraints[i], InequalityConstraint):
+            elif isinstance(self.constraints[i], constraints.InequalityConstraint):
                 if self.constraints[i].is_integral_constraint:
                     lower_term = 0.0
                     upper_term = 0.0
@@ -296,7 +298,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     project_terms = []
                     if self.constraints[i].upper_bound is not None:
                         project_terms.append(
-                            _max(
+                            utils._max(
                                 self.lmbd[i]
                                 + self.mu
                                 * (
@@ -309,7 +311,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
                     if self.constraints[i].lower_bound is not None:
                         project_terms.append(
-                            _min(
+                            utils._min(
                                 self.lmbd[i]
                                 + self.mu
                                 * (
@@ -358,8 +360,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            debug(f"mu = {self.mu}")
-            debug(f"lambda = {self.lmbd}")
+            _loggers.debug(f"mu = {self.mu}")
+            _loggers.debug(f"lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
@@ -391,7 +393,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
     def __init__(
         self,
-        constrained_problem: ConstrainedOptimizationProblem,
+        constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
         lambda_0: Optional[list[float]] = None,
     ) -> None:
@@ -437,7 +439,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            debug(f"mu = {self.mu}")
+            _loggers.debug(f"mu = {self.mu}")
 
             self._update_cost_functional()
 
@@ -466,7 +468,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         self.inner_min_max_terms = []
 
         for i, constraint in enumerate(self.constraints):
-            if isinstance(constraint, EqualityConstraint):
+            if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.quadratic_term["weight"] = self.mu
                     self.inner_scalar_tracking_forms += [constraint.quadratic_term]
@@ -476,7 +478,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
 
-            elif isinstance(constraint, InequalityConstraint):
+            elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.min_max_term["mu"] = self.mu
                     constraint.min_max_term["lambda"] = 0.0

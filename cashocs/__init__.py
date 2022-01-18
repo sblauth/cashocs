@@ -24,27 +24,33 @@ optimization problems, in particular, shape optimization and optimal control pro
 The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
-from ._constraints.constrained_problems import (
+from cashocs._constraints.constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-from ._constraints.constraints import EqualityConstraint, InequalityConstraint
-from ._loggers import LogLevel, set_log_level
-from ._optimization import verification
-from ._optimization.optimal_control.optimal_control_problem import OptimalControlProblem
-from ._optimization.shape_optimization.shape_optimization_problem import (
+from cashocs._constraints.constraints import EqualityConstraint, InequalityConstraint
+from cashocs._loggers import LogLevel, set_log_level
+from cashocs._optimization import verification
+from cashocs._optimization.optimal_control.optimal_control_problem import (
+    OptimalControlProblem,
+)
+from cashocs._optimization.shape_optimization.shape_optimization_problem import (
     ShapeOptimizationProblem,
 )
-from .geometry import (
+from cashocs.geometry import (
     DeformationHandler,
     MeshQuality,
     import_mesh,
     regular_box_mesh,
     regular_mesh,
 )
-from .io import create_config, load_config
-from .nonlinear_solvers import newton_solve, damped_newton_solve, picard_iteration
-from .utils import (
+from cashocs.io import create_config, load_config
+from cashocs.nonlinear_solvers import (
+    newton_solve,
+    damped_newton_solve,
+    picard_iteration,
+)
+from cashocs.utils import (
     create_bcs_list,
     create_dirichlet_bcs,
 )

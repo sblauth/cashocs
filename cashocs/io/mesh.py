@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import pathlib
 
 import fenics
 import numpy as np
@@ -47,8 +47,8 @@ def write_out_mesh(
 
     dim = mesh.geometric_dimension()
 
-    if not Path(out_msh_file).parent.is_dir():
-        Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
+    if not pathlib.Path(out_msh_file).parent.is_dir():
+        pathlib.Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
 
     with open(original_msh_file, "r") as old_file, open(out_msh_file, "w") as new_file:
 

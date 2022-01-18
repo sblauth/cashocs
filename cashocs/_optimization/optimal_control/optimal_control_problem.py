@@ -22,38 +22,24 @@ from __future__ import annotations
 import configparser
 from typing import Dict, List, Union, Optional
 
-import fenics  # type: ignore
+import fenics
 import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from .control_variable_abstractions import ControlVariableAbstractions
-from ..cost_functional import ReducedCostFunctional
-from ..line_search import ArmijoLineSearch
-from ..optimization_algorithms import (
-    GradientDescentMethod,
-    NonlinearCGMethod,
-    LBFGSMethod,
-    NewtonMethod,
-)
-from ..optimization_problem import OptimizationProblem
-from ..verification import control_gradient_test
-from ..._exceptions import InputError
-from ..._forms import ControlFormHandler
-from ..._pde_problems import (
-    AdjointProblem,
-    ControlGradientProblem,
-    HessianProblem,
-    StateProblem,
-)
-from ...utils import (
-    _optimization_algorithm_configuration,
-    enlist,
-    _check_and_enlist_control_constraints,
-)
+from cashocs import _exceptions
+from cashocs import _forms
+from cashocs._optimization import cost_functional
+from cashocs._optimization import line_search
+from cashocs._optimization import optimal_control
+from cashocs._optimization import optimization_algorithms
+from cashocs._optimization import optimization_problem
+from cashocs._optimization import verification
+from cashocs import _pde_problems
+from cashocs import utils
 
 
-class OptimalControlProblem(OptimizationProblem):
+class OptimalControlProblem(optimization_problem.OptimizationProblem):
     """Implements an optimal control problem.
 
     This class is used to define an optimal control problem, and also to solve
@@ -135,7 +121,7 @@ class OptimalControlProblem(OptimizationProblem):
         min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
-        """
+        r"""
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -207,7 +193,7 @@ class OptimalControlProblem(OptimizationProblem):
             desired_weights,
         )
 
-        self.controls = enlist(controls)
+        self.controls = utils.enlist(controls)
         self.control_dim = len(self.controls)
 
         # riesz_scalar_products
@@ -222,7 +208,7 @@ class OptimalControlProblem(OptimizationProblem):
                 for i in range(len(self.controls))
             ]
         else:
-            self.riesz_scalar_products = enlist(riesz_scalar_products)
+            self.riesz_scalar_products = utils.enlist(riesz_scalar_products)
             self.uses_custom_scalar_product = True
 
         # control_constraints
@@ -235,7 +221,7 @@ class OptimalControlProblem(OptimizationProblem):
                 u_b.vector().vec().set(float("inf"))
                 self.control_constraints.append([u_a, u_b])
         else:
-            self.control_constraints = _check_and_enlist_control_constraints(
+            self.control_constraints = utils._check_and_enlist_control_constraints(
                 control_constraints
             )
 
@@ -249,7 +235,7 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control."
                         "optimal_control_problem.OptimalControlProblem"
@@ -264,7 +250,7 @@ class OptimalControlProblem(OptimizationProblem):
             elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control."
                         "optimal_control_problem.OptimalControlProblem"
@@ -280,7 +266,7 @@ class OptimalControlProblem(OptimizationProblem):
         self.require_control_constraints = [False] * self.control_dim
         for idx, pair in enumerate(self.control_constraints):
             if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control."
                         "optimal_control_problem.OptimalControlProblem"
@@ -315,7 +301,7 @@ class OptimalControlProblem(OptimizationProblem):
                                 and sub_elem.degree() == 0
                             )
                         ):
-                            raise InputError(
+                            raise _exceptions.InputError(
                                 (
                                     "cashocs._optimization.optimal_control."
                                     "optimal_control_problem.OptimalControlProblem"
@@ -340,7 +326,7 @@ class OptimalControlProblem(OptimizationProblem):
                             and control_element.degree() == 0
                         )
                     ):
-                        raise InputError(
+                        raise _exceptions.InputError(
                             (
                                 "cashocs._optimization.optimal_control."
                                 "optimal_control_problem.OptimalControlProblem"
@@ -354,7 +340,7 @@ class OptimalControlProblem(OptimizationProblem):
                         )
 
         if not len(self.riesz_scalar_products) == self.control_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 (
                     "cashocs._optimization.optimal_control."
                     "optimal_control_problem.OptimalControlProblem"
@@ -363,7 +349,7 @@ class OptimalControlProblem(OptimizationProblem):
                 "Length of controls does not match",
             )
         if not len(self.control_constraints) == self.control_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 (
                     "cashocs._optimization.optimal_control."
                     "optimal_control_problem.OptimalControlProblem"
@@ -374,7 +360,7 @@ class OptimalControlProblem(OptimizationProblem):
         # end overloading
 
         self.is_control_problem = True
-        self.form_handler = ControlFormHandler(self)
+        self.form_handler = _forms.ControlFormHandler(self)
 
         self.state_spaces = self.form_handler.state_spaces
         self.control_spaces = self.form_handler.control_spaces
@@ -382,15 +368,19 @@ class OptimalControlProblem(OptimizationProblem):
 
         self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
 
-        self.state_problem = StateProblem(self.form_handler, self.initial_guess)
-        self.adjoint_problem = AdjointProblem(self.form_handler, self.state_problem)
-        self.gradient_problem = ControlGradientProblem(
+        self.state_problem = _pde_problems.StateProblem(
+            self.form_handler, self.initial_guess
+        )
+        self.adjoint_problem = _pde_problems.AdjointProblem(
+            self.form_handler, self.state_problem
+        )
+        self.gradient_problem = _pde_problems.ControlGradientProblem(
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
-        self.algorithm = _optimization_algorithm_configuration(self.config)
+        self.algorithm = utils._optimization_algorithm_configuration(self.config)
 
-        self.reduced_cost_functional = ReducedCostFunctional(
+        self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
             self.form_handler, self.state_problem
         )
 
@@ -474,27 +464,33 @@ class OptimalControlProblem(OptimizationProblem):
 
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
-        self.optimization_variable_abstractions = ControlVariableAbstractions(self)
-        self.line_search = ArmijoLineSearch(self)
+        self.optimization_variable_abstractions = (
+            optimal_control.ControlVariableAbstractions(self)
+        )
+        self.line_search = line_search.ArmijoLineSearch(self)
 
         if self.algorithm == "newton":
             self.form_handler._compute_newton_forms()
 
         if self.algorithm == "newton":
-            self.hessian_problem = HessianProblem(
+            self.hessian_problem = _pde_problems.HessianProblem(
                 self.form_handler, self.gradient_problem
             )
 
         if self.algorithm == "gradient_descent":
-            self.solver = GradientDescentMethod(self, self.line_search)
+            self.solver = optimization_algorithms.GradientDescentMethod(
+                self, self.line_search
+            )
         elif self.algorithm == "lbfgs":
-            self.solver = LBFGSMethod(self, self.line_search)
+            self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
         elif self.algorithm == "conjugate_gradient":
-            self.solver = NonlinearCGMethod(self, self.line_search)
+            self.solver = optimization_algorithms.NonlinearCGMethod(
+                self, self.line_search
+            )
         elif self.algorithm == "newton":
-            self.solver = NewtonMethod(self, self.line_search)
+            self.solver = optimization_algorithms.NewtonMethod(self, self.line_search)
         elif self.algorithm == "none":
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",
                 "You did not specify a solution algorithm in your config file. "
@@ -536,7 +532,7 @@ class OptimalControlProblem(OptimizationProblem):
                 if isinstance(derivatives[i], ufl.form.Form):
                     pass
                 else:
-                    raise InputError(
+                    raise _exceptions.InputError(
                         (
                             "cashocs._optimization.optimal_control."
                             "optimal_control_problem.OptimalControlProblem."
@@ -549,7 +545,7 @@ class OptimalControlProblem(OptimizationProblem):
         elif isinstance(derivatives, ufl.form.Form):
             mod_derivatives = [derivatives]
         else:
-            raise InputError(
+            raise _exceptions.InputError(
                 (
                     "cashocs._optimization.optimal_control."
                     "optimal_control_problem.OptimalControlProblem.supply_derivatives"
@@ -560,7 +556,7 @@ class OptimalControlProblem(OptimizationProblem):
 
         for idx, form in enumerate(mod_derivatives):
             if len(form.arguments()) == 2:
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control.optimal_control_problem."
                         "OptimalControlProblem.supply_derivatives"
@@ -569,7 +565,7 @@ class OptimalControlProblem(OptimizationProblem):
                     "Do not use TrialFunction for the derivatives.",
                 )
             elif len(form.arguments()) == 0:
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control.optimal_control_problem."
                         "OptimalControlProblem.supply_derivatives"
@@ -585,7 +581,7 @@ class OptimalControlProblem(OptimizationProblem):
                 not form.arguments()[0].ufl_function_space()
                 == self.form_handler.control_spaces[idx]
             ):
-                raise InputError(
+                raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control.optimal_control_problem."
                         "OptimalControlProblem.supply_derivatives"
@@ -598,7 +594,7 @@ class OptimalControlProblem(OptimizationProblem):
                 )
 
         if not len(mod_derivatives) == self.form_handler.control_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.supply_derivatives",
                 "derivatives",
                 "Length of derivatives does not match number of controls.",
@@ -653,4 +649,4 @@ class OptimalControlProblem(OptimizationProblem):
             or larger, everything works as expected.
         """
 
-        return control_gradient_test(self, u, h, rng)
+        return verification.control_gradient_test(self, u, h, rng)

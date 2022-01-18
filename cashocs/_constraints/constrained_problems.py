@@ -29,16 +29,12 @@ import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from .constraints import EqualityConstraint, InequalityConstraint
-from .solvers import AugmentedLagrangianMethod, QuadraticPenaltyMethod
-from .._exceptions import InputError
-from .._optimization.optimal_control.optimal_control_problem import (
-    OptimalControlProblem,
-)
-from .._optimization.shape_optimization.shape_optimization_problem import (
-    ShapeOptimizationProblem,
-)
-from ..utils import enlist
+from cashocs import _exceptions
+from cashocs import utils
+from cashocs._constraints import constraints
+from cashocs._constraints import solvers
+from cashocs._optimization import optimal_control
+from cashocs._optimization import shape_optimization
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
@@ -54,9 +50,11 @@ class ConstrainedOptimizationProblem(abc.ABC):
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraints: Union[
-            List[Union[EqualityConstraint, InequalityConstraint]],
-            EqualityConstraint,
-            InequalityConstraint,
+            List[
+                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
+            ],
+            constraints.EqualityConstraint,
+            constraints.InequalityConstraint,
         ],
         config: Optional[configparser.ConfigParser] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
@@ -113,12 +111,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.solver = None
 
-        self.cost_functional_form_initial = enlist(cost_functional_form)
+        self.cost_functional_form_initial = utils.enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
-            self.scalar_tracking_forms_initial = enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms_initial = utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraints = enlist(constraints)
+        self.constraints = utils.enlist(constraints)
 
         self.constraint_dim = len(self.constraints)
 
@@ -166,11 +164,15 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
 
         if method in ["Augmented Lagrangian", "AL"]:
-            self.solver = AugmentedLagrangianMethod(self, mu_0=mu_0, lambda_0=lambda_0)
+            self.solver = solvers.AugmentedLagrangianMethod(
+                self, mu_0=mu_0, lambda_0=lambda_0
+            )
         elif method in ["Quadratic Penalty", "QP"]:
-            self.solver = QuadraticPenaltyMethod(self, mu_0=mu_0, lambda_0=lambda_0)
+            self.solver = solvers.QuadraticPenaltyMethod(
+                self, mu_0=mu_0, lambda_0=lambda_0
+            )
         else:
-            raise InputError(
+            raise _exceptions.InputError(
                 (
                     "cashocs._constraints.constrained_problems."
                     "ConstrainedOptimizationProblem.solve"
@@ -280,9 +282,11 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraints: Union[
-            EqualityConstraint,
-            InequalityConstraint,
-            List[Union[EqualityConstraint, InequalityConstraint]],
+            constraints.EqualityConstraint,
+            constraints.InequalityConstraint,
+            List[
+                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
+            ],
         ],
         config: Optional[configparser.ConfigParser] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
@@ -377,7 +381,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
-        ocp = OptimalControlProblem(
+        optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
             self.solver.inner_cost_functional_form,
@@ -394,19 +398,21 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             min_max_terms=self.solver.inner_min_max_terms,
         )
 
-        ocp.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        ocp._shift_cost_functional(self.solver.inner_cost_functional_shift)
+        optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        optimal_control_problem._shift_cost_functional(
+            self.solver.inner_cost_functional_shift
+        )
 
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    ocp.optimization_variable_abstractions.compute_gradient_norm()
+                    optimal_control_problem.optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 
-        ocp.solve(rtol=self.rtol, atol=atol)
+        optimal_control_problem.solve(rtol=self.rtol, atol=atol)
 
 
 class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
@@ -426,9 +432,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
         constraints: Union[
-            EqualityConstraint,
-            InequalityConstraint,
-            List[EqualityConstraint, InequalityConstraint],
+            constraints.EqualityConstraint,
+            constraints.InequalityConstraint,
+            List[constraints.EqualityConstraint, constraints.InequalityConstraint],
         ],
         config: Optional[configparser.ConfigParser] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
@@ -520,7 +526,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
 
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
-        sop = ShapeOptimizationProblem(
+        shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
             self.solver.inner_cost_functional_form,
@@ -535,16 +541,18 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
             min_max_terms=self.solver.inner_min_max_terms,
         )
-        sop.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        sop._shift_cost_functional(self.solver.inner_cost_functional_shift)
+        shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        shape_optimization_problem._shift_cost_functional(
+            self.solver.inner_cost_functional_shift
+        )
 
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    sop.optimization_variable_abstractions.compute_gradient_norm()
+                    shape_optimization_problem.optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 
-        sop.solve(rtol=self.rtol, atol=atol)
+        shape_optimization_problem.solve(rtol=self.rtol, atol=atol)

@@ -19,23 +19,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import fenics
 import numpy as np
 from petsc4py import PETSc
 from typing_extensions import Literal
-from ufl import Jacobian, JacobianInverse
+import ufl
 
-from .measure import _NamedMeasure
-from ..utils.linalg import (
-    _assemble_petsc_system,
-    _setup_petsc_options,
-    _solve_linear_problem,
-)
-
-if TYPE_CHECKING:
-    pass
+from cashocs.geometry import measure
+from cashocs import utils
 
 
 def compute_mesh_quality(
@@ -453,8 +444,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         """
 
         DG0 = fenics.FunctionSpace(mesh, "DG", 0)
-        jac = Jacobian(mesh)
-        inv = JacobianInverse(mesh)
+        jac = ufl.Jacobian(mesh)
+        inv = ufl.JacobianInverse(mesh)
 
         options = [
             ["ksp_type", "preonly"],
@@ -465,9 +456,9 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_max_it", 1000],
         ]
         ksp = PETSc.KSP().create()
-        _setup_petsc_options([ksp], [options])
+        utils._setup_petsc_options([ksp], [options])
 
-        dx = _NamedMeasure("dx", mesh)
+        dx = measure._NamedMeasure("dx", mesh)
         a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
         L = (
             fenics.sqrt(fenics.inner(jac, jac))
@@ -478,8 +469,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(DG0)
 
-        A, b = _assemble_petsc_system(a, L)
-        _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+        A, b = utils._assemble_petsc_system(a, L)
+        utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
@@ -502,8 +493,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         """
 
         DG0 = fenics.FunctionSpace(mesh, "DG", 0)
-        jac = Jacobian(mesh)
-        inv = JacobianInverse(mesh)
+        jac = ufl.Jacobian(mesh)
+        inv = ufl.JacobianInverse(mesh)
 
         options = [
             ["ksp_type", "preonly"],
@@ -514,9 +505,9 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_max_it", 1000],
         ]
         ksp = PETSc.KSP().create()
-        _setup_petsc_options([ksp], [options])
+        utils._setup_petsc_options([ksp], [options])
 
-        dx = _NamedMeasure("dx", mesh)
+        dx = measure._NamedMeasure("dx", mesh)
         a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
         L = (
             fenics.sqrt(fenics.inner(jac, jac))
@@ -527,8 +518,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(DG0)
 
-        A, b = _assemble_petsc_system(a, L)
-        _solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+        A, b = utils._assemble_petsc_system(a, L)
+        utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
 
         cond.vector().vec().reciprocal()

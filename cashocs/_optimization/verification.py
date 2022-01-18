@@ -24,18 +24,16 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 import numpy as np
 
-from .._exceptions import InputError
-from .._loggers import warning
+from cashocs import _exceptions
+from cashocs import _loggers
 
 if TYPE_CHECKING:
-    from .optimal_control.optimal_control_problem import OptimalControlProblem
-    from .shape_optimization.shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
+    from cashocs._optimization import optimal_control
+    from cashocs._optimization import shape_optimization
 
 
 def control_gradient_test(
-    ocp: OptimalControlProblem,
+    ocp: optimal_control.OptimalControlProblem,
     u: Optional[List[fenics.Function]] = None,
     h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
@@ -71,7 +69,7 @@ def control_gradient_test(
             u.append(temp)
 
     if not len(u) == ocp.control_dim:
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.verification.control_gradient_test",
             "u",
             "Length of u does not match the length of controls of the problem.",
@@ -126,7 +124,9 @@ def control_gradient_test(
         residuals.append(res)
 
     if np.min(residuals) < 1e-14:
-        warning("The Taylor remainder is close to 0, results may be inaccurate.")
+        _loggers.warning(
+            "The Taylor remainder is close to 0, results may be inaccurate."
+        )
 
     rates = compute_convergence_rates(epsilons, residuals)
 
@@ -137,7 +137,7 @@ def control_gradient_test(
 
 
 def shape_gradient_test(
-    sop: ShapeOptimizationProblem,
+    sop: shape_optimization.ShapeOptimizationProblem,
     h: Optional[List[fenics.Function]] = None,
     rng: Optional[np.random.RandomState] = None,
 ) -> float:
@@ -196,14 +196,16 @@ def shape_gradient_test(
             residuals.append(res)
             sop.mesh_handler.revert_transformation()
         else:
-            warning(
+            _loggers.warning(
                 "Deformation did not yield a valid finite element mesh. "
                 "Results of the test are probably not accurate."
             )
             residuals.append(float("inf"))
 
     if np.min(residuals) < 1e-14:
-        warning("The Taylor remainder is close to 0, results may be inaccurate.")
+        _loggers.warning(
+            "The Taylor remainder is close to 0, results may be inaccurate."
+        )
 
     rates = compute_convergence_rates(epsilons, residuals)
 

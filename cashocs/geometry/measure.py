@@ -24,12 +24,11 @@ from typing import Union, List, Optional, Dict
 import fenics
 import ufl
 from typing_extensions import Literal
-from ufl.measure import Measure
 
-from .._exceptions import InputError
+from cashocs import _exceptions
 
 
-class _EmptyMeasure(Measure):
+class _EmptyMeasure(ufl.Measure):
     """Implements an empty measure (e.g. of a null set).
 
     This is used for automatic measure generation, e.g., if the fixed boundary is empty
@@ -92,11 +91,12 @@ def generate_measure(
         Here, we create a wrapper for the surface measure on the top and bottom of
         the unit square::
 
-            from fenics import *
+            import fenics
             import cashocs
+
             mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
             top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
-            assemble(1*top_bottom_measure)
+            fenics.assemble(1*top_bottom_measure)
     """
 
     if len(idx) == 0:
@@ -111,7 +111,7 @@ def generate_measure(
     return out_measure
 
 
-class _NamedMeasure(Measure):
+class _NamedMeasure(ufl.Measure):
     """A named integration measure, which can use strings for defining subdomains."""
 
     def __init__(
@@ -174,7 +174,7 @@ class _NamedMeasure(Measure):
             ]:
                 integer_id = self.physical_groups["ds"][subdomain_id]
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.geometry.measure._NamedMeasure", "subdomain_id"
                 )
 

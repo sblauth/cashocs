@@ -19,15 +19,23 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import fenics
 
-from .optimization_algorithm import OptimizationAlgorithm
+from cashocs._optimization.optimization_algorithms import optimization_algorithm
+
+if TYPE_CHECKING:
+    from cashocs._optimization import optimization_problem as op
+    from cashocs._optimization import line_search as ls
 
 
-class NonlinearCGMethod(OptimizationAlgorithm):
+class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
     """Nonlinear CG methods for PDE constrained optimization."""
 
-    def __init__(self, optimization_problem, line_search):
+    def __init__(
+        self, optimization_problem: op.OptimizationProblem, line_search: ls.LineSearch
+    ) -> None:
         """
         Args:
             optimization_problem: The corresponding optimization problem.

@@ -24,20 +24,20 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 import fenics
 from petsc4py import PETSc
 
-from .._pde_problems.pde_problem import PDEProblem
-from ..nonlinear_solvers import newton_solve, picard_iteration
-from ..utils import _assemble_petsc_system, _setup_petsc_options, _solve_linear_problem
+from cashocs._pde_problems import pde_problem
+from cashocs import nonlinear_solvers
+from cashocs import utils
 
 if TYPE_CHECKING:
-    from .._forms import FormHandler
+    from cashocs import _forms
 
 
-class StateProblem(PDEProblem):
+class StateProblem(pde_problem.PDEProblem):
     """The state system."""
 
     def __init__(
         self,
-        form_handler: FormHandler,
+        form_handler: _forms.FormHandler,
         initial_guess: List[fenics.Function],
         temp_dict: Optional[Dict] = None,
     ) -> None:
@@ -89,7 +89,7 @@ class StateProblem(PDEProblem):
         self.newton_atols = [1] * self.form_handler.state_dim
 
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        _setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
+        utils._setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
         # adapt the tolerances so that the Newton system can be solved successfully
         if not self.form_handler.state_is_linear:
@@ -134,14 +134,14 @@ class StateProblem(PDEProblem):
             ):
                 if self.form_handler.state_is_linear:
                     for i in range(self.form_handler.state_dim):
-                        _assemble_petsc_system(
+                        utils._assemble_petsc_system(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
                             rhs_tensor=self.rhs_tensors[i],
                             lhs_tensor=self.lhs_tensors[i],
                         )
-                        _solve_linear_problem(
+                        utils._solve_linear_problem(
                             self.ksps[i],
                             self.rhs_tensors[i].mat(),
                             self.lhs_tensors[i].vec(),
@@ -155,7 +155,7 @@ class StateProblem(PDEProblem):
                         if self.initial_guess is not None:
                             fenics.assign(self.states[i], self.initial_guess[i])
 
-                        self.states[i] = newton_solve(
+                        self.states[i] = nonlinear_solvers.newton_solve(
                             self.form_handler.state_eq_forms[i],
                             self.states[i],
                             self.bcs_list[i],
@@ -172,7 +172,7 @@ class StateProblem(PDEProblem):
                         )
 
             else:
-                picard_iteration(
+                nonlinear_solvers.picard_iteration(
                     self.form_handler.state_eq_forms,
                     self.states,
                     self.bcs_list,

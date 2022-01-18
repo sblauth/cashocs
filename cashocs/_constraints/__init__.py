@@ -17,8 +17,8 @@
 
 """Module for treatment of additional (in-)equality constraints for optimization."""
 
-from .constrained_problems import (
+from cashocs._constraints.constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-from .constraints import EqualityConstraint, InequalityConstraint
+from cashocs._constraints.constraints import EqualityConstraint, InequalityConstraint

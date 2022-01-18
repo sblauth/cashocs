@@ -17,8 +17,12 @@
 
 """Optimization algorithms for PDE constrained optimization."""
 
-from .gradient_descent import GradientDescentMethod
-from .l_bfgs import LBFGSMethod
-from .ncg import NonlinearCGMethod
-from .newton import NewtonMethod
-from .optimization_algorithm import OptimizationAlgorithm
+from cashocs._optimization.optimization_algorithms.gradient_descent import (
+    GradientDescentMethod,
+)
+from cashocs._optimization.optimization_algorithms.l_bfgs import LBFGSMethod
+from cashocs._optimization.optimization_algorithms.ncg import NonlinearCGMethod
+from cashocs._optimization.optimization_algorithms.newton import NewtonMethod
+from cashocs._optimization.optimization_algorithms.optimization_algorithm import (
+    OptimizationAlgorithm,
+)

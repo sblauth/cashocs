@@ -33,23 +33,16 @@ from typing import Dict, List, Union, Optional, Callable, TYPE_CHECKING
 import fenics
 import numpy as np
 import ufl
-from ufl import replace
 
-from .._exceptions import InputError
-from .._loggers import warning, info
-from ..io import OutputManager
-from ..io.config import Config
-from ..utils import (
-    _parse_remesh,
-    summation,
-    _optimization_algorithm_configuration,
-    enlist,
-    _check_and_enlist_bcs,
-    _check_and_enlist_ksp_options,
-)
+from cashocs import _exceptions
+from cashocs import utils
+from cashocs import io
+from cashocs import _loggers
 
 if TYPE_CHECKING:
-    from .optimization_variable_abstractions import OptimizationVariableAbstractions
+    from cashocs._optimization.optimization_variable_abstractions import (
+        OptimizationVariableAbstractions,
+    )
 
 
 class OptimizationProblem(abc.ABC):
@@ -115,7 +108,8 @@ class OptimizationProblem(abc.ABC):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
-            min_max_terms: Additional terms for the cost functional, not be used directly.
+            min_max_terms: Additional terms for the cost functional, not be used
+                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -133,21 +127,21 @@ class OptimizationProblem(abc.ABC):
             ``adjoints[i]``.
         """
 
-        self.has_cashocs_remesh_flag, self.temp_dir = _parse_remesh()
+        self.has_cashocs_remesh_flag, self.temp_dir = utils._parse_remesh()
 
-        self.state_forms = enlist(state_forms)
+        self.state_forms = utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)
-        self.bcs_list = _check_and_enlist_bcs(bcs_list)
+        self.bcs_list = utils._check_and_enlist_bcs(bcs_list)
 
-        self.cost_functional_list = enlist(cost_functional_form)
-        self.cost_functional_form = summation(self.cost_functional_list)
+        self.cost_functional_list = utils.enlist(cost_functional_form)
+        self.cost_functional_form = utils.summation(self.cost_functional_list)
 
-        self.states = enlist(states)
-        self.adjoints = enlist(adjoints)
+        self.states = utils.enlist(states)
+        self.adjoints = utils.enlist(adjoints)
         self.gradient = None
 
         if config is None:
-            self.config = Config()
+            self.config = io.Config()
             self.config.add_section("OptimizationRoutine")
             self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
@@ -158,7 +152,7 @@ class OptimizationProblem(abc.ABC):
         if initial_guess is None:
             self.initial_guess = initial_guess
         else:
-            self.initial_guess = enlist(initial_guess)
+            self.initial_guess = utils.enlist(initial_guess)
 
         if ksp_options is None:
             self.ksp_options = []
@@ -172,19 +166,19 @@ class OptimizationProblem(abc.ABC):
             for i in range(self.state_dim):
                 self.ksp_options.append(option)
         else:
-            self.ksp_options = _check_and_enlist_ksp_options(ksp_options)
+            self.ksp_options = utils._check_and_enlist_ksp_options(ksp_options)
 
         self.adjoint_ksp_options = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
-            else _check_and_enlist_ksp_options(adjoint_ksp_options)
+            else utils._check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
         self.use_scalar_tracking = False
         if scalar_tracking_forms is None:
             self.scalar_tracking_forms = scalar_tracking_forms
         else:
-            self.scalar_tracking_forms = enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms = utils.enlist(scalar_tracking_forms)
             self.use_scalar_tracking = True
 
         self.use_min_max_terms = False
@@ -192,17 +186,17 @@ class OptimizationProblem(abc.ABC):
             self.min_max_terms = min_max_terms
         else:
             self.use_min_max_terms = True
-            self.min_max_terms = enlist(min_max_terms)
+            self.min_max_terms = utils.enlist(min_max_terms)
 
         self.use_scaling = False
         if desired_weights is None:
             self.desired_weights = desired_weights
         else:
-            self.desired_weights = enlist(desired_weights)
+            self.desired_weights = utils.enlist(desired_weights)
             if isinstance(cost_functional_form, list):
                 self.use_scaling = True
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     "OptimizationProblem",
                     "cost_functional_form",
                     (
@@ -214,7 +208,7 @@ class OptimizationProblem(abc.ABC):
             if scalar_tracking_forms is not None and not isinstance(
                 scalar_tracking_forms, list
             ):
-                raise InputError(
+                raise _exceptions.InputError(
                     "OptimizationProblem",
                     "scalar_tracking_forms",
                     (
@@ -224,13 +218,13 @@ class OptimizationProblem(abc.ABC):
                 )
 
         if not len(self.bcs_list) == self.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "bcs_list",
                 "Length of states does not match.",
             )
         if not len(self.adjoints) == self.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "adjoints",
                 "Length of states does not match.",
@@ -238,20 +232,20 @@ class OptimizationProblem(abc.ABC):
 
         if self.initial_guess is not None:
             if not len(self.initial_guess) == self.state_dim:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.optimization_problem.OptimizationProblem",
                     "initial_guess",
                     "Length of states does not match.",
                 )
 
         if not len(self.ksp_options) == self.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "ksp_options",
                 "Length of states does not match.",
             )
         if not len(self.adjoint_ksp_options) == self.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "ksp_options",
                 "Length of states does not match.",
@@ -260,7 +254,7 @@ class OptimizationProblem(abc.ABC):
         if self.desired_weights is not None:
             if not self.use_scalar_tracking:
                 if not len(self.cost_functional_list) == len(self.desired_weights):
-                    raise InputError(
+                    raise _exceptions.InputError(
                         (
                             "cashocs._optimization.optimization_problem."
                             "OptimizationProblem"
@@ -272,7 +266,7 @@ class OptimizationProblem(abc.ABC):
                 if not len(self.cost_functional_list) + len(
                     self.scalar_tracking_forms
                 ) == len(self.desired_weights):
-                    raise InputError(
+                    raise _exceptions.InputError(
                         (
                             "cashocs._optimization.optimization_problem."
                             "OptimizationProblem"
@@ -297,7 +291,7 @@ class OptimizationProblem(abc.ABC):
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
         self.reduced_cost_functional = None
-        self.output_manager: Optional[OutputManager] = None
+        self.output_manager: Optional[io.OutputManager] = None
         self.uses_custom_scalar_product = False
 
         self.optimization_variable_abstractions: Optional[
@@ -349,26 +343,26 @@ class OptimizationProblem(abc.ABC):
         Args:
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
-            system(s).
+                system(s).
         """
 
-        mod_forms = enlist(adjoint_forms)
+        mod_forms = utils.enlist(adjoint_forms)
 
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
             for i in range(self.state_dim):
                 mod_bcs_list.append([])
         else:
-            mod_bcs_list = _check_and_enlist_bcs(adjoint_bcs_list)
+            mod_bcs_list = utils._check_and_enlist_bcs(adjoint_bcs_list)
 
         if not len(mod_forms) == self.form_handler.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
                 "adjoint_forms",
                 "Length of adjoint_forms does not match",
             )
         if not len(mod_bcs_list) == self.form_handler.state_dim:
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
                 "adjoint_bcs_list",
                 "Length of adjoint_bcs_list does not match",
@@ -376,7 +370,7 @@ class OptimizationProblem(abc.ABC):
 
         for idx, form in enumerate(mod_forms):
             if len(form.arguments()) == 2:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
                     "adjoint_forms",
                     (
@@ -385,7 +379,7 @@ class OptimizationProblem(abc.ABC):
                     ),
                 )
             elif len(form.arguments()) == 0:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
                     "adjoint_forms",
                     "The specified adjoint_forms must include a TestFunction object.",
@@ -395,7 +389,7 @@ class OptimizationProblem(abc.ABC):
                 not form.arguments()[0].ufl_function_space()
                 == self.form_handler.adjoint_spaces[idx]
             ):
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs..ShapeOptimizationProblem.supply_adjoint_forms",
                     "adjoint_forms",
                     "The TestFunction has to be chosen from the "
@@ -407,7 +401,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler.adjoint_eq_forms = mod_forms
         # replace the adjoint function by a TrialFunction for internal use
         repl_forms = [
-            replace(
+            ufl.replace(
                 mod_forms[i],
                 {self.adjoints[i]: self.form_handler.trial_functions_adjoint[i]},
             )
@@ -443,7 +437,7 @@ class OptimizationProblem(abc.ABC):
         """Checks, whether custom user forms are used and if they are compatible."""
 
         if self.has_custom_adjoint and not self.has_custom_derivative:
-            warning(
+            _loggers.warning(
                 "You only supplied the adjoint system. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the (shape) derivative "
@@ -452,7 +446,7 @@ class OptimizationProblem(abc.ABC):
             )
 
         elif not self.has_custom_adjoint and self.has_custom_derivative:
-            warning(
+            _loggers.warning(
                 "You only supplied the derivative of the reduced cost functional. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the adjoint system, "
@@ -462,7 +456,7 @@ class OptimizationProblem(abc.ABC):
         if self.algorithm == "newton" and (
             self.has_custom_adjoint or self.has_custom_derivative
         ):
-            raise InputError(
+            raise _exceptions.InputError(
                 "cashocs.optimization_problem.OptimizationProblem",
                 "solve",
                 "The usage of custom forms is not compatible with the Newton solver."
@@ -562,7 +556,9 @@ class OptimizationProblem(abc.ABC):
                 || \nabla J(u_0) ||
         """
 
-        self.algorithm = _optimization_algorithm_configuration(self.config, algorithm)
+        self.algorithm = utils._optimization_algorithm_configuration(
+            self.config, algorithm
+        )
 
         if (rtol is not None) and (atol is None):
             self.config.set("OptimizationRoutine", "rtol", str(rtol))
@@ -578,7 +574,7 @@ class OptimizationProblem(abc.ABC):
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
         self._check_for_custom_forms()
-        self.output_manager = OutputManager(self)
+        self.output_manager = io.OutputManager(self)
 
     def _shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.
@@ -603,7 +599,7 @@ class OptimizationProblem(abc.ABC):
     def _scale_cost_functional(self):
         """Scales the terms of the cost functional and scalar_tracking forms."""
 
-        info(
+        _loggers.info(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "
             "functional yourself or if you supply custom forms."
@@ -617,7 +613,7 @@ class OptimizationProblem(abc.ABC):
 
                 if abs(val) <= 1e-15:
                     val = 1.0
-                    info(
+                    _loggers.info(
                         f"Term {i:d} of the cost functional vanishes "
                         f"for the initial iteration. Multiplying this term with the "
                         f"factor you supplied in desired weights."
@@ -638,7 +634,7 @@ class OptimizationProblem(abc.ABC):
 
                     if abs(val) <= 1e-15:
                         val = 1.0
-                        info(
+                        _loggers.info(
                             f"Term {i:d} of the scalar tracking cost functional "
                             f"vanishes for the initial iteration. Multiplying "
                             f"this term with the factor you supplied in desired "

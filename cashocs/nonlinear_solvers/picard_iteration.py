@@ -26,12 +26,9 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from .newton_solver import newton_solve
-from .._exceptions import InputError, NotConvergedError
-from ..utils import (
-    enlist,
-    _check_and_enlist_bcs,
-)
+from cashocs.nonlinear_solvers import newton_solver
+from cashocs import _exceptions
+from cashocs import utils
 
 
 def picard_iteration(
@@ -83,19 +80,19 @@ def picard_iteration(
             linear ones, and only a linear solver is used.
     """
 
-    F_list = enlist(F_list)
-    u_list = enlist(u_list)
-    bcs_list = _check_and_enlist_bcs(bcs_list)
+    F_list = utils.enlist(F_list)
+    u_list = utils.enlist(u_list)
+    bcs_list = utils._check_and_enlist_bcs(bcs_list)
 
     if not len(F_list) == len(u_list):
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.picard_iteration",
             "F_list",
             "Length of F_list and u_list does not match.",
         )
 
     if not len(bcs_list) == len(u_list):
-        raise InputError(
+        raise _exceptions.InputError(
             "cashocs.picard_iteration",
             "bcs_list",
             "Lenght of bcs_list and u_list does not match.",
@@ -138,7 +135,7 @@ def picard_iteration(
             break
 
         if i == max_iter:
-            raise NotConvergedError("Picard iteration")
+            raise _exceptions.NotConvergedError("Picard iteration")
 
         for j in range(len(u_list)):
             eta = np.minimum(gamma * res, eta_max)
@@ -147,7 +144,7 @@ def picard_iteration(
                 np.maximum(eta, 0.5 * tol / res),
             )
 
-            newton_solve(
+            newton_solver.newton_solve(
                 F_list[j],
                 u_list[j],
                 bcs_list[j],

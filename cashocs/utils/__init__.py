@@ -22,7 +22,7 @@ interesting for users, so they are part of the public API. Includes wrappers tha
 to shorten the coding for often recurring actions.
 """
 
-from .forms import (
+from cashocs.utils.forms import (
     summation,
     multiplication,
     create_bcs_list,
@@ -31,7 +31,7 @@ from .forms import (
     _min,
     moreau_yosida_regularization,
 )
-from .helpers import (
+from cashocs.utils.helpers import (
     _check_and_enlist_bcs,
     _check_and_enlist_ksp_options,
     _check_and_enlist_control_constraints,
@@ -39,7 +39,7 @@ from .helpers import (
     _parse_remesh,
     _optimization_algorithm_configuration,
 )
-from .linalg import (
+from cashocs.utils.linalg import (
     _assemble_petsc_system,
     _setup_petsc_options,
     _solve_linear_problem,
