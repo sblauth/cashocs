@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from _collections import deque
+from collections import deque
 from typing import TYPE_CHECKING, List
 
 import fenics
