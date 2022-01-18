@@ -81,13 +81,6 @@ def test_verification_remeshing():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
-    subprocess.run(
-        [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-    )
-    subprocess.run(
-        [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
-    )
-
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 def test_first_remeshing_step():
@@ -254,3 +247,10 @@ def test_remesh_scaling():
         )
         val = sop.reduced_cost_functional.evaluate()
         assert np.abs(np.abs(val) - w_des) < 1e-14
+
+    subprocess.run(
+        [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+    )
+    subprocess.run(
+        [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
+    )

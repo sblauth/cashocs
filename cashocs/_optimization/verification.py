@@ -90,6 +90,7 @@ def control_gradient_test(
         for V in ocp.form_handler.control_spaces:
             temp = fenics.Function(V)
             if rng is not None:
+                # noinspection PyArgumentList
                 temp.vector()[:] = rng.rand(V.dim())
             else:
                 temp.vector()[:] = np.random.rand(V.dim())
@@ -157,6 +158,7 @@ def shape_gradient_test(
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
         if rng is not None:
+            # noinspection PyArgumentList
             h[0].vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
         else:
             h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())

@@ -29,14 +29,14 @@ from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import _forms
+from cashocs import _pde_problems
+from cashocs import utils
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search
 from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
-from cashocs import _pde_problems
-from cashocs import utils
 
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):

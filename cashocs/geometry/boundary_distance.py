@@ -25,8 +25,8 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from cashocs.geometry import measure
 from cashocs import utils
+from cashocs.geometry import measure
 
 
 def compute_boundary_distance(
@@ -62,7 +62,7 @@ def compute_boundary_distance(
         A fenics function representing an approximation of the distance to the boundary.
     """
 
-    V = fenics.FunctionSpace(mesh, "CG", 1)
+    function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure._NamedMeasure("dx", mesh)
 
     ksp = PETSc.KSP().create()
@@ -77,36 +77,41 @@ def compute_boundary_distance(
     ]
     utils._setup_petsc_options([ksp], [ksp_options])
 
-    u = fenics.TrialFunction(V)
-    v = fenics.TestFunction(V)
+    u = fenics.TrialFunction(function_space)
+    v = fenics.TestFunction(function_space)
 
-    u_curr = fenics.Function(V)
-    u_prev = fenics.Function(V)
+    u_curr = fenics.Function(function_space)
+    u_prev = fenics.Function(function_space)
     norm_u_prev = fenics.sqrt(fenics.dot(fenics.grad(u_prev), fenics.grad(u_prev)))
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
             bcs = utils.create_dirichlet_bcs(
-                V, fenics.Constant(0.0), boundaries, boundary_idcs
+                function_space, fenics.Constant(0.0), boundaries, boundary_idcs
             )
         else:
             bcs = fenics.DirichletBC(
-                V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
+                function_space,
+                fenics.Constant(0.0),
+                fenics.CompiledSubDomain("on_boundary"),
             )
     else:
         bcs = fenics.DirichletBC(
-            V, fenics.Constant(0.0), fenics.CompiledSubDomain("on_boundary")
+            function_space,
+            fenics.Constant(0.0),
+            fenics.CompiledSubDomain("on_boundary"),
         )
 
-    a = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
-    L = fenics.Constant(1.0) * v * dx
+    rhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
+    lhs = fenics.Constant(1.0) * v * dx
 
-    A, b = utils._assemble_petsc_system(a, L, bcs)
+    # noinspection PyPep8Naming
+    A, b = utils._assemble_petsc_system(rhs, lhs, bcs)
     utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
 
-    L = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
+    lhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
-    F_res = (
+    residual_form = (
         pow(
             fenics.sqrt(fenics.dot(fenics.grad(u_curr), fenics.grad(u_curr)))
             - fenics.Constant(1.0),
@@ -115,13 +120,14 @@ def compute_boundary_distance(
         * dx
     )
 
-    res_0 = np.sqrt(fenics.assemble(F_res))
+    res_0 = np.sqrt(fenics.assemble(residual_form))
 
     for i in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
-        A, b = utils._assemble_petsc_system(a, L, bcs)
+        # noinspection PyPep8Naming
+        A, b = utils._assemble_petsc_system(rhs, lhs, bcs)
         utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
-        res = np.sqrt(fenics.assemble(F_res))
+        res = np.sqrt(fenics.assemble(residual_form))
 
         if res <= res_0 * tol:
             break

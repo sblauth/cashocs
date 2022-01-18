@@ -180,8 +180,6 @@ def _optimization_algorithm_configuration(
         Internal name of the algorithms.
     """
 
-    internal_algorithm = None
-
     if algorithm is not None:
         overwrite = True
     else:

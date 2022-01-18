@@ -31,7 +31,6 @@ import cashocs._cli
 from cashocs._exceptions import InputError
 
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 rng = np.random.RandomState(300696)
@@ -213,7 +212,7 @@ def test_moreau_yosida_regularization():
     y_low = 1e-2
     gamma = 1e3
     reg = cashocs.utils.moreau_yosida_regularization(
-        y, gamma, dx, upper_treshold=y_bar, lower_threshold=y_low
+        y, gamma, dx, upper_threshold=y_bar, lower_threshold=y_low
     )
 
     max = cashocs.utils._max

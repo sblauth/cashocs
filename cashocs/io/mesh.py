@@ -84,9 +84,16 @@ def write_out_mesh(
                         new_file.write(line)
                     elif len(split_line) == 3:
                         if dim == 2:
-                            mod_line = f"{points[idcs[subwrite_counter]][0]:.16f} {points[idcs[subwrite_counter]][1]:.16f} 0\n"
+                            mod_line = (
+                                f"{points[idcs[subwrite_counter]][0]:.16f} "
+                                f"{points[idcs[subwrite_counter]][1]:.16f} 0\n"
+                            )
                         elif dim == 3:
-                            mod_line = f"{points[idcs[subwrite_counter]][0]:.16f} {points[idcs[subwrite_counter]][1]:.16f} {points[idcs[subwrite_counter]][2]:.16f}\n"
+                            mod_line = (
+                                f"{points[idcs[subwrite_counter]][0]:.16f} "
+                                f"{points[idcs[subwrite_counter]][1]:.16f} "
+                                f"{points[idcs[subwrite_counter]][2]:.16f}\n"
+                            )
 
                         new_file.write(mod_line)
                         subwrite_counter += 1

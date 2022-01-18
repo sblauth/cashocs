@@ -533,7 +533,8 @@ class Config(ConfigParser):
                     raise ValueError
         except ValueError:
             self.config_errors.append(
-                f"Key {key} in section {section} has the wrong type. Required type is {key_type}.\n"
+                f"Key {key} in section {section} has the wrong type. "
+                f"Required type is {key_type}.\n"
             )
 
     def _check_key_requirements(self, section: str, key: str) -> None:
@@ -553,7 +554,8 @@ class Config(ConfigParser):
                 for req in requirements:
                     if not self.has_option(req[0], req[1]):
                         self.config_errors.append(
-                            f"Key {key} in section {section} requires key {req[1]} in section {req[0]} to be present.\n"
+                            f"Key {key} in section {section} requires "
+                            f"key {req[1]} in section {req[0]} to be present.\n"
                         )
 
     def _check_key_conflicts(self, section: str, key: str) -> None:
@@ -571,7 +573,8 @@ class Config(ConfigParser):
                     if self.has_option(conflict[0], conflict[1]):
                         if self.getboolean(conflict[0], conflict[1]):
                             self.config_errors.append(
-                                f"Key {conflict[1]} in section {conflict[0]} conflicts with key {key} in section {section}.\n"
+                                f"Key {conflict[1]} in section {conflict[0]} "
+                                f"conflicts with key {key} in section {section}.\n"
                             )
 
     def _check_possible_options(self, section: str, key: str) -> None:
@@ -588,7 +591,9 @@ class Config(ConfigParser):
                 not in self.config_scheme[section][key]["possible_options"]
             ):
                 self.config_errors.append(
-                    f"Key {key} in section {section} has a wrong value. Possible options are {self.config_scheme[section][key]['possible_options']}.\n"
+                    f"Key {key} in section {section} has a wrong value. "
+                    f"Possible options are "
+                    f"{self.config_scheme[section][key]['possible_options']}.\n"
                 )
 
     def _check_larger_than_relation(self, section: str, key: str) -> None:
@@ -608,7 +613,9 @@ class Config(ConfigParser):
                 lower_value = self.config_scheme[partner[0]][partner[1]]["fallback"]
             if not lower_value < higher_value:
                 self.config_errors.append(
-                    f"The value of key {key} in section {section} is smaller than the value of key {partner[1]} in section {partner[0]}, but it should be larger.\n"
+                    f"The value of key {key} in section {section} is smaller than "
+                    f"the value of key {partner[1]} in section {partner[0]}, "
+                    f"but it should be larger.\n"
                 )
 
     def _check_larger_equal_than_relation(self, section: str, key: str) -> None:
@@ -628,7 +635,9 @@ class Config(ConfigParser):
                 lower_value = self.config_scheme[partner[0]][partner[1]]["fallback"]
             if not lower_value <= higher_value:
                 self.config_errors.append(
-                    f"The value of key {key} in section {section} is smaller than the value of key {partner[1]} in section {partner[0]}, but it should be larger.\n"
+                    f"The value of key {key} in section {section} is smaller than "
+                    f"the value of key {partner[1]} in section {partner[0]}, "
+                    f"but it should be larger.\n"
                 )
 
     def _check_attributes(self, section: str, key: str) -> None:
@@ -662,7 +671,8 @@ class Config(ConfigParser):
             file = Path(self.get(section, key))
             if not file.is_file():
                 self.config_errors.append(
-                    f"Key {key} in section {section} should point to a file, but the file does not exist.\n"
+                    f"Key {key} in section {section} should point to a file, "
+                    f"but the file does not exist.\n"
                 )
 
             self._check_file_extension(
@@ -673,15 +683,16 @@ class Config(ConfigParser):
         """Checks, whether key has the correct file extension.
 
         Args:
-            section: The corresponding section
-            key: The corresponding key
-            key_attributes: The list of attributes for key.
+            section: The corresponding section.
+            key: The corresponding key.
+            extension: The file extension.
         """
 
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
-                f"Key {key} in section {section} has the wrong file extension, it should end in .{extension}.\n"
+                f"Key {key} in section {section} has the wrong file extension, "
+                f"it should end in .{extension}.\n"
             )
 
     def _check_non_negative_attribute(
@@ -715,7 +726,8 @@ class Config(ConfigParser):
         if "positive" in key_attributes:
             if self.getfloat(section, key) <= 0:
                 self.config_errors.append(
-                    f"Key {key} in section {section} is non-positive, but it most be positive.\n"
+                    f"Key {key} in section {section} is non-positive, "
+                    f"but it most be positive.\n"
                 )
 
     def _check_less_than_one_attribute(
@@ -732,7 +744,8 @@ class Config(ConfigParser):
         if "less_than_one" in key_attributes:
             if self.getfloat(section, key) >= 1:
                 self.config_errors.append(
-                    f"Key {key} in section {section} is larger than one, but it must be smaller.\n"
+                    f"Key {key} in section {section} is larger than one, "
+                    f"but it must be smaller.\n"
                 )
 
     def _check_larger_than_one_attribute(
@@ -749,5 +762,6 @@ class Config(ConfigParser):
         if "larger_than_one" in key_attributes:
             if self.getfloat(section, key) <= 1:
                 self.config_errors.append(
-                    f"Key {key} in section {section} is smaller than one, but it must be larger.\n"
+                    f"Key {key} in section {section} is smaller than one, "
+                    f"but it must be larger.\n"
                 )

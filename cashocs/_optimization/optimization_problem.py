@@ -35,9 +35,10 @@ import numpy as np
 import ufl
 
 from cashocs import _exceptions
-from cashocs import utils
-from cashocs import io
+from cashocs import _forms
 from cashocs import _loggers
+from cashocs import io
+from cashocs import utils
 
 if TYPE_CHECKING:
     from cashocs._optimization.optimization_variable_abstractions import (
@@ -287,7 +288,7 @@ class OptimizationProblem(abc.ABC):
         self.hessian_problem = None
         self.solver = None
 
-        self.form_handler = None
+        self.form_handler: Optional[_forms.FormHandler] = None
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
         self.reduced_cost_functional = None

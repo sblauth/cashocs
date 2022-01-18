@@ -37,14 +37,14 @@ from typing_extensions import Literal
 from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _loggers
+from cashocs import _pde_problems
+from cashocs import geometry
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
-from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs._optimization import verification
-from cashocs import _pde_problems
-from cashocs import geometry
+from cashocs._optimization.shape_optimization import shape_variable_abstractions
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -282,6 +282,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     self.temp_dict = json.load(file)
 
         # boundaries
+        # noinspection PyUnresolvedReferences
         if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
             self.boundaries = boundaries
         else:

@@ -89,15 +89,29 @@ class PETScKSPError(CashocsException):
         elif self.error_code == -6:  # pragma: no cover
             self.error_reason = " (ksp_diverged_breakdown_bicg)"
         elif self.error_code == -7:  # pragma: no cover
-            self.error_reason = " (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)"
+            self.error_reason = (
+                " (ksp_diverged_nonsymmetric, "
+                "need a symmetric operator / preconditioner)"
+            )
         elif self.error_code == -8:  # pragma: no cover
-            self.error_reason = " (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)"
+            self.error_reason = (
+                " (ksp_diverged_indefinite_pc, "
+                "the preconditioner is indefinite, "
+                "but needs to be positive definite)"
+            )
         elif self.error_code == -9:  # pragma: no cover
             self.error_reason = " (ksp_diverged_nanorinf)"
         elif self.error_code == -10:  # pragma: no cover
-            self.error_reason = " (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)"
+            self.error_reason = (
+                " (ksp_diverged_indefinite_mat, "
+                "operator is indefinite, "
+                "but needs to be positive definite)"
+            )
         elif self.error_code == -11:  # pragma: no cover
-            self.error_reason = " (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)"
+            self.error_reason = (
+                " (ksp_diverged_pc_failed, "
+                "it was not possible to build / use the preconditioner)"
+            )
         else:  # pragma: no cover
             self.error_reason = " (unknown)"
 
@@ -110,7 +124,7 @@ class PETScKSPError(CashocsException):
 
 
 class InputError(CashocsException):
-    """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
+    """This gets raised when the user input to a public API method is wrong."""
 
     def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
         """
@@ -127,7 +141,10 @@ class InputError(CashocsException):
     def __str__(self) -> str:
         """Returns the string representation of the exception."""
 
-        main_msg = f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
+        main_msg = (
+            f"Not a valid input for object {self.obj}. "
+            f"The faulty input is for the parameter {self.param}."
+        )
         post_msg = f"\n{self.message}" if self.message is not None else ""
         return main_msg + post_msg
 

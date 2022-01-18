@@ -31,9 +31,9 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from cashocs._pde_problems import pde_problem
 from cashocs import nonlinear_solvers
 from cashocs import utils
+from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs._pde_problems import state_problem as sp

@@ -28,9 +28,10 @@ from petsc4py import PETSc
 from cashocs import _exceptions
 
 
+# noinspection PyUnresolvedReferences
 def _assemble_petsc_system(
-    A_form: ufl.Form,
-    b_form: ufl.Form,
+    rhs_form: ufl.Form,
+    lhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
     rhs_tensor: Optional[fenics.PETScMatrix] = None,
     lhs_tensor: Optional[fenics.PETScVector] = None,
@@ -38,8 +39,8 @@ def _assemble_petsc_system(
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Args:
-        A_form: The UFL form for the left-hand side of the linear equation.
-        b_form: The UFL form for the right-hand side of the linear equation.
+        rhs_form: The UFL form for the left-hand side of the linear equation.
+        lhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
         rhs_tensor: A matrix into which the result is assembled. Default is ``None``.
         lhs_tensor: A vector into which the result is assembled. Default is ``None``.
@@ -59,8 +60,8 @@ def _assemble_petsc_system(
     if lhs_tensor is None:
         lhs_tensor = fenics.PETScVector()
     fenics.assemble_system(
-        A_form,
-        b_form,
+        rhs_form,
+        lhs_form,
         bcs,
         keep_diagonal=True,
         A_tensor=rhs_tensor,
@@ -68,6 +69,7 @@ def _assemble_petsc_system(
     )
     rhs_tensor.ident_zeros()
 
+    # noinspection PyPep8Naming
     A = rhs_tensor.mat()
     b = lhs_tensor.vec()
 
@@ -92,6 +94,7 @@ def _setup_petsc_options(
     opts = fenics.PETScOptions
 
     for i in range(len(ksps)):
+        # noinspection PyArgumentList
         opts.clear()
 
         for option in ksp_options[i]:
@@ -100,6 +103,7 @@ def _setup_petsc_options(
         ksps[i].setFromOptions()
 
 
+# noinspection PyPep8Naming,PyUnresolvedReferences
 def _solve_linear_problem(
     ksp: Optional[PETSc.KSP] = None,
     A: Optional[PETSc.Mat] = None,
@@ -154,7 +158,8 @@ def _solve_linear_problem(
             raise _exceptions.InputError(
                 "cashocs.utils._solve_linear_problem",
                 "ksp",
-                "The KSP object has to be initialized with some Matrix in case A is None.",
+                "The KSP object has to be initialized with some Matrix in case A is "
+                "None.",
             )
 
     if b is None:
@@ -165,6 +170,7 @@ def _solve_linear_problem(
 
     if ksp_options is not None:
         opts = fenics.PETScOptions
+        # noinspection PyArgumentList
         opts.clear()
 
         for option in ksp_options:
@@ -212,42 +218,45 @@ class Interpolator:
             interp.interpolate(u)
     """
 
-    def __init__(self, V: fenics.FunctionSpace, W: fenics.FunctionSpace) -> None:
+    def __init__(
+        self, origin_space: fenics.FunctionSpace, target_space: fenics.FunctionSpace
+    ) -> None:
         """
         Args:
-            V: The function space whose objects shall be interpolated.
-            W: The space into which they shall be interpolated.
+            origin_space: The function space whose objects shall be interpolated.
+            target_space: The space into which they shall be interpolated.
         """
 
         if not (
-            V.ufl_element().family() == "Lagrange"
+            origin_space.ufl_element().family() == "Lagrange"
             or (
-                V.ufl_element().family() == "Discontinuous Lagrange"
-                and V.ufl_element().degree() == 0
+                origin_space.ufl_element().family() == "Discontinuous Lagrange"
+                and origin_space.ufl_element().degree() == 0
             )
         ):
             raise _exceptions.InputError(
                 "cashocs.utils.Interpolator",
-                "V",
+                "origin_space",
                 "The interpolator only works with CG n or DG 0 elements",
             )
         if not (
-            W.ufl_element().family() == "Lagrange"
+            target_space.ufl_element().family() == "Lagrange"
             or (
-                W.ufl_element().family() == "Discontinuous Lagrange"
-                and W.ufl_element().degree() == 0
+                target_space.ufl_element().family() == "Discontinuous Lagrange"
+                and target_space.ufl_element().degree() == 0
             )
         ):
             raise _exceptions.InputError(
                 "cashocs.utils.Interpolator",
-                "W",
+                "target_space",
                 "The interpolator only works with CG n or DG 0 elements",
             )
 
-        self.V = V
-        self.W = W
+        self.origin_space = origin_space
+        self.target_space = target_space
+        # noinspection PyTypeChecker
         self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(
-            self.V, self.W
+            self.origin_space, self.target_space
         )
 
     def interpolate(self, u: fenics.Function) -> fenics.Function:
@@ -265,13 +274,13 @@ class Interpolator:
             The result of the interpolation.
         """
 
-        if not u.function_space() == self.V:
+        if not u.function_space() == self.origin_space:
             raise _exceptions.InputError(
                 "cashocs.utils.Interpolator.interpolate",
                 "u",
                 "The input does not belong to the correct function space.",
             )
-        v = fenics.Function(self.W)
+        v = fenics.Function(self.target_space)
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]
 
         return v

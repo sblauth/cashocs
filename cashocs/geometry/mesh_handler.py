@@ -31,12 +31,12 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from cashocs.geometry import deformation_handler
-from cashocs.geometry import mesh_quality
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import io
 from cashocs import utils
+from cashocs.geometry import deformation_handler
+from cashocs.geometry import mesh_quality
 
 if TYPE_CHECKING:
     from cashocs._optimization.shape_optimization.shape_optimization_problem import (
@@ -243,6 +243,7 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
+            # noinspection PyPep8Naming
             A, b = utils._assemble_petsc_system(self.a_frobenius, self.L_frobenius)
             x = utils._solve_linear_problem(
                 self.ksp_frobenius, A, b, ksp_options=self.options_frobenius
@@ -311,6 +312,7 @@ class _MeshHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
+        # noinspection PyPep8Naming
         A, b = utils._assemble_petsc_system(self.a_prior, self.L_prior)
         x = utils._solve_linear_problem(
             self.ksp_prior, A, b, ksp_options=self.options_prior

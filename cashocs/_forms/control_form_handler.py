@@ -26,8 +26,8 @@ import numpy as np
 import ufl
 
 from cashocs import _exceptions
-from cashocs._forms import form_handler
 from cashocs import utils
+from cashocs._forms import form_handler
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control

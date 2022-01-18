@@ -25,17 +25,16 @@ from typing import List, TYPE_CHECKING, Optional
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 import ufl.algorithms
+from petsc4py import PETSc
 
 from cashocs import _exceptions
+from cashocs import _loggers
 from cashocs import utils
 from cashocs._forms import form_handler
 from cashocs._forms import shape_regularization
-from cashocs import _loggers
 from cashocs.geometry import boundary_distance
-
 
 if TYPE_CHECKING:
     from cashocs._optimization import shape_optimization
@@ -150,6 +149,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
             if not self.scalar_product_matrix.isSymmetric(1e-15):
+                # noinspection PyArgumentList
                 if (
                     not (
                         self.scalar_product_matrix
@@ -669,6 +669,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 ),
                 (p - 2) / 2.0,
             )
+            # noinspection PyTypeChecker
             self.F_p_laplace = (
                 fenics.inner(
                     self.mu_lame

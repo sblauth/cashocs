@@ -21,18 +21,18 @@ from __future__ import annotations
 
 import fenics
 import numpy as np
+import ufl
 from petsc4py import PETSc
 from typing_extensions import Literal
-import ufl
 
-from cashocs.geometry import measure
 from cashocs import utils
+from cashocs.geometry import measure
 
 
 def compute_mesh_quality(
     mesh: fenics.Mesh,
-    type: Literal["min", "minimum", "avg", "average"] = "min",
-    measure: Literal[
+    quality_type: Literal["min", "minimum", "avg", "average"] = "min",
+    quality_measure: Literal[
         "skewness", "maximum_angle", "radius_ratios", "condition_number"
     ] = "skewness",
 ) -> float:
@@ -40,34 +40,36 @@ def compute_mesh_quality(
 
     Args:
         mesh: The mesh whose quality shall be computed.
-        type: The type of measurement for the mesh quality, either minimum quality or
-            average quality over all mesh cells, default is 'min'.
-        measure: The type of quality measure which is used to compute the quality
-            measure, default is 'skewness'
+        quality_type: The type of measurement for the mesh quality, either minimum
+            quality or average quality over all mesh cells, default is 'min'.
+        quality_measure: The type of quality measure which is used to compute the
+            quality measure, default is 'skewness'
 
     Returns:
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
         and 1 the best possible quality.
     """
 
-    if type in ["min", "minimum"]:
-        if measure == "skewness":
+    quality = None
+
+    if quality_type in ["min", "minimum"]:
+        if quality_measure == "skewness":
             quality = MeshQuality.min_skewness(mesh)
-        elif measure == "maximum_angle":
+        elif quality_measure == "maximum_angle":
             quality = MeshQuality.min_maximum_angle(mesh)
-        elif measure == "radius_ratios":
+        elif quality_measure == "radius_ratios":
             quality = MeshQuality.min_radius_ratios(mesh)
-        elif measure == "condition_number":
+        elif quality_measure == "condition_number":
             quality = MeshQuality.min_condition_number(mesh)
 
-    elif type in ["avg", "average"]:
-        if measure == "skewness":
+    elif quality_type in ["avg", "average"]:
+        if quality_measure == "skewness":
             quality = MeshQuality.avg_skewness(mesh)
-        elif measure == "maximum_angle":
+        elif quality_measure == "maximum_angle":
             quality = MeshQuality.avg_maximum_angle(mesh)
-        elif measure == "radius_ratios":
+        elif quality_measure == "radius_ratios":
             quality = MeshQuality.avg_radius_ratios(mesh)
-        elif measure == "condition_number":
+        elif quality_measure == "condition_number":
             quality = MeshQuality.avg_condition_number(mesh)
 
     return quality
@@ -209,12 +211,17 @@ skewness(std::shared_ptr<const Mesh> mesh)
     }
     else
     {
-      dolfin_error("cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh.");
+      dolfin_error(
+        "cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh."
+      );
     }
 
     for (unsigned int i = 0; i < angs.size(); ++i)
     {
-      quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), (opt_angle - angs[i]) / opt_angle);
+      quals[i] = 1 - std::max(
+        (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 
+        (opt_angle - angs[i]) / opt_angle
+      );
     }
     cf[*cell] = *std::min_element(quals.begin(), quals.end());
   }
@@ -248,7 +255,9 @@ maximum_angle(std::shared_ptr<const Mesh> mesh)
     }
     else
     {
-      dolfin_error("cashocs_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh.");
+      dolfin_error(
+        "cashocs_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh."
+      );
     }
 
     for (unsigned int i = 0; i < angs.size(); ++i)
@@ -393,9 +402,9 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         .. math:: d \frac{r}{R},
 
-        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and :math:`R` is
-        the circumradius. To compute the (global) quality measure, the minimum
-        of this expression over all elements is returned.
+        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and
+        :math:`R` is the circumradius. To compute the (global) quality measure, the
+        minimum of this expression over all elements is returned.
 
         Args:
             mesh: The mesh, whose quality shall be computed.
@@ -404,6 +413,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimal radius ratio of the mesh.
         """
 
+        # noinspection PyArgumentList
         return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
 
     @staticmethod
@@ -415,9 +425,9 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         .. math:: d \frac{r}{R},
 
-        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and :math:`R` is
-        the circumradius. To compute the (global) quality measure, the average
-        of this expression over all elements is returned.
+        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and
+        :math:`R` is the circumradius. To compute the (global) quality measure, the
+        average of this expression over all elements is returned.
 
         Args:
             mesh: The mesh, whose quality shall be computed.
@@ -426,6 +436,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average radius ratio of the mesh.
         """
 
+        # noinspection PyArgumentList
         return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
 
     @staticmethod
@@ -443,7 +454,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimal condition number quality measure.
         """
 
-        DG0 = fenics.FunctionSpace(mesh, "DG", 0)
+        function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
@@ -459,17 +470,22 @@ PYBIND11_MODULE(SIGNATURE, m)
         utils._setup_petsc_options([ksp], [options])
 
         dx = measure._NamedMeasure("dx", mesh)
-        a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
-        L = (
+        lhs = (
+            fenics.TrialFunction(function_space_dg0)
+            * fenics.TestFunction(function_space_dg0)
+            * dx
+        )
+        rhs = (
             fenics.sqrt(fenics.inner(jac, jac))
             * fenics.sqrt(fenics.inner(inv, inv))
-            * fenics.TestFunction(DG0)
+            * fenics.TestFunction(function_space_dg0)
             * dx
         )
 
-        cond = fenics.Function(DG0)
+        cond = fenics.Function(function_space_dg0)
 
-        A, b = utils._assemble_petsc_system(a, L)
+        # noinspection PyPep8Naming
+        A, b = utils._assemble_petsc_system(lhs, rhs)
         utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
@@ -492,7 +508,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average mesh quality based on the condition number.
         """
 
-        DG0 = fenics.FunctionSpace(mesh, "DG", 0)
+        function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
@@ -508,17 +524,22 @@ PYBIND11_MODULE(SIGNATURE, m)
         utils._setup_petsc_options([ksp], [options])
 
         dx = measure._NamedMeasure("dx", mesh)
-        a = fenics.TrialFunction(DG0) * fenics.TestFunction(DG0) * dx
-        L = (
+        lhs = (
+            fenics.TrialFunction(function_space_dg0)
+            * fenics.TestFunction(function_space_dg0)
+            * dx
+        )
+        rhs = (
             fenics.sqrt(fenics.inner(jac, jac))
             * fenics.sqrt(fenics.inner(inv, inv))
-            * fenics.TestFunction(DG0)
+            * fenics.TestFunction(function_space_dg0)
             * dx
         )
 
-        cond = fenics.Function(DG0)
+        cond = fenics.Function(function_space_dg0)
 
-        A, b = utils._assemble_petsc_system(a, L)
+        # noinspection PyPep8Naming
+        A, b = utils._assemble_petsc_system(lhs, rhs)
         utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
         cond.vector().apply("")
 

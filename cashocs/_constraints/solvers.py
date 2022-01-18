@@ -26,9 +26,9 @@ import fenics
 import numpy as np
 import ufl.core.expr
 
-from cashocs._constraints import constraints
 from cashocs import _loggers
 from cashocs import utils
+from cashocs._constraints import constraints
 
 if TYPE_CHECKING:
     from cashocs._constraints import constrained_problems
@@ -55,7 +55,7 @@ class ConstrainedSolver(abc.ABC):
 
         self.constrained_problem = constrained_problem
 
-        self.constraints = self.constrained_problem.constraints
+        self.constraints = self.constrained_problem.constraint_list
         self.constraint_dim = self.constrained_problem.constraint_dim
         self.iterations = 0
 
@@ -258,6 +258,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         self.constraints[i].variable_function
                         - self.constraints[i].target
                     )
+                    # noinspection PyTypeChecker
                     self._project_pointwise_multiplier(
                         project_term,
                         self.constraints[i].measure,
@@ -322,6 +323,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                             )
                         )
 
+                    # noinspection PyTypeChecker
                     self._project_pointwise_multiplier(
                         project_terms,
                         self.constraints[i].measure,

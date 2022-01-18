@@ -28,8 +28,8 @@ from typing import TYPE_CHECKING, List
 import fenics
 from petsc4py import PETSc
 
-from cashocs._pde_problems import pde_problem
 from cashocs import utils
+from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms

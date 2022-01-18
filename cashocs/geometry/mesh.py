@@ -23,17 +23,17 @@ import configparser
 import json
 import os
 import time
-from typing import Union, Optional, Tuple, TYPE_CHECKING
+from typing import Union, Optional, Tuple
 
 import fenics
 import numpy as np
 from typing_extensions import Literal
 
-from cashocs.geometry import measure
-from cashocs.geometry import mesh_quality
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import utils
+from cashocs.geometry import measure
+from cashocs.geometry import mesh_quality
 
 
 class Mesh(fenics.Mesh):
@@ -172,6 +172,7 @@ def import_mesh(
     ds = measure._NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
+    # noinspection PyPep8Naming
     dS = measure._NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
@@ -210,6 +211,7 @@ def import_mesh(
         )
         mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
 
+        # noinspection PyTypeChecker
         current_mesh_quality = mesh_quality.compute_mesh_quality(
             mesh, mesh_quality_type, mesh_quality_measure
         )
@@ -263,9 +265,9 @@ def import_mesh(
 
 def regular_mesh(
     n: int = 10,
-    L_x: float = 1.0,
-    L_y: float = 1.0,
-    L_z: Optional[float] = None,
+    length_x: float = 1.0,
+    length_y: float = 1.0,
+    length_z: Optional[float] = None,
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
 ) -> Tuple[
     fenics.Mesh,
@@ -278,35 +280,35 @@ def regular_mesh(
     r"""Creates a mesh corresponding to a rectangle or cube.
 
     This function creates a uniform mesh of either a rectangle or a cube, starting at 
-    the origin and having length specified in ``L_x``, ``L_y``, and ``L_z``. The 
-    resulting mesh uses ``n`` elements along the shortest direction and accordingly many 
-    along the longer ones. The resulting domain is
+    the origin and having length specified in ``length_x``, ``length_y``, and 
+    ``length_z``. The resulting mesh uses ``n`` elements along the shortest direction 
+    and accordingly many along the longer ones. The resulting domain is
 
     .. math::
         \begin{alignedat}{2}
-        &[0, L_x] \times [0, L_y] \quad &&\text{ in } 2D, \\
-        &[0, L_x] \times [0, L_y] \times [0, L_z] \quad &&\text{ in } 3D.
+        &[0, length_x] \times [0, length_y] \quad &&\text{ in } 2D, \\
+        &[0, length_x] \times [0, length_y] \times [0, length_z] \quad &&\text{ in } 3D.
         \end{alignedat}
 
     The boundary markers are ordered as follows:
 
       - 1 corresponds to :math:`x=0`.
 
-      - 2 corresponds to :math:`x=L_x`.
+      - 2 corresponds to :math:`x=length_x`.
 
       - 3 corresponds to :math:`y=0`.
 
-      - 4 corresponds to :math:`y=L_y`.
+      - 4 corresponds to :math:`y=length_y`.
 
       - 5 corresponds to :math:`z=0` (only in 3D).
 
-      - 6 corresponds to :math:`z=L_z` (only in 3D).
+      - 6 corresponds to :math:`z=length_z` (only in 3D).
     
     Args:
         n: Number of elements in the shortest coordinate direction.
-        L_x: Length in x-direction.
-        L_y: Length in y-direction.
-        L_z: Length in z-direction, if this is ``None``, then the geometry will be 
+        length_x: Length in x-direction.
+        length_y: Length in y-direction.
+        length_z: Length in z-direction, if this is ``None``, then the geometry will be 
             two-dimensional (default is ``None``).
         diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
             This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
@@ -323,34 +325,34 @@ def regular_mesh(
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "n", "n needs to be positive."
         )
-    if not L_x > 0.0:
+    if not length_x > 0.0:
         raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh", "L_x", "L_x needs to be positive"
+            "cashocs.geometry.regular_mesh", "length_x", "length_x needs to be positive"
         )
-    if not L_y > 0.0:
+    if not length_y > 0.0:
         raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh", "L_y", "L_y needs to be positive"
+            "cashocs.geometry.regular_mesh", "length_y", "length_y needs to be positive"
         )
-    if not (L_z is None or L_z > 0.0):
+    if not (length_z is None or length_z > 0.0):
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh",
-            "L_z",
-            "L_z needs to be positive or None (for 2D mesh)",
+            "length_z",
+            "length_z needs to be positive or None (for 2D mesh)",
         )
 
     n = int(n)
 
-    if L_z is None:
-        sizes = [L_x, L_y]
+    if length_z is None:
+        sizes = [length_x, length_y]
         dim = 2
     else:
-        sizes = [L_x, L_y, L_z]
+        sizes = [length_x, length_y, length_z]
         dim = 3
 
     size_min = np.min(sizes)
     num_points = [int(np.round(length / size_min * n)) for length in sizes]
 
-    if L_z is None:
+    if length_z is None:
         mesh = fenics.RectangleMesh(
             fenics.Point(0, 0),
             fenics.Point(sizes),
@@ -388,7 +390,7 @@ def regular_mesh(
     y_min.mark(boundaries, 3)
     y_max.mark(boundaries, 4)
 
-    if L_z is not None:
+    if length_z is not None:
         z_min = fenics.CompiledSubDomain(
             "on_boundary && near(x[2], 0, tol)", tol=fenics.DOLFIN_EPS
         )
@@ -402,6 +404,7 @@ def regular_mesh(
 
     dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
     ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    # noinspection PyPep8Naming
     dS = measure._NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS
@@ -409,12 +412,12 @@ def regular_mesh(
 
 def regular_box_mesh(
     n: int = 10,
-    S_x: float = 0.0,
-    S_y: float = 0.0,
-    S_z: Optional[float] = None,
-    E_x: float = 1.0,
-    E_y: float = 1.0,
-    E_z: Optional[float] = None,
+    start_x: float = 0.0,
+    start_y: float = 0.0,
+    start_z: Optional[float] = None,
+    end_x: float = 1.0,
+    end_y: float = 1.0,
+    end_z: Optional[float] = None,
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
 ) -> Tuple[
     fenics.Mesh,
@@ -433,33 +436,34 @@ def regular_box_mesh(
 
     .. math::
         \begin{alignedat}{2}
-            &[S_x, E_x] \times [S_y, E_y] \quad &&\text{ in } 2D, \\
-            &[S_x, E_x] \times [S_y, E_y] \times [S_z, E_z] \quad &&\text{ in } 3D.
+            &[start_x, end_x] \times [start_y, end_y] \quad &&\text{ in } 2D, \\
+            &[start_x, end_x] \times [start_y, end_y] \times [start_z, end_z] \quad
+            &&\text{ in } 3D.
         \end{alignedat}
 
     The boundary markers are ordered as follows:
 
-      - 1 corresponds to :math:`x=S_x`.
+      - 1 corresponds to :math:`x=start_x`.
 
-      - 2 corresponds to :math:`x=E_x`.
+      - 2 corresponds to :math:`x=end_x`.
 
-      - 3 corresponds to :math:`y=S_y`.
+      - 3 corresponds to :math:`y=start_y`.
 
-      - 4 corresponds to :math:`y=E_y`.
+      - 4 corresponds to :math:`y=end_y`.
 
-      - 5 corresponds to :math:`z=S_z` (only in 3D).
+      - 5 corresponds to :math:`z=start_z` (only in 3D).
 
-      - 6 corresponds to :math:`z=E_z` (only in 3D).
+      - 6 corresponds to :math:`z=end_z` (only in 3D).
     
     Args:
         n: Number of elements in the shortest coordinate direction.
-        S_x: Start of the x-interval.
-        S_y: Start of the y-interval.
-        S_z: Start of the z-interval, mesh is 2D if this is ``None`` (default is 
+        start_x: Start of the x-interval.
+        start_y: Start of the y-interval.
+        start_z: Start of the z-interval, mesh is 2D if this is ``None`` (default is 
             ``None``).
-        E_x: End of the x-interval.
-        E_y: End of the y-interval.
-        E_z: End of the z-interval, mesh is 2D if this is ``None`` (default is 
+        end_x: End of the x-interval.
+        end_y: End of the y-interval.
+        end_z: End of the z-interval, mesh is 2D if this is ``None`` (default is 
             ``None``).
         diagonal: This defines the type of diagonal used to create the box mesh in 2D. 
             This can be one of ``"right"``, ``"left"``, ``"left/right"``, 
@@ -479,53 +483,57 @@ def regular_box_mesh(
             "cashocs.geometry.regular_box_mesh", "n", "This needs to be positive."
         )
 
-    if not S_x < E_x:
+    if not start_x < end_x:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
-            "S_x",
-            "Incorrect input for the x-coordinate. S_x has to be smaller than E_x.",
+            "start_x",
+            "Incorrect input for the x-coordinate. "
+            "start_x has to be smaller than end_x.",
         )
-    if not S_y < E_y:
+    if not start_y < end_y:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
-            "S_y",
-            "Incorrect input for the y-coordinate. S_y has to be smaller than E_y.",
+            "start_y",
+            "Incorrect input for the y-coordinate. "
+            "start_y has to be smaller than end_y.",
         )
-    if not ((S_z is None and E_z is None) or (S_z < E_z)):
+    if not ((start_z is None and end_z is None) or (start_z < end_z)):
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
-            "S_z",
-            "Incorrect input for the z-coordinate. S_z has to be smaller than E_z, "
+            "start_z",
+            "Incorrect input for the z-coordinate. "
+            "start_z has to be smaller than end_z, "
             "or only one of them is specified.",
         )
 
-    if S_z is None:
-        lx = E_x - S_x
-        ly = E_y - S_y
+    if start_z is None:
+        lx = end_x - start_x
+        ly = end_y - start_y
         sizes = [lx, ly]
         dim = 2
     else:
-        lx = E_x - S_x
-        ly = E_y - S_y
-        lz = E_z - S_z
+        lx = end_x - start_x
+        ly = end_y - start_y
+        # noinspection PyTypeChecker
+        lz = end_z - start_z
         sizes = [lx, ly, lz]
         dim = 3
 
     size_min = np.min(sizes)
     num_points = [int(np.round(length / size_min * n)) for length in sizes]
 
-    if S_z is None:
+    if start_z is None:
         mesh = fenics.RectangleMesh(
-            fenics.Point(S_x, S_y),
-            fenics.Point(E_x, E_y),
+            fenics.Point(start_x, start_y),
+            fenics.Point(end_x, end_y),
             num_points[0],
             num_points[1],
             diagonal=diagonal,
         )
     else:
         mesh = fenics.BoxMesh(
-            fenics.Point(S_x, S_y, S_z),
-            fenics.Point(E_x, E_y, E_z),
+            fenics.Point(start_x, start_y, start_z),
+            fenics.Point(end_x, end_y, end_z),
             num_points[0],
             num_points[1],
             num_points[2],
@@ -535,35 +543,36 @@ def regular_box_mesh(
     boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
 
     x_min = fenics.CompiledSubDomain(
-        "on_boundary && near(x[0], sx, tol)", tol=fenics.DOLFIN_EPS, sx=S_x
+        "on_boundary && near(x[0], sx, tol)", tol=fenics.DOLFIN_EPS, sx=start_x
     )
     x_max = fenics.CompiledSubDomain(
-        "on_boundary && near(x[0], ex, tol)", tol=fenics.DOLFIN_EPS, ex=E_x
+        "on_boundary && near(x[0], ex, tol)", tol=fenics.DOLFIN_EPS, ex=end_x
     )
     x_min.mark(boundaries, 1)
     x_max.mark(boundaries, 2)
 
     y_min = fenics.CompiledSubDomain(
-        "on_boundary && near(x[1], sy, tol)", tol=fenics.DOLFIN_EPS, sy=S_y
+        "on_boundary && near(x[1], sy, tol)", tol=fenics.DOLFIN_EPS, sy=start_y
     )
     y_max = fenics.CompiledSubDomain(
-        "on_boundary && near(x[1], ey, tol)", tol=fenics.DOLFIN_EPS, ey=E_y
+        "on_boundary && near(x[1], ey, tol)", tol=fenics.DOLFIN_EPS, ey=end_y
     )
     y_min.mark(boundaries, 3)
     y_max.mark(boundaries, 4)
 
-    if S_z is not None:
+    if start_z is not None:
         z_min = fenics.CompiledSubDomain(
-            "on_boundary && near(x[2], sz, tol)", tol=fenics.DOLFIN_EPS, sz=S_z
+            "on_boundary && near(x[2], sz, tol)", tol=fenics.DOLFIN_EPS, sz=start_z
         )
         z_max = fenics.CompiledSubDomain(
-            "on_boundary && near(x[2], ez, tol)", tol=fenics.DOLFIN_EPS, ez=E_z
+            "on_boundary && near(x[2], ez, tol)", tol=fenics.DOLFIN_EPS, ez=end_z
         )
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
     dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
     ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    # noinspection PyPep8Naming
     dS = measure._NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, dS

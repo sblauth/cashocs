@@ -26,8 +26,8 @@ from typing import List, Union, TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs.io import mesh as iomesh
 from cashocs import _forms
+from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimization_problem as op
@@ -88,9 +88,8 @@ class ResultManager:
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
         if solver.form_handler.is_shape_problem:
-            self.output_dict["MeshQuality"].append(
-                solver.optimization_variable_abstractions.mesh_handler.current_mesh_quality
-            )
+            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
+            self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
         self.output_dict["stepsize"].append(solver.stepsize)
 
     def save_to_json(
@@ -160,20 +159,19 @@ class HistoryManager:
             gradient_str = "Stationarity measure"
 
         if solver.form_handler.is_shape_problem:
-            mesh_quality = (
-                solver.optimization_variable_abstractions.mesh_handler.current_mesh_quality
-            )
-            mesh_quality_measure = (
-                solver.optimization_variable_abstractions.mesh_handler.mesh_quality_measure
-            )
+            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
+            mesh_quality = mesh_handler.current_mesh_quality
+            mesh_quality_measure = mesh_handler.mesh_quality_measure
         else:
             mesh_quality = None
 
-        strs = []
-        strs.append(f"Iteration {iteration:4d} - ")
-        strs.append(f" Objective value:  {objective_value:.3e}")
-        strs.append(f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})")
+        strs = [
+            f"Iteration {iteration:4d} - ",
+            f" Objective value:  {objective_value:.3e}",
+            f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
+        ]
         if mesh_quality is not None:
+            # noinspection PyUnboundLocalVariable
             strs.append(
                 f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})"
             )
@@ -227,19 +225,18 @@ class HistoryManager:
             The summary string.
         """
 
-        strs = []
-        strs.append("\n")
-        strs.append(f"Statistics --- Total iterations:  {solver.iteration:4d}")
-        strs.append(f" --- Final objective value:  {solver.objective_value:.3e}")
-        strs.append(f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)")
-        strs.append("\n")
-        strs.append(
-            f"           --- State equations solved:  {solver.state_problem.number_of_solves:d}"
-        )
-        strs.append(
-            f" --- Adjoint equations solved:  {solver.adjoint_problem.number_of_solves:d}"
-        )
-        strs.append("\n")
+        strs = [
+            "\n",
+            f"Statistics --- Total iterations:  {solver.iteration:4d}",
+            f" --- Final objective value:  {solver.objective_value:.3e}",
+            f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
+            "\n",
+            f"           --- State equations solved:  "
+            f"{solver.state_problem.number_of_solves:d}",
+            f" --- Adjoint equations solved:  "
+            f"{solver.adjoint_problem.number_of_solves:d}",
+            "\n",
+        ]
 
         return "".join(strs)
 
@@ -330,12 +327,11 @@ class MeshManager:
         """
 
         if solver.form_handler.is_shape_problem:
-            if (
-                solver.optimization_variable_abstractions.mesh_handler.save_optimized_mesh
-            ):
+            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
+            if mesh_handler.save_optimized_mesh:
                 iomesh.write_out_mesh(
-                    solver.optimization_variable_abstractions.mesh_handler.mesh,
-                    solver.optimization_variable_abstractions.mesh_handler.gmsh_file,
+                    mesh_handler.mesh,
+                    mesh_handler.gmsh_file,
                     f"{self.result_dir}/optimized_mesh.msh",
                 )
 
@@ -501,7 +497,9 @@ class PVDFileManager:
 
             if self.is_control_problem:
                 for i in range(self.form_handler.control_dim):
-                    self.control_pvd_list[i] << self.form_handler.controls[i], iteration
+                    self.control_pvd_list[i] << self.form_handler.controls[i], float(
+                        iteration
+                    )
 
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
@@ -525,4 +523,6 @@ class PVDFileManager:
 
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
-                self.gradient_pvd_list[i] << self.form_handler.gradient[i], iteration
+                self.gradient_pvd_list[i] << self.form_handler.gradient[i], float(
+                    iteration
+                )

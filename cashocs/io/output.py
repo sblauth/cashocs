@@ -20,8 +20,8 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime as dt
 import pathlib
+from datetime import datetime as dt
 from typing import TYPE_CHECKING
 
 from cashocs.io import managers
@@ -49,7 +49,11 @@ class OutputManager:
         )
         if self.time_suffix:
             dt_current_time = dt.now()
-            self.suffix = f"{dt_current_time.year}_{dt_current_time.month}_{dt_current_time.day}_{dt_current_time.hour}_{dt_current_time.minute}_{dt_current_time.second}"
+            self.suffix = (
+                f"{dt_current_time.year}_{dt_current_time.month}_"
+                f"{dt_current_time.day}_{dt_current_time.hour}_"
+                f"{dt_current_time.minute}_{dt_current_time.second}"
+            )
             self.result_dir = f"{self.result_dir}_{self.suffix}"
 
         save_txt = self.config.getboolean("Output", "save_txt", fallback=True)

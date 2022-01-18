@@ -17,8 +17,8 @@
 
 """Custom solvers for nonlinear equations.
 
-This module has custom solvers for nonlinear PDEs, including a damped Newton methd and a
-Picard iteration for coupled problems.
+This module has custom solvers for nonlinear PDEs, including a damped Newton method and
+a Picard iteration for coupled problems.
 """
 
 from cashocs.nonlinear_solvers.newton_solver import newton_solve, damped_newton_solve

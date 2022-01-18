@@ -32,6 +32,7 @@ from cashocs import _loggers
 from cashocs import utils
 
 
+# noinspection PyPep8Naming
 def newton_solve(
     F: ufl.Form,
     u: fenics.Function,
@@ -55,17 +56,19 @@ def newton_solve(
     r"""A damped Newton method for solving nonlinear equations.
     
     The damped Newton method is based on the natural monotonicity test from
-    `Deuflhard, Newton methods for nonlinear problems <https://doi.org/10.1007/978-3-642-23899-4>`_.
+    `Deuflhard, Newton methods for nonlinear problems
+    <https://doi.org/10.1007/978-3-642-23899-4>`_.
     It also allows fine tuning via a direct interface, and absolute, relative,
     and combined stopping criteria. Can also be used to specify the solver for
     the inner (linear) subproblems via petsc ksps.
 
-    The method terminates after ``max_iter`` iterations, or if a termination criterion is
-    satisfied. These criteria are given by
+    The method terminates after ``max_iter`` iterations, or if a termination criterion
+    is satisfied. These criteria are given by
 
     - a relative one in case ``convergence_type = 'rel'``, i.e.,
 
-    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    .. math::
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{rtol} \lvert\lvert F_0\rvert\rvert.
 
     - an absolute one in case ``convergence_type = 'abs'``, i.e.,
 
@@ -73,7 +76,9 @@ def newton_solve(
 
     - a combination of both in case ``convergence_type = 'combined'``, i.e.,
 
-    .. math:: \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol} + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
+    .. math::
+        \lvert\lvert F_{k} \rvert\rvert \leq \texttt{atol}
+        + \texttt{rtol} \lvert\lvert F_0 \rvert\rvert.
 
     The norm chosen for the termination criterion is specified via ``norm_type``.
     
@@ -150,14 +155,14 @@ def newton_solve(
     if isinstance(bcs, fenics.DirichletBC):
         bcs = [bcs]
 
-    if not convergence_type in ["rel", "abs", "combined"]:
+    if convergence_type not in ["rel", "abs", "combined"]:
         raise _exceptions.InputError(
             "cashocs.nonlinear_solvers.damped_newton_solve",
             "convergence_type",
             "Input convergence_type has to be one of 'rel', 'abs', or 'combined'.",
         )
 
-    if not norm_type in ["l2", "linf"]:
+    if norm_type not in ["l2", "linf"]:
         raise _exceptions.InputError(
             "cashocs.nonlinear_solvers.damped_newton_solve",
             "norm_type",
@@ -208,6 +213,8 @@ def newton_solve(
 
     # Compute the initial residual
     assembler.assemble(residual)
+    assembler_shift = None
+    residual_shift = None
 
     if shift is not None:
         assembler_shift = fenics.SystemAssembler(dF, shift, bcs_hom)
@@ -226,7 +233,9 @@ def newton_solve(
     res = res_0
     if verbose:
         print(
-            f"Newton Iteration {iterations:2d} - residual (abs):  {res:.3e} (tol = {atol:.3e})    residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
+            f"Newton Iteration {iterations:2d} - "
+            f"residual (abs):  {res:.3e} (tol = {atol:.3e})    "
+            f"residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
         )
 
     if convergence_type == "abs":
@@ -332,7 +341,9 @@ def newton_solve(
         eta_a = gamma * pow(res / res_prev, 2)
         if verbose:
             print(
-                f"Newton Iteration {iterations:2d} - residual (abs):  {res:.3e} (tol = {atol:.3e})    residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
+                f"Newton Iteration {iterations:2d} - "
+                f"residual (abs):  {res:.3e} (tol = {atol:.3e})    "
+                f"residual (rel):  {res / res_0:.3e} (tol = {rtol:.3e})"
             )
 
         if res <= tol:
@@ -344,6 +355,7 @@ def newton_solve(
 
 
 # deprecated
+# noinspection PyPep8Naming
 def damped_newton_solve(
     F: ufl.Form,
     u: fenics.Function,
@@ -370,10 +382,6 @@ def damped_newton_solve(
         bcs: A list of DirichletBCs for the nonlinear variational problem.
         dF: The Jacobian of F, used for the Newton method. Default is None, and in this 
             case the Jacobian is computed automatically with AD.
-        shift: This is used in case we want to solve a nonlinear operator equation with 
-            a nonlinear part ``F`` and a part ``shift``, which does not depend on the 
-            variable ``u``. Solves the equation :math:`F(u) = shift`. In case shift is 
-            ``None`` (the default), the equation :math:`F(u) = 0` is solved.
         rtol: Relative tolerance of the solver if convergence_type is either 
             ``'combined'`` or ``'rel'`` (default is ``rtol = 1e-10``).
         atol: Absolute tolerance of the solver if convergence_type is either 
@@ -385,18 +393,11 @@ def damped_newton_solve(
         damped: If ``True``, then a damping strategy is used. If ``False``, the 
             classical Newton-Raphson iteration (without damping) is used (default is 
             ``True``).
-        inexact: If ``True``, then an inexact Newtons method is used, in case an 
-            iterative solver is used for the inner solution of the linear systems. 
-            Default is ``True``.
         verbose: If ``True``, prints status of the iteration to the console (default is 
             ``True``).
         ksp: The PETSc ksp object used to solve the inner (linear) problem if this is 
             ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
-        rhs_tensor: A matrix for the right-hand side of the (linearized) equation.
-        lhs_tensor: A vector for the left-hand side of the (linearized) equation.
-        is_linear: A flag, which can be used to simplify the solution in case the 
-            equation is actually linear. Default is ``False``.
 
     Returns:
         The solution of the nonlinear variational problem, if converged. This overwrites 
@@ -430,7 +431,8 @@ def damped_newton_solve(
     """
 
     _loggers.warning(
-        "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced by cashocs.newton_solve and will be removed in the future."
+        "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced "
+        "by cashocs.newton_solve and will be removed in the future."
     )
 
     return newton_solve(

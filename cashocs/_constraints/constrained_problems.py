@@ -49,7 +49,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         cost_functional_form: Union[List[ufl.Form], ufl.Form],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraints: Union[
+        constraint_list: Union[
             List[
                 Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
             ],
@@ -75,8 +75,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 or a list of these.
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
-            constraints: (A list of) additional equality and inequality constraints for
-                the problem.
+            constraint_list: (A list of) additional equality and inequality constraints
+                for the problem.
             config: The config file for the problem, generated via
                 :py:func:`cashocs.create_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
@@ -116,9 +116,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.scalar_tracking_forms_initial = utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraints = utils.enlist(constraints)
+        self.constraint_list = utils.enlist(constraint_list)
 
-        self.constraint_dim = len(self.constraints)
+        self.constraint_dim = len(self.constraint_list)
 
         self.iterations = 0
         self.initial_norm = 1.0
@@ -200,7 +200,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
 
         s = 0.0
-        for constraint in self.constraints:
+        for constraint in self.constraint_list:
             s += pow(constraint.constraint_violation(), 2)
 
         return np.sqrt(s)
@@ -240,6 +240,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 each solve of the state system
         """
 
+        # noinspection PyAttributeOutsideInit
         self._pre_hook = function
 
     def inject_post_hook(self, function: Callable) -> None:
@@ -250,6 +251,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 the computation of the gradient(s)
         """
 
+        # noinspection PyAttributeOutsideInit
         self._post_hook = function
 
     def inject_pre_post_hook(
@@ -281,7 +283,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraints: Union[
+        constraint_list: Union[
             constraints.EqualityConstraint,
             constraints.InequalityConstraint,
             List[
@@ -311,8 +313,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 :py:class:`fenics.Function`, or a list of these.
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
-            constraints: (A list of) additional equality and inequality constraints for
-                the problem.
+            constraint_list: (A list of) additional equality and inequality constraints
+                for the problem.
             config: The config file for the problem, generated via
                 :py:func:`cashocs.create_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
@@ -349,7 +351,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             cost_functional_form,
             states,
             adjoints,
-            constraints,
+            constraint_list,
             config=config,
             initial_guess=initial_guess,
             ksp_options=ksp_options,
@@ -403,12 +405,15 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
+        optimization_variable_abstractions = (
+            optimal_control_problem.optimization_variable_abstractions
+        )
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    optimal_control_problem.optimization_variable_abstractions.compute_gradient_norm()
+                    optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 
@@ -431,7 +436,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        constraints: Union[
+        constraint_list: Union[
             constraints.EqualityConstraint,
             constraints.InequalityConstraint,
             List[constraints.EqualityConstraint, constraints.InequalityConstraint],
@@ -458,8 +463,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
                 markers.
-            constraints: (A list of) additional equality and inequality constraints for
-                the problem.
+            constraint_list: (A list of) additional equality and inequality constraints
+                for the problem.
             config: The config file for the problem, generated via
                 :py:func:`cashocs.create_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
@@ -495,7 +500,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             cost_functional_form,
             states,
             adjoints,
-            constraints,
+            constraint_list,
             config=config,
             initial_guess=initial_guess,
             ksp_options=ksp_options,
@@ -546,12 +551,15 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
+        optimization_variable_abstractions = (
+            shape_optimization_problem.optimization_variable_abstractions
+        )
         if inner_atol is not None:
             atol = inner_atol
         else:
             if self.iterations == 1:
                 self.initial_norm = (
-                    shape_optimization_problem.optimization_variable_abstractions.compute_gradient_norm()
+                    optimization_variable_abstractions.compute_gradient_norm()
                 )
             atol = self.initial_norm * tol / 10.0
 

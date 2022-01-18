@@ -27,8 +27,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-import ufl
 import fenics
+import ufl
 
 from cashocs import _loggers
 from cashocs import utils
@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from cashocs._forms import shape_form_handler
 
 
+# noinspection PyUnresolvedReferences
 def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     """Computes the tangential gradient of u.
 
@@ -51,6 +52,7 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
 
 
+# noinspection PyUnresolvedReferences
 def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     """Computes the tangential divergence of u.
 

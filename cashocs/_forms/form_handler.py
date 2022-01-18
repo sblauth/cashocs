@@ -29,7 +29,6 @@ import ufl
 from cashocs import _exceptions
 from cashocs import utils
 
-
 if TYPE_CHECKING:
     from cashocs import _optimization
     from cashocs._forms import shape_regularization
@@ -71,7 +70,7 @@ class FormHandler(abc.ABC):
         self.shape_regularization: Optional[
             shape_regularization.ShapeRegularization
         ] = None
-        self.control_dim = None
+        self.control_dim = 1
         self.riesz_projection_matrices = None
         self.gradient_forms_rhs = None
         self.uses_custom_scalar_product = False
@@ -84,6 +83,9 @@ class FormHandler(abc.ABC):
         self.scalar_product_matrix = None
         self.test_vector_field = None
         self.mu_lame = None
+        self.controls = None
+        self.control_spaces = None
+        self.deformation_space = None
 
         self.lagrangian_form = self.cost_functional_form + utils.summation(
             self.state_forms
@@ -451,4 +453,9 @@ class FormHandler(abc.ABC):
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
 
+        pass
+
+    def project_to_admissible_set(
+        self, a: List[fenics.Function]
+    ) -> List[fenics.Function]:
         pass

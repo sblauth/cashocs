@@ -26,11 +26,12 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
-from cashocs.nonlinear_solvers import newton_solver
 from cashocs import _exceptions
 from cashocs import utils
+from cashocs.nonlinear_solvers import newton_solver
 
 
+# noinspection PyPep8Naming
 def picard_iteration(
     F_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -95,21 +96,23 @@ def picard_iteration(
         raise _exceptions.InputError(
             "cashocs.picard_iteration",
             "bcs_list",
-            "Lenght of bcs_list and u_list does not match.",
+            "Length of bcs_list and u_list does not match.",
         )
 
     if ksps is None:
-        ksps = [None for i in range(len(u_list))]
+        ksps = [None] * len(u_list)
     if ksp_options is None:
-        ksp_options = [None for i in range(len(u_list))]
+        ksp_options = [None] * len(u_list)
     if rhs_tensors is None:
-        rhs_tensors = [None for i in range(len(u_list))]
+        rhs_tensors = [None] * len(u_list)
     if lhs_tensors is None:
-        lhs_tensors = [None for i in range(len(u_list))]
+        lhs_tensors = [None] * len(u_list)
 
-    res_tensor = [fenics.PETScVector() for j in range(len(u_list))]
+    res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9
     gamma = 0.9
+    res_0 = 1.0
+    tol = 1.0
 
     for i in range(max_iter + 1):
         res = 0.0
@@ -129,7 +132,9 @@ def picard_iteration(
             tol = atol + rtol * res_0
         if verbose:
             print(
-                f"Picard iteration {i:d}: ||res|| (abs): {res:.3e}   ||res|| (rel): {res/res_0:.3e}"
+                f"Picard iteration {i:d}: "
+                f"||res|| (abs): {res:.3e}   "
+                f"||res|| (rel): {res/res_0:.3e}"
             )
         if res <= tol:
             break

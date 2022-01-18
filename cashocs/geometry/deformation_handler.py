@@ -26,10 +26,10 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from cashocs.geometry import measure
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import utils
+from cashocs.geometry import measure
 
 
 class DeformationHandler:
@@ -114,6 +114,7 @@ class DeformationHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
+        # noinspection PyPep8Naming
         A, b = utils._assemble_petsc_system(self.a_prior, self.L_prior)
         x = utils._solve_linear_problem(
             self.ksp_prior, A, b, ksp_options=self.options_prior
@@ -326,7 +327,9 @@ class CollisionCounter:
       int i = 0;
       for (VertexIterator v(*mesh); !v.end(); ++v)
       {
-        colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(v->point());
+        colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(
+          v->point()
+        );
         collisions[i] = colliding_cells.size();
         
         ++i;

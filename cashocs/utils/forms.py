@@ -28,6 +28,7 @@ from cashocs import _exceptions
 from cashocs import _loggers
 
 
+# noinspection PyUnresolvedReferences
 def summation(
     x: List[Union[ufl.core.expr.Expr, int, float]]
 ) -> Union[ufl.core.expr.Expr, int, float]:
@@ -61,6 +62,7 @@ def summation(
     return y
 
 
+# noinspection PyUnresolvedReferences
 def multiplication(
     x: List[Union[ufl.core.expr.Expr, int, float]]
 ) -> Union[ufl.core.expr.Expr, int, float]:
@@ -87,6 +89,7 @@ def multiplication(
     return y
 
 
+# noinspection PyUnresolvedReferences
 def _max(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -103,6 +106,7 @@ def _max(
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
+# noinspection PyUnresolvedReferences
 def _min(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -119,12 +123,13 @@ def _min(
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
+# noinspection PyUnresolvedReferences
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
     measure: fenics.Measure,
     lower_threshold: Optional[Union[float, fenics.Function]] = None,
-    upper_treshold: Optional[Union[float, fenics.Function]] = None,
+    upper_threshold: Optional[Union[float, fenics.Function]] = None,
     shift_lower: Optional[Union[float, fenics.Function]] = None,
     shift_upper: Optional[Union[float, fenics.Function]] = None,
 ) -> ufl.Form:
@@ -146,7 +151,7 @@ def moreau_yosida_regularization(
         lower_threshold: The lower threshold for the inequality constraint. In case this
             is ``None``, the lower bound is set to :math:`-\infty`. The default is
             ``None``
-        upper_treshold: The upper threshold for the inequality constraint. In case this
+        upper_threshold: The upper threshold for the inequality constraint. In case this
             is ``None``, the upper bound is set to :math:`\infty`. The default is
             ``None``
         shift_lower: A shift function for the lower bound of the Moreau-Yosida
@@ -161,7 +166,10 @@ def moreau_yosida_regularization(
         functional.
     """
 
-    if lower_threshold is None and upper_treshold is None:
+    reg_lower = None
+    reg_upper = None
+
+    if lower_threshold is None and upper_threshold is None:
         raise _exceptions.InputError(
             "cashocs.utils.moreau_yosida_regularization",
             "upper_threshold, lower_threshold",
@@ -185,12 +193,12 @@ def moreau_yosida_regularization(
             )
             * measure
         )
-    if upper_treshold is not None:
+    if upper_threshold is not None:
         reg_upper = (
             fenics.Constant(1 / (2 * gamma))
             * pow(
                 _max(
-                    shift_upper + fenics.Constant(gamma) * (term - upper_treshold),
+                    shift_upper + fenics.Constant(gamma) * (term - upper_threshold),
                     fenics.Constant(0.0),
                 ),
                 2,
@@ -198,11 +206,11 @@ def moreau_yosida_regularization(
             * measure
         )
 
-    if upper_treshold is not None and lower_threshold is not None:
+    if upper_threshold is not None and lower_threshold is not None:
         return reg_lower + reg_upper
-    elif upper_treshold is None and lower_threshold is not None:
+    elif upper_threshold is None and lower_threshold is not None:
         return reg_lower
-    elif upper_treshold is not None and lower_threshold is None:
+    elif upper_threshold is not None and lower_threshold is None:
         return reg_upper
 
 
@@ -318,11 +326,13 @@ def create_bcs_list(
         A list of DirichletBC objects that represent the boundary conditions.
 
     .. deprecated:: 1.5.0
-        This is replaced by cashocs.create_dirichlet_bcs and will be removed in the future.
+        This is replaced by cashocs.create_dirichlet_bcs and will be removed in the
+        future.
     """
 
     _loggers.warning(
-        "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by cashocs.create_dirichlet_bcs and will be removed in the future."
+        "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by "
+        "cashocs.create_dirichlet_bcs and will be removed in the future."
     )
 
     return create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs)

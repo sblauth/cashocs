@@ -17,9 +17,9 @@
 
 """Module for treatment of optimal control problems."""
 
-from cashocs._optimization.optimal_control.optimal_control_problem import (
-    OptimalControlProblem,
-)
 from cashocs._optimization.optimal_control.control_variable_abstractions import (
     ControlVariableAbstractions,
+)
+from cashocs._optimization.optimal_control.optimal_control_problem import (
+    OptimalControlProblem,
 )
