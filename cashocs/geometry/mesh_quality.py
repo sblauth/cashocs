@@ -50,27 +50,20 @@ def compute_mesh_quality(
         and 1 the best possible quality.
     """
 
-    quality = None
-
-    if quality_type in ["min", "minimum"]:
-        if quality_measure == "skewness":
-            quality = MeshQuality.min_skewness(mesh)
-        elif quality_measure == "maximum_angle":
-            quality = MeshQuality.min_maximum_angle(mesh)
-        elif quality_measure == "radius_ratios":
-            quality = MeshQuality.min_radius_ratios(mesh)
-        elif quality_measure == "condition_number":
-            quality = MeshQuality.min_condition_number(mesh)
-
-    elif quality_type in ["avg", "average"]:
-        if quality_measure == "skewness":
-            quality = MeshQuality.avg_skewness(mesh)
-        elif quality_measure == "maximum_angle":
-            quality = MeshQuality.avg_maximum_angle(mesh)
-        elif quality_measure == "radius_ratios":
-            quality = MeshQuality.avg_radius_ratios(mesh)
-        elif quality_measure == "condition_number":
-            quality = MeshQuality.avg_condition_number(mesh)
+    min_functions = {
+        "skewness": MeshQuality.min_skewness,
+        "maximum_angle": MeshQuality.min_maximum_angle,
+        "radius_ratios": MeshQuality.min_radius_ratios,
+        "condition_number": MeshQuality.min_condition_number,
+    }
+    avg_functions = {
+        "skewness": MeshQuality.avg_skewness,
+        "maximum_angle": MeshQuality.avg_maximum_angle,
+        "radius_ratios": MeshQuality.avg_radius_ratios,
+        "condition_number": MeshQuality.avg_condition_number,
+    }
+    functions = {"min": min_functions, "avg": avg_functions}
+    quality = functions[quality_type][quality_measure](mesh)
 
     return quality
 
@@ -466,6 +459,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
+        # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
         utils._setup_petsc_options([ksp], [options])
 
@@ -520,6 +514,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
+        # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
         utils._setup_petsc_options([ksp], [options])
 

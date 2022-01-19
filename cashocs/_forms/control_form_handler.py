@@ -86,7 +86,7 @@ class ControlFormHandler(form_handler.FormHandler):
         self.temp = [fenics.Function(V) for V in self.control_spaces]
 
         # Compute the necessary equations
-        self.__compute_gradient_equations()
+        self._compute_gradient_equations()
 
         if self.opt_algo == "newton":
             self._compute_newton_forms()
@@ -282,7 +282,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         return a
 
-    def __compute_gradient_equations(self) -> None:
+    def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
 
         self.gradient_forms_rhs = [
@@ -432,7 +432,7 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.control_dim)
         ]
 
-    def _compute_secon_order_lagrangian_derivatives(self) -> None:
+    def _compute_second_order_lagrangian_derivatives(self) -> None:
         """Compute the second order derivatives of the Lagrangian w.r.t. y and u."""
 
         self.L_yy = [
@@ -547,7 +547,7 @@ class ControlFormHandler(form_handler.FormHandler):
         if self.use_scalar_tracking or self.use_min_max_terms:
             raise _exceptions.InputError(
                 "cashocs._forms.ShapeFormHandler",
-                "__compute_newton_forms",
+                "_compute_newton_forms",
                 (
                     "Newton's method is not available with scalar tracking or"
                     " min_max terms."
@@ -556,7 +556,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         self._compute_sensitivity_equations()
         self._compute_first_order_lagrangian_derivatives()
-        self._compute_secon_order_lagrangian_derivatives()
+        self._compute_second_order_lagrangian_derivatives()
 
         self.w_1 = [
             utils.summation([self.L_yy[i][j] for j in range(self.state_dim)])

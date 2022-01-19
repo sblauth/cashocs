@@ -109,9 +109,9 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         # Calculate the necessary UFL forms
         self.inhomogeneous_mu = False
-        self.__compute_shape_derivative()
-        self.__compute_shape_gradient_forms()
-        self.__setup_mu_computation()
+        self._compute_shape_derivative()
+        self._compute_shape_gradient_forms()
+        self._setup_mu_computation()
 
         retry_assembler_setup = False
         if not self.degree_estimation:
@@ -144,7 +144,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.b_mu = fenics.PETScVector()
 
         self.update_scalar_product()
-        self.__compute_p_laplacian_forms()
+        self._compute_p_laplacian_forms()
 
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
@@ -169,7 +169,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 "Second order methods are not implemented for shape optimization yet"
             )
 
-    def __compute_scalar_tracking_shape_derivative(self) -> None:
+    def _compute_scalar_tracking_shape_derivative(self) -> None:
         """Calculates the shape derivative of scalar_tracking_forms."""
 
         if self.use_scalar_tracking:
@@ -185,7 +185,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     self.test_vector_field,
                 )
 
-    def __compute_min_max_shape_derivative(self) -> None:
+    def _compute_min_max_shape_derivative(self) -> None:
         """Calculates the shape derivative of min_max_terms."""
 
         if self.use_min_max_terms:
@@ -212,7 +212,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.test_vector_field,
                     )
 
-    def __add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
+    # noinspection PyUnresolvedReferences
+    def _add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
         """Adds pull backs for scalar_tracking_forms."""
 
         if self.use_scalar_tracking:
@@ -228,7 +229,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                     fenics.dot(fenics.grad(coeff), self.test_vector_field),
                 )
 
-    def __add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
+    # noinspection PyUnresolvedReferences
+    def _add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
         """Adds pull backs for min_max_terms."""
 
         if self.use_min_max_terms:
@@ -255,7 +257,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                         fenics.dot(fenics.grad(coeff), self.test_vector_field),
                     )
 
-    def __check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
+    # noinspection PyUnresolvedReferences
+    def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables."""
 
         if (
@@ -264,7 +267,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         ):
             self.material_derivative_coeffs.append(coeff)
 
-    def __parse_pull_back_coefficients(self) -> None:
+    def _parse_pull_back_coefficients(self) -> None:
         """Parses the coefficients which are available for adding pull backs."""
 
         self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
@@ -274,17 +277,17 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.material_derivative_coeffs = []
 
         for coeff in self.lagrangian_form.coefficients():
-            self.__check_coefficient_id(coeff)
+            self._check_coefficient_id(coeff)
 
         if self.use_scalar_tracking:
             for j in range(self.no_scalar_tracking_terms):
                 for coeff in self.scalar_cost_functional_integrands[j].coefficients():
-                    self.__check_coefficient_id(coeff)
+                    self._check_coefficient_id(coeff)
 
         if self.use_min_max_terms:
             for j in range(self.no_min_max_terms):
                 for coeff in self.min_max_integrands[j].coefficients():
-                    self.__check_coefficient_id(coeff)
+                    self._check_coefficient_id(coeff)
 
         if len(self.material_derivative_coeffs) > 0:
             _loggers.warning(
@@ -294,11 +297,11 @@ class ShapeFormHandler(form_handler.FormHandler):
                 "with cashocs.verification.shape_gradient_test\n"
             )
 
-    def __add_pull_backs(self) -> None:
+    def _add_pull_backs(self) -> None:
         """Add pull backs to the shape derivative."""
 
         if self.use_pull_back:
-            self.__parse_pull_back_coefficients()
+            self._parse_pull_back_coefficients()
 
             for coeff in self.material_derivative_coeffs:
 
@@ -308,8 +311,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                     fenics.dot(fenics.grad(coeff), self.test_vector_field),
                 )
 
-                self.__add_scalar_tracking_pull_backs(coeff)
-                self.__add_min_max_pull_backs(coeff)
+                self._add_scalar_tracking_pull_backs(coeff)
+                self._add_min_max_pull_backs(coeff)
 
                 self.material_derivative = ufl.algorithms.expand_derivatives(
                     self.material_derivative
@@ -317,7 +320,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
                 self.shape_derivative += self.material_derivative
 
-    def __compute_shape_derivative(self) -> None:
+    def _compute_shape_derivative(self) -> None:
         """Calculates the shape derivative.
 
         This only works properly if differential operators only
@@ -332,14 +335,14 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.test_vector_field,
         )
 
-        self.__compute_scalar_tracking_shape_derivative()
-        self.__compute_min_max_shape_derivative()
-        self.__add_pull_backs()
+        self._compute_scalar_tracking_shape_derivative()
+        self._compute_min_max_shape_derivative()
+        self._add_pull_backs()
 
         # Add regularization
         self.shape_derivative += self.shape_regularization.compute_shape_derivative()
 
-    def __compute_shape_gradient_forms(self) -> None:
+    def _compute_shape_gradient_forms(self) -> None:
         """Calculates the necessary left-hand-sides for the shape gradient problem."""
 
         shape_bdry_temp = self.config.get(
@@ -460,7 +463,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             # Use the scalar product supplied by the user
             self.riesz_scalar_product = self.shape_scalar_product
 
-    def __setup_mu_computation(self) -> None:
+    def _setup_mu_computation(self) -> None:
         """Sets up the computation of the elasticity parameter mu."""
 
         if not self.use_distance_mu:
@@ -479,6 +482,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     ["ksp_atol", 1e-50],
                     ["ksp_max_it", 100],
                 ]
+                # noinspection PyUnresolvedReferences
                 self.ksp_mu = PETSc.KSP().create()
                 utils._setup_petsc_options([self.ksp_mu], [self.options_mu])
 
@@ -554,7 +558,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         mu_max=self.mu_max,
                     )
 
-    def __compute_mu_elas(self) -> None:
+    def _compute_mu_elas(self) -> None:
         """Computes the elasticity parameter mu.
 
         Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
@@ -569,8 +573,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.a_mu,
                         self.L_mu,
                         self.bcs_mu,
-                        rhs_tensor=self.A_mu,
-                        lhs_tensor=self.b_mu,
+                        A_tensor=self.A_mu,
+                        b_tensor=self.b_mu,
                     )
                     x = utils._solve_linear_problem(
                         self.ksp_mu,
@@ -626,7 +630,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         (needed when the geometry changes).
         """
 
-        self.__compute_mu_elas()
+        self._compute_mu_elas()
         if self.update_inhomogeneous:
             self.volumes.vector().vec().aypx(
                 0.0,
@@ -673,7 +677,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         return result
 
-    def __compute_p_laplacian_forms(self) -> None:
+    def _compute_p_laplacian_forms(self) -> None:
         """Computes the weak forms for the p-Laplace equations."""
 
         if self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False):

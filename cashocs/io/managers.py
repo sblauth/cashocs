@@ -380,54 +380,69 @@ class PVDFileManager:
         self.adjoint_pvd_list = []
         self.gradient_pvd_list = []
 
+    def _initialize_states_pvd(self) -> None:
+        """Initializes the list of pvd files for the state variables."""
+
+        if self.save_pvd:
+            for i in range(self.form_handler.state_dim):
+                self.state_pvd_list.append(
+                    self._generate_pvd_file(
+                        self.form_handler.state_spaces[i],
+                        f"state_{i:d}",
+                        self.pvd_prefix,
+                    )
+                )
+
+    def _initialize_controls_pvd(self) -> None:
+        """Initializes the list of pvd files for the control variables."""
+
+        if self.save_pvd and self.is_control_problem:
+            for i in range(self.form_handler.control_dim):
+                self.control_pvd_list.append(
+                    self._generate_pvd_file(
+                        self.form_handler.control_spaces[i],
+                        f"control_{i:d}",
+                        self.pvd_prefix,
+                    )
+                )
+
+    def _initialize_adjoints_pvd(self) -> None:
+        """Initialize the list of pvd files for the adjoint variables."""
+        if self.save_pvd_adjoint:
+            for i in range(self.form_handler.state_dim):
+                self.adjoint_pvd_list.append(
+                    self._generate_pvd_file(
+                        self.form_handler.adjoint_spaces[i],
+                        f"adjoint_{i:d}",
+                        self.pvd_prefix,
+                    )
+                )
+
+    def _initialize_gradients_pvd(self) -> None:
+        """Initialize the list of pvd files for the gradients."""
+
+        if self.save_pvd_gradient:
+            for i in range(self.form_handler.control_dim):
+                if self.is_control_problem:
+                    gradient_str = f"gradient_{i:d}"
+                else:
+                    gradient_str = "shape_gradient"
+                self.gradient_pvd_list.append(
+                    self._generate_pvd_file(
+                        self.form_handler.control_spaces[i],
+                        gradient_str,
+                        self.pvd_prefix,
+                    )
+                )
+
     def _initialize_pvd_lists(self) -> None:
         """Initializes the lists of pvd files."""
 
         if not self.is_initialized:
-            if self.save_pvd:
-                for i in range(self.form_handler.state_dim):
-                    self.state_pvd_list.append(
-                        self._generate_pvd_file(
-                            self.form_handler.state_spaces[i],
-                            f"state_{i:d}",
-                            self.pvd_prefix,
-                        )
-                    )
-
-                if self.is_control_problem:
-                    for i in range(self.form_handler.control_dim):
-                        self.control_pvd_list.append(
-                            self._generate_pvd_file(
-                                self.form_handler.control_spaces[i],
-                                f"control_{i:d}",
-                                self.pvd_prefix,
-                            )
-                        )
-
-            if self.save_pvd_adjoint:
-                for i in range(self.form_handler.state_dim):
-                    self.adjoint_pvd_list.append(
-                        self._generate_pvd_file(
-                            self.form_handler.adjoint_spaces[i],
-                            f"adjoint_{i:d}",
-                            self.pvd_prefix,
-                        )
-                    )
-
-            if self.save_pvd_gradient:
-
-                for i in range(self.form_handler.control_dim):
-                    if self.is_control_problem:
-                        gradient_str = f"gradient_{i:d}"
-                    else:
-                        gradient_str = "shape_gradient"
-                    self.gradient_pvd_list.append(
-                        self._generate_pvd_file(
-                            self.form_handler.control_spaces[i],
-                            gradient_str,
-                            self.pvd_prefix,
-                        )
-                    )
+            self._initialize_states_pvd()
+            self._initialize_controls_pvd()
+            self._initialize_adjoints_pvd()
+            self._initialize_gradients_pvd()
 
             self.is_initialized = True
 
@@ -464,18 +479,12 @@ class PVDFileManager:
         else:
             return fenics.File(f"{self.result_dir}/pvd/{prefix}{name}.pvd")
 
-    def save_to_file(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Saves the variables to pvd files.
+    def _save_states(self, iteration: int) -> None:
+        """Saves the state variables to pvd files.
 
         Args:
-            solver: The optimization algorithm.
+            iteration: The current iteration count.
         """
-
-        self._initialize_pvd_lists()
-
-        iteration = solver.iteration
 
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
@@ -495,11 +504,25 @@ class PVDFileManager:
                         float(iteration),
                     )
 
-            if self.is_control_problem:
-                for i in range(self.form_handler.control_dim):
-                    self.control_pvd_list[i] << self.form_handler.controls[i], float(
-                        iteration
-                    )
+    def _save_controls(self, iteration: int) -> None:
+        """Saves the control variables to pvd.
+
+        Args:
+            iteration: The current iteration count.
+        """
+
+        if self.save_pvd and self.is_control_problem:
+            for i in range(self.form_handler.control_dim):
+                self.control_pvd_list[i] << self.form_handler.controls[i], float(
+                    iteration
+                )
+
+    def _save_adjoints(self, iteration: int) -> None:
+        """Saves the adjoint variables to pvd files.
+
+        Args:
+            iteration: The current iteration count.
+        """
 
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
@@ -521,8 +544,33 @@ class PVDFileManager:
                         float(iteration),
                     )
 
+    def _save_gradients(self, iteration: int) -> None:
+        """Saves the gradients to pvd files.
+
+        Args:
+            iteration: The current iteration count.
+        """
+
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
                 self.gradient_pvd_list[i] << self.form_handler.gradient[i], float(
                     iteration
                 )
+
+    def save_to_file(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """Saves the variables to pvd files.
+
+        Args:
+            solver: The optimization algorithm.
+        """
+
+        self._initialize_pvd_lists()
+
+        iteration = solver.iteration
+
+        self._save_states(iteration)
+        self._save_controls(iteration)
+        self._save_adjoints(iteration)
+        self._save_gradients(iteration)

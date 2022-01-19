@@ -203,10 +203,10 @@ class FormHandler(abc.ABC):
         )
         self.opt_algo = utils._optimization_algorithm_configuration(self.config)
 
-        self.__compute_state_equations()
-        self.__compute_adjoint_equations()
+        self._compute_state_equations()
+        self._compute_adjoint_equations()
 
-    def __compute_state_equations(self) -> None:
+    def _compute_state_equations(self) -> None:
         """Calculates the weak form of the state equation for the use with fenics."""
 
         self.state_eq_forms = [
@@ -254,7 +254,7 @@ class FormHandler(abc.ABC):
                 else:
                     self.state_eq_forms_rhs.append(rhs)
 
-    def __compute_adjoint_boundary_conditions(self) -> None:
+    def _compute_adjoint_boundary_conditions(self) -> None:
         """Computes the boundary conditions for the adjoint systems."""
 
         if self.state_adjoint_equal_spaces:
@@ -299,7 +299,7 @@ class FormHandler(abc.ABC):
                             adjoint_space, bdry_value, bc.sub_domain
                         )
 
-    def __compute_adjoint_scalar_tracking_forms(self) -> None:
+    def _compute_adjoint_scalar_tracking_forms(self) -> None:
         """Compute the part arising due to scalar_tracking_terms."""
 
         if self.use_scalar_tracking:
@@ -318,7 +318,7 @@ class FormHandler(abc.ABC):
                         )
                     )
 
-    def __compute_adjoint_min_max_forms(self) -> None:
+    def _compute_adjoint_min_max_forms(self) -> None:
         """Compute the part arising due to min_max_terms."""
 
         if self.use_min_max_terms:
@@ -350,7 +350,7 @@ class FormHandler(abc.ABC):
                             self.test_functions_adjoint[i],
                         )
 
-    def __compute_adjoint_equations(self) -> None:
+    def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
 
         self.adjoint_eq_forms = [
@@ -362,8 +362,8 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim)
         ]
 
-        self.__compute_adjoint_scalar_tracking_forms()
-        self.__compute_adjoint_min_max_forms()
+        self._compute_adjoint_scalar_tracking_forms()
+        self._compute_adjoint_min_max_forms()
 
         self.linear_adjoint_eq_forms = [
             ufl.replace(
@@ -393,7 +393,7 @@ class FormHandler(abc.ABC):
             else:
                 self.adjoint_eq_rhs.append(rhs)
 
-        self.__compute_adjoint_boundary_conditions()
+        self._compute_adjoint_boundary_conditions()
 
     def _pre_hook(self) -> None:
         pass

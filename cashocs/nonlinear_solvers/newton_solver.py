@@ -32,7 +32,7 @@ from cashocs import _loggers
 from cashocs import utils
 
 
-# noinspection PyPep8Naming
+# noinspection PyPep8Naming,PyUnresolvedReferences
 def newton_solve(
     F: ufl.Form,
     u: fenics.Function,
@@ -49,8 +49,8 @@ def newton_solve(
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[str]]] = None,
-    rhs_tensor: Optional[fenics.PETScMatrix] = None,
-    lhs_tensor: Optional[fenics.PETScVector] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,
+    b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
 ) -> fenics.Function:
     r"""A damped Newton method for solving nonlinear equations.
@@ -114,8 +114,8 @@ def newton_solve(
         ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
             ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
-        rhs_tensor: A matrix for the right-hand side of the (linearized) equation.
-        lhs_tensor: A vector for the left-hand side of the (linearized) equation.
+        A_tensor: A matrix for the right-hand side of the (linearized) equation.
+        b_tensor: A vector for the left-hand side of the (linearized) equation.
         is_linear: A flag, which can be used to simplify the solution in case the
             equation is actually linear. Default is ``False``.
 
@@ -208,8 +208,8 @@ def newton_solve(
     assembler = fenics.SystemAssembler(dF, -F, bcs_hom)
     assembler.keep_diagonal = True
 
-    A_fenics = rhs_tensor or fenics.PETScMatrix()
-    residual = lhs_tensor or fenics.PETScVector()
+    A_fenics = A_tensor or fenics.PETScMatrix()
+    residual = b_tensor or fenics.PETScVector()
 
     # Compute the initial residual
     assembler.assemble(residual)
@@ -355,7 +355,7 @@ def newton_solve(
 
 
 # deprecated
-# noinspection PyPep8Naming
+# noinspection PyPep8Naming,PyUnresolvedReferences
 def damped_newton_solve(
     F: ufl.Form,
     u: fenics.Function,

@@ -52,7 +52,7 @@ class DeformationHandler:
         self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
         self.DG0 = fenics.FunctionSpace(mesh, "DG", 0)
         self.bbtree = self.mesh.bounding_box_tree()
-        self.__setup_a_priori()
+        self._setup_a_priori()
         self.v2d = fenics.vertex_to_dof_map(self.VCG).reshape(
             (-1, self.mesh.geometry().dim())
         )
@@ -66,7 +66,7 @@ class DeformationHandler:
         )
         self.coordinates = self.mesh.coordinates()
 
-    def __setup_a_priori(self) -> None:
+    def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
 
         self.options_prior = [
@@ -77,6 +77,7 @@ class DeformationHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
+        # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
         utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
 
@@ -94,7 +95,7 @@ class DeformationHandler:
             * self.dx
         )
 
-    def __test_a_priori(self, transformation: fenics.Function) -> bool:
+    def _test_a_priori(self, transformation: fenics.Function) -> bool:
         r"""Check the quality of the transformation before the actual mesh is moved.
 
         Checks the quality of the transformation. The criterion is that
@@ -123,7 +124,7 @@ class DeformationHandler:
 
         return min_det > 0
 
-    def __test_a_posteriori(self) -> bool:
+    def _test_a_posteriori(self) -> bool:
         """Checks the quality of the transformation after the actual mesh is moved.
 
         Checks whether the mesh is a valid finite element mesh
@@ -201,7 +202,7 @@ class DeformationHandler:
                 dof_transformation = self.coordinate_to_dof(transformation)
             else:
                 dof_transformation = transformation
-            if not self.__test_a_priori(dof_transformation):
+            if not self._test_a_priori(dof_transformation):
                 _loggers.debug(
                     "Mesh transformation rejected due to a priori check.\n"
                     "Reason: Transformation would result in inverted mesh elements."
@@ -212,13 +213,13 @@ class DeformationHandler:
                 self.coordinates += coordinate_transformation
                 self.bbtree.build(self.mesh)
 
-                return self.__test_a_posteriori()
+                return self._test_a_posteriori()
         else:
             self.old_coordinates = self.mesh.coordinates().copy()
             self.coordinates += coordinate_transformation
             self.bbtree.build(self.mesh)
 
-            return self.__test_a_posteriori()
+            return self._test_a_posteriori()
 
     def coordinate_to_dof(self, coordinate_deformation: np.ndarray) -> fenics.Function:
         """Converts a coordinate deformation to a deformation vector field (dof based).
@@ -296,7 +297,7 @@ class DeformationHandler:
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
 
-        return self.__test_a_posteriori()
+        return self._test_a_posteriori()
 
 
 class CollisionCounter:

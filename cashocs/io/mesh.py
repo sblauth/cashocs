@@ -25,6 +25,26 @@ import fenics
 import numpy as np
 
 
+def create_point_representation(
+    dim: int, points: np.ndarray, idcs: np.ndarray, subwrite_counter: int
+) -> str:
+
+    mod_line = ""
+    if dim == 2:
+        mod_line = (
+            f"{points[idcs[subwrite_counter]][0]:.16f} "
+            f"{points[idcs[subwrite_counter]][1]:.16f} 0\n"
+        )
+    elif dim == 3:
+        mod_line = (
+            f"{points[idcs[subwrite_counter]][0]:.16f} "
+            f"{points[idcs[subwrite_counter]][1]:.16f} "
+            f"{points[idcs[subwrite_counter]][2]:.16f}\n"
+        )
+
+    return mod_line
+
+
 def write_out_mesh(
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
@@ -83,17 +103,9 @@ def write_out_mesh(
                         subnode_counter += 1
                         new_file.write(line)
                     elif len(split_line) == 3:
-                        if dim == 2:
-                            mod_line = (
-                                f"{points[idcs[subwrite_counter]][0]:.16f} "
-                                f"{points[idcs[subwrite_counter]][1]:.16f} 0\n"
-                            )
-                        elif dim == 3:
-                            mod_line = (
-                                f"{points[idcs[subwrite_counter]][0]:.16f} "
-                                f"{points[idcs[subwrite_counter]][1]:.16f} "
-                                f"{points[idcs[subwrite_counter]][2]:.16f}\n"
-                            )
+                        mod_line = create_point_representation(
+                            dim, points, idcs, subwrite_counter
+                        )
 
                         new_file.write(mod_line)
                         subwrite_counter += 1

@@ -78,16 +78,16 @@ class BaseHessianProblem(abc.ABC):
             fenics.Function(V) for V in self.form_handler.control_spaces
         ]
 
-        self.state_rhs_tensors = [
+        self.state_A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
-        self.state_lhs_tensors = [
+        self.state_b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
-        self.adjoint_rhs_tensors = [
+        self.adjoint_A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
-        self.adjoint_lhs_tensors = [
+        self.adjoint_b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
@@ -136,10 +136,12 @@ class BaseHessianProblem(abc.ABC):
         self.bcs_list_ad = None
 
         self.no_sensitivity_solves = 0
+        # noinspection PyUnresolvedReferences
         self.state_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
         utils._setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
+        # noinspection PyUnresolvedReferences
         self.adjoint_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
@@ -148,6 +150,7 @@ class BaseHessianProblem(abc.ABC):
         )
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
+        # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.control_dim)]
 
         option = [
@@ -237,8 +240,8 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.state_ksps,
                 ksp_options=self.form_handler.state_ksp_options,
-                rhs_tensors=self.state_rhs_tensors,
-                lhs_tensors=self.state_lhs_tensors,
+                A_tensors=self.state_A_tensors,
+                b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
             )
 
@@ -256,8 +259,8 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.adjoint_ksps,
                 ksp_options=self.form_handler.adjoint_ksp_options,
-                rhs_tensors=self.adjoint_rhs_tensors,
-                lhs_tensors=self.adjoint_lhs_tensors,
+                A_tensors=self.adjoint_A_tensors,
+                b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,
             )
 

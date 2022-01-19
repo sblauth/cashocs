@@ -252,7 +252,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 self.temp_dir = tempfile.mkdtemp(
                     prefix="._cashocs_remesh_temp_", dir=self.directory
                 )
-                self.__change_except_hook()
+                self._change_except_hook()
                 self.temp_dict = {
                     "temp_dir": self.temp_dir,
                     "gmsh_file": self.config.get("Mesh", "gmsh_file"),
@@ -277,7 +277,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     pass
 
             else:
-                self.__change_except_hook()
+                self._change_except_hook()
                 with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
                     self.temp_dict = json.load(file)
 
@@ -453,7 +453,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.solver.run()
         self.solver.post_processing()
 
-    def __change_except_hook(self) -> None:
+    def _change_except_hook(self) -> None:
         """Ensures that temporary files are deleted when an exception occurs.
 
         This modifies the sys.excepthook command so that it also deletes temp files

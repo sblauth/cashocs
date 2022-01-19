@@ -63,6 +63,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.gradient_norm_squared = 1.0
 
         # Initialize the PETSc Krylov solver for the Riesz projection problems
+        # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.control_dim)]
 
         gradient_tol = self.config.getfloat(
@@ -100,7 +101,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
-        self.lhs_tensors = [
+        self.b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.control_dim)
         ]
 
@@ -117,11 +118,11 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         if not self.has_solution:
             for i in range(self.form_handler.control_dim):
                 fenics.assemble(
-                    self.form_handler.gradient_forms_rhs[i], tensor=self.lhs_tensors[i]
+                    self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
                 )
                 utils._solve_linear_problem(
                     ksp=self.ksps[i],
-                    b=self.lhs_tensors[i].vec(),
+                    b=self.b_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
                 )

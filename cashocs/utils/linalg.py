@@ -22,28 +22,61 @@ from __future__ import annotations
 from typing import Union, List, Tuple, Optional
 
 import fenics
+import numpy as np
 import ufl
 from petsc4py import PETSc
 
 from cashocs import _exceptions
 
+# TODO: Use this in actual code
+def _split_linear_forms(forms) -> Tuple[List[ufl.Form], List[ufl.Form]]:
+    lhs_list = []
+    rhs_list = []
+    for i in range(len(forms)):
+        try:
+            lhs, rhs = fenics.system(forms[i])
+        except ufl.log.UFLException:
+            raise _exceptions.CashocsException(
+                "The state system could not be transferred to a linear "
+                "system.\n"
+                "Perhaps you specified that the system is linear, "
+                "although it is not.\n"
+                "In your config, in the StateSystem section, "
+                "try using is_linear = False."
+            )
+        lhs_list.append(lhs)
+        if rhs.empty():
+            # zero_form = (
+            #     fenics.inner(
+            #         fenics.Constant(np.zeros(self.test_functions_state[i].ufl_shape)),
+            #         self.test_functions_state[i],
+            #     )
+            #     * self.dx
+            # )
+            # self.state_eq_forms_rhs.append(zero_form)
+            pass
+        else:
+            rhs_list.append(rhs)
+
+    return lhs_list, rhs_list
+
 
 # noinspection PyUnresolvedReferences
 def _assemble_petsc_system(
-    rhs_form: ufl.Form,
     lhs_form: ufl.Form,
+    rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    rhs_tensor: Optional[fenics.PETScMatrix] = None,
-    lhs_tensor: Optional[fenics.PETScVector] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,
+    b_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Args:
-        rhs_form: The UFL form for the left-hand side of the linear equation.
-        lhs_form: The UFL form for the right-hand side of the linear equation.
+        lhs_form: The UFL form for the left-hand side of the linear equation.
+        rhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
-        rhs_tensor: A matrix into which the result is assembled. Default is ``None``.
-        lhs_tensor: A vector into which the result is assembled. Default is ``None``.
+        A_tensor: A matrix into which the result is assembled. Default is ``None``.
+        b_tensor: A vector into which the result is assembled. Default is ``None``.
 
     Returns:
         A tuple (A, b), where A is the matrix of the linear system, and b is the vector
@@ -55,27 +88,28 @@ def _assemble_petsc_system(
         allows for well-posed problems on the boundary etc.
     """
 
-    if rhs_tensor is None:
-        rhs_tensor = fenics.PETScMatrix()
-    if lhs_tensor is None:
-        lhs_tensor = fenics.PETScVector()
+    if A_tensor is None:
+        A_tensor = fenics.PETScMatrix()
+    if b_tensor is None:
+        b_tensor = fenics.PETScVector()
     fenics.assemble_system(
-        rhs_form,
         lhs_form,
+        rhs_form,
         bcs,
         keep_diagonal=True,
-        A_tensor=rhs_tensor,
-        b_tensor=lhs_tensor,
+        A_tensor=A_tensor,
+        b_tensor=b_tensor,
     )
-    rhs_tensor.ident_zeros()
+    A_tensor.ident_zeros()
 
     # noinspection PyPep8Naming
-    A = rhs_tensor.mat()
-    b = lhs_tensor.vec()
+    A = A_tensor.mat()
+    b = b_tensor.vec()
 
     return A, b
 
 
+# noinspection PyUnresolvedReferences
 def _setup_petsc_options(
     ksps: List[PETSc.KSP], ksp_options: List[List[List[str]]]
 ) -> None:
@@ -169,14 +203,7 @@ def _solve_linear_problem(
         x, _ = A.getVecs()
 
     if ksp_options is not None:
-        opts = fenics.PETScOptions
-        # noinspection PyArgumentList
-        opts.clear()
-
-        for option in ksp_options:
-            opts.set(*option)
-
-        ksp.setFromOptions()
+        _setup_petsc_options([ksp], [ksp_options])
 
     if rtol is not None:
         ksp.rtol = rtol
@@ -188,6 +215,60 @@ def _solve_linear_problem(
         raise _exceptions.PETScKSPError(ksp.getConvergedReason())
 
     return x
+
+
+# TODO: Use this in actual code
+def _assemble_and_solve_linear(
+    lhs_form: ufl.Form,
+    rhs_form: ufl.Form,
+    bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
+    A: Optional[fenics.PETScMatrix] = None,
+    b: Optional[fenics.PETScVector] = None,
+    x: Optional[PETSc.Vec] = None,
+    ksp: Optional[PETSc.KSP] = None,
+    ksp_options: Optional[List[List[str]]] = None,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
+) -> PETSc.Vec:
+    """Assembles and solves a linear system.
+
+    Args:
+        lhs_form: The UFL form for the left-hand side of the linear equation.
+        rhs_form: The UFL form for the right-hand side of the linear equation.
+        bcs: A list of Dirichlet boundary conditions.
+        A: A matrix into which the lhs is assembled. Default is ``None``.
+        b: A vector into which the rhs is assembled. Default is ``None``.
+        x: The PETSc vector that stores the solution of the problem. If this is
+            None, then a new vector will be created (and returned).
+        ksp: The PETSc KSP object used to solve the problem. None means that the solver
+            mumps is used (default is None).
+        ksp_options: The options for the PETSc ksp object. If this is None (the default)
+            a direct method is used.
+        rtol: The relative tolerance used in case an iterative solver is used for
+            solving the linear problem. Overrides the specification in the ksp object
+            and ksp_options.
+        atol: The absolute tolerance used in case an iterative solver is used for
+            solving the linear problem. Overrides the specification in the ksp object
+            and ksp_options.
+
+    Returns:
+        A PETSc vector containing the solution x.
+    """
+
+    A_matrix, b_vector = _assemble_petsc_system(
+        lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
+    )
+    solution = _solve_linear_problem(
+        ksp=ksp,
+        A=A_matrix,
+        b=b_vector,
+        x=x,
+        ksp_options=ksp_options,
+        rtol=rtol,
+        atol=atol,
+    )
+
+    return solution
 
 
 class Interpolator:

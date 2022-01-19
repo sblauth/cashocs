@@ -51,6 +51,90 @@ class Mesh(fenics.Mesh):
         self._config_flag = True
 
 
+def _check_imported_mesh_quality(
+    input_arg: Union[configparser.ConfigParser, str],
+    mesh: Mesh,
+    cashocs_remesh_flag: bool,
+) -> None:
+    """Checks the quality of an imported mesh.
+
+    Args:
+        input_arg: The argument used to import the mesh.
+
+    Returns:
+
+    """
+
+    if isinstance(input_arg, configparser.ConfigParser):
+        mesh_quality_tol_lower = input_arg.getfloat(
+            "MeshQuality", "tol_lower", fallback=0.0
+        )
+        mesh_quality_tol_upper = input_arg.getfloat(
+            "MeshQuality", "tol_upper", fallback=1e-15
+        )
+
+        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
+            _loggers.warning(
+                "You are using a lower remesh tolerance (tol_lower) close to "
+                "the upper one (tol_upper). This may slow down the "
+                "optimization considerably."
+            )
+
+        mesh_quality_measure = input_arg.get(
+            "MeshQuality", "measure", fallback="skewness"
+        )
+        mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
+
+        # noinspection PyTypeChecker
+        current_mesh_quality = mesh_quality.compute_mesh_quality(
+            mesh, mesh_quality_type, mesh_quality_measure
+        )
+
+        if not cashocs_remesh_flag:
+            if current_mesh_quality < mesh_quality_tol_lower:
+                raise _exceptions.InputError(
+                    "cashocs.geometry.import_mesh",
+                    "input_arg",
+                    "The quality of the mesh file you have specified is not "
+                    "sufficient for evaluating the cost functional.\n"
+                    f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                )
+
+            if current_mesh_quality < mesh_quality_tol_upper:
+                raise _exceptions.InputError(
+                    "cashocs.geometry.import_mesh",
+                    "input_arg",
+                    "The quality of the mesh file you have specified is not "
+                    "sufficient for computing the shape gradient.\n "
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                )
+
+        else:
+            if current_mesh_quality < mesh_quality_tol_lower:
+                raise _exceptions.InputError(
+                    "cashocs.geometry.import_mesh",
+                    "input_arg",
+                    "Remeshing failed.\n"
+                    "The quality of the mesh file generated through remeshing is "
+                    "not sufficient for evaluating the cost functional.\n"
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                )
+
+            if current_mesh_quality < mesh_quality_tol_upper:
+                raise _exceptions.InputError(
+                    "cashocs.geometry.import_mesh",
+                    "input_arg",
+                    "Remeshing failed.\n"
+                    "The quality of the mesh file generated through remeshing "
+                    "is not sufficient for computing the shape gradient.\n "
+                    + f"It currently is {current_mesh_quality:.3e} but has to "
+                    f"be at least {mesh_quality_tol_upper:.3e}.",
+                )
+
+
 def import_mesh(
     input_arg: Union[str, configparser.ConfigParser]
 ) -> Tuple[
@@ -110,16 +194,12 @@ def import_mesh(
     if isinstance(input_arg, str):
         mesh_file = input_arg
     elif isinstance(input_arg, configparser.ConfigParser):
-        # overloading for remeshing
-        if not input_arg.getboolean("Mesh", "remesh", fallback=False):
+        if not cashocs_remesh_flag:
             mesh_file = input_arg.get("Mesh", "mesh_file")
         else:
-            if not cashocs_remesh_flag:
-                mesh_file = input_arg.get("Mesh", "mesh_file")
-            else:
-                with open(f"{temp_dir}/temp_dict.json", "r") as file:
-                    temp_dict = json.load(file)
-                mesh_file = temp_dict["mesh_file"]
+            with open(f"{temp_dir}/temp_dict.json", "r") as file:
+                temp_dict = json.load(file)
+            mesh_file = temp_dict["mesh_file"]
 
     else:
         raise _exceptions.InputError(
@@ -191,74 +271,7 @@ def import_mesh(
         mesh._physical_groups = physical_groups
 
     # Check the mesh quality of the imported mesh in case a config file is passed
-    if isinstance(input_arg, configparser.ConfigParser):
-        mesh_quality_tol_lower = input_arg.getfloat(
-            "MeshQuality", "tol_lower", fallback=0.0
-        )
-        mesh_quality_tol_upper = input_arg.getfloat(
-            "MeshQuality", "tol_upper", fallback=1e-15
-        )
-
-        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
-            _loggers.warning(
-                "You are using a lower remesh tolerance (tol_lower) close to "
-                "the upper one (tol_upper). This may slow down the "
-                "optimization considerably."
-            )
-
-        mesh_quality_measure = input_arg.get(
-            "MeshQuality", "measure", fallback="skewness"
-        )
-        mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
-
-        # noinspection PyTypeChecker
-        current_mesh_quality = mesh_quality.compute_mesh_quality(
-            mesh, mesh_quality_type, mesh_quality_measure
-        )
-
-        if not cashocs_remesh_flag:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for evaluating the cost functional.\n"
-                    f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
-                )
-
-        else:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing is "
-                    "not sufficient for evaluating the cost functional.\n"
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing "
-                    "is not sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_upper:.3e}.",
-                )
+    _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
 
     return mesh, subdomains, boundaries, dx, ds, dS
 

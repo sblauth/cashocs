@@ -70,6 +70,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         )
 
         # Generate the Krylov solver for the shape gradient problem
+        # noinspection PyUnresolvedReferences
         self.ksp = PETSc.KSP().create()
 
         gradient_method = self.config.get(
@@ -197,8 +198,8 @@ class _PLaplaceProjector:
         dx = gradient_problem.form_handler.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.rhs_tensor = fenics.PETScMatrix()
-        self.lhs_tensor = fenics.PETScVector()
+        self.A_tensor = fenics.PETScMatrix()
+        self.b_tensor = fenics.PETScVector()
 
         self.F_list = []
         for p in self.p_list:
@@ -254,6 +255,6 @@ class _PLaplaceProjector:
                 inexact=True,
                 verbose=False,
                 ksp_options=self.ksp_options,
-                rhs_tensor=self.rhs_tensor,
-                lhs_tensor=self.lhs_tensor,
+                A_tensor=self.A_tensor,
+                b_tensor=self.b_tensor,
             )

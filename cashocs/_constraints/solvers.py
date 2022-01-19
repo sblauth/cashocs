@@ -162,16 +162,16 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
-        self.rhs_tensors = [fenics.PETScMatrix()] * self.constraint_dim
-        self.lhs_tensors = [fenics.PETScVector()] * self.constraint_dim
+        self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
+        self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
 
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
         measure: fenics.Measure,
         multiplier: fenics.Function,
-        rhs_tensor: fenics.PETScMatrix,
-        lhs_tensor: fenics.PETScVector,
+        A_tensor: fenics.PETScMatrix,
+        b_tensor: fenics.PETScVector,
     ) -> None:
         """Project the multiplier for a pointwise constraint to a FE function space.
 
@@ -179,8 +179,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             project_terms: The ufl expression of the Lagrange multiplier (guess)
             measure: The measure, where the pointwise constraint is posed.
             multiplier: The function representing the Lagrange multiplier (guess)
-            rhs_tensor: A matrix, into which the form is assembled for speed up
-            lhs_tensor: A vector, into which the form is assembled for speed up
+            A_tensor: A matrix, into which the form is assembled for speed up
+            b_tensor: A vector, into which the form is assembled for speed up
         """
 
         if isinstance(project_terms, list):
@@ -194,11 +194,9 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        utils._assemble_petsc_system(
-            lhs, rhs, rhs_tensor=rhs_tensor, lhs_tensor=lhs_tensor
-        )
+        utils._assemble_petsc_system(lhs, rhs, A_tensor=A_tensor, b_tensor=b_tensor)
         utils._solve_linear_problem(
-            A=rhs_tensor.mat(), b=lhs_tensor.vec(), x=multiplier.vector().vec()
+            A=A_tensor.mat(), b=b_tensor.vec(), x=multiplier.vector().vec()
         )
 
     def _update_cost_functional(self) -> None:
@@ -272,11 +270,11 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 project_term,
                 self.constraints[index].measure,
                 self.lmbd[index],
-                self.rhs_tensors[index],
-                self.lhs_tensors[index],
+                self.A_tensors[index],
+                self.b_tensors[index],
             )
 
-    def _update_inequality_mulitpliers(self, index: int) -> None:
+    def _update_inequality_multipliers(self, index: int) -> None:
         """Performs an update of the Lagrange multipliers for equality constraints.
 
         Args:
@@ -342,8 +340,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 project_terms,
                 self.constraints[index].measure,
                 self.lmbd[index],
-                self.rhs_tensors[index],
-                self.lhs_tensors[index],
+                self.A_tensors[index],
+                self.b_tensors[index],
             )
 
     def _update_lagrange_multiplier_estimates(self) -> None:
@@ -354,7 +352,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self._update_equality_multipliers(i)
 
             elif isinstance(self.constraints[i], constraints.InequalityConstraint):
-                self._update_inequality_mulitpliers(i)
+                self._update_inequality_multipliers(i)
 
     def solve(
         self,

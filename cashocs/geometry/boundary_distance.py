@@ -65,6 +65,7 @@ def compute_boundary_distance(
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure._NamedMeasure("dx", mesh)
 
+    # noinspection PyUnresolvedReferences
     ksp = PETSc.KSP().create()
     ksp_options = [
         ["ksp_type", "cg"],
@@ -102,14 +103,14 @@ def compute_boundary_distance(
             fenics.CompiledSubDomain("on_boundary"),
         )
 
-    rhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
-    lhs = fenics.Constant(1.0) * v * dx
+    lhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
+    rhs = fenics.Constant(1.0) * v * dx
 
     # noinspection PyPep8Naming
-    A, b = utils._assemble_petsc_system(rhs, lhs, bcs)
+    A, b = utils._assemble_petsc_system(lhs, rhs, bcs)
     utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
 
-    lhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
+    rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
     residual_form = (
         pow(
@@ -125,7 +126,7 @@ def compute_boundary_distance(
     for i in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         # noinspection PyPep8Naming
-        A, b = utils._assemble_petsc_system(rhs, lhs, bcs)
+        A, b = utils._assemble_petsc_system(lhs, rhs, bcs)
         utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
         res = np.sqrt(fenics.assemble(residual_form))
 

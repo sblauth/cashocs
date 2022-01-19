@@ -72,13 +72,14 @@ class AdjointProblem(pde_problem.PDEProblem):
             "StateSystem", "picard_verbose", fallback=False
         )
 
+        # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
         utils._setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
-        self.rhs_tensors = [
+        self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
-        self.lhs_tensors = [
+        self.b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
@@ -108,17 +109,22 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
+                    # utils._assemble_and_solve_linear(
+                    #     self.form_handler.adjoint_eq_lhs[-1 - i],
+                    #     self.form_handler.adjoint_eq_rhs[-1 - i],
+                    #     self.bcs_list_ad[-1 - i],
+                    # )
                     utils._assemble_petsc_system(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
-                        rhs_tensor=self.rhs_tensors[-1 - i],
-                        lhs_tensor=self.lhs_tensors[-1 - i],
+                        A_tensor=self.A_tensors[-1 - i],
+                        b_tensor=self.b_tensors[-1 - i],
                     )
                     utils._solve_linear_problem(
                         self.ksps[-1 - i],
-                        self.rhs_tensors[-1 - i].mat(),
-                        self.lhs_tensors[-1 - i].vec(),
+                        self.A_tensors[-1 - i].mat(),
+                        self.b_tensors[-1 - i].vec(),
                         self.adjoints[-1 - i].vector().vec(),
                         self.form_handler.adjoint_ksp_options[-1 - i],
                     )
@@ -139,8 +145,8 @@ class AdjointProblem(pde_problem.PDEProblem):
                     inner_max_its=2,
                     ksps=self.ksps,
                     ksp_options=self.form_handler.adjoint_ksp_options,
-                    rhs_tensors=self.rhs_tensors,
-                    lhs_tensors=self.lhs_tensors,
+                    A_tensors=self.A_tensors,
+                    b_tensors=self.b_tensors,
                     inner_is_linear=True,
                 )
 

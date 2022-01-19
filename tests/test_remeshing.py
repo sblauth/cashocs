@@ -222,7 +222,7 @@ def test_remeshing_functionality():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/mesh_0.msh")
 
-    sop.mesh_handler._MeshHandler__generate_remesh_geo(config.get("Mesh", "gmsh_file"))
+    sop.mesh_handler._generate_remesh_geo(config.get("Mesh", "gmsh_file"))
     assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/remesh.geo")
 
     with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:

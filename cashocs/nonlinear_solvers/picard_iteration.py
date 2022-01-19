@@ -31,7 +31,7 @@ from cashocs import utils
 from cashocs.nonlinear_solvers import newton_solver
 
 
-# noinspection PyPep8Naming
+# noinspection PyPep8Naming,PyUnresolvedReferences
 def picard_iteration(
     F_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -46,8 +46,8 @@ def picard_iteration(
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
-    rhs_tensors: Optional[List[fenics.PETScMatrix]] = None,
-    lhs_tensors: Optional[List[fenics.PETScVector]] = None,
+    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
+    b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
@@ -73,9 +73,9 @@ def picard_iteration(
             optional. Default is ``None``, in which case the direct solver mumps is
             used.
         ksp_options: List of options for the KSP objects.
-        rhs_tensors: List of matrices for the right-hand sides of the inner (linearized)
+        A_tensors: List of matrices for the right-hand sides of the inner (linearized)
             equations.
-        lhs_tensors: List of vectors for the left-hand sides of the inner (linearized)
+        b_tensors: List of vectors for the left-hand sides of the inner (linearized)
             equations.
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
@@ -103,10 +103,10 @@ def picard_iteration(
         ksps = [None] * len(u_list)
     if ksp_options is None:
         ksp_options = [None] * len(u_list)
-    if rhs_tensors is None:
-        rhs_tensors = [None] * len(u_list)
-    if lhs_tensors is None:
-        lhs_tensors = [None] * len(u_list)
+    if A_tensors is None:
+        A_tensors = [None] * len(u_list)
+    if b_tensors is None:
+        b_tensors = [None] * len(u_list)
 
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9
@@ -161,8 +161,8 @@ def picard_iteration(
                 verbose=inner_verbose,
                 ksp=ksps[j],
                 ksp_options=ksp_options[j],
-                rhs_tensor=rhs_tensors[j],
-                lhs_tensor=lhs_tensors[j],
+                A_tensor=A_tensors[j],
+                b_tensor=b_tensors[j],
                 is_linear=inner_is_linear,
             )
 

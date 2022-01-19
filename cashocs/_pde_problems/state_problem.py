@@ -88,6 +88,7 @@ class StateProblem(pde_problem.PDEProblem):
 
         self.newton_atols = [1] * self.form_handler.state_dim
 
+        # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
         utils._setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
@@ -98,10 +99,10 @@ class StateProblem(pde_problem.PDEProblem):
                     rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
                 )
 
-        self.rhs_tensors = [
+        self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
-        self.lhs_tensors = [
+        self.b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
         self.res_j_tensors = [
@@ -112,6 +113,30 @@ class StateProblem(pde_problem.PDEProblem):
             self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
         except TypeError:
             self.number_of_solves = 0
+
+    def _update_scalar_tracking_terms(self) -> None:
+        """Updates the scalar_tracking_forms with current function values."""
+
+        if self.form_handler.use_scalar_tracking:
+            for j in range(self.form_handler.no_scalar_tracking_terms):
+                scalar_integral_value = fenics.assemble(
+                    self.form_handler.scalar_cost_functional_integrands[j]
+                )
+                self.form_handler.scalar_cost_functional_integrand_values[
+                    j
+                ].vector().vec().set(scalar_integral_value)
+
+    def _update_min_max_terms(self) -> None:
+        """Updates the min_max_terms with current function values."""
+
+        if self.form_handler.use_min_max_terms:
+            for j in range(self.form_handler.no_min_max_terms):
+                min_max_integral_value = fenics.assemble(
+                    self.form_handler.min_max_integrands[j]
+                )
+                self.form_handler.min_max_integrand_values[j].vector().vec().set(
+                    min_max_integral_value
+                )
 
     def solve(self) -> List[fenics.Function]:
         """Solves the state system.
@@ -138,13 +163,13 @@ class StateProblem(pde_problem.PDEProblem):
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
-                            rhs_tensor=self.rhs_tensors[i],
-                            lhs_tensor=self.lhs_tensors[i],
+                            A_tensor=self.A_tensors[i],
+                            b_tensor=self.b_tensors[i],
                         )
                         utils._solve_linear_problem(
                             self.ksps[i],
-                            self.rhs_tensors[i].mat(),
-                            self.lhs_tensors[i].vec(),
+                            self.A_tensors[i].mat(),
+                            self.b_tensors[i].vec(),
                             self.states[i].vector().vec(),
                             self.form_handler.state_ksp_options[i],
                         )
@@ -152,9 +177,6 @@ class StateProblem(pde_problem.PDEProblem):
 
                 else:
                     for i in range(self.form_handler.state_dim):
-                        if self.initial_guess is not None:
-                            fenics.assign(self.states[i], self.initial_guess[i])
-
                         self.states[i] = nonlinear_solvers.newton_solve(
                             self.form_handler.state_eq_forms[i],
                             self.states[i],
@@ -167,8 +189,8 @@ class StateProblem(pde_problem.PDEProblem):
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
-                            rhs_tensor=self.rhs_tensors[i],
-                            lhs_tensor=self.lhs_tensors[i],
+                            A_tensor=self.A_tensors[i],
+                            b_tensor=self.b_tensors[i],
                         )
 
             else:
@@ -186,30 +208,15 @@ class StateProblem(pde_problem.PDEProblem):
                     inner_max_its=self.newton_iter,
                     ksps=self.ksps,
                     ksp_options=self.form_handler.state_ksp_options,
-                    rhs_tensors=self.rhs_tensors,
-                    lhs_tensors=self.lhs_tensors,
+                    A_tensors=self.A_tensors,
+                    b_tensors=self.b_tensors,
                     inner_is_linear=self.form_handler.state_is_linear,
                 )
 
             self.has_solution = True
             self.number_of_solves += 1
 
-            if self.form_handler.use_scalar_tracking:
-                for j in range(self.form_handler.no_scalar_tracking_terms):
-                    scalar_integral_value = fenics.assemble(
-                        self.form_handler.scalar_cost_functional_integrands[j]
-                    )
-                    self.form_handler.scalar_cost_functional_integrand_values[
-                        j
-                    ].vector().vec().set(scalar_integral_value)
-
-            if self.form_handler.use_min_max_terms:
-                for j in range(self.form_handler.no_min_max_terms):
-                    min_max_integral_value = fenics.assemble(
-                        self.form_handler.min_max_integrands[j]
-                    )
-                    self.form_handler.min_max_integrand_values[j].vector().vec().set(
-                        min_max_integral_value
-                    )
+            self._update_scalar_tracking_terms()
+            self._update_min_max_terms()
 
         return self.states

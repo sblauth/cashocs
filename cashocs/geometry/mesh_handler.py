@@ -98,8 +98,8 @@ class _MeshHandler:
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
-        self.__setup_decrease_computation()
-        self.__setup_a_priori()
+        self._setup_decrease_computation()
+        self._setup_a_priori()
 
         # Remeshing initializations
         self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
@@ -158,7 +158,7 @@ class _MeshHandler:
         ):
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
-        if not self.__test_a_priori(transformation):
+        if not self._test_a_priori(transformation):
             _loggers.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
@@ -180,7 +180,7 @@ class _MeshHandler:
 
         self.deformation_handler.revert_transformation()
 
-    def __setup_decrease_computation(self) -> None:
+    def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
 
         self.options_frobenius = [
@@ -191,6 +191,7 @@ class _MeshHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
+        # noinspection PyUnresolvedReferences
         self.ksp_frobenius = PETSc.KSP().create()
         utils._setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
@@ -264,7 +265,7 @@ class _MeshHandler:
                 )
             )
 
-    def __setup_a_priori(self) -> None:
+    def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
 
         self.options_prior = [
@@ -275,6 +276,7 @@ class _MeshHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
+        # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
         utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
 
@@ -292,7 +294,7 @@ class _MeshHandler:
             * self.dx
         )
 
-    def __test_a_priori(self, transformation: fenics.Function) -> bool:
+    def _test_a_priori(self, transformation: fenics.Function) -> bool:
         r"""Check the quality of the transformation before the actual mesh is moved.
 
         Checks the quality of the transformation. The criterion is that
@@ -323,7 +325,7 @@ class _MeshHandler:
 
         return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
 
-    def __generate_remesh_geo(self, input_mesh_file: str) -> None:
+    def _generate_remesh_geo(self, input_mesh_file: str) -> None:
         """Generates a .geo file used for remeshing.
 
         The .geo file is generated via the original .geo file for the initial geometry,
@@ -432,6 +434,71 @@ class _MeshHandler:
         if os.path.isfile(subdomains_xdmf_file):
             subprocess.run(["rm", subdomains_xdmf_file], check=True)
 
+    @staticmethod
+    def filter_sys_argv(temp_dir: str):  # pragma: no cover
+        """Filters the command line arguments for the cashocs remesh flag
+
+        Args:
+            temp_dir: Path to directory for the temp files
+        """
+
+        arg_list = sys.argv.copy()
+        idx_cashocs_remesh_flag = [
+            i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
+        ]
+        if len(idx_cashocs_remesh_flag) > 1:
+            raise _exceptions.InputError(
+                "Command line options",
+                "--cashocs_remesh",
+                "The --cashocs_remesh flag should only be present once.",
+            )
+        elif len(idx_cashocs_remesh_flag) == 1:
+            arg_list.pop(idx_cashocs_remesh_flag[0])
+
+        idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
+        if len(idx_temp_dir) > 1:
+            raise _exceptions.InputError(
+                "Command line options",
+                "--temp_dir",
+                "The --temp_dir flag should only be present once.",
+            )
+        elif len(idx_temp_dir) == 1:
+            arg_list.pop(idx_temp_dir[0])
+
+        idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
+        if len(idx_temp_dir) > 1:
+            raise _exceptions.InputError(
+                "Command line options",
+                "--temp_dir",
+                "The --temp_dir flag should only be present once.",
+            )
+        elif len(idx_temp_dir_flag) == 1:
+            arg_list.pop(idx_temp_dir_flag[0])
+
+        return arg_list
+
+    def _restart_script(self, temp_dir: str) -> None:
+        """Restarts the python script with itself and replaces the process.
+
+        Args:
+              temp_dir: Path to the directory for temporary files.
+        """
+
+        if not self.config.getboolean("Debug", "restart", fallback=False):
+            os.execv(
+                sys.executable,
+                [sys.executable]
+                + self.filter_sys_argv(temp_dir)
+                + ["--cashocs_remesh"]
+                + ["--temp_dir"]
+                + [temp_dir],
+            )
+        else:
+            raise _exceptions.CashocsDebugException(
+                "Debug flag detected. "
+                "Restart of script with remeshed geometry is cancelled."
+            )
+
     def remesh(self, solver: OptimizationAlgorithm):
         """Remeshes the current geometry with Gmsh.
 
@@ -448,7 +515,7 @@ class _MeshHandler:
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
             io.write_out_mesh(self.mesh, self.gmsh_file, temp_file)
-            self.__generate_remesh_geo(temp_file)
+            self._generate_remesh_geo(temp_file)
 
             # save the output dict (without the last entries since they are "remeshed")
             self.temp_dict["output_dict"] = {}
@@ -520,63 +587,4 @@ class _MeshHandler:
             with open(f"{temp_dir}/temp_dict.json", "w") as file:
                 json.dump(self.temp_dict, file)
 
-            def filter_sys_argv():  # pragma: no cover
-                """Filters the command line arguments for the cashocs remesh flag
-
-                Returns
-                -------
-                list[str]
-                    The filtered list of command line arguments
-                """
-
-                arg_list = sys.argv.copy()
-                idx_cashocs_remesh_flag = [
-                    i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
-                ]
-                if len(idx_cashocs_remesh_flag) > 1:
-                    raise _exceptions.InputError(
-                        "Command line options",
-                        "--cashocs_remesh",
-                        "The --cashocs_remesh flag should only be present once.",
-                    )
-                elif len(idx_cashocs_remesh_flag) == 1:
-                    arg_list.pop(idx_cashocs_remesh_flag[0])
-
-                idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-                if len(idx_temp_dir) > 1:
-                    raise _exceptions.InputError(
-                        "Command line options",
-                        "--temp_dir",
-                        "The --temp_dir flag should only be present once.",
-                    )
-                elif len(idx_temp_dir) == 1:
-                    arg_list.pop(idx_temp_dir[0])
-
-                idx_temp_dir_flag = [
-                    i for i, s in enumerate(arg_list) if s == "--temp_dir"
-                ]
-                if len(idx_temp_dir) > 1:
-                    raise _exceptions.InputError(
-                        "Command line options",
-                        "--temp_dir",
-                        "The --temp_dir flag should only be present once.",
-                    )
-                elif len(idx_temp_dir_flag) == 1:
-                    arg_list.pop(idx_temp_dir_flag[0])
-
-                return arg_list
-
-            if not self.config.getboolean("Debug", "restart", fallback=False):
-                os.execv(
-                    sys.executable,
-                    [sys.executable]
-                    + filter_sys_argv()
-                    + ["--cashocs_remesh"]
-                    + ["--temp_dir"]
-                    + [temp_dir],
-                )
-            else:
-                raise _exceptions.CashocsDebugException(
-                    "Debug flag detected. "
-                    "Restart of script with remeshed geometry is cancelled."
-                )
+            self._restart_script(temp_dir)

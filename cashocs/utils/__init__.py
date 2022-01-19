@@ -43,6 +43,7 @@ from cashocs.utils.linalg import (
     _assemble_petsc_system,
     _setup_petsc_options,
     _solve_linear_problem,
+    _assemble_and_solve_linear,
     Interpolator,
 )
 
@@ -64,4 +65,5 @@ __all__ = [
     "_solve_linear_problem",
     "Interpolator",
     "create_bcs_list",
+    "_assemble_and_solve_linear",
 ]
