@@ -85,20 +85,6 @@ def picard_iteration(
     u_list = utils.enlist(u_list)
     bcs_list = utils._check_and_enlist_bcs(bcs_list)
 
-    if not len(F_list) == len(u_list):
-        raise _exceptions.InputError(
-            "cashocs.picard_iteration",
-            "F_list",
-            "Length of F_list and u_list does not match.",
-        )
-
-    if not len(bcs_list) == len(u_list):
-        raise _exceptions.InputError(
-            "cashocs.picard_iteration",
-            "bcs_list",
-            "Length of bcs_list and u_list does not match.",
-        )
-
     if ksps is None:
         ksps = [None] * len(u_list)
     if ksp_options is None:

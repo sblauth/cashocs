@@ -181,7 +181,6 @@ def newton_solve(
 
         ksp = PETSc.KSP().create()
         utils._setup_petsc_options([ksp], [ksp_options])
-        ksp.setFromOptions()
 
     # Calculate the Jacobian.
     dF = dF or fenics.derivative(F, u)

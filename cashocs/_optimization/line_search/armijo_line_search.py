@@ -54,6 +54,36 @@ class ArmijoLineSearch(line_search.LineSearch):
         )
         self.armijo_stepsize_initial = self.stepsize
 
+    def _check_for_nonconvergence(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> bool:
+        """Checks, whether the line search failed to converge.
+
+        Args:
+            solver: The optimization algorithm, which uses the line search.
+
+        Returns:
+            A boolean, which is True if a termination / cancellation criterion is
+            satisfied.
+        """
+
+        if solver.iteration >= solver.maximum_iterations:
+            solver.remeshing_its = True
+            return True
+
+        if self.stepsize * self.search_direction_inf <= 1e-8:
+            _loggers.error("Stepsize too small.")
+            solver.line_search_broken = True
+            return True
+        elif (
+            not self.is_newton_like
+            and not self.is_newton
+            and self.stepsize / self.armijo_stepsize_initial <= 1e-8
+        ):
+            _loggers.error("Stepsize too small.")
+            solver.line_search_broken = True
+            return True
+
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
@@ -69,12 +99,14 @@ class ArmijoLineSearch(line_search.LineSearch):
                 (presumably) scaled.
         """
 
-        search_direction_inf = np.max(
+        self.search_direction_inf = np.max(
             [
                 np.max(np.abs(search_direction[i].vector()[:]))
                 for i in range(len(self.gradient))
             ]
         )
+        decrease_measure = 1.0
+        decrease_measure_w_o_step = 1.0
 
         if has_curvature_info:
             self.stepsize = 1.0
@@ -88,21 +120,7 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         while True:
 
-            if solver.iteration >= solver.maximum_iterations:
-                solver.remeshing_its = True
-                return None
-
-            if self.stepsize * search_direction_inf <= 1e-8:
-                _loggers.error("Stepsize too small.")
-                solver.line_search_broken = True
-                return None
-            elif (
-                not self.is_newton_like
-                and not self.is_newton
-                and self.stepsize / self.armijo_stepsize_initial <= 1e-8
-            ):
-                _loggers.error("Stepsize too small.")
-                solver.line_search_broken = True
+            if self._check_for_nonconvergence(solver):
                 return None
 
             if self.is_shape_problem:
@@ -111,8 +129,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                         search_direction
                     )
                 )
-            else:
-                decrease_measure_w_o_step = 1.0
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
                     search_direction, self.stepsize, self.beta_armijo
@@ -132,8 +148,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                 )
             elif self.is_shape_problem:
                 decrease_measure = decrease_measure_w_o_step * self.stepsize
-            else:
-                decrease_measure = 1.0
 
             if (
                 objective_step
