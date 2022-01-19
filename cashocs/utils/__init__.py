@@ -45,6 +45,7 @@ from cashocs.utils.linalg import (
     _solve_linear_problem,
     _assemble_and_solve_linear,
     Interpolator,
+    _split_linear_forms,
 )
 
 __all__ = [
@@ -66,4 +67,5 @@ __all__ = [
     "Interpolator",
     "create_bcs_list",
     "_assemble_and_solve_linear",
+    "_split_linear_forms",
 ]

@@ -568,18 +568,13 @@ class ShapeFormHandler(form_handler.FormHandler):
         if self.shape_scalar_product is None:
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
-
-                    utils._assemble_petsc_system(
+                    x = utils._assemble_and_solve_linear(
                         self.a_mu,
                         self.L_mu,
                         self.bcs_mu,
-                        A_tensor=self.A_mu,
-                        b_tensor=self.b_mu,
-                    )
-                    x = utils._solve_linear_problem(
-                        self.ksp_mu,
-                        self.A_mu.mat(),
-                        self.b_mu.vec(),
+                        A=self.A_mu,
+                        b=self.b_mu,
+                        ksp=self.ksp_mu,
                         ksp_options=self.options_mu,
                     )
 

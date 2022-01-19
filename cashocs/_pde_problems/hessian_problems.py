@@ -196,32 +196,24 @@ class BaseHessianProblem(abc.ABC):
         if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 
             for i in range(self.state_dim):
-                system_matrix, system_rhs = utils._assemble_petsc_system(
+                utils._assemble_and_solve_linear(
                     self.form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
-                )
-                utils._solve_linear_problem(
-                    self.state_ksps[i],
-                    system_matrix,
-                    system_rhs,
-                    self.states_prime[i].vector().vec(),
-                    self.form_handler.state_ksp_options[i],
+                    x=self.states_prime[i].vector().vec(),
+                    ksp=self.state_ksps[i],
+                    ksp_options=self.form_handler.state_ksp_options[i],
                 )
                 self.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
-                system_matrix, system_rhs = utils._assemble_petsc_system(
+                utils._assemble_and_solve_linear(
                     self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i],
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
-                )
-                utils._solve_linear_problem(
-                    self.adjoint_ksps[-1 - i],
-                    system_matrix,
-                    system_rhs,
-                    self.adjoints_prime[-1 - i].vector().vec(),
-                    self.form_handler.adjoint_ksp_options[-1 - i],
+                    x=self.adjoints_prime[-1 - i].vector().vec(),
+                    ksp=self.adjoint_ksps[-1 - i],
+                    ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
                 )
                 self.adjoints_prime[-1 - i].vector().apply("")
 

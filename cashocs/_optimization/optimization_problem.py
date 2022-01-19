@@ -410,27 +410,10 @@ class OptimizationProblem(abc.ABC):
         ]
         self.form_handler.linear_adjoint_eq_forms = repl_forms
 
-        self.form_handler.adjoint_eq_lhs = []
-        self.form_handler.adjoint_eq_rhs = []
-
-        for i in range(self.state_dim):
-            lhs, rhs = fenics.system(self.form_handler.linear_adjoint_eq_forms[i])
-            self.form_handler.adjoint_eq_lhs.append(lhs)
-            if rhs.empty():
-                zero_form = (
-                    fenics.inner(
-                        fenics.Constant(
-                            np.zeros(
-                                self.form_handler.test_functions_adjoint[i].ufl_shape
-                            )
-                        ),
-                        self.form_handler.test_functions_adjoint[i],
-                    )
-                    * self.form_handler.dx
-                )
-                self.form_handler.adjoint_eq_rhs.append(zero_form)
-            else:
-                self.form_handler.adjoint_eq_rhs.append(rhs)
+        (
+            self.form_handler.adjoint_eq_lhs,
+            self.form_handler.adjoint_eq_rhs,
+        ) = utils._split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
 
         self.has_custom_adjoint = True
 

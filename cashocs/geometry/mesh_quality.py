@@ -479,8 +479,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond = fenics.Function(function_space_dg0)
 
         # noinspection PyPep8Naming
-        A, b = utils._assemble_petsc_system(lhs, rhs)
-        utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+        utils._assemble_and_solve_linear(
+            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+        )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
@@ -533,9 +534,9 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        # noinspection PyPep8Naming
-        A, b = utils._assemble_petsc_system(lhs, rhs)
-        utils._solve_linear_problem(ksp, A, b, cond.vector().vec(), options)
+        utils._assemble_and_solve_linear(
+            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+        )
         cond.vector().apply("")
 
         cond.vector().vec().reciprocal()

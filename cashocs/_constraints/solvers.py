@@ -165,6 +165,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
         self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
 
+    # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
@@ -194,10 +195,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        utils._assemble_petsc_system(lhs, rhs, A_tensor=A_tensor, b_tensor=b_tensor)
-        utils._solve_linear_problem(
-            A=A_tensor.mat(), b=b_tensor.vec(), x=multiplier.vector().vec()
+        utils._assemble_and_solve_linear(
+            lhs, rhs, A=A_tensor, b=b_tensor, x=multiplier.vector().vec()
         )
+        multiplier.vector().apply("")
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""

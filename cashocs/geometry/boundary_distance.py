@@ -106,9 +106,7 @@ def compute_boundary_distance(
     lhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
     rhs = fenics.Constant(1.0) * v * dx
 
-    # noinspection PyPep8Naming
-    A, b = utils._assemble_petsc_system(lhs, rhs, bcs)
-    utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
+    utils._assemble_and_solve_linear(lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp)
 
     rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
@@ -126,8 +124,9 @@ def compute_boundary_distance(
     for i in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         # noinspection PyPep8Naming
-        A, b = utils._assemble_petsc_system(lhs, rhs, bcs)
-        utils._solve_linear_problem(ksp, A, b, u_curr.vector().vec())
+        utils._assemble_and_solve_linear(
+            lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp
+        )
         res = np.sqrt(fenics.assemble(residual_form))
 
         if res <= res_0 * tol:

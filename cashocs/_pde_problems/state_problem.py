@@ -159,19 +159,15 @@ class StateProblem(pde_problem.PDEProblem):
             ):
                 if self.form_handler.state_is_linear:
                     for i in range(self.form_handler.state_dim):
-                        utils._assemble_petsc_system(
+                        utils._assemble_and_solve_linear(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
-                            A_tensor=self.A_tensors[i],
-                            b_tensor=self.b_tensors[i],
-                        )
-                        utils._solve_linear_problem(
-                            self.ksps[i],
-                            self.A_tensors[i].mat(),
-                            self.b_tensors[i].vec(),
-                            self.states[i].vector().vec(),
-                            self.form_handler.state_ksp_options[i],
+                            A=self.A_tensors[i],
+                            b=self.b_tensors[i],
+                            x=self.states[i].vector().vec(),
+                            ksp=self.ksps[i],
+                            ksp_options=self.form_handler.state_ksp_options[i],
                         )
                         self.states[i].vector().apply("")
 

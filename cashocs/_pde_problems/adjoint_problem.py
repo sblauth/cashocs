@@ -109,24 +109,15 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
-                    # utils._assemble_and_solve_linear(
-                    #     self.form_handler.adjoint_eq_lhs[-1 - i],
-                    #     self.form_handler.adjoint_eq_rhs[-1 - i],
-                    #     self.bcs_list_ad[-1 - i],
-                    # )
-                    utils._assemble_petsc_system(
+                    utils._assemble_and_solve_linear(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
-                        A_tensor=self.A_tensors[-1 - i],
-                        b_tensor=self.b_tensors[-1 - i],
-                    )
-                    utils._solve_linear_problem(
-                        self.ksps[-1 - i],
-                        self.A_tensors[-1 - i].mat(),
-                        self.b_tensors[-1 - i].vec(),
-                        self.adjoints[-1 - i].vector().vec(),
-                        self.form_handler.adjoint_ksp_options[-1 - i],
+                        A=self.A_tensors[-1 - i],
+                        b=self.b_tensors[-1 - i],
+                        x=self.adjoints[-1 - i].vector().vec(),
+                        ksp=self.ksps[-1 - i],
+                        ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
                     )
                     self.adjoints[-1 - i].vector().apply("")
 

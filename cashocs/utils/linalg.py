@@ -28,8 +28,18 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 
-# TODO: Use this in actual code
-def _split_linear_forms(forms) -> Tuple[List[ufl.Form], List[ufl.Form]]:
+
+def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
+    """Splits a list of linear forms into left- and right-hand sides.
+
+    Args:
+        forms: A list of (linear) ufl forms.
+
+    Returns:
+        A tuple (lhs_forms, rhs_forms), where lhs_forms is the list of forms of the
+        left-hand sides, and rhs_forms is the list of forms of the right-hand side.
+    """
+
     lhs_list = []
     rhs_list = []
     for i in range(len(forms)):
@@ -45,23 +55,26 @@ def _split_linear_forms(forms) -> Tuple[List[ufl.Form], List[ufl.Form]]:
                 "try using is_linear = False."
             )
         lhs_list.append(lhs)
+
         if rhs.empty():
-            # zero_form = (
-            #     fenics.inner(
-            #         fenics.Constant(np.zeros(self.test_functions_state[i].ufl_shape)),
-            #         self.test_functions_state[i],
-            #     )
-            #     * self.dx
-            # )
-            # self.state_eq_forms_rhs.append(zero_form)
-            pass
+            test_function = lhs.arguments()[0]
+            mesh = lhs.ufl_domain()
+            dx = fenics.Measure("dx", mesh)
+            zero_form = (
+                fenics.dot(
+                    fenics.Constant(np.zeros(test_function.ufl_shape)),
+                    test_function,
+                )
+                * dx
+            )
+            rhs_list.append(zero_form)
         else:
             rhs_list.append(rhs)
 
     return lhs_list, rhs_list
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPep8Naming
 def _assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -89,6 +102,7 @@ def _assemble_petsc_system(
     """
 
     if A_tensor is None:
+        # noinspection PyPep8Naming
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
@@ -217,7 +231,7 @@ def _solve_linear_problem(
     return x
 
 
-# TODO: Use this in actual code
+# noinspection PyPep8Naming,PyUnresolvedReferences
 def _assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -255,6 +269,7 @@ def _assemble_and_solve_linear(
         A PETSc vector containing the solution x.
     """
 
+    # noinspection PyPep8Naming
     A_matrix, b_vector = _assemble_petsc_system(
         lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
     )

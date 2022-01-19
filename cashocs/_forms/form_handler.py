@@ -23,10 +23,8 @@ import abc
 from typing import TYPE_CHECKING, Optional, List, Union
 
 import fenics
-import numpy as np
 import ufl
 
-from cashocs import _exceptions
 from cashocs import utils
 
 if TYPE_CHECKING:
@@ -225,34 +223,10 @@ class FormHandler(abc.ABC):
                 for i in range(self.state_dim)
             ]
 
-            self.state_eq_forms_lhs = []
-            self.state_eq_forms_rhs = []
-            for i in range(self.state_dim):
-                try:
-                    lhs, rhs = fenics.system(self.linear_state_eq_forms[i])
-                except ufl.log.UFLException:
-                    raise _exceptions.CashocsException(
-                        "The state system could not be transferred to a linear "
-                        "system.\n"
-                        "Perhaps you specified that the system is linear, "
-                        "although it is not.\n"
-                        "In your config, in the StateSystem section, "
-                        "try using is_linear = False."
-                    )
-                self.state_eq_forms_lhs.append(lhs)
-                if rhs.empty():
-                    zero_form = (
-                        fenics.inner(
-                            fenics.Constant(
-                                np.zeros(self.test_functions_state[i].ufl_shape)
-                            ),
-                            self.test_functions_state[i],
-                        )
-                        * self.dx
-                    )
-                    self.state_eq_forms_rhs.append(zero_form)
-                else:
-                    self.state_eq_forms_rhs.append(rhs)
+            (
+                self.state_eq_forms_lhs,
+                self.state_eq_forms_rhs,
+            ) = utils._split_linear_forms(self.linear_state_eq_forms)
 
     def _compute_adjoint_boundary_conditions(self) -> None:
         """Computes the boundary conditions for the adjoint systems."""
@@ -373,25 +347,9 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim)
         ]
 
-        self.adjoint_eq_lhs = []
-        self.adjoint_eq_rhs = []
-
-        for i in range(self.state_dim):
-            lhs, rhs = fenics.system(self.linear_adjoint_eq_forms[i])
-            self.adjoint_eq_lhs.append(lhs)
-            if rhs.empty():
-                zero_form = (
-                    fenics.inner(
-                        fenics.Constant(
-                            np.zeros(self.test_functions_adjoint[i].ufl_shape)
-                        ),
-                        self.test_functions_adjoint[i],
-                    )
-                    * self.dx
-                )
-                self.adjoint_eq_rhs.append(zero_form)
-            else:
-                self.adjoint_eq_rhs.append(rhs)
+        self.adjoint_eq_lhs, self.adjoint_eq_rhs = utils._split_linear_forms(
+            self.linear_adjoint_eq_forms
+        )
 
         self._compute_adjoint_boundary_conditions()
 

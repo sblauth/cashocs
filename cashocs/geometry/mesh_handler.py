@@ -244,10 +244,11 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
-            # noinspection PyPep8Naming
-            A, b = utils._assemble_petsc_system(self.a_frobenius, self.L_frobenius)
-            x = utils._solve_linear_problem(
-                self.ksp_frobenius, A, b, ksp_options=self.options_frobenius
+            x = utils._assemble_and_solve_linear(
+                self.a_frobenius,
+                self.L_frobenius,
+                ksp=self.ksp_frobenius,
+                ksp_options=self.options_frobenius,
             )
 
             frobenius_norm = np.max(x[:])
@@ -315,9 +316,11 @@ class _MeshHandler:
             0.0, transformation.vector().vec()
         )
         # noinspection PyPep8Naming
-        A, b = utils._assemble_petsc_system(self.a_prior, self.L_prior)
-        x = utils._solve_linear_problem(
-            self.ksp_prior, A, b, ksp_options=self.options_prior
+        x = utils._assemble_and_solve_linear(
+            self.a_prior,
+            self.L_prior,
+            ksp=self.ksp_prior,
+            ksp_options=self.options_prior,
         )
 
         min_det = np.min(x[:])
