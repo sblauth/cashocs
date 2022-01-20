@@ -7,7 +7,7 @@ Tracking of the Cost Functional for Optimal Control Problems
 Problem Formulation
 -------------------
 
-In this demo we investigate CASHOCS functionality of tracking scalar-type
+In this demo we investigate cashocs functionality of tracking scalar-type
 terms such as cost functional values and other quanitites, which typically
 arise after integration. For this, we investigate the problem
 
@@ -25,10 +25,10 @@ arise after integration. For this, we investigate the problem
 For this example, we do not consider control constraints,
 but search for an optimal control u in the entire space :math:`L^2(\Omega)`,
 for the sake of simplicitiy. For the domain under consideration, we use the unit square
-:math:`\Omega = (0, 1)^2`, since this is built into CASHOCS.
+:math:`\Omega = (0, 1)^2`, since this is built into cashocs.
 
 In the following, we will describe how to solve this problem
-using CASHOCS. Moreover,
+using cashocs. Moreover,
 we also detail alternative / equivalent FEniCS code which could
 be used to define the problem instead.
 
@@ -70,7 +70,7 @@ and its setup are completely analogous to :ref:`demo_poisson` ::
 Definition of the scalar tracking type cost functional
 ******************************************************
 
-Next, we define the cost functional. To do this in CASHOCS, we first have to set
+Next, we define the cost functional. To do this in cashocs, we first have to set
 the usual cost functional to :math:`0` by writing the line ::
 
     J = Constant(0)*dx
@@ -82,7 +82,7 @@ This ensures that only the other terms will be active
     In case ``J`` is not defined as ``Constant(0)*dx`` but, e.g., like in
     :ref:`demo_poisson`, the terms will be added on top of each other.
 
-To define the desired tracking type functional, note that CASHOCS implements the
+To define the desired tracking type functional, note that cashocs implements the
 functional for the following kind of cost functionals
 
 .. math::
@@ -129,18 +129,6 @@ This is then put into a dictionary as follows ::
 .. note::
 
     The factor in front of the quadratic term can also be adapted, by using the keyword ``weight`` in the integrand and supplying the desired factor. Note, that the default factor is ``0.5``, and that each weight defined in the dictionary will be multiplied by this value.
-
-
-.. hint::
-
-    For the scaling possibilities, which are described in detail in :ref:`demo_scaling`,
-    we use the following convention: All desired weights are defined in the list
-    ``desired_weights``. In case we have :math:`n` cost functionals defined in
-    ``cost_functional_form`` (here, :math:`n \geq 1`), and :math:`m` additional cost functionals
-    defined as ``scalar_tracking_forms`` (:math:`m \geq 0`), then the first :math:`n`
-    entries of ``desired_weights`` correspond to the cost functionals given in
-    ``cost_functional_form``, and the last :math:`m` entries correspond to the
-    cost functionals defined in ``scalar_tracking_forms``.
 
 
 Finally, we can set up our new optimization problem as we already know, but we

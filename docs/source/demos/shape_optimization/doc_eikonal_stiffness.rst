@@ -43,7 +43,7 @@ Changes in the config file
 
 In order to compute the stiffness :math:`\mu` based on the distance to selected boundaries,
 we only have to change the configuration file we are using, the python code
-for solving the shape optimization problem with CASHOCS stays exactly as
+for solving the shape optimization problem with cashocs stays exactly as
 it was in :ref:`demo_shape_stokes`.
 
 To use the stiffness computation based on the distance to the boundary, we add the

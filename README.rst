@@ -1,5 +1,7 @@
-CASHOCS
-=======
+.. image:: https://raw.githubusercontent.com/sblauth/cashocs/master/logo.png
+    :width: 800
+    :align: center
+    :target: https://github.com/sblauth/cashocs
 
 .. image:: https://img.shields.io/pypi/v/cashocs
     :target: https://pypi.org/project/cashocs/
@@ -10,8 +12,8 @@ CASHOCS
 .. image:: https://img.shields.io/pypi/pyversions/cashocs
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5642717.svg
-   :target: https://doi.org/10.5281/zenodo.5642717
+.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.4035939-blue
+   :target: https://doi.org/10.5281/zenodo.4035939
 
 .. image:: https://img.shields.io/pypi/l/cashocs?color=informational
     :target: https://pypi.org/project/cashocs/
@@ -38,10 +40,10 @@ CASHOCS
 
 |
 
-CASHOCS is a computational adjoint-based shape optimization and optimal control
+cashocs is a computational adjoint-based shape optimization and optimal control
 software for python.
 
-CASHOCS is based on the finite element package `FEniCS
+cashocs is based on the finite element package `FEniCS
 <https://fenicsproject.org>`__ and uses its high-level unified form language UFL
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
@@ -64,13 +66,13 @@ we can recommend the textbooks
 
 .. readme_end_disclaimer
 
-However, the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_ also gives many references either
+However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
-An overview over CASHOCS and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
+An overview over cashocs and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
-the full CASHOCS documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
+the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
 
 
 .. readme_start_installation
@@ -81,7 +83,7 @@ Installation
 Via conda-forge
 ---------------
 
-CASHOCS is available via the anaconda package manager, and you can install it
+cashocs is available via the anaconda package manager, and you can install it
 with ::
 
     conda install -c conda-forge cashocs
@@ -110,7 +112,7 @@ Manual Installation
   The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.4.
 
 - You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8.
-  CASHOCS does not necessarily need this to work properly,
+  cashocs does not necessarily need this to work properly,
   but it is required for the remeshing functionality.
 
 .. note::
@@ -124,15 +126,15 @@ Manual Installation
 
         pip3 install meshio[all] --no-binary=h5py
 
-- You can install CASHOCS via the `PYPI <https://pypi.org/>`_::
+- You can install cashocs via the `PYPI <https://pypi.org/>`_::
 
         pip3 install cashocs
 
-  You can install the newest (development) version of CASHOCS with::
+  You can install the newest (development) version of cashocs with::
 
         pip3 install git+https://github.com/sblauth/cashocs.git
 
-- To get the latest (development) version of CASHOCS, clone this repository with git and install it with pip ::
+- To get the latest (development) version of cashocs, clone this repository with git and install it with pip ::
 
         git clone https://github.com/sblauth/cashocs.git
         cd cashocs
@@ -141,7 +143,7 @@ Manual Installation
 
 .. note::
 
-    To verify that the installation was successful, run the tests for CASHOCS
+    To verify that the installation was successful, run the tests for cashocs
     with ::
 
         python3 -m pytest
@@ -163,8 +165,8 @@ Manual Installation
 Usage
 =====
 
-The complete CASHOCS documentation is available here `<https://cashocs.readthedocs.io/en/latest/index.html>`_. For a detailed
-introduction, see the `CASHOCS tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_. The python source code
+The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest/index.html>`_. For a detailed
+introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 
@@ -226,18 +228,18 @@ as well as ::
 License
 =======
 
-CASHOCS is free software: you can redistribute it and/or modify
+cashocs is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-CASHOCS is distributed in the hope that it will be useful,
+cashocs is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with CASHOCS.  If not, see `<https://www.gnu.org/licenses/>`_.
+along with cashocs.  If not, see `<https://www.gnu.org/licenses/>`_.
 
 
 .. readme_end_license

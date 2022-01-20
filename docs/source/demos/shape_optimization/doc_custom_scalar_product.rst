@@ -7,7 +7,7 @@ Problem Formulation
 -------------------
 
 In this demo, we show how to supply a custom bilinear form for the computation
-of the shape gradient with CASHOCS. For the sake of simplicity, we again consider
+of the shape gradient with cashocs. For the sake of simplicity, we again consider
 our model problem from :ref:`demo_shape_poisson`, given by
 
 .. math::

@@ -1,18 +1,18 @@
 Getting Started
 ===============
 
-As newcomer to CASHOCS, we recommend the paper `Blauth, cashocs: A Computational, Adjoint-Based
+As newcomer to cashocs, we recommend the paper `Blauth, cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_, which
-gives an overview over CASHOCS and its capabilities. Moreover, for a
-comprehensive description of CASHOCS, we refer to its :ref:`tutorial <tutorial_index>`.
+gives an overview over cashocs and its capabilities. Moreover, for a
+comprehensive description of cashocs, we refer to its :ref:`tutorial <tutorial_index>`.
 
-In the following, we briefly showcase how CASHOCS can be used to solve a
+In the following, we briefly showcase how cashocs can be used to solve a
 distributed optimal control problem with a Poisson equation as PDE constaint.
 
-Since CASHOCS is based on FEniCS, most of the user input consists of definining
+Since cashocs is based on FEniCS, most of the user input consists of definining
 the objects (such as the state system and cost functional) via UFL forms. If one
 has a functioning code for the forward problem and the evaluation of the cost
-functional, the necessary modifications to optimize the problem in CASHOCS
+functional, the necessary modifications to optimize the problem in cashocs
 are minimal. Consider, e.g., the following optimization problem
 
 .. math::
@@ -25,7 +25,7 @@ are minimal. Consider, e.g., the following optimization problem
     y &= 0 \quad &&\text{ on } \Gamma.
     \end{alignedat} \right.
 
-Note, that the problem is treated in detail in the :ref:`corresponding CASHOCS tutorial <demo_poisson>`.
+Note, that the problem is treated in detail in the :ref:`corresponding cashocs tutorial <demo_poisson>`.
 
 For our purposes, we assume that a mesh for this problem is defined and that a
 suitable function space is chosen. This can, e.g., be achieved via ::
@@ -58,11 +58,11 @@ Finally, we define the cost functional and the optimization problem ::
     opt_problem = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     opt_problem.solve()
 
-The only major difference between CASHOCS and FEniCS code is that one has to
+The only major difference between cashocs and FEniCS code is that one has to
 use :py:class:`fenics.Function` objects for states and adjoints, and that :py:class:`fenics.TrialFunction`
 and :py:class:`fenics.TestFunction` are not needed to define the state equation.
 Other than that, the syntax would also be valid with FEniCS, at least for this
 problem.
 
-For a detailed discussion of the features of CASHOCS and its usage we refer to the
-:ref:`CASHOCS tutorial <tutorial_index>`.
+For a detailed discussion of the features of cashocs and its usage we refer to the
+:ref:`cashocs tutorial <tutorial_index>`.

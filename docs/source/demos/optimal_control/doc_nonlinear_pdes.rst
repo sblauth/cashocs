@@ -65,7 +65,7 @@ we would use for the problem in FEniCS, i.e., we write ::
 
 .. note::
 
-    In particular, the only difference between the CASHOCS implementation of this weak form
+    In particular, the only difference between the cashocs implementation of this weak form
     and the FEniCS one is that, as before, we use :py:class:`fenics.Function` objects for both the state and
     adjoint variables, whereas we would use :py:class:`fenics.Function` objects for the state, and
     :py:class:`fenics.TestFunction` for the adjoint variable, which would actually play the role of the

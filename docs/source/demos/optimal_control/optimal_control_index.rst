@@ -2,7 +2,7 @@ Optimal Control Problems
 ========================
 
 In this part of the tutorial, we investigate how optimal control problems can
-be treated with CASHOCS.
+be treated with cashocs.
 
 .. toctree::
    :maxdepth: 1

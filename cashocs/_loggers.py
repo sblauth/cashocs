@@ -1,23 +1,23 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Logging module for cashocs.
+"""Logging module for cashocs."""
 
-"""
+from __future__ import annotations
 
 import logging
 
@@ -46,10 +46,14 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + format + reset,
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
+        """See base class."""
+
         super().__init__(*args, **kwargs)
 
     def format(self, record):
+        """See base class."""
+
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
 
@@ -57,13 +61,7 @@ class ColorFormatter(logging.Formatter):
 
 
 class LogLevel:
-    """Stores the various log levels of cashocs.
-
-    See Also
-    --------
-    cashocs.set_log_level : sets the log level of cashocs
-
-    """
+    """Stores the various log levels of cashocs."""
 
     DEBUG = logging.DEBUG
     INFO = logging.INFO
@@ -80,123 +78,83 @@ _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
 
-def set_log_level(level):
+def set_log_level(level: int) -> None:
     """Determines the log level of cashocs.
 
-    Can be used to show, e.g., info and warning messages or to hide them.
-    There are a total of five different levels for the logs: ``DEBUG``, ``INFO``,
-    ``WARNING``, ``ERROR``, and ``CRITICAL``. The usage of this method is explained in
-    the examples section.
+    Can be used to show, e.g., info and warning messages or to hide them. There are a
+    total of five different levels for the logs: ``DEBUG``, ``INFO``, ``WARNING``,
+    ``ERROR``, and ``CRITICAL``. The usage of this method is explained in the examples
+    section.
 
-    Parameters
-    ----------
-    level : int
-            Should be one of ``cashocs.LogLevel.DEBUG``,
-            ``cashocs.LogLevel.INFO``, ``cashocs.LogLevel.WARNING``,
-            ``cashocs.LogLevel.ERROR``, ``cashocs.LogLevel.CRITICAL``
+    Args:
+        level: Should be one of ``cashocs.LogLevel.DEBUG``, ``cashocs.LogLevel.INFO``,
+            ``cashocs.LogLevel.WARNING``, ``cashocs.LogLevel.ERROR``,
+            ``cashocs.LogLevel.CRITICAL``
 
-    Returns
-    -------
-    None
+    Notes:
+        The log level setting is global, so if you use this interactively, you have to
+        restart / reload your interactive console to return to the default settings.
 
-    Notes
-    -----
-    The log level setting is global, so if you use this interactively,
-    you have to restart / reload your interactive console to return to
-    the default settings.
-
-    Examples
-    --------
-    To set the log level of cashocs, use this method as follows::
+    Examples:
+        To set the log level of cashocs, use this method as follows::
 
             import cashocs
-
             cashocs.set_log_level(cashocs.LogLevel.WARNING)
 
-    which only shows messages with a level of ``WARNING`` or higher.
-    To use a different level, replace ``WARNING`` by ``DEBUG``, ``INFO``, ``ERROR``,
-    or ``CRITICAL``.
+        which only shows messages with a level of ``WARNING`` or higher.
+        To use a different level, replace ``WARNING`` by ``DEBUG``, ``INFO``, ``ERROR``,
+        or ``CRITICAL``.
 
     """
 
     _cashocs_logger.setLevel(level)
 
 
-def debug(message):
+def debug(message: str) -> None:
     """Issues a debug level logging message.
 
-    Parameters
-    ----------
-    message : str
-            The message to be issued.
-
-    Returns
-    -------
-    None
+    Args:
+        message: The message to be issued.
     """
 
     _cashocs_logger.debug(message)
 
 
-def info(message):
+def info(message: str) -> None:
     """Issues an info level logging message.
 
-    Parameters
-    ----------
-    message : str
-            The message to be issued.
-
-    Returns
-    -------
-    None
+    Args:
+        message: The message to be issued.
     """
 
     _cashocs_logger.info(message)
 
 
-def warning(message):
+def warning(message: str) -> None:
     """Issues a warning level logging message.
 
-    Parameters
-    ----------
-    message : str
-            The message to be issued.
-
-    Returns
-    -------
-    None
+    Args:
+        message: The message to be issued.
     """
 
     _cashocs_logger.warning(message)
 
 
-def error(message):
+def error(message: str) -> None:
     """Issues a error level logging message.
 
-    Parameters
-    ----------
-    message : str
-            The message to be issued.
-
-    Returns
-    -------
-    None
+    Args:
+        message: The message to be issued.
     """
 
     _cashocs_logger.error(message)
 
 
-def critical(message):
+def critical(message: str) -> None:
     """Issues a critical level logging message.
 
-    Parameters
-    ----------
-    message : str
-            The message to be issued.
-
-    Returns
-    -------
-    None
+    Args:
+        message: The message to be issued.
     """
 
     _cashocs_logger.critical(message)

@@ -54,17 +54,9 @@ cg_restart_tol			(0.25)
 
 [AlgoTNM]
 inner_newton			(cr)
-inner_newton_tolerance	(1e-15)
+inner_newton_rtol   	(1e-15)
+inner_newton_atol   	(0.0)
 max_it_inner_newton		(50)
-
-
-
-[AlgoPDAS]
-
-inner_pdas
-pdas_inner_tolerance			(1e-2)
-maximum_iterations_inner_pdas	(50)
-pdas_regularization_parameter
 
 
 

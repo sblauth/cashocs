@@ -1,19 +1,19 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Tests for the geometry module.
 
@@ -154,6 +154,12 @@ def test_regular_mesh():
     assert np.alltrue(abs(np.max(s_mesh.coordinates(), axis=0) - max_vals) < 1e-14)
     assert np.alltrue(abs(np.min(s_mesh.coordinates(), axis=0) - min_vals) < 1e-14)
 
+    t_mesh, _, _, _, _, _ = cashocs.regular_box_mesh(
+        2, start_x=0.0, end_x=lens[0], start_y=0.0, end_y=lens[1]
+    )
+
+    assert np.allclose(t_mesh.coordinates(), r_mesh.coordinates())
+
 
 def test_mesh_quality_2D():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(2)
@@ -245,7 +251,7 @@ def test_write_mesh():
         dir_path + "/mesh/mesh.xdmf"
     )
 
-    cashocs.utils.write_out_mesh(
+    cashocs.io.write_out_mesh(
         mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
     )
 
@@ -302,6 +308,9 @@ def test_empty_measure():
     assert np.max(np.abs(A.array())) == 0.0
     assert np.max(np.abs(b[:])) == 0.0
     assert c == 0.0
+
+    dE = cashocs.geometry.generate_measure([], dx)
+    assert fenics.assemble(fenics.Constant(1) * dE) == 0.0
 
 
 def test_convert_coordinate_defo_to_dof_defo():
@@ -371,6 +380,10 @@ def test_eikonal_distance():
     dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
     assert np.min(dist.vector()[:]) >= 0.0
     assert (np.max(dist.vector()[:]) - 1.0) / 1.0 <= 0.05
+
+    dist = cashocs.geometry.compute_boundary_distance(mesh)
+    assert np.min(dist.vector()[:]) >= 0.0
+    assert (np.max(dist.vector()[:]) - 0.5) / 0.5 <= 0.05
 
 
 def test_named_mesh_import():

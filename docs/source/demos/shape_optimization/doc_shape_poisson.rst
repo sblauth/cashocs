@@ -6,7 +6,7 @@ Shape Optimization with a Poisson Problem
 Problem Formulation
 -------------------
 
-In this demo, we investigate the basics of CASHOCS for shape optimization problems.
+In this demo, we investigate the basics of cashocs for shape optimization problems.
 As a model problem, we investigate the following one from
 `Etling, Herzog, Loayza, Wachsmuth, First and Second Order Shape Optimization Based on Restricted Mesh Deformations <https://doi.org/10.1137/19M1241465>`_
 
@@ -35,12 +35,12 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Initialization
 **************
 
-We start the problem by using a wildcard import for FEniCS, and by importing CASHOCS ::
+We start the problem by using a wildcard import for FEniCS, and by importing cashocs ::
 
     from fenics import *
     import cashocs
 
-As for the case of optimal control problems, we can specify the verbosity of CASHOCS with
+As for the case of optimal control problems, we can specify the verbosity of cashocs with
 the line ::
 
     cashocs.set_log_level(cashocs.LogLevel.INFO)
@@ -48,14 +48,14 @@ the line ::
 which is documented at :py:func:`cashocs.set_log_level` (cf. :ref:`demo_poisson`).
 
 Similarly to the optimal control case, we also require config files for shape
-optimization problems in CASHOCS. A detailed discussion of the config files
+optimization problems in cashocs. A detailed discussion of the config files
 for shape optimization is given in :ref:`config_shape_optimization`.
 We read the config file with the :py:func:`load_config <cashocs.load_config>` command ::
 
     config = cashocs.load_config('./config.ini')
 
 Next, we have to define the mesh. As the above problem is posed on the unit disc
-initially, we define this via FEniCS commands (CASHOCS only has rectangular meshes built
+initially, we define this via FEniCS commands (cashocs only has rectangular meshes built
 in). This is done via the following code ::
 
     meshlevel = 10
@@ -69,7 +69,7 @@ the problem. For the volume measure, we can simply invoke ::
     dx = Measure('dx', mesh)
 
 However, for the surface measure, we need to mark the boundary. This is required since
-CASHOCS distinguishes between three types of boundaries: The deformable boundary, the
+cashocs distinguishes between three types of boundaries: The deformable boundary, the
 fixed boundary, and boundaries that can only be deformed perpendicular to a certain
 coordinate axis (see :ref:`the relevant documentation of the config files <config_shape_shape_gradient>`). Here, we investigate the
 case of a completely deformable boundary, which makes things rather
@@ -97,7 +97,7 @@ easy. We mark this boundary with the marker ``1`` with the following piece of co
 Note, that all of the alternative ways of marking subdomains or boundaries with
 numbers, as explained in `Langtangen and Logg, Solving PDEs in Python
 <https://doi.org/10.1007/978-3-319-52462-7>`_ also work here. If it is valid for FEniCS, it is also for
-CASHOCS.
+cashocs.
 
 After having defined the initial geometry, we define a :py:class:`fenics.FunctionSpace` consisting of
 piecewise linear Lagrange elements via ::
@@ -113,7 +113,7 @@ This also defines our state variable :math:`u` as ``u``, and the adjoint state :
 
     As remarked in :ref:`demo_poisson`, in
     classical FEniCS syntax we would use a :py:class:`fenics.TrialFunction` for ``u``
-    and a :py:class:`fenics.TestFunction` for ``p``. However, for CASHOCS this must not
+    and a :py:class:`fenics.TestFunction` for ``p``. However, for cashocs this must not
     be the case. Instead, the state and adjoint variables have to be :py:class:`fenics.Function` objects.
 
 The right-hand side of the PDE constraint is then defined as ::
@@ -164,7 +164,7 @@ The result of the optimization looks like this
     :ref:`config_shape_optimization_routine` and the documentation of the :py:func:`solve <cashocs.ShapeOptimizationProblem.solve>`
     method.
 
-    As before, it is not strictly necessary to supply config files to CASHOCS, but
+    As before, it is not strictly necessary to supply config files to cashocs, but
     it is very strongly recommended to do so. In case one does not supply a config
     file, one has to at least specify the solution algorithm in the call to
     the :py:meth:`solve <cashocs.ShapeOptimizationProblem.solve>` method.

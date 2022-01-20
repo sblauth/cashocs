@@ -67,7 +67,7 @@ and the corresponding config can be found in :download:`config.ini </../../demos
 Initialization and generation of synthetic measurements
 *******************************************************
 
-We start our code by importing FEniCS and CASHOCS ::
+We start our code by importing FEniCS and cashocs ::
 
     from fenics import *
     import cashocs
@@ -136,11 +136,11 @@ To do this, we define a function :py:func:`generate_measurements()` as follows :
     and then only the actual solution of the PDE (and not the Lagrange multiplier
     for the integral constraint) is returned.
 
-As usual, we load the config into CASHOCS with the line ::
+As usual, we load the config into cashocs with the line ::
 
     config = cashocs.load_config('./config.ini')
 
-Afterwards, we import the mesh into CASHOCS ::
+Afterwards, we import the mesh into cashocs ::
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
 

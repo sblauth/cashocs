@@ -3,8 +3,8 @@
 Tutorial
 ================
 
-Welcome to the CASHOCS tutorial. In the following, we present several example
-programs that showcase how CASHOCS can be used to solve optimal control and
+Welcome to the cashocs tutorial. In the following, we present several example
+programs that showcase how cashocs can be used to solve optimal control and
 shape optimization problems.
 
 .. include:: ../../README.rst
@@ -15,7 +15,7 @@ However, we will also provide links to either the underlying theory of PDE
 constrained optimization or to the relevant documentation of FEniCS in this
 tutorial.
 
-Note, that an overview over CASHOCS and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
+Note, that an overview over cashocs and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_.
 
 
@@ -32,11 +32,11 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
 
     We recommend that you start with the introductory demos for
     optimal control problems, i.e., :ref:`demo_poisson` and :ref:`config_optimal_control`,
-    as these demonstrate the basic ideas of CASHOCS. Additionally, they are a bit simpler than
+    as these demonstrate the basic ideas of cashocs. Additionally, they are a bit simpler than
     the introductory tutorials for shape optimization problems, i.e.,
     :ref:`demo_shape_poisson` and :ref:`config_shape_optimization`.
 
-    Moreover, we note that some of CASHOCS functionality is explained only for optimal control, but not
+    Moreover, we note that some of cashocs functionality is explained only for optimal control, but not
     for shape optimization problems. This includes the contents of :ref:`demo_picard_iteration`,
     :ref:`demo_heat_equation`, :ref:`demo_iterative_solvers`, :ref:`demo_state_constraints`.
     However, the corresponding functionalities only deal with either the definition

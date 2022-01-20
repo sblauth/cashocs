@@ -8,7 +8,7 @@ Problem Formulation
 -------------------
 
 In this demo, we take a deeper look at how control constraints can be treated in
-CASHOCS. To do so, we investigate the same problem as in :ref:`demo_poisson`, but
+cashocs. To do so, we investigate the same problem as in :ref:`demo_poisson`, but
 now with the addition of box constraints for the control variable. This problem
 reads
 
@@ -73,7 +73,7 @@ Here, we have nearly everything at hand to define the optimal
 control problem, the only missing ingredient are the box constraints,
 which we define now. For the purposes of this example, we
 consider a linear (in the x-direction) corridor for these
-constraints, as it highlights the capabilities of CASHOCS.
+constraints, as it highlights the capabilities of cashocs.
 Hence, we define the lower and upper bounds via ::
 
     u_a = interpolate(Expression('50*(x[0]-1)', degree=1), V)

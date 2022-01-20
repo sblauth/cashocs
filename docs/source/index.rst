@@ -1,9 +1,13 @@
-.. CASHOCS documentation master file, created by
+.. cashocs documentation master file, created by
    sphinx-quickstart on Fri Sep  4 07:56:24 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-CASHOCS Documentation
+.. image:: https://raw.githubusercontent.com/sblauth/cashocs/master/logo.png
+    :width: 800
+    :align: center
+
+cashocs Documentation
 =====================
 
 .. toctree::

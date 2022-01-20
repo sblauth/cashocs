@@ -1,19 +1,19 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Tests for the Picard iteration.
 
@@ -25,6 +25,7 @@ import numpy as np
 from fenics import *
 
 import cashocs
+
 
 
 rng = np.random.RandomState(300696)
@@ -49,6 +50,14 @@ controls = [u, v]
 e1 = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
 e2 = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
 e = [e1, e2]
+
+e1_nonlinear = (
+    inner(grad(y), grad(p)) * dx + pow(y, 3) * p * dx + z * p * dx - u * p * dx
+)
+e2_nonlinear = (
+    inner(grad(z), grad(q)) * dx + pow(z, 3) * q * dx + y * q * dx - v * q * dx
+)
+e_nonlinear = [e1_nonlinear, e2_nonlinear]
 
 bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
@@ -164,9 +173,6 @@ def test_picard_state_solver():
 
 
 def test_picard_solver_for_optimization():
-    # it is sufficient to test the behavior with the newton method, as this includes
-    # all kinds of solves
-
     u_picard = Function(V)
     v_picard = Function(V)
 
@@ -191,3 +197,20 @@ def test_picard_solver_for_optimization():
         / np.max(np.abs(u.vector()[:]))
         <= 1e-8
     )
+
+
+def test_picard_nonlinear():
+    u.vector()[:] = 0.0
+    v.vector()[:] = 0.0
+    config.set("StateSystem", "is_linear", "False")
+
+    ocp_nonlinear = cashocs.OptimalControlProblem(
+        e_nonlinear, bcs, J, states, controls, adjoints, config
+    )
+
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+    assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
+
+    ocp_nonlinear.solve("newton", 1e-6, 0.0, 10)
+    assert ocp_nonlinear.solver.relative_norm < 1e-6

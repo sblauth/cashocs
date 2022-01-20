@@ -1,78 +1,86 @@
 # Copyright (C) 2020-2021 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-r"""CASHOCS is a computational, adjoint based shape optimization and optimal control software for python.
+r"""cashocs is a shape optimization and optimal control software for python.
 
-CASHOCS is based on the finite element package `FEniCS <https://fenicsproject.org>`_
+cashocs is based on the finite element package `FEniCS <https://fenicsproject.org>`_
 and uses its high-level unified form language UFL to treat general PDE constrained
 optimization problems, in particular, shape optimization and optimal control problems.
+
+The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
-from . import space_mapping
-from . import verification
-from ._constraints.constraints import EqualityConstraint, InequalityConstraint
+from cashocs import space_mapping
 
-from ._constraints.constrained_problems import (
+from cashocs._constraints.constrained_problems import (
     ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-
-from ._loggers import LogLevel, set_log_level
-from ._optimal_control.optimal_control_problem import OptimalControlProblem
-from ._shape_optimization.shape_optimization_problem import ShapeOptimizationProblem
-
-from .geometry import (
+from cashocs._constraints.constraints import EqualityConstraint, InequalityConstraint
+from cashocs._loggers import LogLevel, set_log_level
+from cashocs._optimization import verification
+from cashocs._optimization.optimal_control.optimal_control_problem import (
+    OptimalControlProblem,
+)
+from cashocs._optimization.shape_optimization.shape_optimization_problem import (
+    ShapeOptimizationProblem,
+)
+from cashocs.geometry import (
     DeformationHandler,
     MeshQuality,
     import_mesh,
     regular_box_mesh,
     regular_mesh,
 )
-from .nonlinear_solvers import newton_solve, damped_newton_solve
-from .utils import create_bcs_list, create_config, load_config
-
-from .utils import (
+from cashocs.io import create_config, load_config
+from cashocs.nonlinear_solvers import (
+    newton_solve,
+    damped_newton_solve,
+    picard_iteration,
+)
+from cashocs.utils import (
     create_bcs_list,
     create_dirichlet_bcs,
-    create_config,
-    load_config,
-    moreau_yosida_regularization,
 )
 
-__version__ = "1.4.1"
+
+__version__ = "1.5.2"
 
 __all__ = [
     "import_mesh",
+    "LogLevel",
     "regular_mesh",
     "regular_box_mesh",
     "DeformationHandler",
     "MeshQuality",
     "newton_solve",
+    "damped_newton_solve",
+    "picard_iteration",
     "OptimalControlProblem",
     "ShapeOptimizationProblem",
     "create_config",
     "load_config",
     "create_bcs_list",
     "create_dirichlet_bcs",
-    "moreau_yosida_regularization",
     "verification",
     "ConstrainedOptimalControlProblem",
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
+    "set_log_level",
     "space_mapping",
 ]

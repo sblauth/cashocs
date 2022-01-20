@@ -1,12 +1,12 @@
 .. _demo_remeshing:
 
-Remeshing with CASHOCS
+Remeshing with cashocs
 ======================
 
 Problem Formulation
 -------------------
 
-In this tutorial, we take a close look at how remeshing works in CASHOCS. To keep
+In this tutorial, we take a close look at how remeshing works in cashocs. To keep
 this discussion simple, we take a look at the model problem already investigated
 in :ref:`demo_shape_poisson`, i.e.,
 
@@ -37,7 +37,7 @@ The corresponding mesh files are :download:`./mesh/mesh.geo </../../demos/docume
 Pre-Processing with GMSH
 ************************
 
-Before we can start with the actual CASHOCS implementation of remeshing, we have
+Before we can start with the actual cashocs implementation of remeshing, we have
 to take a closer look at how we can define a geometry with GMSH. For this, .geo
 files are used.
 
@@ -52,7 +52,7 @@ describes our geometry.
 .. important::
 
     Any user defined variables that should be also kept for the remeshing, such
-    as the characteristic lengths, must be lower case, so that CASHOCS can distinguish them
+    as the characteristic lengths, must be lower case, so that cashocs can distinguish them
     from the other GMSH commands. Any user defined variable starting with an upper
     case letter is not considered for the .geo file created for remeshing and will,
     thus, probably cause an error.
@@ -72,7 +72,7 @@ with the command ::
     For the purpose of this tutorial it is recommended to leave the ``./mesh/mesh.msh``
     file as it is. In particular, carrying out the above command will overwrite
     the file and is, thus, not recommended. The command just highlights, how one
-    would / could use GMSH to define their own geometries and meshes for CASHOCS
+    would / could use GMSH to define their own geometries and meshes for cashocs
     or FEniCS.
 
 The resulting file is :download:`./mesh/mesh.msh </../../demos/documented/shape_optimization/remeshing/mesh/mesh.msh>`.
@@ -88,7 +88,7 @@ from the command line.
     As the :ref:`cashocs-convert <cashocs_convert>` merely **converts** the .msh
     file to .xdmf, the user may very well use this command.
 
-To ensure that CASHOCS also finds these files, we have to specify them in the file
+To ensure that cashocs also finds these files, we have to specify them in the file
 :download:`config.ini </../../demos/documented/shape_optimization/remeshing/config.ini>`.
 For this, we have the following lines ::
 
@@ -106,7 +106,7 @@ corresponding documentation of the config files <config_shape_mesh>`.
 .. note::
 
     Note, that the paths given in the config file can be either absolute or relative.
-    In the latter case, they have to be relative to the location of the CASHOCS script
+    In the latter case, they have to be relative to the location of the cashocs script
     which is used to solve the problem.
 
 With this, we can now focus on the implementation in python.
@@ -122,7 +122,7 @@ The program starts as :ref:`demo_shape_poisson`, with the following lines ::
 
     config = cashocs.load_config('./config.ini')
 
-with which we import FEniCS and CASHOCS, and read the config file. The mesh and
+with which we import FEniCS and cashocs, and read the config file. The mesh and
 all other related objects are created with the command ::
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
@@ -187,5 +187,5 @@ The results should look like the one of :ref:`demo_shape_poisson`:
         tol_upper = 0.25
 
     are comparatively large. However, this problem still shows all relevant
-    aspects of remeshing in CASHOCS and can, thus, be transferred to "harder"
+    aspects of remeshing in cashocs and can, thus, be transferred to "harder"
     problems that require remeshing.

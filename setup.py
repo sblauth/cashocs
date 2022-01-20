@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="cashocs",
-    version="1.4.1",
+    version="1.5.2",
     author="Sebastian Blauth",
     author_email="sebastian.blauth@itwm.fraunhofer.de",
     description="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
@@ -27,7 +27,6 @@ setuptools.setup(
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -37,11 +36,10 @@ setuptools.setup(
     ],
     keywords="Computational Adjoint-Based Shape Optimization and Optimal Control Software",
     install_requires=[
-        "pytest>=6.0.0",
         "meshio>=4.1.0",
-        "deprecated>=1.2.10",
-        "matplotlib",
+        "numpy>=1.21",
+        "typing_extensions",
     ],
     entry_points={"console_scripts": ["cashocs-convert = cashocs._cli:convert"]},
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )

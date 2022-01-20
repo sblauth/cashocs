@@ -6,7 +6,7 @@ Distributed Control of a Stokes Problem
 Problem Formulation
 -------------------
 
-In this demo we investigate how CASHOCS can be used to treat a different kind
+In this demo we investigate how cashocs can be used to treat a different kind
 of PDE constraint, in particular, we investigate a Stokes problem. The optimization
 problem reads as follows
 
@@ -38,7 +38,7 @@ condition to ensure uniqueness. For this demo we choose another Dirichlet condit
 specifying the value of the pressure at a single point in the domain. Alternatively,
 we could have also required that, e.g., the integral of the velocity :math:`u` over :math:`\Omega`
 vanishes (the implementation would then only be slightly longer, but not as intuitive).
-An example of how to treat such an additional constraint in FEniCS and CASHOCS
+An example of how to treat such an additional constraint in FEniCS and cashocs
 can be found in :ref:`demo_inverse_tomography`.
 
 Implementation
@@ -111,7 +111,7 @@ The boundary conditions for this system can be defined as follows ::
     bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
 Here, we first define the point :math:`x^\text{pres}`, where the pressure is set to 0.
-Afterwards, we use the CASHOCS function :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`
+Afterwards, we use the cashocs function :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`
 to quickly create the no slip conditions at the left, right, and bottom of the cavity. Next, we define the Dirichlet
 velocity :math:`u_\text{dir}` for the lid of the cavity as a :py:class:`fenics.Expression`, and create a corresponding
 boundary condition. Finally, the Dirichlet condition for the pressure is defined. Note,

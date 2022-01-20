@@ -1,19 +1,19 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_shape_poisson.html.
 
@@ -24,7 +24,8 @@ from fenics import *
 import cashocs
 
 
-config = cashocs.create_config("./config.ini")
+
+config = cashocs.load_config("./config.ini")
 
 meshlevel = 15
 degree = 1
@@ -50,11 +51,16 @@ J = u * dx
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
+
+def eps(u):
+    return Constant(0.5) * (grad(u) + grad(u).T)
+
+
 vector_field = sop.get_vector_field()
 dJ = (
     div(vector_field) * u * dx
     - inner(
-        (div(vector_field) * Identity(2) - 2 * sym(grad(vector_field))) * grad(u),
+        (div(vector_field) * Identity(2) - 2 * eps(vector_field)) * grad(u),
         grad(p),
     )
     * dx

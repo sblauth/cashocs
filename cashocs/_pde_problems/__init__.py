@@ -1,36 +1,34 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Several PDE problems for optimization (shape and optimal control).
+"""Base classes for PDE problems."""
 
-"""
-
-from .adjoint_problem import AdjointProblem
-from .gradient_problem import GradientProblem
-from .hessian_problems import HessianProblem, UnconstrainedHessianProblem
-from .shape_gradient_problem import ShapeGradientProblem
-from .state_problem import StateProblem
-
+from cashocs._pde_problems.adjoint_problem import AdjointProblem
+from cashocs._pde_problems.control_gradient_problem import ControlGradientProblem
+from cashocs._pde_problems.hessian_problems import HessianProblem
+from cashocs._pde_problems.pde_problem import PDEProblem
+from cashocs._pde_problems.shape_gradient_problem import ShapeGradientProblem
+from cashocs._pde_problems.state_problem import StateProblem
 
 __all__ = [
     "AdjointProblem",
-    "GradientProblem",
+    "ControlGradientProblem",
     "HessianProblem",
+    "PDEProblem",
     "ShapeGradientProblem",
     "StateProblem",
-    "UnconstrainedHessianProblem",
 ]

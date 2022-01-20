@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-project = "CASHOCS"
-copyright = "2020-2021, Sebastian Blauth"
+project = "cashocs"
+copyright = "2020-2022, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "1.4.1"
+release = "1.5.2"
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,8 +38,8 @@ extensions = [
     "sphinx_copybutton",
 ]
 
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = False
@@ -52,7 +52,8 @@ napoleon_use_keyword = True
 napoleon_use_rtype = True
 
 autodoc_member_order = "alphabetical"  #'bysource'
-autodoc_mock_imports = ["fenics", "numpy", "petsc4py", "ufl", "meshio"]
+autodoc_mock_imports = ["fenics", "numpy", "petsc4py", "ufl", "meshio", "dolfin"]
+autodoc_typehints = "description"
 autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -72,6 +73,10 @@ exclude_patterns = ["_build"]
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+html_logo = "logo.png"
+html_theme_options = {
+    "logo_only": True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

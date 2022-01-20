@@ -1,19 +1,19 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_inverse_tomography.html.
 
@@ -22,6 +22,7 @@
 from fenics import *
 
 import cashocs
+
 
 
 kappa_out = 1e0
@@ -115,7 +116,7 @@ e = [e1, e2, e3]
 u = [uc1, uc2, uc3]
 p = [pd1, pd2, pd3]
 
-bcs = None
+bcs = [[], [], []]
 
 J1 = Constant(0.5) * pow(u1 - measurements[0], 2) * ds
 J2 = Constant(0.5) * pow(u2 - measurements[1], 2) * ds

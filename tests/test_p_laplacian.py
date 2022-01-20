@@ -1,15 +1,29 @@
-"""
-Created on 18/10/2021, 08.44
-
-@author: blauths
-"""
+# Copyright (C) 2020-2022 Sebastian Blauth
+#
+# This file is part of cashocs.
+#
+# cashocs is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# cashocs is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 
 import numpy as np
+import pytest
 from fenics import *
 
 import cashocs
+from cashocs._exceptions import ConfigError
+
 
 
 rng = np.random.RandomState(300696)
@@ -101,3 +115,38 @@ def test_p_laplacian():
     sop.solve(algorithm="gd", rtol=1e-1, max_iter=6)
 
     assert sop.solver.relative_norm <= 1e-1
+
+
+def test_p_laplacian_iterative():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("ShapeGradient", "mu_def", "1.0")
+    config.set("ShapeGradient", "mu_fix", "1.0")
+    config.set("ShapeGradient", "damping_factor", "1.0")
+    config.set("ShapeGradient", "use_p_laplacian", "True")
+    config.set("ShapeGradient", "p_laplacian_power", "10")
+    config.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+
+
+def test_config_conflict():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("ShapeGradient", "fixed_dimensions", "[0]")
+    config.set("ShapeGradient", "use_p_laplacian", "True")
+
+    with pytest.raises(ConfigError) as e_info:
+        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+    assert (
+        "Key use_p_laplacian in section ShapeGradient conflicts with key fixed_dimensions in section ShapeGradient"
+        in str(e_info.value)
+    )

@@ -7,7 +7,7 @@ Problem Formulation
 -------------------
 
 In this demo, we investigate how we can use regularizations for shape optimization
-problems in CASHOCS. For our model problem, we use one similar to the one in :ref:`demo_shape_poisson`,
+problems in cashocs. For our model problem, we use one similar to the one in :ref:`demo_shape_poisson`,
 but which has additional regularization terms, i.e.,
 
 .. math::
@@ -80,7 +80,7 @@ of the cost functional which includes the additional regularization terms.
 
 .. note::
 
-    CASHOCS cannot treat the last two regularization terms directly by a user
+    cashocs cannot treat the last two regularization terms directly by a user
     implementation. Instead, these regularization terms can be realized by setting
     the appropriate parameters in the config files, see the :ref:`Section Regularization <config_shape_regularization>`.
 
@@ -109,7 +109,7 @@ to ``1.5``, :math:`\mu_\text{surf}` to ``1.0``, :math:`\text{surf}_\text{des}`
 to ``4.5``, and :math:`\mu_\text{curv}` to ``1e-4``. Note, that ``use_initial_volume`` and ``use_initial_surface``
 have to be set to ``False``, otherwise the corresponding quantities of the initial
 geometry would be used instead of the ones prescribed in the config file.
-The resulting regularization terms are then treated by CASHOCS, but are, except
+The resulting regularization terms are then treated by cashocs, but are, except
 for these definitions in the config file, invisible for the user.
 
 Finally, we solve the problem as in :ref:`demo_shape_poisson` with the lines ::

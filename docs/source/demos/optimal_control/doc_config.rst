@@ -13,14 +13,14 @@ First of all, the config is divided into the sections: :ref:`Mesh
 <config_ocp_mesh>`, :ref:`StateSystem <config_ocp_state_system>`,
 :ref:`OptimizationRoutine <config_ocp_optimization_routine>`, :ref:`AlgoLBFGS
 <config_ocp_algolbfgs>`, :ref:`AlgoCG <config_ocp_algocg>`, :ref:`AlgoTNM
-<config_ocp_algonewton>`, :ref:`AlgoPDAS <config_ocp_algopdas>`, and :ref:`Output <config_ocp_output>`.
+<config_ocp_algonewton>`, and :ref:`Output <config_ocp_output>`.
 These manage the settings for the mesh, the state equation of the optimization
 problem, the solution algorithms, and the output, respectively. Note, that the
 structure of such config files is explained in-depth in the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_.
 In particular, the order of the entries in each section is arbitrary.
 
-Moreover, we remark that CASHOCS has a default behavior for almost all of these
+Moreover, we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
 and we will discuss this behavior for each parameter in this tutorial.
 A summary of all parameters as well as their default values
@@ -161,8 +161,6 @@ The possible choices are given by
   - ``lbfgs`` or ``bfgs`` : limited memory BFGS method
 
   - ``newton`` : a truncated Newton method
-
-  - ``pdas`` or ``primal_dual_active_set`` : a primal dual active set method (for control constraints)
 
 Note, that there is no default value, so that this always has to be specified by
 the user.
@@ -351,10 +349,17 @@ initial guess is further away from the optimum. The default value is ``inner_new
 
 Then, we have the following line ::
 
-    inner_newton_tolerance = 1e-15
+    inner_newton_rtol = 1e-15
 
 This determines the relative tolerance of the iterative Krylov solver for the
-Hessian problem. This is set to ``inner_newton_tolerance = 1e-15`` by default.
+Hessian problem. This is set to ``inner_newton_rtol = 1e-15`` by default.
+
+Moreover, we can also specify the absolute tolerance for the iterative solver for the
+Hessian problem, with the line ::
+
+    inner_newton_atol = 1e-15
+
+analogously to the relative tolerance above.
 
 In the final line, the paramter ``max_it_inner_newton`` is defined via ::
 
@@ -366,77 +371,12 @@ of the Hessian problem is used after ``max_it_inner_newton`` iterations regardle
 of whether this is converged or not. This defaults to ``max_it_inner_newton = 50``.
 
 
-
-.. _config_ocp_algopdas:
-
-Section AlgoPDAS
-----------------
-
-
-Let us now take a look at the parameters for the primal dual active set method.
-Its first parameter is ``inner_pdas``, which is set as follows ::
-
-    inner_pdas = newton
-
-This parameter determines which solution algorithm is used for the inner
-(unconstrained) optimization problem in the primal dual active set method.
-Can be one of
-
-- ``gd`` or ``gradient_descent`` : A gradient descent method
-
-- ``cg``, ``conjugate_gradient``, ``ncg``, or ``nonlinear_cg`` : A nonlinear conjugate gradient method
-
-- ``lbfgs`` or ``bfgs`` : A limited memory BFGS method
-
-- ``newton`` : A truncated newton method
-
-Note, that the parameters for these inner solvers are determined via the same
-interfaces used for the solution algorithms, i.e, setting ::
-
-    [OptimizationRoutine]
-    algorithm = pdas
-
-    [AlgoLBFGS]
-    bfgs_memory_size = 2
-
-    [AlgoPDAS]
-    inner_pdas = bfgs
-
-(where we do not show additional parameters) uses the limited memory BFGS method
-with memory size 2 as inner solver for the primal dual active set method.
-Moreover, this parameter has to be specified by the user, there is no default value.
-
-Moreover, we have the parameter ::
-
-    pdas_inner_tolerance = 1e-2
-
-This parameter determines the relative tolerance used for the inner
-solution algorithms.
-
-The maximum number of (inner) iterations for the primal dual active set method are
-defined via ::
-
-    maximum_iterations_inner_pdas = 100
-
-and this defaults to ``maximum_iterations_inner_pdas = 50``.
-
-Finally, we have the following line ::
-
-    pdas_regularization_parameter = 1e-4
-
-This determines the regularization parameter for the determination of the active and
-inactive sets, and should be positive. This comes from
-the interpretation as semi-smooth Newton method with Moreau Yosida regularization
-of the constraints. There is no default value for this parameter, it has to be
-supplied by the user.
-
-
 .. _config_ocp_output:
 
 Section Output
 --------------
 
-This section determines the behavior of CASHOCS regarding output, both in the
+This section determines the behavior of cashocs regarding output, both in the
 terminal and w.r.t. output files. The first line of this section reads ::
 
     verbose = True
@@ -513,7 +453,7 @@ in the following.
     * - Parameter
       - Default value
       - Remarks
-    * - mesh-file
+    * - mesh_file
       -
       - optional, see :py:func:`import_mesh <cashocs.import_mesh>`
 
@@ -654,36 +594,15 @@ in the following.
     * - inner_newton
       - ``cr``
       - inner iterative solver for the truncated Newton method
-    * - inner_newton_tolerance
+    * - inner_newton_rtol
       - ``1e-15``
       - relative tolerance for the inner iterative solver
+    * - inner_newton_atol
+      - ``0.0``
+      - absolute tolerance for the inner iterative solver
     * - max_it_inner_newton
       - ``50``
       - maximum iterations for the inner iterative solver
-
-[AlgoPDAS]
-**********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter
-      - Default value
-      - Remarks
-    * - inner_pdas
-      -
-      - has to be specified; determines  the optimization algorithm used to
-        solve the inner sub-problems for the PDAS method
-    * - pdas_inner_tolerance
-      - ``1e-2``
-      - relative tolerance for the inner optimization problems
-    * - maximum_iterations_inner_pdas
-      - ``50``
-      - maximum iterations for the inner optimization algorithm
-    * - pdas_regularization_parameter
-      -
-      - has to be specified; needs to be positive
-
 
 [Output]
 ********

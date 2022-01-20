@@ -1,7 +1,7 @@
-Using CASHOCS Exclusively as a Solver
+Using cashocs Exclusively as a Solver
 =====================================
 
-Here, we showcase that one can use CASHOCS optimization routines without its
+Here, we showcase that one can use cashocs optimization routines without its
 automatic derivation of adjoint systems and (shape) derivatives, where the user
 can choose to supply these forms themselves.
 

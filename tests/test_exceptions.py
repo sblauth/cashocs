@@ -1,21 +1,21 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests if CASHOCS exceptions are being raised properly.
+"""Tests if cashocs exceptions are being raised properly.
 
 """
 
@@ -28,11 +28,11 @@ from fenics import *
 import cashocs
 from cashocs._exceptions import (
     CashocsException,
-    ConfigError,
     InputError,
     NotConvergedError,
     PETScKSPError,
 )
+
 
 
 rng = np.random.RandomState(300696)
@@ -99,18 +99,3 @@ def test_petsc_error():
         u.vector()[:] = rng.rand(V.dim())
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
-
-
-def test_config_error():
-    with pytest.raises(ConfigError) as e_info:
-        config.set("AlgoCG", "cg_method", "nonexistent")
-        config.set("OptimizationRoutine", "algorithm", "cg")
-        config.set("OptimizationRoutine", "maximum_iterations", "2")
-        u.vector()[:] = rng.rand(V.dim())
-        ocp_conf = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-        ocp_conf.solve(max_iter=10)
-    assert "You have an error in your config file." in str(e_info.value)
-
-    with pytest.raises(CashocsException):
-        ocp_conf._erase_pde_memory()
-        ocp_conf.solve(max_iter=10)

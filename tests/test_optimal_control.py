@@ -1,33 +1,33 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Tests for optimal control problems / algorithms.
 
 """
 
 import os
-import subprocess
 
 import numpy as np
 import pytest
 from fenics import *
 
 import cashocs
-from cashocs._exceptions import InputError
+from cashocs._exceptions import InputError, NotConvergedError
+
 
 
 rng = np.random.RandomState(300696)
@@ -333,161 +333,6 @@ def test_control_newton_cr_cc():
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
-def test_control_pdas_gd_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "gd")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=9)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_cg_fr_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "cg")
-    config.set("AlgoCG", "cg_method", "FR")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=10)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_cg_pr_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "cg")
-    config.set("AlgoCG", "cg_method", "PR")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=11)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_cg_hs_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "cg")
-    config.set("AlgoCG", "cg_method", "HS")
-    config.set("AlgoCG", "cg_periodic_restart", "True")
-    config.set("AlgoCG", "cg_periodic_its", "0")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=9)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_cg_dy_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "cg")
-    config.set("AlgoCG", "cg_method", "DY")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=10)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_cg_hz_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "cg")
-    config.set("AlgoCG", "cg_method", "HZ")
-    config.set("AlgoCG", "cg_periodic_restart", "True")
-    config.set("AlgoCG", "cg_periodic_its", "1")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=9)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_bfgs_cc():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoPDAS", "inner_pdas", "lbfgs")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=17)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_newton_cr():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoTNM", "inner_newton", "cr")
-    config.set("AlgoPDAS", "inner_pdas", "newton")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=10)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
-def test_control_pdas_newton_cg():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("AlgoTNM", "inner_newton", "cg")
-    config.set("AlgoPDAS", "inner_pdas", "newton")
-    config.set("OptimizationRoutine", "soft_exit", "True")
-    u.vector()[:] = 0.0
-    ocp_cc = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, control_constraints=cc
-    )
-    ocp_cc.solve("pdas", rtol=1e-2, atol=0.0, max_iter=16)
-
-    assert ocp_cc.solver.converged
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
-
-
 def test_custom_supply_control():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
@@ -510,30 +355,6 @@ def test_custom_supply_control():
     assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(user_ocp, rng=rng) > 1.9
-
-
-def test_scaling_control():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    u.vector()[:] = 1e-2
-
-    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
-    J2 = Constant(0.5) * u * u * dx
-    J_list = [J1, J2]
-
-    desired_weights = rng.rand(2).tolist()
-    summ = sum(desired_weights)
-
-    test_ocp = cashocs.OptimalControlProblem(
-        F, bcs, J_list, y, u, p, config, desired_weights=desired_weights
-    )
-    val = test_ocp.reduced_cost_functional.evaluate()
-
-    assert abs(val - summ) < 1e-14
-
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_scalar_norm_optimization():
@@ -617,6 +438,128 @@ def test_scalar_multiple_norms():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
+def test_different_spaces():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    W = FunctionSpace(mesh, "DG", 1)
+
+    y = Function(V)
+    p = Function(W)
+    u = Function(V)
+
+    n = FacetNormal(mesh)
+    h = CellDiameter(mesh)
+    h_avg = (h("+") + h("-")) / 2
+    flux = 1 / 2 * (inner(grad(u)("+") + grad(u)("-"), n("+")))
+    alpha = 1e3
+    gamma = 1e3
+    e = (
+        dot(grad(p), grad(y)) * dx
+        - dot(avg(grad(p)), jump(y, n)) * dS
+        - dot(jump(p, n), avg(grad(y))) * dS
+        + Constant(alpha) / h_avg * dot(jump(p, n), jump(y, n)) * dS
+        - dot(grad(p), y * n) * ds
+        - dot(p * n, grad(y)) * ds
+        + (Constant(gamma) / h) * p * y * ds
+        - u * p * dx
+    )
+
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    lambd = 1e-6
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * lambd) * u * u * dx
+
+    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+    ocp.solve(algorithm="bfgs")
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_nonlinear_state_eq():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    initial_guess = Function(V)
+    F = inner(grad(y), grad(p)) * dx + pow(y, 3) * p * dx - u * p * dx
+    config.set("StateSystem", "is_linear", "False")
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, initial_guess=[initial_guess]
+    )
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
+    cashocs.verification.control_gradient_test(ocp, rng=rng)
+
+
+def test_riesz_scalar_products():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    u.vector()[:] = 0.0
+    riesz_scalar_product = TrialFunction(V) * TestFunction(V) * dx
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, riesz_scalar_products=riesz_scalar_product
+    )
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, riesz_scalar_products=[riesz_scalar_product]
+    )
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_hooks():
+    def pre_function():
+        u.vector()[:] = 1.0
+
+    def post_function():
+        u.vector()[:] = -1.0
+
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    u.vector()[:] = 0.0
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+    grad = Function(V)
+    grad.vector()[:] = ocp.compute_gradient()[0].vector()[:]
+
+    ocp.inject_pre_post_hook(pre_function, post_function)
+    assert ocp.form_handler._pre_hook == pre_function
+    assert ocp.form_handler._post_hook == post_function
+
+    ocp.compute_state_variables()
+    assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15
+
+    injected_grad = ocp.compute_gradient()
+    assert np.max(np.abs(u.vector()[:] - (-1.0))) < 1e-15
+
+    assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
+
+
+def test_scaling_control():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    u.vector()[:] = 1e-2
+
+    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
+    J2 = Constant(0.5) * u * u * dx
+    J_list = [J1, J2]
+
+    desired_weights = rng.rand(2).tolist()
+    summ = sum(desired_weights)
+
+    test_ocp = cashocs.OptimalControlProblem(
+        F, bcs, J_list, y, u, p, config, desired_weights=desired_weights
+    )
+    val = test_ocp.reduced_cost_functional.evaluate()
+
+    assert abs(val - summ) < 1e-14
+    assert abs(assemble(J_list[0]) - desired_weights[0]) < 1e-14
+    assert abs(assemble(J_list[1]) - desired_weights[1]) < 1e-14
+
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
 def test_scaling_scalar_only():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
@@ -636,7 +579,7 @@ def test_scaling_scalar_only():
     test_ocp = cashocs.OptimalControlProblem(
         F,
         bcs,
-        J,
+        [J],
         y,
         u,
         p,
@@ -671,7 +614,7 @@ def test_scaling_scalar_and_single_cost():
     test_ocp = cashocs.OptimalControlProblem(
         F,
         bcs,
-        J,
+        [J],
         y,
         u,
         p,
@@ -727,156 +670,22 @@ def test_scaling_all():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
-def test_different_spaces():
+def test_iterative_gradient():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
-    W = FunctionSpace(mesh, "DG", 1)
-
-    y = Function(V)
-    p = Function(W)
-    u = Function(V)
-
-    n = FacetNormal(mesh)
-    h = CellDiameter(mesh)
-    h_avg = (h("+") + h("-")) / 2
-    flux = 1 / 2 * (inner(grad(u)("+") + grad(u)("-"), n("+")))
-    alpha = 1e3
-    gamma = 1e3
-    e = (
-        dot(grad(p), grad(y)) * dx
-        - dot(avg(grad(p)), jump(y, n)) * dS
-        - dot(jump(p, n), avg(grad(y))) * dS
-        + Constant(alpha) / h_avg * dot(jump(p, n), jump(y, n)) * dS
-        - dot(grad(p), y * n) * ds
-        - dot(p * n, grad(y)) * ds
-        + (Constant(gamma) / h) * p * y * ds
-        - u * p * dx
-    )
-
-    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-
-    lambd = 1e-6
-    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
-
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * lambd) * u * u * dx
-
-    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
-    ocp.solve(algorithm="bfgs")
-    assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-
-def test_nonlinear_state_eq():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    initial_guess = Function(V)
-    F = inner(grad(y), grad(p)) * dx + pow(y, 3) * p * dx - u * p * dx
-    config.set("StateSystem", "is_linear", "False")
-    ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, initial_guess=[initial_guess]
-    )
-    cashocs.verification.control_gradient_test(ocp, rng=rng)
-    cashocs.verification.control_gradient_test(ocp, rng=rng)
-    cashocs.verification.control_gradient_test(ocp, rng=rng)
-
-
-def test_save_pvd_files():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("Output", "save_pvd", "True")
-    config.set("Output", "save_results", "True")
-    config.set("Output", "save_txt", "True")
-    config.set("Output", "save_pvd_adjoint", "True")
-    config.set("Output", "save_pvd_gradient", "True")
-    config.set("Output", "result_dir", dir_path + "/out")
+    config.set("OptimizationRoutine", "gradient_method", "iterative")
     u.vector()[:] = 0.0
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve(algorithm="bfgs", rtol=1e-1)
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
-
-    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
+    assert ocp.gradient_test(rng=rng) > 1.9
 
 
-def test_riesz_scalar_products():
+def test_small_stepsize1():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("OptimizationRoutine", "initial_stepsize", "1e-8")
     u.vector()[:] = 0.0
-    riesz_scalar_product = TrialFunction(V) * TestFunction(V) * dx
-    ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, riesz_scalar_products=riesz_scalar_product
-    )
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, riesz_scalar_products=[riesz_scalar_product]
-    )
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-
-
-def test_hooks():
-    def pre_function():
-        u.vector()[:] = 1.0
-
-    def post_function():
-        u.vector()[:] = -1.0
-
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    u.vector()[:] = 0.0
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
-    grad = Function(V)
-    grad.vector()[:] = ocp.compute_gradient()[0].vector()[:]
-
-    ocp.inject_pre_post_hook(pre_function, post_function)
-    assert ocp.form_handler._pre_hook == pre_function
-    assert ocp.form_handler._post_hook == post_function
-
-    ocp.compute_state_variables()
-    assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15
-
-    injected_grad = ocp.compute_gradient()
-    assert np.max(np.abs(u.vector()[:] - (-1.0))) < 1e-15
-
-    assert np.max(np.abs(grad.vector()[:] - injected_grad[0].vector()[:])) > 1e-3
-
-
-# def test_min_max_terms():
-#
-# min_max_term = {
-#     "integrand": u * u * dx,
-#     "lower_bound": None,
-#     "upper_bound": 1.0,
-#     "mu": 1.0,
-#     "lambda": 1.0,
-# }
-#
-#
-# config = cashocs.load_config(dir_path + "/config_ocp.ini")
-#
-# u.vector()[:] = 0.0
-# test_ocp = cashocs.OptimalControlProblem(
-#     F,
-#     bcs,
-#     J,
-#     y,
-#     u,
-#     p,
-#     config,
-#     min_max_terms=min_max_term,
-# )
-#
-# test_ocp.solve()
-#
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-# # assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    with pytest.raises(NotConvergedError) as e_info:
+        ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=2)
+    assert "Failed to compute a feasible Armijo step." in str(e_info.value)

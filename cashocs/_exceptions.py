@@ -1,27 +1,35 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Exceptions raised by CASHOCS.
+"""Exceptions raised by cashocs."""
 
-"""
+from __future__ import annotations
+
+from typing import Optional, List
 
 
 class CashocsException(Exception):
-    """Base class for exceptions raised by CASHOCS."""
+    """Base class for exceptions raised by cashocs."""
+
+    pass
+
+
+class CashocsDebugException(CashocsException):
+    """Exception that can get raised for debugging."""
 
     pass
 
@@ -34,15 +42,22 @@ class NotConvergedError(CashocsException):
     optimization problem.
     """
 
-    def __init__(self, solver, message=None):
+    def __init__(self, solver: str, message: Optional[str] = None) -> None:
+        """
+        Args:
+            solver: The solver which raised the exception.
+            message: A message indicating why the solver did not converge.
+        """
+
         self.solver = solver
         self.message = message
 
-    def __str__(self):
-        if self.message is None:
-            return f"The {self.solver} failed to converge."
-        else:
-            return f"The {self.solver} failed to converge.\n{self.message}"
+    def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+
+        main_msg = f"The {self.solver} failed to converge."
+        post_msg = f"\n{self.message}" if self.message is not None else ""
+        return main_msg + post_msg
 
 
 class PETScKSPError(CashocsException):
@@ -51,79 +66,90 @@ class PETScKSPError(CashocsException):
     Also returns the PETSc error code and reason.
     """
 
-    def __init__(self, error_code, message="PETSc linear solver did not converge."):
+    def __init__(
+        self, error_code: int, message: str = "PETSc linear solver did not converge."
+    ) -> None:
+        """
+        Args:
+            error_code: The error code issued by PETSc.
+            message: The message, detailing why PETSc issued an error.
+        """
+
         self.message = message
         self.error_code = error_code
 
-        if self.error_code == -2:
-            self.error_reason = " (ksp_diverged_null)"
-        elif self.error_code == -3:
-            self.error_reason = " (ksp_diverged_its, reached maximum iterations)"
-        elif self.error_code == -4:
-            self.error_reason = " (ksp_diverged_dtol, reached divergence tolerance)"
-        elif self.error_code == -5:
-            self.error_reason = " (ksp_diverged_breakdown, krylov method breakdown)"
-        elif self.error_code == -6:
-            self.error_reason = " (ksp_diverged_breakdown_bicg)"
-        elif self.error_code == -7:
-            self.error_reason = " (ksp_diverged_nonsymmetric, need a symmetric operator / preconditioner)"
-        elif self.error_code == -8:
-            self.error_reason = " (ksp_diverged_indefinite_pc, the preconditioner is indefinite, but needs to be positive definite)"
-        elif self.error_code == -9:
-            self.error_reason = " (ksp_diverged_nanorinf)"
-        elif self.error_code == -10:
-            self.error_reason = " (ksp_diverged_indefinite_mat, operator is indefinite, but needs to be positive definite)"
-        elif self.error_code == -11:
-            self.error_reason = " (ksp_diverged_pc_failed, it was not possible to build / use the preconditioner)"
-        else:
-            self.error_reason = " (unknown)"
+        self.error_dict = {
+            -2: " (ksp_diverged_null)",
+            -3: " (ksp_diverged_its, reached maximum iterations)",
+            -4: " (ksp_diverged_dtol, reached divergence tolerance)",
+            -5: " (ksp_diverged_breakdown, krylov method breakdown)",
+            -6: " (ksp_diverged_breakdown_bicg)",
+            -7: " (ksp_diverged_nonsymmetric, "
+            "need a symmetric operator / preconditioner)",
+            -8: " (ksp_diverged_indefinite_pc, "
+            "the preconditioner is indefinite, "
+            "but needs to be positive definite)",
+            -9: " (ksp_diverged_nanorinf)",
+            -10: " (ksp_diverged_indefinite_mat, "
+            "operator is indefinite, "
+            "but needs to be positive definite)",
+            -11: " (ksp_diverged_pc_failed, "
+            "it was not possible to build / use the preconditioner)",
+        }
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+
         return (
-            f"{self.message} KSPConvergedReason = {self.error_code} {self.error_reason}"
+            f"{self.message} KSPConvergedReason = "
+            f"{self.error_code} {self.error_dict[self.error_code]}"
         )
 
 
 class InputError(CashocsException):
-    """This exception gets raised when the user input to a public API method is wrong or inconsistent."""
+    """This gets raised when the user input to a public API method is wrong."""
 
-    def __init__(self, obj, param, message=None):
+    def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
+        """
+        Args:
+            obj: The object which raises the exception.
+            param: The faulty input parameter.
+            message: A message detailing what went wrong.
+        """
+
         self.obj = obj
         self.param = param
         self.message = message
 
-    def __str__(self):
-        if self.message is None:
-            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}."
-        else:
-            return f"Not a valid input for object {self.obj}. The faulty input is for the parameter {self.param}.\n{self.message}"
+    def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+
+        main_msg = (
+            f"Not a valid input for object {self.obj}. "
+            f"The faulty input is for the parameter {self.param}."
+        )
+        post_msg = f"\n{self.message}" if self.message is not None else ""
+        return main_msg + post_msg
 
 
 class ConfigError(CashocsException):
     """This exception gets raised when parameters in the config file are wrong."""
 
-    pre_message = "You have an error in your config file.\n"
+    pre_message = "You have some error(s) in your config file.\n"
 
-    def __init__(self, section, key, message=None):
-        self.section = section
-        self.key = key
-        self.message = message
+    def __init__(self, config_errors: List[str]) -> None:
+        """
+        Args:
+            config_errors: The list of errors that occurred while trying to validate
+                the config.
+        """
 
-    def __str__(self):
-        if self.message is None:
-            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}."
-        else:
-            return f"{self.pre_message}The error is located in section [{self.section}] in the key {self.key}.\n{self.message}"
+        self.config_errors = config_errors
 
+    def __str__(self) -> str:
+        """Returns the string representation of the exception."""
 
-class GeometryError(CashocsException):
-    """This exception gets raised when there is a problem with the finite element mesh."""
-
-    def __init__(self, message=None):
-        self.message = message
-
-    def __str__(self):
-        if self.message is None:
-            return f"The finite element mesh is not valid anymore."
-        else:
-            return f"The finite element mesh is not valid anymore.\n{self.message}"
+        except_str = f"{self.pre_message}"
+        for error in self.config_errors:
+            except_str += error
+        return except_str
