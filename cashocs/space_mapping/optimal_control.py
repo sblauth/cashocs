@@ -1,66 +1,87 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
-# This file is part of CASHOCS.
+# This file is part of cashocs.
 #
-# CASHOCS is free software: you can redistribute it and/or modify
+# cashocs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# CASHOCS is distributed in the hope that it will be useful,
+# cashocs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CASHOCS.  If not, see <https://www.gnu.org/licenses/>.
+# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Space mapping for optimal control problems
+"""Space mapping for optimal control problems."""
 
-"""
+from __future__ import annotations
+
+import abc
+from typing import Union, List, Dict, Optional
+
+from typing_extensions import Literal
 
 import numpy as np
 import fenics
-from ufl import replace
-from _collections import deque
+import ufl
+import collections
+import configparser
 
-from .._optimal_control.optimal_control_problem import OptimalControlProblem
-from .._exceptions import InputError, NotConvergedError
-from ..utils import (
-    _check_and_enlist_functions,
-    _check_and_enlist_ufl_forms,
-    Interpolator,
-)
-from .._loggers import debug
+from cashocs._optimization.optimal_control import optimal_control_problem as ocp
+from cashocs import _exceptions
+from cashocs import utils
 
 
-class ParentFineModel:
-    def __init__(self):
+class ParentFineModel(abc.ABC):
+    """Base class for the fine model in space mapping.
+
+    Attributes:
+        controls: The control variables of the fine model.
+        cost_functional_value: The current cost functional value of the fine model.
+    """
+
+    def __init__(self) -> None:
+        """Initializes self."""
+
         self.controls = None
         self.cost_functional_value = None
 
-    def solve_and_evaluate(self):
+    @abc.abstractmethod
+    def solve_and_evaluate(self) -> None:
+        """Solves and evaluates the fine model.
+
+        This needs to be overwritten with a custom implementation.
+        """
+
         pass
 
 
 class CoarseModel:
+    """Coarse Model for space mapping."""
+
     def __init__(
         self,
-        state_forms,
-        bcs_list,
-        cost_functional_form,
-        states,
-        controls,
-        adjoints,
-        config=None,
-        riesz_scalar_products=None,
-        control_constraints=None,
-        initial_guess=None,
-        ksp_options=None,
-        adjoint_ksp_options=None,
-        desired_weights=None,
-        scalar_tracking_forms=None,
-    ):
+        state_forms: Union[ufl.Form, List[ufl.Form]],
+        bcs_list: Union[
+            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+        ],
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        controls: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        config: Optional[configparser.ConfigParser] = None,
+        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
+        min_max_terms: Optional[List[Dict]] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
 
         self.state_forms = state_forms
         self.bcs_list = bcs_list
@@ -74,10 +95,11 @@ class CoarseModel:
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
-        self.desired_weights = desired_weights
         self.scalar_tracking_forms = scalar_tracking_forms
+        self.min_max_terms = min_max_terms
+        self.desired_weights = desired_weights
 
-        self.optimal_control_problem = OptimalControlProblem(
+        self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
             self.cost_functional_form,
@@ -90,11 +112,12 @@ class CoarseModel:
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            desired_weights=self.desired_weights,
             scalar_tracking_forms=self.scalar_tracking_forms,
+            min_max_terms=self.min_max_terms,
+            desired_weights=self.desired_weights,
         )
 
-    def optimize(self):
+    def optimize(self) -> None:
 
         self.optimal_control_problem.solve()
 
@@ -102,53 +125,20 @@ class CoarseModel:
 class ParameterExtraction:
     def __init__(
         self,
-        coarse_model,
-        cost_functional_form,
-        states,
-        controls,
-        config=None,
-        scalar_tracking_forms=None,
-        desired_weights=None,
-    ):
-        """
-
-        Parameters
-        ----------
-        coarse_model : CoarseModel
-        cost_functional_form
-        states
-        controls
-        config
-        scalar_tracking_forms
-        desired_weights
-
-        Returns
-        -------
-
-        """
+        coarse_model: CoarseModel,
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        controls: Union[fenics.Function, List[fenics.Function]],
+        config: Optional[configparser.ConfigParser] = None,
+        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
 
         self.coarse_model = coarse_model
         self.cost_functional_form = cost_functional_form
 
-        ### states
-        try:
-            self.states = _check_and_enlist_functions(states)
-        except InputError:
-            raise InputError(
-                "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                "states",
-                "Type of states is wrong.",
-            )
-
-        ### controls
-        try:
-            self.controls = _check_and_enlist_functions(controls)
-        except InputError:
-            raise InputError(
-                "cashocs.space_mapping.optimal_control.ParameterExtraction",
-                "controls",
-                "Type of controls is wrong.",
-            )
+        self.states = utils.enlist(states)
+        self.controls = utils.enlist(controls)
 
         self.config = config
         self.scalar_tracking_forms = scalar_tracking_forms
@@ -176,7 +166,7 @@ class ParameterExtraction:
         mapping_dict.update(dict_adjoints)
         mapping_dict.update(dict_controls)
         self.state_forms = [
-            replace(form, mapping_dict)
+            ufl.replace(form, mapping_dict)
             for form in coarse_model.optimal_control_problem.state_forms
         ]
         self.bcs_list = coarse_model.optimal_control_problem.bcs_list
@@ -194,7 +184,7 @@ class ParameterExtraction:
 
         self.optimal_control_problem = None
 
-    def _solve(self, initial_guesses=None):
+    def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
 
         if initial_guesses is None:
             for i in range(len(self.controls)):
@@ -203,7 +193,7 @@ class ParameterExtraction:
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = initial_guesses[i].vector()[:]
 
-        self.optimal_control_problem = OptimalControlProblem(
+        self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
             self.cost_functional_form,
@@ -226,36 +216,21 @@ class ParameterExtraction:
 class SpaceMapping:
     def __init__(
         self,
-        fine_model,
-        coarse_model,
-        parameter_extraction,
-        method="broyden",
-        max_iter=25,
-        tol=1e-2,
-        use_backtracking_line_search=False,
-        broyden_type="good",
-        cg_type="FR",
-        memory_size=10,
-        scaling_factor=1.0,
-        verbose=True,
-    ):
-        """
-
-        Parameters
-        ----------
-        fine_model : ParentFineModel
-        coarse_model : CoarseModel
-        parameter_extraction : ParameterExtraction
-        method
-        max_iter
-        tol
-        use_backtracking_line_search
-        broyden_type
-        cg_type
-        memory_size
-        scaling_factor
-        verbose
-        """
+        fine_model: ParentFineModel,
+        coarse_model: CoarseModel,
+        parameter_extraction: ParameterExtraction,
+        method: Literal[
+            "broyden", "bfgs", "lbfgs", "sd", "steepest_descent"
+        ] = "broyden",
+        max_iter: int = 25,
+        tol: float = 1e-2,
+        use_backtracking_line_search: bool = False,
+        broyden_type: Literal["good", "bad"] = "good",
+        cg_type: Literal["FR", "PR", "HS", "DY", "HZ"] = "FR",
+        memory_size: int = 10,
+        scaling_factor: float = 1.0,
+        verbose: bool = True,
+    ) -> None:
 
         self.fine_model = fine_model
         self.coarse_model = coarse_model
@@ -279,29 +254,23 @@ class SpaceMapping:
         self.iteration = 0
 
         self.z_star = self.coarse_model.optimal_control_problem.controls
+        self.norm_z_star = 1.0
         self.control_dim = (
             self.coarse_model.optimal_control_problem.form_handler.control_dim
         )
-        try:
-            self.x = _check_and_enlist_functions(self.fine_model.controls)
-        except InputError:
-            raise InputError(
-                "cashocs.space_mapping.optimal_control.ParentFineModel",
-                "self.controls",
-                "The parameter self.controls has to be defined either as a single "
-                + "fenics Function or a list of fenics Functions.",
-            )
+
+        self.x = utils.enlist(self.fine_model.controls)
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
             self.coarse_model.optimal_control_problem.form_handler.control_spaces
         )
         self.ips_to_coarse = [
-            Interpolator(control_spaces_fine[i], control_spaces_coarse[i])
+            utils.Interpolator(control_spaces_fine[i], control_spaces_coarse[i])
             for i in range(len(self.z_star))
         ]
         self.ips_to_fine = [
-            Interpolator(control_spaces_coarse[i], control_spaces_fine[i])
+            utils.Interpolator(control_spaces_coarse[i], control_spaces_fine[i])
             for i in range(len(self.z_star))
         ]
 
@@ -318,12 +287,12 @@ class SpaceMapping:
         self.dir_prev = [fenics.Function(V) for V in control_spaces_coarse]
         self.difference = [fenics.Function(V) for V in control_spaces_coarse]
 
-        self.history_s = deque()
-        self.history_y = deque()
-        self.history_rho = deque()
-        self.history_alpha = deque()
+        self.history_s = collections.deque()
+        self.history_y = collections.deque()
+        self.history_rho = collections.deque()
+        self.history_alpha = collections.deque()
 
-    def solve(self):
+    def solve(self) -> None:
         # Compute initial guess for the space mapping
         self.coarse_model.optimize()
         for i in range(self.control_dim):
@@ -344,8 +313,10 @@ class SpaceMapping:
 
         if self.verbose:
             print(
-                f"Space Mapping - Iteration {self.iteration:3d}:    Cost functional value = "
-                f"{self.fine_model.cost_functional_value:.3e}    eps = {self.eps:.3e}\n"
+                f"Space Mapping - Iteration {self.iteration:3d}:    "
+                f"Cost functional value = "
+                f"{self.fine_model.cost_functional_value:.3e}    "
+                f"eps = {self.eps:.3e}\n"
             )
 
         while not self.converged:
@@ -358,13 +329,6 @@ class SpaceMapping:
                 )
 
             self._compute_search_direction(self.temp, self.h)
-
-            # if self._scalar_product(self.h, self.temp) <= 0.0:
-            #     debug(
-            #         "The computed search direction for space mapping did not yield a descent direction"
-            #     )
-            #     for i in range(self.control_dim):
-            #         self.h[i].vector()[:] = self.temp[i].vector()[:]
 
             stepsize = 1.0
             for i in range(self.control_dim):
@@ -413,7 +377,7 @@ class SpaceMapping:
                         stepsize /= 2
 
                     if stepsize <= 1e-4:
-                        raise NotConvergedError(
+                        raise _exceptions.NotConvergedError(
                             "Space Mapping Backtracking Line Search",
                             "The line search did not converge.",
                         )
@@ -421,8 +385,10 @@ class SpaceMapping:
             self.iteration += 1
             if self.verbose:
                 print(
-                    f"Space Mapping - Iteration {self.iteration:3d}:    Cost functional value = "
-                    f"{self.fine_model.cost_functional_value:.3e}    eps = {self.eps:.3e}"
+                    f"Space Mapping - Iteration {self.iteration:3d}:    "
+                    f"Cost functional value = "
+                    f"{self.fine_model.cost_functional_value:.3e}    "
+                    f"eps = {self.eps:.3e}"
                     f"    step size = {stepsize:.3e}"
                 )
 
@@ -491,18 +457,25 @@ class SpaceMapping:
 
         if self.converged:
             output = (
-                f"\nStatistics --- Space mapping iterations: {self.iteration:4d}"
-                + f" --- Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
+                f"\nStatistics --- "
+                f"Space mapping iterations: {self.iteration:4d} --- "
+                f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
             )
             if self.verbose:
                 print(output)
 
-    def _scalar_product(self, a, b):
+    def _scalar_product(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> float:
+
         return self.coarse_model.optimal_control_problem.form_handler.scalar_product(
             a, b
         )
 
-    def _compute_search_direction(self, q, out):
+    def _compute_search_direction(
+        self, q: List[fenics.Function], out: List[fenics.Function]
+    ) -> None:
+
         if self.method == "steepest_descent":
             return self._compute_steepest_descent_application(q, out)
         elif self.method == "broyden":
@@ -512,11 +485,15 @@ class SpaceMapping:
         elif self.method == "ncg":
             return self._compute_ncg_direction(q, out)
 
-    def _compute_steepest_descent_application(self, q, out):
+    def _compute_steepest_descent_application(
+        self, q: List[fenics.Function], out: List[fenics.Function]
+    ) -> None:
         for i in range(self.control_dim):
             out[i].vector()[:] = q[i].vector()[:]
 
-    def _compute_broyden_application(self, q, out):
+    def _compute_broyden_application(
+        self, q: List[fenics.Function], out: List[fenics.Function]
+    ) -> None:
         for j in range(self.control_dim):
             out[j].vector()[:] = q[j].vector()[:]
 
@@ -526,7 +503,7 @@ class SpaceMapping:
             elif self.broyden_type == "bad":
                 alpha = self._scalar_product(self.history_y[i], q)
             else:
-                raise InputError(
+                raise _exceptions.InputError(
                     "cashocs.space_mapping.optimal_control.SpaceMapping",
                     "broyden_type",
                     "broyden_type has to be either 'good' or 'bad'.",
@@ -535,7 +512,9 @@ class SpaceMapping:
             for j in range(self.control_dim):
                 out[j].vector()[:] += alpha * self.history_s[i][j].vector()[:]
 
-    def _compute_bfgs_application(self, q, out):
+    def _compute_bfgs_application(
+        self, q: List[fenics.Function], out: List[fenics.Function]
+    ) -> None:
         for j in range(self.control_dim):
             out[j].vector()[:] = q[j].vector()[:]
 
@@ -565,7 +544,9 @@ class SpaceMapping:
                         self.history_alpha[-1 - i] - beta
                     )
 
-    def _compute_ncg_direction(self, q, out):
+    def _compute_ncg_direction(
+        self, q: List[fenics.Function], out: List[fenics.Function]
+    ) -> None:
         if self.iteration > 0:
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
@@ -620,7 +601,8 @@ class SpaceMapping:
         for i in range(self.control_dim):
             out[i].vector()[:] = q[i].vector()[:] + self.beta * out[i].vector()[:]
 
-    def _compute_eps(self):
+    def _compute_eps(self) -> float:
+
         for i in range(self.control_dim):
             self.diff[i].vector()[:] = (
                 self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
