@@ -29,7 +29,6 @@ import cashocs
 from cashocs._exceptions import InputError, NotConvergedError
 
 
-
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
@@ -688,4 +687,4 @@ def test_small_stepsize1():
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     with pytest.raises(NotConvergedError) as e_info:
         ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=2)
-    assert "Failed to compute a feasible Armijo step." in str(e_info.value)
+    assert "Armijo rule failed." in str(e_info.value)

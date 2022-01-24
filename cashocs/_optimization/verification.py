@@ -32,34 +32,9 @@ if TYPE_CHECKING:
     from cashocs._optimization import shape_optimization
 
 
-def control_gradient_test(
-    ocp: optimal_control.OptimalControlProblem,
-    u: Optional[List[fenics.Function]] = None,
-    h: Optional[List[fenics.Function]] = None,
-    rng: Optional[np.random.RandomState] = None,
-) -> float:
-    """Performs a Taylor test to verify that the computed gradient is correct.
-
-    Args:
-        ocp: The underlying optimal control problem, for which the gradient
-            of the reduced cost function shall be verified.
-        u: The point, at which the gradient shall be verified. If this is ``None``,
-            then the current controls of the optimization problem are used. Default is
-            ``None``.
-        h: The direction(s) for the directional (Gateaux) derivative. If this is
-            ``None``, one random direction is chosen. Default is ``None``.
-        rng: A numpy random state for calculating a random direction
-
-    Returns:
-        The convergence order from the Taylor test. If this is (approximately) 2 or
-        larger, everything works as expected.
-    """
-
-    initial_state = []
-    for j in range(ocp.control_dim):
-        temp = fenics.Function(ocp.form_handler.control_spaces[j])
-        temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
-        initial_state.append(temp)
+def _initialize_control_variable(
+    ocp: optimal_control.OptimalControlProblem, u: List[fenics.Function]
+) -> List[fenics.Function]:
 
     if u is None:
         u = []
@@ -85,15 +60,47 @@ def control_gradient_test(
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             u.append(temp)
 
+    return u
+
+
+def control_gradient_test(
+    ocp: optimal_control.OptimalControlProblem,
+    u: Optional[List[fenics.Function]] = None,
+    h: Optional[List[fenics.Function]] = None,
+    rng: Optional[np.random.RandomState] = None,
+) -> float:
+    """Performs a Taylor test to verify that the computed gradient is correct.
+
+    Args:
+        ocp: The underlying optimal control problem, for which the gradient
+            of the reduced cost function shall be verified.
+        u: The point, at which the gradient shall be verified. If this is ``None``,
+            then the current controls of the optimization problem are used. Default is
+            ``None``.
+        h: The direction(s) for the directional (Gateaux) derivative. If this is
+            ``None``, one random direction is chosen. Default is ``None``.
+        rng: A numpy random state for calculating a random direction
+
+    Returns:
+        The convergence order from the Taylor test. If this is (approximately) 2 or
+        larger, everything works as expected.
+    """
+
+    rng = rng or np.random
+
+    initial_state = []
+    for j in range(ocp.control_dim):
+        temp = fenics.Function(ocp.form_handler.control_spaces[j])
+        temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+        initial_state.append(temp)
+
+    u = _initialize_control_variable(ocp, u)
+
     if h is None:
         h = []
         for V in ocp.form_handler.control_spaces:
             temp = fenics.Function(V)
-            if rng is not None:
-                # noinspection PyArgumentList
-                temp.vector()[:] = rng.rand(V.dim())
-            else:
-                temp.vector()[:] = np.random.rand(V.dim())
+            temp.vector()[:] = rng.rand(V.dim())
             h.append(temp)
 
     for j in range(ocp.control_dim):
