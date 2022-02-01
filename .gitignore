@@ -9,16 +9,13 @@ htmlcov
 *.pvd
 *.vtu
 
-
 ### pip
 /build
 /dist
 cashocs.egg-info/
 
-
 ### sphinx
 /docs/build
-
 
 ### cashocs
 *._cashocs_remesh_*
