@@ -228,16 +228,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self._remesh_init()
 
-        # boundaries
-        # noinspection PyUnresolvedReferences
-        if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
-            self.boundaries = boundaries
-        else:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem",
-                "boundaries",
-                "Not a valid type for boundaries.",
-            )
+        self.boundaries = boundaries
 
         # shape_scalar_product
         self.shape_scalar_product = shape_scalar_product
@@ -520,39 +511,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         Args:
             shape_derivative: The shape_derivative of the reduced cost functional.
         """
-
-        if not (isinstance(shape_derivative, ufl.Form)):
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "shape_derivative have to be a ufl form",
-            )
-
-        if len(shape_derivative.arguments()) == 2:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "Do not use TrialFunction for the shape_derivative.",
-            )
-        elif len(shape_derivative.arguments()) == 0:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "The specified shape_derivative must include a TestFunction object.",
-            )
-
-        if (
-            not shape_derivative.arguments()[0].ufl_function_space().ufl_element()
-            == self.form_handler.deformation_space.ufl_element()
-        ):
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                (
-                    "The TestFunction has to be chosen from the same "
-                    "space as the corresponding adjoint."
-                ),
-            )
 
         if (
             not shape_derivative.arguments()[0].ufl_function_space()

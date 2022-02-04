@@ -205,24 +205,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.control_constraints = self._parse_control_constraints(control_constraints)
         self._validate_control_constraints()
 
-        if not len(self.riesz_scalar_products) == self.control_dim:
-            raise _exceptions.InputError(
-                (
-                    "cashocs._optimization.optimal_control."
-                    "optimal_control_problem.OptimalControlProblem"
-                ),
-                "riesz_scalar_products",
-                "Length of controls does not match",
-            )
-        if not len(self.control_constraints) == self.control_dim:
-            raise _exceptions.InputError(
-                (
-                    "cashocs._optimization.optimal_control."
-                    "optimal_control_problem.OptimalControlProblem"
-                ),
-                "control_constraints",
-                "Length of controls does not match",
-            )
         # end overloading
 
         self.is_control_problem = True
@@ -393,78 +375,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             the control variables.
         """
 
+        mod_derivatives = None
         if isinstance(derivatives, list) and len(derivatives) > 0:
-            for i in range(len(derivatives)):
-                if isinstance(derivatives[i], ufl.form.Form):
-                    pass
-                else:
-                    raise _exceptions.InputError(
-                        (
-                            "cashocs._optimization.optimal_control."
-                            "optimal_control_problem.OptimalControlProblem."
-                            "supply_derivatives"
-                        ),
-                        "derivatives",
-                        "derivatives have to be ufl forms",
-                    )
             mod_derivatives = derivatives
         elif isinstance(derivatives, ufl.form.Form):
             mod_derivatives = [derivatives]
-        else:
-            raise _exceptions.InputError(
-                (
-                    "cashocs._optimization.optimal_control."
-                    "optimal_control_problem.OptimalControlProblem.supply_derivatives"
-                ),
-                "derivatives",
-                "derivatives have to be ufl forms",
-            )
-
-        for idx, form in enumerate(mod_derivatives):
-            if len(form.arguments()) == 2:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control.optimal_control_problem."
-                        "OptimalControlProblem.supply_derivatives"
-                    ),
-                    "derivatives",
-                    "Do not use TrialFunction for the derivatives.",
-                )
-            elif len(form.arguments()) == 0:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control.optimal_control_problem."
-                        "OptimalControlProblem.supply_derivatives"
-                    ),
-                    "derivatives",
-                    (
-                        "The specified derivatives must include a TestFunction object "
-                        "from the control space."
-                    ),
-                )
-
-            if (
-                not form.arguments()[0].ufl_function_space()
-                == self.form_handler.control_spaces[idx]
-            ):
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control.optimal_control_problem."
-                        "OptimalControlProblem.supply_derivatives"
-                    ),
-                    "derivatives",
-                    (
-                        "The TestFunction has to be chosen from the same space "
-                        "as the corresponding adjoint."
-                    ),
-                )
-
-        if not len(mod_derivatives) == self.form_handler.control_dim:
-            raise _exceptions.InputError(
-                "cashocs.OptimalControlProblem.supply_derivatives",
-                "derivatives",
-                "Length of derivatives does not match number of controls.",
-            )
 
         self.form_handler.gradient_forms_rhs = mod_derivatives
         self.has_custom_derivative = True
@@ -551,6 +466,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             )
 
         # recast floats into functions for compatibility
+        lower_bound = None
+        upper_bound = None
         formatted_control_constraints = []
         for idx, pair in enumerate(temp_control_constraints):
             if isinstance(pair[0], (float, int)):
@@ -558,30 +475,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 lower_bound.vector().vec().set(pair[0])
             elif isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
-            else:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    "Wrong type for the control constraints",
-                )
 
             if isinstance(pair[1], (float, int)):
                 upper_bound = fenics.Function(self.controls[idx].function_space())
                 upper_bound.vector().vec().set(pair[1])
             elif isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
-            else:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    "Wrong type for the control constraints",
-                )
 
             formatted_control_constraints.append([lower_bound, upper_bound])
 

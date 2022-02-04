@@ -155,8 +155,6 @@ class OptimizationProblem(abc.ABC):
             desired_weights,
         )
 
-        self._check_length_of_variables()
-
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
         self.state_problem = None
@@ -264,58 +262,6 @@ class OptimizationProblem(abc.ABC):
                     ),
                 )
 
-    def _check_length_of_variables(self) -> None:
-
-        if not len(self.bcs_list) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "bcs_list",
-                "Length of states does not match.",
-            )
-        if not len(self.adjoints) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "adjoints",
-                "Length of states does not match.",
-            )
-
-        if self.initial_guess is not None:
-            if not len(self.initial_guess) == self.state_dim:
-                raise _exceptions.InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "initial_guess",
-                    "Length of states does not match.",
-                )
-
-        if not len(self.ksp_options) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "ksp_options",
-                "Length of states does not match.",
-            )
-        if not len(self.adjoint_ksp_options) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "ksp_options",
-                "Length of states does not match.",
-            )
-
-        if self.desired_weights is not None:
-            len_scalar_tracking = (
-                0 if not self.use_scalar_tracking else len(self.scalar_tracking_forms)
-            )
-            desired_length = len(self.cost_functional_list) + len_scalar_tracking
-
-            if not len(self.desired_weights) == desired_length:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimization_problem."
-                        "OptimizationProblem"
-                    ),
-                    "desired_weights",
-                    "length of desired_weights does not fit",
-                )
-
     def compute_state_variables(self) -> None:
         """Solves the state system.
 
@@ -363,47 +309,6 @@ class OptimizationProblem(abc.ABC):
                 mod_bcs_list.append([])
         else:
             mod_bcs_list = utils._check_and_enlist_bcs(adjoint_bcs_list)
-
-        if not len(mod_forms) == self.form_handler.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
-                "adjoint_forms",
-                "Length of adjoint_forms does not match",
-            )
-        if not len(mod_bcs_list) == self.form_handler.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
-                "adjoint_bcs_list",
-                "Length of adjoint_bcs_list does not match",
-            )
-
-        for idx, form in enumerate(mod_forms):
-            if len(form.arguments()) == 2:
-                raise _exceptions.InputError(
-                    "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    (
-                        "Do not use TrialFunction for the adjoints, but "
-                        "the actual Function you passed to th OptimalControlProblem."
-                    ),
-                )
-            elif len(form.arguments()) == 0:
-                raise _exceptions.InputError(
-                    "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    "The specified adjoint_forms must include a TestFunction object.",
-                )
-
-            if (
-                not form.arguments()[0].ufl_function_space()
-                == self.form_handler.adjoint_spaces[idx]
-            ):
-                raise _exceptions.InputError(
-                    "cashocs..ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    "The TestFunction has to be chosen from the "
-                    "same space as the corresponding adjoint.",
-                )
 
         self.form_handler.bcs_list_ad = mod_bcs_list
 

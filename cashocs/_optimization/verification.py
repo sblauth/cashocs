@@ -24,7 +24,6 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs import _exceptions
 from cashocs import _loggers
 
 if TYPE_CHECKING:
@@ -42,13 +41,6 @@ def _initialize_control_variable(
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             u.append(temp)
-
-    if not len(u) == ocp.control_dim:
-        raise _exceptions.InputError(
-            "cashocs.verification.control_gradient_test",
-            "u",
-            "Length of u does not match the length of controls of the problem.",
-        )
 
     # check if u and ocp.controls coincide, if yes, make a deepcopy
     ids_u = [fun.id() for fun in u]

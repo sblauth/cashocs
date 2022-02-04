@@ -449,33 +449,15 @@ class _MeshHandler:
         idx_cashocs_remesh_flag = [
             i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
         ]
-        if len(idx_cashocs_remesh_flag) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--cashocs_remesh",
-                "The --cashocs_remesh flag should only be present once.",
-            )
-        elif len(idx_cashocs_remesh_flag) == 1:
+        if len(idx_cashocs_remesh_flag) == 1:
             arg_list.pop(idx_cashocs_remesh_flag[0])
 
         idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-        if len(idx_temp_dir) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--temp_dir",
-                "The --temp_dir flag should only be present once.",
-            )
-        elif len(idx_temp_dir) == 1:
+        if len(idx_temp_dir) == 1:
             arg_list.pop(idx_temp_dir[0])
 
         idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
-        if len(idx_temp_dir) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--temp_dir",
-                "The --temp_dir flag should only be present once.",
-            )
-        elif len(idx_temp_dir_flag) == 1:
+        if len(idx_temp_dir_flag) == 1:
             arg_list.pop(idx_temp_dir_flag[0])
 
         return arg_list

@@ -233,16 +233,6 @@ class DeformationHandler:
             The deformation vector field.
         """
 
-        if not (coordinate_deformation.shape == self.shape_coordinates):
-            raise _exceptions.InputError(
-                "cashocs.geometry.DeformationHandler.coordinate_to_dof",
-                "coordinate_deformation",
-                (
-                    "Shape of coordinate deformation has to be the same as "
-                    "self.mesh.coordinates().shape"
-                ),
-            )
-
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
         dof_deformation = fenics.Function(self.VCG)
         dof_deformation.vector()[:] = dof_vector
@@ -283,18 +273,6 @@ class DeformationHandler:
             ``True`` if the assignment was possible, ``False`` if not.
         """
 
-        if not self.mesh.geometric_dimension() == coordinates.shape[1]:
-            raise _exceptions.InputError(
-                "DeformationHandler.assign_coordinates",
-                "coordinates",
-                "The dimension of coordinates is wrong.",
-            )
-        if not self.mesh.num_vertices() == coordinates.shape[0]:
-            raise _exceptions.InputError(
-                "DeformationHandler.assign_coordinates",
-                "coordinates",
-                "The number of vertices is wrong.",
-            )
         self.old_coordinates = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)

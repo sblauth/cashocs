@@ -29,7 +29,6 @@ import numpy as np
 import ufl
 from typing_extensions import Literal
 
-from cashocs import _exceptions
 from cashocs import utils
 from cashocs._constraints import constraints
 from cashocs._constraints import solvers
@@ -170,18 +169,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
         elif method.casefold() in ["quadratic penalty", "qp"]:
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
-            )
-        else:
-            raise _exceptions.InputError(
-                (
-                    "cashocs._constraints.constrained_problems."
-                    "ConstrainedOptimizationProblem.solve"
-                ),
-                "method",
-                (
-                    "The parameter `method` should be either 'AL' or "
-                    "'Augmented Lagrangian' or 'QP' or 'Quadratic Penalty'"
-                ),
             )
 
         self.solver.solve(

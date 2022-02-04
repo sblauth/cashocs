@@ -191,6 +191,7 @@ def import_mesh(
     cashocs_remesh_flag, temp_dir = utils._parse_remesh()
 
     # Check for the file format
+    mesh_file = None
     if isinstance(input_arg, str):
         mesh_file = input_arg
     elif isinstance(input_arg, configparser.ConfigParser):
@@ -200,16 +201,6 @@ def import_mesh(
             with open(f"{temp_dir}/temp_dict.json", "r") as file:
                 temp_dict = json.load(file)
             mesh_file = temp_dict["mesh_file"]
-
-    else:
-        raise _exceptions.InputError(
-            "cashocs.geometry.import_mesh",
-            "input_arg",
-            (
-                "Not a valid argument for import_mesh. "
-                "Has to be either a path to a mesh file (str) or a config."
-            ),
-        )
 
     file_string = mesh_file[:-5]
 
@@ -334,10 +325,6 @@ def regular_mesh(
         and dS is a measure for the interior facets.
     """
 
-    if not n > 0:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh", "n", "n needs to be positive."
-        )
     if not length_x > 0.0:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "length_x", "length_x needs to be positive"
@@ -490,11 +477,6 @@ def regular_box_mesh(
     """
 
     n = int(n)
-
-    if not n > 0:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_box_mesh", "n", "This needs to be positive."
-        )
 
     if not start_x < end_x:
         raise _exceptions.InputError(

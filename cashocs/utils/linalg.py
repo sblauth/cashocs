@@ -370,12 +370,6 @@ class Interpolator:
             The result of the interpolation.
         """
 
-        if not u.function_space() == self.origin_space:
-            raise _exceptions.InputError(
-                "cashocs.utils.Interpolator.interpolate",
-                "u",
-                "The input does not belong to the correct function space.",
-            )
         v = fenics.Function(self.target_space)
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]
 

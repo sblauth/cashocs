@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-import os
 from configparser import ConfigParser
 from pathlib import Path
 from typing import Optional, List
@@ -66,16 +65,7 @@ def load_config(path: str) -> ConfigParser:
         The output config file, which includes the path to the .ini file.
     """
 
-    if os.path.isfile(path):
-        config = Config(path)
-    else:
-        raise _exceptions.InputError(
-            "cashocs.utils.load_config",
-            "path",
-            "The file you specified does not exist.",
-        )
-
-    return config
+    return Config(path)
 
 
 def _check_for_config_list(string: str) -> bool:
