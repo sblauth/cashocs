@@ -350,7 +350,7 @@ class _MeshHandler:
             with open(geo_file, "r") as f:
                 for line in f:
                     if line[0].islower():
-                        # if line[:2] == 'lc':
+                        # if line[:2] == "lc":
                         file.write(line)
                     if line[:5] == "Field":
                         file.write(line)

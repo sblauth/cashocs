@@ -100,6 +100,7 @@ class CoarseModel:
         self.min_max_terms = min_max_terms
         self.desired_weights = desired_weights
 
+        # noinspection PyUnresolvedReferences
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
         self.coordinates_optimal = None
@@ -261,23 +262,23 @@ class SpaceMapping:
             self.coarse_model.mesh
         )
 
-        self.z_star = fenics.Function(self.VCG)
+        self.z_star = [fenics.Function(self.VCG)]
         self.norm_z_star = 1.0
         self.p_current = fenics.Function(self.VCG)
         self.p_prev = fenics.Function(self.VCG)
-        self.h = fenics.Function(self.VCG)
-        self.v = fenics.Function(self.VCG)
-        self.u = fenics.Function(self.VCG)
+        self.h = [fenics.Function(self.VCG)]
+        self.v = [fenics.Function(self.VCG)]
+        self.u = [fenics.Function(self.VCG)]
         self.transformation = fenics.Function(self.VCG)
 
         self.stepsize = 1.0
         self.x_save = None
         self.current_mesh_quality = 1.0
 
-        self.diff = fenics.Function(self.VCG)
-        self.temp = fenics.Function(self.VCG)
-        self.dir_prev = fenics.Function(self.VCG)
-        self.difference = fenics.Function(self.VCG)
+        self.diff = [fenics.Function(self.VCG)]
+        self.temp = [fenics.Function(self.VCG)]
+        self.dir_prev = [fenics.Function(self.VCG)]
+        self.difference = [fenics.Function(self.VCG)]
 
         self.history_s = collections.deque()
         self.history_y = collections.deque()
@@ -287,9 +288,11 @@ class SpaceMapping:
     def solve(self) -> None:
 
         self.coarse_model.optimize()
-        self.z_star = self.deformation_handler_coarse.coordinate_to_dof(
-            self.coarse_model.coordinates_optimal - self.coordinates_initial
-        )
+        self.z_star = [
+            self.deformation_handler_coarse.coordinate_to_dof(
+                self.coarse_model.coordinates_optimal - self.coordinates_initial
+            )
+        ]
         self.deformation_handler_fine.assign_coordinates(
             self.coarse_model.coordinates_optimal
         )
@@ -317,18 +320,18 @@ class SpaceMapping:
             )
 
         while not self.converged:
-            self.dir_prev.vector()[:] = -(
-                self.p_prev.vector()[:] - self.z_star.vector()[:]
+            self.dir_prev[0].vector()[:] = -(
+                self.p_prev.vector()[:] - self.z_star[0].vector()[:]
             )
-            self.temp.vector()[:] = -(
-                self.p_current.vector()[:] - self.z_star.vector()[:]
+            self.temp[0].vector()[:] = -(
+                self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
             )
             self._compute_search_direction(self.temp, self.h)
 
             self.stepsize = 1.0
             self.p_prev.vector()[:] = self.p_current.vector()[:]
             if not self.use_backtracking_line_search:
-                success = self.deformation_handler_fine.move_mesh(self.h)
+                success = self.deformation_handler_fine.move_mesh(self.h[0])
                 if not success:
                     raise _exceptions.CashocsException(
                         "The assignment of mesh coordinates was not "
@@ -360,7 +363,9 @@ class SpaceMapping:
                             "The line search did not converge.",
                         )
 
-                    self.transformation.vector()[:] = self.stepsize * self.h.vector()[:]
+                    self.transformation.vector()[:] = (
+                        self.stepsize * self.h[0].vector()[:]
+                    )
                     success = self.deformation_handler_fine.move_mesh(
                         self.transformation
                     )
@@ -411,7 +416,7 @@ class SpaceMapping:
                 break
 
             if self.method == "broyden":
-                self.temp.vector()[:] = (
+                self.temp[0].vector()[:] = (
                     self.p_current.vector()[:] - self.p_prev.vector()[:]
                 )
                 self._compute_broyden_application(self.temp, self.v)
@@ -419,21 +424,21 @@ class SpaceMapping:
                 if self.memory_size > 0:
                     if self.broyden_type == "good":
                         divisor = self._scalar_product(self.h, self.v)
-                        self.u.vector()[:] = (
-                            self.h.vector()[:] - self.v.vector()[:]
+                        self.u[0].vector()[:] = (
+                            self.h[0].vector()[:] - self.v[0].vector()[:]
                         ) / divisor
 
-                        self.history_s.append(self.u.copy(True))
-                        self.history_y.append(self.h.copy(True))
+                        self.history_s.append([xx.copy(True) for xx in self.u])
+                        self.history_y.append([xx.copy(True) for xx in self.h])
 
                     elif self.broyden_type == "bad":
                         divisor = self._scalar_product(self.temp, self.temp)
-                        self.u.vector()[:] = (
-                            self.h.vector()[:] - self.v.vector()[:]
+                        self.u[0].vector()[:] = (
+                            self.h[0].vector()[:] - self.v[0].vector()[:]
                         ) / divisor
 
-                        self.history_s.append(self.u.copy(True))
-                        self.history_y.append(self.temp.copy(True))
+                        self.history_s.append([xx.copy(True) for xx in self.u])
+                        self.history_y.append([xx.copy(True) for xx in self.temp])
 
                     if len(self.history_s) > self.memory_size:
                         self.history_s.popleft()
@@ -441,12 +446,12 @@ class SpaceMapping:
 
             elif self.method == "bfgs":
                 if self.memory_size > 0:
-                    self.temp.vector()[:] = (
+                    self.temp[0].vector()[:] = (
                         self.p_current.vector()[:] - self.p_prev.vector()[:]
                     )
 
-                    self.history_y.appendleft(self.temp.copy(True))
-                    self.history_s.appendleft(self.h.copy(True))
+                    self.history_y.appendleft([xx.copy(True) for xx in self.temp])
+                    self.history_s.appendleft([xx.copy(True) for xx in self.h])
                     curvature_condition = self._scalar_product(self.temp, self.h)
 
                     if curvature_condition <= 0.0:
@@ -560,35 +565,35 @@ class SpaceMapping:
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "PR":
-                self.difference.vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev.vector()[:]
+                self.difference[0].vector()[:] = (
+                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
                 )
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "HS":
-                self.difference.vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev.vector()[:]
+                self.difference[0].vector()[:] = (
+                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
                 )
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "DY":
-                self.difference.vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev.vector()[:]
+                self.difference[0].vector()[:] = (
+                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
                 )
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "HZ":
-                self.difference.vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev.vector()[:]
+                self.difference[0].vector()[:] = (
+                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
                 )
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                self.difference.vector()[:] = (
-                    -self.difference.vector()[:] - 2 * y2 / dy * out[0].vector()[:]
+                self.difference[0].vector()[:] = (
+                    -self.difference[0].vector()[:] - 2 * y2 / dy * out[0].vector()[:]
                 )
                 self.beta = -self._scalar_product(self.difference, q) / dy
         else:
@@ -598,7 +603,9 @@ class SpaceMapping:
 
     def _compute_eps(self) -> float:
 
-        self.diff.vector()[:] = self.p_current.vector()[:] - self.z_star.vector()[:]
+        self.diff[0].vector()[:] = (
+            self.p_current.vector()[:] - self.z_star[0].vector()[:]
+        )
         eps = np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
 
         return eps

@@ -220,7 +220,7 @@ class SpaceMapping:
         coarse_model: CoarseModel,
         parameter_extraction: ParameterExtraction,
         method: Literal[
-            "broyden", "bfgs", "lbfgs", "sd", "steepest_descent"
+            "broyden", "bfgs", "lbfgs", "sd", "steepest_descent", "ncg"
         ] = "broyden",
         max_iter: int = 25,
         tol: float = 1e-2,
