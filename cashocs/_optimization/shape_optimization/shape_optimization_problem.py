@@ -440,17 +440,17 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.line_search = line_search.ArmijoLineSearch(self)
 
         # TODO: Do not pass the line search (unnecessary)
-        if self.algorithm == "gradient_descent":
+        if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "lbfgs":
+        elif self.algorithm.casefold() == "lbfgs":
             self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
-        elif self.algorithm == "conjugate_gradient":
+        elif self.algorithm.casefold() == "conjugate_gradient":
             self.solver = optimization_algorithms.NonlinearCGMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "none":
+        elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",

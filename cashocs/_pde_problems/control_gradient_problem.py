@@ -75,14 +75,14 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         )
 
         option = []
-        if gradient_method == "direct":
+        if gradient_method.casefold() == "direct":
             option = [
                 ["ksp_type", "preonly"],
                 ["pc_type", "lu"],
                 ["pc_factor_mat_solver_type", "mumps"],
                 ["mat_mumps_icntl_24", 1],
             ]
-        elif gradient_method == "iterative":
+        elif gradient_method.casefold() == "iterative":
             option = [
                 ["ksp_type", "cg"],
                 ["pc_type", "hypre"],

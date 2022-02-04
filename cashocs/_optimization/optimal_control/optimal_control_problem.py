@@ -335,27 +335,27 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         )
         self.line_search = line_search.ArmijoLineSearch(self)
 
-        if self.algorithm == "newton":
+        if self.algorithm.casefold() == "newton":
             self.form_handler._compute_newton_forms()
 
-        if self.algorithm == "newton":
+        if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(
                 self.form_handler, self.gradient_problem
             )
 
-        if self.algorithm == "gradient_descent":
+        if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "lbfgs":
+        elif self.algorithm.casefold() == "lbfgs":
             self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
-        elif self.algorithm == "conjugate_gradient":
+        elif self.algorithm.casefold() == "conjugate_gradient":
             self.solver = optimization_algorithms.NonlinearCGMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "newton":
+        elif self.algorithm.casefold() == "newton":
             self.solver = optimization_algorithms.NewtonMethod(self, self.line_search)
-        elif self.algorithm == "none":
+        elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",

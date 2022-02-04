@@ -254,9 +254,9 @@ class _NewtonSolver:
         self.b = fenics.as_backend_type(self.residual).vec()
 
     def _compute_convergence_tolerance(self) -> float:
-        if self.convergence_type == "abs":
+        if self.convergence_type.casefold() == "abs":
             return self.atol
-        elif self.convergence_type == "rel":
+        elif self.convergence_type.casefold() == "rel":
             return self.rtol * self.res_0
         else:
             return self.rtol * self.res_0 + self.atol

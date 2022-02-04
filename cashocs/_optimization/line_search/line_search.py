@@ -57,9 +57,9 @@ class LineSearch(abc.ABC):
         )
 
         algorithm = utils._optimization_algorithm_configuration(self.config)
-        self.is_newton_like = algorithm == "lbfgs"
-        self.is_newton = algorithm == "newton"
-        self.is_steepest_descent = algorithm == "gradient_descent"
+        self.is_newton_like = algorithm.casefold() == "lbfgs"
+        self.is_newton = algorithm.casefold() == "newton"
+        self.is_steepest_descent = algorithm.casefold() == "gradient_descent"
         if self.is_newton:
             self.stepsize = 1.0
 

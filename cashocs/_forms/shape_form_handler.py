@@ -164,7 +164,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         "Supplied scalar product form is not symmetric.",
                     )
 
-        if self.opt_algo == "newton":
+        if self.opt_algo.casefold() == "newton":
             raise NotImplementedError(
                 "Second order methods are not implemented for shape optimization yet"
             )

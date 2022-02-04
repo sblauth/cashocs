@@ -445,7 +445,7 @@ class OptimizationProblem(abc.ABC):
                 "or check your approach with the cashocs.verification module."
             )
 
-        if self.algorithm == "newton" and (
+        if self.algorithm.casefold() == "newton" and (
             self.has_custom_adjoint or self.has_custom_derivative
         ):
             raise _exceptions.InputError(

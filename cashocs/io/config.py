@@ -520,15 +520,15 @@ class Config(ConfigParser):
 
         key_type = self.config_scheme[section][key]["type"]
         try:
-            if key_type == "str":
+            if key_type.casefold() == "str":
                 self.get(section, key)
-            elif key_type == "bool":
+            elif key_type.casefold() == "bool":
                 self.getboolean(section, key)
-            elif key_type == "int":
+            elif key_type.casefold() == "int":
                 self.getint(section, key)
-            elif key_type == "float":
+            elif key_type.casefold() == "float":
                 self.getfloat(section, key)
-            elif key_type == "list":
+            elif key_type.casefold() == "list":
                 if not _check_for_config_list(self.get(section, key)):
                     raise ValueError
         except ValueError:
@@ -546,8 +546,8 @@ class Config(ConfigParser):
         """
 
         if (
-            self.config_scheme[section][key]["type"] == "bool"
-            and self[section][key].lower() == "true"
+            self.config_scheme[section][key]["type"].casefold() == "bool"
+            and self[section][key].casefold() == "true"
         ):
             if "requires" in self.config_scheme[section][key].keys():
                 requirements = self.config_scheme[section][key]["requires"]

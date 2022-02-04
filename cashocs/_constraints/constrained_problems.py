@@ -163,11 +163,11 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 which corresponds to a zero guess.
         """
 
-        if method in ["Augmented Lagrangian", "AL"]:
+        if method.casefold() in ["augmented lagrangian", "al"]:
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
-        elif method in ["Quadratic Penalty", "QP"]:
+        elif method.casefold() in ["quadratic penalty", "qp"]:
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )

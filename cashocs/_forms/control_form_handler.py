@@ -88,7 +88,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Compute the necessary equations
         self._compute_gradient_equations()
 
-        if self.opt_algo == "newton":
+        if self.opt_algo.casefold() == "newton":
             self._compute_newton_forms()
 
         # Initialize the scalar products

@@ -186,15 +186,15 @@ def _optimization_algorithm_configuration(
         overwrite = False
         algorithm = config.get("OptimizationRoutine", "algorithm", fallback="none")
 
-    if algorithm in ["gradient_descent", "gd"]:
+    if algorithm.casefold() in ["gradient_descent", "gd"]:
         internal_algorithm = "gradient_descent"
-    elif algorithm in ["cg", "conjugate_gradient", "ncg", "nonlinear_cg"]:
+    elif algorithm.casefold() in ["cg", "conjugate_gradient", "ncg", "nonlinear_cg"]:
         internal_algorithm = "conjugate_gradient"
-    elif algorithm in ["lbfgs", "bfgs"]:
+    elif algorithm.casefold() in ["lbfgs", "bfgs"]:
         internal_algorithm = "lbfgs"
-    elif algorithm in ["newton"]:
+    elif algorithm.casefold() in ["newton"]:
         internal_algorithm = "newton"
-    elif algorithm == "none":
+    elif algorithm.casefold() == "none":
         internal_algorithm = "none"
     else:
         raise _exceptions.InputError(

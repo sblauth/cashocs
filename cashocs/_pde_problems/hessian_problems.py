@@ -289,9 +289,9 @@ class BaseHessianProblem(abc.ABC):
         for j in range(self.control_dim):
             self.delta_control[j].vector().vec().set(0.0)
 
-        if self.inner_newton == "cg":
+        if self.inner_newton.casefold() == "cg":
             self.cg(idx_active)
-        elif self.inner_newton == "cr":
+        elif self.inner_newton.casefold() == "cr":
             self.cr(idx_active)
 
         return self.delta_control
