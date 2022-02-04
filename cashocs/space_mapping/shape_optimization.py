@@ -219,7 +219,7 @@ class SpaceMapping:
         coarse_model: CoarseModel,
         parameter_extraction: ParameterExtraction,
         method: Literal[
-            "broyden", "bfgs", "lbfgs", "sd", "steepest_descent"
+            "broyden", "bfgs", "lbfgs", "sd", "steepest_descent", "ncg"
         ] = "broyden",
         max_iter: int = 25,
         tol: float = 1e-2,
@@ -264,8 +264,8 @@ class SpaceMapping:
 
         self.z_star = [fenics.Function(self.VCG)]
         self.norm_z_star = 1.0
-        self.p_current = fenics.Function(self.VCG)
-        self.p_prev = fenics.Function(self.VCG)
+        self.p_current = [fenics.Function(self.VCG)]
+        self.p_prev = [fenics.Function(self.VCG)]
         self.h = [fenics.Function(self.VCG)]
         self.v = [fenics.Function(self.VCG)]
         self.u = [fenics.Function(self.VCG)]
@@ -304,10 +304,14 @@ class SpaceMapping:
         self.parameter_extraction._solve(
             initial_guess=self.coarse_model.coordinates_optimal
         )
-        self.p_current.vector()[:] = self.deformation_handler_coarse.coordinate_to_dof(
+        self.p_current[0].vector()[
+            :
+        ] = self.deformation_handler_coarse.coordinate_to_dof(
             self.parameter_extraction.mesh.coordinates()[:, :]
             - self.coordinates_initial
-        ).vector()[:]
+        ).vector()[
+            :
+        ]
         self.eps = self._compute_eps()
 
         if self.verbose:
@@ -321,7 +325,7 @@ class SpaceMapping:
 
         while not self.converged:
             self.dir_prev[0].vector()[:] = -(
-                self.p_prev.vector()[:] - self.z_star[0].vector()[:]
+                self.p_prev[0].vector()[:] - self.z_star[0].vector()[:]
             )
             self.temp[0].vector()[:] = -(
                 self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
@@ -329,7 +333,7 @@ class SpaceMapping:
             self._compute_search_direction(self.temp, self.h)
 
             self.stepsize = 1.0
-            self.p_prev.vector()[:] = self.p_current.vector()[:]
+            self.p_prev[0].vector()[:] = self.p_current[0].vector()[:]
             if not self.use_backtracking_line_search:
                 success = self.deformation_handler_fine.move_mesh(self.h[0])
                 if not success:
@@ -343,7 +347,7 @@ class SpaceMapping:
                 self.parameter_extraction._solve(
                     initial_guess=self.coarse_model.coordinates_optimal
                 )
-                self.p_current.vector()[
+                self.p_current[0].vector()[
                     :
                 ] = self.deformation_handler_coarse.coordinate_to_dof(
                     self.parameter_extraction.mesh.coordinates()[:, :]
@@ -376,7 +380,7 @@ class SpaceMapping:
                         self.parameter_extraction._solve(
                             self.coarse_model.coordinates_optimal
                         )
-                        self.p_current.vector()[
+                        self.p_current[0].vector()[
                             :
                         ] = self.deformation_handler_coarse.coordinate_to_dof(
                             self.parameter_extraction.mesh.coordinates()[:, :]
@@ -417,7 +421,7 @@ class SpaceMapping:
 
             if self.method == "broyden":
                 self.temp[0].vector()[:] = (
-                    self.p_current.vector()[:] - self.p_prev.vector()[:]
+                    self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
                 )
                 self._compute_broyden_application(self.temp, self.v)
 
@@ -447,7 +451,7 @@ class SpaceMapping:
             elif self.method == "bfgs":
                 if self.memory_size > 0:
                     self.temp[0].vector()[:] = (
-                        self.p_current.vector()[:] - self.p_prev.vector()[:]
+                        self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
                     )
 
                     self.history_y.appendleft([xx.copy(True) for xx in self.temp])
@@ -524,7 +528,7 @@ class SpaceMapping:
                     "Type of Broyden's method has to be either 'good' or 'bad'."
                 )
 
-            out[0].vector()[:] += alpha * self.history_s[i].vector()[:]
+            out[0].vector()[:] += alpha * self.history_s[i][0].vector()[:]
 
     def _compute_bfgs_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -538,7 +542,7 @@ class SpaceMapping:
                     self.history_s[i], out
                 )
                 self.history_alpha.append(alpha)
-                out[0].vector()[:] -= alpha * self.history_y[i].vector()[:]
+                out[0].vector()[:] -= alpha * self.history_y[i][0].vector()[:]
 
             bfgs_factor = self._scalar_product(
                 self.history_y[0], self.history_s[0]
@@ -549,7 +553,7 @@ class SpaceMapping:
                 beta = self.history_rho[-1 - i] * self._scalar_product(
                     self.history_y[-1 - i], out
                 )
-                out[0].vector()[:] += self.history_s[-1 - i].vector()[:] * (
+                out[0].vector()[:] += self.history_s[-1 - i][0].vector()[:] * (
                     self.history_alpha[-1 - i] - beta
                 )
 
@@ -604,7 +608,7 @@ class SpaceMapping:
     def _compute_eps(self) -> float:
 
         self.diff[0].vector()[:] = (
-            self.p_current.vector()[:] - self.z_star[0].vector()[:]
+            self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
         )
         eps = np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
 
