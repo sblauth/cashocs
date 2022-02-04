@@ -23,7 +23,6 @@ from fenics import *
 import cashocs
 
 
-
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -145,19 +144,23 @@ def test_pw_ineq_constraint():
     )
 
 
-def test_int_eq_constraints_only():
-    u.vector()[:] = 1.0
-    constraint = cashocs.EqualityConstraint(y * y * dx, 1.0)
-    cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
-    problem = cashocs.ConstrainedOptimalControlProblem(
-        F, bcs, J, y, u, p, constraint, config=cfg
-    )
-    problem.solve(method="AL", tol=1e-1)
-    assert constraint.constraint_violation() < 1e-2
+# def test_int_eq_constraints_only():
+u.vector()[:] = 1.0
+constraint = cashocs.EqualityConstraint(y * y * dx, 1.0)
+cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+cfg.set("Output", "verbose", "False")
+problem = cashocs.ConstrainedOptimalControlProblem(
+    F, bcs, J, y, u, p, constraint, config=cfg
+)
+problem.solve(method="AL", tol=1e-1)
+assert constraint.constraint_violation() < 1e-2
 
-    u.vector()[:] = 1.0
-    problem.solve(method="QP", tol=1e-1)
-    assert constraint.constraint_violation() < 1e-2
+u.vector()[:] = 1.0
+problem = cashocs.ConstrainedOptimalControlProblem(
+    F, bcs, J, y, u, p, constraint, config=cfg
+)
+problem.solve(method="QP", tol=1e-1)
+assert constraint.constraint_violation() < 1e-2
 
 
 def test_pw_eq_constraints_only():
@@ -171,6 +174,9 @@ def test_pw_eq_constraints_only():
     assert constraint.constraint_violation() < 1e-2
 
     u.vector()[:] = 1.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
     problem.solve(method="QP", tol=1e-1)
     assert constraint.constraint_violation() < 1e-2
 
@@ -187,6 +193,9 @@ def test_int_ineq_constraints_only():
     assert constraint.constraint_violation() <= 1e-3
 
     u.vector()[:] = 0.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
@@ -217,6 +226,9 @@ def test_pw_ineq_constraints_only():
     assert constraint.constraint_violation() <= 1e-3
 
     u.vector()[:] = 0.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
@@ -231,6 +243,9 @@ def test_pw_ineq_constraints_only():
     assert constraint.constraint_violation() <= 1e-3
 
     u.vector()[:] = 0.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
@@ -248,5 +263,8 @@ def test_pw_ineq_constraints_only():
     assert constraint.constraint_violation() <= 1e-3
 
     u.vector()[:] = 0.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3

@@ -55,6 +55,7 @@ class ConstrainedSolver(abc.ABC):
 
         self.constrained_problem = constrained_problem
 
+        self.solver_name = ""
         self.constraints = self.constrained_problem.constraint_list
         self.constraint_dim = self.constrained_problem.constraint_dim
         self.iterations = 0
@@ -140,6 +141,16 @@ class ConstrainedSolver(abc.ABC):
 
         pass
 
+    def print_results(self) -> None:
+        strs = [
+            f"{self.solver_name} - Iteration {self.iterations:4d} -",
+            f" Objective value: {self.constrained_problem.current_function_value:.3e}",
+            f"    Constraint violation: {self.constraint_violation:.3e}",
+            f"    Penalty parameter mu: {self.mu:.3e}",
+        ]
+
+        print("".join(strs))
+
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
     """An augmented Lagrangian method."""
@@ -164,6 +175,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.gamma = 0.25
         self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
         self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
+        self.solver_name = "Augmented Lagrangian method"
 
     # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
@@ -206,7 +218,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.inner_cost_functional_shifts = []
 
         self.inner_cost_functional_form = (
-            self.constrained_problem.cost_functional_form_initial
+            self.constrained_problem.cost_functional_form_initial[:]
         )
 
         self.inner_scalar_tracking_forms = []
@@ -401,15 +413,17 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constrained_problem.total_constraint_violation()
             )
 
+            self.print_results()
+
             if self.constraint_violation > self.gamma * self.constraint_violation_prev:
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                print("Converged successfully.")
+                print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print("Augmented Lagrangian did not converge.")
+                print(f"{self.solver_name} did not converge.\n")
                 break
 
 
@@ -433,6 +447,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         """
 
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
+        self.solver_name = "Quadratic Penalty Method"
 
     def solve(
         self,
@@ -475,19 +490,21 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             )
             self.mu *= self.beta
 
+            self.print_results()
+
             if self.constraint_violation <= convergence_tol:
-                print("Converged successfully.")
+                print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print("Quadratic Penalty Method did not converge")
+                print(f"{self.solver_name} did not converge.\n")
                 break
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
 
         self.inner_cost_functional_form = (
-            self.constrained_problem.cost_functional_form_initial
+            self.constrained_problem.cost_functional_form_initial[:]
         )
         self.inner_scalar_tracking_forms = []
         self.inner_min_max_terms = []

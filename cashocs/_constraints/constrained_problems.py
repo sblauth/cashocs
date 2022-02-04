@@ -109,6 +109,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.adjoint_ksp_options = adjoint_ksp_options
 
         self.solver = None
+        self.current_function_value = None
 
         self.cost_functional_form_initial = utils.enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
@@ -406,6 +407,24 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
         optimal_control_problem.solve(rtol=self.rtol, atol=atol)
 
+        temp_problem = optimal_control.OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form_initial,
+            self.states,
+            self.controls,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            control_constraints=self.control_constraints,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
+        )
+        temp_problem.state_problem.has_solution = True
+        self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
+
 
 class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
     """A shape optimization problem with additional (in-)equality constraints."""
@@ -551,3 +570,20 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             atol = self.initial_norm * tol / 10.0
 
         shape_optimization_problem.solve(rtol=self.rtol, atol=atol)
+
+        temp_problem = shape_optimization.ShapeOptimizationProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form_initial,
+            self.states,
+            self.adjoints,
+            self.boundaries,
+            config=self.config,
+            shape_scalar_product=self.shape_scalar_product,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
+        )
+        temp_problem.state_problem.has_solution = True
+        self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
