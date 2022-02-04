@@ -144,23 +144,23 @@ def test_pw_ineq_constraint():
     )
 
 
-# def test_int_eq_constraints_only():
-u.vector()[:] = 1.0
-constraint = cashocs.EqualityConstraint(y * y * dx, 1.0)
-cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
-cfg.set("Output", "verbose", "False")
-problem = cashocs.ConstrainedOptimalControlProblem(
-    F, bcs, J, y, u, p, constraint, config=cfg
-)
-problem.solve(method="AL", tol=1e-1)
-assert constraint.constraint_violation() < 1e-2
+def test_int_eq_constraints_only():
+    u.vector()[:] = 1.0
+    constraint = cashocs.EqualityConstraint(y * y * dx, 1.0)
+    cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+    cfg.set("Output", "verbose", "False")
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
+    problem.solve(method="AL", tol=1e-1)
+    assert constraint.constraint_violation() < 1e-2
 
-u.vector()[:] = 1.0
-problem = cashocs.ConstrainedOptimalControlProblem(
-    F, bcs, J, y, u, p, constraint, config=cfg
-)
-problem.solve(method="QP", tol=1e-1)
-assert constraint.constraint_violation() < 1e-2
+    u.vector()[:] = 1.0
+    problem = cashocs.ConstrainedOptimalControlProblem(
+        F, bcs, J, y, u, p, constraint, config=cfg
+    )
+    problem.solve(method="QP", tol=1e-1)
+    assert constraint.constraint_violation() < 1e-2
 
 
 def test_pw_eq_constraints_only():
