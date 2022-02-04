@@ -53,6 +53,8 @@ class ArmijoLineSearch(line_search.LineSearch):
             "OptimizationRoutine", "beta_armijo", fallback=2.0
         )
         self.armijo_stepsize_initial = self.stepsize
+        self.search_direction_inf = 1.0
+        self.decrease_measure_w_o_step = 1.0
 
     def _check_for_nonconvergence(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -105,8 +107,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                 for i in range(len(self.gradient))
             ]
         )
-        decrease_measure = 1.0
-        decrease_measure_w_o_step = 1.0
 
         if has_curvature_info:
             self.stepsize = 1.0
@@ -124,7 +124,7 @@ class ArmijoLineSearch(line_search.LineSearch):
                 return None
 
             if self.is_shape_problem:
-                decrease_measure_w_o_step = (
+                self.decrease_measure_w_o_step = (
                     self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
                     )
@@ -140,14 +140,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             self.state_problem.has_solution = False
             objective_step = self.cost_functional.evaluate()
 
-            if self.is_control_problem:
-                decrease_measure = (
-                    self.optimization_variable_abstractions.compute_decrease_measure(
-                        search_direction
-                    )
-                )
-            elif self.is_shape_problem:
-                decrease_measure = decrease_measure_w_o_step * self.stepsize
+            decrease_measure = self._compute_decrease_measure(search_direction)
 
             if (
                 objective_step
@@ -171,3 +164,11 @@ class ArmijoLineSearch(line_search.LineSearch):
             self.stepsize *= self.beta_armijo
 
         return None
+
+    def _compute_decrease_measure(self, search_direction) -> float:
+        if self.is_control_problem:
+            return self.optimization_variable_abstractions.compute_decrease_measure(
+                search_direction
+            )
+        elif self.is_shape_problem:
+            return self.decrease_measure_w_o_step * self.stepsize

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 
 import fenics
 import numpy as np
@@ -29,6 +29,15 @@ from petsc4py import PETSc
 from cashocs import _exceptions
 from cashocs import utils
 from cashocs.nonlinear_solvers import newton_solver
+
+
+def _setup_obj(obj: Any, dim: int) -> Union[List[None], Any]:
+    """Returns a list of None if obj is None, else returns obj."""
+
+    if obj is None:
+        return [None] * dim
+    else:
+        return obj
 
 
 # noinspection PyPep8Naming,PyUnresolvedReferences
@@ -85,14 +94,12 @@ def picard_iteration(
     u_list = utils.enlist(u_list)
     bcs_list = utils._check_and_enlist_bcs(bcs_list)
 
-    if ksps is None:
-        ksps = [None] * len(u_list)
-    if ksp_options is None:
-        ksp_options = [None] * len(u_list)
-    if A_tensors is None:
-        A_tensors = [None] * len(u_list)
-    if b_tensors is None:
-        b_tensors = [None] * len(u_list)
+    dim = len(u_list)
+
+    ksps = _setup_obj(ksps, dim)
+    ksp_options = _setup_obj(ksp_options, dim)
+    A_tensors = _setup_obj(A_tensors, dim)
+    b_tensors = _setup_obj(b_tensors, dim)
 
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9

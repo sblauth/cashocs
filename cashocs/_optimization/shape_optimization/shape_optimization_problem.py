@@ -225,61 +225,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
         self.temp_dict = None
-        if self.do_remesh:
 
-            if not os.path.isfile(os.path.realpath(sys.argv[0])):
-                raise _exceptions.CashocsException(
-                    "Not a valid configuration. "
-                    "The script has to be the first command line argument."
-                )
-
-            try:
-                if not self.states[0].function_space().mesh()._config_flag:
-                    raise _exceptions.InputError(
-                        "cashocs.import_mesh",
-                        "arg",
-                        "You must specify a config file as input for remeshing.",
-                    )
-            except AttributeError:  # pragma: no cover
-                raise _exceptions.InputError(
-                    "cashocs.import_mesh",
-                    "arg",
-                    "You must specify a config file as input for remeshing.",
-                )
-
-            if not self.has_cashocs_remesh_flag:
-                self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-                self.temp_dir = tempfile.mkdtemp(
-                    prefix="._cashocs_remesh_temp_", dir=self.directory
-                )
-                self._change_except_hook()
-                self.temp_dict = {
-                    "temp_dir": self.temp_dir,
-                    "gmsh_file": self.config.get("Mesh", "gmsh_file"),
-                    "geo_file": self.config.get("Mesh", "geo_file"),
-                    "OptimizationRoutine": {
-                        "iteration_counter": 0,
-                        "gradient_norm_initial": 0.0,
-                    },
-                    "output_dict": {},
-                }
-
-                try:
-                    if self.use_scaling:
-                        self.temp_dict[
-                            "initial_function_values"
-                        ] = self.initial_function_values
-                        if self.use_scalar_tracking:
-                            self.temp_dict[
-                                "initial_scalar_tracking_values"
-                            ] = self.initial_scalar_tracking_values
-                except AttributeError:  # this happens for the unscaled problem
-                    pass
-
-            else:
-                self._change_except_hook()
-                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
-                    self.temp_dict = json.load(file)
+        self._remesh_init()
 
         # boundaries
         # noinspection PyUnresolvedReferences
@@ -320,6 +267,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.form_handler = _forms.ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
+            # noinspection PyUnresolvedReferences
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
                 "mu_surface": self.form_handler.shape_regularization.mu_surface,
@@ -348,6 +296,68 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
+
+    def _check_remesh_input(self) -> None:
+
+        if not os.path.isfile(os.path.realpath(sys.argv[0])):
+            raise _exceptions.CashocsException(
+                "Not a valid configuration. "
+                "The script has to be the first command line argument."
+            )
+
+        try:
+            if not self.states[0].function_space().mesh()._config_flag:
+                raise _exceptions.InputError(
+                    "cashocs.import_mesh",
+                    "arg",
+                    "You must specify a config file as input for remeshing.",
+                )
+        except AttributeError:  # pragma: no cover
+            raise _exceptions.InputError(
+                "cashocs.import_mesh",
+                "arg",
+                "You must specify a config file as input for remeshing.",
+            )
+
+    def _remesh_init(self) -> None:
+
+        if self.do_remesh:
+
+            self._check_remesh_input()
+
+            if not self.has_cashocs_remesh_flag:
+                self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+                self.temp_dir = tempfile.mkdtemp(
+                    prefix="._cashocs_remesh_temp_", dir=self.directory
+                )
+                self._change_except_hook()
+                self.temp_dict = {
+                    "temp_dir": self.temp_dir,
+                    "gmsh_file": self.config.get("Mesh", "gmsh_file"),
+                    "geo_file": self.config.get("Mesh", "geo_file"),
+                    "OptimizationRoutine": {
+                        "iteration_counter": 0,
+                        "gradient_norm_initial": 0.0,
+                    },
+                    "output_dict": {},
+                }
+
+                try:
+                    if self.use_scaling:
+                        self.temp_dict[
+                            "initial_function_values"
+                        ] = self.initial_function_values
+                        if self.use_scalar_tracking:
+                            self.temp_dict[
+                                "initial_scalar_tracking_values"
+                            ] = self.initial_scalar_tracking_values
+                except AttributeError:  # this happens for the unscaled problem
+                    pass
+
+            else:
+                self._change_except_hook()
+                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+                    self.temp_dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.

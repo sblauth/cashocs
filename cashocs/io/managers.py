@@ -494,13 +494,17 @@ class PVDFileManager:
                     == "Mixed"
                 ):
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
+                        state = self.form_handler.states[i].sub(j, True)
+                        state.rename(f"state_{i}_sub_{j}", f"state_{i}_sub_{j}")
                         self.state_pvd_list[i][j] << (
-                            self.form_handler.states[i].sub(j, True),
+                            state,
                             float(iteration),
                         )
                 else:
+                    state = self.form_handler.states[i]
+                    state.rename(f"state_{i}", f"state_{i}")
                     self.state_pvd_list[i] << (
-                        self.form_handler.states[i],
+                        state,
                         float(iteration),
                     )
 
@@ -513,6 +517,8 @@ class PVDFileManager:
 
         if self.save_pvd and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
+                control = self.form_handler.controls[i]
+                control.rename(f"control_{i}", f"control_{i}")
                 self.control_pvd_list[i] << self.form_handler.controls[i], float(
                     iteration
                 )
@@ -534,13 +540,17 @@ class PVDFileManager:
                     for j in range(
                         self.form_handler.adjoint_spaces[i].num_sub_spaces()
                     ):
+                        adjoint = self.form_handler.adjoints[i].sub(j, True)
+                        adjoint.rename(f"adjoint_{i}_sub_{j}", f"adjoint_{i}_sub_{j}")
                         self.adjoint_pvd_list[i][j] << (
-                            self.form_handler.adjoints[i].sub(j, True),
+                            adjoint,
                             float(iteration),
                         )
                 else:
+                    adjoint = self.form_handler.adjoints[i]
+                    adjoint.rename(f"adjoint_{i}", f"adjoint_{i}")
                     self.adjoint_pvd_list[i] << (
-                        self.form_handler.adjoints[i],
+                        adjoint,
                         float(iteration),
                     )
 
@@ -553,9 +563,9 @@ class PVDFileManager:
 
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
-                self.gradient_pvd_list[i] << self.form_handler.gradient[i], float(
-                    iteration
-                )
+                gradient = self.form_handler.gradient[i]
+                gradient.rename(f"gradient_{i}", f"gradient_{i}")
+                self.gradient_pvd_list[i] << gradient, float(iteration)
 
     def save_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm

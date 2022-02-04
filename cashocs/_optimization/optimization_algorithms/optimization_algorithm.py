@@ -136,6 +136,13 @@ class OptimizationAlgorithm(abc.ABC):
         else:
             return False
 
+    def _exit(self, message: str) -> None:
+
+        if self.soft_exit:
+            print(message)
+        else:
+            raise _exceptions.NotConvergedError("Optimization Algorithm", message)
+
     def post_processing(self) -> None:
         """Does a post processing after the optimization algorithm terminates."""
 
@@ -148,25 +155,13 @@ class OptimizationAlgorithm(abc.ABC):
             if self.converged_reason == -1:
                 self.output()
                 self.output_summary()
-                if self.soft_exit:
-                    print("Maximum number of iterations exceeded.")
-                else:
-                    raise _exceptions.NotConvergedError(
-                        "Optimization Algorithm",
-                        "Maximum number of iterations were exceeded.",
-                    )
+                self._exit("Maximum number of iterations exceeded.")
 
             # Armijo line search failed
             elif self.converged_reason == -2:
                 self.iteration -= 1
                 self.output_summary()
-                if self.soft_exit:
-                    print("Armijo rule failed.")
-                else:
-                    raise _exceptions.NotConvergedError(
-                        "Armijo line search",
-                        "Failed to compute a feasible Armijo step.",
-                    )
+                self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
             elif self.converged_reason == -3:
@@ -178,24 +173,13 @@ class OptimizationAlgorithm(abc.ABC):
                     self.optimization_variable_abstractions.mesh_handler.remesh(self)
                 else:
                     self.output_summary()
-                    if self.soft_exit:
-                        _loggers.error("Mesh quality is too low.")
-                    else:
-                        raise _exceptions.NotConvergedError(
-                            "Optimization Algorithm", "Mesh quality is too low."
-                        )
+                    self._exit("Mesh quality is too low.")
 
             # Iteration for remeshing is the one exceeding the maximum number
             # of iterations
             elif self.converged_reason == -4:
                 self.output_summary()
-                if self.soft_exit:
-                    print("Maximum number of iterations exceeded.")
-                else:
-                    raise _exceptions.NotConvergedError(
-                        "Optimization Algorithm",
-                        "Maximum number of iterations were exceeded.",
-                    )
+                self._exit("Maximum number of iterations exceeded.")
 
     def convergence_test(self) -> bool:
         """Checks, whether the algorithm converged successfully.

@@ -30,7 +30,6 @@ import cashocs
 from cashocs._exceptions import NotConvergedError
 
 
-
 def eps(u):
     """Computes the symmetric gradient of u
 
@@ -1031,4 +1030,4 @@ def test_stepsize2():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     with pytest.raises(NotConvergedError) as e_info:
         sop.solve("cg", rtol=1e-3, atol=0.0, max_iter=1000)
-    assert "Failed to compute a feasible Armijo step." in str(e_info.value)
+    assert "Armijo rule failed." in str(e_info.value)

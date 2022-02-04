@@ -62,6 +62,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.history_s = deque()
             self.history_y = deque()
             self.history_rho = deque()
+            self.history_alpha = deque()
             self.gradient_prev = [
                 fenics.Function(V) for V in self.form_handler.control_spaces
             ]
@@ -108,6 +109,43 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
             self.update_hessian_approximation()
 
+    def _first_loop(self) -> None:
+
+        for i, _ in enumerate(self.history_s):
+            alpha = self.history_rho[i] * self.form_handler.scalar_product(
+                self.history_s[i], self.search_direction
+            )
+            self.history_alpha.append(alpha)
+            for j in range(len(self.gradient)):
+                self.search_direction[j].vector().vec().axpy(
+                    -alpha, self.history_y[i][j].vector().vec()
+                )
+
+    def _second_loop(self) -> None:
+
+        for i, _ in enumerate(self.history_s):
+            beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
+                self.history_y[-1 - i], self.search_direction
+            )
+
+            for j in range(len(self.gradient)):
+                self.search_direction[j].vector().vec().axpy(
+                    self.history_alpha[-1 - i] - beta,
+                    self.history_s[-1 - i][j].vector().vec(),
+                )
+
+    def _bfgs_scaling(self) -> None:
+
+        if self.use_bfgs_scaling and self.iteration > 0:
+            factor = self.form_handler.scalar_product(
+                self.history_y[0], self.history_s[0]
+            ) / self.form_handler.scalar_product(self.history_y[0], self.history_y[0])
+        else:
+            factor = 1.0
+
+        for j in range(len(self.gradient)):
+            self.search_direction[j].vector().vec().scale(factor)
+
     def compute_search_direction(self, grad: List[fenics.Function]) -> None:
         """Computes the search direction for the BFGS method with a double loop.
 
@@ -119,7 +157,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         """
 
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
-            history_alpha = deque()
+            self.history_alpha.clear()
             for j in range(len(self.gradient)):
                 self.search_direction[j].vector().vec().aypx(
                     0.0, grad[j].vector().vec()
@@ -129,42 +167,14 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction, self.search_direction
             )
 
-            for i, _ in enumerate(self.history_s):
-                alpha = self.history_rho[i] * self.form_handler.scalar_product(
-                    self.history_s[i], self.search_direction
-                )
-                history_alpha.append(alpha)
-                for j in range(len(self.gradient)):
-                    self.search_direction[j].vector().vec().axpy(
-                        -alpha, self.history_y[i][j].vector().vec()
-                    )
-
-            if self.use_bfgs_scaling and self.iteration > 0:
-                factor = self.form_handler.scalar_product(
-                    self.history_y[0], self.history_s[0]
-                ) / self.form_handler.scalar_product(
-                    self.history_y[0], self.history_y[0]
-                )
-            else:
-                factor = 1.0
-
-            for j in range(len(self.gradient)):
-                self.search_direction[j].vector().vec().scale(factor)
+            self._first_loop()
+            self._bfgs_scaling()
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
 
-            for i, _ in enumerate(self.history_s):
-                beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
-                    self.history_y[-1 - i], self.search_direction
-                )
-
-                for j in range(len(self.gradient)):
-                    self.search_direction[j].vector().vec().axpy(
-                        history_alpha[-1 - i] - beta,
-                        self.history_s[-1 - i][j].vector().vec(),
-                    )
+            self._second_loop()
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_direction, self.search_direction

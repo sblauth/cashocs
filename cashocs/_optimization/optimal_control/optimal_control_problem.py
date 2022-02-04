@@ -197,147 +197,13 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.control_dim = len(self.controls)
 
         # riesz_scalar_products
-        if riesz_scalar_products is None:
-            dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
-            self.riesz_scalar_products = [
-                fenics.inner(
-                    fenics.TrialFunction(self.controls[i].function_space()),
-                    fenics.TestFunction(self.controls[i].function_space()),
-                )
-                * dx
-                for i in range(len(self.controls))
-            ]
-        else:
-            self.riesz_scalar_products = utils.enlist(riesz_scalar_products)
-            self.uses_custom_scalar_product = True
+        self.riesz_scalar_products = self._parse_riesz_scalar_products(
+            riesz_scalar_products
+        )
 
         # control_constraints
-        if control_constraints is None:
-            self.control_constraints = []
-            for control in self.controls:
-                u_a = fenics.Function(control.function_space())
-                u_a.vector().vec().set(float("-inf"))
-                u_b = fenics.Function(control.function_space())
-                u_b.vector().vec().set(float("inf"))
-                self.control_constraints.append([u_a, u_b])
-        else:
-            self.control_constraints = utils._check_and_enlist_control_constraints(
-                control_constraints
-            )
-
-        # recast floats into functions for compatibility
-        temp_constraints = self.control_constraints[:]
-        self.control_constraints = []
-        for idx, pair in enumerate(temp_constraints):
-            if isinstance(pair[0], (float, int)):
-                lower_bound = fenics.Function(self.controls[idx].function_space())
-                lower_bound.vector().vec().set(pair[0])
-            elif isinstance(pair[0], fenics.Function):
-                lower_bound = pair[0]
-            else:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    "Wrong type for the control constraints",
-                )
-
-            if isinstance(pair[1], (float, int)):
-                upper_bound = fenics.Function(self.controls[idx].function_space())
-                upper_bound.vector().vec().set(pair[1])
-            elif isinstance(pair[1], fenics.Function):
-                upper_bound = pair[1]
-            else:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    "Wrong type for the control constraints",
-                )
-
-            self.control_constraints.append([lower_bound, upper_bound])
-
-        # Check whether the control constraints are feasible,
-        # and whether they are actually present
-        self.require_control_constraints = [False] * self.control_dim
-        for idx, pair in enumerate(self.control_constraints):
-            if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    (
-                        "The lower bound must always be smaller than the upper bound "
-                        "for the control_constraints."
-                    ),
-                )
-
-            if pair[0].vector().vec().max()[1] == float("-inf") and pair[
-                1
-            ].vector().vec().min()[1] == float("inf"):
-                # no control constraint for this component
-                pass
-            else:
-                self.require_control_constraints[idx] = True
-
-                control_element = self.controls[idx].ufl_element()
-                if control_element.family() == "Mixed":
-                    for j in range(control_element.value_size()):
-                        sub_elem = control_element.extract_component(j)[1]
-                        if not (
-                            sub_elem.family() == "Real"
-                            or (
-                                sub_elem.family() == "Lagrange"
-                                and sub_elem.degree() == 1
-                            )
-                            or (
-                                sub_elem.family() == "Discontinuous Lagrange"
-                                and sub_elem.degree() == 0
-                            )
-                        ):
-                            raise _exceptions.InputError(
-                                (
-                                    "cashocs._optimization.optimal_control."
-                                    "optimal_control_problem.OptimalControlProblem"
-                                ),
-                                "controls",
-                                (
-                                    "Control constraints are only implemented for "
-                                    "linear Lagrange, constant Discontinuous Lagrange, "
-                                    "and Real elements."
-                                ),
-                            )
-
-                else:
-                    if not (
-                        control_element.family() == "Real"
-                        or (
-                            control_element.family() == "Lagrange"
-                            and control_element.degree() == 1
-                        )
-                        or (
-                            control_element.family() == "Discontinuous Lagrange"
-                            and control_element.degree() == 0
-                        )
-                    ):
-                        raise _exceptions.InputError(
-                            (
-                                "cashocs._optimization.optimal_control."
-                                "optimal_control_problem.OptimalControlProblem"
-                            ),
-                            "controls",
-                            (
-                                "Control constraints are only implemented for "
-                                "linear Lagrange, constant Discontinuous Lagrange, "
-                                "and Real elements."
-                            ),
-                        )
+        self.control_constraints = self._parse_control_constraints(control_constraints)
+        self._validate_control_constraints()
 
         if not len(self.riesz_scalar_products) == self.control_dim:
             raise _exceptions.InputError(
@@ -650,3 +516,151 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """
 
         return verification.control_gradient_test(self, u, h, rng)
+
+    def _parse_riesz_scalar_products(self, riesz_scalar_products) -> List[ufl.Form]:
+
+        if riesz_scalar_products is None:
+            dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
+            return [
+                fenics.inner(
+                    fenics.TrialFunction(self.controls[i].function_space()),
+                    fenics.TestFunction(self.controls[i].function_space()),
+                )
+                * dx
+                for i in range(len(self.controls))
+            ]
+        else:
+            self.uses_custom_scalar_product = True
+            return utils.enlist(riesz_scalar_products)
+
+    def _parse_control_constraints(
+        self, control_constraints
+    ) -> List[List[fenics.Function]]:
+
+        if control_constraints is None:
+            temp_control_constraints = []
+            for control in self.controls:
+                u_a = fenics.Function(control.function_space())
+                u_a.vector().vec().set(float("-inf"))
+                u_b = fenics.Function(control.function_space())
+                u_b.vector().vec().set(float("inf"))
+                temp_control_constraints.append([u_a, u_b])
+        else:
+            temp_control_constraints = utils._check_and_enlist_control_constraints(
+                control_constraints
+            )
+
+        # recast floats into functions for compatibility
+        formatted_control_constraints = []
+        for idx, pair in enumerate(temp_control_constraints):
+            if isinstance(pair[0], (float, int)):
+                lower_bound = fenics.Function(self.controls[idx].function_space())
+                lower_bound.vector().vec().set(pair[0])
+            elif isinstance(pair[0], fenics.Function):
+                lower_bound = pair[0]
+            else:
+                raise _exceptions.InputError(
+                    (
+                        "cashocs._optimization.optimal_control."
+                        "optimal_control_problem.OptimalControlProblem"
+                    ),
+                    "control_constraints",
+                    "Wrong type for the control constraints",
+                )
+
+            if isinstance(pair[1], (float, int)):
+                upper_bound = fenics.Function(self.controls[idx].function_space())
+                upper_bound.vector().vec().set(pair[1])
+            elif isinstance(pair[1], fenics.Function):
+                upper_bound = pair[1]
+            else:
+                raise _exceptions.InputError(
+                    (
+                        "cashocs._optimization.optimal_control."
+                        "optimal_control_problem.OptimalControlProblem"
+                    ),
+                    "control_constraints",
+                    "Wrong type for the control constraints",
+                )
+
+            formatted_control_constraints.append([lower_bound, upper_bound])
+
+        return formatted_control_constraints
+
+    def _validate_control_constraints(self) -> None:
+
+        self.require_control_constraints = [False] * self.control_dim
+        for idx, pair in enumerate(self.control_constraints):
+            if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):
+                raise _exceptions.InputError(
+                    (
+                        "cashocs._optimization.optimal_control."
+                        "optimal_control_problem.OptimalControlProblem"
+                    ),
+                    "control_constraints",
+                    (
+                        "The lower bound must always be smaller than the upper bound "
+                        "for the control_constraints."
+                    ),
+                )
+
+            if pair[0].vector().vec().max()[1] == float("-inf") and pair[
+                1
+            ].vector().vec().min()[1] == float("inf"):
+                # no control constraint for this component
+                pass
+            else:
+                self.require_control_constraints[idx] = True
+
+                control_element = self.controls[idx].ufl_element()
+                if control_element.family() == "Mixed":
+                    for j in range(control_element.value_size()):
+                        sub_elem = control_element.extract_component(j)[1]
+                        if not (
+                            sub_elem.family() == "Real"
+                            or (
+                                sub_elem.family() == "Lagrange"
+                                and sub_elem.degree() == 1
+                            )
+                            or (
+                                sub_elem.family() == "Discontinuous Lagrange"
+                                and sub_elem.degree() == 0
+                            )
+                        ):
+                            raise _exceptions.InputError(
+                                (
+                                    "cashocs._optimization.optimal_control."
+                                    "optimal_control_problem.OptimalControlProblem"
+                                ),
+                                "controls",
+                                (
+                                    "Control constraints are only implemented for "
+                                    "linear Lagrange, constant Discontinuous Lagrange, "
+                                    "and Real elements."
+                                ),
+                            )
+
+                else:
+                    if not (
+                        control_element.family() == "Real"
+                        or (
+                            control_element.family() == "Lagrange"
+                            and control_element.degree() == 1
+                        )
+                        or (
+                            control_element.family() == "Discontinuous Lagrange"
+                            and control_element.degree() == 0
+                        )
+                    ):
+                        raise _exceptions.InputError(
+                            (
+                                "cashocs._optimization.optimal_control."
+                                "optimal_control_problem.OptimalControlProblem"
+                            ),
+                            "controls",
+                            (
+                                "Control constraints are only implemented for "
+                                "linear Lagrange, constant Discontinuous Lagrange, "
+                                "and Real elements."
+                            ),
+                        )

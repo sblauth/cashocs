@@ -100,89 +100,92 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             if self.nonconvergence():
                 break
 
+    def _compute_beta_fr(self) -> None:
+        beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
+        beta_denominator = self.form_handler.scalar_product(
+            self.gradient_prev, self.gradient_prev
+        )
+        self.beta = beta_numerator / beta_denominator
+
+    def _compute_beta_pr(self) -> None:
+
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().aypx(
+                0.0,
+                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
+            )
+
+        beta_numerator = self.form_handler.scalar_product(
+            self.gradient, self.difference
+        )
+        beta_denominator = self.form_handler.scalar_product(
+            self.gradient_prev, self.gradient_prev
+        )
+        self.beta = beta_numerator / beta_denominator
+
+    def _compute_beta_hs(self) -> None:
+
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().aypx(
+                0.0,
+                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
+            )
+
+        beta_numerator = self.form_handler.scalar_product(
+            self.gradient, self.difference
+        )
+        beta_denominator = self.form_handler.scalar_product(
+            self.difference, self.search_direction
+        )
+        self.beta = beta_numerator / beta_denominator
+
+    def _compute_beta_dy(self) -> None:
+
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().aypx(
+                0.0,
+                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
+            )
+
+        beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
+        beta_denominator = self.form_handler.scalar_product(
+            self.search_direction, self.difference
+        )
+        self.beta = beta_numerator / beta_denominator
+
+    def _compute_beta_hz(self) -> None:
+
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().aypx(
+                0.0,
+                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
+            )
+
+        dy = self.form_handler.scalar_product(self.search_direction, self.difference)
+        y2 = self.form_handler.scalar_product(self.difference, self.difference)
+
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().axpy(
+                -2 * y2 / dy, self.search_direction[i].vector().vec()
+            )
+
+        self.beta = (
+            self.form_handler.scalar_product(self.difference, self.gradient) / dy
+        )
+
     def compute_beta(self) -> None:
         """Computes the NCG update parameter beta."""
 
+        beta_method = {
+            "FR": self._compute_beta_fr,
+            "PR": self._compute_beta_pr,
+            "HS": self._compute_beta_hs,
+            "DY": self._compute_beta_dy,
+            "HZ": self._compute_beta_hz,
+        }
+
         if self.iteration > 0:
-            if self.cg_method == "FR":
-                beta_numerator = self.form_handler.scalar_product(
-                    self.gradient, self.gradient
-                )
-                beta_denominator = self.form_handler.scalar_product(
-                    self.gradient_prev, self.gradient_prev
-                )
-                self.beta = beta_numerator / beta_denominator
-
-            elif self.cg_method == "PR":
-                for i in range(len(self.gradient)):
-                    self.difference[i].vector().vec().aypx(
-                        0.0,
-                        self.gradient[i].vector().vec()
-                        - self.gradient_prev[i].vector().vec(),
-                    )
-
-                beta_numerator = self.form_handler.scalar_product(
-                    self.gradient, self.difference
-                )
-                beta_denominator = self.form_handler.scalar_product(
-                    self.gradient_prev, self.gradient_prev
-                )
-                self.beta = beta_numerator / beta_denominator
-
-            elif self.cg_method == "HS":
-                for i in range(len(self.gradient)):
-                    self.difference[i].vector().vec().aypx(
-                        0.0,
-                        self.gradient[i].vector().vec()
-                        - self.gradient_prev[i].vector().vec(),
-                    )
-
-                beta_numerator = self.form_handler.scalar_product(
-                    self.gradient, self.difference
-                )
-                beta_denominator = self.form_handler.scalar_product(
-                    self.difference, self.search_direction
-                )
-                self.beta = beta_numerator / beta_denominator
-
-            elif self.cg_method == "DY":
-                for i in range(len(self.gradient)):
-                    self.difference[i].vector().vec().aypx(
-                        0.0,
-                        self.gradient[i].vector().vec()
-                        - self.gradient_prev[i].vector().vec(),
-                    )
-
-                beta_numerator = self.form_handler.scalar_product(
-                    self.gradient, self.gradient
-                )
-                beta_denominator = self.form_handler.scalar_product(
-                    self.search_direction, self.difference
-                )
-                self.beta = beta_numerator / beta_denominator
-
-            elif self.cg_method == "HZ":
-                for i in range(len(self.gradient)):
-                    self.difference[i].vector().vec().aypx(
-                        0.0,
-                        self.gradient[i].vector().vec()
-                        - self.gradient_prev[i].vector().vec(),
-                    )
-
-                dy = self.form_handler.scalar_product(
-                    self.search_direction, self.difference
-                )
-                y2 = self.form_handler.scalar_product(self.difference, self.difference)
-
-                for i in range(len(self.gradient)):
-                    self.difference[i].vector().vec().axpy(
-                        -2 * y2 / dy, self.search_direction[i].vector().vec()
-                    )
-
-                self.beta = (
-                    self.form_handler.scalar_product(self.difference, self.gradient)
-                    / dy
-                )
+            beta_method[self.cg_method]()
         else:
             self.beta = 0.0
 
