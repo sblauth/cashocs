@@ -177,15 +177,15 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         """Computes the NCG update parameter beta."""
 
         beta_method = {
-            "FR": self._compute_beta_fr,
-            "PR": self._compute_beta_pr,
-            "HS": self._compute_beta_hs,
-            "DY": self._compute_beta_dy,
-            "HZ": self._compute_beta_hz,
+            "fr": self._compute_beta_fr,
+            "pr": self._compute_beta_pr,
+            "hs": self._compute_beta_hs,
+            "dy": self._compute_beta_dy,
+            "hz": self._compute_beta_hz,
         }
 
         if self.iteration > 0:
-            beta_method[self.cg_method]()
+            beta_method[self.cg_method.casefold()]()
         else:
             self.beta = 0.0
 

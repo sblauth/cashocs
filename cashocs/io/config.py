@@ -247,8 +247,8 @@ class Config(ConfigParser):
             "AlgoCG": {
                 "cg_method": {
                     "type": "str",
-                    "fallback": "FR",
-                    "possible_options": ["FR", "PR", "HS", "DY", "HZ"],
+                    "fallback": "fr",
+                    "possible_options": ["fr", "pr", "hs", "dy", "hz"],
                 },
                 "cg_periodic_restart": {"type": "bool", "fallback": False},
                 "cg_periodic_its": {
@@ -587,7 +587,7 @@ class Config(ConfigParser):
 
         if "possible_options" in self.config_scheme[section][key].keys():
             if (
-                self[section][key]
+                self[section][key].casefold()
                 not in self.config_scheme[section][key]["possible_options"]
             ):
                 self.config_errors.append(
