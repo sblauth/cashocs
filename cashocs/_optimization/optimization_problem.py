@@ -65,7 +65,7 @@ class OptimizationProblem(abc.ABC):
         cost_functional_form: Union[ufl.Form, List[ufl.Form]],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]] = None,
         adjoint_ksp_options: Optional[
