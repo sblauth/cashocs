@@ -1,0 +1,41 @@
+name: micromamba ci
+
+on:
+  workflow_dispatch:
+#  pull_request:
+#  schedule:
+#    - cron: '17 22 * * *'
+
+jobs:
+  micromamba_ci:
+    name: CI with micromamba
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: .env/testenv.yml
+        extra-specs: |
+          fenics=2019
+          meshio">=5.0.0"
+          pytest">=7.0.0"
+          deprecated">=1.2.12"
+          gmsh">=4.8"
+          python=3.9
+
+    - name: Install package
+      run: |
+        pip install .
+
+    - name: Run tests and generate coverage
+      run: |
+        pytest

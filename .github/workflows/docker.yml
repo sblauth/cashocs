@@ -36,7 +36,7 @@ jobs:
         run: |
           docker buildx build --push \
             --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
             --target=test-env \
             --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
 
@@ -57,9 +57,31 @@ jobs:
         run: |
           docker buildx build --push \
             --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
             --target=cashocs \
             --tag sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
+
+
+  build_fast_image:
+    name: Build fast (precompiled) sblauth/cashocs image
+    needs: 
+      - build_test_env
+      - build_user_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log into the Dockerhub registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Build the Docker image
+        run: |
+          docker buildx build --push \
+            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
+            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
+            --target=fast-cashocs \
+            --tag sblauth/fast-cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
 
 
   test_user_image:

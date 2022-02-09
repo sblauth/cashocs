@@ -11,13 +11,20 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     container:
-      image: sblauth/cashocs-test-env:latest
+      image: sblauth/fast-cashocs:latest
 
     steps:
+    - name: Delete old installation
+      shell: bash -l {0}
+      run: |
+        conda activate cashocs
+        pip uninstall -y cashocs
+        rm -R /root/cashocs
+
     - name: Checkout repository
       uses: actions/checkout@v2 
 
-    - name: Install cashocs
+    - name: Update cashocs installation
       shell: bash -l {0}
       run: |
         conda activate cashocs
