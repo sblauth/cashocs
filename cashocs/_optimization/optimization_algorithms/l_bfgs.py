@@ -49,12 +49,8 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
         self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
-        self.bfgs_memory_size = self.config.getint(
-            "AlgoLBFGS", "bfgs_memory_size", fallback=5
-        )
-        self.use_bfgs_scaling = self.config.getboolean(
-            "AlgoLBFGS", "use_bfgs_scaling", fallback=True
-        )
+        self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
+        self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
 
         self.has_curvature_info = False
 

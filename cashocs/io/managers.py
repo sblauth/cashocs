@@ -49,9 +49,7 @@ class ResultManager:
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
-        self.save_results = self.config.getboolean(
-            "Output", "save_results", fallback=True
-        )
+        self.save_results = self.config.getboolean("Output", "save_results")
 
         self.output_dict = dict()
         if (
@@ -124,12 +122,8 @@ class HistoryManager:
 
         self.result_dir = result_dir
 
-        self.verbose = optimization_problem.config.getboolean(
-            "Output", "verbose", fallback=True
-        )
-        self.save_txt = optimization_problem.config.getboolean(
-            "Output", "save_txt", fallback=True
-        )
+        self.verbose = optimization_problem.config.getboolean("Output", "verbose")
+        self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
 
     @staticmethod
     def generate_output_str(
@@ -290,7 +284,7 @@ class TempFileManager:
         if self.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if mesh_handler.do_remesh and not self.config.getboolean(
-                "Debug", "remeshing", fallback=False
+                "Debug", "remeshing"
             ):
                 subprocess.run(
                     ["rm", "-r", mesh_handler.temp_dir],
@@ -353,13 +347,9 @@ class PVDFileManager:
 
         self.result_dir = result_dir
 
-        self.save_pvd = self.config.getboolean("Output", "save_pvd", fallback=False)
-        self.save_pvd_adjoint = self.config.getboolean(
-            "Output", "save_pvd_adjoint", fallback=False
-        )
-        self.save_pvd_gradient = self.config.getboolean(
-            "Output", "save_pvd_gradient", fallback=False
-        )
+        self.save_pvd = self.config.getboolean("Output", "save_pvd")
+        self.save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
+        self.save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
 
         self.is_control_problem = False
         self.is_shape_problem = False

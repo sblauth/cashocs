@@ -184,7 +184,7 @@ def _optimization_algorithm_configuration(
         overwrite = True
     else:
         overwrite = False
-        algorithm = config.get("OptimizationRoutine", "algorithm", fallback="none")
+        algorithm = config.get("OptimizationRoutine", "algorithm")
 
     if algorithm.casefold() in ["gradient_descent", "gd"]:
         internal_algorithm = "gradient_descent"

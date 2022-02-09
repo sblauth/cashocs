@@ -47,11 +47,9 @@ class ArmijoLineSearch(line_search.LineSearch):
         super().__init__(optimization_problem)
 
         self.epsilon_armijo = self.config.getfloat(
-            "OptimizationRoutine", "epsilon_armijo", fallback=1e-4
+            "OptimizationRoutine", "epsilon_armijo"
         )
-        self.beta_armijo = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo", fallback=2.0
-        )
+        self.beta_armijo = self.config.getfloat("OptimizationRoutine", "beta_armijo")
         self.armijo_stepsize_initial = self.stepsize
         self.search_direction_inf = 1.0
         self.decrease_measure_w_o_step = 1.0

@@ -66,12 +66,8 @@ def _check_imported_mesh_quality(
     """
 
     if isinstance(input_arg, configparser.ConfigParser):
-        mesh_quality_tol_lower = input_arg.getfloat(
-            "MeshQuality", "tol_lower", fallback=0.0
-        )
-        mesh_quality_tol_upper = input_arg.getfloat(
-            "MeshQuality", "tol_upper", fallback=1e-15
-        )
+        mesh_quality_tol_lower = input_arg.getfloat("MeshQuality", "tol_lower")
+        mesh_quality_tol_upper = input_arg.getfloat("MeshQuality", "tol_upper")
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
             _loggers.warning(
@@ -80,10 +76,8 @@ def _check_imported_mesh_quality(
                 "optimization considerably."
             )
 
-        mesh_quality_measure = input_arg.get(
-            "MeshQuality", "measure", fallback="skewness"
-        )
-        mesh_quality_type = input_arg.get("MeshQuality", "type", fallback="min")
+        mesh_quality_measure = input_arg.get("MeshQuality", "measure")
+        mesh_quality_type = input_arg.get("MeshQuality", "type")
 
         # noinspection PyTypeChecker
         current_mesh_quality = mesh_quality.compute_mesh_quality(

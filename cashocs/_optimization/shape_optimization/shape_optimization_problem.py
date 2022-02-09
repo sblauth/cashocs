@@ -223,7 +223,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         )
 
         # Initialize the remeshing behavior, and a temp file
-        self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
+        self.do_remesh = self.config.getboolean("Mesh", "remesh")
         self.temp_dict = None
 
         self._remesh_init()
@@ -243,7 +243,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.uses_custom_scalar_product = True
 
         if self.uses_custom_scalar_product and self.config.getboolean(
-            "ShapeGradient", "use_p_laplacian", fallback=False
+            "ShapeGradient", "use_p_laplacian"
         ):
             _loggers.warning(
                 (
@@ -478,7 +478,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "An exception was raised by cashocs, "
                 "deleting the created temporary files."
             )
-            if not self.config.getboolean("Debug", "remeshing", fallback=False):
+            if not self.config.getboolean("Debug", "remeshing"):
                 subprocess.run(["rm", "-r", self.temp_dir], check=True)
                 subprocess.run(
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True

@@ -24,7 +24,6 @@ from fenics import *
 import cashocs
 
 
-
 config = cashocs.load_config("./config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 h = MaxCellEdgeLength(mesh)
@@ -54,6 +53,19 @@ bc_no_slip = cashocs.create_dirichlet_bcs(
 )
 bcs = [bc_in] + bc_no_slip
 
+
+def pre_fun():
+    v, q = TestFunctions(V)
+    e = (
+        inner(grad(u), grad(v)) * dx
+        + Constant(Re / 10.0) * dot(grad(u) * u, v) * dx
+        - p * div(v) * dx
+        - q * div(u) * dx
+    )
+
+    cashocs.newton_solve(e, up, bcs, verbose=True)
+
+
 J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
 
 vol_fun = Constant(1) * dx
@@ -73,6 +85,7 @@ constraints = [vol_constraint, bc_x_constraint, bc_y_constraint]
 problem = cashocs.ConstrainedShapeOptimizationProblem(
     e, bcs, J, up, vq, boundaries, constraints, config
 )
+problem.inject_pre_hook(pre_fun)
 problem.solve(method="AL", tol=1e-4, mu_0=1e4)
 
 ### Post Processing

@@ -92,29 +92,21 @@ class ShapeRegularization:
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.use_relative_scaling = self.config.getboolean(
-            "Regularization", "use_relative_scaling", fallback=False
+            "Regularization", "use_relative_scaling"
         )
 
-        self.measure_hole = self.config.getboolean(
-            "Regularization", "measure_hole", fallback=False
-        )
+        self.measure_hole = self.config.getboolean("Regularization", "measure_hole")
         if self.measure_hole:
-            self.x_start = self.config.getfloat(
-                "Regularization", "x_start", fallback=0.0
-            )
-            self.x_end = self.config.getfloat("Regularization", "x_end", fallback=1.0)
+            self.x_start = self.config.getfloat("Regularization", "x_start")
+            self.x_end = self.config.getfloat("Regularization", "x_end")
             self.delta_x = self.x_end - self.x_start
 
-            self.y_start = self.config.getfloat(
-                "Regularization", "y_start", fallback=0.0
-            )
-            self.y_end = self.config.getfloat("Regularization", "y_end", fallback=1.0)
+            self.y_start = self.config.getfloat("Regularization", "y_start")
+            self.y_end = self.config.getfloat("Regularization", "y_end")
             self.delta_y = self.y_end - self.y_start
 
-            self.z_start = self.config.getfloat(
-                "Regularization", "z_start", fallback=0.0
-            )
-            self.z_end = self.config.getfloat("Regularization", "z_end", fallback=1.0)
+            self.z_start = self.config.getfloat("Regularization", "z_start")
+            self.z_end = self.config.getfloat("Regularization", "z_end")
             self.delta_z = self.z_end - self.z_start
             if self.geometric_dimension == 2:
                 self.delta_z = 1.0
@@ -145,15 +137,9 @@ class ShapeRegularization:
     def _init_volume_regularization(self) -> None:
         """Initializes the terms corresponding to the volume regularization."""
 
-        self.mu_volume = self.config.getfloat(
-            "Regularization", "factor_volume", fallback=0.0
-        )
-        self.target_volume = self.config.getfloat(
-            "Regularization", "target_volume", fallback=0.0
-        )
-        if self.config.getboolean(
-            "Regularization", "use_initial_volume", fallback=False
-        ):
+        self.mu_volume = self.config.getfloat("Regularization", "factor_volume")
+        self.target_volume = self.config.getfloat("Regularization", "target_volume")
+        if self.config.getboolean("Regularization", "use_initial_volume"):
             if not self.measure_hole:
                 self.target_volume = fenics.assemble(fenics.Constant(1) * self.dx)
             else:
@@ -165,15 +151,9 @@ class ShapeRegularization:
     def _init_surface_regularization(self) -> None:
         """Initializes the terms corresponding to the surface regularization."""
 
-        self.mu_surface = self.config.getfloat(
-            "Regularization", "factor_surface", fallback=0.0
-        )
-        self.target_surface = self.config.getfloat(
-            "Regularization", "target_surface", fallback=0.0
-        )
-        if self.config.getboolean(
-            "Regularization", "use_initial_surface", fallback=False
-        ):
+        self.mu_surface = self.config.getfloat("Regularization", "factor_surface")
+        self.target_surface = self.config.getfloat("Regularization", "target_surface")
+        if self.config.getboolean("Regularization", "use_initial_surface"):
             self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
     def _init_curvature_regularization(
@@ -185,9 +165,7 @@ class ShapeRegularization:
             form_handler: The form handler of the problem.
         """
 
-        self.mu_curvature = self.config.getfloat(
-            "Regularization", "factor_curvature", fallback=0.0
-        )
+        self.mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
         self.kappa_curvature = fenics.Function(form_handler.deformation_space)
         if self.mu_curvature > 0.0:
             n = fenics.FacetNormal(self.mesh)
@@ -210,21 +188,16 @@ class ShapeRegularization:
     def _init_barycenter_regularization(self) -> None:
         """Initializes the terms corresponding to the barycenter regularization."""
 
-        self.mu_barycenter = self.config.getfloat(
-            "Regularization", "factor_barycenter", fallback=0.0
-        )
+        self.mu_barycenter = self.config.getfloat("Regularization", "factor_barycenter")
 
-        target_bar = self.config.get(
-            "Regularization", "target_barycenter", fallback="[0,0,0]"
+        self.target_barycenter_list = self.config.getlist(
+            "Regularization", "target_barycenter"
         )
-        self.target_barycenter_list = json.loads(target_bar)
 
         if self.geometric_dimension == 2 and len(self.target_barycenter_list) == 2:
             self.target_barycenter_list.append(0.0)
 
-        if self.config.getboolean(
-            "Regularization", "use_initial_barycenter", fallback=False
-        ):
+        if self.config.getboolean("Regularization", "use_initial_barycenter"):
             self.target_barycenter_list = [0.0, 0.0, 0.0]
             if not self.measure_hole:
                 volume = fenics.assemble(fenics.Constant(1) * self.dx)

@@ -67,19 +67,11 @@ class _MeshHandler:
         self.config = self.form_handler.config
 
         # setup from config
-        self.volume_change = float(
-            self.config.get("MeshQuality", "volume_change", fallback="inf")
-        )
-        self.angle_change = float(
-            self.config.get("MeshQuality", "angle_change", fallback="inf")
-        )
+        self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
+        self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
 
-        self.mesh_quality_tol_lower = self.config.getfloat(
-            "MeshQuality", "tol_lower", fallback=0.0
-        )
-        self.mesh_quality_tol_upper = self.config.getfloat(
-            "MeshQuality", "tol_upper", fallback=1e-15
-        )
+        self.mesh_quality_tol_lower = self.config.getfloat("MeshQuality", "tol_lower")
+        self.mesh_quality_tol_upper = self.config.getfloat("MeshQuality", "tol_upper")
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             _loggers.warning(
@@ -87,11 +79,9 @@ class _MeshHandler:
                 "one (tol_upper). This may slow down the optimization considerably."
             )
 
-        self.mesh_quality_measure = self.config.get(
-            "MeshQuality", "measure", fallback="skewness"
-        )
+        self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
 
-        self.mesh_quality_type = self.config.get("MeshQuality", "type", fallback="min")
+        self.mesh_quality_type = self.config.get("MeshQuality", "type")
 
         self.current_mesh_quality = 1.0
         self.current_mesh_quality = mesh_quality.compute_mesh_quality(
@@ -102,10 +92,8 @@ class _MeshHandler:
         self._setup_a_priori()
 
         # Remeshing initializations
-        self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
-        self.save_optimized_mesh = self.config.getboolean(
-            "Output", "save_mesh", fallback=False
-        )
+        self.do_remesh = self.config.getboolean("Mesh", "remesh")
+        self.save_optimized_mesh = self.config.getboolean("Output", "save_mesh")
 
         if self.do_remesh or self.save_optimized_mesh:
             self.mesh_directory = os.path.dirname(
@@ -252,9 +240,7 @@ class _MeshHandler:
             )
 
             frobenius_norm = np.max(x[:])
-            beta_armijo = self.config.getfloat(
-                "OptimizationRoutine", "beta_armijo", fallback=2
-            )
+            beta_armijo = self.config.getfloat("OptimizationRoutine", "beta_armijo")
 
             return int(
                 np.maximum(
@@ -469,7 +455,7 @@ class _MeshHandler:
               temp_dir: Path to the directory for temporary files.
         """
 
-        if not self.config.getboolean("Debug", "restart", fallback=False):
+        if not self.config.getboolean("Debug", "restart"):
             os.execv(
                 sys.executable,
                 [sys.executable]
@@ -533,7 +519,7 @@ class _MeshHandler:
                 "-o",
                 new_gmsh_file,
             ]
-            if not self.config.getboolean("Mesh", "show_gmsh_output", fallback=False):
+            if not self.config.getboolean("Mesh", "show_gmsh_output"):
                 subprocess.run(
                     gmsh_cmd_list,
                     check=True,

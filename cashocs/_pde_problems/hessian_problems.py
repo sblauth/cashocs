@@ -61,16 +61,10 @@ class BaseHessianProblem(abc.ABC):
         self.config = self.form_handler.config
         self.gradient = self.gradient_problem.gradient
 
-        self.inner_newton = self.config.get("AlgoTNM", "inner_newton", fallback="cr")
-        self.max_it_inner_newton = self.config.getint(
-            "AlgoTNM", "max_it_inner_newton", fallback=50
-        )
-        self.inner_newton_rtol = self.config.getfloat(
-            "AlgoTNM", "inner_newton_rtol", fallback=1e-15
-        )
-        self.inner_newton_atol = self.config.getfloat(
-            "AlgoTNM", "inner_newton_atol", fallback=0.0
-        )
+        self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
+        self.max_it_inner_newton = self.config.getint("AlgoTNM", "max_it_inner_newton")
+        self.inner_newton_rtol = self.config.getfloat("AlgoTNM", "inner_newton_rtol")
+        self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
 
         self.test_directions = self.form_handler.test_directions
         self.residual = [fenics.Function(V) for V in self.form_handler.control_spaces]
@@ -118,18 +112,10 @@ class BaseHessianProblem(abc.ABC):
 
         self.controls = self.form_handler.controls
 
-        self.picard_rtol = self.config.getfloat(
-            "StateSystem", "picard_rtol", fallback=1e-10
-        )
-        self.picard_atol = self.config.getfloat(
-            "StateSystem", "picard_atol", fallback=1e-12
-        )
-        self.picard_max_iter = self.config.getint(
-            "StateSystem", "picard_iter", fallback=50
-        )
-        self.picard_verbose = self.config.getboolean(
-            "StateSystem", "picard_verbose", fallback=False
-        )
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
 
         self.states_prime = None
         self.adjoints_prime = None

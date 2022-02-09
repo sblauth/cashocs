@@ -31,6 +31,7 @@ import numpy as np
 import ufl
 from petsc4py import PETSc
 
+from cashocs import _loggers
 from cashocs import nonlinear_solvers
 from cashocs import utils
 from cashocs._pde_problems import pde_problem
@@ -65,17 +66,13 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
-        gradient_tol = self.config.getfloat(
-            "OptimizationRoutine", "gradient_tol", fallback=1e-9
-        )
+        gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
 
         # Generate the Krylov solver for the shape gradient problem
         # noinspection PyUnresolvedReferences
         self.ksp = PETSc.KSP().create()
 
-        gradient_method = self.config.get(
-            "OptimizationRoutine", "gradient_method", fallback="direct"
-        )
+        gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
         if gradient_method.casefold() == "direct":
             self.ksp_options = [
@@ -98,8 +95,19 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         utils._setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
+            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            and self.form_handler.use_fixed_dimensions
+        ):
+            _loggers.warning(
+                "Incompatible config settings: "
+                "use_p_laplacian and fixed_dimensions are incompatible. "
+                "Falling back to use_p_laplacian=False."
+            )
+
+        if (
+            self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and not self.form_handler.uses_custom_scalar_product
+            and not self.form_handler.use_fixed_dimensions
         ):
             self.p_laplace_projector = _PLaplaceProjector(
                 self,
@@ -125,10 +133,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
-                self.config.getboolean(
-                    "ShapeGradient", "use_p_laplacian", fallback=False
-                )
+                self.config.getboolean("ShapeGradient", "use_p_laplacian")
                 and not self.form_handler.uses_custom_scalar_product
+                and not self.form_handler.use_fixed_dimensions
             ):
                 self.p_laplace_projector.solve()
                 self.has_solution = True
@@ -185,11 +192,9 @@ class _PLaplaceProjector:
             config: The config for the optimization problem
         """
 
-        self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
-        delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
-        eps = config.getfloat(
-            "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
-        )
+        self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
+        delta = config.getfloat("ShapeGradient", "damping_factor")
+        eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient[0]
         self.shape_derivative = shape_derivative
@@ -220,9 +225,7 @@ class _PLaplaceProjector:
                 * dx
             )
 
-            gradient_method = config.get(
-                "OptimizationRoutine", "gradient_method", fallback="direct"
-            )
+            gradient_method = config.get("OptimizationRoutine", "gradient_method")
 
             if gradient_method.casefold() == "direct":
                 self.ksp_options = [

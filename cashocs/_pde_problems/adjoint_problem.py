@@ -59,18 +59,10 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.adjoints = self.form_handler.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-        self.picard_rtol = self.config.getfloat(
-            "StateSystem", "picard_rtol", fallback=1e-10
-        )
-        self.picard_atol = self.config.getfloat(
-            "StateSystem", "picard_atol", fallback=1e-12
-        )
-        self.picard_max_iter = self.config.getint(
-            "StateSystem", "picard_iter", fallback=50
-        )
-        self.picard_verbose = self.config.getboolean(
-            "StateSystem", "picard_verbose", fallback=False
-        )
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]

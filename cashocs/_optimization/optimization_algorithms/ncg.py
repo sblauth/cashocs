@@ -51,19 +51,15 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.difference = [fenics.Function(V) for V in self.form_handler.control_spaces]
         self.temp_HZ = [fenics.Function(V) for V in self.form_handler.control_spaces]
 
-        self.cg_method = self.config.get("AlgoCG", "cg_method", fallback="FR")
+        self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(
-            "AlgoCG", "cg_periodic_restart", fallback=False
+            "AlgoCG", "cg_periodic_restart"
         )
-        self.cg_periodic_its = self.config.getint(
-            "AlgoCG", "cg_periodic_its", fallback=10
-        )
+        self.cg_periodic_its = self.config.getint("AlgoCG", "cg_periodic_its")
         self.cg_relative_restart = self.config.getboolean(
-            "AlgoCG", "cg_relative_restart", fallback=False
+            "AlgoCG", "cg_relative_restart"
         )
-        self.cg_restart_tol = self.config.getfloat(
-            "AlgoCG", "cg_restart_tol", fallback=0.25
-        )
+        self.cg_restart_tol = self.config.getfloat("AlgoCG", "cg_restart_tol")
 
         self.memory = 0
         self.beta = 0.0

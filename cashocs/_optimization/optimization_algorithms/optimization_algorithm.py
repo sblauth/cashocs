@@ -74,14 +74,12 @@ class OptimizationAlgorithm(abc.ABC):
         self.converged = False
         self.converged_reason = 0
 
-        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol", fallback=1e-3)
-        self.atol = self.config.getfloat("OptimizationRoutine", "atol", fallback=0.0)
+        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
+        self.atol = self.config.getfloat("OptimizationRoutine", "atol")
         self.maximum_iterations = self.config.getint(
-            "OptimizationRoutine", "maximum_iterations", fallback=100
+            "OptimizationRoutine", "maximum_iterations"
         )
-        self.soft_exit = self.config.getboolean(
-            "OptimizationRoutine", "soft_exit", fallback=False
-        )
+        self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
         if optimization_problem.is_shape_problem:
             self.temp_dict = optimization_problem.temp_dict

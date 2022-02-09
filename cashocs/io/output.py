@@ -41,12 +41,10 @@ class OutputManager:
         """
 
         self.config = optimization_problem.config
-        self.result_dir = self.config.get("Output", "result_dir", fallback="./results")
+        self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
 
-        self.time_suffix = self.config.getboolean(
-            "Output", "time_suffix", fallback=False
-        )
+        self.time_suffix = self.config.getboolean("Output", "time_suffix")
         if self.time_suffix:
             dt_current_time = dt.now()
             self.suffix = (
@@ -56,15 +54,11 @@ class OutputManager:
             )
             self.result_dir = f"{self.result_dir}_{self.suffix}"
 
-        save_txt = self.config.getboolean("Output", "save_txt", fallback=True)
-        save_results = self.config.getboolean("Output", "save_results", fallback=True)
-        save_pvd = self.config.getboolean("Output", "save_pvd", fallback=False)
-        save_pvd_adjoint = self.config.getboolean(
-            "Output", "save_pvd_adjoint", fallback=False
-        )
-        save_pvd_gradient = self.config.getboolean(
-            "Output", "save_pvd_gradient", fallback=False
-        )
+        save_txt = self.config.getboolean("Output", "save_txt")
+        save_results = self.config.getboolean("Output", "save_results")
+        save_pvd = self.config.getboolean("Output", "save_pvd")
+        save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
+        save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
         has_output = (
             save_txt
             or save_results

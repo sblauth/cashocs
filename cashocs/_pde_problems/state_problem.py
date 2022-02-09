@@ -57,34 +57,16 @@ class StateProblem(pde_problem.PDEProblem):
         self.bcs_list = self.form_handler.bcs_list
         self.states = self.form_handler.states
 
-        self.picard_rtol = self.config.getfloat(
-            "StateSystem", "picard_rtol", fallback=1e-10
-        )
-        self.picard_atol = self.config.getfloat(
-            "StateSystem", "picard_atol", fallback=1e-20
-        )
-        self.picard_max_iter = self.config.getint(
-            "StateSystem", "picard_iter", fallback=50
-        )
-        self.picard_verbose = self.config.getboolean(
-            "StateSystem", "picard_verbose", fallback=False
-        )
-        self.newton_rtol = self.config.getfloat(
-            "StateSystem", "newton_rtol", fallback=1e-11
-        )
-        self.newton_atol = self.config.getfloat(
-            "StateSystem", "newton_atol", fallback=1e-13
-        )
-        self.newton_damped = self.config.getboolean(
-            "StateSystem", "newton_damped", fallback=True
-        )
-        self.newton_inexact = self.config.getboolean(
-            "StateSystem", "newton_inexact", fallback=False
-        )
-        self.newton_verbose = self.config.getboolean(
-            "StateSystem", "newton_verbose", fallback=False
-        )
-        self.newton_iter = self.config.getint("StateSystem", "newton_iter", fallback=50)
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+        self.newton_rtol = self.config.getfloat("StateSystem", "newton_rtol")
+        self.newton_atol = self.config.getfloat("StateSystem", "newton_atol")
+        self.newton_damped = self.config.getboolean("StateSystem", "newton_damped")
+        self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
+        self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
+        self.newton_iter = self.config.getint("StateSystem", "newton_iter")
 
         self.newton_atols = [1] * self.form_handler.state_dim
 

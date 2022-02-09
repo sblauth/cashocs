@@ -193,12 +193,8 @@ class FormHandler(abc.ABC):
             fenics.TestFunction(V) for V in self.adjoint_spaces
         ]
 
-        self.state_is_linear = self.config.getboolean(
-            "StateSystem", "is_linear", fallback=False
-        )
-        self.state_is_picard = self.config.getboolean(
-            "StateSystem", "picard_iteration", fallback=False
-        )
+        self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
+        self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
         self.opt_algo = utils._optimization_algorithm_configuration(self.config)
 
         self._compute_state_equations()

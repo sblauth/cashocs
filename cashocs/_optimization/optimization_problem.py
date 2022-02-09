@@ -200,8 +200,6 @@ class OptimizationProblem(abc.ABC):
 
         if config is None:
             self.config = io.Config()
-            self.config.add_section("OptimizationRoutine")
-            self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
             self.config = copy.deepcopy(config)
 
