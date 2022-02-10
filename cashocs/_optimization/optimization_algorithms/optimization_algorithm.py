@@ -142,7 +142,7 @@ class OptimizationAlgorithm(abc.ABC):
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
     def post_processing(self) -> None:
-        """Does a post processing after the optimization algorithm terminates."""
+        """Does a post-processing after the optimization algorithm terminates."""
 
         if self.converged:
             self.output()

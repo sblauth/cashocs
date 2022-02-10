@@ -17,7 +17,7 @@
 
 """Mesh generation and import tools.
 
-This module consists of tools for for the fast generation or import of meshes into
+This module consists of tools for the fast generation or import of meshes into
 fenics. The :py:func:`import_mesh <cashocs.geometry.import_mesh>` function is used to
 import (converted) GMSH mesh files, and the :py:func:`regular_mesh
 <cashocs.geometry.regular_mesh>` and :py:func:`regular_box_mesh

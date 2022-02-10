@@ -390,7 +390,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     def min_radius_ratios(mesh: fenics.Mesh) -> float:
         r"""Computes the minimal radius ratio of the mesh.
 
-        This measures the ratio of the element's inradius to it's circumradius,
+        This measures the ratio of the element's inradius to its circumradius,
         normalized by the geometric dimension. This is computed via
 
         .. math:: d \frac{r}{R},
@@ -413,7 +413,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     def avg_radius_ratios(mesh: fenics.Mesh) -> float:
         r"""Computes the average radius ratio of the mesh.
 
-        This measures the ratio of the element's inradius to it's circumradius,
+        This measures the ratio of the element's inradius to its circumradius,
         normalized by the geometric dimension. This is computed via
 
         .. math:: d \frac{r}{R},

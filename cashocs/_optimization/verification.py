@@ -69,7 +69,7 @@ def control_gradient_test(
         u: The point, at which the gradient shall be verified. If this is ``None``,
             then the current controls of the optimization problem are used. Default is
             ``None``.
-        h: The direction(s) for the directional (Gateaux) derivative. If this is
+        h: The direction(s) for the directional (Gâteaux) derivative. If this is
             ``None``, one random direction is chosen. Default is ``None``.
         rng: A numpy random state for calculating a random direction
 

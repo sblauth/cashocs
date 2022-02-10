@@ -336,8 +336,8 @@ PYBIND11_MODULE(SIGNATURE, m)
             mesh: A FEM mesh.
 
         Returns:
-            An array of cell indices, where array[i] contains the indices of all cells
-            that vertex i collides with.
+            An array of cell indices, where ``array[i]`` contains the indices of all
+            cells that vertex ``i`` collides with.
         """
 
         return cls._cpp_object.compute_collisions(mesh)

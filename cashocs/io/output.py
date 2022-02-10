@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class OutputManager:
-    """Class handling all of the output."""
+    """Class handling all the output."""
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """

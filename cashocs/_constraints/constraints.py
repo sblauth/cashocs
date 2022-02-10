@@ -41,7 +41,7 @@ class Constraint(abc.ABC):
     ) -> None:
         """
         Args:
-            variable_function: Either a ufl Form (when we have a scalar / integral
+            variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
                 which models the part that is to be constrained.
             measure: A measure indicating where a pointwise constraint should be
@@ -84,7 +84,7 @@ class EqualityConstraint(Constraint):
     ) -> None:
         """
         Args:
-            variable_function: Either a ufl Form (when we have a scalar / integral
+            variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
                 which models the part that is to be constrained.
             target: The target (rhs) of the equality constraint.
@@ -141,7 +141,7 @@ class InequalityConstraint(Constraint):
     ) -> None:
         """
         Args:
-            variable_function: Either a ufl Form (when we have a scalar / integral
+            variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
                 which models the part that is to be constrained
             lower_bound: The lower bound for the inequality constraint

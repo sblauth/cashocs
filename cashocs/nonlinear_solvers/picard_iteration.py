@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Picard iteration for coupled PDEs."""
+"""A Picard iteration for coupled PDEs."""
 
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ def picard_iteration(
             ``True``.
         inner_damped: Boolean flag, if ``True``, the inner problems are solved with a
             damped Newton method, default is ``True``
-        inner_inexact: Boolean flag, if ``True``, the inner problems are solved with a
+        inner_inexact: Boolean flag, if ``True``, the inner problems are solved with an
             inexact Newton method, default is ``True``
         inner_verbose: Boolean flag, if ``True``, the inner problems write the history
             to stdout, default is ``False``.

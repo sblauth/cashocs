@@ -49,7 +49,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     Note, that in the case of multiple variables these have to be grouped into
     ordered lists, where state_forms, bcs_list, states, adjoints have to have
     the same order (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of
-    ``y1`` and so on.
+    ``y1`` and so on).
     """
 
     def __new__(
@@ -290,7 +290,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 taken. Default is ``None``.
 
         Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
 
             - a purely relative one (if only ``rtol`` is specified), i.e.,
@@ -421,7 +421,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             u: The point, at which the gradient shall be verified. If this is ``None``,
                 then the current controls of the optimization problem are used. Default
                 is ``None``.
-            h: The direction(s) for the directional (Gateaux) derivative. If this is
+            h: The direction(s) for the directional (Gâteaux) derivative. If this is
                 ``None``, one random direction is chosen. Default is ``None``.
             rng: A numpy random state for calculating a random direction.
 

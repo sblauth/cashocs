@@ -109,7 +109,7 @@ class ResultManager:
 
 
 class HistoryManager:
-    """Class for managing the human readable output of cashocs."""
+    """Class for managing the human-readable output of cashocs."""
 
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str

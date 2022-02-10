@@ -403,7 +403,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 the config file is taken. Default is ``None``.
 
         Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
 
             - a purely relative one (if only ``rtol`` is specified), i.e.,

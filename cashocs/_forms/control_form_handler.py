@@ -200,8 +200,9 @@ class ControlFormHandler(form_handler.FormHandler):
     ) -> List[fenics.Function]:
         """Restricts a function to the active set.
 
-        Restricts a control type function a onto the active set,
-        which is returned via the function b,  i.e., b is zero on the inactive set.
+        Restricts a control type function ``a`` onto the active set,
+        which is returned via the function ``b``,  i.e., ``b`` is zero on the inactive
+        set.
 
         Args:
             a: The first argument, to be projected onto the active set.
@@ -229,16 +230,16 @@ class ControlFormHandler(form_handler.FormHandler):
     ) -> List[fenics.Function]:
         """Restricts a function to the inactive set.
 
-        Restricts a control type function a onto the inactive set,
-        which is returned via the function b, i.e., b is zero on the active set.
+        Restricts a control type function ``a`` onto the inactive set,
+        which is returned via the function ``b``, i.e., ``b`` is zero on the active set.
 
         Args:
             a: The control-type function that is to be projected onto the inactive set.
             b: The storage for the result of the projection (is overwritten).
 
         Returns:
-            The result of the projection of a onto the inactive set (overwrites input
-            b).
+            The result of the projection of ``a`` onto the inactive set (overwrites
+            input ``b``).
         """
 
         for j in range(self.control_dim):
@@ -260,7 +261,7 @@ class ControlFormHandler(form_handler.FormHandler):
     ) -> List[fenics.Function]:
         """Project a function to the set of admissible controls.
 
-        Projects a control type function a onto the set of admissible controls
+        Projects a control type function ``a`` onto the set of admissible controls
         (given by the box constraints).
 
         Args:
@@ -268,7 +269,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 controls (is overwritten)
 
         Returns:
-            The result of the projection (overwrites input a)
+            The result of the projection (overwrites input ``a``)
         """
 
         for j in range(self.control_dim):

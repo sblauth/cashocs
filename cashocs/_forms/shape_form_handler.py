@@ -208,7 +208,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     # noinspection PyUnresolvedReferences
     def _add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pull backs for scalar_tracking_forms."""
+        """Adds pullbacks for scalar_tracking_forms."""
 
         if self.use_scalar_tracking:
             for j in range(self.no_scalar_tracking_terms):
@@ -225,7 +225,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     # noinspection PyUnresolvedReferences
     def _add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pull backs for min_max_terms."""
+        """Adds pullbacks for min_max_terms."""
 
         if self.use_min_max_terms:
             for j in range(self.no_min_max_terms):
@@ -262,7 +262,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.material_derivative_coeffs.append(coeff)
 
     def _parse_pull_back_coefficients(self) -> None:
-        """Parses the coefficients which are available for adding pull backs."""
+        """Parses the coefficients which are available for adding pullbacks."""
 
         self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
             coeff.id() for coeff in self.adjoints
@@ -292,7 +292,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
 
     def _add_pull_backs(self) -> None:
-        """Add pull backs to the shape derivative."""
+        """Add pullbacks to the shape derivative."""
 
         if self.use_pull_back:
             self._parse_pull_back_coefficients()
@@ -322,7 +322,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         A corresponding warning whenever this could be the case is issued.
         """
 
-        # Shape derivative of Lagrangian w/o regularization and pull-backs
+        # Shape derivative of Lagrangian w/o regularization and pullbacks
         self.shape_derivative = fenics.derivative(
             self.lagrangian_form,
             fenics.SpatialCoordinate(self.mesh),

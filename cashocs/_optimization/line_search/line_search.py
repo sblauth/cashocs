@@ -71,7 +71,8 @@ class LineSearch(abc.ABC):
 
         Notes:
             This is the function that should be called in the optimization algorithm,
-            it consists of a call to self.search and self.post_line_search afterwards.
+            it consists of a call to ``self.search`` and ``self.post_line_search``
+            afterwards.
 
         Args:
             solver: The optimization algorithm.

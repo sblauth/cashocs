@@ -83,7 +83,7 @@ def write_subdomains(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out an xdmf file with meshio corresponding to the subdomains.
+    """Write out a xdmf file with meshio corresponding to the subdomains.
 
     Args:
         meshdim: The dimension of the mesh.
@@ -117,7 +117,7 @@ def write_boundaries(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out an xdmf file with meshio corresponding to the boundaries.
+    """Write out a xdmf file with meshio corresponding to the boundaries.
 
     Args:
         meshdim: The dimension of the mesh.

@@ -274,7 +274,7 @@ class OptimizationProblem(abc.ABC):
 
         This can be used for debugging purposes and solver validation.
         Updates / overwrites the user input for the adjoint variables.
-        The solve of the corresponding state system needed to determine
+        The solution of the corresponding state system needed to determine
         the adjoints is carried out automatically.
         """
 
@@ -432,7 +432,7 @@ class OptimizationProblem(abc.ABC):
                 taken. Default is ``None``.
 
         Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
 
             - a purely relative one (if only ``rtol`` is specified), i.e.,

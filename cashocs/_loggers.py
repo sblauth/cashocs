@@ -99,6 +99,7 @@ def set_log_level(level: int) -> None:
         To set the log level of cashocs, use this method as follows::
 
             import cashocs
+
             cashocs.set_log_level(cashocs.LogLevel.WARNING)
 
         which only shows messages with a level of ``WARNING`` or higher.
