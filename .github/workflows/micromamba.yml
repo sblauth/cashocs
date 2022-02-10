@@ -23,7 +23,7 @@ jobs:
     - name: Install micromamba
       uses: mamba-org/provision-with-micromamba@main
       with:
-        environment-file: .env/testenv.yml
+        environment-file: .github/micromamba/testenv.yml
         extra-specs: |
           fenics=2019
           meshio">=5.0.0"

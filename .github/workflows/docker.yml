@@ -36,7 +36,7 @@ jobs:
         run: |
           docker buildx build --push \
             --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=test-env \
             --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
 
@@ -57,7 +57,7 @@ jobs:
         run: |
           docker buildx build --push \
             --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=cashocs \
             --tag sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
 
@@ -79,7 +79,7 @@ jobs:
         run: |
           docker buildx build --push \
             --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline,mode=max --file ./.docker/Dockerfile \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=fast-cashocs \
             --tag sblauth/fast-cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
 
