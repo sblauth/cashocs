@@ -1,4 +1,4 @@
-name: ci
+name: fast ci
 
 on:
   push:
@@ -8,13 +8,13 @@ on:
     - cron: '17 22 * * *'
 
 jobs:
-  ci:
+  tests:
     runs-on: ubuntu-latest
     container:
       image: sblauth/fast-cashocs:latest
 
     steps:
-    - name: Delete old installation
+    - name: Delete current installation in docker image
       shell: bash -l {0}
       run: |
         conda activate cashocs
@@ -24,7 +24,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2 
 
-    - name: Update cashocs installation
+    - name: Install cashocs
       shell: bash -l {0}
       run: |
         conda activate cashocs
