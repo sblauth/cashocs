@@ -9,14 +9,15 @@ on:
     - cron: '17 21 * * *'
 
 jobs:
-  build_image:
-    name: Build sblauth/cashocs image
+  build_test_env:
+    name: Build sblauth/cashocs-test-env image
     runs-on: ubuntu-latest
     outputs:
       TAG_PREFIX: ${{ steps.tag_name.outputs.TAG_PREFIX }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
 
       - name: Get tag name
         id: tag_name
@@ -34,22 +35,29 @@ jobs:
       - name: Build the Docker image
         run: |
           docker buildx build --push \
-            --cache-from=type=registry,ref=sblauth/cashocs:${{ steps.tag_name.outputs.TAG_PREFIX }} \
+            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
+            --target=test-env \
+            --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
+
+
+  build_user_image:
+    name: Build sblauth/cashocs image
+    needs: 
+      - build_test_env
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log into the Dockerhub registry
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Build the Docker image
+        run: |
+          docker buildx build --push \
+            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
             --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=cashocs \
-            --tag sblauth/cashocs:${{ steps.tag_name.outputs.TAG_PREFIX }} .
+            --tag sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
 
-  test_image:
-    name: Test sblauth/cashocs image
-    needs:
-      - build_image
-    runs-on: ubuntu-latest
-    container:
-      image: sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }}
-    steps:
-      - name: Run tests
-        shell: bash -l {0}
-        run: |
-          conda activate cashocs
-          cd /root/cashocs/
-          pytest
