@@ -42,8 +42,7 @@ jobs:
   test_image:
     name: Test sblauth/cashocs image
     needs:
-      - build_test_env
-      - build_user_image
+      - build_image
     runs-on: ubuntu-latest
     container:
       image: sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }}
