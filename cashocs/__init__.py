@@ -56,7 +56,7 @@ from cashocs.utils import (
 )
 
 
-__version__ = "1.5.7"
+__version__ = "1.5.8"
 
 __all__ = [
     "import_mesh",
