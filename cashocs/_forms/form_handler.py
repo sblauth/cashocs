@@ -53,8 +53,8 @@ def _get_subdx(
             ans = _get_subdx(function_space.sub(i), index, ls + [i])
             if ans is not None:
                 return ans
-    else:
-        return None
+
+    return None
 
 
 class FormHandler(abc.ABC):

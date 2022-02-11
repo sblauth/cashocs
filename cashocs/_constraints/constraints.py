@@ -127,6 +127,7 @@ class EqualityConstraint(Constraint):
                     pow(self.variable_function - self.target, 2) * self.measure
                 )
             )
+        return float("inf")
 
 
 class InequalityConstraint(Constraint):

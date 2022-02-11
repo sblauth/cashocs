@@ -191,3 +191,5 @@ class _NamedMeasure(ufl.Measure):
 
         elif isinstance(subdomain_id, (list, tuple)):
             return generate_measure(subdomain_id, self)
+
+        return None

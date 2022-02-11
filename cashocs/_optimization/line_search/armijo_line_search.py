@@ -84,6 +84,8 @@ class ArmijoLineSearch(line_search.LineSearch):
             solver.line_search_broken = True
             return True
 
+        return False
+
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
@@ -170,3 +172,5 @@ class ArmijoLineSearch(line_search.LineSearch):
             )
         elif self.is_shape_problem:
             return self.decrease_measure_w_o_step * self.stepsize
+        else:
+            return float("inf")
