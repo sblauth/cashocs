@@ -1,3 +1,0 @@
-[console_scripts]
-cashocs-convert = cashocs._cli:convert
-

@@ -1,3 +1,0 @@
-meshio>=4.1.0
-numpy>=1.21
-typing_extensions
