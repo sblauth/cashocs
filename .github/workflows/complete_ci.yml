@@ -8,19 +8,20 @@ on:
 
 jobs:
   complete_ci:
-    name: CI on Linux with python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    name: CI on ${{ matrix.os }} with python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 5
       matrix:
-        include:
-          - python-version: "3.7"
-          - python-version: "3.8"
-          - python-version: "3.9"
+        os: [ubuntu-latest, macOS-10.15]
+        python-version: ["3.7", "3.8", "3.9"]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
+    - name: Fix Conda permissions on macOS
+      run: sudo chown -R $UID $CONDA
 
     - name: Add conda to system path
       run: |
