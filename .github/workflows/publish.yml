@@ -49,9 +49,9 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        name: cashocs ${{ github.ref }}
-        body: cashocs ${{ github.ref }}
+        tag_name: ${GITHUB_REF#refs/tags/}
+        name: cashocs ${GITHUB_REF#refs/tags/}
+        body: cashocs ${GITHUB_REF#refs/tags/}
 
 
   build_and_publish:
