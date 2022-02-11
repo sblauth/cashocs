@@ -1,4 +1,4 @@
-name: fast ci
+name: cached tests
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container:
-      image: sblauth/fast-cashocs:latest
+      image: sblauth/cashocs:latest
 
     steps:
     - name: Delete current installation in docker image
