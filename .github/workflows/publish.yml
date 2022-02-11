@@ -1,4 +1,4 @@
-name: Publish cashocs
+name: Publish cashocs on Github and PyPI
 
 on:
   push:
