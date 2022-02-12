@@ -44,14 +44,19 @@ jobs:
     
     - name: Checkout repository
       uses: actions/checkout@v2
+    
+
+    - name: Get tag name
+      id: tag_name
+      run: |
+        echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
 
     - name: Create Github release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${GITHUB_REF#refs/tags/}
-        name: cashocs ${GITHUB_REF#refs/tags/}
-        body: cashocs ${GITHUB_REF#refs/tags/}
+        name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
+        body: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
 
 
   build_and_publish:
