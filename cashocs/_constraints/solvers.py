@@ -43,7 +43,8 @@ class ConstrainedSolver(abc.ABC):
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -52,7 +53,6 @@ class ConstrainedSolver(abc.ABC):
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
         """
-
         self.constrained_problem = constrained_problem
 
         self.solver_name = ""
@@ -95,12 +95,10 @@ class ConstrainedSolver(abc.ABC):
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         pass
 
     def _post_process_cost_functional(self) -> None:
         """Ensures that scalar_tracking_forms and min_max_terms are correct."""
-
         if len(self.inner_scalar_tracking_forms) == 0:
             self.inner_scalar_tracking_forms = (
                 self.constrained_problem.scalar_tracking_forms_initial
@@ -138,10 +136,10 @@ class ConstrainedSolver(abc.ABC):
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
         """
-
         pass
 
     def print_results(self) -> None:
+        """Prints the results of the current iteration to the console."""
         strs = [
             f"{self.solver_name} - Iteration {self.iterations:4d} -",
             f" Objective value: {self.constrained_problem.current_function_value:.3e}",
@@ -161,7 +159,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -170,7 +169,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
         """
-
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
         self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
@@ -195,7 +193,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             A_tensor: A matrix, into which the form is assembled for speed up
             b_tensor: A vector, into which the form is assembled for speed up
         """
-
         if isinstance(project_terms, list):
             project_term = utils.summation(project_terms)
         else:
@@ -214,7 +211,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         self.inner_cost_functional_shifts = []
 
         self.inner_cost_functional_form = (
@@ -267,7 +263,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         Args:
             index: The index of the equality constraint.
         """
-
         if self.constraints[index].is_integral_constraint:
             self.lmbd[index] += self.mu * (
                 fenics.assemble(self.constraints[index].variable_function)
@@ -359,7 +354,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def _update_lagrange_multiplier_estimates(self) -> None:
         """Performs an update of the Lagrange multiplier estimates."""
-
         for i in range(self.constraint_dim):
             if isinstance(self.constraints[i], constraints.EqualityConstraint):
                 self._update_equality_multipliers(i)
@@ -390,7 +384,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
         """
-
         convergence_tol = constraint_tol or tol / 10.0
 
         self.iterations = 0
@@ -436,7 +429,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         mu_0: Optional[float] = None,
         lambda_0: Optional[list[float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -445,7 +439,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
         """
-
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.solver_name = "Quadratic Penalty Method"
 
@@ -472,7 +465,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
         """
-
         convergence_tol = constraint_tol or tol / 10.0
 
         self.iterations = 0
@@ -502,7 +494,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         self.inner_cost_functional_form = (
             self.constrained_problem.cost_functional_form_initial[:]
         )

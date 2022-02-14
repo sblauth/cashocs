@@ -30,7 +30,6 @@ import numpy as np
 
 def _generate_parser() -> argparse.ArgumentParser:
     """Returns a parser for command line arguments."""
-
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
     )
@@ -47,6 +46,7 @@ def _generate_parser() -> argparse.ArgumentParser:
 
 
 def check_file_extension(file: str, required_extension: str) -> None:
+    """Checks whether a given file extension is correct."""
     if not file.split(".")[-1] == required_extension:
         raise Exception(
             f"Cannot use {file} due to wrong format.",
@@ -65,7 +65,6 @@ def write_mesh(
         ostring: The output string, containing the name and path to the output file,
             without extension.
     """
-
     cells_str = "triangle"
     if meshdim == 2:
         cells_str = "triangle"
@@ -83,7 +82,7 @@ def write_subdomains(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out a xdmf file with meshio corresponding to the subdomains.
+    """Writes out a xdmf file with meshio corresponding to the subdomains.
 
     Args:
         meshdim: The dimension of the mesh.
@@ -93,7 +92,6 @@ def write_subdomains(
         ostring: The output string, containing the name and path to the output file,
             without extension.
     """
-
     cells_str = "triangle"
     if meshdim == 2:
         cells_str = "triangle"
@@ -117,7 +115,7 @@ def write_boundaries(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out a xdmf file with meshio corresponding to the boundaries.
+    """Writes out a xdmf file with meshio corresponding to the boundaries.
 
     Args:
         meshdim: The dimension of the mesh.
@@ -127,7 +125,6 @@ def write_boundaries(
         ostring: The output string, containing the name and path to the output file,
             without extension.
     """
-
     facet_str = "line"
     if meshdim == 2:
         facet_str = "line"
@@ -153,7 +150,6 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
         ostring: The output string, containing the name and path to the output file,
             without extension.
     """
-
     physical_groups = {"dx": {}, "ds": {}}
     has_physical_groups = False
     with open(inputfile, "r") as infile:
@@ -192,7 +188,6 @@ def convert(argv: Optional[List[str]] = None) -> None:
         argv: Command line options. The first parameter is the input .msh file,
             the second is the output .xdmf file
     """
-
     start_time = time.time()
 
     parser = _generate_parser()

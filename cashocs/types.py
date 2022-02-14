@@ -17,9 +17,9 @@
 
 """Type hints for cashocs."""
 
-from typing import Union, List
+from typing import Union
 
-from cashocs._optimization.shape_optimization import ShapeOptimizationProblem
 from cashocs._optimization.optimal_control import OptimalControlProblem
+from cashocs._optimization.shape_optimization import ShapeOptimizationProblem
 
 OptimizationProblem = Union[ShapeOptimizationProblem, OptimalControlProblem]

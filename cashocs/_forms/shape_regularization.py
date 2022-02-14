@@ -48,7 +48,6 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     Returns:
         The tangential gradient of u.
     """
-
     return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
 
 
@@ -63,7 +62,6 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     Returns:
         The tangential divergence of u.
     """
-
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
 
 
@@ -71,11 +69,11 @@ class ShapeRegularization:
     """Regularization terms for shape optimization problems."""
 
     def __init__(self, form_handler: shape_form_handler.ShapeFormHandler) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The corresponding shape form handler object.
         """
-
         self.test_vector_field = form_handler.test_vector_field
         self.config = form_handler.config
         self.geometric_dimension = form_handler.mesh.geometric_dimension()
@@ -136,7 +134,6 @@ class ShapeRegularization:
 
     def _init_volume_regularization(self) -> None:
         """Initializes the terms corresponding to the volume regularization."""
-
         self.mu_volume = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
         if self.config.getboolean("Regularization", "use_initial_volume"):
@@ -150,7 +147,6 @@ class ShapeRegularization:
 
     def _init_surface_regularization(self) -> None:
         """Initializes the terms corresponding to the surface regularization."""
-
         self.mu_surface = self.config.getfloat("Regularization", "factor_surface")
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
         if self.config.getboolean("Regularization", "use_initial_surface"):
@@ -164,7 +160,6 @@ class ShapeRegularization:
         Args:
             form_handler: The form handler of the problem.
         """
-
         self.mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
         self.kappa_curvature = fenics.Function(form_handler.deformation_space)
         if self.mu_curvature > 0.0:
@@ -187,7 +182,6 @@ class ShapeRegularization:
 
     def _init_barycenter_regularization(self) -> None:
         """Initializes the terms corresponding to the barycenter regularization."""
-
         self.mu_barycenter = self.config.getfloat("Regularization", "factor_barycenter")
 
         self.target_barycenter_list = self.config.getlist(
@@ -249,7 +243,6 @@ class ShapeRegularization:
         Updates the volume, surface area, and barycenters (after the
         mesh is updated).
         """
-
         if not self.measure_hole:
             volume = fenics.assemble(fenics.Constant(1) * self.dx)
             barycenter_x = (
@@ -306,7 +299,6 @@ class ShapeRegularization:
 
     def compute_curvature(self) -> None:
         """Computes the mean curvature vector of the geometry."""
-
         if self.mu_curvature > 0.0:
             fenics.assemble(
                 self.a_curvature, keep_diagonal=True, tensor=self.A_curvature
@@ -330,7 +322,6 @@ class ShapeRegularization:
         Returns:
             Part of the objective value coming from the regularization
         """
-
         if self.has_regularization:
 
             value = 0.0
@@ -428,7 +419,6 @@ class ShapeRegularization:
         Returns:
             The weak form of the shape derivative coming from the regularization
         """
-
         vector_field = self.test_vector_field
         if self.has_regularization:
 
@@ -594,7 +584,6 @@ class ShapeRegularization:
 
     def _scale_volume_term(self) -> None:
         """Scales the volume regularization parameter."""
-
         if self.mu_volume > 0.0:
             if not self.measure_hole:
                 volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
@@ -616,7 +605,6 @@ class ShapeRegularization:
 
     def _scale_surface_term(self) -> None:
         """Scales the surface regularization term."""
-
         if self.mu_surface > 0.0:
             surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
             value = 0.5 * pow(surface - self.target_surface, 2)
@@ -632,7 +620,6 @@ class ShapeRegularization:
 
     def _scale_curvature_term(self) -> None:
         """Scales the curvature regularization term."""
-
         if self.mu_curvature > 0.0:
             self.compute_curvature()
             value = 0.5 * fenics.assemble(
@@ -650,7 +637,6 @@ class ShapeRegularization:
 
     def _scale_barycenter_term(self) -> None:
         """Scales the barycenter regularization term."""
-
         if self.mu_barycenter > 0.0:
             if not self.measure_hole:
                 volume = fenics.assemble(fenics.Constant(1) * self.dx)
@@ -715,7 +701,6 @@ class ShapeRegularization:
 
     def _scale_weights(self) -> None:
         """Scales the terms of the regularization by the weights given in the config."""
-
         if self.use_relative_scaling and self.has_regularization:
             if not self.has_cashocs_remesh_flag:
                 self._scale_volume_term()

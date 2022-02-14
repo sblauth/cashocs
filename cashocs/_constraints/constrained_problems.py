@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Constrained optimization problems, with additional equality / inequality constraints.
-"""
+"""Constrained optimization problems, additional (in-)equality constraints."""
 
 from __future__ import annotations
 
@@ -61,7 +60,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
         adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
         scalar_tracking_forms: Optional[List[Dict]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -98,7 +98,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
         """
-
         self.state_forms = state_forms
         self.bcs_list = bcs_list
         self.states = states
@@ -162,7 +161,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
             lambda_0: Initial guess for the Lagrange multipliers. Default is ``None``,
                 which corresponds to a zero guess.
         """
-
         if method.casefold() in ["augmented lagrangian", "al"]:
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
@@ -186,7 +184,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
         Returns:
             The 2-norm of the total constraint violation.
         """
-
         s = 0.0
         for constraint in self.constraint_list:
             s += pow(constraint.constraint_violation(), 2)
@@ -211,7 +208,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
         """
-
         self.rtol = inner_rtol or tol
 
     def _pre_hook(self) -> None:
@@ -227,7 +223,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
             function: A custom function without arguments, which will be called before
                 each solve of the state system
         """
-
         # noinspection PyAttributeOutsideInit
         self._pre_hook = function
 
@@ -238,7 +233,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
         """
-
         # noinspection PyAttributeOutsideInit
         self._post_hook = function
 
@@ -253,7 +247,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
         """
-
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
@@ -286,7 +279,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
-        r"""
+        r"""Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -332,7 +326,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
         """
-
         super().__init__(
             state_forms,
             bcs_list,
@@ -368,7 +361,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
         """
-
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
         optimal_control_problem = optimal_control.OptimalControlProblem(
@@ -454,7 +446,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
         scalar_tracking_forms: Optional[Dict] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -499,7 +492,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
         """
-
         super().__init__(
             state_forms,
             bcs_list,
@@ -534,7 +526,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
         """
-
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(

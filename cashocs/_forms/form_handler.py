@@ -28,7 +28,7 @@ import ufl
 from cashocs import utils
 
 if TYPE_CHECKING:
-    from cashocs import _optimization
+    from cashocs import types
     from cashocs._forms import shape_regularization
 
 
@@ -45,7 +45,6 @@ def _get_subdx(
     Returns:
         The list of the sub-indices.
     """
-
     if function_space.id() == index:
         return ls
     if function_space.num_sub_spaces() > 1:
@@ -66,12 +65,12 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
-    def __init__(self, optimization_problem: _optimization.OptimizationProblem) -> None:
-        """
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem
         """
-
         self.bcs_list = optimization_problem.bcs_list
         self.states = optimization_problem.states
         self.adjoints = optimization_problem.adjoints
@@ -202,7 +201,6 @@ class FormHandler(abc.ABC):
 
     def _compute_state_equations(self) -> None:
         """Calculates the weak form of the state equation for the use with fenics."""
-
         self.state_eq_forms = [
             fenics.derivative(
                 self.state_forms[i], self.adjoints[i], self.test_functions_state[i]
@@ -226,7 +224,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_boundary_conditions(self) -> None:
         """Computes the boundary conditions for the adjoint systems."""
-
         if self.state_adjoint_equal_spaces:
             self.bcs_list_ad = [
                 [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
@@ -271,7 +268,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_scalar_tracking_forms(self) -> None:
         """Compute the part arising due to scalar_tracking_terms."""
-
         if self.use_scalar_tracking:
             for i in range(self.state_dim):
                 for j in range(self.no_scalar_tracking_terms):
@@ -290,7 +286,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_min_max_forms(self) -> None:
         """Compute the part arising due to min_max_terms."""
-
         if self.use_min_max_terms:
             for i in range(self.state_dim):
                 for j in range(self.no_min_max_terms):
@@ -322,7 +317,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
-
         self.adjoint_eq_forms = [
             fenics.derivative(
                 self.lagrangian_form,
@@ -368,7 +362,6 @@ class FormHandler(abc.ABC):
         Returns:
             The scalar product of a and b.
         """
-
         pass
 
     def restrict_to_inactive_set(
@@ -386,7 +379,6 @@ class FormHandler(abc.ABC):
         Returns:
             The result of the restriction (overrides input b)
         """
-
         for j in range(len(self.gradient)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
                 b[j].vector().vec().aypx(0.0, a[j].vector().vec())
@@ -408,7 +400,6 @@ class FormHandler(abc.ABC):
         Returns:
             The result of the restriction (overrides input b)
         """
-
         for j in range(len(self.gradient)):
             b[j].vector().vec().set(0.0)
 
@@ -416,15 +407,14 @@ class FormHandler(abc.ABC):
 
     def compute_active_sets(self) -> None:
         """Computes the active set for problems with box constraints."""
-
         pass
 
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
-
         pass
 
     def project_to_admissible_set(
         self, a: List[fenics.Function]
     ) -> List[fenics.Function]:
+        """Projects a function ``a`` onto the admissible set."""
         pass

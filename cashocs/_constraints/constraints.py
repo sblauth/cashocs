@@ -39,7 +39,8 @@ class Constraint(abc.ABC):
         variable_function: Union[ufl.Form, ufl.core.expr.Expr],
         measure: Optional[fenics.Measure] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
@@ -47,7 +48,6 @@ class Constraint(abc.ABC):
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
         """
-
         self.variable_function = variable_function
         self.measure = measure
 
@@ -69,7 +69,6 @@ class Constraint(abc.ABC):
         Returns:
             The computed violation
         """
-
         pass
 
 
@@ -82,7 +81,8 @@ class EqualityConstraint(Constraint):
         target: float,
         measure: Optional[fenics.Measure] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
@@ -91,7 +91,6 @@ class EqualityConstraint(Constraint):
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
         """
-
         super().__init__(variable_function, measure=measure)
         self.target = target
 
@@ -118,7 +117,6 @@ class EqualityConstraint(Constraint):
         Returns:
             The computed violation
         """
-
         if self.is_integral_constraint:
             return np.abs(fenics.assemble(self.variable_function) - self.target)
         elif self.is_pointwise_constraint:
@@ -140,7 +138,8 @@ class InequalityConstraint(Constraint):
         upper_bound: Optional[Union[float, fenics.Function]] = None,
         measure: Optional[fenics.Measure] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             variable_function: Either a UFL Form (when we have a scalar / integral
                 constraint) or an ufl expression (when we have a pointwise constraint),
@@ -150,7 +149,6 @@ class InequalityConstraint(Constraint):
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
         """
-
         super().__init__(variable_function, measure=measure)
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -215,7 +213,6 @@ class InequalityConstraint(Constraint):
         Returns:
             The computed violation
         """
-
         violation = 0.0
         if self.is_integral_constraint:
             min_max_integral = fenics.assemble(self.min_max_term["integrand"])

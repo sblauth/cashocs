@@ -45,11 +45,11 @@ class ControlFormHandler(form_handler.FormHandler):
     def __init__(
         self, optimization_problem: optimal_control.OptimalControlProblem
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimal control problem
         """
-
         super().__init__(optimization_problem)
 
         # Initialize the attributes from the arguments
@@ -140,7 +140,6 @@ class ControlFormHandler(form_handler.FormHandler):
         Returns:
             The value of the scalar product.
         """
-
         result = 0.0
 
         for i in range(self.control_dim):
@@ -155,7 +154,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def compute_active_sets(self) -> None:
         """Computes the indices corresponding to active and inactive sets."""
-
         self.idx_active_lower = []
         self.idx_active_upper = []
         self.idx_active = []
@@ -211,7 +209,6 @@ class ControlFormHandler(form_handler.FormHandler):
         Returns:
             The result of the projection (overwrites input b).
         """
-
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
@@ -241,7 +238,6 @@ class ControlFormHandler(form_handler.FormHandler):
             The result of the projection of ``a`` onto the inactive set (overwrites
             input ``b``).
         """
-
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
@@ -271,7 +267,6 @@ class ControlFormHandler(form_handler.FormHandler):
         Returns:
             The result of the projection (overwrites input ``a``)
         """
-
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 a[j].vector().vec().pointwiseMin(
@@ -285,7 +280,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
-
         self.gradient_forms_rhs = [
             fenics.derivative(
                 self.lagrangian_form,
@@ -342,7 +336,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_sensitivity_equations(self) -> None:
         """Calculates the forms for the (forward) sensitivity equations."""
-
         # Use replace -> derivative to speed up the computations
         self.sensitivity_eqs_temp = [
             ufl.replace(
@@ -415,7 +408,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
-
         self.L_y = [
             fenics.derivative(
                 self.lagrangian_form,
@@ -435,7 +427,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_second_order_lagrangian_derivatives(self) -> None:
         """Compute the second order derivatives of the Lagrangian w.r.t. y and u."""
-
         self.L_yy = [
             [
                 fenics.derivative(self.L_y[i], self.states[j], self.states_prime[j])
@@ -471,7 +462,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_adjoint_sensitivity_equations(self) -> None:
         """Computes the adjoint sensitivity equations for the Newton method."""
-
         # Use replace -> derivative for faster computations
         self.adjoint_sensitivity_eqs_diag_temp = [
             ufl.replace(
@@ -544,7 +534,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_newton_forms(self) -> None:
         """Calculates the needed forms for the truncated Newton method."""
-
         if self.use_scalar_tracking or self.use_min_max_terms:
             raise _exceptions.InputError(
                 "cashocs._forms.ShapeFormHandler",

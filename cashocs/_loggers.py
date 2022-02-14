@@ -48,12 +48,10 @@ class ColorFormatter(logging.Formatter):
 
     def __init__(self, *args, **kwargs) -> None:
         """See base class."""
-
         super().__init__(*args, **kwargs)
 
     def format(self, record):
         """See base class."""
-
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
 
@@ -107,7 +105,6 @@ def set_log_level(level: int) -> None:
         or ``CRITICAL``.
 
     """
-
     _cashocs_logger.setLevel(level)
 
 
@@ -117,7 +114,6 @@ def debug(message: str) -> None:
     Args:
         message: The message to be issued.
     """
-
     _cashocs_logger.debug(message)
 
 
@@ -127,7 +123,6 @@ def info(message: str) -> None:
     Args:
         message: The message to be issued.
     """
-
     _cashocs_logger.info(message)
 
 
@@ -137,7 +132,6 @@ def warning(message: str) -> None:
     Args:
         message: The message to be issued.
     """
-
     _cashocs_logger.warning(message)
 
 
@@ -147,7 +141,6 @@ def error(message: str) -> None:
     Args:
         message: The message to be issued.
     """
-
     _cashocs_logger.error(message)
 
 
@@ -157,5 +150,4 @@ def critical(message: str) -> None:
     Args:
         message: The message to be issued.
     """
-
     _cashocs_logger.critical(message)

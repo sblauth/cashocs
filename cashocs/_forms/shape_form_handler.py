@@ -50,11 +50,11 @@ class ShapeFormHandler(form_handler.FormHandler):
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding shape optimization problem.
         """
-
         super().__init__(optimization_problem)
 
         self.has_cashocs_remesh_flag = optimization_problem.has_cashocs_remesh_flag
@@ -165,7 +165,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _compute_scalar_tracking_shape_derivative(self) -> None:
         """Calculates the shape derivative of scalar_tracking_forms."""
-
         if self.use_scalar_tracking:
             for j in range(self.no_scalar_tracking_terms):
                 self.shape_derivative += fenics.derivative(
@@ -181,7 +180,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _compute_min_max_shape_derivative(self) -> None:
         """Calculates the shape derivative of min_max_terms."""
-
         if self.use_min_max_terms:
             for j in range(self.no_min_max_terms):
                 if self.min_max_lower_bounds[j] is not None:
@@ -209,7 +207,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     # noinspection PyUnresolvedReferences
     def _add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
         """Adds pullbacks for scalar_tracking_forms."""
-
         if self.use_scalar_tracking:
             for j in range(self.no_scalar_tracking_terms):
                 self.material_derivative += fenics.derivative(
@@ -226,7 +223,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     # noinspection PyUnresolvedReferences
     def _add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
         """Adds pullbacks for min_max_terms."""
-
         if self.use_min_max_terms:
             for j in range(self.no_min_max_terms):
                 if self.min_max_lower_bounds[j] is not None:
@@ -254,7 +250,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     # noinspection PyUnresolvedReferences
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables."""
-
         if (
             coeff.id() not in self.state_adjoint_ids
             and not coeff.ufl_element().family() == "Real"
@@ -263,7 +258,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _parse_pull_back_coefficients(self) -> None:
         """Parses the coefficients which are available for adding pullbacks."""
-
         self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
             coeff.id() for coeff in self.adjoints
         ]
@@ -293,7 +287,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _add_pull_backs(self) -> None:
         """Add pullbacks to the shape derivative."""
-
         if self.use_pull_back:
             self._parse_pull_back_coefficients()
 
@@ -321,7 +314,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         act on state and adjoint variables, else the results are incorrect.
         A corresponding warning whenever this could be the case is issued.
         """
-
         # Shape derivative of Lagrangian w/o regularization and pullbacks
         self.shape_derivative = fenics.derivative(
             self.lagrangian_form,
@@ -338,7 +330,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _compute_shape_gradient_forms(self) -> None:
         """Calculates the necessary left-hand-sides for the shape gradient problem."""
-
         self.shape_bdry_def = self.config.getlist("ShapeGradient", "shape_bdry_def")
         self.shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
 
@@ -438,7 +429,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _setup_mu_computation(self) -> None:
         """Sets up the computation of the elasticity parameter mu."""
-
         if not self.use_distance_mu:
             self.mu_def = self.config.getfloat("ShapeGradient", "mu_def")
             self.mu_fix = self.config.getfloat("ShapeGradient", "mu_fix")
@@ -530,7 +520,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
         PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
         """
-
         if self.shape_scalar_product is None:
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
@@ -570,7 +559,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _project_scalar_product(self) -> None:
         """Ensures, that only free dimensions can be deformed."""
-
         if self.use_fixed_dimensions:
 
             copy_mat = self.fe_scalar_product_matrix.copy()
@@ -588,7 +576,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         Updates the left-hand-side of the linear elasticity equations
         (needed when the geometry changes).
         """
-
         self._compute_mu_elas()
         if self.update_inhomogeneous:
             self.volumes.vector().vec().aypx(
@@ -615,7 +602,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         Returns:
             The scalar product of a and b.
         """
-
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and not self.uses_custom_scalar_product
@@ -638,7 +624,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _compute_p_laplacian_forms(self) -> None:
         """Computes the weak forms for the p-Laplace equations."""
-
         if self.config.getboolean("ShapeGradient", "use_p_laplacian"):
             p = self.config.getint("ShapeGradient", "p_laplacian_power")
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
