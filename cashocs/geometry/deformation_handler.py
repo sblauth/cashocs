@@ -40,11 +40,11 @@ class DeformationHandler:
     """
 
     def __init__(self, mesh: fenics.Mesh) -> None:
-        """
+        """Initializes self.
+
         Args:
             mesh: The fenics mesh which is to be deformed.
         """
-
         self.mesh = mesh
         self.dx = measure._NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
@@ -68,7 +68,6 @@ class DeformationHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-
         self.options_prior = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -111,7 +110,6 @@ class DeformationHandler:
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
         """
-
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
@@ -140,7 +138,6 @@ class DeformationHandler:
             fenics itself does not check whether the used mesh is a valid finite
             element mesh, so this check has to be done manually.
         """
-
         self_intersections = False
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
@@ -160,7 +157,6 @@ class DeformationHandler:
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
         """
-
         self.mesh.coordinates()[:, :] = self.old_coordinates
         del self.old_coordinates
         self.bbtree.build(self.mesh)
@@ -188,7 +184,6 @@ class DeformationHandler:
         Returns:
             ``True`` if the mesh movement was successful, ``False`` otherwise.
         """
-
         if isinstance(transformation, np.ndarray):
             if not transformation.shape == self.coordinates.shape:
                 raise _exceptions.CashocsException(
@@ -232,7 +227,6 @@ class DeformationHandler:
         Returns:
             The deformation vector field.
         """
-
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
         dof_deformation = fenics.Function(self.VCG)
         dof_deformation.vector()[:] = dof_vector
@@ -248,7 +242,6 @@ class DeformationHandler:
         Returns:
             The array which can be used to deform the mesh coordinates.
         """
-
         if not (
             dof_deformation.ufl_element().family() == "Lagrange"
             and dof_deformation.ufl_element().degree() == 1
@@ -272,7 +265,6 @@ class DeformationHandler:
         Returns:
             ``True`` if the assignment was possible, ``False`` if not.
         """
-
         self.old_coordinates = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
@@ -326,6 +318,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     _cpp_object = fenics.compile_cpp_code(_cpp_code)
 
     def __init__(self) -> None:
+        """Initializes self."""
         pass
 
     @classmethod
@@ -339,5 +332,4 @@ PYBIND11_MODULE(SIGNATURE, m)
             An array of cell indices, where ``array[i]`` contains the indices of all
             cells that vertex ``i`` collides with.
         """
-
         return cls._cpp_object.compute_collisions(mesh)

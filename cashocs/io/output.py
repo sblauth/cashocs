@@ -35,11 +35,11 @@ class OutputManager:
     """Class handling all the output."""
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         self.config = optimization_problem.config
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
@@ -89,7 +89,6 @@ class OutputManager:
         Args:
             solver: The optimization algorithm.
         """
-
         self.history_manager.print_to_console(solver)
         self.history_manager.print_to_file(solver)
 
@@ -105,7 +104,6 @@ class OutputManager:
         Args:
             solver: The optimization algorithm.
         """
-
         self.history_manager.print_console_summary(solver)
         self.history_manager.print_file_summary(solver)
 
@@ -121,5 +119,4 @@ class OutputManager:
         Args:
             remesh_counter: Number of times remeshing has been performed.
         """
-
         self.pvd_file_manager.set_remesh(remesh_counter)

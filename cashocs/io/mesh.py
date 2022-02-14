@@ -28,7 +28,17 @@ import numpy as np
 def create_point_representation(
     dim: int, points: np.ndarray, idcs: np.ndarray, subwrite_counter: int
 ) -> str:
+    """Creates the representation of the mesh coordinates for gmsh .msh file.
 
+    Args:
+        dim: Dimension of the mesh.
+        points: The array of the mesh coordinates.
+        idcs: The list of indices of the points for the current element.
+        subwrite_counter: A counter for looping over the indices.
+
+    Returns:
+        A string representation of the mesh coordinates.
+    """
     mod_line = ""
     if dim == 2:
         mod_line = (
@@ -64,7 +74,6 @@ def write_out_mesh(
         The method only works with GMSH 4.1 file format. Others might also work, but
         this is not tested or ensured in any way.
     """
-
     dim = mesh.geometric_dimension()
 
     if not pathlib.Path(out_msh_file).parent.is_dir():

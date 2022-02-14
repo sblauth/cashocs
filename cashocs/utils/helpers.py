@@ -37,7 +37,6 @@ def enlist(arg: Union[Any, List]) -> List:
     Returns:
         The object wrapped into a list.
     """
-
     if isinstance(arg, list):
         return arg
     else:
@@ -57,7 +56,6 @@ def _check_and_enlist_bcs(
     Returns:
         The wrapped list of DirichletBC objects
     """
-
     if isinstance(bcs_list, fenics.DirichletBC):
         return [[bcs_list]]
     elif isinstance(bcs_list, list) and len(bcs_list) == 0:
@@ -88,7 +86,6 @@ def _check_and_enlist_control_constraints(
     Returns:
         The wrapped list of control constraints.
     """
-
     if isinstance(control_constraints, list) and isinstance(
         control_constraints[0], list
     ):
@@ -116,7 +113,6 @@ def _check_and_enlist_ksp_options(
     Returns:
         The wrapped list of ksp options.
     """
-
     if (
         isinstance(ksp_options, list)
         and isinstance(ksp_options[0], list)
@@ -146,7 +142,6 @@ def _parse_remesh() -> Tuple[bool, str]:
         which indicates whether remeshing is used, and temp_dir is the path to the
         directory containing the temporary files for reinitialization.
     """
-
     parser = argparse.ArgumentParser(description="test argument parser")
     parser.add_argument(
         "--temp_dir", type=str, help="Location of the temp directory for remeshing"
@@ -179,7 +174,6 @@ def _optimization_algorithm_configuration(
     Returns:
         Internal name of the algorithms.
     """
-
     if algorithm is not None:
         overwrite = True
     else:

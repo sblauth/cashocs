@@ -55,7 +55,44 @@ class _NewtonSolver:
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
     ) -> None:
+        r"""Initializes self.
 
+        Args:
+            F: The variational form of the nonlinear problem to be solved by Newton's
+                method.
+            u: The sought solution / initial guess. It is not assumed that the initial
+                guess satisfies the Dirichlet boundary conditions, they are applied
+                automatically. The method overwrites / updates this Function.
+            bcs: A list of DirichletBCs for the nonlinear variational problem.
+            dF: The Jacobian of F, used for the Newton method. Default is None, and in
+                this case the Jacobian is computed automatically with AD.
+            shift: A shift term, if the right-hand side of the nonlinear problem is not
+                zero, but shift.
+            rtol: Relative tolerance of the solver if convergence_type is either
+                ``'combined'`` or ``'rel'`` (default is ``rtol = 1e-10``).
+            atol: Absolute tolerance of the solver if convergence_type is either
+                ``'combined'`` or ``'abs'`` (default is ``atol = 1e-10``).
+            max_iter: Maximum number of iterations carried out by the method (default is
+                ``max_iter = 50``).
+            convergence_type: Determines the type of stopping criterion that is used.
+            norm_type: Determines which norm is used in the stopping criterion.
+            damped: If ``True``, then a damping strategy is used. If ``False``, the
+                classical Newton-Raphson iteration (without damping) is used (default is
+                ``True``).
+            inexact: A boolean flag which indicates, whether an inexact Newton\'s method
+                is used.
+            verbose: If ``True``, prints status of the iteration to the console (default
+                is ``True``).
+            ksp: The PETSc ksp object used to solve the inner (linear) problem if this
+                is ``None`` it uses the direct solver MUMPS (default is ``None``).
+            ksp_options: The list of options for the linear solver.
+            A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+                sub-problem.
+            b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
+                sub-problem.
+            is_linear: A boolean flag, which indicates whether the problem is actually
+                linear.
+        """
         self.F = F
         self.u = u
         if isinstance(bcs, fenics.DirichletBC):
@@ -136,7 +173,7 @@ class _NewtonSolver:
         self.tol = 1.0
 
     def _print_output(self) -> None:
-
+        """Prints the output of the current iteration to the console."""
         if self.verbose:
             print(
                 f"Newton Iteration {self.iterations:2d} - "
@@ -145,11 +182,13 @@ class _NewtonSolver:
             )
 
     def _assemble_matrix(self) -> None:
+        """Assembles the matrix for solving the linear problem."""
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
         self.A = fenics.as_backend_type(self.A_fenics).mat()
 
     def _compute_eta_inexact(self) -> None:
+        """Computes the parameter ``eta`` for the inexact Newton method."""
         if self.inexact:
             if self.iterations == 1:
                 self.eta = self.eta_max
@@ -172,6 +211,11 @@ class _NewtonSolver:
             self.eta = self.rtol * 1e-1
 
     def solve(self) -> fenics.Function:
+        r"""Solves the (nonlinear) problem with Newton\'s method.
+
+        Returns:
+            A solution of the nonlinear problem.
+        """
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
@@ -234,6 +278,7 @@ class _NewtonSolver:
         return self.u
 
     def _check_for_divergence(self) -> None:
+        """Checks, whether the Newton solver diverged."""
         if self.breakdown:
             raise _exceptions.NotConvergedError(
                 "Newton solver", "Stepsize for increment too low."
@@ -246,6 +291,7 @@ class _NewtonSolver:
             )
 
     def _compute_residual(self) -> None:
+        """Computes the residual of the nonlinear system."""
         self.assembler.assemble(self.residual)
         if self.shift is not None:
             self.assembler_shift.assemble(self.residual_shift)
@@ -254,6 +300,11 @@ class _NewtonSolver:
         self.b = fenics.as_backend_type(self.residual).vec()
 
     def _compute_convergence_tolerance(self) -> float:
+        """Computes the tolerance for the Newton solver.
+
+        Returns:
+            The computed tolerance.
+        """
         if self.convergence_type.casefold() == "abs":
             return self.atol
         elif self.convergence_type.casefold() == "rel":
@@ -262,6 +313,7 @@ class _NewtonSolver:
             return self.rtol * self.res_0 + self.atol
 
     def _backtracking_line_search(self) -> None:
+        """Performs a backtracking line search for the damped Newton method."""
         while True:
             self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
             self._compute_residual()
@@ -310,6 +362,69 @@ def newton_solve(
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
 ) -> fenics.Function:
+    r"""Solves a nonlinear problem with Newton\'s method.
+    
+    Args:
+        F: The variational form of the nonlinear problem to be solved by Newton's
+            method.
+        u: The sought solution / initial guess. It is not assumed that the initial guess
+            satisfies the Dirichlet boundary conditions, they are applied automatically.
+            The method overwrites / updates this Function.
+        bcs: A list of DirichletBCs for the nonlinear variational problem.
+        dF: The Jacobian of F, used for the Newton method. Default is None, and in this
+            case the Jacobian is computed automatically with AD.
+        shift: A shift term, if the right-hand side of the nonlinear problem is not
+            zero, but shift.
+        rtol: Relative tolerance of the solver if convergence_type is either
+            ``'combined'`` or ``'rel'`` (default is ``rtol = 1e-10``).
+        atol: Absolute tolerance of the solver if convergence_type is either
+            ``'combined'`` or ``'abs'`` (default is ``atol = 1e-10``).
+        max_iter: Maximum number of iterations carried out by the method (default is
+            ``max_iter = 50``).
+        convergence_type: Determines the type of stopping criterion that is used.
+        norm_type: Determines which norm is used in the stopping criterion.
+        damped: If ``True``, then a damping strategy is used. If ``False``, the
+            classical Newton-Raphson iteration (without damping) is used (default is
+            ``True``).
+        verbose: If ``True``, prints status of the iteration to the console (default is
+            ``True``).
+        ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
+            ``None`` it uses the direct solver MUMPS (default is ``None``).
+        ksp_options: The list of options for the linear solver.
+        A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+            sub-problem.
+        b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
+            sub-problem.
+        is_linear: A boolean flag, which indicates whether the problem is actually
+            linear.
+
+    Returns:
+        The solution of the nonlinear variational problem, if converged. This overwrites
+        the input function u.
+
+    Examples:
+        Consider the problem
+
+        .. math::
+            \begin{alignedat}{2}
+            - \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
+            u &= 0 \quad &&\text{ on } \Gamma.
+            \end{alignedat}
+
+        This is solved with the code ::
+
+            from fenics import *
+            import cashocs
+
+            mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
+            V = FunctionSpace(mesh, 'CG', 1)
+
+            u = Function(V)
+            v = TestFunction(V)
+            F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
+            bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
+            cashocs.newton_solve(F, u, bcs)
+    """
     solver = _NewtonSolver(
         F,
         u,
@@ -409,7 +524,6 @@ def damped_newton_solve(
     .. deprecated:: 1.5.0
         This is replaced by cashocs.newton_solve and will be removed in the future.
     """
-
     _loggers.warning(
         "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced "
         "by cashocs.newton_solve and will be removed in the future."

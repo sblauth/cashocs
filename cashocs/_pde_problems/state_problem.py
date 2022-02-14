@@ -41,14 +41,14 @@ class StateProblem(pde_problem.PDEProblem):
         initial_guess: List[fenics.Function],
         temp_dict: Optional[Dict] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler of the optimization problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
             temp_dict: A dict used for reinitialization when remeshing is performed.
         """
-
         super().__init__(form_handler)
 
         self.initial_guess = initial_guess
@@ -98,7 +98,6 @@ class StateProblem(pde_problem.PDEProblem):
 
     def _update_scalar_tracking_terms(self) -> None:
         """Updates the scalar_tracking_forms with current function values."""
-
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(
@@ -110,7 +109,6 @@ class StateProblem(pde_problem.PDEProblem):
 
     def _update_min_max_terms(self) -> None:
         """Updates the min_max_terms with current function values."""
-
         if self.form_handler.use_min_max_terms:
             for j in range(self.form_handler.no_min_max_terms):
                 min_max_integral_value = fenics.assemble(
@@ -126,7 +124,6 @@ class StateProblem(pde_problem.PDEProblem):
         Returns:
             The solution of the state system.
         """
-
         if not self.has_solution:
 
             self.form_handler._pre_hook()

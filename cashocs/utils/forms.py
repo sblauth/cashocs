@@ -49,7 +49,6 @@ def summation(
         incompatible with FEniCS objects, so this function should be used for
         the latter.
     """
-
     if len(x) == 0:
         y = fenics.Constant(0.0)
         _loggers.warning("Empty list handed to summation, returning 0.")
@@ -76,7 +75,6 @@ def multiplication(
     Returns:
         The result of the multiplication.
     """
-
     if len(x) == 0:
         y = fenics.Constant(1.0)
         _loggers.warning("Empty list handed to multiplication, returning 1.")
@@ -102,7 +100,6 @@ def _max(
     Returns:
         The maximum of a and b.
     """
-
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
@@ -119,7 +116,6 @@ def _min(
     Returns:
         The minimum of a and b.
     """
-
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
@@ -133,7 +129,7 @@ def moreau_yosida_regularization(
     shift_lower: Optional[Union[float, fenics.Function]] = None,
     shift_upper: Optional[Union[float, fenics.Function]] = None,
 ) -> ufl.Form:
-    r"""Implements a Moreau-Yosida regularization of an inequality constraint
+    r"""Implements a Moreau-Yosida regularization of an inequality constraint.
 
     The general form of the inequality is of the form ::
 
@@ -165,7 +161,6 @@ def moreau_yosida_regularization(
         The ufl form of the Moreau-Yosida regularization, to be used in the cost
         functional.
     """
-
     reg_lower = None
     reg_upper = None
 
@@ -259,7 +254,6 @@ def create_dirichlet_bcs(
             bcs = cashocs.create_dirichlet_bcs(V, fenics.Constant(0), boundaries,
                 [1,2,3,4])
     """
-
     mesh = function_space.mesh()
 
     if not isinstance(idcs, list):
@@ -329,7 +323,6 @@ def create_bcs_list(
         This is replaced by cashocs.create_dirichlet_bcs and will be removed in the
         future.
     """
-
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by "
         "cashocs.create_dirichlet_bcs and will be removed in the future."

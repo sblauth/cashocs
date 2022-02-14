@@ -42,7 +42,8 @@ class AdjointProblem(pde_problem.PDEProblem):
         state_problem: sp.StateProblem,
         temp_dict: Dict = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object used to get the point where we
@@ -50,7 +51,6 @@ class AdjointProblem(pde_problem.PDEProblem):
             temp_dict: A dictionary used for reinitializations when remeshing is
                 performed.
         """
-
         super().__init__(form_handler)
 
         self.state_problem = state_problem
@@ -92,7 +92,6 @@ class AdjointProblem(pde_problem.PDEProblem):
         Returns:
             The list of adjoint variables.
         """
-
         self.state_problem.solve()
 
         if not self.has_solution:

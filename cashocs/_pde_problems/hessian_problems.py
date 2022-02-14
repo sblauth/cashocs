@@ -48,13 +48,13 @@ class BaseHessianProblem(abc.ABC):
         form_handler: _forms.ControlFormHandler,
         gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object for the optimization problem.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
         """
-
         self.form_handler = form_handler
         self.gradient_problem = gradient_problem
 
@@ -159,7 +159,7 @@ class BaseHessianProblem(abc.ABC):
     def hessian_application(
         self, h: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
-        r"""Computes the application of the Hessian to some element
+        r"""Computes the application of the Hessian to some element.
 
         This is needed in the truncated Newton method where we solve the system
 
@@ -171,7 +171,6 @@ class BaseHessianProblem(abc.ABC):
             h: A function to which we want to apply the Hessian to.
             out: A list of functions into which the result is saved.
         """
-
         for i in range(self.control_dim):
             self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
 
@@ -268,7 +267,6 @@ class BaseHessianProblem(abc.ABC):
         Returns:
             A list containing the Newton increment.
         """
-
         self.gradient_problem.solve()
         self.form_handler.compute_active_sets()
 
@@ -289,7 +287,6 @@ class BaseHessianProblem(abc.ABC):
         Args:
             idx_active: The list of active indices
         """
-
         pass
 
     @abc.abstractmethod
@@ -299,7 +296,6 @@ class BaseHessianProblem(abc.ABC):
         Args:
             idx_active: The list of active indices
         """
-
         pass
 
 
@@ -311,13 +307,13 @@ class HessianProblem(BaseHessianProblem):
         form_handler: _forms.ControlFormHandler,
         gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object for the optimization problem.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
         """
-
         super().__init__(form_handler, gradient_problem)
 
     def reduced_hessian_application(
@@ -331,7 +327,6 @@ class HessianProblem(BaseHessianProblem):
             h: The direction, onto which the reduced Hessian is applied.
             out: The output of the application of the (linear) operator.
         """
-
         for j in range(self.control_dim):
             out[j].vector().vec().set(0.0)
 
@@ -360,7 +355,6 @@ class HessianProblem(BaseHessianProblem):
         Returns:
             A list containing the Newton increment.
         """
-
         if idx_active is not None:
             raise _exceptions.CashocsException(
                 "Must not pass idx_active to HessianProblem."
@@ -374,7 +368,6 @@ class HessianProblem(BaseHessianProblem):
         Args:
             idx_active: The list of active indices
         """
-
         for j in range(self.control_dim):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
@@ -420,7 +413,6 @@ class HessianProblem(BaseHessianProblem):
         Args:
             idx_active: The list of active indices.
         """
-
         for j in range(self.control_dim):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())

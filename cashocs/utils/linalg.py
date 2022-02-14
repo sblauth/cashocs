@@ -39,7 +39,6 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
         A tuple (lhs_forms, rhs_forms), where lhs_forms is the list of forms of the
         left-hand sides, and rhs_forms is the list of forms of the right-hand side.
     """
-
     lhs_list = []
     rhs_list = []
     for i in range(len(forms)):
@@ -100,7 +99,6 @@ def _assemble_petsc_system(
         one to the diagonal in case the corresponding row only consists of zeros. This
         allows for well-posed problems on the boundary etc.
     """
-
     if A_tensor is None:
         # noinspection PyPep8Naming
         A_tensor = fenics.PETScMatrix()
@@ -138,7 +136,6 @@ def _setup_petsc_options(
         ksp_options: A list of command line options that specify the iterative solver
             from PETSc.
     """
-
     opts = fenics.PETScOptions
 
     for i in range(len(ksps)):
@@ -186,7 +183,6 @@ def _solve_linear_problem(
     Returns:
         The solution vector.
     """
-
     if ksp is None:
         ksp = PETSc.KSP().create()
         options = [
@@ -268,7 +264,6 @@ def _assemble_and_solve_linear(
     Returns:
         A PETSc vector containing the solution x.
     """
-
     # noinspection PyPep8Naming
     A_matrix, b_vector = _assemble_petsc_system(
         lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
@@ -317,12 +312,12 @@ class Interpolator:
     def __init__(
         self, origin_space: fenics.FunctionSpace, target_space: fenics.FunctionSpace
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             origin_space: The function space whose objects shall be interpolated.
             target_space: The space into which they shall be interpolated.
         """
-
         if not (
             origin_space.ufl_element().family() == "Lagrange"
             or (
@@ -369,7 +364,6 @@ class Interpolator:
         Returns:
             The result of the interpolation.
         """
-
         v = fenics.Function(self.target_space)
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]
 

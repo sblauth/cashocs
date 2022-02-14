@@ -41,13 +41,11 @@ class Mesh(fenics.Mesh):
 
     def __init__(self, *args, **kwargs) -> None:
         """See base class."""
-
         super().__init__(*args, **kwargs)
         self._config_flag = False
 
     def _set_config_flag(self) -> None:
         """Indicates, that the mesh has been loaded via a config file."""
-
         self._config_flag = True
 
 
@@ -60,11 +58,9 @@ def _check_imported_mesh_quality(
 
     Args:
         input_arg: The argument used to import the mesh.
-
-    Returns:
-
+        mesh: The finite element mesh whose quality shall be checked.
+        cashocs_remesh_flag: A flag, indicating whether remeshing is active.
     """
-
     if isinstance(input_arg, configparser.ConfigParser):
         mesh_quality_tol_lower = input_arg.getfloat("MeshQuality", "tol_lower")
         mesh_quality_tol_upper = input_arg.getfloat("MeshQuality", "tol_upper")
@@ -178,7 +174,6 @@ def import_mesh(
 
         and both can be used interchangeably.
     """
-
     start_time = time.time()
     _loggers.info("Importing mesh.")
 
@@ -318,7 +313,6 @@ def regular_mesh(
         function for the boundaries, dx is a volume measure, ds is a surface measure,
         and dS is a measure for the interior facets.
     """
-
     if not length_x > 0.0:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "length_x", "length_x needs to be positive"
@@ -469,7 +463,6 @@ def regular_box_mesh(
         function for the boundaries, dx is a volume measure, ds is a surface measure,
         and dS is a measure for the interior facets.
     """
-
     n = int(n)
 
     if not start_x < end_x:

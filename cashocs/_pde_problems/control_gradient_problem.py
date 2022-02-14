@@ -46,13 +46,13 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object of the optimization problem.
             state_problem: The StateProblem object used to solve the state equations.
             adjoint_problem: The AdjointProblem used to solve the adjoint equations.
         """
-
         super().__init__(form_handler)
 
         self.form_handler: _forms.ControlFormHandler
@@ -107,7 +107,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         Returns:
             The list containing the (components of the) gradient of the cost functional.
         """
-
         self.state_problem.solve()
         self.adjoint_problem.solve()
 

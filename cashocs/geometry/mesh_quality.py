@@ -49,7 +49,6 @@ def compute_mesh_quality(
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
         and 1 the best possible quality.
     """
-
     min_functions = {
         "skewness": MeshQuality.min_skewness,
         "maximum_angle": MeshQuality.min_maximum_angle,
@@ -272,6 +271,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     _quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
 
     def __init__(self) -> None:
+        """Initializes self."""
         pass
 
     @classmethod
@@ -302,7 +302,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The minimum skewness of the mesh.
         """
-
         return np.min(cls._quality_object.skewness(mesh).array())
 
     @classmethod
@@ -333,7 +332,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The average skewness of the mesh.
         """
-
         return np.average(cls._quality_object.skewness(mesh).array())
 
     @classmethod
@@ -358,7 +356,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The minimum value of the maximum angle quality measure.
         """
-
         return np.min(cls._quality_object.maximum_angle(mesh).array())
 
     @classmethod
@@ -383,7 +380,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The average quality, based on the maximum angle measure.
         """
-
         return np.average(cls._quality_object.maximum_angle(mesh).array())
 
     @staticmethod
@@ -405,7 +401,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The minimal radius ratio of the mesh.
         """
-
         # noinspection PyArgumentList
         return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
 
@@ -428,7 +423,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The average radius ratio of the mesh.
         """
-
         # noinspection PyArgumentList
         return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
 
@@ -446,7 +440,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The minimal condition number quality measure.
         """
-
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
@@ -502,7 +495,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             The average mesh quality based on the condition number.
         """
-
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)

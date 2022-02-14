@@ -32,11 +32,11 @@ class PDEProblem(abc.ABC):
     """Base class for a PDE problem."""
 
     def __init__(self, form_handler: _forms.FormHandler) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The form handler for the problem.
         """
-
         self.form_handler = form_handler
         self.config = form_handler.config
 
@@ -49,5 +49,4 @@ class PDEProblem(abc.ABC):
         Returns:
             The solution of the PDE.
         """
-
         pass

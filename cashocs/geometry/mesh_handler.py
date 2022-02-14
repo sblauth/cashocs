@@ -53,11 +53,11 @@ class _MeshHandler:
     """
 
     def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             shape_optimization_problem: The corresponding shape optimization problem.
         """
-
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
         self.mesh = self.form_handler.mesh
@@ -139,7 +139,6 @@ class _MeshHandler:
         Args:
             transformation: The transformation for the mesh, a vector CG1 Function.
         """
-
         if not (
             transformation.ufl_element().family() == "Lagrange"
             and transformation.ufl_element().degree() == 1
@@ -165,12 +164,10 @@ class _MeshHandler:
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
         """
-
         self.deformation_handler.revert_transformation()
 
     def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
-
         self.options_frobenius = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -224,7 +221,6 @@ class _MeshHandler:
         Returns:
             A guess for the number of "Armijo halvings" to get a better stepsize.
         """
-
         if self.angle_change == float("inf"):
             return 0
 
@@ -254,7 +250,6 @@ class _MeshHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-
         self.options_prior = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -297,7 +292,6 @@ class _MeshHandler:
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
         """
-
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
@@ -324,7 +318,6 @@ class _MeshHandler:
             input_mesh_file: Path to the mesh file used for generating the new .geo
                 file.
         """
-
         with open(self.remesh_geo_file, "w") as file:
             temp_name = os.path.split(input_mesh_file)[1]
 
@@ -356,7 +349,6 @@ class _MeshHandler:
         Args:
             mesh_file: Path to the Gmsh file, has to end in .msh.
         """
-
         temp_location = f"{mesh_file[:-4]}_temp.msh"
 
         with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
@@ -380,7 +372,6 @@ class _MeshHandler:
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file):
             subprocess.run(["rm", gmsh_file], check=True)
@@ -425,12 +416,11 @@ class _MeshHandler:
 
     @staticmethod
     def filter_sys_argv(temp_dir: str):  # pragma: no cover
-        """Filters the command line arguments for the cashocs remesh flag
+        """Filters the command line arguments for the cashocs remesh flag.
 
         Args:
             temp_dir: Path to directory for the temp files
         """
-
         arg_list = sys.argv.copy()
         idx_cashocs_remesh_flag = [
             i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
@@ -454,7 +444,6 @@ class _MeshHandler:
         Args:
               temp_dir: Path to the directory for temporary files.
         """
-
         if not self.config.getboolean("Debug", "restart"):
             os.execv(
                 sys.executable,
@@ -479,7 +468,6 @@ class _MeshHandler:
         Args:
             solver: The optimization algorithm used to solve the problem.
         """
-
         if self.do_remesh:
             self.remesh_counter += 1
             temp_file = (

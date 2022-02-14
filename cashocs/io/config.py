@@ -44,7 +44,6 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
         This is replaced by :py:func:`load_config <cashocs.load_config>`
         and will be removed in the future.
     """
-
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
         "and will be removed in the future."
@@ -65,7 +64,6 @@ def load_config(path: str) -> ConfigParser:
     Returns:
         The output config file, which includes the path to the .ini file.
     """
-
     return Config(path)
 
 
@@ -78,7 +76,6 @@ def _check_for_config_list(string: str) -> bool:
     Returns:
         ``True`` if the string is valid, ``False`` otherwise
     """
-
     result = False
 
     for char in string:
@@ -99,11 +96,11 @@ class Config(ConfigParser):
     """Class for handling the config in cashocs."""
 
     def __init__(self, config_file: Optional[str] = None) -> None:
-        """
+        """Initializes self.
+
         Args:
             config_file: Path to the config file.
         """
-
         super().__init__()
         self.config_errors = []
 
@@ -623,7 +620,18 @@ restart = False
         if config_file is not None:
             self.read(config_file)
 
-    def getlist(self, section, option, **kwargs):
+    def getlist(self, section: str, option: str, **kwargs) -> List:
+        """Extracts a list from a config file.
+
+        Args:
+            section: The section where the list is placed.
+            option: The option which contains the list.
+            **kwargs: A list of keyword arguments that get passed to
+                :py:meth:``self.get``
+
+        Returns:
+            The list which is specified in section ``section`` and key ``option``.
+        """
         if (
             self.config_scheme[section][option]["type"] == "list"
         ) and _check_for_config_list(self.get(section, option)):
@@ -637,7 +645,6 @@ restart = False
 
     def validate_config(self) -> None:
         """Validates the configuration file."""
-
         self._check_sections()
         self._check_keys()
 
@@ -646,7 +653,6 @@ restart = False
 
     def _check_sections(self) -> None:
         """Checks whether all sections are valid."""
-
         for section_name, section in self.items():
             if section_name not in self.config_scheme.keys():
                 self.config_errors.append(
@@ -655,7 +661,6 @@ restart = False
 
     def _check_keys(self) -> None:
         """Checks the keys of the sections."""
-
         for section_name, section in self.items():
             for key in section.keys():
                 if section_name in self.config_scheme.keys():
@@ -678,7 +683,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         key_type = self.config_scheme[section][key]["type"]
         try:
             if key_type.casefold() == "str":
@@ -705,7 +709,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         if (
             self.config_scheme[section][key]["type"].casefold() == "bool"
             and self[section][key].casefold() == "true"
@@ -726,7 +729,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         if "possible_options" in self.config_scheme[section][key].keys():
             if (
                 self[section][key].casefold()
@@ -745,7 +747,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         if "larger_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_than"]
@@ -764,7 +765,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         if "larger_equal_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_equal_than"]
@@ -783,7 +783,6 @@ restart = False
             section: The corresponding section
             key: The corresponding key
         """
-
         if "attributes" in self.config_scheme[section][key].keys():
             key_attributes = self.config_scheme[section][key]["attributes"]
             self._check_file_attribute(section, key, key_attributes)
@@ -802,7 +801,6 @@ restart = False
             key: The corresponding key
             key_attributes: The list of attributes for key.
         """
-
         if "file" in key_attributes:
             file = Path(self.get(section, key))
             if not file.is_file():
@@ -823,7 +821,6 @@ restart = False
             key: The corresponding key.
             extension: The file extension.
         """
-
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
@@ -841,7 +838,6 @@ restart = False
             key: The corresponding key
             key_attributes: The list of attributes for key.
         """
-
         if "non_negative" in key_attributes:
             if self.getfloat(section, key) < 0:
                 self.config_errors.append(
@@ -858,7 +854,6 @@ restart = False
             key: The corresponding key
             key_attributes: The list of attributes for key.
         """
-
         if "positive" in key_attributes:
             if self.getfloat(section, key) <= 0:
                 self.config_errors.append(
@@ -876,7 +871,6 @@ restart = False
             key: The corresponding key
             key_attributes: The list of attributes for key.
         """
-
         if "less_than_one" in key_attributes:
             if self.getfloat(section, key) >= 1:
                 self.config_errors.append(
@@ -894,7 +888,6 @@ restart = False
             key: The corresponding key
             key_attributes: The list of attributes for key.
         """
-
         if "larger_than_one" in key_attributes:
             if self.getfloat(section, key) <= 1:
                 self.config_errors.append(

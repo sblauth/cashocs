@@ -48,11 +48,11 @@ class _EmptyMeasure(ufl.Measure):
     """
 
     def __init__(self, measure: fenics.Measure) -> None:
-        """
+        """Initializes self.
+
         Args:
             measure: The underlying UFL measure.
         """
-
         super().__init__(measure.integral_type())
         self.measure = measure
 
@@ -66,7 +66,6 @@ class _EmptyMeasure(ufl.Measure):
         Returns:
             The resulting UFL form.
         """
-
         return fenics.Constant(0) * other * self.measure
 
 
@@ -99,7 +98,6 @@ def generate_measure(
             top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
             fenics.assemble(1*top_bottom_measure)
     """
-
     if len(idx) == 0:
         out_measure = _EmptyMeasure(measure)
 
@@ -125,7 +123,6 @@ class _NamedMeasure(ufl.Measure):
         physical_groups=None,
     ) -> None:
         """See base class."""
-
         super().__init__(
             integral_type,
             domain=domain,
@@ -149,7 +146,6 @@ class _NamedMeasure(ufl.Measure):
 
         This implementation also allows strings for subdomain id.
         """
-
         if isinstance(subdomain_id, int):
             return super().__call__(
                 subdomain_id=subdomain_id,

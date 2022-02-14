@@ -51,14 +51,14 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The ShapeFormHandler object corresponding to the shape
                 optimization problem.
             state_problem: The corresponding state problem.
             adjoint_problem: The corresponding adjoint problem.
         """
-
         super().__init__(form_handler)
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
@@ -124,7 +124,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             The function representing the shape gradient of the (reduced) cost
             functional.
         """
-
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
@@ -173,7 +172,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
 
 class _PLaplaceProjector:
-    """A class for computing the gradient deformation with a p-Laplace projection"""
+    """A class for computing the gradient deformation with a p-Laplace projection."""
 
     def __init__(
         self,
@@ -183,7 +182,8 @@ class _PLaplaceProjector:
         bcs_shape: List[fenics.DirichletBC],
         config: configparser.ConfigParser,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             gradient_problem: The shape gradient problem
             gradient: The fenics Function representing the gradient deformation
@@ -191,7 +191,6 @@ class _PLaplaceProjector:
             bcs_shape: The boundary conditions for computing the gradient deformation
             config: The config for the optimization problem
         """
-
         self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
         delta = config.getfloat("ShapeGradient", "damping_factor")
         eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
@@ -246,7 +245,6 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
-
         self.solution.vector().vec().set(0.0)
         for F in self.F_list:
             nonlinear_solvers.newton_solve(

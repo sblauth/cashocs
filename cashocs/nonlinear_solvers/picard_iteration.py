@@ -33,7 +33,6 @@ from cashocs.nonlinear_solvers import newton_solver
 
 def _setup_obj(obj: Any, dim: int) -> Union[List[None], Any]:
     """Returns a list of None if obj is None, else returns obj."""
-
     if obj is None:
         return [None] * dim
     else:
@@ -89,7 +88,6 @@ def picard_iteration(
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
     """
-
     F_list = utils.enlist(F_list)
     u_list = utils.enlist(u_list)
     bcs_list = utils._check_and_enlist_bcs(bcs_list)
