@@ -26,7 +26,7 @@ import fenics
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import types
     from cashocs._optimization import line_search as ls
 
 
@@ -34,7 +34,9 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
     """Nonlinear CG methods for PDE constrained optimization."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, line_search: ls.LineSearch
+        self,
+        optimization_problem: types.OptimizationProblem,
+        line_search: ls.LineSearch,
     ) -> None:
         """
         Args:

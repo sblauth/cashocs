@@ -28,8 +28,8 @@ from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    from cashocs import types
     from cashocs._optimization import optimization_algorithms
-    from cashocs._optimization import optimization_problem as op
 
 
 class ArmijoLineSearch(line_search.LineSearch):
@@ -37,7 +37,7 @@ class ArmijoLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
-        optimization_problem: op.OptimizationProblem,
+        optimization_problem: types.OptimizationProblem,
     ) -> None:
         """
         Args:
