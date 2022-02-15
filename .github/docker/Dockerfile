@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3:latest AS test-env
 
 RUN apt-get update --fix-missing \
-  && apt-get install -y libgl1-mesa-dev ffmpeg libsm6 libxext6 \
+  && apt-get install -y libgl1-mesa-dev ffmpeg libsm6 libxext6 curl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
