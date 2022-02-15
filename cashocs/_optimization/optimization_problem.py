@@ -75,7 +75,8 @@ class OptimizationProblem(abc.ABC):
         min_max_terms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
-        r"""
+        r"""Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -127,7 +128,6 @@ class OptimizationProblem(abc.ABC):
             boundary conditions ``bcs_list[i]`` and corresponding adjoint state
             ``adjoints[i]``.
         """
-
         self.has_cashocs_remesh_flag, self.temp_dir = utils._parse_remesh()
 
         self.state_forms = utils.enlist(state_forms)
@@ -183,7 +183,6 @@ class OptimizationProblem(abc.ABC):
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:
         """Ensures that the PDEs are solved again, and no cache is used."""
-
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
 
@@ -197,7 +196,28 @@ class OptimizationProblem(abc.ABC):
         min_max_terms: Dict,
         desired_weights: List[float],
     ) -> None:
+        """Initializes the optional input parameters.
 
+        Args:
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems.
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems.
+            scalar_tracking_forms: A list of dictionaries that define scalar tracking
+                type cost functionals, where an integral value should be brought to a
+                desired value. Each dict needs to have the keys ``'integrand'`` and
+                ``'tracking_goal'``.
+            min_max_terms: Additional terms for the cost functional, not be used
+                directly.
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration.
+        """
         if config is None:
             self.config = io.Config()
         else:
@@ -266,7 +286,6 @@ class OptimizationProblem(abc.ABC):
         This can be used for debugging purposes and to validate the solver.
         Updates and overwrites the user input for the state variables.
         """
-
         self.state_problem.solve()
 
     def compute_adjoint_variables(self) -> None:
@@ -277,7 +296,6 @@ class OptimizationProblem(abc.ABC):
         The solution of the corresponding state system needed to determine
         the adjoints is carried out automatically.
         """
-
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
@@ -298,7 +316,6 @@ class OptimizationProblem(abc.ABC):
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
         """
-
         mod_forms = utils.enlist(adjoint_forms)
 
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
@@ -330,7 +347,6 @@ class OptimizationProblem(abc.ABC):
 
     def _check_for_custom_forms(self) -> None:
         """Checks, whether custom user forms are used and if they are compatible."""
-
         if self.has_custom_adjoint and not self.has_custom_derivative:
             _loggers.warning(
                 "You only supplied the adjoint system. "
@@ -366,7 +382,6 @@ class OptimizationProblem(abc.ABC):
             function: A custom function without arguments, which will be called before
                 each solve of the state system
         """
-
         self.form_handler._pre_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
@@ -379,7 +394,6 @@ class OptimizationProblem(abc.ABC):
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
         """
-
         self.form_handler._post_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
@@ -388,7 +402,7 @@ class OptimizationProblem(abc.ABC):
     def inject_pre_post_hook(
         self, pre_function: Callable, post_function: Callable
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook
+        """Changes the a-priori (pre) and a-posteriori (post) hook.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -396,7 +410,6 @@ class OptimizationProblem(abc.ABC):
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
         """
-
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
@@ -450,7 +463,6 @@ class OptimizationProblem(abc.ABC):
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
         """
-
         self.algorithm = utils._optimization_algorithm_configuration(
             self.config, algorithm
         )
@@ -477,7 +489,6 @@ class OptimizationProblem(abc.ABC):
         Args:
             shift: The constant, by which the cost functional is shifted.
         """
-
         self.form_handler.cost_functional_shift = shift
 
     @abc.abstractmethod
@@ -488,10 +499,10 @@ class OptimizationProblem(abc.ABC):
             The result of the gradient test. If this is (approximately) 2 or larger,
             everything works as expected.
         """
-
         pass
 
     def _compute_initial_function_values(self) -> None:
+        """Computes the cost functional values for the initial iteration."""
         self.state_problem.solve()
         self.initial_function_values = []
         for i in range(len(self.cost_functional_list)):
@@ -531,7 +542,6 @@ class OptimizationProblem(abc.ABC):
 
     def _scale_cost_functional(self):
         """Scales the terms of the cost functional and scalar_tracking forms."""
-
         _loggers.info(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "

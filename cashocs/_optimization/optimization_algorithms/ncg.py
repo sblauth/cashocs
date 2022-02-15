@@ -38,12 +38,12 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         optimization_problem: types.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
         """
-
         super().__init__(optimization_problem)
         self.line_search = line_search
 
@@ -68,7 +68,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the NCG method."""
-
         self.initialize_solver()
         self.memory = 0
 
@@ -99,6 +98,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
                 break
 
     def _compute_beta_fr(self) -> None:
+        """Computes beta for the Fletcher-Reeves method."""
         beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
         beta_denominator = self.form_handler.scalar_product(
             self.gradient_prev, self.gradient_prev
@@ -106,7 +106,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.beta = beta_numerator / beta_denominator
 
     def _compute_beta_pr(self) -> None:
-
+        """Computes beta for the Polak-Ribiere method."""
         for i in range(len(self.gradient)):
             self.difference[i].vector().vec().aypx(
                 0.0,
@@ -122,7 +122,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.beta = beta_numerator / beta_denominator
 
     def _compute_beta_hs(self) -> None:
-
+        """Computes beta for the Hestenes-Stiefel method."""
         for i in range(len(self.gradient)):
             self.difference[i].vector().vec().aypx(
                 0.0,
@@ -138,7 +138,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.beta = beta_numerator / beta_denominator
 
     def _compute_beta_dy(self) -> None:
-
+        """Computes beta for the Dai-Yuan method."""
         for i in range(len(self.gradient)):
             self.difference[i].vector().vec().aypx(
                 0.0,
@@ -152,7 +152,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.beta = beta_numerator / beta_denominator
 
     def _compute_beta_hz(self) -> None:
-
+        """Computes beta for the Hager-Zhang method."""
         for i in range(len(self.gradient)):
             self.difference[i].vector().vec().aypx(
                 0.0,
@@ -173,7 +173,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_beta(self) -> None:
         """Computes the NCG update parameter beta."""
-
         beta_method = {
             "fr": self._compute_beta_fr,
             "pr": self._compute_beta_pr,
@@ -189,7 +188,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the NCG method."""
-
         for i in range(len(self.gradient)):
             self.search_direction[i].vector().vec().aypx(
                 self.beta, -self.gradient[i].vector().vec()
@@ -197,7 +195,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def restart(self) -> None:
         """Checks, whether the NCG method should be restarted and does the restart."""
-
         if self.cg_periodic_restart:
             if self.memory < self.cg_periodic_its:
                 self.memory += 1
@@ -220,7 +217,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def store_previous_gradient(self) -> None:
         """Stores a copy of the gradient of the previous iteration."""
-
         for i in range(len(self.gradient)):
             self.gradient_prev[i].vector().vec().aypx(
                 0.0, self.gradient[i].vector().vec()
@@ -228,7 +224,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def project_ncg_search_direction(self) -> None:
         """Projects the search direction according to the box constraints."""
-
         self.optimization_variable_abstractions.project_ncg_search_direction(
             self.search_direction
         )

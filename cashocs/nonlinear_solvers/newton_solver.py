@@ -363,7 +363,7 @@ def newton_solve(
     is_linear: bool = False,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
-    
+
     Args:
         F: The variational form of the nonlinear problem to be solved by Newton's
             method.

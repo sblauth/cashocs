@@ -40,12 +40,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         optimization_problem: types.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
         """
-
         super().__init__(optimization_problem)
         self.line_search = line_search
 
@@ -69,7 +69,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""
-
         self.initialize_solver()
         self.compute_gradient()
         self.form_handler.compute_active_sets()
@@ -108,7 +107,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.update_hessian_approximation()
 
     def _first_loop(self) -> None:
-
+        """Performs the firstof the two L-BFGS loops."""
         for i, _ in enumerate(self.history_s):
             alpha = self.history_rho[i] * self.form_handler.scalar_product(
                 self.history_s[i], self.search_direction
@@ -120,7 +119,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
 
     def _second_loop(self) -> None:
-
+        """Performs the second of the two L-BFGS loops."""
         for i, _ in enumerate(self.history_s):
             beta = self.history_rho[-1 - i] * self.form_handler.scalar_product(
                 self.history_y[-1 - i], self.search_direction
@@ -133,7 +132,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
 
     def _bfgs_scaling(self) -> None:
-
+        """Scales the BFGS search direction."""
         if self.use_bfgs_scaling and self.iteration > 0:
             factor = self.form_handler.scalar_product(
                 self.history_y[0], self.history_s[0]
@@ -153,7 +152,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         Returns:
             A function corresponding to the current / next search direction
         """
-
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             self.history_alpha.clear()
             for j in range(len(self.gradient)):
@@ -192,7 +190,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def store_previous_gradient(self) -> None:
         """Stores a copy of the gradient in the previous iteration."""
-
         if self.bfgs_memory_size > 0:
             for i in range(len(self.gradient)):
                 self.gradient_prev[i].vector().vec().aypx(
@@ -201,7 +198,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def update_hessian_approximation(self) -> None:
         """Updates the approximation of the inverse Hessian."""
-
         if self.bfgs_memory_size > 0:
             for i in range(len(self.gradient)):
                 self.y_k[i].vector().vec().aypx(

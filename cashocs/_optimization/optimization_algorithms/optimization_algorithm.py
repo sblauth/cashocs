@@ -35,11 +35,11 @@ class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         self.line_search_broken = False
         self.has_curvature_info = False
 
@@ -91,7 +91,6 @@ class OptimizationAlgorithm(abc.ABC):
     @abc.abstractmethod
     def run(self) -> None:
         """Solves the optimization problem."""
-
         pass
 
     def compute_gradient_norm(self) -> float:
@@ -100,17 +99,14 @@ class OptimizationAlgorithm(abc.ABC):
         Returns:
             The computed gradient norm.
         """
-
         return self.optimization_variable_abstractions.compute_gradient_norm()
 
     def output(self) -> None:
-        """Writes the output (to console and files)."""
-
+        """Writes the output to console and files."""
         self.output_manager.output(self)
 
     def output_summary(self) -> None:
         """Writes the summary of the optimization (to files and console)."""
-
         self.output_manager.output_summary(self)
 
     def nonconvergence(self) -> bool:
@@ -119,7 +115,6 @@ class OptimizationAlgorithm(abc.ABC):
         Returns:
             A flag which is True, when the algorithm did not converge
         """
-
         if self.iteration >= self.maximum_iterations:
             self.converged_reason = -1
         if self.line_search_broken:
@@ -135,7 +130,7 @@ class OptimizationAlgorithm(abc.ABC):
             return False
 
     def _exit(self, message: str) -> None:
-
+        """Exits the optimization algorithm."""
         if self.soft_exit:
             print(message)
         else:
@@ -143,7 +138,6 @@ class OptimizationAlgorithm(abc.ABC):
 
     def post_processing(self) -> None:
         """Does a post-processing after the optimization algorithm terminates."""
-
         if self.converged:
             self.output()
             self.output_summary()
@@ -185,7 +179,6 @@ class OptimizationAlgorithm(abc.ABC):
         Returns:
             A flag, which is True if the algorithm converged.
         """
-
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
         try:
@@ -202,7 +195,6 @@ class OptimizationAlgorithm(abc.ABC):
 
     def compute_gradient(self) -> None:
         """Computes the gradient of the reduced cost functional."""
-
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
         self.gradient_problem.solve()
@@ -212,7 +204,6 @@ class OptimizationAlgorithm(abc.ABC):
 
         Reverts the direction to the negative gradient if an ascent direction is found.
         """
-
         directional_derivative = self.form_handler.scalar_product(
             self.gradient, self.search_direction
         )
@@ -226,7 +217,6 @@ class OptimizationAlgorithm(abc.ABC):
 
     def initialize_solver(self) -> None:
         """Initializes the solver."""
-
         self.converged = False
 
         try:

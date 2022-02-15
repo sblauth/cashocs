@@ -37,11 +37,11 @@ class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
         self.mesh_handler: Optional[geometry._MeshHandler] = None
@@ -58,13 +58,11 @@ class OptimizationVariableAbstractions(abc.ABC):
         Returns:
             The decrease measure for the Armijo test.
         """
-
         pass
 
     @abc.abstractmethod
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
-
         pass
 
     @abc.abstractmethod
@@ -82,7 +80,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         Returns:
             The stepsize which was found to be acceptable.
         """
-
         pass
 
     @abc.abstractmethod
@@ -92,7 +89,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         Returns:
             The norm of the gradient.
         """
-
         pass
 
     @abc.abstractmethod
@@ -108,7 +104,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
         """
-
         pass
 
     @abc.abstractmethod
@@ -118,7 +113,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         Returns:
             A boolean, which indicates whether remeshing is required.
         """
-
         pass
 
     @abc.abstractmethod
@@ -130,5 +124,4 @@ class OptimizationVariableAbstractions(abc.ABC):
         Args:
             search_direction: The current search direction (will be overwritten).
         """
-
         pass

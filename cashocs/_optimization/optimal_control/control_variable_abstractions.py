@@ -38,11 +38,11 @@ class ControlVariableAbstractions(
     def __init__(
         self, optimization_problem: optimal_control.OptimalControlProblem
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         super().__init__(optimization_problem)
 
         self.controls = optimization_problem.controls
@@ -71,7 +71,6 @@ class ControlVariableAbstractions(
         Returns:
             The decrease measure for the Armijo test.
         """
-
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
@@ -84,7 +83,6 @@ class ControlVariableAbstractions(
 
     def store_optimization_variables(self) -> None:
         """Saves a copy of the current iterate of the optimization variables."""
-
         for i in range(len(self.controls)):
             self.control_temp[i].vector().vec().aypx(
                 0.0, self.controls[i].vector().vec()
@@ -92,7 +90,6 @@ class ControlVariableAbstractions(
 
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
-
         for i in range(len(self.controls)):
             self.controls[i].vector().vec().aypx(
                 0.0, self.control_temp[i].vector().vec()
@@ -112,7 +109,6 @@ class ControlVariableAbstractions(
         Returns:
             The stepsize which was found to be acceptable.
         """
-
         self.store_optimization_variables()
 
         for j in range(len(self.controls)):
@@ -130,7 +126,6 @@ class ControlVariableAbstractions(
         Returns:
             The norm of the gradient.
         """
-
         return np.sqrt(self._stationary_measure_squared())
 
     def _stationary_measure_squared(self) -> float:
@@ -142,7 +137,6 @@ class ControlVariableAbstractions(
         Returns:
             The square of the stationary measure
         """
-
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
                 0.0, self.controls[j].vector().vec() - self.gradient[j].vector().vec()
@@ -173,7 +167,6 @@ class ControlVariableAbstractions(
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
         """
-
         return 0
 
     def requires_remeshing(self) -> bool:
@@ -182,7 +175,6 @@ class ControlVariableAbstractions(
         Returns:
             A boolean, which indicates whether remeshing is required.
         """
-
         return False
 
     def project_ncg_search_direction(
@@ -193,7 +185,6 @@ class ControlVariableAbstractions(
         Args:
             search_direction: The current search direction (will be overwritten).
         """
-
         for j in range(self.form_handler.control_dim):
             idx = np.asarray(
                 np.logical_or(

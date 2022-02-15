@@ -72,56 +72,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> OptimalControlProblem:
+        r"""Initializes self.
 
-        if desired_weights is not None:
-            _use_scaling = True
-        else:
-            _use_scaling = False
-
-        if _use_scaling:
-            unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(
-                state_forms,
-                bcs_list,
-                cost_functional_form,
-                states,
-                controls,
-                adjoints,
-                config=config,
-                riesz_scalar_products=riesz_scalar_products,
-                control_constraints=control_constraints,
-                initial_guess=initial_guess,
-                ksp_options=ksp_options,
-                adjoint_ksp_options=adjoint_ksp_options,
-                scalar_tracking_forms=scalar_tracking_forms,
-                min_max_terms=min_max_terms,
-                desired_weights=desired_weights,
-            )
-            unscaled_problem._scale_cost_functional()  # overwrites cost functional list
-
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
-        bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
-        min_max_terms: Optional[List[Dict]] = None,
-        desired_weights: Optional[List[float]] = None,
-    ) -> None:
-        r"""
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -177,7 +129,111 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             Examples how to use this class can be found in the :ref:`tutorial
             <tutorial_index>`.
         """
+        if desired_weights is not None:
+            _use_scaling = True
+        else:
+            _use_scaling = False
 
+        if _use_scaling:
+            unscaled_problem = super().__new__(cls)
+            unscaled_problem.__init__(
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                controls,
+                adjoints,
+                config=config,
+                riesz_scalar_products=riesz_scalar_products,
+                control_constraints=control_constraints,
+                initial_guess=initial_guess,
+                ksp_options=ksp_options,
+                adjoint_ksp_options=adjoint_ksp_options,
+                scalar_tracking_forms=scalar_tracking_forms,
+                min_max_terms=min_max_terms,
+                desired_weights=desired_weights,
+            )
+            unscaled_problem._scale_cost_functional()  # overwrites cost functional list
+
+        return super().__new__(cls)
+
+    def __init__(
+        self,
+        state_forms: Union[ufl.Form, List[ufl.Form]],
+        bcs_list: Union[
+            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+        ],
+        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        states: Union[fenics.Function, List[fenics.Function]],
+        controls: Union[fenics.Function, List[fenics.Function]],
+        adjoints: Union[fenics.Function, List[fenics.Function]],
+        config: Optional[configparser.ConfigParser] = None,
+        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[List[List[List[str]]]] = None,
+        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
+        min_max_terms: Optional[List[Dict]] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
+        r"""Initializes self.
+
+        Args:
+            state_forms: The weak form of the state equation (user implemented). Can be
+                either a single UFL form, or a (ordered) list of UFL forms.
+            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
+                Dirichlet (essential) boundary conditions. If this is ``None``, then no
+                Dirichlet boundary conditions are imposed.
+            cost_functional_form: UFL form of the cost functional. Can also be a list of
+                summands of the cost functional
+            states: The state variable(s), can either be a :py:class:`fenics.Function`,
+                or a list of these.
+            controls: The control variable(s), can either be a
+                :py:class:`fenics.Function`, or a list of these.
+            adjoints: The adjoint variable(s), can either be a
+                :py:class:`fenics.Function`, or a (ordered) list of these.
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
+            riesz_scalar_products: The scalar products of the control space. Can either
+                be None, a single UFL form, or a (ordered) list of UFL forms. If
+                ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
+            control_constraints: Box constraints posed on the control, ``None`` means
+                that there are none (default is ``None``). The (inner) lists should
+                contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the
+                lower, and ``u_b`` the upper bound.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`. Defaults
+                to ``None``, which means a zero initial guess.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems. If this is ``None``, then the
+                direct solver mumps is used (default is ``None``).
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems. If this is ``None``, then
+                the same options as for the state systems are used (default is
+                ``None``).
+            scalar_tracking_forms: A list of dictionaries that define scalar tracking
+                type cost functionals, where an integral value should be brought to a
+                desired value. Each dict needs to have the keys ``'integrand'`` and
+                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
+                are considered.
+            min_max_terms: Additional terms for the cost functional, not to be used
+                directly.
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration. In case
+                that `desired_weights` is `None`, no scaling is performed. Default is
+                `None`.
+
+        Examples:
+            Examples how to use this class can be found in the :ref:`tutorial
+            <tutorial_index>`.
+        """
         super().__init__(
             state_forms,
             bcs_list,
@@ -241,7 +297,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         This sets the value of has_solution to False for all relevant PDE problems,
         where memory is stored.
         """
-
         super()._erase_pde_memory()
         self.gradient_problem.has_solution = False
 
@@ -309,7 +364,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 || \nabla J(u_0) ||
 
         """
-
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self.optimization_variable_abstractions = (
@@ -359,7 +413,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Returns:
             A list consisting of the (components) of the gradient.
         """
-
         self.gradient_problem.solve()
 
         return self.gradient
@@ -374,7 +427,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             derivatives: The derivatives of the reduced (!) cost functional w.r.t.
             the control variables.
         """
-
         mod_derivatives = None
         if isinstance(derivatives, list) and len(derivatives) > 0:
             mod_derivatives = derivatives
@@ -405,7 +457,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
         """
-
         self.supply_derivatives(derivatives)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
 
@@ -429,11 +480,19 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             The convergence order from the Taylor test. If this is (approximately) 2
             or larger, everything works as expected.
         """
-
         return verification.control_gradient_test(self, u, h, rng)
 
-    def _parse_riesz_scalar_products(self, riesz_scalar_products) -> List[ufl.Form]:
+    def _parse_riesz_scalar_products(
+        self, riesz_scalar_products: Union[List[ufl.Form], ufl.Form]
+    ) -> List[ufl.Form]:
+        """Checks, whether a given scalar product is symmetric.
 
+        Args:
+            riesz_scalar_products: The UFL forms of the scalar product.
+
+        Returns:
+            The (wrapped) list of scalar products
+        """
         if riesz_scalar_products is None:
             dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
             return [
@@ -451,7 +510,14 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     def _parse_control_constraints(
         self, control_constraints
     ) -> List[List[fenics.Function]]:
+        """Checks, whether the given control constraints are feasible.
 
+        Args:
+            control_constraints: The control constraints.
+
+        Returns:
+            The (wrapped) list of control constraints.
+        """
         if control_constraints is None:
             temp_control_constraints = []
             for control in self.controls:
@@ -487,7 +553,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         return formatted_control_constraints
 
     def _validate_control_constraints(self) -> None:
-
+        """Checks, whether given control constraints are valid."""
         self.require_control_constraints = [False] * self.control_dim
         for idx, pair in enumerate(self.control_constraints):
             if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):

@@ -19,7 +19,8 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, Optional
+from typing_extensions import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -39,11 +40,11 @@ class ArmijoLineSearch(line_search.LineSearch):
         self,
         optimization_problem: types.OptimizationProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         super().__init__(optimization_problem)
 
         self.epsilon_armijo = self.config.getfloat(
@@ -66,7 +67,6 @@ class ArmijoLineSearch(line_search.LineSearch):
             A boolean, which is True if a termination / cancellation criterion is
             satisfied.
         """
-
         if solver.iteration >= solver.maximum_iterations:
             solver.remeshing_its = True
             return True
@@ -100,7 +100,6 @@ class ArmijoLineSearch(line_search.LineSearch):
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
         """
-
         self.search_direction_inf = np.max(
             [
                 np.max(np.abs(search_direction[i].vector()[:]))
@@ -165,7 +164,17 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         return None
 
-    def _compute_decrease_measure(self, search_direction) -> float:
+    def _compute_decrease_measure(
+        self, search_direction: Optional[List[fenics.Function]]
+    ) -> float:
+        """Computes the decrease measure for use in the Armijo line search.
+
+        Args:
+            search_direction: The current search direction.
+
+        Returns:
+            The computed decrease measure.
+        """
         if self.is_control_problem:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction

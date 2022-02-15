@@ -35,11 +35,11 @@ class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
         """
-
         self.config = optimization_problem.config
         self.form_handler = optimization_problem.form_handler
         self.gradient = optimization_problem.gradient
@@ -80,7 +80,6 @@ class LineSearch(abc.ABC):
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
         """
-
         self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
 
@@ -96,10 +95,8 @@ class LineSearch(abc.ABC):
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
         """
-
         pass
 
     def post_line_search(self) -> None:
         """Performs tasks after the line search was successful."""
-
         self.form_handler.update_scalar_product()

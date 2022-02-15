@@ -77,7 +77,6 @@ def control_gradient_test(
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
     """
-
     rng = rng or np.random
 
     initial_state = []
@@ -153,7 +152,6 @@ def shape_gradient_test(
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
     """
-
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
         if rng is not None:
@@ -226,7 +224,6 @@ def compute_convergence_rates(
     Returns:
         The computed convergence rates
     """
-
     rates = []
     for i in range(1, len(epsilons)):
         rates.append(
