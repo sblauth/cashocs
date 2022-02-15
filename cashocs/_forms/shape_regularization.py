@@ -339,7 +339,6 @@ class ShapeRegularization:
 
             if self.mu_surface > 0.0:
                 surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
-                # self.current_surface.val = surface
                 value += 0.5 * self.mu_surface * pow(surface - self.target_surface, 2)
 
             if self.mu_curvature > 0.0:
