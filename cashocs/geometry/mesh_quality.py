@@ -382,8 +382,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         """
         return np.average(cls._quality_object.maximum_angle(mesh).array())
 
-    @staticmethod
-    def min_radius_ratios(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def min_radius_ratios(cls, mesh: fenics.Mesh) -> float:
         r"""Computes the minimal radius ratio of the mesh.
 
         This measures the ratio of the element's inradius to its circumradius,
@@ -404,8 +404,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         # noinspection PyArgumentList
         return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
 
-    @staticmethod
-    def avg_radius_ratios(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def avg_radius_ratios(cls, mesh: fenics.Mesh) -> float:
         r"""Computes the average radius ratio of the mesh.
 
         This measures the ratio of the element's inradius to its circumradius,
@@ -426,8 +426,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         # noinspection PyArgumentList
         return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
 
-    @staticmethod
-    def min_condition_number(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def min_condition_number(cls, mesh: fenics.Mesh) -> float:
         r"""Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
@@ -481,8 +481,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         return cond.vector().vec().min()[1]
 
-    @staticmethod
-    def avg_condition_number(mesh):
+    @classmethod
+    def avg_condition_number(cls, mesh: fenics.Mesh) -> float:
         """Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the

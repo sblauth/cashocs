@@ -34,6 +34,81 @@ if TYPE_CHECKING:
     from cashocs._optimization import optimization_algorithms
 
 
+def generate_summary_str(
+    solver: optimization_algorithms.OptimizationAlgorithm,
+) -> str:
+    """Generates a string for the summary of the optimization.
+
+    Args:
+        solver: The optimization algorithm.
+
+    Returns:
+        The summary string.
+    """
+    strs = [
+        "\n",
+        f"Statistics --- Total iterations:  {solver.iteration:4d}",
+        f" --- Final objective value:  {solver.objective_value:.3e}",
+        f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
+        "\n",
+        f"           --- State equations solved:  "
+        f"{solver.state_problem.number_of_solves:d}",
+        f" --- Adjoint equations solved:  "
+        f"{solver.adjoint_problem.number_of_solves:d}",
+        "\n",
+    ]
+
+    return "".join(strs)
+
+
+def generate_output_str(
+    solver: optimization_algorithms.OptimizationAlgorithm,
+) -> str:
+    """Generates the string which can be written to console and file.
+
+    Args:
+        solver: The optimization algorithm.
+
+    Returns:
+        The output string, which is used later.
+    """
+    iteration = solver.iteration
+    objective_value = solver.objective_value
+    if iteration == 0:
+        gradient_norm = solver.gradient_norm_initial
+        abs_rel_str = "abs"
+    else:
+        gradient_norm = solver.relative_norm
+        abs_rel_str = "rel"
+
+    if not (np.any(solver.require_control_constraints)):
+        gradient_str = "Gradient norm"
+    else:
+        gradient_str = "Stationarity measure"
+
+    if solver.form_handler.is_shape_problem:
+        mesh_handler = solver.optimization_variable_abstractions.mesh_handler
+        mesh_quality = mesh_handler.current_mesh_quality
+        mesh_quality_measure = mesh_handler.mesh_quality_measure
+    else:
+        mesh_quality = None
+
+    strs = [
+        f"Iteration {iteration:4d} - ",
+        f" Objective value:  {objective_value:.3e}",
+        f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
+    ]
+    if mesh_quality is not None:
+        # noinspection PyUnboundLocalVariable
+        strs.append(f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})")
+    if iteration > 0:
+        strs.append(f"    Step size:  {solver.stepsize:.3e}")
+    if iteration == 0:
+        strs.append("\n")
+
+    return "".join(strs)
+
+
 class ResultManager:
     """Class for managing the output of the optimization history."""
 
@@ -123,56 +198,6 @@ class HistoryManager:
         self.verbose = optimization_problem.config.getboolean("Output", "verbose")
         self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
 
-    @staticmethod
-    def generate_output_str(
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> str:
-        """Generates the string which can be written to console and file.
-
-        Args:
-            solver: The optimization algorithm.
-
-        Returns:
-            The output string, which is used later.
-        """
-        iteration = solver.iteration
-        objective_value = solver.objective_value
-        if iteration == 0:
-            gradient_norm = solver.gradient_norm_initial
-            abs_rel_str = "abs"
-        else:
-            gradient_norm = solver.relative_norm
-            abs_rel_str = "rel"
-
-        if not (np.any(solver.require_control_constraints)):
-            gradient_str = "Gradient norm"
-        else:
-            gradient_str = "Stationarity measure"
-
-        if solver.form_handler.is_shape_problem:
-            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-            mesh_quality = mesh_handler.current_mesh_quality
-            mesh_quality_measure = mesh_handler.mesh_quality_measure
-        else:
-            mesh_quality = None
-
-        strs = [
-            f"Iteration {iteration:4d} - ",
-            f" Objective value:  {objective_value:.3e}",
-            f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
-        ]
-        if mesh_quality is not None:
-            # noinspection PyUnboundLocalVariable
-            strs.append(
-                f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})"
-            )
-        if iteration > 0:
-            strs.append(f"    Step size:  {solver.stepsize:.3e}")
-        if iteration == 0:
-            strs.append("\n")
-
-        return "".join(strs)
-
     def print_to_console(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
@@ -182,7 +207,7 @@ class HistoryManager:
             solver: The optimization algorithm.
         """
         if self.verbose:
-            print(self.generate_output_str(solver))
+            print(generate_output_str(solver))
 
     def print_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -199,34 +224,7 @@ class HistoryManager:
                 file_attr = "a"
 
             with open(f"{self.result_dir}/history.txt", file_attr) as file:
-                file.write(f"{self.generate_output_str(solver)}\n")
-
-    @staticmethod
-    def generate_summary_str(
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> str:
-        """Generates a string for the summary of the optimization.
-
-        Args:
-            solver: The optimization algorithm.
-
-        Returns:
-            The summary string.
-        """
-        strs = [
-            "\n",
-            f"Statistics --- Total iterations:  {solver.iteration:4d}",
-            f" --- Final objective value:  {solver.objective_value:.3e}",
-            f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
-            "\n",
-            f"           --- State equations solved:  "
-            f"{solver.state_problem.number_of_solves:d}",
-            f" --- Adjoint equations solved:  "
-            f"{solver.adjoint_problem.number_of_solves:d}",
-            "\n",
-        ]
-
-        return "".join(strs)
+                file.write(f"{generate_output_str(solver)}\n")
 
     def print_console_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -237,7 +235,7 @@ class HistoryManager:
             solver: The optimization algorithm.
         """
         if self.verbose:
-            print(self.generate_summary_str(solver))
+            print(generate_summary_str(solver))
 
     def print_file_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -249,7 +247,7 @@ class HistoryManager:
         """
         if self.save_txt:
             with open(f"{self.result_dir}/history.txt", "a") as file:
-                file.write(self.generate_summary_str(solver))
+                file.write(generate_summary_str(solver))
 
 
 class TempFileManager:

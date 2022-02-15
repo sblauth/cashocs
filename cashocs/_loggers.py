@@ -36,14 +36,14 @@ class ColorFormatter(logging.Formatter):
     light_blue = "\x1b[0;36m"
     reset = "\x1b[0m"
 
-    format = "%(name)s - %(levelname)s - %(message)s"
+    my_format = "%(name)s - %(levelname)s - %(message)s"
 
     FORMATS = {
-        logging.DEBUG: green + format + reset,
-        logging.INFO: blue + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset,
+        logging.DEBUG: green + my_format + reset,
+        logging.INFO: blue + my_format + reset,
+        logging.WARNING: yellow + my_format + reset,
+        logging.ERROR: red + my_format + reset,
+        logging.CRITICAL: bold_red + my_format + reset,
     }
 
     def __init__(self, *args, **kwargs) -> None:

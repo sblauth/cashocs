@@ -45,6 +45,60 @@ if TYPE_CHECKING:
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
+def _remove_gmsh_parametrizations(mesh_file: str) -> None:
+    """Removes the parametrizations section from a Gmsh file.
+
+    This is needed in case several remeshing iterations have to be executed.
+
+    Args:
+        mesh_file: Path to the Gmsh file, has to end in .msh.
+    """
+    temp_location = f"{mesh_file[:-4]}_temp.msh"
+
+    with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
+
+        parametrizations_section = False
+
+        for line in in_file:
+
+            if line == "$Parametrizations\n":
+                parametrizations_section = True
+
+            if not parametrizations_section:
+                temp_file.write(line)
+            else:
+                pass
+
+            if line == "$EndParametrizations\n":
+                parametrizations_section = False
+
+    subprocess.run(["mv", temp_location, mesh_file], check=True)
+
+
+def filter_sys_argv(temp_dir: str):  # pragma: no cover
+    """Filters the command line arguments for the cashocs remesh flag.
+
+    Args:
+        temp_dir: Path to directory for the temp files
+    """
+    arg_list = sys.argv.copy()
+    idx_cashocs_remesh_flag = [
+        i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
+    ]
+    if len(idx_cashocs_remesh_flag) == 1:
+        arg_list.pop(idx_cashocs_remesh_flag[0])
+
+    idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
+    if len(idx_temp_dir) == 1:
+        arg_list.pop(idx_temp_dir[0])
+
+    idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
+    if len(idx_temp_dir_flag) == 1:
+        arg_list.pop(idx_temp_dir_flag[0])
+
+    return arg_list
+
+
 class _MeshHandler:
     """Handles the mesh for shape optimization problems.
 
@@ -339,36 +393,6 @@ class _MeshHandler:
                     if line[:5] == "Mesh.":
                         file.write(line)
 
-    @staticmethod
-    def _remove_gmsh_parametrizations(mesh_file: str) -> None:
-        """Removes the parametrizations section from a Gmsh file.
-
-        This is needed in case several remeshing iterations have to be executed.
-
-        Args:
-            mesh_file: Path to the Gmsh file, has to end in .msh.
-        """
-        temp_location = f"{mesh_file[:-4]}_temp.msh"
-
-        with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
-
-            parametrizations_section = False
-
-            for line in in_file:
-
-                if line == "$Parametrizations\n":
-                    parametrizations_section = True
-
-                if not parametrizations_section:
-                    temp_file.write(line)
-                else:
-                    pass
-
-                if line == "$EndParametrizations\n":
-                    parametrizations_section = False
-
-        subprocess.run(["mv", temp_location, mesh_file], check=True)
-
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
@@ -413,30 +437,6 @@ class _MeshHandler:
         if os.path.isfile(subdomains_xdmf_file):
             subprocess.run(["rm", subdomains_xdmf_file], check=True)
 
-    @staticmethod
-    def filter_sys_argv(temp_dir: str):  # pragma: no cover
-        """Filters the command line arguments for the cashocs remesh flag.
-
-        Args:
-            temp_dir: Path to directory for the temp files
-        """
-        arg_list = sys.argv.copy()
-        idx_cashocs_remesh_flag = [
-            i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
-        ]
-        if len(idx_cashocs_remesh_flag) == 1:
-            arg_list.pop(idx_cashocs_remesh_flag[0])
-
-        idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-        if len(idx_temp_dir) == 1:
-            arg_list.pop(idx_temp_dir[0])
-
-        idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
-        if len(idx_temp_dir_flag) == 1:
-            arg_list.pop(idx_temp_dir_flag[0])
-
-        return arg_list
-
     def _restart_script(self, temp_dir: str) -> None:
         """Restarts the python script with itself and replaces the process.
 
@@ -447,7 +447,7 @@ class _MeshHandler:
             os.execv(
                 sys.executable,
                 [sys.executable]
-                + self.filter_sys_argv(temp_dir)
+                + filter_sys_argv(temp_dir)
                 + ["--cashocs_remesh"]
                 + ["--temp_dir"]
                 + [temp_dir],
@@ -515,7 +515,7 @@ class _MeshHandler:
             else:
                 subprocess.run(gmsh_cmd_list, check=True)
 
-            self._remove_gmsh_parametrizations(new_gmsh_file)
+            _remove_gmsh_parametrizations(new_gmsh_file)
 
             self.temp_dict["remesh_counter"] = self.remesh_counter
             self.temp_dict["remesh_directory"] = self.remesh_directory
