@@ -68,6 +68,7 @@ class OptimizationProblem(abc.ABC):
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
     temp_dict: Dict
+    algorithm: str
 
     def __init__(
         self,
@@ -169,7 +170,6 @@ class OptimizationProblem(abc.ABC):
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
-        self.algorithm = None
         self.line_search = None
         self.hessian_problem = None
         self.solver = None

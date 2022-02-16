@@ -77,6 +77,7 @@ class FormHandler(abc.ABC):
     controls: List[fenics.Function]
     control_dim: int
     riesz_projection_matrices: List[PETSc.Mat]
+    uses_custom_scalar_product: bool = False
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
@@ -105,7 +106,6 @@ class FormHandler(abc.ABC):
             shape_regularization.ShapeRegularization
         ] = None
         self.gradient_forms_rhs = None
-        self.uses_custom_scalar_product = False
         self.shape_derivative = None
         self.bcs_shape = None
         self.scalar_product_matrix = None

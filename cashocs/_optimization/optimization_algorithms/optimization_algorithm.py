@@ -34,6 +34,8 @@ if TYPE_CHECKING:
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
+    stepsize: float = 1.0
+
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
 
@@ -64,7 +66,6 @@ class OptimizationAlgorithm(abc.ABC):
         self.objective_value = 1.0
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
-        self.stepsize = 1.0
 
         self.require_control_constraints = False
 
