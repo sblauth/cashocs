@@ -27,14 +27,14 @@ import fenics
 from cashocs import utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _optimization as op
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

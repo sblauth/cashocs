@@ -28,7 +28,7 @@ import ufl
 from cashocs import utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _optimization as op
     from cashocs._forms import shape_regularization
 
 
@@ -65,7 +65,7 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

@@ -25,7 +25,7 @@ from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
     from cashocs._optimization import line_search as ls
-    from cashocs import types
+    from cashocs import _optimization as op
 
 
 class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
@@ -33,7 +33,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: op.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.

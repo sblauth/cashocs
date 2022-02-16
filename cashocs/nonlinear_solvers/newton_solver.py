@@ -386,6 +386,7 @@ def newton_solve(
         damped: If ``True``, then a damping strategy is used. If ``False``, the
             classical Newton-Raphson iteration (without damping) is used (default is
             ``True``).
+        inexact: If ``True``, an inexact Newton\'s method is used. Default is ``True``.
         verbose: If ``True``, prints status of the iteration to the console (default is
             ``True``).
         ksp: The PETSc ksp object used to solve the inner (linear) problem if this is

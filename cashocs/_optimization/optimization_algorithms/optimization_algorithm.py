@@ -28,13 +28,13 @@ from cashocs import _exceptions
 from cashocs import _loggers
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _optimization as op
 
 
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

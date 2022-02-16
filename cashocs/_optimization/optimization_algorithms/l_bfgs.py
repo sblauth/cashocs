@@ -28,7 +28,7 @@ import numpy as np
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _optimization as op
     from cashocs._optimization import line_search as ls
 
 
@@ -37,7 +37,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: op.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
@@ -107,7 +107,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.update_hessian_approximation()
 
     def _first_loop(self) -> None:
-        """Performs the firstof the two L-BFGS loops."""
+        """Performs the first of the two L-BFGS loops."""
         for i, _ in enumerate(self.history_s):
             alpha = self.history_rho[i] * self.form_handler.scalar_product(
                 self.history_s[i], self.search_direction

@@ -29,14 +29,14 @@ from typing import TYPE_CHECKING, List, Optional
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _optimization as op
     from cashocs import geometry
 
 
 class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:
