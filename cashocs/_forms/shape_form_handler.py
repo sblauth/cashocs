@@ -149,7 +149,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         - self.scalar_product_matrix.copy().transpose()
                     ).norm()
                     / self.scalar_product_matrix.norm()
-                    < 1e-15
+                    < 1e-14
                 ):
                     raise _exceptions.InputError(
                         "cashocs._forms.ShapeFormHandler",
