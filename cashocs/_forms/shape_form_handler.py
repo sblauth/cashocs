@@ -149,17 +149,12 @@ class ShapeFormHandler(form_handler.FormHandler):
                         - self.scalar_product_matrix.copy().transpose()
                     ).norm()
                     / self.scalar_product_matrix.norm()
-                    < 1e-14
+                    < 1e-15
                 ):
-                    temp_val = (
-                        self.scalar_product_matrix
-                        - self.scalar_product_matrix.copy().transpose()
-                    ).norm() / self.scalar_product_matrix.norm()
                     raise _exceptions.InputError(
                         "cashocs._forms.ShapeFormHandler",
                         "shape_scalar_product",
-                        "Supplied scalar product form is not symmetric."
-                        + f"{temp_val = :.3e}",
+                        "Supplied scalar product form is not symmetric.",
                     )
 
         if self.opt_algo.casefold() == "newton":

@@ -467,17 +467,11 @@ class PVDFileManager:
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         state = self.form_handler.states[i].sub(j, True)
                         state.rename(f"state_{i}_sub_{j}", f"state_{i}_sub_{j}")
-                        self.state_pvd_list[i][j] << (
-                            state,
-                            float(iteration),
-                        )
+                        self.state_pvd_list[i][j].write(state, float(iteration))
                 else:
                     state = self.form_handler.states[i]
                     state.rename(f"state_{i}", f"state_{i}")
-                    self.state_pvd_list[i] << (
-                        state,
-                        float(iteration),
-                    )
+                    self.state_pvd_list[i].write(state, float(iteration))
 
     def _save_controls(self, iteration: int) -> None:
         """Saves the control variables to pvd.
@@ -489,8 +483,8 @@ class PVDFileManager:
             for i in range(self.form_handler.control_dim):
                 control = self.form_handler.controls[i]
                 control.rename(f"control_{i}", f"control_{i}")
-                self.control_pvd_list[i] << self.form_handler.controls[i], float(
-                    iteration
+                self.control_pvd_list[i].write(
+                    self.form_handler.controls[i], float(iteration)
                 )
 
     def _save_adjoints(self, iteration: int) -> None:
@@ -511,17 +505,11 @@ class PVDFileManager:
                     ):
                         adjoint = self.form_handler.adjoints[i].sub(j, True)
                         adjoint.rename(f"adjoint_{i}_sub_{j}", f"adjoint_{i}_sub_{j}")
-                        self.adjoint_pvd_list[i][j] << (
-                            adjoint,
-                            float(iteration),
-                        )
+                        self.adjoint_pvd_list[i][j].write(adjoint, float(iteration))
                 else:
                     adjoint = self.form_handler.adjoints[i]
                     adjoint.rename(f"adjoint_{i}", f"adjoint_{i}")
-                    self.adjoint_pvd_list[i] << (
-                        adjoint,
-                        float(iteration),
-                    )
+                    self.adjoint_pvd_list[i].write(adjoint, float(iteration))
 
     def _save_gradients(self, iteration: int) -> None:
         """Saves the gradients to pvd files.
@@ -533,7 +521,7 @@ class PVDFileManager:
             for i in range(self.form_handler.control_dim):
                 gradient = self.form_handler.gradient[i]
                 gradient.rename(f"gradient_{i}", f"gradient_{i}")
-                self.gradient_pvd_list[i] << gradient, float(iteration)
+                self.gradient_pvd_list[i].write(gradient, float(iteration))
 
     def save_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
