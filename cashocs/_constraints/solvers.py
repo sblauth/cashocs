@@ -37,6 +37,8 @@ if TYPE_CHECKING:
 class ConstrainedSolver(abc.ABC):
     """A solver for a constrained optimization problem."""
 
+    solver_name: str
+
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
@@ -55,7 +57,6 @@ class ConstrainedSolver(abc.ABC):
         """
         self.constrained_problem = constrained_problem
 
-        self.solver_name = ""
         self.constraints = self.constrained_problem.constraint_list
         self.constraint_dim = self.constrained_problem.constraint_dim
         self.iterations = 0

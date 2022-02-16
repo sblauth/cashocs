@@ -218,6 +218,7 @@ def test_pw_ineq_constraints_only():
     u.vector()[:] = 0.0
     J = pow(y - Constant(1.0), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+    cfg.set("OptimizationRoutine", "maximum_iterations", "250")
     constraint = cashocs.InequalityConstraint(y, upper_bound=0.5, measure=dx)
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
@@ -235,6 +236,7 @@ def test_pw_ineq_constraints_only():
     u.vector()[:] = 0.0
     J = pow(y - Constant(-1), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+    cfg.set("OptimizationRoutine", "maximum_iterations", "250")
     constraint = cashocs.InequalityConstraint(y, lower_bound=-0.5, measure=dx)
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
@@ -253,6 +255,7 @@ def test_pw_ineq_constraints_only():
     u.vector()[:] = 0.0
     J = pow(y - lin_expr, 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+    cfg.set("OptimizationRoutine", "maximum_iterations", "250")
     constraint = cashocs.InequalityConstraint(
         y, lower_bound=-0.5, upper_bound=0.5, measure=dx
     )

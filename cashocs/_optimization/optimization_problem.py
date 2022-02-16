@@ -35,7 +35,6 @@ import numpy as np
 import ufl
 
 from cashocs import _exceptions
-from cashocs import _forms
 from cashocs import _loggers
 from cashocs import io
 from cashocs import utils
@@ -44,6 +43,9 @@ if TYPE_CHECKING:
     from cashocs._optimization.optimization_variable_abstractions import (
         OptimizationVariableAbstractions,
     )
+    from cashocs import types
+    from cashocs._optimization import cost_functional
+    from cashocs import _pde_problems
 
 
 class OptimizationProblem(abc.ABC):
@@ -55,6 +57,17 @@ class OptimizationProblem(abc.ABC):
     corresponding equations. This could be subclassed to generate custom
     optimization problems.
     """
+
+    gradient: List[fenics.Function]
+    reduced_cost_functional: cost_functional.ReducedCostFunctional
+    gradient_problem: types.GradientProblem
+    output_manager: io.OutputManager
+    form_handler: types.FormHandler
+    optimization_variable_abstractions: OptimizationVariableAbstractions
+    adjoint_problem: _pde_problems.AdjointProblem
+    state_problem: _pde_problems.StateProblem
+    uses_custom_scalar_product: bool = False
+    temp_dict: Dict
 
     def __init__(
         self,
@@ -139,7 +152,6 @@ class OptimizationProblem(abc.ABC):
 
         self.states = utils.enlist(states)
         self.adjoints = utils.enlist(adjoints)
-        self.gradient = None
 
         self.use_scalar_tracking = False
         self.use_min_max_terms = False
@@ -157,28 +169,34 @@ class OptimizationProblem(abc.ABC):
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
-        self.state_problem = None
-        self.adjoint_problem = None
-        self.gradient_problem = None
-        self.temp_dict = None
-
         self.algorithm = None
         self.line_search = None
         self.hessian_problem = None
         self.solver = None
 
-        self.form_handler: Optional[_forms.FormHandler] = None
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
-        self.reduced_cost_functional = None
-        self.output_manager: Optional[io.OutputManager] = None
-        self.uses_custom_scalar_product = False
 
-        self.optimization_variable_abstractions: Optional[
-            OptimizationVariableAbstractions
-        ] = None
-        self.is_shape_problem = False
-        self.is_control_problem = False
+        self._is_shape_problem = False
+        self._is_control_problem = False
+
+    @property
+    def is_shape_problem(self) -> bool:
+        return self._is_shape_problem
+
+    @is_shape_problem.setter
+    def is_shape_problem(self, value: bool) -> None:
+        self._is_shape_problem = value
+        self._is_control_problem = not value
+
+    @property
+    def is_control_problem(self) -> bool:
+        return self._is_control_problem
+
+    @is_control_problem.setter
+    def is_control_problem(self, value: bool) -> None:
+        self._is_shape_problem = not value
+        self._is_control_problem = value
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

@@ -119,8 +119,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.constraint_dim = len(self.constraint_list)
 
-        self.iterations = 0
-        self.initial_norm = 1.0
+        self.initial_norm = 0.0
         self.constraint_violation = 0.0
         self.constraint_violation_prev = 0.0
 
@@ -385,19 +384,14 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        optimization_variable_abstractions = (
-            optimal_control_problem.optimization_variable_abstractions
-        )
         if inner_atol is not None:
             atol = inner_atol
         else:
-            if self.iterations == 1:
-                self.initial_norm = (
-                    optimization_variable_abstractions.compute_gradient_norm()
-                )
             atol = self.initial_norm * tol / 10.0
 
         optimal_control_problem.solve(rtol=self.rtol, atol=atol)
+        if self.solver.iterations == 1:
+            self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
         temp_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
@@ -548,19 +542,14 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        optimization_variable_abstractions = (
-            shape_optimization_problem.optimization_variable_abstractions
-        )
         if inner_atol is not None:
             atol = inner_atol
         else:
-            if self.iterations == 1:
-                self.initial_norm = (
-                    optimization_variable_abstractions.compute_gradient_norm()
-                )
             atol = self.initial_norm * tol / 10.0
 
         shape_optimization_problem.solve(rtol=self.rtol, atol=atol)
+        if self.solver.iterations == 1:
+            self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 
         temp_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,

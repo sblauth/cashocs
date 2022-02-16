@@ -30,7 +30,7 @@ from cashocs import _forms
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import _optimization as op
     from cashocs._optimization import optimization_algorithms
 
 

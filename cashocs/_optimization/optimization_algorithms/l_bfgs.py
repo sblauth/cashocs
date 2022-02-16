@@ -28,7 +28,7 @@ import numpy as np
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs import _optimization as op
+    from cashocs import types
     from cashocs._optimization import line_search as ls
 
 
@@ -37,7 +37,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
-        optimization_problem: op.OptimizationProblem,
+        optimization_problem: types.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
