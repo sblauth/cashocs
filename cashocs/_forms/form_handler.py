@@ -22,6 +22,7 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING, Optional, List, Union
 
+from petsc4py import PETSc
 import fenics
 import ufl
 
@@ -65,6 +66,18 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
+    fe_shape_derivative_vector: fenics.PETScVector
+    assembler: fenics.SystemAssembler
+    fixed_indices: List[int]
+    use_fixed_dimensions: bool = False
+    test_vector_field: fenics.TestFunction
+    gradient: List[fenics.Function]
+    control_spaces: List[fenics.FunctionSpace]
+    deformation_space: fenics.FunctionSpace
+    controls: List[fenics.Function]
+    control_dim: int
+    riesz_projection_matrices: List[PETSc.Mat]
+
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
 
@@ -88,26 +101,15 @@ class FormHandler(abc.ABC):
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms
 
-        self.gradient = None
         self.shape_regularization: Optional[
             shape_regularization.ShapeRegularization
         ] = None
-        self.control_dim = 1
-        self.riesz_projection_matrices = None
         self.gradient_forms_rhs = None
         self.uses_custom_scalar_product = False
         self.shape_derivative = None
         self.bcs_shape = None
-        self.assembler = None
-        self.fe_shape_derivative_vector = None
-        self.use_fixed_dimensions = False
-        self.fixed_indices = None
         self.scalar_product_matrix = None
-        self.test_vector_field = None
         self.mu_lame = None
-        self.controls = None
-        self.control_spaces = None
-        self.deformation_space = None
 
         self.lagrangian_form = self.cost_functional_form + utils.summation(
             self.state_forms

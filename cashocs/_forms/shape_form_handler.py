@@ -68,8 +68,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.scalar_product_matrix: Optional[fenics.PETScMatrix] = None
 
-        self.control_dim = 1
-
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation"
         )
@@ -86,6 +84,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         )
 
         self.control_spaces = [self.deformation_space]
+        self.control_dim = 1
 
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)

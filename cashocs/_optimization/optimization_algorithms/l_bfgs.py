@@ -54,8 +54,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
 
-        self.has_curvature_info = False
-
         if self.bfgs_memory_size > 0:
             self.history_s = deque()
             self.history_y = deque()

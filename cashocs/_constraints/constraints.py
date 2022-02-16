@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Union, Optional
+from typing import Union, Optional, Dict
 
 import fenics
 import numpy as np
@@ -33,6 +33,9 @@ from cashocs import utils
 
 class Constraint(abc.ABC):
     """Base class for additional equality and inequality constraints."""
+
+    linear_term: Union[ufl.Form, ufl.core.expr.Expr]
+    quadratic_term: Union[ufl.Form, Dict]
 
     def __init__(
         self,
@@ -58,9 +61,6 @@ class Constraint(abc.ABC):
             self.is_integral_constraint = True
         else:
             self.is_pointwise_constraint = True
-
-        self.linear_term = None
-        self.quadratic_term = None
 
     @abc.abstractmethod
     def constraint_violation(self) -> float:
