@@ -26,6 +26,7 @@ max-line-length = 88
 
 [tool.pydocstyle]
 convention = "google"
+match_dir = "cashocs/"
 
 [tool.coverage.run]
 source = ["cashocs"]
