@@ -21,9 +21,6 @@ group_by_package = "True"
 known_first_party = ["cashocs"]
 known_third_party = ["fenics", "ufl", "numpy"]
 
-[tool.flake8]
-max-line-length = 88
-
 [tool.pydocstyle]
 convention = "google"
 match_dir = "cashocs/"
