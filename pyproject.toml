@@ -4,3 +4,17 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["cashocs"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise _exceptions.InputError",
+    "raise _exceptions.CashocsException",
+    "raise _exceptions.CashocsDebugException",
+    "_loggers.warning",
+    "abstractmethod",
+]
