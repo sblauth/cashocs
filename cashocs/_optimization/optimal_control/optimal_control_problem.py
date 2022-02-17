@@ -270,7 +270,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.control_spaces = self.form_handler.control_spaces
         self.adjoint_spaces = self.form_handler.adjoint_spaces
 
-        self.projected_difference = [fenics.Function(V) for V in self.control_spaces]
+        self.projected_difference = [
+            fenics.Function(function_space) for function_space in self.control_spaces
+        ]
 
         self.state_problem = _pde_problems.StateProblem(
             self.form_handler, self.initial_guess

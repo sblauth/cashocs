@@ -122,7 +122,6 @@ def compute_boundary_distance(
 
     for i in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
-        # noinspection PyPep8Naming
         utils._assemble_and_solve_linear(
             lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp
         )

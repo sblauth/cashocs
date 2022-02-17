@@ -67,7 +67,7 @@ class OptimizationProblem(abc.ABC):
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
-    temp_dict: Dict
+    temp_dict: Optional[Dict]
     algorithm: str
 
     def __init__(
@@ -182,6 +182,7 @@ class OptimizationProblem(abc.ABC):
 
     @property
     def is_shape_problem(self) -> bool:
+        """Returns a boolean flag, ``True`` if self is a shape optimization problem."""
         return self._is_shape_problem
 
     @is_shape_problem.setter
@@ -191,6 +192,7 @@ class OptimizationProblem(abc.ABC):
 
     @property
     def is_control_problem(self) -> bool:
+        """Returns a boolean flag, ``True`` if self is an optimal control problem."""
         return self._is_control_problem
 
     @is_control_problem.setter

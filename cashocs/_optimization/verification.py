@@ -89,9 +89,9 @@ def control_gradient_test(
 
     if h is None:
         h = []
-        for V in ocp.form_handler.control_spaces:
-            temp = fenics.Function(V)
-            temp.vector()[:] = rng.rand(V.dim())
+        for function_space in ocp.form_handler.control_spaces:
+            temp = fenics.Function(function_space)
+            temp.vector()[:] = rng.rand(function_space.dim())
             h.append(temp)
 
     for j in range(ocp.control_dim):

@@ -33,13 +33,13 @@ from cashocs import utils
 
 
 class _NewtonSolver:
-    # noinspection PyPep8Naming,PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences
     def __init__(
         self,
-        F: ufl.Form,
+        nonlinear_form: ufl.Form,
         u: fenics.Function,
         bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-        dF: Optional[ufl.Form] = None,
+        derivative: Optional[ufl.Form] = None,
         shift: Optional[ufl.Form] = None,
         rtol: float = 1e-10,
         atol: float = 1e-10,
@@ -51,21 +51,22 @@ class _NewtonSolver:
         verbose: bool = True,
         ksp: Optional[PETSc.KSP] = None,
         ksp_options: Optional[List[List[str]]] = None,
-        A_tensor: Optional[fenics.PETScMatrix] = None,
+        a_tensor: Optional[fenics.PETScMatrix] = None,
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
     ) -> None:
         r"""Initializes self.
 
         Args:
-            F: The variational form of the nonlinear problem to be solved by Newton's
-                method.
+            nonlinear_form: The variational form of the nonlinear problem to be solved
+                by Newton's method.
             u: The sought solution / initial guess. It is not assumed that the initial
                 guess satisfies the Dirichlet boundary conditions, they are applied
                 automatically. The method overwrites / updates this Function.
             bcs: A list of DirichletBCs for the nonlinear variational problem.
-            dF: The Jacobian of F, used for the Newton method. Default is None, and in
-                this case the Jacobian is computed automatically with AD.
+            derivative: The Jacobian of nonlinear_form, used for the Newton method.
+                Default is None, and in this case the Jacobian is computed automatically
+                with AD.
             shift: A shift term, if the right-hand side of the nonlinear problem is not
                 zero, but shift.
             rtol: Relative tolerance of the solver if convergence_type is either
@@ -86,14 +87,14 @@ class _NewtonSolver:
             ksp: The PETSc ksp object used to solve the inner (linear) problem if this
                 is ``None`` it uses the direct solver MUMPS (default is ``None``).
             ksp_options: The list of options for the linear solver.
-            A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+            a_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
                 sub-problem.
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
         """
-        self.F = F
+        self.F = nonlinear_form
         self.u = u
         if isinstance(bcs, fenics.DirichletBC):
             self.bcs = [bcs]
@@ -108,11 +109,11 @@ class _NewtonSolver:
         self.damped = damped
         self.inexact = inexact
         self.verbose = verbose
-        self.A_tensor = A_tensor
+        self.a_tensor = a_tensor
         self.b_tensor = b_tensor
         self.is_linear = is_linear
 
-        self.dF = dF or fenics.derivative(self.F, self.u)
+        self.derivative = derivative or fenics.derivative(self.F, self.u)
 
         # Setup increment and function for monotonicity test
         self.V = u.function_space()
@@ -151,9 +152,9 @@ class _NewtonSolver:
         self.gamma = 0.9
         self.lmbd = 1.0
 
-        self.assembler = fenics.SystemAssembler(self.dF, -self.F, self.bcs_hom)
+        self.assembler = fenics.SystemAssembler(self.derivative, -self.F, self.bcs_hom)
         self.assembler.keep_diagonal = True
-        self.A_fenics = self.A_tensor or fenics.PETScMatrix()
+        self.A_fenics = self.a_tensor or fenics.PETScMatrix()
         self.residual = self.b_tensor or fenics.PETScVector()
 
         self.assembler_shift = None
@@ -161,7 +162,7 @@ class _NewtonSolver:
 
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
-                self.dF, self.shift, self.bcs_hom
+                self.derivative, self.shift, self.bcs_hom
             )
             self.residual_shift = fenics.PETScVector()
 
@@ -341,12 +342,12 @@ class _NewtonSolver:
                 break
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 def newton_solve(
-    F: ufl.Form,
+    nonlinear_form: ufl.Form,
     u: fenics.Function,
     bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    dF: Optional[ufl.Form] = None,
+    derivative: Optional[ufl.Form] = None,
     shift: Optional[ufl.Form] = None,
     rtol: float = 1e-10,
     atol: float = 1e-10,
@@ -358,21 +359,21 @@ def newton_solve(
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[str]]] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,
+    a_tensor: Optional[fenics.PETScMatrix] = None,
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 
     Args:
-        F: The variational form of the nonlinear problem to be solved by Newton's
-            method.
+        nonlinear_form: The variational form of the nonlinear problem to be solved by
+            Newton's method.
         u: The sought solution / initial guess. It is not assumed that the initial guess
             satisfies the Dirichlet boundary conditions, they are applied automatically.
             The method overwrites / updates this Function.
         bcs: A list of DirichletBCs for the nonlinear variational problem.
-        dF: The Jacobian of F, used for the Newton method. Default is None, and in this
-            case the Jacobian is computed automatically with AD.
+        derivative: The Jacobian of F, used for the Newton method. Default is None, and
+            in this case the Jacobian is computed automatically with AD.
         shift: A shift term, if the right-hand side of the nonlinear problem is not
             zero, but shift.
         rtol: Relative tolerance of the solver if convergence_type is either
@@ -392,7 +393,7 @@ def newton_solve(
         ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
             ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
-        A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+        a_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
             sub-problem.
@@ -427,10 +428,10 @@ def newton_solve(
             cashocs.newton_solve(F, u, bcs)
     """
     solver = _NewtonSolver(
-        F,
+        nonlinear_form,
         u,
         bcs,
-        dF=dF,
+        derivative=derivative,
         shift=shift,
         rtol=rtol,
         atol=atol,
@@ -442,7 +443,7 @@ def newton_solve(
         verbose=verbose,
         ksp=ksp,
         ksp_options=ksp_options,
-        A_tensor=A_tensor,
+        a_tensor=a_tensor,
         b_tensor=b_tensor,
         is_linear=is_linear,
     )
@@ -451,12 +452,12 @@ def newton_solve(
     return solution
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 def damped_newton_solve(
-    F: ufl.Form,
+    nonlinear_form: ufl.Form,
     u: fenics.Function,
     bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    dF: Optional[ufl.Form] = None,
+    derivative: Optional[ufl.Form] = None,
     rtol: float = 1e-10,
     atol: float = 1e-10,
     max_iter: int = 50,
@@ -470,14 +471,14 @@ def damped_newton_solve(
     r"""Damped Newton solve interface, only here for compatibility reasons.
 
     Args:
-        F: The variational form of the nonlinear problem to be solved by Newton's
-            method.
+        nonlinear_form: The variational form of the nonlinear problem to be solved by
+            Newton's method.
         u: The sought solution / initial guess. It is not assumed that the initial guess
             satisfies the Dirichlet boundary conditions, they are applied automatically.
             The method overwrites / updates this Function.
         bcs: A list of DirichletBCs for the nonlinear variational problem.
-        dF: The Jacobian of F, used for the Newton method. Default is None, and in this
-            case the Jacobian is computed automatically with AD.
+        derivative: The Jacobian of nonlinear_form, used for the Newton method. Default
+            is None, and in this case the Jacobian is computed automatically with AD.
         rtol: Relative tolerance of the solver if convergence_type is either
             ``'combined'`` or ``'rel'`` (default is ``rtol = 1e-10``).
         atol: Absolute tolerance of the solver if convergence_type is either
@@ -531,10 +532,10 @@ def damped_newton_solve(
     )
 
     return newton_solve(
-        F,
+        nonlinear_form,
         u,
         bcs,
-        dF=dF,
+        derivative=derivative,
         shift=None,
         rtol=rtol,
         atol=atol,

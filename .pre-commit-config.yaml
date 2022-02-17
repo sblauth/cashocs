@@ -8,3 +8,9 @@ repos:
     rev: 5.10.1
     hooks:
     -   id: isort
+
+-   repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+    -   id: pydocstyle
+        additional_dependencies: ["toml"]

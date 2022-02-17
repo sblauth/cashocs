@@ -68,22 +68,34 @@ class ControlFormHandler(form_handler.FormHandler):
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
 
-        self.gradient = [fenics.Function(V) for V in self.control_spaces]
+        self.gradient = [
+            fenics.Function(function_space) for function_space in self.control_spaces
+        ]
 
         # Define the necessary functions
-        self.states_prime = [fenics.Function(V) for V in self.state_spaces]
-        self.adjoints_prime = [fenics.Function(V) for V in self.adjoint_spaces]
+        self.states_prime = [
+            fenics.Function(function_space) for function_space in self.state_spaces
+        ]
+        self.adjoints_prime = [
+            fenics.Function(function_space) for function_space in self.adjoint_spaces
+        ]
 
-        self.test_directions = [fenics.Function(V) for V in self.control_spaces]
+        self.test_directions = [
+            fenics.Function(function_space) for function_space in self.control_spaces
+        ]
 
         self.trial_functions_control = [
-            fenics.TrialFunction(V) for V in self.control_spaces
+            fenics.TrialFunction(function_space)
+            for function_space in self.control_spaces
         ]
         self.test_functions_control = [
-            fenics.TestFunction(V) for V in self.control_spaces
+            fenics.TestFunction(function_space)
+            for function_space in self.control_spaces
         ]
 
-        self.temp = [fenics.Function(V) for V in self.control_spaces]
+        self.temp = [
+            fenics.Function(function_space) for function_space in self.control_spaces
+        ]
 
         # Compute the necessary equations
         self._compute_gradient_equations()

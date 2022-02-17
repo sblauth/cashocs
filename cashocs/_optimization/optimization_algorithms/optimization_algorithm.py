@@ -54,7 +54,8 @@ class OptimizationAlgorithm(abc.ABC):
         self.cost_functional = optimization_problem.reduced_cost_functional
         self.gradient = optimization_problem.gradient
         self.search_direction = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
 
         self.optimization_variable_abstractions = (

@@ -202,7 +202,7 @@ class _PLaplaceProjector:
         dx = gradient_problem.form_handler.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.A_tensor = fenics.PETScMatrix()
+        self.a_tensor = fenics.PETScMatrix()
         self.b_tensor = fenics.PETScVector()
 
         self.F_list = []
@@ -246,9 +246,9 @@ class _PLaplaceProjector:
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
         self.solution.vector().vec().set(0.0)
-        for F in self.F_list:
+        for nonlinear_form in self.F_list:
             nonlinear_solvers.newton_solve(
-                F,
+                nonlinear_form,
                 self.solution,
                 self.bcs_shape,
                 shift=self.shape_derivative,
@@ -256,6 +256,6 @@ class _PLaplaceProjector:
                 inexact=True,
                 verbose=False,
                 ksp_options=self.ksp_options,
-                A_tensor=self.A_tensor,
+                a_tensor=self.a_tensor,
                 b_tensor=self.b_tensor,
             )

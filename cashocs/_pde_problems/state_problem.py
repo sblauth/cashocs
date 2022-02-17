@@ -81,7 +81,7 @@ class StateProblem(pde_problem.PDEProblem):
                     rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
                 )
 
-        self.A_tensors = [
+        self.a_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.b_tensors = [
@@ -142,7 +142,7 @@ class StateProblem(pde_problem.PDEProblem):
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
-                            A=self.A_tensors[i],
+                            a=self.a_tensors[i],
                             b=self.b_tensors[i],
                             x=self.states[i].vector().vec(),
                             ksp=self.ksps[i],
@@ -164,7 +164,7 @@ class StateProblem(pde_problem.PDEProblem):
                             verbose=self.newton_verbose,
                             ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
-                            A_tensor=self.A_tensors[i],
+                            a_tensor=self.a_tensors[i],
                             b_tensor=self.b_tensors[i],
                         )
 
@@ -183,7 +183,7 @@ class StateProblem(pde_problem.PDEProblem):
                     inner_max_its=self.newton_iter,
                     ksps=self.ksps,
                     ksp_options=self.form_handler.state_ksp_options,
-                    A_tensors=self.A_tensors,
+                    a_tensors=self.a_tensors,
                     b_tensors=self.b_tensors,
                     inner_is_linear=self.form_handler.state_is_linear,
                 )

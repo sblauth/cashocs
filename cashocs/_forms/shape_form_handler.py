@@ -526,7 +526,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.a_mu,
                         self.L_mu,
                         self.bcs_mu,
-                        A=self.A_mu,
+                        a=self.A_mu,
                         b=self.b_mu,
                         ksp=self.ksp_mu,
                         ksp_options=self.options_mu,

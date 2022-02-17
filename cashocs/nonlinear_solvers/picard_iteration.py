@@ -39,9 +39,9 @@ def _setup_obj(obj: Any, dim: int) -> Union[List[None], Any]:
         return obj
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 def picard_iteration(
-    F_list: Union[List[ufl.form], ufl.Form],
+    form_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
     bcs_list: Union[List[fenics.DirichletBC], List[List[fenics.DirichletBC]]],
     max_iter: int = 50,
@@ -54,14 +54,14 @@ def picard_iteration(
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
-    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
+    a_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
     Args:
-        F_list: List of the coupled PDEs.
+        form_list: List of the coupled PDEs.
         u_list: List of the state variables (to be solved for).
         bcs_list: List of boundary conditions for the PDEs.
         max_iter: The maximum number of iterations for the Picard iteration.
@@ -81,14 +81,14 @@ def picard_iteration(
             optional. Default is ``None``, in which case the direct solver mumps is
             used.
         ksp_options: List of options for the KSP objects.
-        A_tensors: List of matrices for the right-hand sides of the inner (linearized)
+        a_tensors: List of matrices for the right-hand sides of the inner (linearized)
             equations.
         b_tensors: List of vectors for the left-hand sides of the inner (linearized)
             equations.
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
     """
-    F_list = utils.enlist(F_list)
+    form_list = utils.enlist(form_list)
     u_list = utils.enlist(u_list)
     bcs_list = utils._check_and_enlist_bcs(bcs_list)
 
@@ -96,7 +96,7 @@ def picard_iteration(
 
     ksps = _setup_obj(ksps, dim)
     ksp_options = _setup_obj(ksp_options, dim)
-    A_tensors = _setup_obj(A_tensors, dim)
+    a_tensors = _setup_obj(a_tensors, dim)
     b_tensors = _setup_obj(b_tensors, dim)
 
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
@@ -108,7 +108,7 @@ def picard_iteration(
     for i in range(max_iter + 1):
         res = 0.0
         for j in range(len(u_list)):
-            fenics.assemble(F_list[j], tensor=res_tensor[j])
+            fenics.assemble(form_list[j], tensor=res_tensor[j])
             [bc.apply(res_tensor[j]) for bc in bcs_list[j]]
 
             # TODO: Include very first solve to adjust absolute tolerance
@@ -141,7 +141,7 @@ def picard_iteration(
             )
 
             newton_solver.newton_solve(
-                F_list[j],
+                form_list[j],
                 u_list[j],
                 bcs_list[j],
                 rtol=eta,
@@ -152,7 +152,7 @@ def picard_iteration(
                 verbose=inner_verbose,
                 ksp=ksps[j],
                 ksp_options=ksp_options[j],
-                A_tensor=A_tensors[j],
+                a_tensor=a_tensors[j],
                 b_tensor=b_tensors[j],
                 is_linear=inner_is_linear,
             )

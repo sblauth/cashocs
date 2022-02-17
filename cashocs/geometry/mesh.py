@@ -232,8 +232,7 @@ def import_mesh(
     ds = measure._NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    # noinspection PyPep8Naming
-    dS = measure._NamedMeasure(
+    d_interior_facet = measure._NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
@@ -253,7 +252,7 @@ def import_mesh(
     # Check the mesh quality of the imported mesh in case a config file is passed
     _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
 
-    return mesh, subdomains, boundaries, dx, ds, dS
+    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
 def regular_mesh(
@@ -392,10 +391,9 @@ def regular_mesh(
 
     dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
     ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    # noinspection PyPep8Naming
-    dS = measure._NamedMeasure("dS", mesh)
+    d_interior_facet = measure._NamedMeasure("dS", mesh)
 
-    return mesh, subdomains, boundaries, dx, ds, dS
+    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
 def regular_box_mesh(
@@ -554,7 +552,6 @@ def regular_box_mesh(
 
     dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
     ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    # noinspection PyPep8Naming
-    dS = measure._NamedMeasure("dS", mesh)
+    d_interior_facet = measure._NamedMeasure("dS", mesh)
 
-    return mesh, subdomains, boundaries, dx, ds, dS
+    return mesh, subdomains, boundaries, dx, ds, d_interior_facet

@@ -48,10 +48,17 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.line_search = line_search
 
         self.gradient_prev = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
-        self.difference = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.temp_HZ = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.difference = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.temp_HZ = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
 
         self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(

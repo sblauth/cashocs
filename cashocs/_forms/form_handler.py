@@ -183,15 +183,19 @@ class FormHandler(abc.ABC):
         self.dx = fenics.Measure("dx", self.mesh)
 
         self.trial_functions_state = [
-            fenics.TrialFunction(V) for V in self.state_spaces
+            fenics.TrialFunction(function_space) for function_space in self.state_spaces
         ]
-        self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
+        self.test_functions_state = [
+            fenics.TestFunction(function_space) for function_space in self.state_spaces
+        ]
 
         self.trial_functions_adjoint = [
-            fenics.TrialFunction(V) for V in self.adjoint_spaces
+            fenics.TrialFunction(function_space)
+            for function_space in self.adjoint_spaces
         ]
         self.test_functions_adjoint = [
-            fenics.TestFunction(V) for V in self.adjoint_spaces
+            fenics.TestFunction(function_space)
+            for function_space in self.adjoint_spaces
         ]
 
         self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")

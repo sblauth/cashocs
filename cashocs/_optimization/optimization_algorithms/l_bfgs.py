@@ -49,7 +49,10 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         super().__init__(optimization_problem)
         self.line_search = line_search
 
-        self.temp = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.temp = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
 
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
@@ -60,10 +63,17 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.history_rho = deque()
             self.history_alpha = deque()
             self.gradient_prev = [
-                fenics.Function(V) for V in self.form_handler.control_spaces
+                fenics.Function(function_space)
+                for function_space in self.form_handler.control_spaces
             ]
-            self.y_k = [fenics.Function(V) for V in self.form_handler.control_spaces]
-            self.s_k = [fenics.Function(V) for V in self.form_handler.control_spaces]
+            self.y_k = [
+                fenics.Function(function_space)
+                for function_space in self.form_handler.control_spaces
+            ]
+            self.s_k = [
+                fenics.Function(function_space)
+                for function_space in self.form_handler.control_spaces
+            ]
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""

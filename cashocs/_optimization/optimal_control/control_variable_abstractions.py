@@ -47,7 +47,8 @@ class ControlVariableAbstractions(
 
         self.controls = optimization_problem.controls
         self.control_temp = [
-            fenics.Function(V) for V in optimization_problem.control_spaces
+            fenics.Function(function_space)
+            for function_space in optimization_problem.control_spaces
         ]
         for i in range(len(self.controls)):
             self.control_temp[i].vector().vec().aypx(
@@ -57,7 +58,8 @@ class ControlVariableAbstractions(
         self.control_constraints = optimization_problem.control_constraints
 
         self.projected_difference = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
 
     def compute_decrease_measure(

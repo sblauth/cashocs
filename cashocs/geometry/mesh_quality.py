@@ -471,7 +471,6 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        # noinspection PyPep8Naming
         utils._assemble_and_solve_linear(
             lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
         )

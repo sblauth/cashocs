@@ -113,7 +113,6 @@ class DeformationHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        # noinspection PyPep8Naming
         x = utils._assemble_and_solve_linear(
             self.a_prior,
             self.L_prior,

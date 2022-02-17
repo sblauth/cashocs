@@ -73,12 +73,12 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
     return lhs_list, rhs_list
 
 
-# noinspection PyUnresolvedReferences,PyPep8Naming
+# noinspection PyUnresolvedReferences
 def _assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,
+    a_tensor: Optional[fenics.PETScMatrix] = None,
     b_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
@@ -87,7 +87,7 @@ def _assemble_petsc_system(
         lhs_form: The UFL form for the left-hand side of the linear equation.
         rhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
-        A_tensor: A matrix into which the result is assembled. Default is ``None``.
+        a_tensor: A matrix into which the result is assembled. Default is ``None``.
         b_tensor: A vector into which the result is assembled. Default is ``None``.
 
     Returns:
@@ -99,9 +99,8 @@ def _assemble_petsc_system(
         one to the diagonal in case the corresponding row only consists of zeros. This
         allows for well-posed problems on the boundary etc.
     """
-    if A_tensor is None:
-        # noinspection PyPep8Naming
-        A_tensor = fenics.PETScMatrix()
+    if a_tensor is None:
+        a_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
     fenics.assemble_system(
@@ -109,16 +108,15 @@ def _assemble_petsc_system(
         rhs_form,
         bcs,
         keep_diagonal=True,
-        A_tensor=A_tensor,
+        A_tensor=a_tensor,
         b_tensor=b_tensor,
     )
-    A_tensor.ident_zeros()
+    a_tensor.ident_zeros()
 
-    # noinspection PyPep8Naming
-    A = A_tensor.mat()
+    a = a_tensor.mat()
     b = b_tensor.vec()
 
-    return A, b
+    return a, b
 
 
 # noinspection PyUnresolvedReferences
@@ -148,10 +146,10 @@ def _setup_petsc_options(
         ksps[i].setFromOptions()
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 def _solve_linear_problem(
     ksp: Optional[PETSc.KSP] = None,
-    A: Optional[PETSc.Mat] = None,
+    a: Optional[PETSc.Mat] = None,
     b: Optional[PETSc.Vec] = None,
     x: Optional[PETSc.Vec] = None,
     ksp_options: Optional[List[List[str]]] = None,
@@ -163,7 +161,7 @@ def _solve_linear_problem(
     Args:
         ksp: The PETSc KSP object used to solve the problem. None means that the solver
             mumps is used (default is None).
-        A: The PETSc matrix corresponding to the left-hand side of the problem. If
+        a: The PETSc matrix corresponding to the left-hand side of the problem. If
             this is None, then the matrix stored in the ksp object is used. Raises
             an error if no matrix is stored. Default is None.
         b: The PETSc vector corresponding to the right-hand side of the problem.
@@ -194,11 +192,11 @@ def _solve_linear_problem(
 
         _setup_petsc_options([ksp], [options])
 
-    if A is not None:
-        ksp.setOperators(A)
+    if a is not None:
+        ksp.setOperators(a)
     else:
-        A = ksp.getOperators()[0]
-        if A.size[0] == -1 and A.size[1] == -1:
+        a = ksp.getOperators()[0]
+        if a.size[0] == -1 and a.size[1] == -1:
             raise _exceptions.InputError(
                 "cashocs.utils._solve_linear_problem",
                 "ksp",
@@ -207,10 +205,10 @@ def _solve_linear_problem(
             )
 
     if b is None:
-        return A.getVecs()[0]
+        return a.getVecs()[0]
 
     if x is None:
-        x, _ = A.getVecs()
+        x, _ = a.getVecs()
 
     if ksp_options is not None:
         _setup_petsc_options([ksp], [ksp_options])
@@ -227,12 +225,12 @@ def _solve_linear_problem(
     return x
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 def _assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    A: Optional[fenics.PETScMatrix] = None,
+    a: Optional[fenics.PETScMatrix] = None,
     b: Optional[fenics.PETScVector] = None,
     x: Optional[PETSc.Vec] = None,
     ksp: Optional[PETSc.KSP] = None,
@@ -246,7 +244,7 @@ def _assemble_and_solve_linear(
         lhs_form: The UFL form for the left-hand side of the linear equation.
         rhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
-        A: A matrix into which the lhs is assembled. Default is ``None``.
+        a: A matrix into which the lhs is assembled. Default is ``None``.
         b: A vector into which the rhs is assembled. Default is ``None``.
         x: The PETSc vector that stores the solution of the problem. If this is
             None, then a new vector will be created (and returned).
@@ -264,13 +262,12 @@ def _assemble_and_solve_linear(
     Returns:
         A PETSc vector containing the solution x.
     """
-    # noinspection PyPep8Naming
-    A_matrix, b_vector = _assemble_petsc_system(
-        lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
+    a_matrix, b_vector = _assemble_petsc_system(
+        lhs_form, rhs_form, bcs, a_tensor=a, b_tensor=b
     )
     solution = _solve_linear_problem(
         ksp=ksp,
-        A=A_matrix,
+        a=a_matrix,
         b=b_vector,
         x=x,
         ksp_options=ksp_options,

@@ -67,18 +67,22 @@ class BaseHessianProblem(abc.ABC):
         self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
 
         self.test_directions = self.form_handler.test_directions
-        self.residual = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.residual = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
         self.delta_control = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
 
-        self.state_A_tensors = [
+        self.state_a_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.state_b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
-        self.adjoint_A_tensors = [
+        self.adjoint_a_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.adjoint_b_tensors = [
@@ -88,26 +92,59 @@ class BaseHessianProblem(abc.ABC):
         self.state_dim = self.form_handler.state_dim
         self.control_dim = self.form_handler.control_dim
 
-        self.temp1 = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.temp2 = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.temp1 = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.temp2 = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
 
-        self.p = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.p_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.p_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.s = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.s_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.s_pprev = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.q = [fenics.Function(V) for V in self.form_handler.control_spaces]
-        self.q_prev = [fenics.Function(V) for V in self.form_handler.control_spaces]
+        self.p = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.p_prev = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.p_pprev = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.s = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.s_prev = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.s_pprev = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.q = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
+        self.q_prev = [
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
+        ]
 
         self.hessian_actions = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
         self.inactive_part = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
         self.active_part = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
 
         self.controls = self.form_handler.controls
@@ -217,7 +254,7 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.state_ksps,
                 ksp_options=self.form_handler.state_ksp_options,
-                A_tensors=self.state_A_tensors,
+                a_tensors=self.state_a_tensors,
                 b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
             )
@@ -236,7 +273,7 @@ class BaseHessianProblem(abc.ABC):
                 inner_max_its=2,
                 ksps=self.adjoint_ksps,
                 ksp_options=self.form_handler.adjoint_ksp_options,
-                A_tensors=self.adjoint_A_tensors,
+                a_tensors=self.adjoint_a_tensors,
                 b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,
             )

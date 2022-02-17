@@ -308,7 +308,7 @@ class ShapeRegularization:
             fenics.assemble(self.L_curvature, tensor=self.b_curvature)
 
             utils._solve_linear_problem(
-                A=self.A_curvature.mat(),
+                a=self.A_curvature.mat(),
                 b=self.b_curvature.vec(),
                 x=self.kappa_curvature.vector().vec(),
             )
