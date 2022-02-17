@@ -19,10 +19,10 @@
 
 from typing import Union
 
+from cashocs import _forms
+from cashocs import _pde_problems
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
-from cashocs import _pde_problems
-from cashocs import _forms
 
 OptimizationProblem = Union[
     shape_optimization.ShapeOptimizationProblem, optimal_control.OptimalControlProblem

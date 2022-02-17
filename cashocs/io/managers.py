@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import json
 import subprocess
-from typing import List, Union, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np

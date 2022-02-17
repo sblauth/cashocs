@@ -24,7 +24,7 @@ in the truncated Newton method.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np

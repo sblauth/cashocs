@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Union, Optional, Dict
+from typing import Dict, Optional, Union
 
 import fenics
 import numpy as np

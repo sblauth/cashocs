@@ -20,10 +20,10 @@
 from __future__ import annotations
 
 from typing import List, Optional
-from typing_extensions import TYPE_CHECKING
 
 import fenics
 import numpy as np
+from typing_extensions import TYPE_CHECKING
 
 from cashocs import _loggers
 from cashocs._optimization.line_search import line_search

@@ -24,13 +24,13 @@ the same optimization algorithms can be used for different types of problems.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs import types
     from cashocs import geometry
+    from cashocs import types
 
 
 class OptimizationVariableAbstractions(abc.ABC):

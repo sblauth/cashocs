@@ -19,12 +19,12 @@
 
 from __future__ import annotations
 
-from typing import Union, List, Tuple, Optional
+from typing import List, Optional, Tuple, Union
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
+import ufl
 
 from cashocs import _exceptions
 

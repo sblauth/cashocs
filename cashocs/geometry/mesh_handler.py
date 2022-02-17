@@ -39,10 +39,10 @@ from cashocs.geometry import deformation_handler
 from cashocs.geometry import mesh_quality
 
 if TYPE_CHECKING:
+    from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
     )
-    from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
 
 
 def _remove_gmsh_parametrizations(mesh_file: str) -> None:

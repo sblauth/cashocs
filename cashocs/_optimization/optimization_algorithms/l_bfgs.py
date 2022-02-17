@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np

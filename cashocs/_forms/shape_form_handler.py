@@ -20,13 +20,13 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, TYPE_CHECKING, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 import ufl
 import ufl.algorithms
-from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers

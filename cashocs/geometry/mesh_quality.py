@@ -21,9 +21,9 @@ from __future__ import annotations
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
 from typing_extensions import Literal
+import ufl
 
 from cashocs import utils
 from cashocs.geometry import measure

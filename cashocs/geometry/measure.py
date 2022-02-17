@@ -19,11 +19,11 @@
 
 from __future__ import annotations
 
-from typing import Union, List, Optional, Dict
+from typing import Dict, List, Optional, Union
 
 import fenics
-import ufl
 from typing_extensions import Literal
+import ufl
 
 from cashocs import _exceptions
 

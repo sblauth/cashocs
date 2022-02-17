@@ -28,7 +28,7 @@ import abc
 import configparser
 import copy
 import json
-from typing import Dict, List, Union, Optional, Callable, TYPE_CHECKING
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -40,12 +40,12 @@ from cashocs import io
 from cashocs import utils
 
 if TYPE_CHECKING:
+    from cashocs import _pde_problems
+    from cashocs import types
+    from cashocs._optimization import cost_functional
     from cashocs._optimization.optimization_variable_abstractions import (
         OptimizationVariableAbstractions,
     )
-    from cashocs import types
-    from cashocs._optimization import cost_functional
-    from cashocs import _pde_problems
 
 
 class OptimizationProblem(abc.ABC):

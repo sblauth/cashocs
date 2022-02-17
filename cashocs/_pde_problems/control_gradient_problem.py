@@ -23,7 +23,7 @@ cost functional.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
@@ -33,8 +33,8 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
-    from cashocs._pde_problems import state_problem as sp
     from cashocs._pde_problems import adjoint_problem as ap
+    from cashocs._pde_problems import state_problem as sp
 
 
 class ControlGradientProblem(pde_problem.PDEProblem):

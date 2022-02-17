@@ -22,31 +22,25 @@ interesting for users, so they are part of the public API. Includes wrappers tha
 to shorten the coding for often recurring actions.
 """
 
-from cashocs.utils.forms import (
-    summation,
-    multiplication,
-    create_bcs_list,
-    create_dirichlet_bcs,
-    _max,
-    _min,
-    moreau_yosida_regularization,
-)
-from cashocs.utils.helpers import (
-    _check_and_enlist_bcs,
-    _check_and_enlist_ksp_options,
-    _check_and_enlist_control_constraints,
-    enlist,
-    _parse_remesh,
-    _optimization_algorithm_configuration,
-)
-from cashocs.utils.linalg import (
-    _assemble_petsc_system,
-    _setup_petsc_options,
-    _solve_linear_problem,
-    _assemble_and_solve_linear,
-    Interpolator,
-    _split_linear_forms,
-)
+from cashocs.utils.forms import _max
+from cashocs.utils.forms import _min
+from cashocs.utils.forms import create_bcs_list
+from cashocs.utils.forms import create_dirichlet_bcs
+from cashocs.utils.forms import moreau_yosida_regularization
+from cashocs.utils.forms import multiplication
+from cashocs.utils.forms import summation
+from cashocs.utils.helpers import _check_and_enlist_bcs
+from cashocs.utils.helpers import _check_and_enlist_control_constraints
+from cashocs.utils.helpers import _check_and_enlist_ksp_options
+from cashocs.utils.helpers import _optimization_algorithm_configuration
+from cashocs.utils.helpers import _parse_remesh
+from cashocs.utils.helpers import enlist
+from cashocs.utils.linalg import _assemble_and_solve_linear
+from cashocs.utils.linalg import _assemble_petsc_system
+from cashocs.utils.linalg import _setup_petsc_options
+from cashocs.utils.linalg import _solve_linear_problem
+from cashocs.utils.linalg import _split_linear_forms
+from cashocs.utils.linalg import Interpolator
 
 __all__ = [
     "summation",

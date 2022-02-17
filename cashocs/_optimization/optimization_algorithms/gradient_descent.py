@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs._optimization import line_search as ls
     from cashocs import types
+    from cashocs._optimization import line_search as ls
 
 
 class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):

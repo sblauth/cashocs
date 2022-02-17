@@ -25,14 +25,14 @@ import os
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 
 import dolfin.function.argument
 import fenics
 import numpy as np
+from typing_extensions import Literal
 import ufl
 import ufl.algorithms
-from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import _forms

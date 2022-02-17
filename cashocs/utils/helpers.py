@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import argparse
 import configparser
-from typing import Union, List, Tuple, Optional, Any
+from typing import Any, List, Optional, Tuple, Union
 
 import fenics
 

@@ -23,7 +23,7 @@ import configparser
 import json
 import os
 import time
-from typing import Union, Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import fenics
 import numpy as np

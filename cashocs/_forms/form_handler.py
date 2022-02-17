@@ -20,10 +20,10 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Optional, List, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
-from petsc4py import PETSc
 import fenics
+from petsc4py import PETSc
 import ufl
 
 from cashocs import utils

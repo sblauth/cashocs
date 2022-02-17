@@ -21,12 +21,12 @@ from __future__ import annotations
 
 import abc
 import configparser
-from typing import List, Dict, Optional, Union, Callable
+from typing import Callable, Dict, List, Optional, Union
 
 import fenics
 import numpy as np
-import ufl
 from typing_extensions import Literal
+import ufl
 
 from cashocs import utils
 from cashocs._constraints import constraints

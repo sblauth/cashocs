@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 

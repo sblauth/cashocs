@@ -19,16 +19,16 @@
 
 from __future__ import annotations
 
+from datetime import datetime as dt
 import os
 import pathlib
-from datetime import datetime as dt
 from typing import TYPE_CHECKING
 
 from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
     from cashocs._optimization import optimization_algorithms
+    from cashocs._optimization import optimization_problem as op
 
 
 class OutputManager:

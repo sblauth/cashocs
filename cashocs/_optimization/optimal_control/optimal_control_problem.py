@@ -20,12 +20,12 @@
 from __future__ import annotations
 
 import configparser
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 
 import fenics
 import numpy as np
-import ufl
 from typing_extensions import Literal
+import ufl
 
 from cashocs import _exceptions
 from cashocs import _forms

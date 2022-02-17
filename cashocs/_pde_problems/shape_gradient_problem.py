@@ -24,12 +24,12 @@ shape gradient with a Riesz projection.
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
+import ufl
 
 from cashocs import _loggers
 from cashocs import nonlinear_solvers
@@ -37,9 +37,9 @@ from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs._pde_problems import state_problem as sp
-    from cashocs._pde_problems import adjoint_problem as ap
     from cashocs import _forms
+    from cashocs._pde_problems import adjoint_problem as ap
+    from cashocs._pde_problems import state_problem as sp
 
 
 class ShapeGradientProblem(pde_problem.PDEProblem):
