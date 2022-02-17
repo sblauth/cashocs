@@ -23,8 +23,6 @@ from fenics import *
 
 import cashocs
 
-
-
 kappa_out = 1e0
 kappa_in = 1e1
 

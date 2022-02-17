@@ -19,12 +19,10 @@
 
 """
 
-import numpy as np
 from fenics import *
+import numpy as np
 
 import cashocs
-
-
 
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)

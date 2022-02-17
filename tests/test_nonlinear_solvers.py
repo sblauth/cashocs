@@ -19,11 +19,10 @@
 
 """
 
-import numpy as np
 from fenics import *
+import numpy as np
 
 import cashocs
-
 
 
 def test_newton_solver():

@@ -21,13 +21,13 @@
 
 import os
 
+from fenics import *
 import numpy as np
 import pytest
-from fenics import *
 
 import cashocs
-from cashocs._exceptions import InputError, NotConvergedError
-
+from cashocs._exceptions import InputError
+from cashocs._exceptions import NotConvergedError
 
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))

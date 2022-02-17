@@ -107,7 +107,7 @@ def control_gradient_test(
     gradient_at_u = ocp.compute_gradient()
     directional_derivative = ocp.form_handler.scalar_product(gradient_at_u, h)
 
-    epsilons = [scaling * 1e-2 / 2 ** i for i in range(4)]
+    epsilons = [scaling * 1e-2 / 2**i for i in range(4)]
     residuals = []
 
     for eps in epsilons:
@@ -177,7 +177,7 @@ def shape_gradient_test(
     box_upper = np.max(sop.mesh_handler.mesh.coordinates())
     length = box_upper - box_lower
 
-    epsilons = [length * 1e-4 / 2 ** i for i in range(4)]
+    epsilons = [length * 1e-4 / 2**i for i in range(4)]
     residuals = []
 
     for idx, eps in enumerate(epsilons):

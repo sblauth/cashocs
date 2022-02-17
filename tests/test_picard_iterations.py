@@ -21,12 +21,10 @@
 
 import os
 
-import numpy as np
 from fenics import *
+import numpy as np
 
 import cashocs
-
-
 
 rng = np.random.RandomState(300696)
 set_log_level(LogLevel.CRITICAL)

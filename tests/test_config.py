@@ -19,13 +19,13 @@
 import os
 import subprocess
 
+from fenics import *
 import numpy as np
 import pytest
-from fenics import *
 
 import cashocs
-from cashocs._exceptions import ConfigError, InputError
-
+from cashocs._exceptions import ConfigError
+from cashocs._exceptions import InputError
 
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))

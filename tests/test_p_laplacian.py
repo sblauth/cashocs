@@ -17,9 +17,9 @@
 
 import os
 
+from fenics import *
 import numpy as np
 import pytest
-from fenics import *
 
 import cashocs
 
