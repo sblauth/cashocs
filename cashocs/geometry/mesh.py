@@ -224,7 +224,7 @@ def import_mesh(
         if not cashocs_remesh_flag:
             mesh_file = input_arg.get("Mesh", "mesh_file")
         else:
-            with open(f"{temp_dir}/temp_dict.json", "r") as file:
+            with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
                 temp_dict = json.load(file)
             mesh_file = temp_dict["mesh_file"]
 
@@ -257,7 +257,7 @@ def import_mesh(
 
     physical_groups = None
     if os.path.isfile(f"{file_string}_physical_groups.json"):
-        with open(f"{file_string}_physical_groups.json") as file:
+        with open(f"{file_string}_physical_groups.json", "r", encoding="utf-8") as file:
             physical_groups = json.load(file)
 
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
@@ -343,11 +343,11 @@ def regular_mesh(
         function for the boundaries, dx is a volume measure, ds is a surface measure,
         and dS is a measure for the interior facets.
     """
-    if not length_x > 0.0:
+    if length_x <= 0.0:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "length_x", "length_x needs to be positive"
         )
-    if not length_y > 0.0:
+    if length_y <= 0.0:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_mesh", "length_y", "length_y needs to be positive"
         )
@@ -495,14 +495,14 @@ def regular_box_mesh(
     """
     n = int(n)
 
-    if not start_x < end_x:
+    if start_x >= end_x:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "start_x",
             "Incorrect input for the x-coordinate. "
             "start_x has to be smaller than end_x.",
         )
-    if not start_y < end_y:
+    if start_y >= end_y:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "start_y",

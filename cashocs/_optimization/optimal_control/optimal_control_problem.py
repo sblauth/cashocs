@@ -129,12 +129,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             Examples how to use this class can be found in the :ref:`tutorial
             <tutorial_index>`.
         """
-        if desired_weights is not None:
-            _use_scaling = True
-        else:
-            _use_scaling = False
+        use_scaling = bool(desired_weights is not None)
 
-        if _use_scaling:
+        if use_scaling:
             unscaled_problem = super().__new__(cls)
             unscaled_problem.__init__(
                 state_forms,

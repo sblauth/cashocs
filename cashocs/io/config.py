@@ -654,7 +654,7 @@ restart = False
     def _check_sections(self) -> None:
         """Checks whether all sections are valid."""
         for section_name, section in self.items():
-            if section_name not in self.config_scheme.keys():
+            if section_name not in self.config_scheme:
                 self.config_errors.append(
                     f"The following section is not valid: {section}\n"
                 )
@@ -663,7 +663,7 @@ restart = False
         """Checks the keys of the sections."""
         for section_name, section in self.items():
             for key in section.keys():
-                if section_name in self.config_scheme.keys():
+                if section_name in self.config_scheme:
                     if key not in self.config_scheme[section_name].keys():
                         self.config_errors.append(
                             f"Key {key} is not valid for section {section_name}.\n"
@@ -751,7 +751,7 @@ restart = False
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_than"]
             lower_value = self.getfloat(partner[0], partner[1])
-            if not lower_value < higher_value:
+            if lower_value >= higher_value:
                 self.config_errors.append(
                     f"The value of key {key} in section {section} is smaller than "
                     f"the value of key {partner[1]} in section {partner[0]}, "
@@ -769,7 +769,7 @@ restart = False
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_equal_than"]
             lower_value = self.getfloat(partner[0], partner[1])
-            if not lower_value <= higher_value:
+            if lower_value > higher_value:
                 self.config_errors.append(
                     f"The value of key {key} in section {section} is smaller than "
                     f"the value of key {partner[1]} in section {partner[0]}, "

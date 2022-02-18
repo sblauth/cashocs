@@ -79,7 +79,9 @@ def write_out_mesh(
     if not pathlib.Path(out_msh_file).parent.is_dir():
         pathlib.Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
 
-    with open(original_msh_file, "r") as old_file, open(out_msh_file, "w") as new_file:
+    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
+        out_msh_file, "w", encoding="utf-8"
+    ) as new_file:
 
         points = mesh.coordinates()
 

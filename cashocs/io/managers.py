@@ -81,7 +81,7 @@ def generate_output_str(
         gradient_norm = solver.relative_norm
         abs_rel_str = "rel"
 
-    if not (np.any(solver.require_control_constraints)):
+    if not np.any(solver.require_control_constraints):
         gradient_str = "Gradient norm"
     else:
         gradient_str = "Stationarity measure"
@@ -126,7 +126,7 @@ class ResultManager:
 
         self.save_results = self.config.getboolean("Output", "save_results")
 
-        self.output_dict = dict()
+        self.output_dict = {}
         if (
             optimization_problem.is_shape_problem
             and optimization_problem.temp_dict is not None
@@ -177,7 +177,7 @@ class ResultManager:
         self.output_dict["adjoint_solves"] = solver.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = solver.iteration
         if self.save_results:
-            with open(f"{self.result_dir}/history.json", "w") as file:
+            with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
 
 
@@ -223,7 +223,9 @@ class HistoryManager:
             else:
                 file_attr = "a"
 
-            with open(f"{self.result_dir}/history.txt", file_attr) as file:
+            with open(
+                f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
+            ) as file:
                 file.write(f"{generate_output_str(solver)}\n")
 
     def print_console_summary(
@@ -246,7 +248,7 @@ class HistoryManager:
             solver: The optimization algorithm.
         """
         if self.save_txt:
-            with open(f"{self.result_dir}/history.txt", "a") as file:
+            with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(solver))
 
 

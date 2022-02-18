@@ -126,10 +126,7 @@ class OptimizationAlgorithm(abc.ABC):
         if self.remeshing_its:
             self.converged_reason = -4
 
-        if self.converged_reason < 0:
-            return True
-        else:
-            return False
+        return bool(self.converged_reason < 0)
 
     def _exit(self, message: str) -> None:
         """Exits the optimization algorithm."""

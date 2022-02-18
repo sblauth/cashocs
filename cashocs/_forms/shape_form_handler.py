@@ -133,7 +133,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
-        self.A_mu = fenics.PETScMatrix()
+        self.a_mu_matrix = fenics.PETScMatrix()
         self.b_mu = fenics.PETScVector()
 
         self.update_scalar_product()
@@ -362,10 +362,10 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.shape_bdry_fix_z,
             )
 
-        self.CG1 = fenics.FunctionSpace(self.mesh, "CG", 1)
-        self.DG0 = fenics.FunctionSpace(self.mesh, "DG", 0)
+        self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
+        self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
-        self.mu_lame = fenics.Function(self.CG1)
+        self.mu_lame = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
 
         if self.shape_scalar_product is None:
@@ -377,7 +377,9 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
 
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
-                self.volumes = fenics.project(fenics.CellVolume(self.mesh), self.DG0)
+                self.volumes = fenics.project(
+                    fenics.CellVolume(self.mesh), self.dg_function_space
+                )
 
                 vol_max = self.volumes.vector().vec().max()[1]
                 self.volumes.vector().vec().scale(1 / vol_max)
@@ -448,20 +450,20 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.ksp_mu = PETSc.KSP().create()
                 utils._setup_petsc_options([self.ksp_mu], [self.options_mu])
 
-                phi = fenics.TrialFunction(self.CG1)
-                psi = fenics.TestFunction(self.CG1)
+                phi = fenics.TrialFunction(self.cg_function_space)
+                psi = fenics.TestFunction(self.cg_function_space)
 
                 self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
-                self.L_mu = fenics.Constant(0.0) * psi * self.dx
+                self.l_mu = fenics.Constant(0.0) * psi * self.dx
 
                 self.bcs_mu = utils.create_dirichlet_bcs(
-                    self.CG1,
+                    self.cg_function_space,
                     fenics.Constant(self.mu_fix),
                     self.boundaries,
                     self.shape_bdry_fix,
                 )
                 self.bcs_mu += utils.create_dirichlet_bcs(
-                    self.CG1,
+                    self.cg_function_space,
                     fenics.Constant(self.mu_def),
                     self.boundaries,
                     self.shape_bdry_def,
@@ -478,7 +480,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.bdry_idcs = self.config.getlist("ShapeGradient", "boundaries_dist")
 
                 self.smooth_mu = self.config.getboolean("ShapeGradient", "smooth_mu")
-                self.distance = fenics.Function(self.CG1)
+                self.distance = fenics.Function(self.cg_function_space)
                 if not self.smooth_mu:
                     self.mu_expression = fenics.Expression(
                         (
@@ -524,9 +526,9 @@ class ShapeFormHandler(form_handler.FormHandler):
                 if self.inhomogeneous_mu:
                     x = utils._assemble_and_solve_linear(
                         self.a_mu,
-                        self.L_mu,
+                        self.l_mu,
                         self.bcs_mu,
-                        a=self.A_mu,
+                        a=self.a_mu_matrix,
                         b=self.b_mu,
                         ksp=self.ksp_mu,
                         ksp_options=self.options_mu,
@@ -550,7 +552,10 @@ class ShapeFormHandler(form_handler.FormHandler):
                     .vec(),
                 )
                 self.mu_lame.vector().vec().aypx(
-                    0.0, fenics.interpolate(self.mu_expression, self.CG1).vector().vec()
+                    0.0,
+                    fenics.interpolate(self.mu_expression, self.cg_function_space)
+                    .vector()
+                    .vec(),
                 )
 
             # for mpi compatibility
@@ -579,7 +584,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         if self.update_inhomogeneous:
             self.volumes.vector().vec().aypx(
                 0.0,
-                fenics.project(fenics.CellVolume(self.mesh), self.DG0).vector().vec(),
+                fenics.project(fenics.CellVolume(self.mesh), self.dg_function_space)
+                .vector()
+                .vec(),
             )
             vol_max = self.volumes.vector().vec().max()[1]
             self.volumes.vector().vec().scale(1 / vol_max)
@@ -606,7 +613,8 @@ class ShapeFormHandler(form_handler.FormHandler):
             and not self.uses_custom_scalar_product
         ):
             form = ufl.replace(
-                self.F_p_laplace, {self.gradient[0]: a[0], self.test_vector_field: b[0]}
+                self.p_laplace_form,
+                {self.gradient[0]: a[0], self.test_vector_field: b[0]},
             )
             result = fenics.assemble(form)
 
@@ -634,7 +642,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 (p - 2) / 2.0,
             )
             # noinspection PyTypeChecker
-            self.F_p_laplace = (
+            self.p_laplace_form = (
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)

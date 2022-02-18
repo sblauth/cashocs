@@ -134,12 +134,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
         """
-        if desired_weights is not None:
-            _use_scaling = True
-        else:
-            _use_scaling = False
+        use_scaling = bool(desired_weights is not None)
 
-        if _use_scaling:
+        if use_scaling:
             unscaled_problem = super().__new__(cls)
             unscaled_problem.__init__(
                 state_forms,
@@ -354,12 +351,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     "arg",
                     "You must specify a config file as input for remeshing.",
                 )
-        except AttributeError:  # pragma: no cover
+        except AttributeError as attribute_error:  # pragma: no cover
             raise _exceptions.InputError(
                 "cashocs.import_mesh",
                 "arg",
                 "You must specify a config file as input for remeshing.",
-            )
+            ) from attribute_error
 
     def _remesh_init(self) -> None:
         """Initializes self for remeshing."""
@@ -398,7 +395,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
             else:
                 self._change_except_hook()
-                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+                with open(
+                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
+                ) as file:
                     self.temp_dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:

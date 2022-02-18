@@ -109,13 +109,11 @@ def picard_iteration(
         res = 0.0
         for j in range(len(u_list)):
             fenics.assemble(form_list[j], tensor=res_tensor[j])
-            [bc.apply(res_tensor[j]) for bc in bcs_list[j]]
+            for bc in bcs_list[j]:
+                bc.apply(res_tensor[j])
 
             # TODO: Include very first solve to adjust absolute tolerance
             res += pow(res_tensor[j].norm("l2"), 2)
-
-        if res == 0:
-            break
 
         res = np.sqrt(res)
         if i == 0:

@@ -77,7 +77,7 @@ class ConstrainedSolver(abc.ABC):
         for constraint in self.constraints:
             if constraint.is_pointwise_constraint:
                 mesh = constraint.measure.ufl_domain().ufl_cargo()
-                self.CG = fenics.FunctionSpace(mesh, "CG", 1)
+                self.cg_function_space = fenics.FunctionSpace(mesh, "CG", 1)
                 break
 
         for i, constraint in enumerate(self.constraints):
@@ -198,8 +198,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         else:
             project_term = project_terms
 
-        trial = fenics.TrialFunction(self.CG)
-        test = fenics.TestFunction(self.CG)
+        trial = fenics.TrialFunction(self.cg_function_space)
+        test = fenics.TestFunction(self.cg_function_space)
 
         lhs = trial * test * measure
         rhs = project_term * test * measure
@@ -239,8 +239,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
                     self.inner_cost_functional_shifts.append(
-                        -fenics.assemble(
-                            self.lmbd[i] * constraint.target * constraint.measure
+                        fenics.assemble(
+                            -self.lmbd[i] * constraint.target * constraint.measure
                         )
                     )
 
@@ -500,7 +500,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         self.inner_scalar_tracking_forms = []
         self.inner_min_max_terms = []
 
-        for i, constraint in enumerate(self.constraints):
+        for constraint in self.constraints:
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.quadratic_term["weight"] = self.mu

@@ -49,6 +49,7 @@ class NotConvergedError(CashocsException):
             solver: The solver which raised the exception.
             message: A message indicating why the solver did not converge.
         """
+        super().__init__()
         self.solver = solver
         self.message = message
 
@@ -66,7 +67,9 @@ class PETScKSPError(CashocsException):
     """
 
     def __init__(
-        self, error_code: int, message: str = "PETSc linear solver did not converge."
+        self,
+        error_code: int,
+        message: str = "PETSc linear solver did not converge.",
     ) -> None:
         """Initializes self.
 
@@ -74,6 +77,7 @@ class PETScKSPError(CashocsException):
             error_code: The error code issued by PETSc.
             message: The message, detailing why PETSc issued an error.
         """
+        super().__init__()
         self.message = message
         self.error_code = error_code
 
@@ -115,6 +119,7 @@ class InputError(CashocsException):
             param: The faulty input parameter.
             message: A message detailing what went wrong.
         """
+        super().__init__()
         self.obj = obj
         self.param = param
         self.message = message
@@ -141,6 +146,7 @@ class ConfigError(CashocsException):
             config_errors: The list of errors that occurred while trying to validate
                 the config.
         """
+        super().__init__()
         self.config_errors = config_errors
 
     def __str__(self) -> str:

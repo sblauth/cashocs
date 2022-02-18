@@ -35,6 +35,10 @@ from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
 
+def _hook() -> None:
+    return None
+
+
 class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
@@ -109,6 +113,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.solver = None
         self.current_function_value = None
+
+        self._pre_hook = _hook
+        self._post_hook = _hook
 
         self.cost_functional_form_initial = utils.enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
@@ -209,34 +216,26 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         self.rtol = inner_rtol or tol
 
-    def _pre_hook(self) -> None:
-        pass
-
-    def _post_hook(self) -> None:
-        pass
-
-    def inject_pre_hook(self, function: Callable) -> None:
+    def inject_pre_hook(self, function: Callable[[], None]) -> None:
         """Changes the a-priori hook of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
         """
-        # noinspection PyAttributeOutsideInit
         self._pre_hook = function
 
-    def inject_post_hook(self, function: Callable) -> None:
+    def inject_post_hook(self, function: Callable[[], None]) -> None:
         """Changes the a-posteriori hook of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
         """
-        # noinspection PyAttributeOutsideInit
         self._post_hook = function
 
     def inject_pre_post_hook(
-        self, pre_function: Callable, post_function: Callable
+        self, pre_function: Callable[[], None], post_function: Callable[[], None]
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
 

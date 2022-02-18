@@ -84,7 +84,7 @@ class ShapeRegularization:
         self.dx = fenics.Measure("dx", self.mesh)
         self.ds = fenics.Measure("ds", self.mesh)
 
-        self.A_curvature = fenics.PETScMatrix()
+        self.a_curvature_matrix = fenics.PETScMatrix()
         self.b_curvature = fenics.PETScVector()
 
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
@@ -172,7 +172,7 @@ class ShapeRegularization:
                 )
                 * self.ds
             )
-            self.L_curvature = (
+            self.l_curvature = (
                 fenics.inner(
                     t_grad(x, n),
                     t_grad(fenics.TestFunction(form_handler.deformation_space), n),
@@ -301,14 +301,14 @@ class ShapeRegularization:
         """Computes the mean curvature vector of the geometry."""
         if self.mu_curvature > 0.0:
             fenics.assemble(
-                self.a_curvature, keep_diagonal=True, tensor=self.A_curvature
+                self.a_curvature, keep_diagonal=True, tensor=self.a_curvature_matrix
             )
-            self.A_curvature.ident_zeros()
+            self.a_curvature_matrix.ident_zeros()
 
-            fenics.assemble(self.L_curvature, tensor=self.b_curvature)
+            fenics.assemble(self.l_curvature, tensor=self.b_curvature)
 
             utils._solve_linear_problem(
-                a=self.A_curvature.mat(),
+                a=self.a_curvature_matrix.mat(),
                 b=self.b_curvature.vec(),
                 x=self.kappa_curvature.vector().vec(),
             )
@@ -709,7 +709,9 @@ class ShapeRegularization:
 
             else:
 
-                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+                with open(
+                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
+                ) as file:
                     temp_dict = json.load(file)
 
                 self.mu_volume = temp_dict["Regularization"]["mu_volume"]

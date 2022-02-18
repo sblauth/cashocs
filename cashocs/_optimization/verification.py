@@ -161,7 +161,8 @@ def shape_gradient_test(
             h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
 
     # ensure that the shape boundary conditions are applied
-    [bc.apply(h[0].vector()) for bc in sop.form_handler.bcs_shape]
+    for bc in sop.form_handler.bcs_shape:
+        bc.apply(h[0].vector())
 
     if sop.form_handler.use_fixed_dimensions:
         h[0].vector()[sop.form_handler.fixed_indices] = 0.0
@@ -180,7 +181,7 @@ def shape_gradient_test(
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
     residuals = []
 
-    for idx, eps in enumerate(epsilons):
+    for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
         transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):

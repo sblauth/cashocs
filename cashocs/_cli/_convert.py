@@ -152,14 +152,14 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
     """
     physical_groups = {"dx": {}, "ds": {}}
     has_physical_groups = False
-    with open(inputfile, "r") as infile:
+    with open(inputfile, "r", encoding="utf-8") as infile:
         for line in infile:
             line = line.strip()
             if line == "$PhysicalNames":
                 has_physical_groups = True
                 info_line = next(infile).strip()
                 no_physical_groups = int(info_line)
-                for i in range(no_physical_groups):
+                for _ in range(no_physical_groups):
                     physical_line = next(infile).strip().split()
                     phys_dim = int(physical_line[0])
                     phys_tag = int(physical_line[1])
@@ -177,7 +177,9 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
                 break
 
         if has_physical_groups:
-            with open(f"{ostring}_physical_groups.json", "w") as ofile:
+            with open(
+                f"{ostring}_physical_groups.json", "w", encoding="utf-8"
+            ) as ofile:
                 json.dump(physical_groups, ofile)
 
 

@@ -235,10 +235,9 @@ class FormHandler(abc.ABC):
                 [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
                 for i in range(self.state_dim)
             ]
-            [
-                [bc.homogenize() for bc in self.bcs_list_ad[i]]
-                for i in range(self.state_dim)
-            ]
+            for i in range(self.state_dim):
+                for bc in self.bcs_list_ad[i]:
+                    bc.homogenize()
         else:
 
             self.bcs_list_ad = [

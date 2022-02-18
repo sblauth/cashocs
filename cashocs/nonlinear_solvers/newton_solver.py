@@ -33,6 +33,8 @@ from cashocs import utils
 
 
 class _NewtonSolver:
+    """A Newton solver."""
+
     # noinspection PyUnresolvedReferences
     def __init__(
         self,
@@ -94,7 +96,7 @@ class _NewtonSolver:
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
         """
-        self.F = nonlinear_form
+        self.nonlinear_form = nonlinear_form
         self.u = u
         if isinstance(bcs, fenics.DirichletBC):
             self.bcs = [bcs]
@@ -113,13 +115,13 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
 
-        self.derivative = derivative or fenics.derivative(self.F, self.u)
+        self.derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
 
         # Setup increment and function for monotonicity test
-        self.V = u.function_space()
-        self.du = fenics.Function(self.V)
-        self.ddu = fenics.Function(self.V)
-        self.u_save = fenics.Function(self.V)
+        self.function_space = u.function_space()
+        self.du = fenics.Function(self.function_space)
+        self.ddu = fenics.Function(self.function_space)
+        self.u_save = fenics.Function(self.function_space)
         self.ksp_options = ksp_options
 
         if ksp is None:
@@ -140,10 +142,12 @@ class _NewtonSolver:
             self.ksp = ksp
 
         self.iterations = 0
-        [bc.apply(self.u.vector()) for bc in self.bcs]
+        for bc in self.bcs:
+            bc.apply(self.u.vector())
         # copy the boundary conditions and homogenize them for the increment
         self.bcs_hom = [fenics.DirichletBC(bc) for bc in self.bcs]
-        [bc.homogenize() for bc in self.bcs_hom]
+        for bc in self.bcs_hom:
+            bc.homogenize()
 
         # inexact newton parameters
         self.eta = 1.0
@@ -152,9 +156,11 @@ class _NewtonSolver:
         self.gamma = 0.9
         self.lmbd = 1.0
 
-        self.assembler = fenics.SystemAssembler(self.derivative, -self.F, self.bcs_hom)
+        self.assembler = fenics.SystemAssembler(
+            self.derivative, -self.nonlinear_form, self.bcs_hom
+        )
         self.assembler.keep_diagonal = True
-        self.A_fenics = self.a_tensor or fenics.PETScMatrix()
+        self.a_fenics = self.a_tensor or fenics.PETScMatrix()
         self.residual = self.b_tensor or fenics.PETScVector()
 
         self.assembler_shift = None
@@ -167,7 +173,7 @@ class _NewtonSolver:
             self.residual_shift = fenics.PETScVector()
 
         self.b = None
-        self.A = None
+        self.a_matrix = None
         self.breakdown = False
         self.res = 1.0
         self.res_0 = 1.0
@@ -184,9 +190,9 @@ class _NewtonSolver:
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
-        self.assembler.assemble(self.A_fenics)
-        self.A_fenics.ident_zeros()
-        self.A = fenics.as_backend_type(self.A_fenics).mat()
+        self.assembler.assemble(self.a_fenics)
+        self.a_fenics.ident_zeros()
+        self.a_matrix = fenics.as_backend_type(self.a_fenics).mat()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -242,7 +248,7 @@ class _NewtonSolver:
             self._compute_eta_inexact()
             utils._solve_linear_problem(
                 self.ksp,
-                self.A,
+                self.a_matrix,
                 self.b,
                 self.du.vector().vec(),
                 self.ksp_options,
@@ -261,7 +267,8 @@ class _NewtonSolver:
 
             self._compute_residual()
 
-            [bc.apply(self.residual) for bc in self.bcs_hom]
+            for bc in self.bcs_hom:
+                bc.apply(self.residual)
 
             res_prev = self.res
             self.res = self.residual.norm(self.norm_type)
@@ -372,8 +379,8 @@ def newton_solve(
             satisfies the Dirichlet boundary conditions, they are applied automatically.
             The method overwrites / updates this Function.
         bcs: A list of DirichletBCs for the nonlinear variational problem.
-        derivative: The Jacobian of F, used for the Newton method. Default is None, and
-            in this case the Jacobian is computed automatically with AD.
+        derivative: The Jacobian of nonlinear_form, used for the Newton method. Default
+            is None, and in this case the Jacobian is computed automatically with AD.
         shift: A shift term, if the right-hand side of the nonlinear problem is not
             zero, but shift.
         rtol: Relative tolerance of the solver if convergence_type is either
@@ -421,8 +428,8 @@ def newton_solve(
             mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, 'CG', 1)
 
-            u = Function(V)
-            v = TestFunction(V)
+            u = Function(function_space)
+            v = TestFunction(function_space)
             F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
             bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
             cashocs.newton_solve(F, u, bcs)
@@ -517,8 +524,8 @@ def damped_newton_solve(
             mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
             V = FunctionSpace(mesh, 'CG', 1)
 
-            u = Function(V)
-            v = TestFunction(V)
+            u = Function(function_space)
+            v = TestFunction(function_space)
             F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
             bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
             cashocs.newton_solve(F, u, bcs)

@@ -205,13 +205,13 @@ class _PLaplaceProjector:
         self.a_tensor = fenics.PETScMatrix()
         self.b_tensor = fenics.PETScVector()
 
-        self.F_list = []
+        self.form_list = []
         for p in self.p_list:
             kappa = pow(
                 fenics.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
                 (p - 2) / 2.0,
             )
-            self.F_list.append(
+            self.form_list.append(
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
@@ -246,7 +246,7 @@ class _PLaplaceProjector:
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
         self.solution.vector().vec().set(0.0)
-        for nonlinear_form in self.F_list:
+        for nonlinear_form in self.form_list:
             nonlinear_solvers.newton_solve(
                 nonlinear_form,
                 self.solution,

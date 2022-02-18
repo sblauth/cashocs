@@ -154,7 +154,7 @@ def _parse_remesh() -> Tuple[bool, str]:
     args = parser.parse_args()
 
     temp_dir = args.temp_dir or None
-    cashocs_remesh_flag = True if args.cashocs_remesh else False
+    cashocs_remesh_flag = bool(args.cashocs_remesh)
 
     return cashocs_remesh_flag, temp_dir
 

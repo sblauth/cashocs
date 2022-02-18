@@ -106,18 +106,13 @@ class ControlFormHandler(form_handler.FormHandler):
         # Initialize the scalar products
         fenics_scalar_product_matrices = [fenics.PETScMatrix()] * self.control_dim
 
-        [
+        for i in range(self.control_dim):
             fenics.assemble(
                 self.riesz_scalar_products[i],
                 keep_diagonal=True,
                 tensor=fenics_scalar_product_matrices[i],
             )
-            for i in range(self.control_dim)
-        ]
-        [
             fenics_scalar_product_matrices[i].ident_zeros()
-            for i in range(self.control_dim)
-        ]
         self.riesz_projection_matrices = [
             fenics_scalar_product_matrices[i].mat() for i in range(self.control_dim)
         ]
@@ -420,7 +415,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
-        self.L_y = [
+        self.lagrangian_y = [
             fenics.derivative(
                 self.lagrangian_form,
                 self.states[i],
@@ -428,7 +423,7 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(self.state_dim)
         ]
-        self.L_u = [
+        self.lagrangian_u = [
             fenics.derivative(
                 self.lagrangian_form,
                 self.controls[i],
@@ -439,33 +434,37 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_second_order_lagrangian_derivatives(self) -> None:
         """Compute the second order derivatives of the Lagrangian w.r.t. y and u."""
-        self.L_yy = [
+        self.lagrangian_yy = [
             [
-                fenics.derivative(self.L_y[i], self.states[j], self.states_prime[j])
+                fenics.derivative(
+                    self.lagrangian_y[i], self.states[j], self.states_prime[j]
+                )
                 for j in range(self.state_dim)
             ]
             for i in range(self.state_dim)
         ]
-        self.L_yu = [
+        self.lagrangian_yu = [
             [
-                fenics.derivative(self.L_u[i], self.states[j], self.states_prime[j])
+                fenics.derivative(
+                    self.lagrangian_u[i], self.states[j], self.states_prime[j]
+                )
                 for j in range(self.state_dim)
             ]
             for i in range(self.control_dim)
         ]
-        self.L_uy = [
+        self.lagrangian_uy = [
             [
                 fenics.derivative(
-                    self.L_y[i], self.controls[j], self.test_directions[j]
+                    self.lagrangian_y[i], self.controls[j], self.test_directions[j]
                 )
                 for j in range(self.control_dim)
             ]
             for i in range(self.state_dim)
         ]
-        self.L_uu = [
+        self.lagrangian_uu = [
             [
                 fenics.derivative(
-                    self.L_u[i], self.controls[j], self.test_directions[j]
+                    self.lagrangian_u[i], self.controls[j], self.test_directions[j]
                 )
                 for j in range(self.control_dim)
             ]
@@ -561,13 +560,17 @@ class ControlFormHandler(form_handler.FormHandler):
         self._compute_second_order_lagrangian_derivatives()
 
         self.w_1 = [
-            utils.summation([self.L_yy[i][j] for j in range(self.state_dim)])
-            + utils.summation([self.L_uy[i][j] for j in range(self.control_dim)])
+            utils.summation([self.lagrangian_yy[i][j] for j in range(self.state_dim)])
+            + utils.summation(
+                [self.lagrangian_uy[i][j] for j in range(self.control_dim)]
+            )
             for i in range(self.state_dim)
         ]
         self.w_2 = [
-            utils.summation([self.L_yu[i][j] for j in range(self.state_dim)])
-            + utils.summation([self.L_uu[i][j] for j in range(self.control_dim)])
+            utils.summation([self.lagrangian_yu[i][j] for j in range(self.state_dim)])
+            + utils.summation(
+                [self.lagrangian_uu[i][j] for j in range(self.control_dim)]
+            )
             for i in range(self.control_dim)
         ]
 

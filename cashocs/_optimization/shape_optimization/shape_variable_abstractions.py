@@ -131,13 +131,10 @@ class ShapeVariableAbstractions(
         Returns:
             A boolean, which indicates whether remeshing is required.
         """
-        if (
+        return bool(
             self.mesh_handler.current_mesh_quality
             < self.mesh_handler.mesh_quality_tol_upper
-        ):
-            return True
-        else:
-            return False
+        )
 
     def project_ncg_search_direction(
         self, search_direction: List[fenics.Function]

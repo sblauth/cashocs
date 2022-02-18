@@ -259,7 +259,7 @@ class OptimizationProblem(abc.ABC):
                 ["mat_mumps_icntl_24", 1],
             ]
 
-            for i in range(self.state_dim):
+            for _ in range(self.state_dim):
                 self.ksp_options.append(option)
         else:
             self.ksp_options = utils._check_and_enlist_ksp_options(ksp_options)
@@ -572,7 +572,7 @@ class OptimizationProblem(abc.ABC):
             self._compute_initial_function_values()
 
         else:
-            with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+            with open(f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
                 temp_dict = json.load(file)
             self.initial_function_values = temp_dict["initial_function_values"]
             if self.use_scalar_tracking:

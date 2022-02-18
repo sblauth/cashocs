@@ -55,10 +55,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             fenics.Function(function_space)
             for function_space in self.form_handler.control_spaces
         ]
-        self.temp_HZ = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
 
         self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(

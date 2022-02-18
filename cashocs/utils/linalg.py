@@ -44,7 +44,7 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
     for i in range(len(forms)):
         try:
             lhs, rhs = fenics.system(forms[i])
-        except ufl.log.UFLException:
+        except ufl.log.UFLException as ufl_exception:
             raise _exceptions.CashocsException(
                 "The state system could not be transferred to a linear "
                 "system.\n"
@@ -52,7 +52,7 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
                 "although it is not.\n"
                 "In your config, in the StateSystem section, "
                 "try using is_linear = False."
-            )
+            ) from ufl_exception
         lhs_list.append(lhs)
 
         if rhs.empty():

@@ -55,7 +55,9 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     """
     temp_location = f"{mesh_file[:-4]}_temp.msh"
 
-    with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
+    with open(mesh_file, "r", encoding="utf-8") as in_file, open(
+        temp_location, "w", encoding="utf-8"
+    ) as temp_file:
 
         parametrizations_section = False
 
@@ -234,16 +236,16 @@ class _MeshHandler:
         self.ksp_frobenius = PETSc.KSP().create()
         utils._setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
-        self.trial_dg0 = fenics.TrialFunction(self.form_handler.DG0)
-        self.test_dg0 = fenics.TestFunction(self.form_handler.DG0)
+        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
+        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
 
-        if not (self.angle_change == float("inf")):
+        if self.angle_change != float("inf"):
             self.search_direction_container = fenics.Function(
                 self.form_handler.deformation_space
             )
 
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
-            self.L_frobenius = (
+            self.l_frobenius = (
                 fenics.sqrt(
                     fenics.inner(
                         fenics.grad(self.search_direction_container),
@@ -284,7 +286,7 @@ class _MeshHandler:
             )
             x = utils._assemble_and_solve_linear(
                 self.a_frobenius,
-                self.L_frobenius,
+                self.l_frobenius,
                 ksp=self.ksp_frobenius,
                 ksp_options=self.options_frobenius,
             )
@@ -322,7 +324,7 @@ class _MeshHandler:
         dim = self.mesh.geometric_dimension()
 
         self.a_prior = self.trial_dg0 * self.test_dg0 * self.dx
-        self.L_prior = (
+        self.l_prior = (
             fenics.det(
                 fenics.Identity(dim) + fenics.grad(self.transformation_container)
             )
@@ -351,7 +353,7 @@ class _MeshHandler:
         )
         x = utils._assemble_and_solve_linear(
             self.a_prior,
-            self.L_prior,
+            self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
@@ -371,7 +373,7 @@ class _MeshHandler:
             input_mesh_file: Path to the mesh file used for generating the new .geo
                 file.
         """
-        with open(self.remesh_geo_file, "w") as file:
+        with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
             temp_name = os.path.split(input_mesh_file)[1]
 
             file.write(f"Merge '{temp_name}';\n")
@@ -379,7 +381,7 @@ class _MeshHandler:
             file.write("\n")
 
             geo_file = self.temp_dict["geo_file"]
-            with open(geo_file, "r") as f:
+            with open(geo_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if line[0].islower():
                         file.write(line)
@@ -541,7 +543,7 @@ class _MeshHandler:
 
             temp_dir = self.temp_dict["temp_dir"]
 
-            with open(f"{temp_dir}/temp_dict.json", "w") as file:
+            with open(f"{temp_dir}/temp_dict.json", "w", encoding="utf-8") as file:
                 json.dump(self.temp_dict, file)
 
             self._restart_script(temp_dir)

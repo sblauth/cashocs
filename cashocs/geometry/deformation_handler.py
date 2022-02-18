@@ -49,14 +49,14 @@ class DeformationHandler:
         self.dx = measure._NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
-        self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
-        self.DG0 = fenics.FunctionSpace(mesh, "DG", 0)
+        self.vector_cg_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
+        self.dg_function_space = fenics.FunctionSpace(mesh, "DG", 0)
         self.bbtree = self.mesh.bounding_box_tree()
         self._setup_a_priori()
-        self.v2d = fenics.vertex_to_dof_map(self.VCG).reshape(
+        self.v2d = fenics.vertex_to_dof_map(self.vector_cg_space).reshape(
             (-1, self.mesh.geometry().dim())
         )
-        self.d2v = fenics.dof_to_vertex_map(self.VCG)
+        self.d2v = fenics.dof_to_vertex_map(self.vector_cg_space)
 
         cells = self.mesh.cells()
         flat_cells = cells.flatten().tolist()
@@ -80,17 +80,19 @@ class DeformationHandler:
         self.ksp_prior = PETSc.KSP().create()
         utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
 
-        self.transformation_container = fenics.Function(self.VCG)
+        self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
 
         self.a_prior = (
-            fenics.TrialFunction(self.DG0) * fenics.TestFunction(self.DG0) * self.dx
+            fenics.TrialFunction(self.dg_function_space)
+            * fenics.TestFunction(self.dg_function_space)
+            * self.dx
         )
-        self.L_prior = (
+        self.l_prior = (
             fenics.det(
                 fenics.Identity(dim) + fenics.grad(self.transformation_container)
             )
-            * fenics.TestFunction(self.DG0)
+            * fenics.TestFunction(self.dg_function_space)
             * self.dx
         )
 
@@ -115,7 +117,7 @@ class DeformationHandler:
         )
         x = utils._assemble_and_solve_linear(
             self.a_prior,
-            self.L_prior,
+            self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
@@ -227,7 +229,7 @@ class DeformationHandler:
             The deformation vector field.
         """
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
-        dof_deformation = fenics.Function(self.VCG)
+        dof_deformation = fenics.Function(self.vector_cg_space)
         dof_deformation.vector()[:] = dof_vector
 
         return dof_deformation

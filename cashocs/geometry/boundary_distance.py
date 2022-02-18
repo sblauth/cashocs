@@ -120,7 +120,7 @@ def compute_boundary_distance(
 
     res_0 = np.sqrt(fenics.assemble(residual_form))
 
-    for i in range(max_iter):
+    for _ in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         utils._assemble_and_solve_linear(
             lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp
