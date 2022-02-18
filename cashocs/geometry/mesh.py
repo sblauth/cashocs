@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import configparser
+import functools
 import json
 import os
 import time
@@ -125,6 +126,33 @@ def _check_imported_mesh_quality(
                 )
 
 
+def _get_mesh_stats(mode: Literal["import", "generate"] = "import"):
+    def decorator_stats(func):
+        @functools.wraps(func)
+        def wrapper_stats(*args, **kwargs):
+            word = "importing" if mode.casefold() == "import" else "generating"
+            start_time = time.time()
+            _loggers.info(f"{word.capitalize()} mesh.")
+
+            value = func(*args, **kwargs)
+
+            end_time = time.time()
+            _loggers.info(
+                f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s."
+            )
+            _loggers.info(
+                f"Mesh contains {value[0].num_vertices():,} vertices and "
+                f"{value[0].num_cells():,} cells of type "
+                f"{value[0].ufl_cell().cellname()}\n"
+            )
+            return value
+
+        return wrapper_stats
+
+    return decorator_stats
+
+
+@_get_mesh_stats(mode="import")
 def import_mesh(
     input_arg: Union[str, configparser.ConfigParser]
 ) -> Tuple[
@@ -174,9 +202,6 @@ def import_mesh(
 
         and both can be used interchangeably.
     """
-    start_time = time.time()
-    _loggers.info("Importing mesh.")
-
     cashocs_remesh_flag, temp_dir = utils._parse_remesh()
 
     # Check for the file format
@@ -236,13 +261,6 @@ def import_mesh(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
-    end_time = time.time()
-    _loggers.info(f"Done importing mesh. Elapsed time: {end_time - start_time:.2f} s")
-    _loggers.info(
-        f"Mesh contains {mesh.num_vertices():,} vertices"
-        f" and {mesh.num_cells():,} cells of type {mesh.ufl_cell().cellname()}.\n"
-    )
-
     # Add an attribute to the mesh to show with what procedure it was generated
     mesh._set_config_flag()
     # Add the physical groups to the mesh in case they are present
@@ -255,6 +273,7 @@ def import_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
+@_get_mesh_stats(mode="generate")
 def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
@@ -396,6 +415,7 @@ def regular_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
+@_get_mesh_stats(mode="generate")
 def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
