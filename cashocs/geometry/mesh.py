@@ -24,7 +24,7 @@ import functools
 import json
 import os
 import time
-from typing import Callable, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 import fenics
 import numpy as np
@@ -126,22 +126,22 @@ def _check_imported_mesh_quality(
                 )
 
 
-def _get_mesh_stats(mode: Literal["import", "generate"] = "import") -> Callable:
-    def decorator_stats(
-        func: Callable[
-            ...,
-            Tuple[
-                Mesh,
-                fenics.MeshFunction,
-                fenics.MeshFunction,
-                fenics.Measure,
-                fenics.Measure,
-                fenics.Measure,
-            ],
-        ]
-    ) -> Callable:
+MeshTuple = Tuple[
+    Mesh,
+    fenics.MeshFunction,
+    fenics.MeshFunction,
+    fenics.Measure,
+    fenics.Measure,
+    fenics.Measure,
+]
+
+
+def _get_mesh_stats(
+    mode: Literal["import", "generate"] = "import"
+) -> Callable[..., Callable[..., MeshTuple]]:
+    def decorator_stats(func: Callable[..., MeshTuple]) -> Callable[..., MeshTuple]:
         @functools.wraps(func)
-        def wrapper_stats(*args, **kwargs):
+        def wrapper_stats(*args: Any, **kwargs: Any) -> MeshTuple:
             word = "importing" if mode.casefold() == "import" else "generating"
             start_time = time.time()
             _loggers.info(f"{word.capitalize()} mesh.")
