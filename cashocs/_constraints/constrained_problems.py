@@ -101,6 +101,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
+
         """
         self.state_forms = state_forms
         self.bcs_list = bcs_list
@@ -166,6 +167,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 means that ``mu_0 = 1`` is used.
             lambda_0: Initial guess for the Lagrange multipliers. Default is ``None``,
                 which corresponds to a zero guess.
+
         """
         if method.casefold() in ["augmented lagrangian", "al"]:
             self.solver = solvers.AugmentedLagrangianMethod(
@@ -189,6 +191,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Returns:
             The 2-norm of the total constraint violation.
+
         """
         s = 0.0
         for constraint in self.constraint_list:
@@ -213,6 +216,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+
         """
         self.rtol = inner_rtol or tol
 
@@ -222,6 +226,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
+
         """
         self._pre_hook = function
 
@@ -231,6 +236,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
+
         """
         self._post_hook = function
 
@@ -244,6 +250,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 each solve of the state system
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
+
         """
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
@@ -323,6 +330,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
+
         """
         super().__init__(
             state_forms,
@@ -358,6 +366,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+
         """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
@@ -484,6 +493,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
+
         """
         super().__init__(
             state_forms,
@@ -518,6 +528,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+
         """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 

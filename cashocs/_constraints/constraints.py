@@ -50,6 +50,7 @@ class Constraint(abc.ABC):
                 which models the part that is to be constrained.
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
+
         """
         self.variable_function = variable_function
         self.measure = measure
@@ -68,6 +69,7 @@ class Constraint(abc.ABC):
 
         Returns:
             The computed violation
+
         """
         pass
 
@@ -90,6 +92,7 @@ class EqualityConstraint(Constraint):
             target: The target (rhs) of the equality constraint.
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
+
         """
         super().__init__(variable_function, measure=measure)
         self.target = target
@@ -116,6 +119,7 @@ class EqualityConstraint(Constraint):
 
         Returns:
             The computed violation
+
         """
         if self.is_integral_constraint:
             return np.abs(fenics.assemble(self.variable_function) - self.target)
@@ -148,6 +152,7 @@ class InequalityConstraint(Constraint):
             upper_bound: The upper bound for the inequality constraint
             measure: A measure indicating where a pointwise constraint should be
                 satisfied.
+
         """
         super().__init__(variable_function, measure=measure)
         self.lower_bound = lower_bound
@@ -212,6 +217,7 @@ class InequalityConstraint(Constraint):
 
         Returns:
             The computed violation
+
         """
         violation = 0.0
         if self.is_integral_constraint:

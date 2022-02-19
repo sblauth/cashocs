@@ -54,6 +54,7 @@ class ConstrainedSolver(abc.ABC):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
+
         """
         self.constrained_problem = constrained_problem
 
@@ -136,6 +137,7 @@ class ConstrainedSolver(abc.ABC):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
+
         """
         pass
 
@@ -169,6 +171,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
+
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
@@ -192,6 +195,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             multiplier: The function representing the Lagrange multiplier (guess)
             a_tensor: A matrix, into which the form is assembled for speed up
             b_tensor: A vector, into which the form is assembled for speed up
+
         """
         if isinstance(project_terms, list):
             project_term = utils.summation(project_terms)
@@ -262,6 +266,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         Args:
             index: The index of the equality constraint.
+
         """
         if self.constraints[index].is_integral_constraint:
             self.lmbd[index] += self.mu * (
@@ -287,6 +292,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         Args:
             index: The index of the equality constraint.
+
         """
         if self.constraints[index].is_integral_constraint:
             lower_term = 0.0
@@ -383,6 +389,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
+
         """
         convergence_tol = constraint_tol or tol / 10.0
 
@@ -438,6 +445,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
+
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.solver_name = "Quadratic Penalty Method"
@@ -464,6 +472,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
+
         """
         convergence_tol = constraint_tol or tol / 10.0
 
