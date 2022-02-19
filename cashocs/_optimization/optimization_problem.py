@@ -141,6 +141,7 @@ class OptimizationProblem(abc.ABC):
             ``state_forms[i]`` is the weak form of the PDE for ``states[i]`` with
             boundary conditions ``bcs_list[i]`` and corresponding adjoint state
             ``adjoints[i]``.
+
         """
         self.has_cashocs_remesh_flag, self.temp_dir = utils._parse_remesh()
 
@@ -187,6 +188,7 @@ class OptimizationProblem(abc.ABC):
 
     @is_shape_problem.setter
     def is_shape_problem(self, value: bool) -> None:
+        """Setter method for is_shape_problem."""
         self._is_shape_problem = value
         self._is_control_problem = not value
 
@@ -197,6 +199,7 @@ class OptimizationProblem(abc.ABC):
 
     @is_control_problem.setter
     def is_control_problem(self, value: bool) -> None:
+        """Setter method for is_control_problem."""
         self._is_shape_problem = not value
         self._is_control_problem = value
 
@@ -237,6 +240,7 @@ class OptimizationProblem(abc.ABC):
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
                 magnitude of `desired_weights[i]` for the initial iteration.
+
         """
         if config is None:
             self.config = io.Config()
@@ -335,6 +339,7 @@ class OptimizationProblem(abc.ABC):
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
+
         """
         mod_forms = utils.enlist(adjoint_forms)
 
@@ -401,6 +406,7 @@ class OptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
+
         """
         self.form_handler._pre_hook = function
         self.state_problem.has_solution = False
@@ -413,6 +419,7 @@ class OptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
+
         """
         self.form_handler._post_hook = function
         self.state_problem.has_solution = False
@@ -429,6 +436,7 @@ class OptimizationProblem(abc.ABC):
                 each solve of the state system
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
+
         """
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
@@ -482,6 +490,7 @@ class OptimizationProblem(abc.ABC):
 
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
+
         """
         self.algorithm = utils._optimization_algorithm_configuration(
             self.config, algorithm
@@ -508,6 +517,7 @@ class OptimizationProblem(abc.ABC):
 
         Args:
             shift: The constant, by which the cost functional is shifted.
+
         """
         self.form_handler.cost_functional_shift = shift
 
@@ -518,6 +528,7 @@ class OptimizationProblem(abc.ABC):
         Returns:
             The result of the gradient test. If this is (approximately) 2 or larger,
             everything works as expected.
+
         """
         pass
 

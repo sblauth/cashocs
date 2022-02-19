@@ -41,6 +41,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
@@ -57,6 +58,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The decrease measure for the Armijo test.
+
         """
         pass
 
@@ -79,6 +81,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The stepsize which was found to be acceptable.
+
         """
         pass
 
@@ -88,6 +91,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The norm of the gradient.
+
         """
         pass
 
@@ -103,6 +107,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
+
         """
         pass
 
@@ -112,6 +117,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             A boolean, which indicates whether remeshing is required.
+
         """
         pass
 
@@ -123,5 +129,6 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Args:
             search_direction: The current search direction (will be overwritten).
+
         """
         pass

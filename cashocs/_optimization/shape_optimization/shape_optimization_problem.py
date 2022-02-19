@@ -133,6 +133,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+
         """
         use_scaling = bool(desired_weights is not None)
 
@@ -254,6 +255,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+
         """
         super().__init__(
             state_forms,
@@ -516,6 +518,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 exctype: The type of the exception.
                 value: The value of the exception.
                 traceback: The traceback of the exception.
+
             """
             _loggers.debug(
                 "An exception was raised by cashocs, "
@@ -539,6 +542,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             A list containing the shape gradient.
+
         """
         self.gradient_problem.solve()
 
@@ -552,6 +556,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Args:
             shape_derivative: The shape_derivative of the reduced cost functional.
+
         """
         if (
             not shape_derivative.arguments()[0].ufl_function_space()
@@ -608,6 +613,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
+
         """
         self.supply_shape_derivative(shape_derivative)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
@@ -617,6 +623,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             The TestFunction object.
+
         """
         return self.form_handler.test_vector_field
 
@@ -635,5 +642,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         Returns:
             The convergence order from the Taylor test. If this is (approximately) 2
             or larger, everything works as expected.
+
         """
         return verification.shape_gradient_test(self, h, rng)

@@ -128,6 +128,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
             <tutorial_index>`.
+
         """
         use_scaling = bool(desired_weights is not None)
 
@@ -230,6 +231,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
             <tutorial_index>`.
+
         """
         super().__init__(
             state_forms,
@@ -411,6 +413,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             A list consisting of the (components) of the gradient.
+
         """
         self.gradient_problem.solve()
 
@@ -425,6 +428,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Args:
             derivatives: The derivatives of the reduced (!) cost functional w.r.t.
             the control variables.
+
         """
         mod_derivatives = None
         if isinstance(derivatives, list) and len(derivatives) > 0:
@@ -455,6 +459,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
+
         """
         self.supply_derivatives(derivatives)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
@@ -478,6 +483,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Returns:
             The convergence order from the Taylor test. If this is (approximately) 2
             or larger, everything works as expected.
+
         """
         return verification.control_gradient_test(self, u, h, rng)
 
@@ -491,6 +497,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             The (wrapped) list of scalar products
+
         """
         if riesz_scalar_products is None:
             dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
@@ -516,6 +523,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             The (wrapped) list of control constraints.
+
         """
         if control_constraints is None:
             temp_control_constraints = []

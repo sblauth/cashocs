@@ -45,6 +45,7 @@ class _EmptyMeasure(ufl.Measure):
             Constant(0)*u*dm
 
         so that ``fenics.assemble(u*dm)`` generates zeros.
+
     """
 
     def __init__(self, measure: fenics.Measure) -> None:
@@ -52,6 +53,7 @@ class _EmptyMeasure(ufl.Measure):
 
         Args:
             measure: The underlying UFL measure.
+
         """
         super().__init__(measure.integral_type())
         self.measure = measure
@@ -65,6 +67,7 @@ class _EmptyMeasure(ufl.Measure):
 
         Returns:
             The resulting UFL form.
+
         """
         return fenics.Constant(0) * other * self.measure
 
@@ -97,6 +100,7 @@ def generate_measure(
             mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
             top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
             fenics.assemble(1*top_bottom_measure)
+
     """
     if len(idx) == 0:
         out_measure = _EmptyMeasure(measure)

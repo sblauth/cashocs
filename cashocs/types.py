@@ -17,10 +17,13 @@
 
 """Type hints for cashocs."""
 
-from typing import Union
+from typing import Tuple, Union
+
+import fenics
 
 from cashocs import _forms
 from cashocs import _pde_problems
+from cashocs import geometry
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
@@ -31,3 +34,11 @@ GradientProblem = Union[
     _pde_problems.ShapeGradientProblem, _pde_problems.ControlGradientProblem
 ]
 FormHandler = Union[_forms.ControlFormHandler, _forms.ShapeFormHandler]
+MeshTuple = Tuple[
+    geometry.mesh.Mesh,
+    fenics.MeshFunction,
+    fenics.MeshFunction,
+    fenics.Measure,
+    fenics.Measure,
+    fenics.Measure,
+]

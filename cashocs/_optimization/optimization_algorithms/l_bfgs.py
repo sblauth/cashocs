@@ -45,6 +45,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
+
         """
         super().__init__(optimization_problem)
         self.line_search = line_search
@@ -159,6 +160,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
         Returns:
             A function corresponding to the current / next search direction
+
         """
         if self.bfgs_memory_size > 0 and len(self.history_s) > 0:
             self.history_alpha.clear()

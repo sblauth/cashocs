@@ -64,6 +64,7 @@ def write_mesh(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+
     """
     cells_str = "triangle"
     if meshdim == 2:
@@ -91,6 +92,7 @@ def write_subdomains(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+
     """
     cells_str = "triangle"
     if meshdim == 2:
@@ -124,6 +126,7 @@ def write_boundaries(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+
     """
     facet_str = "line"
     if meshdim == 2:
@@ -149,6 +152,7 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
         meshdim: The dimension of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+
     """
     physical_groups = {"dx": {}, "ds": {}}
     has_physical_groups = False
@@ -189,6 +193,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     Args:
         argv: Command line options. The first parameter is the input .msh file,
             the second is the output .xdmf file
+
     """
     start_time = time.time()
 

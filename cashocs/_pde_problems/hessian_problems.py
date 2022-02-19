@@ -52,6 +52,7 @@ class HessianProblem:
             form_handler: The FormHandler object for the optimization problem.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
+
         """
         self.form_handler = form_handler
         self.gradient_problem = gradient_problem
@@ -205,6 +206,7 @@ class HessianProblem:
         Args:
             h: A function to which we want to apply the Hessian to.
             out: A list of functions into which the result is saved.
+
         """
         for i in range(self.control_dim):
             self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
@@ -301,6 +303,7 @@ class HessianProblem:
         Args:
             h: The direction, onto which the reduced Hessian is applied.
             out: The output of the application of the (linear) operator.
+
         """
         for j in range(self.control_dim):
             out[j].vector().vec().set(0.0)
@@ -324,6 +327,7 @@ class HessianProblem:
 
         Returns:
             A list containing the Newton increment.
+
         """
         self.gradient_problem.solve()
         self.form_handler.compute_active_sets()

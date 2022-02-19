@@ -47,6 +47,7 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
 
     Returns:
         The tangential gradient of u.
+
     """
     return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
 
@@ -61,6 +62,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
 
     Returns:
         The tangential divergence of u.
+
     """
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
 
@@ -73,6 +75,7 @@ class ShapeRegularization:
 
         Args:
             form_handler: The corresponding shape form handler object.
+
         """
         self.test_vector_field = form_handler.test_vector_field
         self.config = form_handler.config
@@ -159,6 +162,7 @@ class ShapeRegularization:
 
         Args:
             form_handler: The form handler of the problem.
+
         """
         self.mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
         self.kappa_curvature = fenics.Function(form_handler.deformation_space)
@@ -321,6 +325,7 @@ class ShapeRegularization:
 
         Returns:
             Part of the objective value coming from the regularization
+
         """
         if self.has_regularization:
 
@@ -417,6 +422,7 @@ class ShapeRegularization:
 
         Returns:
             The weak form of the shape derivative coming from the regularization
+
         """
         vector_field = self.test_vector_field
         if self.has_regularization:

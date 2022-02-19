@@ -52,6 +52,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
 
     Args:
         mesh_file: Path to the Gmsh file, has to end in .msh.
+
     """
     temp_location = f"{mesh_file[:-4]}_temp.msh"
 
@@ -82,6 +83,7 @@ def filter_sys_argv(temp_dir: str):  # pragma: no cover
 
     Args:
         temp_dir: Path to directory for the temp files
+
     """
     arg_list = sys.argv.copy()
     idx_cashocs_remesh_flag = [
@@ -113,6 +115,7 @@ class _MeshHandler:
 
         Args:
             shape_optimization_problem: The corresponding shape optimization problem.
+
         """
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
@@ -194,6 +197,7 @@ class _MeshHandler:
 
         Args:
             transformation: The transformation for the mesh, a vector CG1 Function.
+
         """
         if not (
             transformation.ufl_element().family() == "Lagrange"
@@ -276,6 +280,7 @@ class _MeshHandler:
 
         Returns:
             A guess for the number of "Armijo halvings" to get a better stepsize.
+
         """
         if self.angle_change == float("inf"):
             return 0
@@ -347,6 +352,7 @@ class _MeshHandler:
 
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
+
         """
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
@@ -372,6 +378,7 @@ class _MeshHandler:
         Args:
             input_mesh_file: Path to the mesh file used for generating the new .geo
                 file.
+
         """
         with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
             temp_name = os.path.split(input_mesh_file)[1]
@@ -443,6 +450,7 @@ class _MeshHandler:
 
         Args:
               temp_dir: Path to the directory for temporary files.
+
         """
         if not self.config.getboolean("Debug", "restart"):
             os.execv(
@@ -467,6 +475,7 @@ class _MeshHandler:
 
         Args:
             solver: The optimization algorithm used to solve the problem.
+
         """
         if self.do_remesh:
             self.remesh_counter += 1

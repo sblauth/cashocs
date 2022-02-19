@@ -48,6 +48,7 @@ class StateProblem(pde_problem.PDEProblem):
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
             temp_dict: A dict used for reinitialization when remeshing is performed.
+
         """
         super().__init__(form_handler)
 
@@ -123,6 +124,7 @@ class StateProblem(pde_problem.PDEProblem):
 
         Returns:
             The solution of the state system.
+
         """
         if not self.has_solution:
 

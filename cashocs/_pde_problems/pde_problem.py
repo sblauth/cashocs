@@ -36,6 +36,7 @@ class PDEProblem(abc.ABC):
 
         Args:
             form_handler: The form handler for the problem.
+
         """
         self.form_handler = form_handler
         self.config = form_handler.config
@@ -48,5 +49,6 @@ class PDEProblem(abc.ABC):
 
         Returns:
             The solution of the PDE.
+
         """
         pass

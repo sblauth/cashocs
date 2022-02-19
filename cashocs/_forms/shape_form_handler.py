@@ -54,6 +54,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         Args:
             optimization_problem: The corresponding shape optimization problem.
+
         """
         super().__init__(optimization_problem)
 
@@ -205,7 +206,12 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     # noinspection PyUnresolvedReferences
     def _add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pullbacks for scalar_tracking_forms."""
+        """Adds pullbacks for scalar_tracking_forms.
+
+        Args:
+            coeff: The coefficient after which the Lagrangian is differentiated.
+
+        """
         if self.use_scalar_tracking:
             for j in range(self.no_scalar_tracking_terms):
                 self.material_derivative += fenics.derivative(
@@ -221,7 +227,12 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     # noinspection PyUnresolvedReferences
     def _add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pullbacks for min_max_terms."""
+        """Adds pullbacks for min_max_terms.
+
+        Args:
+            coeff: The coefficient after which the Lagrangian is differentiated.
+
+        """
         if self.use_min_max_terms:
             for j in range(self.no_min_max_terms):
                 if self.min_max_lower_bounds[j] is not None:
@@ -248,7 +259,12 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     # noinspection PyUnresolvedReferences
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
-        """Checks, whether the coefficient belongs to state or adjoint variables."""
+        """Checks, whether the coefficient belongs to state or adjoint variables.
+
+        Args:
+            coeff: The coefficient under investigation
+
+        """
         if (
             coeff.id() not in self.state_adjoint_ids
             and not coeff.ufl_element().family() == "Real"
@@ -607,6 +623,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         Returns:
             The scalar product of a and b.
+
         """
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")

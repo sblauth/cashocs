@@ -44,6 +44,7 @@ class DeformationHandler:
 
         Args:
             mesh: The fenics mesh which is to be deformed.
+
         """
         self.mesh = mesh
         self.dx = measure._NamedMeasure("dx", self.mesh)
@@ -111,6 +112,7 @@ class DeformationHandler:
 
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
+
         """
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
@@ -138,6 +140,7 @@ class DeformationHandler:
         Notes:
             fenics itself does not check whether the used mesh is a valid finite
             element mesh, so this check has to be done manually.
+
         """
         self_intersections = False
         collisions = CollisionCounter.compute_collisions(self.mesh)
@@ -184,6 +187,7 @@ class DeformationHandler:
 
         Returns:
             ``True`` if the mesh movement was successful, ``False`` otherwise.
+
         """
         if isinstance(transformation, np.ndarray):
             if not transformation.shape == self.coordinates.shape:
@@ -227,6 +231,7 @@ class DeformationHandler:
 
         Returns:
             The deformation vector field.
+
         """
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
         dof_deformation = fenics.Function(self.vector_cg_space)
@@ -242,6 +247,7 @@ class DeformationHandler:
 
         Returns:
             The array which can be used to deform the mesh coordinates.
+
         """
         if not (
             dof_deformation.ufl_element().family() == "Lagrange"
@@ -265,6 +271,7 @@ class DeformationHandler:
 
         Returns:
             ``True`` if the assignment was possible, ``False`` if not.
+
         """
         self.old_coordinates = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coordinates[:, :]
@@ -332,5 +339,6 @@ PYBIND11_MODULE(SIGNATURE, m)
         Returns:
             An array of cell indices, where ``array[i]`` contains the indices of all
             cells that vertex ``i`` collides with.
+
         """
         return cls._cpp_object.compute_collisions(mesh)

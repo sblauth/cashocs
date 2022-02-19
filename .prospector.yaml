@@ -61,7 +61,11 @@ pyroma:
 mypy:
   run: false
   options:
+    disallow-untyped-defs: true
     ignore-missing-imports: true
+    no-implicit-optional: true
+    check-untyped-defs: true
+    warn-return-any: true
     follow-imports: skip
 
 vulture:

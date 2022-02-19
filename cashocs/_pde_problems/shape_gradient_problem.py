@@ -58,6 +58,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 optimization problem.
             state_problem: The corresponding state problem.
             adjoint_problem: The corresponding adjoint problem.
+
         """
         super().__init__(form_handler)
         self.state_problem = state_problem
@@ -123,6 +124,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         Returns:
             The function representing the shape gradient of the (reduced) cost
             functional.
+
         """
         self.state_problem.solve()
         self.adjoint_problem.solve()
@@ -190,6 +192,7 @@ class _PLaplaceProjector:
             shape_derivative: The ufl Form of the shape derivative
             bcs_shape: The boundary conditions for computing the gradient deformation
             config: The config for the optimization problem
+
         """
         self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
         delta = config.getfloat("ShapeGradient", "damping_factor")

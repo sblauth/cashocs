@@ -39,6 +39,7 @@ class LineSearch(abc.ABC):
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         self.config = optimization_problem.config
         self.form_handler = optimization_problem.form_handler
@@ -79,6 +80,7 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+
         """
         self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
@@ -94,6 +96,7 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+
         """
         pass
 

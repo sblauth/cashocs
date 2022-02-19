@@ -42,6 +42,7 @@ class ReducedCostFunctional:
         Args:
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object corresponding to the state system.
+
         """
         self.form_handler = form_handler
         self.state_problem = state_problem
@@ -55,6 +56,7 @@ class ReducedCostFunctional:
 
         Returns:
             The value of the reduced cost functional
+
         """
         self.state_problem.solve()
 

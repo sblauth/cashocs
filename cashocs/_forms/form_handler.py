@@ -45,6 +45,7 @@ def _get_subdx(
 
     Returns:
         The list of the sub-indices.
+
     """
     if function_space.id() == index:
         return ls
@@ -84,6 +85,7 @@ class FormHandler(abc.ABC):
 
         Args:
             optimization_problem: The corresponding optimization problem
+
         """
         self.bcs_list = optimization_problem.bcs_list
         self.states = optimization_problem.states
@@ -366,6 +368,7 @@ class FormHandler(abc.ABC):
 
         Returns:
             The scalar product of a and b.
+
         """
         pass
 
@@ -383,6 +386,7 @@ class FormHandler(abc.ABC):
 
         Returns:
             The result of the restriction (overrides input b)
+
         """
         for j in range(len(self.gradient)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
@@ -404,6 +408,7 @@ class FormHandler(abc.ABC):
 
         Returns:
             The result of the restriction (overrides input b)
+
         """
         for j in range(len(self.gradient)):
             b[j].vector().vec().set(0.0)

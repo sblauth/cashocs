@@ -42,6 +42,7 @@ class ShapeVariableAbstractions(
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         super().__init__(optimization_problem)
         self.mesh_handler = optimization_problem.mesh_handler
@@ -63,6 +64,7 @@ class ShapeVariableAbstractions(
 
         Returns:
             The decrease measure for the Armijo test.
+
         """
         return self.form_handler.scalar_product(self.gradient, search_direction)
 
@@ -71,6 +73,7 @@ class ShapeVariableAbstractions(
 
         Returns:
             The norm of the gradient.
+
         """
         return np.sqrt(self.form_handler.scalar_product(self.gradient, self.gradient))
 
@@ -91,6 +94,7 @@ class ShapeVariableAbstractions(
 
         Returns:
             The stepsize which was found to be acceptable.
+
         """
         while True:
             self.deformation.vector().vec().aypx(
@@ -122,6 +126,7 @@ class ShapeVariableAbstractions(
 
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
+
         """
         return self.mesh_handler.compute_decreases(search_direction, stepsize)
 
@@ -130,6 +135,7 @@ class ShapeVariableAbstractions(
 
         Returns:
             A boolean, which indicates whether remeshing is required.
+
         """
         return bool(
             self.mesh_handler.current_mesh_quality
@@ -143,5 +149,6 @@ class ShapeVariableAbstractions(
 
         Args:
             search_direction: The current search direction (will be overwritten).
+
         """
         pass

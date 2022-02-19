@@ -50,6 +50,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 linearize the problem.
             temp_dict: A dictionary used for reinitializations when remeshing is
                 performed.
+
         """
         super().__init__(form_handler)
 
@@ -91,6 +92,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         Returns:
             The list of adjoint variables.
+
         """
         self.state_problem.solve()
 

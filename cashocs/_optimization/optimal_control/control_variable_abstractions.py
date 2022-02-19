@@ -42,6 +42,7 @@ class ControlVariableAbstractions(
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         super().__init__(optimization_problem)
 
@@ -72,6 +73,7 @@ class ControlVariableAbstractions(
 
         Returns:
             The decrease measure for the Armijo test.
+
         """
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
@@ -110,6 +112,7 @@ class ControlVariableAbstractions(
 
         Returns:
             The stepsize which was found to be acceptable.
+
         """
         self.store_optimization_variables()
 
@@ -127,6 +130,7 @@ class ControlVariableAbstractions(
 
         Returns:
             The norm of the gradient.
+
         """
         return np.sqrt(self._stationary_measure_squared())
 
@@ -138,6 +142,7 @@ class ControlVariableAbstractions(
 
         Returns:
             The square of the stationary measure
+
         """
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
@@ -168,6 +173,7 @@ class ControlVariableAbstractions(
 
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
+
         """
         return 0
 
@@ -176,6 +182,7 @@ class ControlVariableAbstractions(
 
         Returns:
             A boolean, which indicates whether remeshing is required.
+
         """
         return False
 
@@ -186,6 +193,7 @@ class ControlVariableAbstractions(
 
         Args:
             search_direction: The current search direction (will be overwritten).
+
         """
         for j in range(self.form_handler.control_dim):
             idx = np.asarray(

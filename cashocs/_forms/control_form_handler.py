@@ -49,6 +49,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         Args:
             optimization_problem: The corresponding optimal control problem
+
         """
         super().__init__(optimization_problem)
 
@@ -146,6 +147,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         Returns:
             The value of the scalar product.
+
         """
         result = 0.0
 
@@ -215,6 +217,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         Returns:
             The result of the projection (overwrites input b).
+
         """
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -244,6 +247,7 @@ class ControlFormHandler(form_handler.FormHandler):
         Returns:
             The result of the projection of ``a`` onto the inactive set (overwrites
             input ``b``).
+
         """
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
@@ -273,6 +277,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         Returns:
             The result of the projection (overwrites input ``a``)
+
         """
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:

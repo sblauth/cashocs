@@ -34,7 +34,16 @@ if TYPE_CHECKING:
 def _initialize_control_variable(
     ocp: optimal_control.OptimalControlProblem, u: List[fenics.Function]
 ) -> List[fenics.Function]:
+    """Initializes the control variable, so that it can be restored later.
 
+    Args:
+        ocp: The corresponding optimal control problem.
+        u: The control variable.
+
+    Returns:
+        A copy of the control variables
+
+    """
     if u is None:
         u = []
         for j in range(ocp.control_dim):
@@ -76,6 +85,7 @@ def control_gradient_test(
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
+
     """
     rng = rng or np.random
 
@@ -151,6 +161,7 @@ def shape_gradient_test(
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
+
     """
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
@@ -224,6 +235,7 @@ def compute_convergence_rates(
 
     Returns:
         The computed convergence rates
+
     """
     rates = []
     for i in range(1, len(epsilons)):

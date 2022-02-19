@@ -113,6 +113,7 @@ def debug(message: str) -> None:
 
     Args:
         message: The message to be issued.
+
     """
     _cashocs_logger.debug(message)
 
@@ -122,6 +123,7 @@ def info(message: str) -> None:
 
     Args:
         message: The message to be issued.
+
     """
     _cashocs_logger.info(message)
 
@@ -131,6 +133,7 @@ def warning(message: str) -> None:
 
     Args:
         message: The message to be issued.
+
     """
     _cashocs_logger.warning(message)
 
@@ -140,6 +143,7 @@ def error(message: str) -> None:
 
     Args:
         message: The message to be issued.
+
     """
     _cashocs_logger.error(message)
 
@@ -149,5 +153,6 @@ def critical(message: str) -> None:
 
     Args:
         message: The message to be issued.
+
     """
     _cashocs_logger.critical(message)

@@ -60,6 +60,7 @@ def compute_boundary_distance(
 
     Returns:
         A fenics function representing an approximation of the distance to the boundary.
+
     """
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure._NamedMeasure("dx", mesh)

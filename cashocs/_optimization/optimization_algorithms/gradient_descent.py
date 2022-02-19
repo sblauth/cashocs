@@ -41,6 +41,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
+
         """
         super().__init__(optimization_problem)
         self.line_search = line_search

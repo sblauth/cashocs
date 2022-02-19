@@ -44,6 +44,7 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         super().__init__(optimization_problem)
 
@@ -66,6 +67,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         Returns:
             A boolean, which is True if a termination / cancellation criterion is
             satisfied.
+
         """
         if solver.iteration >= solver.maximum_iterations:
             solver.remeshing_its = True
@@ -99,6 +101,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+
         """
         self.search_direction_inf = np.max(
             [
@@ -174,6 +177,7 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         Returns:
             The computed decrease measure.
+
         """
         if self.is_control_problem:
             return self.optimization_variable_abstractions.compute_decrease_measure(

@@ -41,6 +41,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         self.line_search_broken = False
         self.has_curvature_info = False
@@ -100,6 +101,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             The computed gradient norm.
+
         """
         return self.optimization_variable_abstractions.compute_gradient_norm()
 
@@ -116,6 +118,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             A flag which is True, when the algorithm did not converge
+
         """
         if self.iteration >= self.maximum_iterations:
             self.converged_reason = -1
@@ -129,7 +132,12 @@ class OptimizationAlgorithm(abc.ABC):
         return bool(self.converged_reason < 0)
 
     def _exit(self, message: str) -> None:
-        """Exits the optimization algorithm."""
+        """Exits the optimization algorithm and prints message.
+
+        Args:
+            message: The message that should be printed on exit.
+
+        """
         if self.soft_exit:
             print(message)
         else:
@@ -177,6 +185,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             A flag, which is True if the algorithm converged.
+
         """
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
