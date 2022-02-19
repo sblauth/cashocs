@@ -44,6 +44,7 @@ def generate_summary_str(
 
     Returns:
         The summary string.
+
     """
     strs = [
         "\n",
@@ -71,6 +72,7 @@ def generate_output_str(
 
     Returns:
         The output string, which is used later.
+
     """
     iteration = solver.iteration
     objective_value = solver.objective_value
@@ -120,6 +122,7 @@ class ResultManager:
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the results are saved.
+
         """
         self.config = optimization_problem.config
         self.result_dir = result_dir
@@ -156,6 +159,7 @@ class ResultManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
@@ -171,6 +175,7 @@ class ResultManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         self.output_dict["initial_gradient_norm"] = solver.gradient_norm_initial
         self.output_dict["state_solves"] = solver.state_problem.number_of_solves
@@ -192,6 +197,7 @@ class HistoryManager:
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the results are saved.
+
         """
         self.result_dir = result_dir
 
@@ -205,6 +211,7 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if self.verbose:
             print(generate_output_str(solver))
@@ -216,6 +223,7 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if self.save_txt:
             if solver.iteration == 0:
@@ -235,6 +243,7 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if self.verbose:
             print(generate_summary_str(solver))
@@ -246,6 +255,7 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if self.save_txt:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
@@ -260,6 +270,7 @@ class TempFileManager:
 
         Args:
             optimization_problem: The corresponding optimization problem.
+
         """
         self.config = optimization_problem.config
         self.is_shape_problem = optimization_problem.is_shape_problem
@@ -271,6 +282,7 @@ class TempFileManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if self.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
@@ -298,6 +310,7 @@ class MeshManager:
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the output is saved to.
+
         """
         self.config = optimization_problem.config
         self.result_dir = result_dir
@@ -309,6 +322,7 @@ class MeshManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         if solver.form_handler.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
@@ -331,6 +345,7 @@ class PVDFileManager:
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the output files are saved in.
+
         """
         self.form_handler = optimization_problem.form_handler
         self.config = optimization_problem.config
@@ -427,6 +442,7 @@ class PVDFileManager:
 
         Args:
             remesh_counter: The number of times remeshing has been performed.
+
         """
         self.pvd_prefix = f"remesh_{remesh_counter:d}_"
 
@@ -442,6 +458,7 @@ class PVDFileManager:
 
         Returns:
             A .pvd fenics.File object, into which a Function can be written
+
         """
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
@@ -458,6 +475,7 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
+
         """
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
@@ -480,6 +498,7 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
+
         """
         if self.save_pvd and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
@@ -494,6 +513,7 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
+
         """
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
@@ -518,6 +538,7 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
+
         """
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
@@ -532,6 +553,7 @@ class PVDFileManager:
 
         Args:
             solver: The optimization algorithm.
+
         """
         self._initialize_pvd_lists()
 

@@ -29,13 +29,16 @@ from typing import Any, Callable, Optional, Union
 import fenics
 import numpy as np
 from typing_extensions import Literal
+from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import types
 from cashocs import utils
 from cashocs.geometry import measure
 from cashocs.geometry import mesh_quality
+
+if TYPE_CHECKING:
+    from cashocs import types
 
 
 class Mesh(fenics.Mesh):

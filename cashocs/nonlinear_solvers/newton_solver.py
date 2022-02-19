@@ -95,6 +95,7 @@ class _NewtonSolver:
                 sub-problem.
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
+
         """
         self.nonlinear_form = nonlinear_form
         self.u = u
@@ -222,6 +223,7 @@ class _NewtonSolver:
 
         Returns:
             A solution of the nonlinear problem.
+
         """
         self._compute_residual()
 
@@ -312,6 +314,7 @@ class _NewtonSolver:
 
         Returns:
             The computed tolerance.
+
         """
         if self.convergence_type.casefold() == "abs":
             return self.atol
@@ -433,6 +436,7 @@ def newton_solve(
             F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
             bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
             cashocs.newton_solve(F, u, bcs)
+
     """
     solver = _NewtonSolver(
         nonlinear_form,
@@ -532,6 +536,7 @@ def damped_newton_solve(
 
     .. deprecated:: 1.5.0
         This is replaced by cashocs.newton_solve and will be removed in the future.
+
     """
     _loggers.warning(
         "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced "

@@ -43,6 +43,7 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
     .. deprecated:: 1.1.0
         This is replaced by :py:func:`load_config <cashocs.load_config>`
         and will be removed in the future.
+
     """
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
@@ -63,6 +64,7 @@ def load_config(path: str) -> ConfigParser:
 
     Returns:
         The output config file, which includes the path to the .ini file.
+
     """
     return Config(path)
 
@@ -75,6 +77,7 @@ def _check_for_config_list(string: str) -> bool:
 
     Returns:
         ``True`` if the string is valid, ``False`` otherwise
+
     """
     result = False
 
@@ -100,6 +103,7 @@ class Config(ConfigParser):
 
         Args:
             config_file: Path to the config file.
+
         """
         super().__init__()
         self.config_errors = []
@@ -631,6 +635,7 @@ restart = False
 
         Returns:
             The list which is specified in section ``section`` and key ``option``.
+
         """
         if (
             self.config_scheme[section][option]["type"] == "list"
@@ -682,6 +687,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         key_type = self.config_scheme[section][key]["type"]
         try:
@@ -708,6 +714,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         if (
             self.config_scheme[section][key]["type"].casefold() == "bool"
@@ -728,6 +735,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         if "possible_options" in self.config_scheme[section][key].keys():
             if (
@@ -746,6 +754,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         if "larger_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
@@ -764,6 +773,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         if "larger_equal_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
@@ -782,6 +792,7 @@ restart = False
         Args:
             section: The corresponding section
             key: The corresponding key
+
         """
         if "attributes" in self.config_scheme[section][key].keys():
             key_attributes = self.config_scheme[section][key]["attributes"]
@@ -800,6 +811,7 @@ restart = False
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
+
         """
         if "file" in key_attributes:
             file = Path(self.get(section, key))
@@ -820,6 +832,7 @@ restart = False
             section: The corresponding section.
             key: The corresponding key.
             extension: The file extension.
+
         """
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
@@ -837,6 +850,7 @@ restart = False
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
+
         """
         if "non_negative" in key_attributes:
             if self.getfloat(section, key) < 0:
@@ -853,6 +867,7 @@ restart = False
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
+
         """
         if "positive" in key_attributes:
             if self.getfloat(section, key) <= 0:
@@ -870,6 +885,7 @@ restart = False
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
+
         """
         if "less_than_one" in key_attributes:
             if self.getfloat(section, key) >= 1:
@@ -887,6 +903,7 @@ restart = False
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
+
         """
         if "larger_than_one" in key_attributes:
             if self.getfloat(section, key) <= 1:

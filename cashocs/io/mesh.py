@@ -38,6 +38,7 @@ def create_point_representation(
 
     Returns:
         A string representation of the mesh coordinates.
+
     """
     mod_line = ""
     if dim == 2:
@@ -73,6 +74,7 @@ def write_out_mesh(
     Notes:
         The method only works with GMSH 4.1 file format. Others might also work, but
         this is not tested or ensured in any way.
+
     """
     dim = mesh.geometric_dimension()
 
