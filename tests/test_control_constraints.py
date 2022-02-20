@@ -118,11 +118,11 @@ def test_pw_ineq_constraint():
     )
 
     assert ineq_constraint_lower.constraint_violation() == np.sqrt(
-        assemble(pow(cashocs.utils._min(0.0, u - lower_bound), 2) * dx)
+        assemble(pow(cashocs._utils.min_(0.0, u - lower_bound), 2) * dx)
     )
 
     assert ineq_constraint_upper.constraint_violation() == np.sqrt(
-        assemble(pow(cashocs.utils._max(0.0, u - upper_bound), 2) * dx)
+        assemble(pow(cashocs._utils.max_(0.0, u - upper_bound), 2) * dx)
     )
 
     assert (
@@ -131,11 +131,11 @@ def test_pw_ineq_constraint():
             - np.sqrt(
                 assemble(
                     pow(
-                        cashocs.utils._min(0.0, u - lower_bound),
+                        cashocs._utils.min_(0.0, u - lower_bound),
                         2,
                     )
                     * dx
-                    + pow(cashocs.utils._max(0.0, u - upper_bound), 2) * dx
+                    + pow(cashocs._utils.max_(0.0, u - upper_bound), 2) * dx
                 )
             )
         )

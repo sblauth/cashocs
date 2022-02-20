@@ -114,7 +114,7 @@ def generate_measure(
     return out_measure
 
 
-class _NamedMeasure(ufl.Measure):
+class NamedMeasure(ufl.Measure):
     """A named integration measure, which can use strings for defining subdomains."""
 
     def __init__(
@@ -176,7 +176,7 @@ class _NamedMeasure(ufl.Measure):
                 integer_id = self.physical_groups["ds"][subdomain_id]
             else:
                 raise _exceptions.InputError(
-                    "cashocs.geometry.measure._NamedMeasure", "subdomain_id"
+                    "cashocs.geometry.measure.NamedMeasure", "subdomain_id"
                 )
 
             return super().__call__(

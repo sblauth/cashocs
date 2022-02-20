@@ -28,7 +28,7 @@ import numpy as np
 from typing_extensions import Literal
 import ufl
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs._constraints import constraints
 from cashocs._constraints import solvers
 from cashocs._optimization import optimal_control
@@ -118,12 +118,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self._pre_hook = _hook
         self._post_hook = _hook
 
-        self.cost_functional_form_initial = utils.enlist(cost_functional_form)
+        self.cost_functional_form_initial = _utils.enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
-            self.scalar_tracking_forms_initial = utils.enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms_initial = _utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraint_list = utils.enlist(constraint_list)
+        self.constraint_list = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
@@ -388,7 +388,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         )
 
         optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        optimal_control_problem._shift_cost_functional(
+        optimal_control_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
 
@@ -548,7 +548,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             min_max_terms=self.solver.inner_min_max_terms,
         )
         shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        shape_optimization_problem._shift_cost_functional(
+        shape_optimization_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
 

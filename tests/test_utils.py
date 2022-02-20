@@ -62,16 +62,16 @@ def test_summation():
         temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
-    F = cashocs.utils.summation([funcs[i] * test * dx for i in range(dim)])
+    F = cashocs._utils.summation([funcs[i] * test * dx for i in range(dim)])
     F_exact = (funcs[0] + funcs[1] + funcs[2]) * test * dx
 
     b = assemble(F)[:]
     b_exact = assemble(F_exact)[:]
 
-    assert cashocs.utils.summation(a) == 10
-    assert abs(cashocs.utils.summation(b) - np.sum(b)) < 1e-14
+    assert cashocs._utils.summation(a) == 10
+    assert abs(cashocs._utils.summation(b) - np.sum(b)) < 1e-14
     assert np.allclose(b, b_exact)
-    assert assemble(pow(cashocs.utils.summation([]), 2) * dx) == 0.0
+    assert assemble(pow(cashocs._utils.summation([]), 2) * dx) == 0.0
 
 
 def test_multiplication():
@@ -86,16 +86,16 @@ def test_multiplication():
         temp.vector()[:] = rng.rand(V.dim())
         funcs.append(temp)
 
-    F = cashocs.utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
+    F = cashocs._utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
     F_exact = (funcs[0] * funcs[1] * funcs[2]) * test * dx
 
     b = assemble(F)[:]
     b_exact = assemble(F_exact)[:]
 
-    assert cashocs.utils.multiplication(a) == 24
-    assert abs(cashocs.utils.multiplication(b) - np.prod(b)) < 1e-14
+    assert cashocs._utils.multiplication(a) == 24
+    assert abs(cashocs._utils.multiplication(b) - np.prod(b)) < 1e-14
     assert np.allclose(b, b_exact)
-    assert assemble(cashocs.utils.multiplication([]) * dx) / assemble(1 * dx) == 1.0
+    assert assemble(cashocs._utils.multiplication([]) * dx) / assemble(1 * dx) == 1.0
 
 
 def test_create_bcs():
@@ -126,8 +126,8 @@ def test_interpolator():
     W = FunctionSpace(mesh, "CG", 2)
     X = FunctionSpace(mesh, "DG", 0)
 
-    interp_W = cashocs.utils.Interpolator(V, W)
-    interp_X = cashocs.utils.Interpolator(V, X)
+    interp_W = cashocs._utils.Interpolator(V, W)
+    interp_X = cashocs._utils.Interpolator(V, X)
 
     func_V = Function(V)
     func_V.vector()[:] = rng.rand(V.dim())
@@ -210,12 +210,12 @@ def test_moreau_yosida_regularization():
     y_bar = 1e-1
     y_low = 1e-2
     gamma = 1e3
-    reg = cashocs.utils.moreau_yosida_regularization(
+    reg = cashocs._utils.moreau_yosida_regularization(
         y, gamma, dx, upper_threshold=y_bar, lower_threshold=y_low
     )
 
-    max = cashocs.utils._max
-    min = cashocs.utils._min
+    max = cashocs._utils.max_
+    min = cashocs._utils.min_
     reg_ana = (
         1 / (2 * gamma) * pow(max(gamma * (y - y_bar), 0.0), 2) * dx
         + 1 / (2 * gamma) * pow(min(gamma * (y - y_low), 0.0), 2) * dx

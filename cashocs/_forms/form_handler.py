@@ -26,7 +26,7 @@ import fenics
 from petsc4py import PETSc
 import ufl
 
-from cashocs import utils
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
@@ -77,6 +77,7 @@ class FormHandler(abc.ABC):
     deformation_space: fenics.FunctionSpace
     controls: List[fenics.Function]
     control_dim: int
+    # noinspection PyUnresolvedReferences
     riesz_projection_matrices: List[PETSc.Mat]
     uses_custom_scalar_product: bool = False
 
@@ -113,7 +114,7 @@ class FormHandler(abc.ABC):
         self.scalar_product_matrix = None
         self.mu_lame = None
 
-        self.lagrangian_form = self.cost_functional_form + utils.summation(
+        self.lagrangian_form = self.cost_functional_form + _utils.summation(
             self.state_forms
         )
         self.cost_functional_shift = 0.0
@@ -202,7 +203,7 @@ class FormHandler(abc.ABC):
 
         self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
         self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
-        self.opt_algo = utils._optimization_algorithm_configuration(self.config)
+        self.opt_algo = _utils.optimization_algorithm_configuration(self.config)
 
         self._compute_state_equations()
         self._compute_adjoint_equations()
@@ -228,7 +229,7 @@ class FormHandler(abc.ABC):
             (
                 self.state_eq_forms_lhs,
                 self.state_eq_forms_rhs,
-            ) = utils._split_linear_forms(self.linear_state_eq_forms)
+            ) = _utils.split_linear_forms(self.linear_state_eq_forms)
 
     def _compute_adjoint_boundary_conditions(self) -> None:
         """Computes the boundary conditions for the adjoint systems."""
@@ -301,7 +302,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_lower_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += utils._min(
+                        self.adjoint_eq_forms[i] += _utils.min_(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -314,7 +315,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_upper_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += utils._max(
+                        self.adjoint_eq_forms[i] += _utils.max_(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -344,7 +345,7 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim)
         ]
 
-        self.adjoint_eq_lhs, self.adjoint_eq_rhs = utils._split_linear_forms(
+        self.adjoint_eq_lhs, self.adjoint_eq_rhs = _utils.split_linear_forms(
             self.linear_adjoint_eq_forms
         )
 

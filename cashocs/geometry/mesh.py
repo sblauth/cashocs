@@ -33,7 +33,7 @@ from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 from cashocs.geometry import mesh_quality
 
@@ -233,7 +233,7 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
         and both can be used interchangeably.
 
     """
-    cashocs_remesh_flag, temp_dir = utils._parse_remesh()
+    cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
 
     # Check for the file format
     mesh_file = None
@@ -282,21 +282,23 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = measure._NamedMeasure(
+    dx = measure.NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = measure._NamedMeasure(
+    ds = measure.NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    d_interior_facet = measure._NamedMeasure(
+    d_interior_facet = measure.NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
     # Add an attribute to the mesh to show with what procedure it was generated
+    # noinspection PyProtectedMember
+    # pylint: disable=protected-access
     mesh._set_config_flag()
     # Add the physical groups to the mesh in case they are present
     if physical_groups is not None:
-        mesh._physical_groups = physical_groups
+        mesh.physical_groups = physical_groups
 
     # Check the mesh quality of the imported mesh in case a config file is passed
     _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
@@ -433,9 +435,9 @@ def regular_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    d_interior_facet = measure._NamedMeasure("dS", mesh)
+    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    d_interior_facet = measure.NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
@@ -589,8 +591,8 @@ def regular_box_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = measure._NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = measure._NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    d_interior_facet = measure._NamedMeasure("dS", mesh)
+    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    d_interior_facet = measure.NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet

@@ -28,7 +28,7 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 
 
@@ -47,7 +47,7 @@ class DeformationHandler:
 
         """
         self.mesh = mesh
-        self.dx = measure._NamedMeasure("dx", self.mesh)
+        self.dx = measure.NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
         self.vector_cg_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
@@ -79,7 +79,7 @@ class DeformationHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
+        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
@@ -118,7 +118,7 @@ class DeformationHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        x = utils._assemble_and_solve_linear(
+        x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
             ksp=self.ksp_prior,

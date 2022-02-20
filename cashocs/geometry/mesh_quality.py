@@ -25,7 +25,7 @@ from petsc4py import PETSc
 from typing_extensions import Literal
 import ufl
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 
 
@@ -463,9 +463,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         ]
         # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
-        utils._setup_petsc_options([ksp], [options])
+        _utils.setup_petsc_options([ksp], [options])
 
-        dx = measure._NamedMeasure("dx", mesh)
+        dx = measure.NamedMeasure("dx", mesh)
         lhs = (
             fenics.TrialFunction(function_space_dg0)
             * fenics.TestFunction(function_space_dg0)
@@ -480,7 +480,7 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
         )
         cond.vector().apply("")
@@ -518,9 +518,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         ]
         # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
-        utils._setup_petsc_options([ksp], [options])
+        _utils.setup_petsc_options([ksp], [options])
 
-        dx = measure._NamedMeasure("dx", mesh)
+        dx = measure.NamedMeasure("dx", mesh)
         lhs = (
             fenics.TrialFunction(function_space_dg0)
             * fenics.TestFunction(function_space_dg0)
@@ -535,7 +535,7 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
         )
         cond.vector().apply("")

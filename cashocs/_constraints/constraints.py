@@ -28,7 +28,7 @@ import ufl
 import ufl.core.expr
 
 from cashocs import _exceptions
-from cashocs import utils
+from cashocs import _utils
 
 
 class Constraint(abc.ABC):
@@ -187,7 +187,7 @@ class InequalityConstraint(Constraint):
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
-                        utils._max(
+                        _utils.max_(
                             fenics.Constant(0.0),
                             self.multiplier
                             + self.weight * (self.variable_function - self.upper_bound),
@@ -202,7 +202,7 @@ class InequalityConstraint(Constraint):
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
-                        utils._min(
+                        _utils.min_(
                             fenics.Constant(0.0),
                             self.multiplier
                             + self.weight * (self.variable_function - self.lower_bound),
@@ -238,7 +238,7 @@ class InequalityConstraint(Constraint):
             if self.upper_bound is not None:
                 violation += fenics.assemble(
                     pow(
-                        utils._max(
+                        _utils.max_(
                             self.variable_function - self.upper_bound,
                             fenics.Constant(0.0),
                         ),
@@ -250,7 +250,7 @@ class InequalityConstraint(Constraint):
             if self.lower_bound is not None:
                 violation += fenics.assemble(
                     pow(
-                        utils._min(
+                        _utils.min_(
                             self.variable_function - self.lower_bound,
                             fenics.Constant(0.0),
                         ),

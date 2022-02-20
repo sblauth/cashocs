@@ -30,8 +30,8 @@ import numpy as np
 from petsc4py import PETSc
 
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -164,12 +164,12 @@ class HessianProblem:
         self.state_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
-        utils._setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
+        _utils.setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
         # noinspection PyUnresolvedReferences
         self.adjoint_ksps = [
             PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
         ]
-        utils._setup_petsc_options(
+        _utils.setup_petsc_options(
             self.adjoint_ksps, self.form_handler.adjoint_ksp_options
         )
 
@@ -190,7 +190,7 @@ class HessianProblem:
         for i in range(self.control_dim):
             self.riesz_ksp_options.append(option)
 
-        utils._setup_petsc_options(self.ksps, self.riesz_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -220,7 +220,7 @@ class HessianProblem:
         if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
 
             for i in range(self.state_dim):
-                utils._assemble_and_solve_linear(
+                _utils.assemble_and_solve_linear(
                     self.form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
@@ -231,7 +231,7 @@ class HessianProblem:
                 self.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
-                utils._assemble_and_solve_linear(
+                _utils.assemble_and_solve_linear(
                     self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i],
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
@@ -285,7 +285,7 @@ class HessianProblem:
                 fenics.assemble(self.form_handler.hessian_rhs[i])
             ).vec()
 
-            utils._solve_linear_problem(
+            _utils.solve_linear_problem(
                 self.ksps[i],
                 b=b,
                 x=out[i].vector().vec(),

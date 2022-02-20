@@ -25,7 +25,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 
 
@@ -63,7 +63,7 @@ def compute_boundary_distance(
 
     """
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
-    dx = measure._NamedMeasure("dx", mesh)
+    dx = measure.NamedMeasure("dx", mesh)
 
     # noinspection PyUnresolvedReferences
     ksp = PETSc.KSP().create()
@@ -76,7 +76,7 @@ def compute_boundary_distance(
         ["ksp_atol", 1e-50],
         ["ksp_max_it", 1000],
     ]
-    utils._setup_petsc_options([ksp], [ksp_options])
+    _utils.setup_petsc_options([ksp], [ksp_options])
 
     u = fenics.TrialFunction(function_space)
     v = fenics.TestFunction(function_space)
@@ -87,7 +87,7 @@ def compute_boundary_distance(
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
-            bcs = utils.create_dirichlet_bcs(
+            bcs = _utils.create_dirichlet_bcs(
                 function_space, fenics.Constant(0.0), boundaries, boundary_idcs
             )
         else:
@@ -106,7 +106,7 @@ def compute_boundary_distance(
     lhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
     rhs = fenics.Constant(1.0) * v * dx
 
-    utils._assemble_and_solve_linear(lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp)
+    _utils.assemble_and_solve_linear(lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp)
 
     rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
@@ -123,7 +123,7 @@ def compute_boundary_distance(
 
     for _ in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp
         )
         res = np.sqrt(fenics.assemble(residual_form))

@@ -29,13 +29,13 @@ import ufl
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 
 
 class _NewtonSolver:
     """A Newton solver."""
 
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyPep8Naming
     def __init__(
         self,
         nonlinear_form: ufl.Form,
@@ -137,7 +137,7 @@ class _NewtonSolver:
                 self.ksp_options = ksp_options
 
             self.ksp = PETSc.KSP().create()
-            utils._setup_petsc_options([self.ksp], [self.ksp_options])
+            _utils.setup_petsc_options([self.ksp], [self.ksp_options])
 
         else:
             self.ksp = ksp
@@ -161,9 +161,8 @@ class _NewtonSolver:
             self.derivative, -self.nonlinear_form, self.bcs_hom
         )
         self.assembler.keep_diagonal = True
-        self.A_fenics = (
-            self.A_tensor or fenics.PETScMatrix()
-        )  # pylint: disable=invalid-name
+        # pylint: disable=invalid-name
+        self.A_fenics = self.A_tensor or fenics.PETScMatrix()
         self.residual = self.b_tensor or fenics.PETScVector()
 
         self.assembler_shift = None
@@ -250,7 +249,7 @@ class _NewtonSolver:
             self.u_save.vector().vec().aypx(0.0, self.u.vector().vec())
 
             self._compute_eta_inexact()
-            utils._solve_linear_problem(
+            _utils.solve_linear_problem(
                 self.ksp,
                 self.A_matrix,
                 self.b,
@@ -330,7 +329,7 @@ class _NewtonSolver:
         while True:
             self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
             self._compute_residual()
-            utils._solve_linear_problem(
+            _utils.solve_linear_problem(
                 ksp=self.ksp,
                 b=self.b,
                 x=self.ddu.vector().vec(),

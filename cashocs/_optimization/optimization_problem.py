@@ -36,8 +36,8 @@ import ufl
 
 from cashocs import _exceptions
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import io
-from cashocs import utils
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
@@ -143,17 +143,17 @@ class OptimizationProblem(abc.ABC):
             ``adjoints[i]``.
 
         """
-        self.has_cashocs_remesh_flag, self.temp_dir = utils._parse_remesh()
+        self.has_cashocs_remesh_flag, self.temp_dir = _utils.parse_remesh()
 
-        self.state_forms = utils.enlist(state_forms)
+        self.state_forms = _utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)
-        self.bcs_list = utils._check_and_enlist_bcs(bcs_list)
+        self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-        self.cost_functional_list = utils.enlist(cost_functional_form)
-        self.cost_functional_form = utils.summation(self.cost_functional_list)
+        self.cost_functional_list = _utils.enlist(cost_functional_form)
+        self.cost_functional_form = _utils.summation(self.cost_functional_list)
 
-        self.states = utils.enlist(states)
-        self.adjoints = utils.enlist(adjoints)
+        self.states = _utils.enlist(states)
+        self.adjoints = _utils.enlist(adjoints)
 
         self.use_scalar_tracking = False
         self.use_min_max_terms = False
@@ -252,7 +252,7 @@ class OptimizationProblem(abc.ABC):
         if initial_guess is None:
             self.initial_guess = initial_guess
         else:
-            self.initial_guess = utils.enlist(initial_guess)
+            self.initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
             self.ksp_options = []
@@ -266,30 +266,30 @@ class OptimizationProblem(abc.ABC):
             for _ in range(self.state_dim):
                 self.ksp_options.append(option)
         else:
-            self.ksp_options = utils._check_and_enlist_ksp_options(ksp_options)
+            self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
         self.adjoint_ksp_options = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
-            else utils._check_and_enlist_ksp_options(adjoint_ksp_options)
+            else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
         if scalar_tracking_forms is None:
             self.scalar_tracking_forms = scalar_tracking_forms
         else:
-            self.scalar_tracking_forms = utils.enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms = _utils.enlist(scalar_tracking_forms)
             self.use_scalar_tracking = True
 
         if min_max_terms is None:
             self.min_max_terms = min_max_terms
         else:
             self.use_min_max_terms = True
-            self.min_max_terms = utils.enlist(min_max_terms)
+            self.min_max_terms = _utils.enlist(min_max_terms)
 
         if desired_weights is None:
             self.desired_weights = desired_weights
         else:
-            self.desired_weights = utils.enlist(desired_weights)
+            self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
             if scalar_tracking_forms is not None and not isinstance(
@@ -341,14 +341,14 @@ class OptimizationProblem(abc.ABC):
                 system(s).
 
         """
-        mod_forms = utils.enlist(adjoint_forms)
+        mod_forms = _utils.enlist(adjoint_forms)
 
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
             for i in range(self.state_dim):
                 mod_bcs_list.append([])
         else:
-            mod_bcs_list = utils._check_and_enlist_bcs(adjoint_bcs_list)
+            mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)
 
         self.form_handler.bcs_list_ad = mod_bcs_list
 
@@ -366,7 +366,7 @@ class OptimizationProblem(abc.ABC):
         (
             self.form_handler.adjoint_eq_lhs,
             self.form_handler.adjoint_eq_rhs,
-        ) = utils._split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
+        ) = _utils.split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
 
         self.has_custom_adjoint = True
 
@@ -492,7 +492,7 @@ class OptimizationProblem(abc.ABC):
                 || \nabla J(u_0) ||
 
         """
-        self.algorithm = utils._optimization_algorithm_configuration(
+        self.algorithm = _utils.optimization_algorithm_configuration(
             self.config, algorithm
         )
 
@@ -512,7 +512,7 @@ class OptimizationProblem(abc.ABC):
         self._check_for_custom_forms()
         self.output_manager = io.OutputManager(self)
 
-    def _shift_cost_functional(self, shift: float = 0.0) -> None:
+    def shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.
 
         Args:

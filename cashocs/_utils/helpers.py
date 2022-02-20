@@ -44,7 +44,7 @@ def enlist(arg: Union[Any, List]) -> List:
         return [arg]
 
 
-def _check_and_enlist_bcs(
+def check_and_enlist_bcs(
     bcs_list: Union[
         fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
     ]
@@ -68,13 +68,13 @@ def _check_and_enlist_bcs(
         return bcs_list
     else:
         raise _exceptions.InputError(
-            "cashocs.utils._check_and_enlist_bcs",
+            "cashocs._utils.check_and_enlist_bcs",
             "bcs_list",
             "Type of bcs_list is wrong",
         )
 
 
-def _check_and_enlist_control_constraints(
+def check_and_enlist_control_constraints(
     control_constraints: Union[
         List[Union[float, int, fenics.Function]],
         List[List[Union[float, int, fenics.Function]]],
@@ -99,13 +99,13 @@ def _check_and_enlist_control_constraints(
         return [control_constraints]
     else:
         raise _exceptions.InputError(
-            "cashocs.utils._check_and_enlist_control_constraints",
+            "cashocs._utils.check_and_enlist_control_constraints",
             "control_constraints",
             "Type of control_constraints is wrong",
         )
 
 
-def _check_and_enlist_ksp_options(
+def check_and_enlist_ksp_options(
     ksp_options: Union[List[List[str]], List[List[List[str]]]]
 ) -> List[List[List[str]]]:
     """Wraps ksp options into a list suitable for cashocs.
@@ -132,13 +132,13 @@ def _check_and_enlist_ksp_options(
         return ksp_options[:]
     else:
         raise _exceptions.InputError(
-            "cashocs.utils._check_and_enlist_ksp_options",
+            "cashocs._utils.check_and_enlist_ksp_options",
             "ksp_options",
             "Type of ksp_options is wrong.",
         )
 
 
-def _parse_remesh() -> Tuple[bool, str]:
+def parse_remesh() -> Tuple[bool, str]:
     """Parses command line arguments for the remeshing flag.
 
     Returns:
@@ -164,7 +164,7 @@ def _parse_remesh() -> Tuple[bool, str]:
     return cashocs_remesh_flag, temp_dir
 
 
-def _optimization_algorithm_configuration(
+def optimization_algorithm_configuration(
     config: configparser.ConfigParser, algorithm: Optional[str] = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
@@ -198,7 +198,7 @@ def _optimization_algorithm_configuration(
         internal_algorithm = "none"
     else:
         raise _exceptions.InputError(
-            "cashocs.utils._optimization_algorithm_configuration",
+            "cashocs._utils.optimization_algorithm_configuration",
             "algorithm",
             "Not a valid choice for the optimization algorithm.\n"
             "	For a gradient descent method, use 'gradient_descent' or 'gd'.\n"

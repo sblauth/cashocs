@@ -31,7 +31,7 @@ import fenics
 import ufl
 
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs._forms import shape_form_handler
@@ -311,7 +311,7 @@ class ShapeRegularization:
 
             fenics.assemble(self.l_curvature, tensor=self.b_curvature)
 
-            utils._solve_linear_problem(
+            _utils.solve_linear_problem(
                 A=self.a_curvature_matrix.mat(),
                 b=self.b_curvature.vec(),
                 x=self.kappa_curvature.vector().vec(),

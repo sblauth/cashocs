@@ -90,7 +90,7 @@ def multiplication(
 
 
 # noinspection PyUnresolvedReferences
-def _max(
+def max_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
     """Computes the maximum of a and b.
@@ -107,7 +107,7 @@ def _max(
 
 
 # noinspection PyUnresolvedReferences
-def _min(
+def min_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
     """Computes the minimum of a and b.
@@ -171,7 +171,7 @@ def moreau_yosida_regularization(
 
     if lower_threshold is None and upper_threshold is None:
         raise _exceptions.InputError(
-            "cashocs.utils.moreau_yosida_regularization",
+            "cashocs._utils.moreau_yosida_regularization",
             "upper_threshold, lower_threshold",
             "At least one of the threshold parameters has to be defined.",
         )
@@ -185,7 +185,7 @@ def moreau_yosida_regularization(
         reg_lower = (
             fenics.Constant(1 / (2 * gamma))
             * pow(
-                _min(
+                min_(
                     shift_lower + fenics.Constant(gamma) * (term - lower_threshold),
                     fenics.Constant(0.0),
                 ),
@@ -197,7 +197,7 @@ def moreau_yosida_regularization(
         reg_upper = (
             fenics.Constant(1 / (2 * gamma))
             * pow(
-                _max(
+                max_(
                     shift_upper + fenics.Constant(gamma) * (term - upper_threshold),
                     fenics.Constant(0.0),
                 ),
@@ -272,7 +272,7 @@ def create_dirichlet_bcs(
                 fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
             )
         elif isinstance(entry, str):
-            physical_groups = mesh._physical_groups
+            physical_groups = mesh.physical_groups
             if entry in physical_groups["ds"].keys():
                 bcs_list.append(
                     fenics.DirichletBC(

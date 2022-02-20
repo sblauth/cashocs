@@ -30,7 +30,7 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _pde_problems
-from cashocs import utils
+from cashocs import _utils
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search
 from cashocs._optimization import optimal_control
@@ -248,7 +248,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
-        self.controls = utils.enlist(controls)
+        self.controls = _utils.enlist(controls)
         self.control_dim = len(self.controls)
 
         # riesz_scalar_products
@@ -283,7 +283,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.form_handler, self.state_problem, self.adjoint_problem
         )
 
-        self.algorithm = utils._optimization_algorithm_configuration(self.config)
+        self.algorithm = _utils.optimization_algorithm_configuration(self.config)
 
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
             self.form_handler, self.state_problem
@@ -511,7 +511,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             ]
         else:
             self.uses_custom_scalar_product = True
-            return utils.enlist(riesz_scalar_products)
+            return _utils.enlist(riesz_scalar_products)
 
     def _parse_control_constraints(
         self, control_constraints
@@ -534,7 +534,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 u_b.vector().vec().set(float("inf"))
                 temp_control_constraints.append([u_a, u_b])
         else:
-            temp_control_constraints = utils._check_and_enlist_control_constraints(
+            temp_control_constraints = _utils.check_and_enlist_control_constraints(
                 control_constraints
             )
 

@@ -30,7 +30,7 @@ import ufl.algorithms
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs._forms import form_handler
 from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
@@ -187,7 +187,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
                     )
                     self.shape_derivative += fenics.derivative(
-                        utils._min(fenics.Constant(0.0), term_lower)
+                        _utils.min_(fenics.Constant(0.0), term_lower)
                         * self.min_max_integrands[j],
                         fenics.SpatialCoordinate(self.mesh),
                         self.test_vector_field,
@@ -198,7 +198,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
                     )
                     self.shape_derivative += fenics.derivative(
-                        utils._max(fenics.Constant(0.0), term_upper)
+                        _utils.max_(fenics.Constant(0.0), term_upper)
                         * self.min_max_integrands[j],
                         fenics.SpatialCoordinate(self.mesh),
                         self.test_vector_field,
@@ -240,7 +240,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
                     )
                     self.material_derivative += fenics.derivative(
-                        utils._min(fenics.Constant(0.0), term_lower)
+                        _utils.min_(fenics.Constant(0.0), term_lower)
                         * self.min_max_integrands[j],
                         coeff,
                         fenics.dot(fenics.grad(coeff), self.test_vector_field),
@@ -251,7 +251,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
                     )
                     self.material_derivative += fenics.derivative(
-                        utils._max(fenics.Constant(0.0), term_upper)
+                        _utils.max_(fenics.Constant(0.0), term_upper)
                         * self.min_max_integrands[j],
                         coeff,
                         fenics.dot(fenics.grad(coeff), self.test_vector_field),
@@ -352,26 +352,26 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
         self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
 
-        self.bcs_shape = utils.create_dirichlet_bcs(
+        self.bcs_shape = _utils.create_dirichlet_bcs(
             self.deformation_space,
             fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
             self.boundaries,
             self.shape_bdry_fix,
         )
-        self.bcs_shape += utils.create_dirichlet_bcs(
+        self.bcs_shape += _utils.create_dirichlet_bcs(
             self.deformation_space.sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
-        self.bcs_shape += utils.create_dirichlet_bcs(
+        self.bcs_shape += _utils.create_dirichlet_bcs(
             self.deformation_space.sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
         if self.deformation_space.num_sub_spaces() == 3:
-            self.bcs_shape += utils.create_dirichlet_bcs(
+            self.bcs_shape += _utils.create_dirichlet_bcs(
                 self.deformation_space.sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
@@ -464,7 +464,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 ]
                 # noinspection PyUnresolvedReferences
                 self.ksp_mu = PETSc.KSP().create()
-                utils._setup_petsc_options([self.ksp_mu], [self.options_mu])
+                _utils.setup_petsc_options([self.ksp_mu], [self.options_mu])
 
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)
@@ -473,13 +473,13 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.l_mu = fenics.Constant(0.0) * psi * self.dx
 
-                self.bcs_mu = utils.create_dirichlet_bcs(
+                self.bcs_mu = _utils.create_dirichlet_bcs(
                     self.cg_function_space,
                     fenics.Constant(self.mu_fix),
                     self.boundaries,
                     self.shape_bdry_fix,
                 )
-                self.bcs_mu += utils.create_dirichlet_bcs(
+                self.bcs_mu += _utils.create_dirichlet_bcs(
                     self.cg_function_space,
                     fenics.Constant(self.mu_def),
                     self.boundaries,
@@ -541,7 +541,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         if self.shape_scalar_product is None:
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
-                    x = utils._assemble_and_solve_linear(
+                    x = _utils.assemble_and_solve_linear(
                         self.A_mu,
                         self.l_mu,
                         self.bcs_mu,

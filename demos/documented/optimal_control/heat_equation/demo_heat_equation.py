@@ -79,7 +79,7 @@ for k in range(len(t_array)):
     )
 
 
-J = cashocs.utils.summation(J_list)
+J = cashocs._utils.summation(J_list)
 
 ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
 ocp.solve()

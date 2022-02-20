@@ -26,7 +26,7 @@ import numpy as np
 import ufl
 
 from cashocs import _exceptions
-from cashocs import utils
+from cashocs import _utils
 from cashocs._forms import form_handler
 
 if TYPE_CHECKING:
@@ -325,7 +325,7 @@ class ControlFormHandler(form_handler.FormHandler):
                             self.min_max_integrand_values[j]
                             - self.min_max_lower_bounds[j]
                         )
-                        self.gradient_forms_rhs[i] += utils._min(
+                        self.gradient_forms_rhs[i] += _utils.min_(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -338,7 +338,7 @@ class ControlFormHandler(form_handler.FormHandler):
                             self.min_max_integrand_values[j]
                             - self.min_max_upper_bounds[j]
                         )
-                        self.gradient_forms_rhs[i] += utils._max(
+                        self.gradient_forms_rhs[i] += _utils.max_(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -375,7 +375,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Need to distinguish cases due to empty sum in case state_dim = 1
         if self.state_dim > 1:
             self.sensitivity_eqs_rhs = [
-                -utils.summation(
+                -_utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -386,7 +386,7 @@ class ControlFormHandler(form_handler.FormHandler):
                         if j != i
                     ]
                 )
-                - utils.summation(
+                - _utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -400,7 +400,7 @@ class ControlFormHandler(form_handler.FormHandler):
             ]
         else:
             self.sensitivity_eqs_rhs = [
-                -utils.summation(
+                -_utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
@@ -515,7 +515,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Need cases distinction due to empty sum for state_dim == 1
         if self.state_dim > 1:
             for i in range(self.state_dim):
-                self.w_1[i] -= utils.summation(
+                self.w_1[i] -= _utils.summation(
                     [
                         fenics.derivative(
                             self.adjoint_sensitivity_eqs_all_temp[j],
@@ -535,7 +535,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 
         self.adjoint_sensitivity_eqs_rhs = [
-            utils.summation(
+            _utils.summation(
                 [
                     fenics.derivative(
                         self.adjoint_sensitivity_eqs_all_temp[j],
@@ -565,15 +565,15 @@ class ControlFormHandler(form_handler.FormHandler):
         self._compute_second_order_lagrangian_derivatives()
 
         self.w_1 = [
-            utils.summation([self.lagrangian_yy[i][j] for j in range(self.state_dim)])
-            + utils.summation(
+            _utils.summation([self.lagrangian_yy[i][j] for j in range(self.state_dim)])
+            + _utils.summation(
                 [self.lagrangian_uy[i][j] for j in range(self.control_dim)]
             )
             for i in range(self.state_dim)
         ]
         self.w_2 = [
-            utils.summation([self.lagrangian_yu[i][j] for j in range(self.state_dim)])
-            + utils.summation(
+            _utils.summation([self.lagrangian_yu[i][j] for j in range(self.state_dim)])
+            + _utils.summation(
                 [self.lagrangian_uu[i][j] for j in range(self.control_dim)]
             )
             for i in range(self.control_dim)

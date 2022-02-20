@@ -33,8 +33,8 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import io
-from cashocs import utils
 from cashocs.geometry import deformation_handler
 from cashocs.geometry import mesh_quality
 
@@ -238,7 +238,7 @@ class _MeshHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_frobenius = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
+        _utils.setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
         self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
@@ -289,7 +289,7 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
-            x = utils._assemble_and_solve_linear(
+            x = _utils.assemble_and_solve_linear(
                 self.a_frobenius,
                 self.l_frobenius,
                 ksp=self.ksp_frobenius,
@@ -321,7 +321,7 @@ class _MeshHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
+        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(
             self.form_handler.deformation_space
@@ -358,7 +358,7 @@ class _MeshHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        x = utils._assemble_and_solve_linear(
+        x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
             ksp=self.ksp_prior,

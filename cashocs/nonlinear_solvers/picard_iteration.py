@@ -27,7 +27,7 @@ from petsc4py import PETSc
 import ufl
 
 from cashocs import _exceptions
-from cashocs import utils
+from cashocs import _utils
 from cashocs.nonlinear_solvers import newton_solver
 
 
@@ -48,7 +48,7 @@ def _setup_obj(obj: Any, dim: int) -> Union[List[None], Any]:
         return obj
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPep8Naming
 def picard_iteration(
     form_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -63,9 +63,8 @@ def picard_iteration(
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
-    A_tensors: Optional[
-        List[fenics.PETScMatrix]
-    ] = None,  # pylint: disable=invalid-name
+    # pylint: disable=invalid-name
+    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
@@ -100,14 +99,15 @@ def picard_iteration(
             linear ones, and only a linear solver is used.
 
     """
-    form_list = utils.enlist(form_list)
-    u_list = utils.enlist(u_list)
-    bcs_list = utils._check_and_enlist_bcs(bcs_list)
+    form_list = _utils.enlist(form_list)
+    u_list = _utils.enlist(u_list)
+    bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
     dim = len(u_list)
 
     ksps = _setup_obj(ksps, dim)
     ksp_options = _setup_obj(ksp_options, dim)
+    # noinspection PyPep8Naming
     A_tensors = _setup_obj(A_tensors, dim)
     b_tensors = _setup_obj(b_tensors, dim)
 

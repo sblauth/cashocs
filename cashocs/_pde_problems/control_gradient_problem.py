@@ -28,7 +28,7 @@ from typing import List, TYPE_CHECKING
 import fenics
 from petsc4py import PETSc
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         for i in range(self.form_handler.control_dim):
             self.riesz_ksp_options.append(option)
 
-        utils._setup_petsc_options(self.ksps, self.riesz_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -117,7 +117,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                 fenics.assemble(
                     self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
                 )
-                utils._solve_linear_problem(
+                _utils.solve_linear_problem(
                     ksp=self.ksps[i],
                     b=self.b_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),

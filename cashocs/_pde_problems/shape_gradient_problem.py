@@ -32,8 +32,8 @@ from petsc4py import PETSc
 import ufl
 
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -93,7 +93,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 ["ksp_max_it", 250],
             ]
 
-        utils._setup_petsc_options([self.ksp], [self.ksp_options])
+        _utils.setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
@@ -153,7 +153,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     self.form_handler.fe_shape_derivative_vector[
                         self.form_handler.fixed_indices
                     ] = 0.0
-                utils._solve_linear_problem(
+                _utils.solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,
                     self.form_handler.fe_shape_derivative_vector.vec(),

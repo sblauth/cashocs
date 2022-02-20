@@ -24,7 +24,7 @@ from typing import List, TYPE_CHECKING
 
 import fenics
 
-from cashocs import utils
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import types
@@ -55,7 +55,7 @@ class LineSearch(abc.ABC):
 
         self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
 
-        algorithm = utils._optimization_algorithm_configuration(self.config)
+        algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"
         self.is_newton = algorithm.casefold() == "newton"
         self.is_steepest_descent = algorithm.casefold() == "gradient_descent"

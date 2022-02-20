@@ -24,8 +24,8 @@ from typing import Dict, List, TYPE_CHECKING
 import fenics
 from petsc4py import PETSc
 
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        utils._setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -103,7 +103,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
-                    utils._assemble_and_solve_linear(
+                    _utils.assemble_and_solve_linear(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],

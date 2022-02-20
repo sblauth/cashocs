@@ -27,7 +27,7 @@ import numpy as np
 import ufl.core.expr
 
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs._constraints import constraints
 
 if TYPE_CHECKING:
@@ -180,6 +180,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
         self.solver_name = "Augmented Lagrangian method"
 
+    # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
@@ -199,7 +200,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         """
         if isinstance(project_terms, list):
-            project_term = utils.summation(project_terms)
+            project_term = _utils.summation(project_terms)
         else:
             project_term = project_terms
 
@@ -209,7 +210,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, A=A_tensor, b=b_tensor, x=multiplier.vector().vec()
         )
         multiplier.vector().apply("")
@@ -326,7 +327,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             project_terms = []
             if self.constraints[index].upper_bound is not None:
                 project_terms.append(
-                    utils._max(
+                    _utils.max_(
                         self.lmbd[index]
                         + self.mu
                         * (
@@ -339,7 +340,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             if self.constraints[index].lower_bound is not None:
                 project_terms.append(
-                    utils._min(
+                    _utils.min_(
                         self.lmbd[index]
                         + self.mu
                         * (
@@ -403,6 +404,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
                 tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
             )
@@ -485,6 +488,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(tol=tol)
 
             self.constraint_violation = (

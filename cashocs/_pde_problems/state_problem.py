@@ -24,8 +24,8 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 import fenics
 from petsc4py import PETSc
 
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -73,7 +73,7 @@ class StateProblem(pde_problem.PDEProblem):
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        utils._setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
         # adapt the tolerances so that the Newton system can be solved successfully
         if not self.form_handler.state_is_linear:
@@ -141,7 +141,7 @@ class StateProblem(pde_problem.PDEProblem):
             ):
                 if self.form_handler.state_is_linear:
                     for i in range(self.form_handler.state_dim):
-                        utils._assemble_and_solve_linear(
+                        _utils.assemble_and_solve_linear(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
