@@ -38,6 +38,7 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
     Returns:
         A tuple (lhs_forms, rhs_forms), where lhs_forms is the list of forms of the
         left-hand sides, and rhs_forms is the list of forms of the right-hand side.
+
     """
     lhs_list = []
     rhs_list = []
@@ -78,7 +79,7 @@ def _assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    a_tensor: Optional[fenics.PETScMatrix] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
@@ -87,7 +88,7 @@ def _assemble_petsc_system(
         lhs_form: The UFL form for the left-hand side of the linear equation.
         rhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
-        a_tensor: A matrix into which the result is assembled. Default is ``None``.
+        A_tensor: A matrix into which the result is assembled. Default is ``None``.
         b_tensor: A vector into which the result is assembled. Default is ``None``.
 
     Returns:
@@ -98,9 +99,10 @@ def _assemble_petsc_system(
         This function always uses the ident_zeros method of the matrix in order to add a
         one to the diagonal in case the corresponding row only consists of zeros. This
         allows for well-posed problems on the boundary etc.
+
     """
-    if a_tensor is None:
-        a_tensor = fenics.PETScMatrix()
+    if A_tensor is None:
+        A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
     fenics.assemble_system(
@@ -108,15 +110,15 @@ def _assemble_petsc_system(
         rhs_form,
         bcs,
         keep_diagonal=True,
-        A_tensor=a_tensor,
+        A_tensor=A_tensor,
         b_tensor=b_tensor,
     )
-    a_tensor.ident_zeros()
+    A_tensor.ident_zeros()
 
-    a = a_tensor.mat()
+    A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
 
-    return a, b
+    return A, b
 
 
 # noinspection PyUnresolvedReferences
@@ -133,6 +135,7 @@ def _setup_petsc_options(
             options are applied to.
         ksp_options: A list of command line options that specify the iterative solver
             from PETSc.
+
     """
     opts = fenics.PETScOptions
 
@@ -149,7 +152,7 @@ def _setup_petsc_options(
 # noinspection PyUnresolvedReferences
 def _solve_linear_problem(
     ksp: Optional[PETSc.KSP] = None,
-    a: Optional[PETSc.Mat] = None,
+    A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     x: Optional[PETSc.Vec] = None,
     ksp_options: Optional[List[List[str]]] = None,
@@ -180,6 +183,7 @@ def _solve_linear_problem(
 
     Returns:
         The solution vector.
+
     """
     if ksp is None:
         ksp = PETSc.KSP().create()
@@ -192,11 +196,11 @@ def _solve_linear_problem(
 
         _setup_petsc_options([ksp], [options])
 
-    if a is not None:
-        ksp.setOperators(a)
+    if A is not None:
+        ksp.setOperators(A)
     else:
-        a = ksp.getOperators()[0]
-        if a.size[0] == -1 and a.size[1] == -1:
+        A = ksp.getOperators()[0]
+        if A.size[0] == -1 and A.size[1] == -1:
             raise _exceptions.InputError(
                 "cashocs.utils._solve_linear_problem",
                 "ksp",
@@ -205,10 +209,10 @@ def _solve_linear_problem(
             )
 
     if b is None:
-        return a.getVecs()[0]
+        return A.getVecs()[0]
 
     if x is None:
-        x, _ = a.getVecs()
+        x, _ = A.getVecs()
 
     if ksp_options is not None:
         _setup_petsc_options([ksp], [ksp_options])
@@ -230,7 +234,7 @@ def _assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    a: Optional[fenics.PETScMatrix] = None,
+    A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
     x: Optional[PETSc.Vec] = None,
     ksp: Optional[PETSc.KSP] = None,
@@ -261,13 +265,15 @@ def _assemble_and_solve_linear(
 
     Returns:
         A PETSc vector containing the solution x.
+
     """
-    a_matrix, b_vector = _assemble_petsc_system(
-        lhs_form, rhs_form, bcs, a_tensor=a, b_tensor=b
+    # pylint: disable=invalid-name
+    A_matrix, b_vector = _assemble_petsc_system(
+        lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
     )
     solution = _solve_linear_problem(
         ksp=ksp,
-        a=a_matrix,
+        A=A_matrix,
         b=b_vector,
         x=x,
         ksp_options=ksp_options,
@@ -304,6 +310,7 @@ class Interpolator:
 
             interp = cashocs.utils.Interpolator(V1, V2)
             interp.interpolate(u)
+
     """
 
     def __init__(
@@ -314,6 +321,7 @@ class Interpolator:
         Args:
             origin_space: The function space whose objects shall be interpolated.
             target_space: The space into which they shall be interpolated.
+
         """
         if not (
             origin_space.ufl_element().family() == "Lagrange"
@@ -360,6 +368,7 @@ class Interpolator:
 
         Returns:
             The result of the interpolation.
+
         """
         v = fenics.Function(self.target_space)
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]

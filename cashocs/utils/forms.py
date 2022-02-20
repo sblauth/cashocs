@@ -48,6 +48,7 @@ def summation(
         of python or the numpy variant are recommended. Still, they are
         incompatible with FEniCS objects, so this function should be used for
         the latter.
+
     """
     if len(x) == 0:
         y = fenics.Constant(0.0)
@@ -74,6 +75,7 @@ def multiplication(
 
     Returns:
         The result of the multiplication.
+
     """
     if len(x) == 0:
         y = fenics.Constant(1.0)
@@ -99,6 +101,7 @@ def _max(
 
     Returns:
         The maximum of a and b.
+
     """
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
@@ -115,6 +118,7 @@ def _min(
 
     Returns:
         The minimum of a and b.
+
     """
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
@@ -160,6 +164,7 @@ def moreau_yosida_regularization(
     Returns:
         The ufl form of the Moreau-Yosida regularization, to be used in the cost
         functional.
+
     """
     reg_lower = None
     reg_upper = None
@@ -253,6 +258,7 @@ def create_dirichlet_bcs(
             V = fenics.FunctionSpace(mesh, 'CG', 1)
             bcs = cashocs.create_dirichlet_bcs(V, fenics.Constant(0), boundaries,
                 [1,2,3,4])
+
     """
     mesh = function_space.mesh()
 
@@ -322,6 +328,7 @@ def create_bcs_list(
     .. deprecated:: 1.5.0
         This is replaced by cashocs.create_dirichlet_bcs and will be removed in the
         future.
+
     """
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by "

@@ -75,13 +75,15 @@ class HessianProblem:
             for function_space in self.form_handler.control_spaces
         ]
 
-        self.state_a_tensors = [
+        # pylint: disable=invalid-name
+        self.state_A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.state_b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
-        self.adjoint_a_tensors = [
+        # pylint: disable=invalid-name
+        self.adjoint_A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.adjoint_b_tensors = [
@@ -254,7 +256,7 @@ class HessianProblem:
                 inner_max_its=2,
                 ksps=self.state_ksps,
                 ksp_options=self.form_handler.state_ksp_options,
-                a_tensors=self.state_a_tensors,
+                A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
             )
@@ -273,7 +275,7 @@ class HessianProblem:
                 inner_max_its=2,
                 ksps=self.adjoint_ksps,
                 ksp_options=self.form_handler.adjoint_ksp_options,
-                a_tensors=self.adjoint_a_tensors,
+                A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,
             )

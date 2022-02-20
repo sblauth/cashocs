@@ -175,7 +175,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
-        self.a_tensors = [fenics.PETScMatrix()] * self.constraint_dim
+        # pylint: disable=invalid-name
+        self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
         self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
         self.solver_name = "Augmented Lagrangian method"
 
@@ -184,7 +185,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
         measure: fenics.Measure,
         multiplier: fenics.Function,
-        a_tensor: fenics.PETScMatrix,
+        A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector,
     ) -> None:
         """Project the multiplier for a pointwise constraint to a FE function space.
@@ -193,7 +194,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             project_terms: The ufl expression of the Lagrange multiplier (guess)
             measure: The measure, where the pointwise constraint is posed.
             multiplier: The function representing the Lagrange multiplier (guess)
-            a_tensor: A matrix, into which the form is assembled for speed up
+            A_tensor: A matrix, into which the form is assembled for speed up
             b_tensor: A vector, into which the form is assembled for speed up
 
         """
@@ -209,7 +210,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         rhs = project_term * test * measure
 
         utils._assemble_and_solve_linear(
-            lhs, rhs, a=a_tensor, b=b_tensor, x=multiplier.vector().vec()
+            lhs, rhs, A=A_tensor, b=b_tensor, x=multiplier.vector().vec()
         )
         multiplier.vector().apply("")
 
@@ -283,7 +284,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 project_term,
                 self.constraints[index].measure,
                 self.lmbd[index],
-                self.a_tensors[index],
+                self.A_tensors[index],
                 self.b_tensors[index],
             )
 
@@ -354,7 +355,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 project_terms,
                 self.constraints[index].measure,
                 self.lmbd[index],
-                self.a_tensors[index],
+                self.A_tensors[index],
                 self.b_tensors[index],
             )
 

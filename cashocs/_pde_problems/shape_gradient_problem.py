@@ -205,7 +205,7 @@ class _PLaplaceProjector:
         dx = gradient_problem.form_handler.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.a_tensor = fenics.PETScMatrix()
+        self.A_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
         self.b_tensor = fenics.PETScVector()
 
         self.form_list = []
@@ -259,6 +259,6 @@ class _PLaplaceProjector:
                 inexact=True,
                 verbose=False,
                 ksp_options=self.ksp_options,
-                a_tensor=self.a_tensor,
+                A_tensor=self.A_tensor,
                 b_tensor=self.b_tensor,
             )

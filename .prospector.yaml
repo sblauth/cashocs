@@ -31,6 +31,9 @@ pep8:
   run: true
   options:
     max-line-length: 88
+  disable:
+    - N803
+    - N806
 
 pep257:
   run: true

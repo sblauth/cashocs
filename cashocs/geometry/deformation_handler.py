@@ -84,7 +84,8 @@ class DeformationHandler:
         self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
 
-        self.a_prior = (
+        # pylint: disable=invalid-name
+        self.A_prior = (
             fenics.TrialFunction(self.dg_function_space)
             * fenics.TestFunction(self.dg_function_space)
             * self.dx
@@ -118,7 +119,7 @@ class DeformationHandler:
             0.0, transformation.vector().vec()
         )
         x = utils._assemble_and_solve_linear(
-            self.a_prior,
+            self.A_prior,
             self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,

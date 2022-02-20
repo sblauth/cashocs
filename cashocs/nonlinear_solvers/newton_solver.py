@@ -53,7 +53,7 @@ class _NewtonSolver:
         verbose: bool = True,
         ksp: Optional[PETSc.KSP] = None,
         ksp_options: Optional[List[List[str]]] = None,
-        a_tensor: Optional[fenics.PETScMatrix] = None,
+        A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
     ) -> None:
@@ -89,7 +89,7 @@ class _NewtonSolver:
             ksp: The PETSc ksp object used to solve the inner (linear) problem if this
                 is ``None`` it uses the direct solver MUMPS (default is ``None``).
             ksp_options: The list of options for the linear solver.
-            a_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+            A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
                 sub-problem.
@@ -112,7 +112,7 @@ class _NewtonSolver:
         self.damped = damped
         self.inexact = inexact
         self.verbose = verbose
-        self.a_tensor = a_tensor
+        self.A_tensor = A_tensor  # pylint: disable=invalid-name
         self.b_tensor = b_tensor
         self.is_linear = is_linear
 
@@ -161,7 +161,9 @@ class _NewtonSolver:
             self.derivative, -self.nonlinear_form, self.bcs_hom
         )
         self.assembler.keep_diagonal = True
-        self.a_fenics = self.a_tensor or fenics.PETScMatrix()
+        self.A_fenics = (
+            self.A_tensor or fenics.PETScMatrix()
+        )  # pylint: disable=invalid-name
         self.residual = self.b_tensor or fenics.PETScVector()
 
         self.assembler_shift = None
@@ -174,7 +176,7 @@ class _NewtonSolver:
             self.residual_shift = fenics.PETScVector()
 
         self.b = None
-        self.a_matrix = None
+        self.A_matrix = None  # pylint: disable=invalid-name
         self.breakdown = False
         self.res = 1.0
         self.res_0 = 1.0
@@ -191,9 +193,9 @@ class _NewtonSolver:
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
-        self.assembler.assemble(self.a_fenics)
-        self.a_fenics.ident_zeros()
-        self.a_matrix = fenics.as_backend_type(self.a_fenics).mat()
+        self.assembler.assemble(self.A_fenics)
+        self.A_fenics.ident_zeros()
+        self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -250,7 +252,7 @@ class _NewtonSolver:
             self._compute_eta_inexact()
             utils._solve_linear_problem(
                 self.ksp,
-                self.a_matrix,
+                self.A_matrix,
                 self.b,
                 self.du.vector().vec(),
                 self.ksp_options,
@@ -369,7 +371,7 @@ def newton_solve(
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[str]]] = None,
-    a_tensor: Optional[fenics.PETScMatrix] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
 ) -> fenics.Function:
@@ -403,7 +405,7 @@ def newton_solve(
         ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
             ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
-        a_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
+        A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
             sub-problem.
@@ -454,7 +456,7 @@ def newton_solve(
         verbose=verbose,
         ksp=ksp,
         ksp_options=ksp_options,
-        a_tensor=a_tensor,
+        A_tensor=A_tensor,
         b_tensor=b_tensor,
         is_linear=is_linear,
     )

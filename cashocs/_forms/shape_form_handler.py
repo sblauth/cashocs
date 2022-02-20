@@ -134,7 +134,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
-        self.a_mu_matrix = fenics.PETScMatrix()
+        self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
         self.b_mu = fenics.PETScVector()
 
         self.update_scalar_product()
@@ -469,7 +469,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)
 
-                self.a_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
+                # pylint: disable=invalid-name
+                self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.l_mu = fenics.Constant(0.0) * psi * self.dx
 
                 self.bcs_mu = utils.create_dirichlet_bcs(
@@ -541,10 +542,10 @@ class ShapeFormHandler(form_handler.FormHandler):
             if not self.use_distance_mu:
                 if self.inhomogeneous_mu:
                     x = utils._assemble_and_solve_linear(
-                        self.a_mu,
+                        self.A_mu,
                         self.l_mu,
                         self.bcs_mu,
-                        a=self.a_mu_matrix,
+                        A=self.A_mu_matrix,
                         b=self.b_mu,
                         ksp=self.ksp_mu,
                         ksp_options=self.options_mu,

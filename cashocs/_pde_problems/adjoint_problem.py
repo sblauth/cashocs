@@ -69,7 +69,8 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
         utils._setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
-        self.a_tensors = [
+        # pylint: disable=invalid-name
+        self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
         self.b_tensors = [
@@ -106,7 +107,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
-                        a=self.a_tensors[-1 - i],
+                        A=self.A_tensors[-1 - i],
                         b=self.b_tensors[-1 - i],
                         x=self.adjoints[-1 - i].vector().vec(),
                         ksp=self.ksps[-1 - i],
@@ -129,7 +130,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                     inner_max_its=2,
                     ksps=self.ksps,
                     ksp_options=self.form_handler.adjoint_ksp_options,
-                    a_tensors=self.a_tensors,
+                    A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
                     inner_is_linear=True,
                 )

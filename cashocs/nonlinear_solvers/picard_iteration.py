@@ -63,7 +63,9 @@ def picard_iteration(
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[List[List[List[str]]]] = None,
-    a_tensors: Optional[List[fenics.PETScMatrix]] = None,
+    A_tensors: Optional[
+        List[fenics.PETScMatrix]
+    ] = None,  # pylint: disable=invalid-name
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
 ) -> None:
@@ -90,7 +92,7 @@ def picard_iteration(
             optional. Default is ``None``, in which case the direct solver mumps is
             used.
         ksp_options: List of options for the KSP objects.
-        a_tensors: List of matrices for the right-hand sides of the inner (linearized)
+        A_tensors: List of matrices for the right-hand sides of the inner (linearized)
             equations.
         b_tensors: List of vectors for the left-hand sides of the inner (linearized)
             equations.
@@ -106,7 +108,7 @@ def picard_iteration(
 
     ksps = _setup_obj(ksps, dim)
     ksp_options = _setup_obj(ksp_options, dim)
-    a_tensors = _setup_obj(a_tensors, dim)
+    A_tensors = _setup_obj(A_tensors, dim)
     b_tensors = _setup_obj(b_tensors, dim)
 
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
@@ -160,7 +162,7 @@ def picard_iteration(
                 verbose=inner_verbose,
                 ksp=ksps[j],
                 ksp_options=ksp_options[j],
-                a_tensor=a_tensors[j],
+                A_tensor=A_tensors[j],
                 b_tensor=b_tensors[j],
                 is_linear=inner_is_linear,
             )

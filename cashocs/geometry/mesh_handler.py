@@ -328,7 +328,8 @@ class _MeshHandler:
         )
         dim = self.mesh.geometric_dimension()
 
-        self.a_prior = self.trial_dg0 * self.test_dg0 * self.dx
+        # pylint: disable=invalid-name
+        self.A_prior = self.trial_dg0 * self.test_dg0 * self.dx
         self.l_prior = (
             fenics.det(
                 fenics.Identity(dim) + fenics.grad(self.transformation_container)
@@ -358,7 +359,7 @@ class _MeshHandler:
             0.0, transformation.vector().vec()
         )
         x = utils._assemble_and_solve_linear(
-            self.a_prior,
+            self.A_prior,
             self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
