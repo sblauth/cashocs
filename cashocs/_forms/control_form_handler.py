@@ -374,6 +374,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         # Need to distinguish cases due to empty sum in case state_dim = 1
         if self.state_dim > 1:
+            # pylint: disable=invalid-unary-operand-type
             self.sensitivity_eqs_rhs = [
                 -_utils.summation(
                     [
@@ -399,6 +400,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 for i in range(self.state_dim)
             ]
         else:
+            # pylint: disable=invalid-unary-operand-type
             self.sensitivity_eqs_rhs = [
                 -_utils.summation(
                     [
@@ -548,7 +550,7 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.control_dim)
         ]
 
-    def _compute_newton_forms(self) -> None:
+    def compute_newton_forms(self) -> None:
         """Calculates the needed forms for the truncated Newton method."""
         if self.use_scalar_tracking or self.use_min_max_terms:
             raise _exceptions.InputError(

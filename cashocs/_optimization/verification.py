@@ -112,6 +112,8 @@ def control_gradient_test(
     if scaling < 1e-3:
         scaling = 1.0
 
+    # noinspection PyProtectedMember
+    # pylint: disable=protected-access
     ocp._erase_pde_memory()
     cost_functional_at_u = ocp.reduced_cost_functional.evaluate()
     gradient_at_u = ocp.compute_gradient()
@@ -124,6 +126,8 @@ def control_gradient_test(
         for j in range(ocp.control_dim):
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
+        # noinspection PyProtectedMember
+        # pylint: disable=protected-access
         ocp._erase_pde_memory()
         cost_functional_at_v = ocp.reduced_cost_functional.evaluate()
 
@@ -180,6 +184,8 @@ def shape_gradient_test(
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
+    # noinspection PyProtectedMember
+    # pylint: disable=protected-access
     sop._erase_pde_memory()
     current_cost_functional = sop.reduced_cost_functional.evaluate()
     shape_grad = sop.compute_shape_gradient()
@@ -196,6 +202,8 @@ def shape_gradient_test(
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
         transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             sop._erase_pde_memory()
             perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
 

@@ -408,7 +408,7 @@ class OptimizationProblem(abc.ABC):
                 each solve of the state system
 
         """
-        self.form_handler._pre_hook = function
+        self.form_handler.pre_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
@@ -421,7 +421,7 @@ class OptimizationProblem(abc.ABC):
                 the computation of the gradient(s)
 
         """
-        self.form_handler._post_hook = function
+        self.form_handler.post_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False

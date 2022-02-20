@@ -521,8 +521,8 @@ def test_hooks():
     grad.vector()[:] = ocp.compute_gradient()[0].vector()[:]
 
     ocp.inject_pre_post_hook(pre_function, post_function)
-    assert ocp.form_handler._pre_hook == pre_function
-    assert ocp.form_handler._post_hook == post_function
+    assert ocp.form_handler.pre_hook == pre_function
+    assert ocp.form_handler.post_hook == post_function
 
     ocp.compute_state_variables()
     assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15

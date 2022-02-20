@@ -58,6 +58,10 @@ def _get_subdx(
     return None
 
 
+def _hook() -> None:
+    return None
+
+
 class FormHandler(abc.ABC):
     """Parent class for UFL form manipulation.
 
@@ -205,6 +209,9 @@ class FormHandler(abc.ABC):
         self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
         self.opt_algo = _utils.optimization_algorithm_configuration(self.config)
 
+        self.pre_hook = _hook
+        self.post_hook = _hook
+
         self._compute_state_equations()
         self._compute_adjoint_equations()
 
@@ -350,12 +357,6 @@ class FormHandler(abc.ABC):
         )
 
         self._compute_adjoint_boundary_conditions()
-
-    def _pre_hook(self) -> None:
-        pass
-
-    def _post_hook(self) -> None:
-        pass
 
     @abc.abstractmethod
     def scalar_product(

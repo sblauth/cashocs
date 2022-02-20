@@ -373,7 +373,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.line_search = line_search.ArmijoLineSearch(self)
 
         if self.algorithm.casefold() == "newton":
-            self.form_handler._compute_newton_forms()
+            self.form_handler.compute_newton_forms()
 
         if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(

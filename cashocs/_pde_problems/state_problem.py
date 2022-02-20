@@ -129,7 +129,7 @@ class StateProblem(pde_problem.PDEProblem):
         """
         if not self.has_solution:
 
-            self.form_handler._pre_hook()
+            self.form_handler.pre_hook()
 
             if self.initial_guess is not None:
                 for j in range(self.form_handler.state_dim):

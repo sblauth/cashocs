@@ -347,6 +347,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         try:
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             if not self.states[0].function_space().mesh()._config_flag:
                 raise _exceptions.InputError(
                     "cashocs.import_mesh",
