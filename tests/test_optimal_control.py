@@ -688,3 +688,18 @@ def test_small_stepsize1():
     with pytest.raises(NotConvergedError) as e_info:
         ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=2)
     assert "Armijo rule failed." in str(e_info.value)
+
+
+def test_control_bcs():
+    u.vector()[:] = 0.0
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    value = rng.rand()
+    control_bcs_list = cashocs.create_bcs_list(
+        V, Constant(value), boundaries, [1, 2, 3, 4]
+    )
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, control_bcs_list=control_bcs_list
+    )
+    ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=9)
+    assert np.sqrt(assemble(pow(u - value, 2) * ds)) < 1e-15
+    assert ocp.solver.relative_norm <= ocp.solver.rtol

@@ -107,30 +107,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         self._compute_shape_gradient_forms()
         self._setup_mu_computation()
 
-        retry_assembler_setup = False
-        if not self.degree_estimation:
-            try:
-                self.assembler = fenics.SystemAssembler(
-                    self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
-                )
-            except (AssertionError, ValueError):
-                retry_assembler_setup = True
-
-        if retry_assembler_setup or self.degree_estimation:
-            self.estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
-                    self.riesz_scalar_product
-                ),
-                ufl.algorithms.estimate_total_polynomial_degree(self.shape_derivative),
-            )
-            self.assembler = fenics.SystemAssembler(
-                self.riesz_scalar_product,
-                self.shape_derivative,
-                self.bcs_shape,
-                form_compiler_parameters={"quadrature_degree": self.estimated_degree},
-            )
-
-        self.assembler.keep_diagonal = True
+        self.setup_assembler(
+            self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
+        )
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
@@ -162,6 +141,42 @@ class ShapeFormHandler(form_handler.FormHandler):
             raise NotImplementedError(
                 "Second order methods are not implemented for shape optimization yet"
             )
+
+    def setup_assembler(
+        self,
+        scalar_product: ufl.form,
+        shape_derivative: ufl.form,
+        bcs: List[fenics.DirichletBC],
+    ) -> None:
+        """Sets up the assembler for assembling the shape gradient projection.
+
+        Args:
+            scalar_product: The weak form of the scalar product
+            shape_derivative: The weak form of the shape derivative
+            bcs: The boundary conditions for the projection
+
+        """
+        retry_assembler_setup = False
+        if not self.degree_estimation:
+            try:
+                self.assembler = fenics.SystemAssembler(
+                    scalar_product, shape_derivative, bcs
+                )
+            except (AssertionError, ValueError):
+                retry_assembler_setup = True
+
+        if retry_assembler_setup or self.degree_estimation:
+            estimated_degree = np.maximum(
+                ufl.algorithms.estimate_total_polynomial_degree(scalar_product),
+                ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
+            )
+            self.assembler = fenics.SystemAssembler(
+                scalar_product,
+                shape_derivative,
+                bcs,
+                form_compiler_parameters={"quadrature_degree": estimated_degree},
+            )
+        self.assembler.keep_diagonal = True
 
     def _compute_scalar_tracking_shape_derivative(self) -> None:
         """Calculates the shape derivative of scalar_tracking_forms."""

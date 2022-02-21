@@ -71,6 +71,13 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
+        control_bcs_list: Optional[
+            Union[
+                fenics.DirichletBC,
+                List[fenics.DirichletBC],
+                List[List[fenics.DirichletBC]],
+            ]
+        ] = None,
     ) -> OptimalControlProblem:
         r"""Initializes self.
 
@@ -124,6 +131,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            control_bcs_list: A list of boundary conditions for the control variables.
+                This is passed analogously to ``bcs_list``. Default is ``None``.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -150,6 +159,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 scalar_tracking_forms=scalar_tracking_forms,
                 min_max_terms=min_max_terms,
                 desired_weights=desired_weights,
+                control_bcs_list=control_bcs_list,
             )
             unscaled_problem._scale_cost_functional()  # overwrites cost functional list
 
@@ -174,6 +184,13 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
+        control_bcs_list: Optional[
+            Union[
+                fenics.DirichletBC,
+                List[fenics.DirichletBC],
+                List[List[fenics.DirichletBC]],
+            ]
+        ] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -227,6 +244,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            control_bcs_list: A list of boundary conditions for the control variables.
+                This is passed analogously to ``bcs_list``. Default is ``None``.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -255,6 +274,22 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.riesz_scalar_products = self._parse_riesz_scalar_products(
             riesz_scalar_products
         )
+
+        self.use_control_bcs = False
+        if control_bcs_list is not None:
+            self.control_bcs_list_inhomogeneous = _utils.check_and_enlist_bcs(
+                control_bcs_list
+            )
+            self.control_bcs_list = []
+            for bcs_list in self.control_bcs_list_inhomogeneous:
+                hom_bcs = [fenics.DirichletBC(bc) for bc in bcs_list]
+                for bc in hom_bcs:
+                    bc.homogenize()
+                self.control_bcs_list.append(hom_bcs)
+
+            self.use_control_bcs = True
+        else:
+            self.control_bcs_list = [None] * self.control_dim
 
         # control_constraints
         self.control_constraints = self._parse_control_constraints(control_constraints)
@@ -300,6 +335,14 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """
         super()._erase_pde_memory()
         self.gradient_problem.has_solution = False
+
+    def _setup_control_bcs(self) -> None:
+        """Sets up the boundary conditions for the control variables."""
+        if self.use_control_bcs:
+            for i in range(self.control_dim):
+                for i in range(self.control_dim):
+                    for bc in self.control_bcs_list_inhomogeneous[i]:
+                        bc.apply(self.controls[i].vector())
 
     def solve(
         self,
@@ -366,6 +409,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         """
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
+
+        self._setup_control_bcs()
 
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(self)
@@ -435,6 +480,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             mod_derivatives = derivatives
         elif isinstance(derivatives, ufl.form.Form):
             mod_derivatives = [derivatives]
+
+        self.form_handler.setup_assemblers(
+            self.form_handler.riesz_scalar_products,
+            mod_derivatives,
+            self.form_handler.control_bcs_list,
+        )
 
         self.form_handler.gradient_forms_rhs = mod_derivatives
         self.has_custom_derivative = True
