@@ -19,11 +19,12 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl
+import ufl.algorithms
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -56,6 +57,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Initialize the attributes from the arguments
         self.controls = optimization_problem.controls
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
+        self.control_bcs_list = optimization_problem.control_bcs_list
         self.control_constraints = optimization_problem.control_constraints
         self.require_control_constraints = (
             optimization_problem.require_control_constraints
@@ -109,18 +111,62 @@ class ControlFormHandler(form_handler.FormHandler):
         if self.opt_algo.casefold() == "newton":
             self.compute_newton_forms()
 
-        # Initialize the scalar products
+        self.setup_assemblers(
+            self.riesz_scalar_products, self.gradient_forms_rhs, self.control_bcs_list
+        )
+
+    def setup_assemblers(
+        self,
+        scalar_product_forms: List[ufl.Form],
+        derivatives: List[ufl.Form],
+        bcs: Union[List[List[fenics.DirichletBC]], List[None]],
+    ) -> None:
+        """Sets up the assemblers and matrices for the projection of the gradient.
+
+        Args:
+            scalar_product_forms: The weak form of the scalar product.
+            derivatives: The weak form of the derivative.
+            bcs: The boundary conditions for the projection.
+
+        """
+        try:
+            self.assemblers = []
+            for i in range(self.control_dim):
+                assembler = fenics.SystemAssembler(
+                    scalar_product_forms[i],
+                    derivatives[i],
+                    bcs[i],
+                )
+                assembler.keep_diagonal = True
+                self.assemblers.append(assembler)
+        except (AssertionError, ValueError):
+            self.assemblers = []
+            for i in range(self.control_dim):
+                estimated_degree = np.maximum(
+                    ufl.algorithms.estimate_total_polynomial_degree(
+                        self.riesz_scalar_products[i]
+                    ),
+                    ufl.algorithms.estimate_total_polynomial_degree(
+                        self.gradient_forms_rhs[i]
+                    ),
+                )
+                assembler = fenics.SystemAssembler(
+                    scalar_product_forms[i],
+                    derivatives[i],
+                    bcs[i],
+                    form_compiler_parameters={"quadrature_degree": estimated_degree},
+                )
+                assembler.keep_diagonal = True
+                self.assemblers.append(assembler)
+
         fenics_scalar_product_matrices = [
             fenics.PETScMatrix() for _ in range(self.control_dim)
         ]
 
         for i in range(self.control_dim):
-            fenics.assemble(
-                self.riesz_scalar_products[i],
-                keep_diagonal=True,
-                tensor=fenics_scalar_product_matrices[i],
-            )
+            self.assemblers[i].assemble(fenics_scalar_product_matrices[i])
             fenics_scalar_product_matrices[i].ident_zeros()
+
         self.riesz_projection_matrices = [
             fenics_scalar_product_matrices[i].mat() for i in range(self.control_dim)
         ]

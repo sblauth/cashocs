@@ -283,6 +283,13 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         ksp_options: Optional[List[List[List[str]]]] = None,
         adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
+        control_bcs_list: Optional[
+            Union[
+                fenics.DirichletBC,
+                List[fenics.DirichletBC],
+                List[List[fenics.DirichletBC]],
+            ]
+        ] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -330,6 +337,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
+            control_bcs_list: A list of boundary conditions for the control variables.
+                This is passed analogously to ``bcs_list``. Default is ``None``.
 
         """
         super().__init__(
@@ -348,6 +357,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
         self.controls = controls
         self.riesz_scalar_products = riesz_scalar_products
+        self.control_bcs_list = control_bcs_list
         self.control_constraints = control_constraints
 
     def _solve_inner_problem(
@@ -385,6 +395,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             adjoint_ksp_options=self.adjoint_ksp_options,
             scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
             min_max_terms=self.solver.inner_min_max_terms,
+            control_bcs_list=self.control_bcs_list,
         )
 
         optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)

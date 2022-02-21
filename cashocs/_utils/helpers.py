@@ -21,14 +21,16 @@ from __future__ import annotations
 
 import argparse
 import configparser
-from typing import Any, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, TypeVar, Union
 
 import fenics
 
 from cashocs import _exceptions
 
+T = TypeVar("T")
 
-def enlist(arg: Union[Any, List]) -> List:
+
+def enlist(arg: Union[T, List[T]]) -> List[T]:
     """Wraps the input argument into a list, if it isn't a list already.
 
     Args:

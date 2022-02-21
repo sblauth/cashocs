@@ -571,30 +571,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 {shape_derivative.arguments()[0]: self.form_handler.test_vector_field},
             )
 
-        retry_assembler_setup = False
-        if not self.form_handler.degree_estimation:
-            try:
-                self.form_handler.assembler = fenics.SystemAssembler(
-                    self.form_handler.riesz_scalar_product,
-                    shape_derivative,
-                    self.form_handler.bcs_shape,
-                )
-            except (AssertionError, ValueError):
-                retry_assembler_setup = True
-
-        if retry_assembler_setup or self.form_handler.degree_estimation:
-            estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
-                    self.form_handler.riesz_scalar_product
-                ),
-                ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
-            )
-            self.form_handler.assembler = fenics.SystemAssembler(
-                self.form_handler.riesz_scalar_product,
-                shape_derivative,
-                self.form_handler.bcs_shape,
-                form_compiler_parameters={"quadrature_degree": estimated_degree},
-            )
+        self.form_handler.setup_assembler(
+            self.form_handler.riesz_scalar_product,
+            shape_derivative,
+            self.form_handler.bcs_shape,
+        )
 
         self.has_custom_derivative = True
 

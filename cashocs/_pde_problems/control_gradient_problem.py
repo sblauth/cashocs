@@ -114,9 +114,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         if not self.has_solution:
             for i in range(self.form_handler.control_dim):
-                fenics.assemble(
-                    self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
-                )
+                self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 _utils.solve_linear_problem(
                     ksp=self.ksps[i],
                     b=self.b_tensors[i].vec(),
