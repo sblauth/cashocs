@@ -111,11 +111,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_beta_pr(self) -> None:
         """Computes beta for the Polak-Ribiere method."""
-        for i in range(len(self.gradient)):
-            self.difference[i].vector().vec().aypx(
-                0.0,
-                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
-            )
+        self._compute_difference()
 
         beta_numerator = self.form_handler.scalar_product(
             self.gradient, self.difference
@@ -127,11 +123,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_beta_hs(self) -> None:
         """Computes beta for the Hestenes-Stiefel method."""
-        for i in range(len(self.gradient)):
-            self.difference[i].vector().vec().aypx(
-                0.0,
-                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
-            )
+        self._compute_difference()
 
         beta_numerator = self.form_handler.scalar_product(
             self.gradient, self.difference
@@ -143,11 +135,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_beta_dy(self) -> None:
         """Computes beta for the Dai-Yuan method."""
-        for i in range(len(self.gradient)):
-            self.difference[i].vector().vec().aypx(
-                0.0,
-                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
-            )
+        self._compute_difference()
 
         beta_numerator = self.form_handler.scalar_product(self.gradient, self.gradient)
         beta_denominator = self.form_handler.scalar_product(
@@ -157,11 +145,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_beta_hz(self) -> None:
         """Computes beta for the Hager-Zhang method."""
-        for i in range(len(self.gradient)):
-            self.difference[i].vector().vec().aypx(
-                0.0,
-                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
-            )
+        self._compute_difference()
 
         dy = self.form_handler.scalar_product(self.search_direction, self.difference)
         y2 = self.form_handler.scalar_product(self.difference, self.difference)
@@ -231,3 +215,11 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         self.optimization_variable_abstractions.project_ncg_search_direction(
             self.search_direction
         )
+
+    def _compute_difference(self) -> None:
+        """Computes the difference between current and previous gradients."""
+        for i in range(len(self.gradient)):
+            self.difference[i].vector().vec().aypx(
+                0.0,
+                self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
+            )

@@ -25,7 +25,7 @@ and barycenter, and desired ones.
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -140,13 +140,7 @@ class ShapeRegularization:
         self.mu_volume = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
         if self.config.getboolean("Regularization", "use_initial_volume"):
-            if not self.measure_hole:
-                self.target_volume = fenics.assemble(fenics.Constant(1) * self.dx)
-            else:
-                self.target_volume = (
-                    self.delta_x * self.delta_y * self.delta_z
-                    - fenics.assemble(fenics.Constant(1.0) * self.dx)
-                )
+            self.target_volume = self._compute_volume()
 
     def _init_surface_regularization(self) -> None:
         """Initializes the terms corresponding to the surface regularization."""
@@ -196,50 +190,7 @@ class ShapeRegularization:
             self.target_barycenter_list.append(0.0)
 
         if self.config.getboolean("Regularization", "use_initial_barycenter"):
-            self.target_barycenter_list = [0.0, 0.0, 0.0]
-            if not self.measure_hole:
-                volume = fenics.assemble(fenics.Constant(1) * self.dx)
-                self.target_barycenter_list[0] = (
-                    fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
-                )
-                self.target_barycenter_list[1] = (
-                    fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
-                )
-                if self.geometric_dimension == 3:
-                    self.target_barycenter_list[2] = (
-                        fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
-                    )
-                else:
-                    self.target_barycenter_list[2] = 0.0
-
-            else:
-                volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                    fenics.Constant(1) * self.dx
-                )
-                self.target_barycenter_list[0] = (
-                    0.5
-                    * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                    * self.delta_y
-                    * self.delta_z
-                    - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                ) / volume
-                self.target_barycenter_list[1] = (
-                    0.5
-                    * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                    * self.delta_x
-                    * self.delta_z
-                    - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                ) / volume
-                if self.geometric_dimension == 3:
-                    self.target_barycenter_list[2] = (
-                        0.5
-                        * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                        * self.delta_x
-                        * self.delta_y
-                        - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                    ) / volume
-                else:
-                    self.target_barycenter_list[2] = 0.0
+            self.target_barycenter_list = self._compute_barycenter_list()
 
     def update_geometric_quantities(self) -> None:
         """Updates the geometric quantities.
@@ -247,57 +198,16 @@ class ShapeRegularization:
         Updates the volume, surface area, and barycenters (after the
         mesh is updated).
         """
-        if not self.measure_hole:
-            volume = fenics.assemble(fenics.Constant(1) * self.dx)
-            barycenter_x = (
-                fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
-            )
-            barycenter_y = (
-                fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
-            )
-            if self.geometric_dimension == 3:
-                barycenter_z = (
-                    fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
-                )
-            else:
-                barycenter_z = 0.0
-
-        else:
-            volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                fenics.Constant(1) * self.dx
-            )
-            barycenter_x = (
-                0.5
-                * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                * self.delta_y
-                * self.delta_z
-                - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-            ) / volume
-            barycenter_y = (
-                0.5
-                * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                * self.delta_x
-                * self.delta_z
-                - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-            ) / volume
-            if self.geometric_dimension == 3:
-                barycenter_z = (
-                    0.5
-                    * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                    * self.delta_x
-                    * self.delta_y
-                    - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                ) / volume
-            else:
-                barycenter_z = 0.0
+        volume = self._compute_volume()
+        barycenter_list = self._compute_barycenter_list()
 
         surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
         self.current_volume.val = volume
         self.current_surface.val = surface
-        self.current_barycenter_x.val = barycenter_x
-        self.current_barycenter_y.val = barycenter_y
-        self.current_barycenter_z.val = barycenter_z
+        self.current_barycenter_x.val = barycenter_list[0]
+        self.current_barycenter_y.val = barycenter_list[1]
+        self.current_barycenter_z.val = barycenter_list[2]
 
         self.compute_curvature()
 
@@ -332,14 +242,7 @@ class ShapeRegularization:
             value = 0.0
 
             if self.mu_volume > 0.0:
-                if not self.measure_hole:
-                    volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
-                else:
-                    volume = (
-                        self.delta_x * self.delta_y * self.delta_z
-                        - fenics.assemble(fenics.Constant(1) * self.dx)
-                    )
-
+                volume = self._compute_volume()
                 value += 0.5 * self.mu_volume * pow(volume - self.target_volume, 2)
 
             if self.mu_surface > 0.0:
@@ -354,61 +257,15 @@ class ShapeRegularization:
                 value += 0.5 * self.mu_curvature * curvature_val
 
             if self.mu_barycenter > 0.0:
-                if not self.measure_hole:
-                    volume = fenics.assemble(fenics.Constant(1) * self.dx)
-
-                    barycenter_x = (
-                        fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
-                    )
-                    barycenter_y = (
-                        fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
-                    )
-                    if self.geometric_dimension == 3:
-                        barycenter_z = (
-                            fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                            / volume
-                        )
-                    else:
-                        barycenter_z = 0.0
-
-                else:
-                    volume = (
-                        self.delta_x * self.delta_y * self.delta_z
-                        - fenics.assemble(fenics.Constant(1) * self.dx)
-                    )
-
-                    barycenter_x = (
-                        0.5
-                        * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                        * self.delta_y
-                        * self.delta_z
-                        - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                    ) / volume
-                    barycenter_y = (
-                        0.5
-                        * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                        * self.delta_x
-                        * self.delta_z
-                        - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                    ) / volume
-                    if self.geometric_dimension == 3:
-                        barycenter_z = (
-                            0.5
-                            * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                            * self.delta_x
-                            * self.delta_y
-                            - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                        ) / volume
-                    else:
-                        barycenter_z = 0.0
+                barycenter_list = self._compute_barycenter_list()
 
                 value += (
                     0.5
                     * self.mu_barycenter
                     * (
-                        pow(barycenter_x - self.target_barycenter_list[0], 2)
-                        + pow(barycenter_y - self.target_barycenter_list[1], 2)
-                        + pow(barycenter_z - self.target_barycenter_list[2], 2)
+                        pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
+                        + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
+                        + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
                     )
                 )
 
@@ -590,13 +447,7 @@ class ShapeRegularization:
     def _scale_volume_term(self) -> None:
         """Scales the volume regularization parameter."""
         if self.mu_volume > 0.0:
-            if not self.measure_hole:
-                volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
-            else:
-                volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                    fenics.Constant(1) * self.dx
-                )
-
+            volume = self._compute_volume()
             value = 0.5 * pow(volume - self.target_volume, 2)
 
             if abs(value) < 1e-15:
@@ -643,56 +494,12 @@ class ShapeRegularization:
     def _scale_barycenter_term(self) -> None:
         """Scales the barycenter regularization term."""
         if self.mu_barycenter > 0.0:
-            if not self.measure_hole:
-                volume = fenics.assemble(fenics.Constant(1) * self.dx)
-
-                barycenter_x = (
-                    fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
-                )
-                barycenter_y = (
-                    fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
-                )
-                if self.geometric_dimension == 3:
-                    barycenter_z = (
-                        fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
-                    )
-                else:
-                    barycenter_z = 0.0
-
-            else:
-                volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                    fenics.Constant(1) * self.dx
-                )
-
-                barycenter_x = (
-                    0.5
-                    * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                    * self.delta_y
-                    * self.delta_z
-                    - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-                ) / volume
-                barycenter_y = (
-                    0.5
-                    * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                    * self.delta_x
-                    * self.delta_z
-                    - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-                ) / volume
-                if self.geometric_dimension == 3:
-                    barycenter_z = (
-                        0.5
-                        * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                        * self.delta_x
-                        * self.delta_y
-                        - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                    ) / volume
-                else:
-                    barycenter_z = 0.0
+            barycenter_list = self._compute_barycenter_list()
 
             value = 0.5 * (
-                pow(barycenter_x - self.target_barycenter_list[0], 2)
-                + pow(barycenter_y - self.target_barycenter_list[1], 2)
-                + pow(barycenter_z - self.target_barycenter_list[2], 2)
+                pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
+                + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
+                + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
             )
 
             if abs(value) < 1e-15:
@@ -724,3 +531,73 @@ class ShapeRegularization:
                 self.mu_surface = temp_dict["Regularization"]["mu_surface"]
                 self.mu_curvature = temp_dict["Regularization"]["mu_curvature"]
                 self.mu_barycenter = temp_dict["Regularization"]["mu_barycenter"]
+
+    def _compute_barycenter_list(self) -> List[float]:
+        """Computes the list of barycenters for the geometry.
+
+        Returns:
+            The list of coordinates of the barycenter of the geometry.
+
+        """
+        barycenter_list = [0.0] * 3
+        volume = self._compute_volume()
+
+        if not self.measure_hole:
+            barycenter_list[0] = (
+                fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
+            )
+            barycenter_list[1] = (
+                fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
+            )
+            if self.geometric_dimension == 3:
+                barycenter_list[2] = (
+                    fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
+                )
+            else:
+                barycenter_list[2] = 0.0
+
+            return barycenter_list
+
+        else:
+            barycenter_list[0] = (
+                0.5
+                * (pow(self.x_end, 2) - pow(self.x_start, 2))
+                * self.delta_y
+                * self.delta_z
+                - fenics.assemble(self.spatial_coordinate[0] * self.dx)
+            ) / volume
+            barycenter_list[1] = (
+                0.5
+                * (pow(self.y_end, 2) - pow(self.y_start, 2))
+                * self.delta_x
+                * self.delta_z
+                - fenics.assemble(self.spatial_coordinate[1] * self.dx)
+            ) / volume
+            if self.geometric_dimension == 3:
+                barycenter_list[2] = (
+                    0.5
+                    * (pow(self.z_end, 2) - pow(self.z_start, 2))
+                    * self.delta_x
+                    * self.delta_y
+                    - fenics.assemble(self.spatial_coordinate[2] * self.dx)
+                ) / volume
+            else:
+                barycenter_list[2] = 0.0
+
+            return barycenter_list
+
+    def _compute_volume(self) -> float:
+        """Computes the volume of the geometry.
+
+        Returns:
+            The volume of the geometry.
+
+        """
+        if not self.measure_hole:
+            volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
+        else:
+            volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
+                fenics.Constant(1) * self.dx
+            )
+
+        return volume
