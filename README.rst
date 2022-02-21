@@ -184,6 +184,10 @@ If you use cashocs for your research, I would be grateful if you would cite the 
 	https://doi.org/10.1016/j.softx.2020.100646
 
 Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper ::
+
+.. image:: https://api.codacy.com/project/badge/Grade/14b6ba4613ae4f8e92e0abf556738601
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/sblauth/cashocs?utm_source=github.com&utm_medium=referral&utm_content=sblauth/cashocs&utm_campaign=Badge_Grade_Settings
 	
 	Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov--Poincaré-Type Metrics
 	Sebastian Blauth
