@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import subprocess  # nosec B404
 from typing import List, TYPE_CHECKING, Union
 
 import fenics
@@ -289,11 +289,11 @@ class TempFileManager:
             if mesh_handler.do_remesh and not self.config.getboolean(
                 "Debug", "remeshing"
             ):
-                subprocess.run(
+                subprocess.run(  # nosec B603
                     ["rm", "-r", mesh_handler.temp_dir],
                     check=True,
                 )
-                subprocess.run(
+                subprocess.run(  # nosec B603
                     ["rm", "-r", mesh_handler.remesh_directory],
                     check=True,
                 )

@@ -165,7 +165,7 @@ def solve_linear_problem(
     Args:
         ksp: The PETSc KSP object used to solve the problem. None means that the solver
             mumps is used (default is None).
-        a: The PETSc matrix corresponding to the left-hand side of the problem. If
+        A: The PETSc matrix corresponding to the left-hand side of the problem. If
             this is None, then the matrix stored in the ksp object is used. Raises
             an error if no matrix is stored. Default is None.
         b: The PETSc vector corresponding to the right-hand side of the problem.
@@ -250,7 +250,7 @@ def assemble_and_solve_linear(
         lhs_form: The UFL form for the left-hand side of the linear equation.
         rhs_form: The UFL form for the right-hand side of the linear equation.
         bcs: A list of Dirichlet boundary conditions.
-        a: A matrix into which the lhs is assembled. Default is ``None``.
+        A: A matrix into which the lhs is assembled. Default is ``None``.
         b: A vector into which the rhs is assembled. Default is ``None``.
         x: The PETSc vector that stores the solution of the problem. If this is
             None, then a new vector will be created (and returned).

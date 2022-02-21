@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 from typing import List, TYPE_CHECKING
@@ -75,7 +75,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
             if line == "$EndParametrizations\n":
                 parametrizations_section = False
 
-    subprocess.run(["mv", temp_location, mesh_file], check=True)
+    subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603
 
 
 def filter_sys_argv(temp_dir: str):  # pragma: no cover
@@ -182,7 +182,9 @@ class _MeshHandler:
             self.gmsh_file_init = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
             )
-            subprocess.run(["cp", self.gmsh_file, self.gmsh_file_init], check=True)
+            subprocess.run(  # nosec 603
+                ["cp", self.gmsh_file, self.gmsh_file_init], check=True
+            )
             self.gmsh_file = self.gmsh_file_init
 
     def move_mesh(self, transformation: fenics.Function) -> bool:
@@ -406,45 +408,45 @@ class _MeshHandler:
         """Removes the gmsh files from the previous remeshing iterations."""
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file):
-            subprocess.run(["rm", gmsh_file], check=True)
+            subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
 
         gmsh_pre_remesh_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if os.path.isfile(gmsh_pre_remesh_file):
-            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)
+            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
 
         mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         if os.path.isfile(mesh_h5_file):
-            subprocess.run(["rm", mesh_h5_file], check=True)
+            subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
 
         mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
         if os.path.isfile(mesh_xdmf_file):
-            subprocess.run(["rm", mesh_xdmf_file], check=True)
+            subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
 
         boundaries_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if os.path.isfile(boundaries_h5_file):
-            subprocess.run(["rm", boundaries_h5_file], check=True)
+            subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
 
         boundaries_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if os.path.isfile(boundaries_xdmf_file):
-            subprocess.run(["rm", boundaries_xdmf_file], check=True)
+            subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
 
         subdomains_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if os.path.isfile(subdomains_h5_file):
-            subprocess.run(["rm", subdomains_h5_file], check=True)
+            subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
 
         subdomains_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if os.path.isfile(subdomains_xdmf_file):
-            subprocess.run(["rm", subdomains_xdmf_file], check=True)
+            subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
 
     def _restart_script(self, temp_dir: str) -> None:
         """Restarts the python script with itself and replaces the process.
@@ -454,7 +456,7 @@ class _MeshHandler:
 
         """
         if not self.config.getboolean("Debug", "restart"):
-            os.execv(
+            os.execv(  # nosec 606
                 sys.executable,
                 [sys.executable]
                 + filter_sys_argv(temp_dir)
@@ -518,13 +520,13 @@ class _MeshHandler:
                 new_gmsh_file,
             ]
             if not self.config.getboolean("Mesh", "show_gmsh_output"):
-                subprocess.run(
+                subprocess.run(  # nosec 603
                     gmsh_cmd_list,
                     check=True,
                     stdout=subprocess.DEVNULL,
                 )
             else:
-                subprocess.run(gmsh_cmd_list, check=True)
+                subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
 
             _remove_gmsh_parametrizations(new_gmsh_file)
 
@@ -534,7 +536,7 @@ class _MeshHandler:
 
             new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
-            subprocess.run(
+            subprocess.run(  # nosec 603
                 ["cashocs-convert", new_gmsh_file, new_xdmf_file],
                 check=True,
             )

@@ -396,6 +396,7 @@ class FormHandler(abc.ABC):
 
         return b
 
+    # pylint: disable=unused-argument
     def restrict_to_active_set(
         self, a: List[fenics.Function], b: List[fenics.Function]
     ) -> List[fenics.Function]:

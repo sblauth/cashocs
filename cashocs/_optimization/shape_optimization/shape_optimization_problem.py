@@ -22,7 +22,7 @@ from __future__ import annotations
 import configparser
 import json
 import os
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 from typing import Dict, List, Optional, Union
@@ -171,8 +171,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 not unscaled_problem.has_cashocs_remesh_flag
                 and unscaled_problem.do_remesh
             ):
-                subprocess.run(["rm", "-r", unscaled_problem.temp_dir], check=True)
-                subprocess.run(
+                subprocess.run(  # nosec B603
+                    ["rm", "-r", unscaled_problem.temp_dir], check=True
+                )
+                subprocess.run(  # nosec B603
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
                     check=True,
                 )
@@ -527,8 +529,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "deleting the created temporary files."
             )
             if not self.config.getboolean("Debug", "remeshing"):
-                subprocess.run(["rm", "-r", self.temp_dir], check=True)
-                subprocess.run(
+                subprocess.run(["rm", "-r", self.temp_dir], check=True)  # nosec B603
+                subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
             sys.__excepthook__(exctype, value, traceback)

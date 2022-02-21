@@ -66,6 +66,11 @@ class ControlFormHandler(form_handler.FormHandler):
         self.idx_active_upper = None
         self.idx_inactive = None
 
+        self.w_1 = None
+        self.w_2 = None
+        self.w_3 = None
+        self.hessian_rhs = None
+
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
 
@@ -102,7 +107,7 @@ class ControlFormHandler(form_handler.FormHandler):
         self._compute_gradient_equations()
 
         if self.opt_algo.casefold() == "newton":
-            self._compute_newton_forms()
+            self.compute_newton_forms()
 
         # Initialize the scalar products
         fenics_scalar_product_matrices = [fenics.PETScMatrix()] * self.control_dim
@@ -400,8 +405,8 @@ class ControlFormHandler(form_handler.FormHandler):
                 for i in range(self.state_dim)
             ]
         else:
-            # pylint: disable=invalid-unary-operand-type
             self.sensitivity_eqs_rhs = [
+                # pylint: disable=invalid-unary-operand-type
                 -_utils.summation(
                     [
                         fenics.derivative(
