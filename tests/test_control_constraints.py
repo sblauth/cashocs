@@ -166,6 +166,7 @@ def test_pw_eq_constraints_only():
     u.vector()[:] = 1.0
     constraint = cashocs.EqualityConstraint(y + u, 0.0, dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
+    cfg.set("Output", "verbose", "False")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
