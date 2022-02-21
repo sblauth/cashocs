@@ -176,8 +176,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
         # pylint: disable=invalid-name
-        self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
-        self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
+        self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
+        self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian method"
 
     # noinspection PyPep8Naming

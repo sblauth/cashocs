@@ -110,7 +110,9 @@ class ControlFormHandler(form_handler.FormHandler):
             self.compute_newton_forms()
 
         # Initialize the scalar products
-        fenics_scalar_product_matrices = [fenics.PETScMatrix()] * self.control_dim
+        fenics_scalar_product_matrices = [
+            fenics.PETScMatrix() for _ in range(self.control_dim)
+        ]
 
         for i in range(self.control_dim):
             fenics.assemble(
