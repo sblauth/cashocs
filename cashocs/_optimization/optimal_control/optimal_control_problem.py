@@ -281,8 +281,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 control_bcs_list
             )
             self.control_bcs_list = []
-            for bcs_list in self.control_bcs_list_inhomogeneous:
-                hom_bcs = [fenics.DirichletBC(bc) for bc in bcs_list]
+            for list_bcs in self.control_bcs_list_inhomogeneous:
+                hom_bcs = [fenics.DirichletBC(bc) for bc in list_bcs]
                 for bc in hom_bcs:
                     bc.homogenize()
                 self.control_bcs_list.append(hom_bcs)
@@ -340,9 +340,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """Sets up the boundary conditions for the control variables."""
         if self.use_control_bcs:
             for i in range(self.control_dim):
-                for i in range(self.control_dim):
-                    for bc in self.control_bcs_list_inhomogeneous[i]:
-                        bc.apply(self.controls[i].vector())
+                for bc in self.control_bcs_list_inhomogeneous[i]:
+                    bc.apply(self.controls[i].vector())
 
     def solve(
         self,
