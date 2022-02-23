@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 class Mesh(fenics.Mesh):
     """A finite element mesh."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """See base class."""
         super().__init__(*args, **kwargs)
         self._config_flag = False
@@ -236,7 +236,7 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
     cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
 
     # Check for the file format
-    mesh_file = None
+    mesh_file: str = ""
     if isinstance(input_arg, str):
         mesh_file = input_arg
     elif isinstance(input_arg, configparser.ConfigParser):
@@ -518,7 +518,32 @@ def regular_box_mesh(
             "Incorrect input for the y-coordinate. "
             "start_y has to be smaller than end_y.",
         )
-    if not ((start_z is None and end_z is None) or (start_z < end_z)):
+
+    fail_z = False
+
+    if start_z is None and end_z is None:
+        lx = end_x - start_x
+        ly = end_y - start_y
+        sizes = [lx, ly]
+        dim = 2
+    else:
+        if start_z is not None and end_z is not None:
+            if start_z >= end_z:
+                fail_z = True
+            else:
+                lx = end_x - start_x
+                ly = end_y - start_y
+                # noinspection PyTypeChecker
+                lz = end_z - start_z
+                sizes = [lx, ly, lz]
+                dim = 3
+
+        elif start_z is None and end_z is not None:
+            fail_z = True
+        else:
+            fail_z = True
+
+    if fail_z:
         raise _exceptions.InputError(
             "cashocs.geometry.regular_box_mesh",
             "start_z",
@@ -526,19 +551,6 @@ def regular_box_mesh(
             "start_z has to be smaller than end_z, "
             "or only one of them is specified.",
         )
-
-    if start_z is None:
-        lx = end_x - start_x
-        ly = end_y - start_y
-        sizes = [lx, ly]
-        dim = 2
-    else:
-        lx = end_x - start_x
-        ly = end_y - start_y
-        # noinspection PyTypeChecker
-        lz = end_z - start_z
-        sizes = [lx, ly, lz]
-        dim = 3
 
     size_min = np.min(sizes)
     num_points = [int(np.round(length / size_min * n)) for length in sizes]

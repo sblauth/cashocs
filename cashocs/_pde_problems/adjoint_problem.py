@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
@@ -40,7 +40,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self,
         form_handler: _forms.FormHandler,
         state_problem: sp.StateProblem,
-        temp_dict: Dict = None,
+        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 

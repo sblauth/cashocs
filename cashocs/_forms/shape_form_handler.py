@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -47,6 +47,8 @@ class ShapeFormHandler(form_handler.FormHandler):
     and the shape derivatives.
     """
 
+    scalar_product_matrix: fenics.PETScMatrix
+
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem
     ) -> None:
@@ -66,8 +68,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             optimization_problem.uses_custom_scalar_product
         )
         deformation_space = optimization_problem.deformation_space
-
-        self.scalar_product_matrix: Optional[fenics.PETScMatrix] = None
 
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation"
@@ -146,7 +146,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self,
         scalar_product: ufl.form,
         shape_derivative: ufl.form,
-        bcs: List[fenics.DirichletBC],
+        bcs: Optional[List[fenics.DirichletBC]],
     ) -> None:
         """Sets up the assembler for assembling the shape gradient projection.
 
@@ -292,7 +292,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             coeff.id() for coeff in self.adjoints
         ]
 
-        self.material_derivative_coeffs = []
+        self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
 
         for coeff in self.lagrangian_form.coefficients():
             self._check_coefficient_id(coeff)
@@ -396,7 +396,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
-        self.mu_lame = fenics.Function(self.cg_function_space)
+        self.mu_lame: Any = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
 
         if self.shape_scalar_product is None:
@@ -418,19 +418,14 @@ class ShapeFormHandler(form_handler.FormHandler):
             else:
                 self.volumes = fenics.Constant(1.0)
 
-            def eps(u):
+            def eps(u: fenics.Function) -> ufl.core.expr.Expr:
                 """Computes the symmetric gradient of a vector field ``u``.
 
-                Parameters
-                ----------
-                u : fenics.Function
-                    A vector field
+                Args:
+                    u: A vector field
 
-                Returns
-                -------
-                ufl.core.expr.Expr
+                Returns:
                     The symmetric gradient of ``u``
-
 
                 """
                 return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
@@ -641,6 +636,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             The scalar product of a and b.
 
         """
+        result: float
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and not self.uses_custom_scalar_product

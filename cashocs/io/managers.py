@@ -370,10 +370,10 @@ class PVDFileManager:
         )
         self.is_initialized = False
 
-        self.state_pvd_list = []
-        self.control_pvd_list = []
-        self.adjoint_pvd_list = []
-        self.gradient_pvd_list = []
+        self.state_pvd_list: List[fenics.File] = []
+        self.control_pvd_list: List[fenics.File] = []
+        self.adjoint_pvd_list: List[fenics.File] = []
+        self.gradient_pvd_list: List[fenics.File] = []
 
     def _initialize_states_pvd(self) -> None:
         """Initializes the list of pvd files for the state variables."""

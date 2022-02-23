@@ -61,7 +61,7 @@ class DeformationHandler:
 
         cells = self.mesh.cells()
         flat_cells = cells.flatten().tolist()
-        self.cell_counter = collections.Counter(flat_cells)
+        self.cell_counter: collections.Counter = collections.Counter(flat_cells)
         self.occurrences = np.array(
             [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
         )
@@ -124,7 +124,7 @@ class DeformationHandler:
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
-        min_det = np.min(x[:])
+        min_det: float = np.min(x[:])
 
         return min_det > 0
 
@@ -260,8 +260,7 @@ class DeformationHandler:
                 "dof_deformation has to be a piecewise linear Lagrange vector field.",
             )
 
-        coordinate_deformation = dof_deformation.vector().vec()[self.v2d]
-
+        coordinate_deformation: np.ndarray = dof_deformation.vector().vec()[self.v2d]
         return coordinate_deformation
 
     def assign_coordinates(self, coordinates: np.ndarray) -> bool:
@@ -342,4 +341,5 @@ PYBIND11_MODULE(SIGNATURE, m)
             cells that vertex ``i`` collides with.
 
         """
-        return cls._cpp_object.compute_collisions(mesh)
+        collisions: np.ndarray = cls._cpp_object.compute_collisions(mesh)
+        return collisions

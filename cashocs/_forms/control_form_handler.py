@@ -43,6 +43,17 @@ class ControlFormHandler(form_handler.FormHandler):
      the optimization (solution) algorithms.
     """
 
+    idx_active: List
+    idx_active_lower: List
+    idx_active_upper: List
+    idx_inactive: List
+    adjoint_sensitivity_eqs_picard: List[ufl.Form]
+    adjoint_sensitivity_eqs_rhs: List[ufl.Form]
+    w_1: List[ufl.Form]
+    w_2: List[ufl.Form]
+    w_3: List[ufl.Form]
+    hessian_rhs: List[ufl.Form]
+
     def __init__(
         self, optimization_problem: optimal_control.OptimalControlProblem
     ) -> None:
@@ -62,16 +73,6 @@ class ControlFormHandler(form_handler.FormHandler):
         self.require_control_constraints = (
             optimization_problem.require_control_constraints
         )
-
-        self.idx_active = None
-        self.idx_active_lower = None
-        self.idx_active_upper = None
-        self.idx_inactive = None
-
-        self.w_1 = None
-        self.w_2 = None
-        self.w_3 = None
-        self.hessian_rhs = None
 
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]

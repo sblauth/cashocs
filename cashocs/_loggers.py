@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 
 class ColorFormatter(logging.Formatter):
@@ -46,11 +47,11 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + my_format + reset,
     }
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """See base class."""
         super().__init__(*args, **kwargs)
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """See base class."""
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)

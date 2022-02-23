@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -43,7 +43,7 @@ class ConstrainedSolver(abc.ABC):
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
-        lambda_0: Optional[List[float]] = None,
+        lambda_0: Optional[Union[List[float], float]] = None,
     ) -> None:
         """Initializes self.
 
@@ -91,8 +91,8 @@ class ConstrainedSolver(abc.ABC):
         self.beta = 10.0
         self.inner_cost_functional_shift = 0.0
 
-        self.inner_scalar_tracking_forms = []
-        self.inner_min_max_terms = []
+        self.inner_scalar_tracking_forms: List[Dict] = []
+        self.inner_min_max_terms: List[Dict] = []
 
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
@@ -239,7 +239,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     constraint.quadratic_term["weight"] = self.mu
                     self.inner_scalar_tracking_forms += [constraint.quadratic_term]
 
-                elif constraint.is_pointwise_constraint:
+                elif constraint.measure is not None:
                     self.inner_cost_functional_form += [
                         constraint.linear_term,
                         fenics.Constant(self.mu) * constraint.quadratic_term,

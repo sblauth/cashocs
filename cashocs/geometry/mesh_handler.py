@@ -78,7 +78,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603
 
 
-def filter_sys_argv(temp_dir: str):  # pragma: no cover
+def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover
     """Filters the command line arguments for the cashocs remesh flag.
 
     Args:
@@ -367,8 +367,8 @@ class _MeshHandler:
             ksp_options=self.options_prior,
         )
 
-        min_det = np.min(x[:])
-        max_det = np.max(x[:])
+        min_det: float = np.min(x[:])
+        max_det: float = np.max(x[:])
 
         return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
 
@@ -470,7 +470,7 @@ class _MeshHandler:
                 "Restart of script with remeshed geometry is cancelled."
             )
 
-    def remesh(self, solver: OptimizationAlgorithm):
+    def remesh(self, solver: OptimizationAlgorithm) -> None:
         """Remeshes the current geometry with Gmsh.
 
         Performs a remeshing of the geometry, and then restarts the optimization problem

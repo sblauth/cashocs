@@ -35,6 +35,9 @@ from cashocs import _utils
 class _NewtonSolver:
     """A Newton solver."""
 
+    assembler_shift: fenics.SystemAssembler
+    residual_shift = fenics.PETScVector
+
     # noinspection PyUnresolvedReferences,PyPep8Naming
     def __init__(
         self,
@@ -52,7 +55,7 @@ class _NewtonSolver:
         inexact: bool = True,
         verbose: bool = True,
         ksp: Optional[PETSc.KSP] = None,
-        ksp_options: Optional[List[List[str]]] = None,
+        ksp_options: Optional[List[List[Union[str, int]]]] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
@@ -164,9 +167,6 @@ class _NewtonSolver:
         # pylint: disable=invalid-name
         self.A_fenics = self.A_tensor or fenics.PETScMatrix()
         self.residual = self.b_tensor or fenics.PETScVector()
-
-        self.assembler_shift = None
-        self.residual_shift = None
 
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
@@ -369,7 +369,7 @@ def newton_solve(
     inexact: bool = True,
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int]]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
@@ -478,7 +478,7 @@ def damped_newton_solve(
     damped: bool = True,
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int]]]] = None,
 ) -> fenics.Function:  # pragma: no cover
     r"""Damped Newton solve interface, only here for compatibility reasons.
 

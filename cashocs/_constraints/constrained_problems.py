@@ -42,6 +42,8 @@ def _hook() -> None:
 class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
+    solver: Union[solvers.AugmentedLagrangianMethod, solvers.QuadraticPenaltyMethod]
+
     def __init__(
         self,
         state_forms: Union[List[ufl.Form], ufl.Form],
@@ -62,7 +64,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[List[List[List[str]]]] = None,
         adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[List[Dict]] = None,
+        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -112,7 +114,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
-        self.solver = None
         self.current_function_value = None
 
         self._pre_hook = _hook
@@ -197,7 +198,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
         for constraint in self.constraint_list:
             s += pow(constraint.constraint_violation(), 2)
 
-        return np.sqrt(s)
+        violation: float = np.sqrt(s)
+        return violation
 
     @abc.abstractmethod
     def _solve_inner_problem(
@@ -450,7 +452,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         constraint_list: Union[
             constraints.EqualityConstraint,
             constraints.InequalityConstraint,
-            List[constraints.EqualityConstraint, constraints.InequalityConstraint],
+            List[
+                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
+            ],
         ],
         config: Optional[configparser.ConfigParser] = None,
         shape_scalar_product: Optional[ufl.Form] = None,

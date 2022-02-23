@@ -22,7 +22,6 @@ from __future__ import annotations
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from typing_extensions import Literal
 import ufl
 
 from cashocs import _utils
@@ -31,10 +30,8 @@ from cashocs.geometry import measure
 
 def compute_mesh_quality(
     mesh: fenics.Mesh,
-    quality_type: Literal["min", "minimum", "avg", "average"] = "min",
-    quality_measure: Literal[
-        "skewness", "maximum_angle", "radius_ratios", "condition_number"
-    ] = "skewness",
+    quality_type: str = "min",
+    quality_measure: str = "skewness",
 ) -> float:
     """This computes the mesh quality of a given mesh.
 
@@ -305,7 +302,8 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimum skewness of the mesh.
 
         """
-        return np.min(cls._quality_object.skewness(mesh).array())
+        quality: float = np.min(cls._quality_object.skewness(mesh).array())
+        return quality
 
     @classmethod
     def avg_skewness(cls, mesh: fenics.Mesh) -> float:
@@ -336,7 +334,8 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average skewness of the mesh.
 
         """
-        return np.average(cls._quality_object.skewness(mesh).array())
+        quality: float = np.average(cls._quality_object.skewness(mesh).array())
+        return quality
 
     @classmethod
     def min_maximum_angle(cls, mesh: fenics.Mesh) -> float:
@@ -361,7 +360,8 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimum value of the maximum angle quality measure.
 
         """
-        return np.min(cls._quality_object.maximum_angle(mesh).array())
+        quality: float = np.min(cls._quality_object.maximum_angle(mesh).array())
+        return quality
 
     @classmethod
     def avg_maximum_angle(cls, mesh: fenics.Mesh) -> float:
@@ -386,7 +386,8 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average quality, based on the maximum angle measure.
 
         """
-        return np.average(cls._quality_object.maximum_angle(mesh).array())
+        quality: float = np.average(cls._quality_object.maximum_angle(mesh).array())
+        return quality
 
     @classmethod
     def min_radius_ratios(cls, mesh: fenics.Mesh) -> float:
@@ -409,7 +410,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         """
         # noinspection PyArgumentList
-        return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+        quality: float = np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+        return quality
 
     @classmethod
     def avg_radius_ratios(cls, mesh: fenics.Mesh) -> float:
@@ -432,7 +434,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         """
         # noinspection PyArgumentList
-        return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+        quality: float = np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+        return quality
 
     @classmethod
     def min_condition_number(cls, mesh: fenics.Mesh) -> float:
@@ -487,7 +490,8 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
 
-        return cond.vector().vec().min()[1]
+        quality: float = cond.vector().vec().min()[1]
+        return quality
 
     @classmethod
     def avg_condition_number(cls, mesh: fenics.Mesh) -> float:
@@ -543,4 +547,5 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
 
-        return cond.vector().vec().sum() / cond.vector().vec().getSize()
+        quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
+        return quality

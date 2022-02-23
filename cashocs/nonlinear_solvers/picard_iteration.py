@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Union
+from typing import List, Optional, TypeVar, Union
 
 import fenics
 import numpy as np
@@ -30,8 +30,10 @@ from cashocs import _exceptions
 from cashocs import _utils
 from cashocs.nonlinear_solvers import newton_solver
 
+T = TypeVar("T")
 
-def _setup_obj(obj: Any, dim: int) -> Union[List[None], Any]:
+
+def _setup_obj(obj: T, dim: int) -> Union[T, List[None]]:
     """Returns a list of None if obj is None, else returns obj.
 
     Args:
@@ -62,7 +64,7 @@ def picard_iteration(
     inner_verbose: bool = False,
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
-    ksp_options: Optional[List[List[List[str]]]] = None,
+    ksp_options: Optional[List[List[Union[str, int]]]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
@@ -105,8 +107,8 @@ def picard_iteration(
 
     dim = len(u_list)
 
-    ksps = _setup_obj(ksps, dim)
-    ksp_options = _setup_obj(ksp_options, dim)
+    derived_ksps = _setup_obj(ksps, dim)
+    derived_ksp_options = _setup_obj(ksp_options, dim)
     # noinspection PyPep8Naming
     A_tensors = _setup_obj(A_tensors, dim)
     b_tensors = _setup_obj(b_tensors, dim)
@@ -160,8 +162,8 @@ def picard_iteration(
                 damped=inner_damped,
                 inexact=inner_inexact,
                 verbose=inner_verbose,
-                ksp=ksps[j],
-                ksp_options=ksp_options[j],
+                ksp=derived_ksps[j],
+                ksp_options=derived_ksp_options[j],
                 A_tensor=A_tensors[j],
                 b_tensor=b_tensors[j],
                 is_linear=inner_is_linear,

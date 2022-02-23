@@ -84,6 +84,7 @@ class FormHandler(abc.ABC):
     # noinspection PyUnresolvedReferences
     riesz_projection_matrices: List[PETSc.Mat]
     uses_custom_scalar_product: bool = False
+    gradient_forms_rhs: List[ufl.Form]
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
@@ -112,7 +113,6 @@ class FormHandler(abc.ABC):
         self.shape_regularization: Optional[
             shape_regularization.ShapeRegularization
         ] = None
-        self.gradient_forms_rhs = None
         self.shape_derivative = None
         self.bcs_shape = None
         self.scalar_product_matrix = None

@@ -22,7 +22,7 @@ from __future__ import annotations
 from configparser import ConfigParser
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -106,9 +106,9 @@ class Config(ConfigParser):
 
         """
         super().__init__()
-        self.config_errors = []
+        self.config_errors: List[str] = []
 
-        self.config_scheme = {
+        self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
             "Mesh": {
                 "mesh_file": {
                     "type": "str",
@@ -624,7 +624,7 @@ restart = False
         if config_file is not None:
             self.read(config_file)
 
-    def getlist(self, section: str, option: str, **kwargs) -> List:
+    def getlist(self, section: str, option: str, **kwargs: Any) -> List:
         """Extracts a list from a config file.
 
         Args:
@@ -640,7 +640,8 @@ restart = False
         if (
             self.config_scheme[section][option]["type"] == "list"
         ) and _check_for_config_list(self.get(section, option)):
-            return json.loads(self.get(section, option, **kwargs))
+            py_list: List = json.loads(self.get(section, option, **kwargs))
+            return py_list
         else:
             raise _exceptions.InputError(
                 "Config.getlist",

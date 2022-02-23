@@ -25,7 +25,6 @@ optimization problems.
 from __future__ import annotations
 
 import abc
-import configparser
 import copy
 import json
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
@@ -211,7 +210,7 @@ class OptimizationProblem(abc.ABC):
 
     def _parse_optional_inputs(
         self,
-        config: configparser.ConfigParser,
+        config: io.Config,
         initial_guess: List[fenics.Function],
         ksp_options: Union[List[List[str]], List[List[List[str]]]],
         adjoint_ksp_options: Union[List[List[str]], List[List[List[str]]]],

@@ -105,8 +105,8 @@ class EqualityConstraint(Constraint):
                 "weight": 1.0,
             }
 
-        elif self.is_pointwise_constraint:
-            mesh = measure.ufl_domain().ufl_cargo()
+        elif self.measure is not None:
+            mesh = self.measure.ufl_domain().ufl_cargo()
             multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
             self.multiplier = fenics.Function(multiplier_space)
             self.linear_term = self.multiplier * variable_function * measure
@@ -121,15 +121,16 @@ class EqualityConstraint(Constraint):
             The computed violation
 
         """
+        violation = float("inf")
         if self.is_integral_constraint:
-            return np.abs(fenics.assemble(self.variable_function) - self.target)
+            violation = np.abs(fenics.assemble(self.variable_function) - self.target)
         elif self.is_pointwise_constraint:
-            return np.sqrt(
+            violation = np.sqrt(
                 fenics.assemble(
                     pow(self.variable_function - self.target, 2) * self.measure
                 )
             )
-        return float("inf")
+        return violation
 
 
 class InequalityConstraint(Constraint):
@@ -174,8 +175,8 @@ class InequalityConstraint(Constraint):
                 "lambda": 1.0,
             }
 
-        elif self.is_pointwise_constraint:
-            mesh = measure.ufl_domain().ufl_cargo()
+        elif self.measure is not None:
+            mesh = self.measure.ufl_domain().ufl_cargo()
             multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
             self.multiplier = fenics.Function(multiplier_space)
             weight_space = fenics.FunctionSpace(mesh, "R", 0)
@@ -219,7 +220,7 @@ class InequalityConstraint(Constraint):
             The computed violation
 
         """
-        violation = 0.0
+        violation: float = 0.0
         if self.is_integral_constraint:
             min_max_integral = fenics.assemble(self.min_max_term["integrand"])
 
@@ -259,4 +260,6 @@ class InequalityConstraint(Constraint):
                     * self.measure
                 )
 
-        return np.sqrt(violation)
+        violation = np.sqrt(violation)
+
+        return violation

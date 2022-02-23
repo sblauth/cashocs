@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import fenics
 from typing_extensions import Literal
@@ -124,7 +124,7 @@ class NamedMeasure(ufl.Measure):
         subdomain_id: str = "everywhere",
         metadata: Optional[Dict] = None,
         subdomain_data: Optional[fenics.MeshFunction] = None,
-        physical_groups=None,
+        physical_groups: Optional[Dict[str, Dict[str, int]]] = None,
     ) -> None:
         """See base class."""
         super().__init__(
@@ -134,18 +134,21 @@ class NamedMeasure(ufl.Measure):
             metadata=metadata,
             subdomain_data=subdomain_data,
         )
-        self.physical_groups = physical_groups
+        if physical_groups is None:
+            self.physical_groups = {}
+        else:
+            self.physical_groups = physical_groups
 
     def __call__(
         self,
-        subdomain_id=None,
-        metadata=None,
-        domain=None,
-        subdomain_data=None,
-        degree=None,
-        scheme=None,
-        rule=None,
-    ):
+        subdomain_id: Any = None,
+        metadata: Any = None,
+        domain: Any = None,
+        subdomain_data: Any = None,
+        degree: Any = None,
+        scheme: Any = None,
+        rule: Any = None,
+    ) -> Optional[ufl.Measure]:
         """See base class.
 
         This implementation also allows strings for subdomain id.
@@ -163,7 +166,7 @@ class NamedMeasure(ufl.Measure):
 
         elif isinstance(subdomain_id, str):
             if (
-                subdomain_id in self.physical_groups["dx"].keys()
+                subdomain_id in self.physical_groups["dx"]
                 and self._integral_type == "cell"
             ):
                 integer_id = self.physical_groups["dx"][subdomain_id]
@@ -189,7 +192,9 @@ class NamedMeasure(ufl.Measure):
                 rule=rule,
             )
 
-        elif isinstance(subdomain_id, (list, tuple)):
+        elif isinstance(subdomain_id, (list)) and all(
+            isinstance(x, int) for x in subdomain_id
+        ):
             return generate_measure(subdomain_id, self)
 
         return None

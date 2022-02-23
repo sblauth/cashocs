@@ -137,14 +137,16 @@ class ShapeRegularization:
 
     def _init_volume_regularization(self) -> None:
         """Initializes the terms corresponding to the volume regularization."""
-        self.mu_volume = self.config.getfloat("Regularization", "factor_volume")
+        self.mu_volume: float = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
         if self.config.getboolean("Regularization", "use_initial_volume"):
             self.target_volume = self._compute_volume()
 
     def _init_surface_regularization(self) -> None:
         """Initializes the terms corresponding to the surface regularization."""
-        self.mu_surface = self.config.getfloat("Regularization", "factor_surface")
+        self.mu_surface: float = self.config.getfloat(
+            "Regularization", "factor_surface"
+        )
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
         if self.config.getboolean("Regularization", "use_initial_surface"):
             self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
@@ -158,7 +160,9 @@ class ShapeRegularization:
             form_handler: The form handler of the problem.
 
         """
-        self.mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
+        self.mu_curvature: float = self.config.getfloat(
+            "Regularization", "factor_curvature"
+        )
         self.kappa_curvature = fenics.Function(form_handler.deformation_space)
         if self.mu_curvature > 0.0:
             n = fenics.FacetNormal(self.mesh)
@@ -180,7 +184,9 @@ class ShapeRegularization:
 
     def _init_barycenter_regularization(self) -> None:
         """Initializes the terms corresponding to the barycenter regularization."""
-        self.mu_barycenter = self.config.getfloat("Regularization", "factor_barycenter")
+        self.mu_barycenter: float = self.config.getfloat(
+            "Regularization", "factor_barycenter"
+        )
 
         self.target_barycenter_list = self.config.getlist(
             "Regularization", "target_barycenter"
@@ -593,6 +599,7 @@ class ShapeRegularization:
             The volume of the geometry.
 
         """
+        volume = 0.0
         if not self.measure_hole:
             volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
         else:

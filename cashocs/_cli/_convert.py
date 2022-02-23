@@ -22,7 +22,7 @@
 import argparse
 import json
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import meshio
 import numpy as np
@@ -154,7 +154,7 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
             without extension.
 
     """
-    physical_groups = {"dx": {}, "ds": {}}
+    physical_groups: Dict[str, Dict[str, int]] = {"dx": {}, "ds": {}}
     has_physical_groups = False
     with open(inputfile, "r", encoding="utf-8") as infile:
         for line in infile:
