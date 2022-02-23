@@ -599,7 +599,7 @@ class ShapeRegularization:
             The volume of the geometry.
 
         """
-        volume = 0.0
+        volume: float
         if not self.measure_hole:
             volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
         else:

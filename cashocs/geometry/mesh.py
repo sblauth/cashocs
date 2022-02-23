@@ -520,6 +520,8 @@ def regular_box_mesh(
         )
 
     fail_z = False
+    dim = 2
+    sizes = [1.0, 1.0]
 
     if start_z is None and end_z is None:
         lx = end_x - start_x
