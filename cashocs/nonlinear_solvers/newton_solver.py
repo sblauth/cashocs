@@ -219,6 +219,11 @@ class _NewtonSolver:
         if self.is_linear:
             self.eta = self.rtol * 1e-1
 
+    def _check_for_nan_residual(self) -> None:
+        """Checks, whether the residual is nan. If yes, raise a NotConvergedError."""
+        if np.isnan(self.res):
+            raise _exceptions.NotConvergedError("newton solver", "Residual is nan.")
+
     def solve(self) -> fenics.Function:
         r"""Solves the (nonlinear) problem with Newton\'s method.
 
@@ -235,6 +240,7 @@ class _NewtonSolver:
             return self.u
 
         self.res = self.res_0
+        self._check_for_nan_residual()
         self._print_output()
 
         self.tol = self._compute_convergence_tolerance()
@@ -275,6 +281,7 @@ class _NewtonSolver:
 
             res_prev = self.res
             self.res = self.residual.norm(self.norm_type)
+            self._check_for_nan_residual()
             self.eta_a = self.gamma * pow(self.res / res_prev, 2)
             self._print_output()
 
