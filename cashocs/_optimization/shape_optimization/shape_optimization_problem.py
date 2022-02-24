@@ -19,20 +19,19 @@
 
 from __future__ import annotations
 
-import configparser
 import json
 import os
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
 import numpy as np
+from typing_extensions import Literal
 import ufl
 import ufl.algorithms
-from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -45,6 +44,10 @@ from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
+
+if TYPE_CHECKING:
+    from cashocs import io
+    from cashocs import types
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -62,100 +65,31 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def __new__(
         cls,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC,
-            List[fenics.DirichletBC],
             List[List[fenics.DirichletBC]],
-            None,
+            List[fenics.DirichletBC],
+            fenics.DirichletBC,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> ShapeOptimizationProblem:
+        """Initializes self.
 
-        if desired_weights is not None:
-            _use_scaling = True
-        else:
-            _use_scaling = False
-
-        if _use_scaling:
-            unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(
-                state_forms,
-                bcs_list,
-                cost_functional_form,
-                states,
-                adjoints,
-                boundaries,
-                config=config,
-                shape_scalar_product=shape_scalar_product,
-                initial_guess=initial_guess,
-                ksp_options=ksp_options,
-                adjoint_ksp_options=adjoint_ksp_options,
-                scalar_tracking_forms=scalar_tracking_forms,
-                min_max_terms=min_max_terms,
-                desired_weights=desired_weights,
-            )
-            unscaled_problem._scale_cost_functional()  # overwrites the list
-
-            problem = super().__new__(cls)
-            if not unscaled_problem.has_cashocs_remesh_flag:
-                problem.initial_function_values = (
-                    unscaled_problem.initial_function_values
-                )
-                if unscaled_problem.use_scalar_tracking:
-                    problem.initial_scalar_tracking_values = (
-                        unscaled_problem.initial_scalar_tracking_values
-                    )
-
-            if (
-                not unscaled_problem.has_cashocs_remesh_flag
-                and unscaled_problem.do_remesh
-            ):
-                subprocess.run(["rm", "-r", unscaled_problem.temp_dir], check=True)
-                subprocess.run(
-                    ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
-                    check=True,
-                )
-
-            return problem
-
-        else:
-            return super().__new__(cls)
-
-    def __init__(
-        self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
-        bcs_list: Union[
-            fenics.DirichletBC,
-            List[fenics.DirichletBC],
-            List[List[fenics.DirichletBC]],
-            None,
-        ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        boundaries: fenics.MeshFunction,
-        config: Optional[configparser.ConfigParser] = None,
-        shape_scalar_product: Optional[ufl.Form] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
-        desired_weights: Optional[List[float]] = None,
-    ) -> None:
-        """
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -205,8 +139,135 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
-        """
 
+        """
+        use_scaling = bool(desired_weights is not None)
+
+        if use_scaling:
+            unscaled_problem = super().__new__(cls)
+            unscaled_problem.__init__(
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                adjoints,
+                boundaries,
+                config=config,
+                shape_scalar_product=shape_scalar_product,
+                initial_guess=initial_guess,
+                ksp_options=ksp_options,
+                adjoint_ksp_options=adjoint_ksp_options,
+                scalar_tracking_forms=scalar_tracking_forms,
+                min_max_terms=min_max_terms,
+                desired_weights=desired_weights,
+            )
+            unscaled_problem._scale_cost_functional()  # overwrites the list
+
+            problem = super().__new__(cls)
+            if not unscaled_problem.has_cashocs_remesh_flag:
+                problem.initial_function_values = (
+                    unscaled_problem.initial_function_values
+                )
+                if unscaled_problem.use_scalar_tracking:
+                    problem.initial_scalar_tracking_values = (
+                        unscaled_problem.initial_scalar_tracking_values
+                    )
+
+            if (
+                not unscaled_problem.has_cashocs_remesh_flag
+                and unscaled_problem.do_remesh
+            ):
+                subprocess.run(  # nosec B603
+                    ["rm", "-r", unscaled_problem.temp_dir], check=True
+                )
+                subprocess.run(  # nosec B603
+                    ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
+                    check=True,
+                )
+
+            return problem
+
+        else:
+            return super().__new__(cls)
+
+    def __init__(
+        self,
+        state_forms: Union[List[ufl.Form], ufl.Form],
+        bcs_list: Union[
+            List[List[fenics.DirichletBC]],
+            List[fenics.DirichletBC],
+            fenics.DirichletBC,
+        ],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
+        boundaries: fenics.MeshFunction,
+        config: Optional[io.Config] = None,
+        shape_scalar_product: Optional[ufl.Form] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
+        desired_weights: Optional[List[float]] = None,
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            state_forms: The weak form of the state equation (user implemented). Can be
+                either a single UFL form, or a (ordered) list of UFL forms.
+            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
+                Dirichlet (essential) boundary conditions. If this is ``None``, then no
+                Dirichlet boundary conditions are imposed.
+            cost_functional_form: UFL form of the cost functional. Can also be a list of
+                summands of the cost functional
+            states: The state variable(s), can either be a :py:class:`fenics.Function`,
+                or a list of these.
+            adjoints: The adjoint variable(s), can either be a
+                :py:class:`fenics.Function`, or a (ordered) list of these.
+            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
+                markers.
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
+            shape_scalar_product: The bilinear form for computing the shape gradient
+                (or gradient deformation). This has to use
+                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
+                objects to define the weak form, which have to be in a
+                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
+                finite elements. Moreover, this form is required to be symmetric.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`. Defaults
+                to ``None``, which means a zero initial guess.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems. If this is ``None``, then the
+                direct solver mumps is used (default is ``None``).
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems. If this is ``None``, then
+                the same options as for the state systems are used (default is
+                ``None``).
+            scalar_tracking_forms: A list of dictionaries that define scalar tracking
+                type cost functionals, where an integral value should be brought to a
+                desired value. Each dict needs to have the keys ``'integrand'`` and
+                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
+                are considered.
+            min_max_terms: Additional terms for the cost functional, not to be used
+                directly.
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration. In case
+                that `desired_weights` is `None`, no scaling is performed. Default is
+                `None`.
+
+        """
         super().__init__(
             state_forms,
             bcs_list,
@@ -223,26 +284,17 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         )
 
         # Initialize the remeshing behavior, and a temp file
-        self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
+        self.do_remesh = self.config.getboolean("Mesh", "remesh")
         self.temp_dict = None
 
         self._remesh_init()
 
-        # boundaries
-        # noinspection PyUnresolvedReferences
-        if isinstance(boundaries, fenics.cpp.mesh.MeshFunctionSizet):
-            self.boundaries = boundaries
-        else:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem",
-                "boundaries",
-                "Not a valid type for boundaries.",
-            )
+        self.boundaries = boundaries
 
         # shape_scalar_product
         self.shape_scalar_product = shape_scalar_product
         if shape_scalar_product is None:
-            self.deformation_space = None
+            self.deformation_space: Optional[fenics.FunctionSpace] = None
         else:
             self.deformation_space = self.shape_scalar_product.arguments()[
                 0
@@ -252,7 +304,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.uses_custom_scalar_product = True
 
         if self.uses_custom_scalar_product and self.config.getboolean(
-            "ShapeGradient", "use_p_laplacian", fallback=False
+            "ShapeGradient", "use_p_laplacian"
         ):
             _loggers.warning(
                 (
@@ -264,7 +316,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         self.is_shape_problem = True
-        self.form_handler = _forms.ShapeFormHandler(self)
+        self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
             # noinspection PyUnresolvedReferences
@@ -298,7 +350,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.objective_value = 1.0
 
     def _check_remesh_input(self) -> None:
-
+        """Checks if the inputs are valid for remeshing."""
         if not os.path.isfile(os.path.realpath(sys.argv[0])):
             raise _exceptions.CashocsException(
                 "Not a valid configuration. "
@@ -306,21 +358,23 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         try:
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             if not self.states[0].function_space().mesh()._config_flag:
                 raise _exceptions.InputError(
                     "cashocs.import_mesh",
                     "arg",
                     "You must specify a config file as input for remeshing.",
                 )
-        except AttributeError:  # pragma: no cover
+        except AttributeError as attribute_error:  # pragma: no cover
             raise _exceptions.InputError(
                 "cashocs.import_mesh",
                 "arg",
                 "You must specify a config file as input for remeshing.",
-            )
+            ) from attribute_error
 
     def _remesh_init(self) -> None:
-
+        """Initializes self for remeshing."""
         if self.do_remesh:
 
             self._check_remesh_input()
@@ -356,7 +410,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
             else:
                 self._change_except_hook()
-                with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+                with open(
+                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
+                ) as file:
                     self.temp_dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:
@@ -365,7 +421,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         This sets the value of has_solution to False for all relevant PDE problems,
         where memory is stored.
         """
-
         super()._erase_pde_memory()
         self.mesh_handler.bbtree.build(self.mesh_handler.mesh)
         self.form_handler.update_scalar_product()
@@ -412,7 +467,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 the config file is taken. Default is ``None``.
 
         Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
 
             - a purely relative one (if only ``rtol`` is specified), i.e.,
@@ -431,7 +486,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 || \nabla J(u_0) ||
 
         """
-
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self.optimization_variable_abstractions = (
@@ -440,17 +494,17 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.line_search = line_search.ArmijoLineSearch(self)
 
         # TODO: Do not pass the line search (unnecessary)
-        if self.algorithm == "gradient_descent":
+        if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "lbfgs":
+        elif self.algorithm.casefold() == "lbfgs":
             self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
-        elif self.algorithm == "conjugate_gradient":
+        elif self.algorithm.casefold() == "conjugate_gradient":
             self.solver = optimization_algorithms.NonlinearCGMethod(
                 self, self.line_search
             )
-        elif self.algorithm == "none":
+        elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
                 "algorithm",
@@ -470,26 +524,22 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         (only needed for remeshing)
         """
 
-        def custom_except_hook(exctype, value, traceback):  # pragma: no cover
+        def custom_except_hook(exctype, value, traceback) -> None:  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
-            Parameters
-            ----------
-            exctype
-            value
-            traceback
-
-            Returns
-            -------
+            Args:
+                exctype: The type of the exception.
+                value: The value of the exception.
+                traceback: The traceback of the exception.
 
             """
             _loggers.debug(
                 "An exception was raised by cashocs, "
                 "deleting the created temporary files."
             )
-            if not self.config.getboolean("Debug", "remeshing", fallback=False):
-                subprocess.run(["rm", "-r", self.temp_dir], check=True)
-                subprocess.run(
+            if not self.config.getboolean("Debug", "remeshing"):
+                subprocess.run(["rm", "-r", self.temp_dir], check=True)  # nosec B603
+                subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
             sys.__excepthook__(exctype, value, traceback)
@@ -505,8 +555,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             A list containing the shape gradient.
-        """
 
+        """
         self.gradient_problem.solve()
 
         return self.gradient
@@ -519,41 +569,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Args:
             shape_derivative: The shape_derivative of the reduced cost functional.
+
         """
-
-        if not (isinstance(shape_derivative, ufl.Form)):
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "shape_derivative have to be a ufl form",
-            )
-
-        if len(shape_derivative.arguments()) == 2:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "Do not use TrialFunction for the shape_derivative.",
-            )
-        elif len(shape_derivative.arguments()) == 0:
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                "The specified shape_derivative must include a TestFunction object.",
-            )
-
-        if (
-            not shape_derivative.arguments()[0].ufl_function_space().ufl_element()
-            == self.form_handler.deformation_space.ufl_element()
-        ):
-            raise _exceptions.InputError(
-                "cashocs.ShapeOptimizationProblem.supply_shape_derivative",
-                "shape_derivative",
-                (
-                    "The TestFunction has to be chosen from the same "
-                    "space as the corresponding adjoint."
-                ),
-            )
-
         if (
             not shape_derivative.arguments()[0].ufl_function_space()
             == self.form_handler.deformation_space
@@ -563,30 +580,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 {shape_derivative.arguments()[0]: self.form_handler.test_vector_field},
             )
 
-        retry_assembler_setup = False
-        if not self.form_handler.degree_estimation:
-            try:
-                self.form_handler.assembler = fenics.SystemAssembler(
-                    self.form_handler.riesz_scalar_product,
-                    shape_derivative,
-                    self.form_handler.bcs_shape,
-                )
-            except (AssertionError, ValueError):
-                retry_assembler_setup = True
-
-        if retry_assembler_setup or self.form_handler.degree_estimation:
-            estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
-                    self.form_handler.riesz_scalar_product
-                ),
-                ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
-            )
-            self.form_handler.assembler = fenics.SystemAssembler(
-                self.form_handler.riesz_scalar_product,
-                shape_derivative,
-                self.form_handler.bcs_shape,
-                form_compiler_parameters={"quadrature_degree": estimated_degree},
-            )
+        self.form_handler.setup_assembler(
+            self.form_handler.riesz_scalar_product,
+            shape_derivative,
+            self.form_handler.bcs_shape,
+        )
 
         self.has_custom_derivative = True
 
@@ -609,8 +607,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
-        """
 
+        """
         self.supply_shape_derivative(shape_derivative)
         self.supply_adjoint_forms(adjoint_forms, adjoint_bcs_list)
 
@@ -619,8 +617,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         Returns:
             The TestFunction object.
-        """
 
+        """
         return self.form_handler.test_vector_field
 
     def gradient_test(
@@ -640,5 +638,4 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             or larger, everything works as expected.
 
         """
-
         return verification.shape_gradient_test(self, h, rng)

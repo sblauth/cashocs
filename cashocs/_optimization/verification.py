@@ -24,7 +24,6 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs import _exceptions
 from cashocs import _loggers
 
 if TYPE_CHECKING:
@@ -33,22 +32,24 @@ if TYPE_CHECKING:
 
 
 def _initialize_control_variable(
-    ocp: optimal_control.OptimalControlProblem, u: List[fenics.Function]
+    ocp: optimal_control.OptimalControlProblem, u: Optional[List[fenics.Function]]
 ) -> List[fenics.Function]:
+    """Initializes the control variable, so that it can be restored later.
 
+    Args:
+        ocp: The corresponding optimal control problem.
+        u: The control variable.
+
+    Returns:
+        A copy of the control variables
+
+    """
     if u is None:
         u = []
         for j in range(ocp.control_dim):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             u.append(temp)
-
-    if not len(u) == ocp.control_dim:
-        raise _exceptions.InputError(
-            "cashocs.verification.control_gradient_test",
-            "u",
-            "Length of u does not match the length of controls of the problem.",
-        )
 
     # check if u and ocp.controls coincide, if yes, make a deepcopy
     ids_u = [fun.id() for fun in u]
@@ -77,15 +78,15 @@ def control_gradient_test(
         u: The point, at which the gradient shall be verified. If this is ``None``,
             then the current controls of the optimization problem are used. Default is
             ``None``.
-        h: The direction(s) for the directional (Gateaux) derivative. If this is
+        h: The direction(s) for the directional (Gâteaux) derivative. If this is
             ``None``, one random direction is chosen. Default is ``None``.
         rng: A numpy random state for calculating a random direction
 
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
-    """
 
+    """
     rng = rng or np.random
 
     initial_state = []
@@ -98,9 +99,9 @@ def control_gradient_test(
 
     if h is None:
         h = []
-        for V in ocp.form_handler.control_spaces:
-            temp = fenics.Function(V)
-            temp.vector()[:] = rng.rand(V.dim())
+        for function_space in ocp.form_handler.control_spaces:
+            temp = fenics.Function(function_space)
+            temp.vector()[:] = rng.rand(function_space.dim())
             h.append(temp)
 
     for j in range(ocp.control_dim):
@@ -111,18 +112,22 @@ def control_gradient_test(
     if scaling < 1e-3:
         scaling = 1.0
 
+    # noinspection PyProtectedMember
+    # pylint: disable=protected-access
     ocp._erase_pde_memory()
     cost_functional_at_u = ocp.reduced_cost_functional.evaluate()
     gradient_at_u = ocp.compute_gradient()
     directional_derivative = ocp.form_handler.scalar_product(gradient_at_u, h)
 
-    epsilons = [scaling * 1e-2 / 2 ** i for i in range(4)]
+    epsilons = [scaling * 1e-2 / 2**i for i in range(4)]
     residuals = []
 
     for eps in epsilons:
         for j in range(ocp.control_dim):
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
+        # noinspection PyProtectedMember
+        # pylint: disable=protected-access
         ocp._erase_pde_memory()
         cost_functional_at_v = ocp.reduced_cost_functional.evaluate()
 
@@ -141,7 +146,8 @@ def control_gradient_test(
     for j in range(ocp.control_dim):
         ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
 
-    return np.min(rates)
+    min_rate: float = np.min(rates)
+    return min_rate
 
 
 def shape_gradient_test(
@@ -160,8 +166,8 @@ def shape_gradient_test(
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
-    """
 
+    """
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
         if rng is not None:
@@ -171,13 +177,16 @@ def shape_gradient_test(
             h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
 
     # ensure that the shape boundary conditions are applied
-    [bc.apply(h[0].vector()) for bc in sop.form_handler.bcs_shape]
+    for bc in sop.form_handler.bcs_shape:
+        bc.apply(h[0].vector())
 
     if sop.form_handler.use_fixed_dimensions:
         h[0].vector()[sop.form_handler.fixed_indices] = 0.0
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
+    # noinspection PyProtectedMember
+    # pylint: disable=protected-access
     sop._erase_pde_memory()
     current_cost_functional = sop.reduced_cost_functional.evaluate()
     shape_grad = sop.compute_shape_gradient()
@@ -187,13 +196,15 @@ def shape_gradient_test(
     box_upper = np.max(sop.mesh_handler.mesh.coordinates())
     length = box_upper - box_lower
 
-    epsilons = [length * 1e-4 / 2 ** i for i in range(4)]
+    epsilons = [length * 1e-4 / 2**i for i in range(4)]
     residuals = []
 
-    for idx, eps in enumerate(epsilons):
+    for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
         transformation.vector().vec().scale(eps)
         if sop.mesh_handler.move_mesh(transformation):
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             sop._erase_pde_memory()
             perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
 
@@ -217,7 +228,6 @@ def shape_gradient_test(
         )
 
     rates = compute_convergence_rates(epsilons, residuals)
-
     return np.min(rates)
 
 
@@ -233,14 +243,14 @@ def compute_convergence_rates(
 
     Returns:
         The computed convergence rates
-    """
 
-    rates = []
+    """
+    rates: List[float] = []
     for i in range(1, len(epsilons)):
-        rates.append(
-            np.log(residuals[i] / residuals[i - 1])
-            / np.log(epsilons[i] / epsilons[i - 1])
+        rate: float = np.log(residuals[i] / residuals[i - 1]) / np.log(
+            epsilons[i] / epsilons[i - 1]
         )
+        rates.append(rate)
 
     if verbose:
         print(f"Taylor test convergence rate: {rates}")

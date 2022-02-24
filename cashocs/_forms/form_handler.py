@@ -20,16 +20,18 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Optional, List, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
+from petsc4py import PETSc
 import ufl
 
-from cashocs import utils
+from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import _optimization
-    from cashocs._forms import shape_regularization
+    from cashocs import io
+    from cashocs import types
+    from cashocs._forms import shape_regularization as sr
 
 
 def _get_subdx(
@@ -44,8 +46,8 @@ def _get_subdx(
 
     Returns:
         The list of the sub-indices.
-    """
 
+    """
     if function_space.id() == index:
         return ls
     if function_space.num_sub_spaces() > 1:
@@ -53,8 +55,12 @@ def _get_subdx(
             ans = _get_subdx(function_space.sub(i), index, ls + [i])
             if ans is not None:
                 return ans
-    else:
-        return None
+
+    return None
+
+
+def _hook() -> None:
+    return None
 
 
 class FormHandler(abc.ABC):
@@ -66,20 +72,46 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
-    def __init__(self, optimization_problem: _optimization.OptimizationProblem) -> None:
-        """
+    fe_shape_derivative_vector: fenics.PETScVector
+    assembler: fenics.SystemAssembler
+    fixed_indices: List[int]
+    use_fixed_dimensions: bool = False
+    test_vector_field: fenics.TestFunction
+    gradient: List[fenics.Function]
+    control_spaces: List[fenics.FunctionSpace]
+    deformation_space: fenics.FunctionSpace
+    controls: List[fenics.Function]
+    control_dim: int
+    # noinspection PyUnresolvedReferences
+    riesz_projection_matrices: List[PETSc.Mat]
+    uses_custom_scalar_product: bool = False
+    gradient_forms_rhs: List[ufl.Form]
+    bcs_shape: List[fenics.DirichletBC]
+    shape_regularization: sr.ShapeRegularization
+    shape_derivative: ufl.Form
+    scalar_product_matrix: fenics.PETScMatrix
+    mu_lame: fenics.Function
+    config: io.Config
+    cost_functional_form: ufl.Form
+    scalar_cost_functional_integrands: List[ufl.Form]
+    scalar_cost_functional_integrand_values: List[fenics.Function]
+
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem
-        """
 
-        self.bcs_list = optimization_problem.bcs_list
+        """
+        self.optimization_problem = optimization_problem
+        self.bcs_list: List[List[fenics.DirichletBC]] = optimization_problem.bcs_list
         self.states = optimization_problem.states
         self.adjoints = optimization_problem.adjoints
         self.config = optimization_problem.config
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
-        self.use_scalar_tracking = optimization_problem.use_scalar_tracking
-        self.use_min_max_terms = optimization_problem.use_min_max_terms
+        self.use_scalar_tracking = self.optimization_problem.use_scalar_tracking
+        self.use_min_max_terms: bool = optimization_problem.use_min_max_terms
         self.min_max_forms = optimization_problem.min_max_terms
         self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
 
@@ -89,28 +121,7 @@ class FormHandler(abc.ABC):
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms
 
-        self.gradient = None
-        self.shape_regularization: Optional[
-            shape_regularization.ShapeRegularization
-        ] = None
-        self.control_dim = 1
-        self.riesz_projection_matrices = None
-        self.gradient_forms_rhs = None
-        self.uses_custom_scalar_product = False
-        self.shape_derivative = None
-        self.bcs_shape = None
-        self.assembler = None
-        self.fe_shape_derivative_vector = None
-        self.use_fixed_dimensions = False
-        self.fixed_indices = None
-        self.scalar_product_matrix = None
-        self.test_vector_field = None
-        self.mu_lame = None
-        self.controls = None
-        self.control_spaces = None
-        self.deformation_space = None
-
-        self.lagrangian_form = self.cost_functional_form + utils.summation(
+        self.lagrangian_form = self.cost_functional_form + _utils.summation(
             self.state_forms
         )
         self.cost_functional_shift = 0.0
@@ -136,7 +147,7 @@ class FormHandler(abc.ABC):
                 for mesh in dummy_meshes
             ]
 
-            self.no_scalar_tracking_terms = len(self.scalar_tracking_goals)
+            self.no_scalar_tracking_terms: int = len(self.scalar_tracking_goals)
             try:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector().vec().set(
@@ -178,35 +189,37 @@ class FormHandler(abc.ABC):
         else:
             self.state_adjoint_equal_spaces = False
 
-        self.mesh = self.state_spaces[0].mesh()
+        self.mesh: fenics.Mesh = self.state_spaces[0].mesh()
         self.dx = fenics.Measure("dx", self.mesh)
 
         self.trial_functions_state = [
-            fenics.TrialFunction(V) for V in self.state_spaces
+            fenics.TrialFunction(function_space) for function_space in self.state_spaces
         ]
-        self.test_functions_state = [fenics.TestFunction(V) for V in self.state_spaces]
+        self.test_functions_state = [
+            fenics.TestFunction(function_space) for function_space in self.state_spaces
+        ]
 
         self.trial_functions_adjoint = [
-            fenics.TrialFunction(V) for V in self.adjoint_spaces
+            fenics.TrialFunction(function_space)
+            for function_space in self.adjoint_spaces
         ]
         self.test_functions_adjoint = [
-            fenics.TestFunction(V) for V in self.adjoint_spaces
+            fenics.TestFunction(function_space)
+            for function_space in self.adjoint_spaces
         ]
 
-        self.state_is_linear = self.config.getboolean(
-            "StateSystem", "is_linear", fallback=False
-        )
-        self.state_is_picard = self.config.getboolean(
-            "StateSystem", "picard_iteration", fallback=False
-        )
-        self.opt_algo = utils._optimization_algorithm_configuration(self.config)
+        self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
+        self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
+        self.opt_algo = _utils.optimization_algorithm_configuration(self.config)
+
+        self.pre_hook = _hook
+        self.post_hook = _hook
 
         self._compute_state_equations()
         self._compute_adjoint_equations()
 
     def _compute_state_equations(self) -> None:
         """Calculates the weak form of the state equation for the use with fenics."""
-
         self.state_eq_forms = [
             fenics.derivative(
                 self.state_forms[i], self.adjoints[i], self.test_functions_state[i]
@@ -226,20 +239,18 @@ class FormHandler(abc.ABC):
             (
                 self.state_eq_forms_lhs,
                 self.state_eq_forms_rhs,
-            ) = utils._split_linear_forms(self.linear_state_eq_forms)
+            ) = _utils.split_linear_forms(self.linear_state_eq_forms)
 
     def _compute_adjoint_boundary_conditions(self) -> None:
         """Computes the boundary conditions for the adjoint systems."""
-
         if self.state_adjoint_equal_spaces:
             self.bcs_list_ad = [
                 [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
                 for i in range(self.state_dim)
             ]
-            [
-                [bc.homogenize() for bc in self.bcs_list_ad[i]]
-                for i in range(self.state_dim)
-            ]
+            for i in range(self.state_dim):
+                for bc in self.bcs_list_ad[i]:
+                    bc.homogenize()
         else:
 
             self.bcs_list_ad = [
@@ -249,7 +260,8 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim):
                 for j, bc in enumerate(self.bcs_list[i]):
                     idx = bc.function_space().id()
-                    subdx = _get_subdx(self.state_spaces[i], idx, ls=[])
+                    subdx: List[int] = []
+                    _get_subdx(self.state_spaces[i], idx, ls=subdx)
                     adjoint_space = self.adjoint_spaces[i]
                     for num in subdx:
                         adjoint_space = adjoint_space.sub(num)
@@ -275,7 +287,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_scalar_tracking_forms(self) -> None:
         """Compute the part arising due to scalar_tracking_terms."""
-
         if self.use_scalar_tracking:
             for i in range(self.state_dim):
                 for j in range(self.no_scalar_tracking_terms):
@@ -294,7 +305,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_min_max_forms(self) -> None:
         """Compute the part arising due to min_max_terms."""
-
         if self.use_min_max_terms:
             for i in range(self.state_dim):
                 for j in range(self.no_min_max_terms):
@@ -303,7 +313,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_lower_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += utils._min(
+                        self.adjoint_eq_forms[i] += _utils.min_(
                             fenics.Constant(0.0), term_lower
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -316,7 +326,7 @@ class FormHandler(abc.ABC):
                             self.min_max_integrand_values[j]
                             - self.min_max_upper_bounds[j]
                         )
-                        self.adjoint_eq_forms[i] += utils._max(
+                        self.adjoint_eq_forms[i] += _utils.max_(
                             fenics.Constant(0.0), term_upper
                         ) * fenics.derivative(
                             self.min_max_integrands[j],
@@ -326,7 +336,6 @@ class FormHandler(abc.ABC):
 
     def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
-
         self.adjoint_eq_forms = [
             fenics.derivative(
                 self.lagrangian_form,
@@ -347,17 +356,11 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim)
         ]
 
-        self.adjoint_eq_lhs, self.adjoint_eq_rhs = utils._split_linear_forms(
+        self.adjoint_eq_lhs, self.adjoint_eq_rhs = _utils.split_linear_forms(
             self.linear_adjoint_eq_forms
         )
 
         self._compute_adjoint_boundary_conditions()
-
-    def _pre_hook(self) -> None:
-        pass
-
-    def _post_hook(self) -> None:
-        pass
 
     @abc.abstractmethod
     def scalar_product(
@@ -371,8 +374,8 @@ class FormHandler(abc.ABC):
 
         Returns:
             The scalar product of a and b.
-        """
 
+        """
         pass
 
     def restrict_to_inactive_set(
@@ -389,14 +392,15 @@ class FormHandler(abc.ABC):
 
         Returns:
             The result of the restriction (overrides input b)
-        """
 
+        """
         for j in range(len(self.gradient)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
                 b[j].vector().vec().aypx(0.0, a[j].vector().vec())
 
         return b
 
+    # pylint: disable=unused-argument
     def restrict_to_active_set(
         self, a: List[fenics.Function], b: List[fenics.Function]
     ) -> List[fenics.Function]:
@@ -411,8 +415,8 @@ class FormHandler(abc.ABC):
 
         Returns:
             The result of the restriction (overrides input b)
-        """
 
+        """
         for j in range(len(self.gradient)):
             b[j].vector().vec().set(0.0)
 
@@ -420,15 +424,14 @@ class FormHandler(abc.ABC):
 
     def compute_active_sets(self) -> None:
         """Computes the active set for problems with box constraints."""
-
         pass
 
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
-
         pass
 
     def project_to_admissible_set(
         self, a: List[fenics.Function]
     ) -> List[fenics.Function]:
+        """Projects a function ``a`` onto the admissible set."""
         pass

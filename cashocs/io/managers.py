@@ -20,8 +20,8 @@
 from __future__ import annotations
 
 import json
-import subprocess
-from typing import List, Union, TYPE_CHECKING
+import subprocess  # nosec B404
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -30,8 +30,85 @@ from cashocs import _forms
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import _optimization as op
     from cashocs._optimization import optimization_algorithms
+
+
+def generate_summary_str(
+    solver: optimization_algorithms.OptimizationAlgorithm,
+) -> str:
+    """Generates a string for the summary of the optimization.
+
+    Args:
+        solver: The optimization algorithm.
+
+    Returns:
+        The summary string.
+
+    """
+    strs = [
+        "\n",
+        f"Statistics --- Total iterations:  {solver.iteration:4d}",
+        f" --- Final objective value:  {solver.objective_value:.3e}",
+        f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
+        "\n",
+        f"           --- State equations solved:  "
+        f"{solver.state_problem.number_of_solves:d}",
+        f" --- Adjoint equations solved:  "
+        f"{solver.adjoint_problem.number_of_solves:d}",
+        "\n",
+    ]
+
+    return "".join(strs)
+
+
+def generate_output_str(
+    solver: optimization_algorithms.OptimizationAlgorithm,
+) -> str:
+    """Generates the string which can be written to console and file.
+
+    Args:
+        solver: The optimization algorithm.
+
+    Returns:
+        The output string, which is used later.
+
+    """
+    iteration = solver.iteration
+    objective_value = solver.objective_value
+    if iteration == 0:
+        gradient_norm = solver.gradient_norm_initial
+        abs_rel_str = "abs"
+    else:
+        gradient_norm = solver.relative_norm
+        abs_rel_str = "rel"
+
+    if not np.any(solver.require_control_constraints):
+        gradient_str = "Gradient norm"
+    else:
+        gradient_str = "Stationarity measure"
+
+    if solver.form_handler.is_shape_problem:
+        mesh_handler = solver.optimization_variable_abstractions.mesh_handler
+        mesh_quality = mesh_handler.current_mesh_quality
+        mesh_quality_measure = mesh_handler.mesh_quality_measure
+    else:
+        mesh_quality = None
+
+    strs = [
+        f"Iteration {iteration:4d} - ",
+        f" Objective value:  {objective_value:.3e}",
+        f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
+    ]
+    if mesh_quality is not None:
+        # noinspection PyUnboundLocalVariable
+        strs.append(f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})")
+    if iteration > 0:
+        strs.append(f"    Step size:  {solver.stepsize:.3e}")
+    if iteration == 0:
+        strs.append("\n")
+
+    return "".join(strs)
 
 
 class ResultManager:
@@ -40,20 +117,19 @@ class ResultManager:
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the results are saved.
-        """
 
+        """
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
-        self.save_results = self.config.getboolean(
-            "Output", "save_results", fallback=True
-        )
+        self.save_results = self.config.getboolean("Output", "save_results")
 
-        self.output_dict = dict()
+        self.output_dict = {}
         if (
             optimization_problem.is_shape_problem
             and optimization_problem.temp_dict is not None
@@ -83,8 +159,8 @@ class ResultManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
         if solver.form_handler.is_shape_problem:
@@ -99,88 +175,34 @@ class ResultManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         self.output_dict["initial_gradient_norm"] = solver.gradient_norm_initial
         self.output_dict["state_solves"] = solver.state_problem.number_of_solves
         self.output_dict["adjoint_solves"] = solver.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = solver.iteration
         if self.save_results:
-            with open(f"{self.result_dir}/history.json", "w") as file:
+            with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
 
 
 class HistoryManager:
-    """Class for managing the human readable output of cashocs."""
+    """Class for managing the human-readable output of cashocs."""
 
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the results are saved.
-        """
 
+        """
         self.result_dir = result_dir
 
-        self.verbose = optimization_problem.config.getboolean(
-            "Output", "verbose", fallback=True
-        )
-        self.save_txt = optimization_problem.config.getboolean(
-            "Output", "save_txt", fallback=True
-        )
-
-    @staticmethod
-    def generate_output_str(
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> str:
-        """Generates the string which can be written to console and file.
-
-        Args:
-            solver: The optimization algorithm.
-
-        Returns:
-            The output string, which is used later.
-        """
-
-        iteration = solver.iteration
-        objective_value = solver.objective_value
-        if iteration == 0:
-            gradient_norm = solver.gradient_norm_initial
-            abs_rel_str = "abs"
-        else:
-            gradient_norm = solver.relative_norm
-            abs_rel_str = "rel"
-
-        if not (np.any(solver.require_control_constraints)):
-            gradient_str = "Gradient norm"
-        else:
-            gradient_str = "Stationarity measure"
-
-        if solver.form_handler.is_shape_problem:
-            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-            mesh_quality = mesh_handler.current_mesh_quality
-            mesh_quality_measure = mesh_handler.mesh_quality_measure
-        else:
-            mesh_quality = None
-
-        strs = [
-            f"Iteration {iteration:4d} - ",
-            f" Objective value:  {objective_value:.3e}",
-            f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
-        ]
-        if mesh_quality is not None:
-            # noinspection PyUnboundLocalVariable
-            strs.append(
-                f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})"
-            )
-        if iteration > 0:
-            strs.append(f"    Step size:  {solver.stepsize:.3e}")
-        if iteration == 0:
-            strs.append("\n")
-
-        return "".join(strs)
+        self.verbose = optimization_problem.config.getboolean("Output", "verbose")
+        self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
 
     def print_to_console(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -189,10 +211,10 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if self.verbose:
-            print(self.generate_output_str(solver))
+            print(generate_output_str(solver))
 
     def print_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -201,44 +223,18 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if self.save_txt:
             if solver.iteration == 0:
                 file_attr = "w"
             else:
                 file_attr = "a"
 
-            with open(f"{self.result_dir}/history.txt", file_attr) as file:
-                file.write(f"{self.generate_output_str(solver)}\n")
-
-    @staticmethod
-    def generate_summary_str(
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> str:
-        """Generates a string for the summary of the optimization.
-
-        Args:
-            solver: The optimization algorithm.
-
-        Returns:
-            The summary string.
-        """
-
-        strs = [
-            "\n",
-            f"Statistics --- Total iterations:  {solver.iteration:4d}",
-            f" --- Final objective value:  {solver.objective_value:.3e}",
-            f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
-            "\n",
-            f"           --- State equations solved:  "
-            f"{solver.state_problem.number_of_solves:d}",
-            f" --- Adjoint equations solved:  "
-            f"{solver.adjoint_problem.number_of_solves:d}",
-            "\n",
-        ]
-
-        return "".join(strs)
+            with open(
+                f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
+            ) as file:
+                file.write(f"{generate_output_str(solver)}\n")
 
     def print_console_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -247,10 +243,10 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if self.verbose:
-            print(self.generate_summary_str(solver))
+            print(generate_summary_str(solver))
 
     def print_file_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -259,22 +255,23 @@ class HistoryManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if self.save_txt:
-            with open(f"{self.result_dir}/history.txt", "a") as file:
-                file.write(self.generate_summary_str(solver))
+            with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
+                file.write(generate_summary_str(solver))
 
 
 class TempFileManager:
     """Class for managing temporary files."""
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         self.config = optimization_problem.config
         self.is_shape_problem = optimization_problem.is_shape_problem
 
@@ -285,18 +282,18 @@ class TempFileManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if self.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if mesh_handler.do_remesh and not self.config.getboolean(
-                "Debug", "remeshing", fallback=False
+                "Debug", "remeshing"
             ):
-                subprocess.run(
+                subprocess.run(  # nosec B603
                     ["rm", "-r", mesh_handler.temp_dir],
                     check=True,
                 )
-                subprocess.run(
+                subprocess.run(  # nosec B603
                     ["rm", "-r", mesh_handler.remesh_directory],
                     check=True,
                 )
@@ -308,12 +305,13 @@ class MeshManager:
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the output is saved to.
-        """
 
+        """
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
@@ -324,8 +322,8 @@ class MeshManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         if solver.form_handler.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if mesh_handler.save_optimized_mesh:
@@ -342,24 +340,21 @@ class PVDFileManager:
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the output files are saved in.
-        """
 
+        """
         self.form_handler = optimization_problem.form_handler
         self.config = optimization_problem.config
 
         self.result_dir = result_dir
 
-        self.save_pvd = self.config.getboolean("Output", "save_pvd", fallback=False)
-        self.save_pvd_adjoint = self.config.getboolean(
-            "Output", "save_pvd_adjoint", fallback=False
-        )
-        self.save_pvd_gradient = self.config.getboolean(
-            "Output", "save_pvd_gradient", fallback=False
-        )
+        self.save_pvd = self.config.getboolean("Output", "save_pvd")
+        self.save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
+        self.save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
 
         self.is_control_problem = False
         self.is_shape_problem = False
@@ -375,14 +370,13 @@ class PVDFileManager:
         )
         self.is_initialized = False
 
-        self.state_pvd_list = []
-        self.control_pvd_list = []
-        self.adjoint_pvd_list = []
-        self.gradient_pvd_list = []
+        self.state_pvd_list: List[fenics.File] = []
+        self.control_pvd_list: List[fenics.File] = []
+        self.adjoint_pvd_list: List[fenics.File] = []
+        self.gradient_pvd_list: List[fenics.File] = []
 
     def _initialize_states_pvd(self) -> None:
         """Initializes the list of pvd files for the state variables."""
-
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
                 self.state_pvd_list.append(
@@ -395,7 +389,6 @@ class PVDFileManager:
 
     def _initialize_controls_pvd(self) -> None:
         """Initializes the list of pvd files for the control variables."""
-
         if self.save_pvd and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
                 self.control_pvd_list.append(
@@ -420,7 +413,6 @@ class PVDFileManager:
 
     def _initialize_gradients_pvd(self) -> None:
         """Initialize the list of pvd files for the gradients."""
-
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
                 if self.is_control_problem:
@@ -437,7 +429,6 @@ class PVDFileManager:
 
     def _initialize_pvd_lists(self) -> None:
         """Initializes the lists of pvd files."""
-
         if not self.is_initialized:
             self._initialize_states_pvd()
             self._initialize_controls_pvd()
@@ -451,14 +442,14 @@ class PVDFileManager:
 
         Args:
             remesh_counter: The number of times remeshing has been performed.
-        """
 
+        """
         self.pvd_prefix = f"remesh_{remesh_counter:d}_"
 
     def _generate_pvd_file(
         self, space: fenics.FunctionSpace, name: str, prefix: str = ""
     ) -> Union[fenics.File, List[fenics.File]]:
-        """Generate a fenics.File for saving Functions
+        """Generate a fenics.File for saving Functions.
 
         Args:
             space: The FEM function space where the function is taken from.
@@ -467,8 +458,8 @@ class PVDFileManager:
 
         Returns:
             A .pvd fenics.File object, into which a Function can be written
-        """
 
+        """
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
@@ -484,8 +475,8 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
-        """
 
+        """
         if self.save_pvd:
             for i in range(self.form_handler.state_dim):
                 if (
@@ -496,31 +487,25 @@ class PVDFileManager:
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         state = self.form_handler.states[i].sub(j, True)
                         state.rename(f"state_{i}_sub_{j}", f"state_{i}_sub_{j}")
-                        self.state_pvd_list[i][j] << (
-                            state,
-                            float(iteration),
-                        )
+                        self.state_pvd_list[i][j].write(state, float(iteration))
                 else:
                     state = self.form_handler.states[i]
                     state.rename(f"state_{i}", f"state_{i}")
-                    self.state_pvd_list[i] << (
-                        state,
-                        float(iteration),
-                    )
+                    self.state_pvd_list[i].write(state, float(iteration))
 
     def _save_controls(self, iteration: int) -> None:
         """Saves the control variables to pvd.
 
         Args:
             iteration: The current iteration count.
-        """
 
+        """
         if self.save_pvd and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
                 control = self.form_handler.controls[i]
                 control.rename(f"control_{i}", f"control_{i}")
-                self.control_pvd_list[i] << self.form_handler.controls[i], float(
-                    iteration
+                self.control_pvd_list[i].write(
+                    self.form_handler.controls[i], float(iteration)
                 )
 
     def _save_adjoints(self, iteration: int) -> None:
@@ -528,8 +513,8 @@ class PVDFileManager:
 
         Args:
             iteration: The current iteration count.
-        """
 
+        """
         if self.save_pvd_adjoint:
             for i in range(self.form_handler.state_dim):
                 if (
@@ -542,30 +527,24 @@ class PVDFileManager:
                     ):
                         adjoint = self.form_handler.adjoints[i].sub(j, True)
                         adjoint.rename(f"adjoint_{i}_sub_{j}", f"adjoint_{i}_sub_{j}")
-                        self.adjoint_pvd_list[i][j] << (
-                            adjoint,
-                            float(iteration),
-                        )
+                        self.adjoint_pvd_list[i][j].write(adjoint, float(iteration))
                 else:
                     adjoint = self.form_handler.adjoints[i]
                     adjoint.rename(f"adjoint_{i}", f"adjoint_{i}")
-                    self.adjoint_pvd_list[i] << (
-                        adjoint,
-                        float(iteration),
-                    )
+                    self.adjoint_pvd_list[i].write(adjoint, float(iteration))
 
     def _save_gradients(self, iteration: int) -> None:
         """Saves the gradients to pvd files.
 
         Args:
             iteration: The current iteration count.
-        """
 
+        """
         if self.save_pvd_gradient:
             for i in range(self.form_handler.control_dim):
                 gradient = self.form_handler.gradient[i]
                 gradient.rename(f"gradient_{i}", f"gradient_{i}")
-                self.gradient_pvd_list[i] << gradient, float(iteration)
+                self.gradient_pvd_list[i].write(gradient, float(iteration))
 
     def save_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -574,8 +553,8 @@ class PVDFileManager:
 
         Args:
             solver: The optimization algorithm.
-        """
 
+        """
         self._initialize_pvd_lists()
 
         iteration = solver.iteration

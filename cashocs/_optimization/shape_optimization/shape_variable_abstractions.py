@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -38,11 +38,12 @@ class ShapeVariableAbstractions(
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         super().__init__(optimization_problem)
         self.mesh_handler = optimization_problem.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
@@ -63,8 +64,8 @@ class ShapeVariableAbstractions(
 
         Returns:
             The decrease measure for the Armijo test.
-        """
 
+        """
         return self.form_handler.scalar_product(self.gradient, search_direction)
 
     def compute_gradient_norm(self) -> float:
@@ -72,13 +73,12 @@ class ShapeVariableAbstractions(
 
         Returns:
             The norm of the gradient.
-        """
 
+        """
         return np.sqrt(self.form_handler.scalar_product(self.gradient, self.gradient))
 
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
-
         self.mesh_handler.revert_transformation()
 
     def update_optimization_variables(
@@ -94,8 +94,8 @@ class ShapeVariableAbstractions(
 
         Returns:
             The stepsize which was found to be acceptable.
-        """
 
+        """
         while True:
             self.deformation.vector().vec().aypx(
                 0.0, stepsize * search_direction[0].vector().vec()
@@ -126,8 +126,8 @@ class ShapeVariableAbstractions(
 
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
-        """
 
+        """
         return self.mesh_handler.compute_decreases(search_direction, stepsize)
 
     def requires_remeshing(self) -> bool:
@@ -135,15 +135,12 @@ class ShapeVariableAbstractions(
 
         Returns:
             A boolean, which indicates whether remeshing is required.
-        """
 
-        if (
+        """
+        return bool(
             self.mesh_handler.current_mesh_quality
             < self.mesh_handler.mesh_quality_tol_upper
-        ):
-            return True
-        else:
-            return False
+        )
 
     def project_ncg_search_direction(
         self, search_direction: List[fenics.Function]
@@ -152,6 +149,6 @@ class ShapeVariableAbstractions(
 
         Args:
             search_direction: The current search direction (will be overwritten).
-        """
 
+        """
         pass

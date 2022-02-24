@@ -24,21 +24,22 @@ shape gradient with a Riesz projection.
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
+import ufl
 
+from cashocs import _loggers
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs._pde_problems import state_problem as sp
-    from cashocs._pde_problems import adjoint_problem as ap
     from cashocs import _forms
+    from cashocs._pde_problems import adjoint_problem as ap
+    from cashocs._pde_problems import state_problem as sp
 
 
 class ShapeGradientProblem(pde_problem.PDEProblem):
@@ -50,41 +51,40 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The ShapeFormHandler object corresponding to the shape
                 optimization problem.
             state_problem: The corresponding state problem.
             adjoint_problem: The corresponding adjoint problem.
-        """
 
+        """
         super().__init__(form_handler)
+        self.form_handler: _forms.ShapeFormHandler
+
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
         self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
-        gradient_tol = self.config.getfloat(
-            "OptimizationRoutine", "gradient_tol", fallback=1e-9
-        )
+        gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
 
         # Generate the Krylov solver for the shape gradient problem
         # noinspection PyUnresolvedReferences
         self.ksp = PETSc.KSP().create()
 
-        gradient_method = self.config.get(
-            "OptimizationRoutine", "gradient_method", fallback="direct"
-        )
+        gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
-        if gradient_method == "direct":
+        if gradient_method.casefold() == "direct":
             self.ksp_options = [
                 ["ksp_type", "preonly"],
                 ["pc_type", "lu"],
                 ["pc_factor_mat_solver_type", "mumps"],
                 ["mat_mumps_icntl_24", 1],
             ]
-        elif gradient_method == "iterative":
+        elif gradient_method.casefold() == "iterative":
             self.ksp_options = [
                 ["ksp_type", "cg"],
                 ["pc_type", "hypre"],
@@ -95,11 +95,22 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 ["ksp_max_it", 250],
             ]
 
-        utils._setup_petsc_options([self.ksp], [self.ksp_options])
+        _utils.setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian", fallback=False)
+            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            and self.form_handler.use_fixed_dimensions
+        ):
+            _loggers.warning(
+                "Incompatible config settings: "
+                "use_p_laplacian and fixed_dimensions are incompatible. "
+                "Falling back to use_p_laplacian=False."
+            )
+
+        if (
+            self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and not self.form_handler.uses_custom_scalar_product
+            and not self.form_handler.use_fixed_dimensions
         ):
             self.p_laplace_projector = _PLaplaceProjector(
                 self,
@@ -115,8 +126,8 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         Returns:
             The function representing the shape gradient of the (reduced) cost
             functional.
-        """
 
+        """
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
@@ -125,10 +136,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
-                self.config.getboolean(
-                    "ShapeGradient", "use_p_laplacian", fallback=False
-                )
+                self.config.getboolean("ShapeGradient", "use_p_laplacian")
                 and not self.form_handler.uses_custom_scalar_product
+                and not self.form_handler.use_fixed_dimensions
             ):
                 self.p_laplace_projector.solve()
                 self.has_solution = True
@@ -145,7 +155,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     self.form_handler.fe_shape_derivative_vector[
                         self.form_handler.fixed_indices
                     ] = 0.0
-                utils._solve_linear_problem(
+                _utils.solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,
                     self.form_handler.fe_shape_derivative_vector.vec(),
@@ -160,13 +170,13 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     self.gradient, self.gradient
                 )
 
-            self.form_handler._post_hook()
+            self.form_handler.post_hook()
 
         return self.gradient
 
 
 class _PLaplaceProjector:
-    """A class for computing the gradient deformation with a p-Laplace projection"""
+    """A class for computing the gradient deformation with a p-Laplace projection."""
 
     def __init__(
         self,
@@ -176,20 +186,19 @@ class _PLaplaceProjector:
         bcs_shape: List[fenics.DirichletBC],
         config: configparser.ConfigParser,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             gradient_problem: The shape gradient problem
             gradient: The fenics Function representing the gradient deformation
             shape_derivative: The ufl Form of the shape derivative
             bcs_shape: The boundary conditions for computing the gradient deformation
             config: The config for the optimization problem
-        """
 
-        self.p_target = config.getint("ShapeGradient", "p_laplacian_power", fallback=2)
-        delta = config.getfloat("ShapeGradient", "damping_factor", fallback=0.0)
-        eps = config.getfloat(
-            "ShapeGradient", "p_laplacian_stabilization", fallback=0.0
-        )
+        """
+        self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
+        delta = config.getfloat("ShapeGradient", "damping_factor")
+        eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient[0]
         self.shape_derivative = shape_derivative
@@ -198,16 +207,16 @@ class _PLaplaceProjector:
         dx = gradient_problem.form_handler.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.A_tensor = fenics.PETScMatrix()
+        self.A_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
         self.b_tensor = fenics.PETScVector()
 
-        self.F_list = []
+        self.form_list = []
         for p in self.p_list:
             kappa = pow(
                 fenics.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
                 (p - 2) / 2.0,
             )
-            self.F_list.append(
+            self.form_list.append(
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
@@ -220,18 +229,16 @@ class _PLaplaceProjector:
                 * dx
             )
 
-            gradient_method = config.get(
-                "OptimizationRoutine", "gradient_method", fallback="direct"
-            )
+            gradient_method = config.get("OptimizationRoutine", "gradient_method")
 
-            if gradient_method == "direct":
+            if gradient_method.casefold() == "direct":
                 self.ksp_options = [
                     ["ksp_type", "preonly"],
                     ["pc_type", "lu"],
                     ["pc_factor_mat_solver_type", "mumps"],
                     ["mat_mumps_icntl_24", 1],
                 ]
-            elif gradient_method == "iterative":
+            elif gradient_method.casefold() == "iterative":
                 self.ksp_options = [
                     ["ksp_type", "cg"],
                     ["pc_type", "hypre"],
@@ -243,11 +250,10 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
-
         self.solution.vector().vec().set(0.0)
-        for F in self.F_list:
+        for nonlinear_form in self.form_list:
             nonlinear_solvers.newton_solve(
-                F,
+                nonlinear_form,
                 self.solution,
                 self.bcs_shape,
                 shift=self.shape_derivative,

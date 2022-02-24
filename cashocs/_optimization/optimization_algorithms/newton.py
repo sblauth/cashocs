@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import types
     from cashocs._optimization import line_search as ls
 
 
@@ -32,14 +32,17 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
     """A truncated Newton method."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, line_search: ls.LineSearch
+        self,
+        optimization_problem: types.OptimizationProblem,
+        line_search: ls.LineSearch,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
-        """
 
+        """
         super().__init__(optimization_problem)
         self.line_search = line_search
         self.hessian_problem = optimization_problem.hessian_problem
@@ -51,7 +54,6 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the truncated Newton method."""
-
         self.initialize_solver()
 
         while True:
@@ -89,6 +91,5 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the Newton method."""
-
         self.search_direction = self.hessian_problem.newton_solve()
         self.has_curvature_info = True

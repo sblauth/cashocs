@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Union, List, Tuple, Optional
+from typing import Any, List, Optional, Tuple, TypeVar, Union
 
 import fenics
 import ufl
@@ -27,11 +27,11 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _loggers
 
+T = TypeVar("T")
+
 
 # noinspection PyUnresolvedReferences
-def summation(
-    x: List[Union[ufl.core.expr.Expr, int, float]]
-) -> Union[ufl.core.expr.Expr, int, float]:
+def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL
@@ -48,8 +48,8 @@ def summation(
         of python or the numpy variant are recommended. Still, they are
         incompatible with FEniCS objects, so this function should be used for
         the latter.
-    """
 
+    """
     if len(x) == 0:
         y = fenics.Constant(0.0)
         _loggers.warning("Empty list handed to summation, returning 0.")
@@ -63,9 +63,7 @@ def summation(
 
 
 # noinspection PyUnresolvedReferences
-def multiplication(
-    x: List[Union[ufl.core.expr.Expr, int, float]]
-) -> Union[ufl.core.expr.Expr, int, float]:
+def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct a UFL form.
@@ -75,8 +73,8 @@ def multiplication(
 
     Returns:
         The result of the multiplication.
-    """
 
+    """
     if len(x) == 0:
         y = fenics.Constant(1.0)
         _loggers.warning("Empty list handed to multiplication, returning 1.")
@@ -90,7 +88,7 @@ def multiplication(
 
 
 # noinspection PyUnresolvedReferences
-def _max(
+def max_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
     """Computes the maximum of a and b.
@@ -101,13 +99,13 @@ def _max(
 
     Returns:
         The maximum of a and b.
-    """
 
+    """
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
 # noinspection PyUnresolvedReferences
-def _min(
+def min_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
     """Computes the minimum of a and b.
@@ -118,8 +116,8 @@ def _min(
 
     Returns:
         The minimum of a and b.
-    """
 
+    """
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
@@ -133,7 +131,7 @@ def moreau_yosida_regularization(
     shift_lower: Optional[Union[float, fenics.Function]] = None,
     shift_upper: Optional[Union[float, fenics.Function]] = None,
 ) -> ufl.Form:
-    r"""Implements a Moreau-Yosida regularization of an inequality constraint
+    r"""Implements a Moreau-Yosida regularization of an inequality constraint.
 
     The general form of the inequality is of the form ::
 
@@ -164,14 +162,14 @@ def moreau_yosida_regularization(
     Returns:
         The ufl form of the Moreau-Yosida regularization, to be used in the cost
         functional.
-    """
 
+    """
     reg_lower = None
     reg_upper = None
 
     if lower_threshold is None and upper_threshold is None:
         raise _exceptions.InputError(
-            "cashocs.utils.moreau_yosida_regularization",
+            "cashocs._utils.moreau_yosida_regularization",
             "upper_threshold, lower_threshold",
             "At least one of the threshold parameters has to be defined.",
         )
@@ -185,7 +183,7 @@ def moreau_yosida_regularization(
         reg_lower = (
             fenics.Constant(1 / (2 * gamma))
             * pow(
-                _min(
+                min_(
                     shift_lower + fenics.Constant(gamma) * (term - lower_threshold),
                     fenics.Constant(0.0),
                 ),
@@ -197,7 +195,7 @@ def moreau_yosida_regularization(
         reg_upper = (
             fenics.Constant(1 / (2 * gamma))
             * pow(
-                _max(
+                max_(
                     shift_upper + fenics.Constant(gamma) * (term - upper_threshold),
                     fenics.Constant(0.0),
                 ),
@@ -206,12 +204,18 @@ def moreau_yosida_regularization(
             * measure
         )
 
-    if upper_threshold is not None and lower_threshold is not None:
+    if reg_lower is not None and reg_upper is not None:
         return reg_lower + reg_upper
-    elif upper_threshold is None and lower_threshold is not None:
+    elif reg_lower is not None and reg_upper is None:
         return reg_lower
-    elif upper_threshold is not None and lower_threshold is None:
+    elif reg_lower is None and reg_upper is not None:
         return reg_upper
+    else:
+        raise _exceptions.InputError(
+            "cashocs._utils.moreau_yosida_regularization",
+            "upper_threshold, lower_threshold",
+            "At least one of the threshold parameters has to be defined.",
+        )
 
 
 def create_dirichlet_bcs(
@@ -221,7 +225,7 @@ def create_dirichlet_bcs(
     ],
     boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
-    **kwargs,
+    **kwargs: Any,
 ) -> List[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
@@ -258,8 +262,8 @@ def create_dirichlet_bcs(
             V = fenics.FunctionSpace(mesh, 'CG', 1)
             bcs = cashocs.create_dirichlet_bcs(V, fenics.Constant(0), boundaries,
                 [1,2,3,4])
-    """
 
+    """
     mesh = function_space.mesh()
 
     if not isinstance(idcs, list):
@@ -272,7 +276,7 @@ def create_dirichlet_bcs(
                 fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
             )
         elif isinstance(entry, str):
-            physical_groups = mesh._physical_groups
+            physical_groups = mesh.physical_groups
             if entry in physical_groups["ds"].keys():
                 bcs_list.append(
                     fenics.DirichletBC(
@@ -301,7 +305,7 @@ def create_bcs_list(
     ],
     boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
-    **kwargs,
+    **kwargs: Any,
 ) -> List[fenics.DirichletBC]:  # pragma: no cover
     """Create several Dirichlet boundary conditions at once.
 
@@ -328,8 +332,8 @@ def create_bcs_list(
     .. deprecated:: 1.5.0
         This is replaced by cashocs.create_dirichlet_bcs and will be removed in the
         future.
-    """
 
+    """
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by "
         "cashocs.create_dirichlet_bcs and will be removed in the future."

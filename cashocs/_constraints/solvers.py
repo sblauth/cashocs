@@ -20,14 +20,14 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl.core.expr
 
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs._constraints import constraints
 
 if TYPE_CHECKING:
@@ -37,13 +37,16 @@ if TYPE_CHECKING:
 class ConstrainedSolver(abc.ABC):
     """A solver for a constrained optimization problem."""
 
+    solver_name: str
+
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
         mu_0: Optional[float] = None,
-        lambda_0: Optional[List[float]] = None,
+        lambda_0: Optional[Union[List[float], float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -51,8 +54,8 @@ class ConstrainedSolver(abc.ABC):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
-        """
 
+        """
         self.constrained_problem = constrained_problem
 
         self.constraints = self.constrained_problem.constraint_list
@@ -75,7 +78,7 @@ class ConstrainedSolver(abc.ABC):
         for constraint in self.constraints:
             if constraint.is_pointwise_constraint:
                 mesh = constraint.measure.ufl_domain().ufl_cargo()
-                self.CG = fenics.FunctionSpace(mesh, "CG", 1)
+                self.cg_function_space = fenics.FunctionSpace(mesh, "CG", 1)
                 break
 
         for i, constraint in enumerate(self.constraints):
@@ -88,18 +91,16 @@ class ConstrainedSolver(abc.ABC):
         self.beta = 10.0
         self.inner_cost_functional_shift = 0.0
 
-        self.inner_scalar_tracking_forms = []
-        self.inner_min_max_terms = []
+        self.inner_scalar_tracking_forms: List[Dict] = []
+        self.inner_min_max_terms: List[Dict] = []
 
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         pass
 
     def _post_process_cost_functional(self) -> None:
         """Ensures that scalar_tracking_forms and min_max_terms are correct."""
-
         if len(self.inner_scalar_tracking_forms) == 0:
             self.inner_scalar_tracking_forms = (
                 self.constrained_problem.scalar_tracking_forms_initial
@@ -136,9 +137,20 @@ class ConstrainedSolver(abc.ABC):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
-        """
 
+        """
         pass
+
+    def print_results(self) -> None:
+        """Prints the results of the current iteration to the console."""
+        strs = [
+            f"{self.solver_name} - Iteration {self.iterations:4d} -",
+            f" Objective value: {self.constrained_problem.current_function_value:.3e}",
+            f"    Constraint violation: {self.constraint_violation:.3e}",
+            f"    Penalty parameter mu: {self.mu:.3e}",
+        ]
+
+        print("".join(strs))
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -150,7 +162,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         mu_0: Optional[float] = None,
         lambda_0: Optional[List[float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -158,12 +171,14 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
-        """
 
+        """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
-        self.A_tensors = [fenics.PETScMatrix()] * self.constraint_dim
-        self.b_tensors = [fenics.PETScVector()] * self.constraint_dim
+        # pylint: disable=invalid-name
+        self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
+        self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
+        self.solver_name = "Augmented Lagrangian method"
 
     # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
@@ -171,7 +186,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
         measure: fenics.Measure,
         multiplier: fenics.Function,
-        A_tensor: fenics.PETScMatrix,
+        A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector,
     ) -> None:
         """Project the multiplier for a pointwise constraint to a FE function space.
@@ -182,31 +197,30 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             multiplier: The function representing the Lagrange multiplier (guess)
             A_tensor: A matrix, into which the form is assembled for speed up
             b_tensor: A vector, into which the form is assembled for speed up
-        """
 
+        """
         if isinstance(project_terms, list):
-            project_term = utils.summation(project_terms)
+            project_term = _utils.summation(project_terms)
         else:
             project_term = project_terms
 
-        trial = fenics.TrialFunction(self.CG)
-        test = fenics.TestFunction(self.CG)
+        trial = fenics.TrialFunction(self.cg_function_space)
+        test = fenics.TestFunction(self.cg_function_space)
 
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, A=A_tensor, b=b_tensor, x=multiplier.vector().vec()
         )
         multiplier.vector().apply("")
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         self.inner_cost_functional_shifts = []
 
         self.inner_cost_functional_form = (
-            self.constrained_problem.cost_functional_form_initial
+            self.constrained_problem.cost_functional_form_initial[:]
         )
 
         self.inner_scalar_tracking_forms = []
@@ -225,14 +239,14 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     constraint.quadratic_term["weight"] = self.mu
                     self.inner_scalar_tracking_forms += [constraint.quadratic_term]
 
-                elif constraint.is_pointwise_constraint:
+                elif constraint.measure is not None:
                     self.inner_cost_functional_form += [
                         constraint.linear_term,
                         fenics.Constant(self.mu) * constraint.quadratic_term,
                     ]
                     self.inner_cost_functional_shifts.append(
-                        -fenics.assemble(
-                            self.lmbd[i] * constraint.target * constraint.measure
+                        fenics.assemble(
+                            -self.lmbd[i] * constraint.target * constraint.measure
                         )
                     )
 
@@ -254,8 +268,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         Args:
             index: The index of the equality constraint.
-        """
 
+        """
         if self.constraints[index].is_integral_constraint:
             self.lmbd[index] += self.mu * (
                 fenics.assemble(self.constraints[index].variable_function)
@@ -280,6 +294,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
         Args:
             index: The index of the equality constraint.
+
         """
         if self.constraints[index].is_integral_constraint:
             lower_term = 0.0
@@ -312,7 +327,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             project_terms = []
             if self.constraints[index].upper_bound is not None:
                 project_terms.append(
-                    utils._max(
+                    _utils.max_(
                         self.lmbd[index]
                         + self.mu
                         * (
@@ -325,7 +340,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             if self.constraints[index].lower_bound is not None:
                 project_terms.append(
-                    utils._min(
+                    _utils.min_(
                         self.lmbd[index]
                         + self.mu
                         * (
@@ -347,7 +362,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def _update_lagrange_multiplier_estimates(self) -> None:
         """Performs an update of the Lagrange multiplier estimates."""
-
         for i in range(self.constraint_dim):
             if isinstance(self.constraints[i], constraints.EqualityConstraint):
                 self._update_equality_multipliers(i)
@@ -377,8 +391,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
-        """
 
+        """
         convergence_tol = constraint_tol or tol / 10.0
 
         self.iterations = 0
@@ -390,6 +404,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
                 tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
             )
@@ -401,15 +417,17 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constrained_problem.total_constraint_violation()
             )
 
+            self.print_results()
+
             if self.constraint_violation > self.gamma * self.constraint_violation_prev:
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                print("Converged successfully.")
+                print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print("Augmented Lagrangian did not converge.")
+                print(f"{self.solver_name} did not converge.\n")
                 break
 
 
@@ -422,7 +440,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         mu_0: Optional[float] = None,
         lambda_0: Optional[list[float]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             constrained_problem: The constrained optimization problem which shall be
                 solved.
@@ -430,9 +449,10 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
                 is given).
             lambda_0: Initial guess for the Lagrange multipliers (in AugmentedLagrangian
                 method) Defaults to zero initial guess, when ``None`` is given.
-        """
 
+        """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
+        self.solver_name = "Quadratic Penalty Method"
 
     def solve(
         self,
@@ -456,8 +476,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             constraint_tol: The tolerance for the constraint violation, which is
                 desired. If this is ``None`` (default), then this is specified as
                 ``tol/10``.
-        """
 
+        """
         convergence_tol = constraint_tol or tol / 10.0
 
         self.iterations = 0
@@ -468,6 +488,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
+            # noinspection PyProtectedMember
+            # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(tol=tol)
 
             self.constraint_violation = (
@@ -475,24 +497,25 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             )
             self.mu *= self.beta
 
+            self.print_results()
+
             if self.constraint_violation <= convergence_tol:
-                print("Converged successfully.")
+                print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print("Quadratic Penalty Method did not converge")
+                print(f"{self.solver_name} did not converge.\n")
                 break
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
-
         self.inner_cost_functional_form = (
-            self.constrained_problem.cost_functional_form_initial
+            self.constrained_problem.cost_functional_form_initial[:]
         )
         self.inner_scalar_tracking_forms = []
         self.inner_min_max_terms = []
 
-        for i, constraint in enumerate(self.constraints):
+        for constraint in self.constraints:
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.quadratic_term["weight"] = self.mu

@@ -23,18 +23,18 @@ cost functional.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
-    from cashocs._pde_problems import state_problem as sp
     from cashocs._pde_problems import adjoint_problem as ap
+    from cashocs._pde_problems import state_problem as sp
 
 
 class ControlGradientProblem(pde_problem.PDEProblem):
@@ -46,13 +46,14 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object of the optimization problem.
             state_problem: The StateProblem object used to solve the state equations.
             adjoint_problem: The AdjointProblem used to solve the adjoint equations.
-        """
 
+        """
         super().__init__(form_handler)
 
         self.form_handler: _forms.ControlFormHandler
@@ -66,23 +67,21 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.control_dim)]
 
-        gradient_tol = self.config.getfloat(
-            "OptimizationRoutine", "gradient_tol", fallback=1e-9
+        gradient_tol: float = self.config.getfloat(
+            "OptimizationRoutine", "gradient_tol"
         )
 
-        gradient_method = self.config.get(
-            "OptimizationRoutine", "gradient_method", fallback="direct"
-        )
+        gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 
         option = []
-        if gradient_method == "direct":
+        if gradient_method.casefold() == "direct":
             option = [
                 ["ksp_type", "preonly"],
                 ["pc_type", "lu"],
                 ["pc_factor_mat_solver_type", "mumps"],
                 ["mat_mumps_icntl_24", 1],
             ]
-        elif gradient_method == "iterative":
+        elif gradient_method.casefold() == "iterative":
             option = [
                 ["ksp_type", "cg"],
                 ["pc_type", "hypre"],
@@ -97,7 +96,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         for i in range(self.form_handler.control_dim):
             self.riesz_ksp_options.append(option)
 
-        utils._setup_petsc_options(self.ksps, self.riesz_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
@@ -110,17 +109,15 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         Returns:
             The list containing the (components of the) gradient of the cost functional.
-        """
 
+        """
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
         if not self.has_solution:
             for i in range(self.form_handler.control_dim):
-                fenics.assemble(
-                    self.form_handler.gradient_forms_rhs[i], tensor=self.b_tensors[i]
-                )
-                utils._solve_linear_problem(
+                self.form_handler.assemblers[i].assemble(self.b_tensors[i])
+                _utils.solve_linear_problem(
                     ksp=self.ksps[i],
                     b=self.b_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),
@@ -134,6 +131,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                 self.gradient, self.gradient
             )
 
-            self.form_handler._post_hook()
+            self.form_handler.post_hook()
 
         return self.gradient

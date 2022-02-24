@@ -19,13 +19,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
 
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -40,17 +40,18 @@ class AdjointProblem(pde_problem.PDEProblem):
         self,
         form_handler: _forms.FormHandler,
         state_problem: sp.StateProblem,
-        temp_dict: Dict = None,
+        temp_dict: Optional[Dict] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object used to get the point where we
                 linearize the problem.
             temp_dict: A dictionary used for reinitializations when remeshing is
                 performed.
-        """
 
+        """
         super().__init__(form_handler)
 
         self.state_problem = state_problem
@@ -59,23 +60,16 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.adjoints = self.form_handler.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-        self.picard_rtol = self.config.getfloat(
-            "StateSystem", "picard_rtol", fallback=1e-10
-        )
-        self.picard_atol = self.config.getfloat(
-            "StateSystem", "picard_atol", fallback=1e-12
-        )
-        self.picard_max_iter = self.config.getint(
-            "StateSystem", "picard_iter", fallback=50
-        )
-        self.picard_verbose = self.config.getboolean(
-            "StateSystem", "picard_verbose", fallback=False
-        )
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        utils._setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
 
+        # pylint: disable=invalid-name
         self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
@@ -99,8 +93,8 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         Returns:
             The list of adjoint variables.
-        """
 
+        """
         self.state_problem.solve()
 
         if not self.has_solution:
@@ -109,7 +103,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.form_handler.state_dim == 1
             ):
                 for i in range(self.form_handler.state_dim):
-                    utils._assemble_and_solve_linear(
+                    _utils.assemble_and_solve_linear(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],

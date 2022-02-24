@@ -19,17 +19,18 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, Optional
 
 import fenics
 import numpy as np
+from typing_extensions import TYPE_CHECKING
 
 from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    from cashocs import types
     from cashocs._optimization import optimization_algorithms
-    from cashocs._optimization import optimization_problem as op
 
 
 class ArmijoLineSearch(line_search.LineSearch):
@@ -37,20 +38,21 @@ class ArmijoLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
-        optimization_problem: op.OptimizationProblem,
+        optimization_problem: types.OptimizationProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         super().__init__(optimization_problem)
 
-        self.epsilon_armijo = self.config.getfloat(
-            "OptimizationRoutine", "epsilon_armijo", fallback=1e-4
+        self.epsilon_armijo: float = self.config.getfloat(
+            "OptimizationRoutine", "epsilon_armijo"
         )
-        self.beta_armijo = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo", fallback=2.0
+        self.beta_armijo: float = self.config.getfloat(
+            "OptimizationRoutine", "beta_armijo"
         )
         self.armijo_stepsize_initial = self.stepsize
         self.search_direction_inf = 1.0
@@ -67,8 +69,8 @@ class ArmijoLineSearch(line_search.LineSearch):
         Returns:
             A boolean, which is True if a termination / cancellation criterion is
             satisfied.
-        """
 
+        """
         if solver.iteration >= solver.maximum_iterations:
             solver.remeshing_its = True
             return True
@@ -86,6 +88,8 @@ class ArmijoLineSearch(line_search.LineSearch):
             solver.line_search_broken = True
             return True
 
+        return False
+
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
@@ -99,8 +103,8 @@ class ArmijoLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
-        """
 
+        """
         self.search_direction_inf = np.max(
             [
                 np.max(np.abs(search_direction[i].vector()[:]))
@@ -165,10 +169,23 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         return None
 
-    def _compute_decrease_measure(self, search_direction) -> float:
+    def _compute_decrease_measure(
+        self, search_direction: Optional[List[fenics.Function]]
+    ) -> float:
+        """Computes the decrease measure for use in the Armijo line search.
+
+        Args:
+            search_direction: The current search direction.
+
+        Returns:
+            The computed decrease measure.
+
+        """
         if self.is_control_problem:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )
         elif self.is_shape_problem:
             return self.decrease_measure_w_o_step * self.stepsize
+        else:
+            return float("inf")

@@ -21,21 +21,18 @@ import subprocess
 import sys
 from unittest.mock import patch
 
+from fenics import Constant
+from fenics import DirichletBC
+from fenics import Function
+from fenics import FunctionSpace
+from fenics import grad
+from fenics import inner
+from fenics import SpatialCoordinate
 import numpy as np
 import pytest
-from fenics import (
-    Function,
-    FunctionSpace,
-    grad,
-    inner,
-    SpatialCoordinate,
-    DirichletBC,
-    Constant,
-)
 
 import cashocs
 from cashocs._exceptions import CashocsDebugException
-
 
 rng = np.random.RandomState(300696)
 has_gmsh = False
@@ -89,7 +86,6 @@ def test_first_remeshing_step():
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
     config.set("Output", "result_dir", dir_path + "/temp/")
-    config.add_section("Debug")
     config.set("Debug", "remeshing", "True")
     config.set("Debug", "restart", "True")
 
@@ -138,7 +134,6 @@ def test_reentry():
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
     config.set("Output", "result_dir", dir_path + "/temp/")
-    config.add_section("Debug")
     config.set("Debug", "remeshing", "True")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)

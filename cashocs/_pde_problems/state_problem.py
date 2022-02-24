@@ -19,17 +19,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
 
+from cashocs import _utils
 from cashocs import nonlinear_solvers
-from cashocs import utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _forms
+    from cashocs import types
 
 
 class StateProblem(pde_problem.PDEProblem):
@@ -37,18 +37,19 @@ class StateProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
+        form_handler: types.FormHandler,
         initial_guess: List[fenics.Function],
         temp_dict: Optional[Dict] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler of the optimization problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
             temp_dict: A dict used for reinitialization when remeshing is performed.
-        """
 
+        """
         super().__init__(form_handler)
 
         self.initial_guess = initial_guess
@@ -57,40 +58,22 @@ class StateProblem(pde_problem.PDEProblem):
         self.bcs_list = self.form_handler.bcs_list
         self.states = self.form_handler.states
 
-        self.picard_rtol = self.config.getfloat(
-            "StateSystem", "picard_rtol", fallback=1e-10
-        )
-        self.picard_atol = self.config.getfloat(
-            "StateSystem", "picard_atol", fallback=1e-20
-        )
-        self.picard_max_iter = self.config.getint(
-            "StateSystem", "picard_iter", fallback=50
-        )
-        self.picard_verbose = self.config.getboolean(
-            "StateSystem", "picard_verbose", fallback=False
-        )
-        self.newton_rtol = self.config.getfloat(
-            "StateSystem", "newton_rtol", fallback=1e-11
-        )
-        self.newton_atol = self.config.getfloat(
-            "StateSystem", "newton_atol", fallback=1e-13
-        )
-        self.newton_damped = self.config.getboolean(
-            "StateSystem", "newton_damped", fallback=True
-        )
-        self.newton_inexact = self.config.getboolean(
-            "StateSystem", "newton_inexact", fallback=False
-        )
-        self.newton_verbose = self.config.getboolean(
-            "StateSystem", "newton_verbose", fallback=False
-        )
-        self.newton_iter = self.config.getint("StateSystem", "newton_iter", fallback=50)
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+        self.newton_rtol = self.config.getfloat("StateSystem", "newton_rtol")
+        self.newton_atol = self.config.getfloat("StateSystem", "newton_atol")
+        self.newton_damped = self.config.getboolean("StateSystem", "newton_damped")
+        self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
+        self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
+        self.newton_iter = self.config.getint("StateSystem", "newton_iter")
 
         self.newton_atols = [1] * self.form_handler.state_dim
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        utils._setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
+        _utils.setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
 
         # adapt the tolerances so that the Newton system can be solved successfully
         if not self.form_handler.state_is_linear:
@@ -99,6 +82,7 @@ class StateProblem(pde_problem.PDEProblem):
                     rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
                 )
 
+        # pylint: disable=invalid-name
         self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
         ]
@@ -109,14 +93,13 @@ class StateProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
-        try:
+        if self.temp_dict is not None:
             self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
-        except TypeError:
+        else:
             self.number_of_solves = 0
 
     def _update_scalar_tracking_terms(self) -> None:
         """Updates the scalar_tracking_forms with current function values."""
-
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(
@@ -128,7 +111,6 @@ class StateProblem(pde_problem.PDEProblem):
 
     def _update_min_max_terms(self) -> None:
         """Updates the min_max_terms with current function values."""
-
         if self.form_handler.use_min_max_terms:
             for j in range(self.form_handler.no_min_max_terms):
                 min_max_integral_value = fenics.assemble(
@@ -143,11 +125,11 @@ class StateProblem(pde_problem.PDEProblem):
 
         Returns:
             The solution of the state system.
-        """
 
+        """
         if not self.has_solution:
 
-            self.form_handler._pre_hook()
+            self.form_handler.pre_hook()
 
             if self.initial_guess is not None:
                 for j in range(self.form_handler.state_dim):
@@ -159,7 +141,7 @@ class StateProblem(pde_problem.PDEProblem):
             ):
                 if self.form_handler.state_is_linear:
                     for i in range(self.form_handler.state_dim):
-                        utils._assemble_and_solve_linear(
+                        _utils.assemble_and_solve_linear(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],

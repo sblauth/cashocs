@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Sebastian Blauth
+# Copyright (C) 2020-2022 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,13 +25,14 @@ The documentation for cashocs can be found `here <https://cashocs.readthedocs.io
 """
 
 from cashocs import space_mapping
-
+from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
-    ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-from cashocs._constraints.constraints import EqualityConstraint, InequalityConstraint
-from cashocs._loggers import LogLevel, set_log_level
+from cashocs._constraints.constraints import EqualityConstraint
+from cashocs._constraints.constraints import InequalityConstraint
+from cashocs._loggers import LogLevel
+from cashocs._loggers import set_log_level
 from cashocs._optimization import verification
 from cashocs._optimization.optimal_control.optimal_control_problem import (
     OptimalControlProblem,
@@ -39,26 +40,21 @@ from cashocs._optimization.optimal_control.optimal_control_problem import (
 from cashocs._optimization.shape_optimization.shape_optimization_problem import (
     ShapeOptimizationProblem,
 )
-from cashocs.geometry import (
-    DeformationHandler,
-    MeshQuality,
-    import_mesh,
-    regular_box_mesh,
-    regular_mesh,
-)
-from cashocs.io import create_config, load_config
-from cashocs.nonlinear_solvers import (
-    newton_solve,
-    damped_newton_solve,
-    picard_iteration,
-)
-from cashocs.utils import (
-    create_bcs_list,
-    create_dirichlet_bcs,
-)
+from cashocs._utils import create_bcs_list
+from cashocs._utils import create_dirichlet_bcs
+from cashocs._utils import Interpolator
+from cashocs.geometry import DeformationHandler
+from cashocs.geometry import import_mesh
+from cashocs.geometry import MeshQuality
+from cashocs.geometry import regular_box_mesh
+from cashocs.geometry import regular_mesh
+from cashocs.io import create_config
+from cashocs.io import load_config
+from cashocs.nonlinear_solvers import damped_newton_solve
+from cashocs.nonlinear_solvers import newton_solve
+from cashocs.nonlinear_solvers import picard_iteration
 
-
-__version__ = "1.5.3"
+__version__ = "1.5.13"
 
 __all__ = [
     "import_mesh",
@@ -82,5 +78,6 @@ __all__ = [
     "EqualityConstraint",
     "InequalityConstraint",
     "set_log_level",
+    "Interpolator",
     "space_mapping",
 ]

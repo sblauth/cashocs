@@ -19,17 +19,20 @@
 
 from __future__ import annotations
 
-from typing import Union, List, Tuple, Optional
+from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
+import ufl
 
 from cashocs import _exceptions
 
+if TYPE_CHECKING:
+    from cashocs import types
 
-def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
+
+def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
     """Splits a list of linear forms into left- and right-hand sides.
 
     Args:
@@ -38,14 +41,14 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
     Returns:
         A tuple (lhs_forms, rhs_forms), where lhs_forms is the list of forms of the
         left-hand sides, and rhs_forms is the list of forms of the right-hand side.
-    """
 
+    """
     lhs_list = []
     rhs_list = []
     for i in range(len(forms)):
         try:
             lhs, rhs = fenics.system(forms[i])
-        except ufl.log.UFLException:
+        except ufl.log.UFLException as ufl_exception:
             raise _exceptions.CashocsException(
                 "The state system could not be transferred to a linear "
                 "system.\n"
@@ -53,7 +56,7 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
                 "although it is not.\n"
                 "In your config, in the StateSystem section, "
                 "try using is_linear = False."
-            )
+            ) from ufl_exception
         lhs_list.append(lhs)
 
         if rhs.empty():
@@ -74,12 +77,12 @@ def _split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl
     return lhs_list, rhs_list
 
 
-# noinspection PyUnresolvedReferences,PyPep8Naming
-def _assemble_petsc_system(
+# noinspection PyUnresolvedReferences
+def assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,
+    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
 ) -> Tuple[PETSc.Mat, PETSc.Vec]:
     """Assembles a system symmetrically and converts objects to PETSc format.
@@ -99,10 +102,9 @@ def _assemble_petsc_system(
         This function always uses the ident_zeros method of the matrix in order to add a
         one to the diagonal in case the corresponding row only consists of zeros. This
         allows for well-posed problems on the boundary etc.
-    """
 
+    """
     if A_tensor is None:
-        # noinspection PyPep8Naming
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
@@ -117,16 +119,14 @@ def _assemble_petsc_system(
     A_tensor.ident_zeros()
 
     # noinspection PyPep8Naming
-    A = A_tensor.mat()
+    A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
 
     return A, b
 
 
 # noinspection PyUnresolvedReferences
-def _setup_petsc_options(
-    ksps: List[PETSc.KSP], ksp_options: List[List[List[str]]]
-) -> None:
+def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
@@ -137,8 +137,8 @@ def _setup_petsc_options(
             options are applied to.
         ksp_options: A list of command line options that specify the iterative solver
             from PETSc.
-    """
 
+    """
     opts = fenics.PETScOptions
 
     for i in range(len(ksps)):
@@ -151,13 +151,13 @@ def _setup_petsc_options(
         ksps[i].setFromOptions()
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
-def _solve_linear_problem(
+# noinspection PyUnresolvedReferences
+def solve_linear_problem(
     ksp: Optional[PETSc.KSP] = None,
-    A: Optional[PETSc.Mat] = None,
+    A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     x: Optional[PETSc.Vec] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:
@@ -185,26 +185,27 @@ def _solve_linear_problem(
 
     Returns:
         The solution vector.
-    """
 
+    """
     if ksp is None:
         ksp = PETSc.KSP().create()
-        options = [
+        options: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "lu"],
             ["pc_factor_mat_solver_type", "mumps"],
             ["mat_mumps_icntl_24", 1],
         ]
 
-        _setup_petsc_options([ksp], [options])
+        setup_petsc_options([ksp], [options])
 
     if A is not None:
         ksp.setOperators(A)
     else:
+        # noinspection PyPep8Naming
         A = ksp.getOperators()[0]
         if A.size[0] == -1 and A.size[1] == -1:
             raise _exceptions.InputError(
-                "cashocs.utils._solve_linear_problem",
+                "cashocs._utils.solve_linear_problem",
                 "ksp",
                 "The KSP object has to be initialized with some Matrix in case A is "
                 "None.",
@@ -217,7 +218,7 @@ def _solve_linear_problem(
         x, _ = A.getVecs()
 
     if ksp_options is not None:
-        _setup_petsc_options([ksp], [ksp_options])
+        setup_petsc_options([ksp], [ksp_options])
 
     if rtol is not None:
         ksp.rtol = rtol
@@ -231,16 +232,16 @@ def _solve_linear_problem(
     return x
 
 
-# noinspection PyPep8Naming,PyUnresolvedReferences
-def _assemble_and_solve_linear(
+# noinspection PyUnresolvedReferences
+def assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
-    A: Optional[fenics.PETScMatrix] = None,
+    A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
     x: Optional[PETSc.Vec] = None,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:
@@ -267,13 +268,14 @@ def _assemble_and_solve_linear(
 
     Returns:
         A PETSc vector containing the solution x.
-    """
 
+    """
+    # pylint: disable=invalid-name
     # noinspection PyPep8Naming
-    A_matrix, b_vector = _assemble_petsc_system(
+    A_matrix, b_vector = assemble_petsc_system(
         lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
     )
-    solution = _solve_linear_problem(
+    solution = solve_linear_problem(
         ksp=ksp,
         A=A_matrix,
         b=b_vector,
@@ -310,19 +312,21 @@ class Interpolator:
             expr = fenics.Expression('sin(2*pi*x[0])', degree=1)
             u = fenics.interpolate(expr, V1)
 
-            interp = cashocs.utils.Interpolator(V1, V2)
+            interp = cashocs._utils.Interpolator(V1, V2)
             interp.interpolate(u)
+
     """
 
     def __init__(
         self, origin_space: fenics.FunctionSpace, target_space: fenics.FunctionSpace
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             origin_space: The function space whose objects shall be interpolated.
             target_space: The space into which they shall be interpolated.
-        """
 
+        """
         if not (
             origin_space.ufl_element().family() == "Lagrange"
             or (
@@ -331,7 +335,7 @@ class Interpolator:
             )
         ):
             raise _exceptions.InputError(
-                "cashocs.utils.Interpolator",
+                "cashocs._utils.Interpolator",
                 "origin_space",
                 "The interpolator only works with CG n or DG 0 elements",
             )
@@ -343,7 +347,7 @@ class Interpolator:
             )
         ):
             raise _exceptions.InputError(
-                "cashocs.utils.Interpolator",
+                "cashocs._utils.Interpolator",
                 "target_space",
                 "The interpolator only works with CG n or DG 0 elements",
             )
@@ -368,14 +372,8 @@ class Interpolator:
 
         Returns:
             The result of the interpolation.
-        """
 
-        if not u.function_space() == self.origin_space:
-            raise _exceptions.InputError(
-                "cashocs.utils.Interpolator.interpolate",
-                "u",
-                "The input does not belong to the correct function space.",
-            )
+        """
         v = fenics.Function(self.target_space)
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]
 

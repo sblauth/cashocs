@@ -19,11 +19,10 @@
 
 """
 
-import numpy as np
 from fenics import *
+import numpy as np
 
 import cashocs
-
 
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
@@ -48,7 +47,7 @@ gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
 for gamma in gammas:
 
-    J = J_init + cashocs.utils.moreau_yosida_regularization(
+    J = J_init + cashocs._utils.moreau_yosida_regularization(
         y, gamma, dx, upper_threshold=y_bar
     )
 

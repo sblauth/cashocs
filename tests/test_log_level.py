@@ -16,7 +16,11 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 import cashocs
-from cashocs._loggers import critical, debug, error, info, warning
+from cashocs._loggers import critical
+from cashocs._loggers import debug
+from cashocs._loggers import error
+from cashocs._loggers import info
+from cashocs._loggers import warning
 
 
 def test_set_log_level(caplog):

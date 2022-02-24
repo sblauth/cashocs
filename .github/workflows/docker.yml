@@ -35,8 +35,8 @@ jobs:
       - name: Build the Docker image
         run: |
           docker buildx build --push \
-            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --no-cache \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=test-env \
             --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
 
@@ -56,24 +56,8 @@ jobs:
       - name: Build the Docker image
         run: |
           docker buildx build --push \
-            --cache-from=type=registry,ref=sblauth/cashocs-test-env:${{ needs.build_test_env.outputs.TAG_PREFIX }} \
-            --cache-to=type=inline --file ./.docker/Dockerfile \
+            --no-cache \
+            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
             --target=cashocs \
             --tag sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
 
-
-  test_user_image:
-    name: Test sblauth/cashocs image
-    needs:
-      - build_test_env
-      - build_user_image
-    runs-on: ubuntu-latest
-    container:
-      image: sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }}
-    steps:
-      - name: Run tests
-        shell: bash -l {0}
-        run: |
-          conda activate cashocs
-          cd /root/cashocs/
-          pytest

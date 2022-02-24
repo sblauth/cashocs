@@ -19,10 +19,10 @@
 
 from __future__ import annotations
 
-import os
 from configparser import ConfigParser
+import json
 from pathlib import Path
-from typing import Optional, List
+from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -43,8 +43,8 @@ def create_config(path: str) -> ConfigParser:  # pragma: no cover
     .. deprecated:: 1.1.0
         This is replaced by :py:func:`load_config <cashocs.load_config>`
         and will be removed in the future.
-    """
 
+    """
     _loggers.warning(
         "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
         "and will be removed in the future."
@@ -64,18 +64,9 @@ def load_config(path: str) -> ConfigParser:
 
     Returns:
         The output config file, which includes the path to the .ini file.
+
     """
-
-    if os.path.isfile(path):
-        config = Config(path)
-    else:
-        raise _exceptions.InputError(
-            "cashocs.utils.load_config",
-            "path",
-            "The file you specified does not exist.",
-        )
-
-    return config
+    return Config(path)
 
 
 def _check_for_config_list(string: str) -> bool:
@@ -86,8 +77,8 @@ def _check_for_config_list(string: str) -> bool:
 
     Returns:
         ``True`` if the string is valid, ``False`` otherwise
-    """
 
+    """
     result = False
 
     for char in string:
@@ -108,14 +99,16 @@ class Config(ConfigParser):
     """Class for handling the config in cashocs."""
 
     def __init__(self, config_file: Optional[str] = None) -> None:
-        """
+        """Initializes self.
+
         Args:
             config_file: Path to the config file.
+
         """
-
         super().__init__()
+        self.config_errors: List[str] = []
 
-        self.config_scheme = {
+        self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
             "Mesh": {
                 "mesh_file": {
                     "type": "str",
@@ -134,53 +127,59 @@ class Config(ConfigParser):
                 },
                 "remesh": {
                     "type": "bool",
-                    "fallback": False,
                     "requires": [("Mesh", "gmsh_file")],
                 },
-                "show_gmsh_output": {"type": "bool", "fallback": False},
+                "show_gmsh_output": {
+                    "type": "bool",
+                },
             },
             "StateSystem": {
-                "is_linear": {"type": "bool", "fallback": False},
+                "is_linear": {
+                    "type": "bool",
+                },
                 "newton_rtol": {
                     "type": "float",
-                    "fallback": 1e-11,
                     "attributes": ["less_than_one", "positive"],
                 },
                 "newton_atol": {
                     "type": "float",
-                    "fallback": 1e-13,
                     "attributes": ["non_negative"],
                 },
                 "newton_iter": {
                     "type": "int",
-                    "fallback": 50,
                     "attributes": ["non_negative"],
                 },
-                "newton_damped": {"type": "bool", "fallback": True},
-                "newton_inexact": {"type": "bool", "fallback": False},
-                "newton_verbose": {"type": "bool", "fallback": False},
-                "picard_iteration": {"type": "bool", "fallback": False},
+                "newton_damped": {
+                    "type": "bool",
+                },
+                "newton_inexact": {
+                    "type": "bool",
+                },
+                "newton_verbose": {
+                    "type": "bool",
+                },
+                "picard_iteration": {
+                    "type": "bool",
+                },
                 "picard_rtol": {
                     "type": "float",
-                    "fallback": 1e-10,
                     "attributes": ["positive", "less_than_one"],
                 },
                 "picard_atol": {
                     "type": "float",
-                    "fallback": 1e-20,
                     "attributes": ["non_negative"],
                 },
                 "picard_iter": {
                     "type": "int",
-                    "fallback": 50,
                     "attributes": ["non_negative"],
                 },
-                "picard_verbose": {"type": "bool", "fallback": False},
+                "picard_verbose": {
+                    "type": "bool",
+                },
             },
             "OptimizationRoutine": {
                 "algorithm": {
                     "type": "str",
-                    "fallback": "none",
                     "possible_options": [
                         "gd",
                         "gradient_descent",
@@ -196,244 +195,259 @@ class Config(ConfigParser):
                 },
                 "rtol": {
                     "type": "float",
-                    "fallback": 1e-3,
                     "attributes": ["less_than_one", "positive"],
                 },
                 "atol": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "maximum_iterations": {
                     "type": "int",
-                    "fallback": 100,
                     "attributes": ["non_negative"],
                 },
                 "initial_stepsize": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["positive"],
                 },
                 "epsilon_armijo": {
                     "type": "float",
-                    "fallback": 1e-4,
                     "attributes": ["positive", "less_than_one"],
                 },
                 "beta_armijo": {
                     "type": "float",
-                    "fallback": 2.0,
                     "attributes": ["positive", "larger_than_one"],
                 },
                 "gradient_method": {
                     "type": "str",
-                    "fallback": "direct",
                     "possible_options": ["direct", "iterative"],
                 },
                 "gradient_tol": {
                     "type": "float",
-                    "fallback": 1e-9,
                     "attributes": ["less_than_one", "positive"],
                 },
-                "soft_exit": {"type": "bool", "fallback": False},
+                "soft_exit": {
+                    "type": "bool",
+                },
             },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
                     "type": "int",
-                    "fallback": 5,
                     "attributes": ["non_negative"],
                 },
-                "use_bfgs_scaling": {"type": "bool", "fallback": True},
+                "use_bfgs_scaling": {
+                    "type": "bool",
+                },
             },
             "AlgoCG": {
                 "cg_method": {
                     "type": "str",
-                    "fallback": "FR",
-                    "possible_options": ["FR", "PR", "HS", "DY", "HZ"],
+                    "possible_options": ["fr", "pr", "hs", "dy", "hz"],
                 },
-                "cg_periodic_restart": {"type": "bool", "fallback": False},
+                "cg_periodic_restart": {
+                    "type": "bool",
+                },
                 "cg_periodic_its": {
                     "type": "int",
-                    "fallback": 10,
                     "attributes": ["non_negative"],
                 },
-                "cg_relative_restart": {"type": "bool", "fallback": False},
+                "cg_relative_restart": {
+                    "type": "bool",
+                },
                 "cg_restart_tol": {
                     "type": "float",
-                    "fallback": 0.25,
                     "attributes": ["positive"],
                 },
             },
             "AlgoTNM": {
                 "inner_newton": {
                     "type": "str",
-                    "fallback": "cr",
                     "possible_options": ["cg", "cr"],
                 },
                 "inner_newton_rtol": {
                     "type": "float",
-                    "fallback": 1e-15,
                     "attributes": ["positive", "less_than_one"],
                 },
                 "inner_newton_atol": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "max_it_inner_newton": {
                     "type": "int",
-                    "fallback": 50,
                     "attributes": ["non_negative"],
                 },
             },
             "ShapeGradient": {
-                "shape_bdry_def": {"type": "list", "fallback": "[]"},
-                "shape_bdry_fix": {"type": "list", "fallback": "[]"},
-                "shape_bdry_fix_x": {"type": "list", "fallback": "[]"},
-                "shape_bdry_fix_y": {"type": "list", "fallback": "[]"},
-                "shape_bdry_fix_z": {"type": "list", "fallback": "[]"},
-                "use_pull_back": {"type": "bool", "fallback": True},
-                "lambda_lame": {"type": "float", "fallback": 0.0},
+                "shape_bdry_def": {
+                    "type": "list",
+                },
+                "shape_bdry_fix": {
+                    "type": "list",
+                },
+                "shape_bdry_fix_x": {
+                    "type": "list",
+                },
+                "shape_bdry_fix_y": {
+                    "type": "list",
+                },
+                "shape_bdry_fix_z": {
+                    "type": "list",
+                },
+                "use_pull_back": {
+                    "type": "bool",
+                },
+                "lambda_lame": {
+                    "type": "float",
+                },
                 "damping_factor": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "mu_def": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["positive"],
                 },
                 "mu_fix": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["positive"],
                 },
-                "use_sqrt_mu": {"type": "bool", "fallback": False},
-                "inhomogeneous": {"type": "bool", "fallback": False},
-                "update_inhomogeneous": {"type": "bool", "fallback": False},
-                "use_distance_mu": {"type": "bool", "fallback": False},
+                "use_sqrt_mu": {
+                    "type": "bool",
+                },
+                "inhomogeneous": {
+                    "type": "bool",
+                },
+                "update_inhomogeneous": {
+                    "type": "bool",
+                },
+                "use_distance_mu": {
+                    "type": "bool",
+                },
                 "dist_min": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["non_negative"],
                 },
                 "dist_max": {
                     "type": "float",
-                    "fallback": 1.0,
                     "larger_equal_than": ("ShapeGradient", "dist_min"),
                     "attributes": ["non_negative"],
                 },
                 "mu_min": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["positive"],
                 },
                 "mu_max": {
                     "type": "float",
-                    "fallback": 1.0,
                     "attributes": ["positive"],
                 },
-                "boundaries_dist": {"type": "list", "fallback": "[]"},
-                "smooth_mu": {"type": "bool", "fallback": False},
-                "use_p_laplacian": {"type": "bool", "fallback": False},
+                "boundaries_dist": {
+                    "type": "list",
+                },
+                "smooth_mu": {
+                    "type": "bool",
+                },
+                "use_p_laplacian": {
+                    "type": "bool",
+                },
                 "p_laplacian_power": {
                     "type": "int",
-                    "fallback": 2,
                     "attributes": ["larger_than_one"],
                 },
                 "p_laplacian_stabilization": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative", "less_than_one"],
                 },
                 "fixed_dimensions": {
                     "type": "list",
-                    "fallback": "[]",
-                    "conflicts": [("ShapeGradient", "use_p_laplacian")],
                 },
-                "degree_estimation": {"type": "bool", "fallback": True},
+                "degree_estimation": {
+                    "type": "bool",
+                },
             },
             "Regularization": {
                 "factor_volume": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "target_volume": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
-                "use_initial_volume": {"type": "bool", "fallback": False},
+                "use_initial_volume": {
+                    "type": "bool",
+                },
                 "factor_surface": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "target_surface": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
-                "use_initial_surface": {"type": "bool", "fallback": False},
+                "use_initial_surface": {
+                    "type": "bool",
+                },
                 "factor_curvature": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
                 "factor_barycenter": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["non_negative"],
                 },
-                "target_barycenter": {"type": "list", "fallback": "[0,0,0]"},
-                "use_initial_barycenter": {"type": "bool", "fallback": False},
-                "measure_hole": {"type": "bool", "fallback": False},
-                "x_start": {"type": "float", "fallback": 0.0},
+                "target_barycenter": {
+                    "type": "list",
+                },
+                "use_initial_barycenter": {
+                    "type": "bool",
+                },
+                "measure_hole": {
+                    "type": "bool",
+                },
+                "x_start": {
+                    "type": "float",
+                },
                 "x_end": {
                     "type": "float",
-                    "fallback": 1.0,
                     "larger_than": ("Regularization", "x_start"),
                 },
-                "y_start": {"type": "float", "fallback": 0.0},
+                "y_start": {
+                    "type": "float",
+                },
                 "y_end": {
                     "type": "float",
-                    "fallback": 1.0,
                     "larger_than": ("Regularization", "y_start"),
                 },
-                "z_start": {"type": "float", "fallback": 0.0},
+                "z_start": {
+                    "type": "float",
+                },
                 "z_end": {
                     "type": "float",
-                    "fallback": 1.0,
                     "larger_than": ("Regularization", "z_start"),
                 },
-                "use_relative_scaling": {"type": "bool", "fallback": False},
+                "use_relative_scaling": {
+                    "type": "bool",
+                },
             },
             "MeshQuality": {
                 "volume_change": {
                     "type": "float",
-                    "fallback": float("inf"),
                     "attributes": ["positive", "larger_than_one"],
                 },
                 "angle_change": {
                     "type": "float",
-                    "fallback": float("inf"),
                     "attributes": ["positive"],
                 },
                 "tol_lower": {
                     "type": "float",
-                    "fallback": 0.0,
                     "attributes": ["less_than_one", "non_negative"],
                 },
                 "tol_upper": {
                     "type": "float",
-                    "fallback": 1e-15,
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("MeshQuality", "tol_lower"),
                 },
                 "measure": {
                     "type": "str",
-                    "fallback": "skewness",
                     "possible_options": [
                         "skewness",
                         "radius_ratios",
@@ -443,39 +457,200 @@ class Config(ConfigParser):
                 },
                 "type": {
                     "type": "str",
-                    "fallback": "min",
                     "possible_options": ["min", "avg", "minimum", "average"],
                 },
             },
             "Output": {
-                "verbose": {"type": "bool", "fallback": True},
-                "save_results": {"type": "bool", "fallback": True},
-                "save_txt": {"type": "bool", "fallback": True},
-                "save_pvd": {"type": "bool", "fallback": False},
-                "save_pvd_adjoint": {"type": "bool", "fallback": False},
-                "save_pvd_gradient": {"type": "bool", "fallback": False},
+                "verbose": {
+                    "type": "bool",
+                },
+                "save_results": {
+                    "type": "bool",
+                },
+                "save_txt": {
+                    "type": "bool",
+                },
+                "save_pvd": {
+                    "type": "bool",
+                },
+                "save_pvd_adjoint": {
+                    "type": "bool",
+                },
+                "save_pvd_gradient": {
+                    "type": "bool",
+                },
                 "save_mesh": {
                     "type": "bool",
-                    "fallback": False,
                     "requires": [("Mesh", "gmsh_file")],
                 },
-                "result_dir": {"type": "str", "fallback": "./results"},
-                "time_suffix": {"type": "bool", "fallback": False},
+                "result_dir": {
+                    "type": "str",
+                },
+                "time_suffix": {
+                    "type": "bool",
+                },
             },
             "Debug": {
-                "remeshing": {"type": "bool", "fallback": False},
-                "restart": {"type": "bool", "fallback": False},
+                "remeshing": {
+                    "type": "bool",
+                },
+                "restart": {
+                    "type": "bool",
+                },
             },
             "DEFAULT": {},
         }
-        self.config_errors = []
+        self.default_config_str = """
+[Mesh]
+remesh = False
+show_gmsh_output = False
+
+[StateSystem]
+is_linear = False
+newton_rtol = 1e-11
+newton_atol = 1e-13
+newton_iter = 50
+newton_damped = False
+newton_inexact = False
+newton_verbose = False
+picard_iteration = False
+picard_rtol = 1e-10
+picard_atol = 1e-12
+picard_iter = 50
+picard_verbose = False
+
+[OptimizationRoutine]
+algorithm = none
+rtol = 1e-3
+atol = 0.0
+maximum_iterations = 100
+soft_exit = False
+epsilon_armijo = 1e-4
+beta_armijo = 2.0
+initial_stepsize = 1.0
+gradient_tol = 1e-9
+gradient_method = direct
+
+[ShapeGradient]
+lambda_lame = 0.0
+damping_factor = 0.0
+inhomogeneous = False
+mu_def = 1.0
+mu_fix = 1.0
+use_sqrt_mu = False
+use_p_laplacian = False
+p_laplacian_power = 2
+p_laplacian_stabilization = 0.0
+degree_estimation = True
+use_pull_back = True
+use_distance_mu = False
+mu_min = 1.0
+mu_max = 1.0
+dist_min = 1.0
+dist_max = 1.0
+boundaries_dist = []
+smooth_mu = False
+update_inhomogeneous = False
+fixed_dimensions = []
+shape_bdry_def = []
+shape_bdry_fix = []
+shape_bdry_fix_x = []
+shape_bdry_fix_y = []
+shape_bdry_fix_z = []
+
+[Regularization]
+factor_volume = 0.0
+target_volume = 0.0
+use_initial_volume = False
+factor_surface = 0.0
+target_surface = 0.0
+use_initial_surface = False
+factor_curvature = 0.0
+factor_barycenter = 0.0
+target_barycenter = [0.0, 0.0, 0.0]
+use_initial_barycenter = False
+use_relative_scaling = False
+measure_hole = False
+x_start = 0.0
+x_end = 1.0
+y_start = 0.0
+y_end = 1.0
+z_start = 0.0
+z_end = 1.0
+
+[AlgoTNM]
+inner_newton = cr
+max_it_inner_newton = 50
+inner_newton_rtol = 1e-15
+inner_newton_atol = 0.0
+
+[AlgoLBFGS]
+bfgs_memory_size = 5
+use_bfgs_scaling = True
+
+[AlgoCG]
+cg_method = DY
+cg_periodic_restart = False
+cg_periodic_its = 10
+cg_relative_restart = False
+cg_restart_tol = 0.25
+
+[MeshQuality]
+tol_lower = 0.0
+tol_upper = 1e-15
+measure = skewness
+type = min
+volume_change = inf
+angle_change = inf
+
+[Output]
+save_results = True
+verbose = True
+save_txt = True
+save_pvd = False
+save_pvd_adjoint = False
+save_pvd_gradient = False
+save_mesh = False
+result_dir = ./results
+time_suffix = False
+
+[Debug]
+remeshing = False
+restart = False
+"""
+
+        self.read_string(self.default_config_str)
 
         if config_file is not None:
             self.read(config_file)
 
+    def getlist(self, section: str, option: str, **kwargs: Any) -> List:
+        """Extracts a list from a config file.
+
+        Args:
+            section: The section where the list is placed.
+            option: The option which contains the list.
+            **kwargs: A list of keyword arguments that get passed to
+                :py:meth:``self.get``
+
+        Returns:
+            The list which is specified in section ``section`` and key ``option``.
+
+        """
+        if (
+            self.config_scheme[section][option]["type"] == "list"
+        ) and _check_for_config_list(self.get(section, option)):
+            py_list: List = json.loads(self.get(section, option, **kwargs))
+            return py_list
+        else:
+            raise _exceptions.InputError(
+                "Config.getlist",
+                "option",
+                f"option {option} in section {section} cannot be used as list.",
+            )
+
     def validate_config(self) -> None:
         """Validates the configuration file."""
-
         self._check_sections()
         self._check_keys()
 
@@ -484,19 +659,17 @@ class Config(ConfigParser):
 
     def _check_sections(self) -> None:
         """Checks whether all sections are valid."""
-
         for section_name, section in self.items():
-            if section_name not in self.config_scheme.keys():
+            if section_name not in self.config_scheme:
                 self.config_errors.append(
                     f"The following section is not valid: {section}\n"
                 )
 
     def _check_keys(self) -> None:
         """Checks the keys of the sections."""
-
         for section_name, section in self.items():
             for key in section.keys():
-                if section_name in self.config_scheme.keys():
+                if section_name in self.config_scheme:
                     if key not in self.config_scheme[section_name].keys():
                         self.config_errors.append(
                             f"Key {key} is not valid for section {section_name}.\n"
@@ -506,7 +679,6 @@ class Config(ConfigParser):
                         self._check_possible_options(section_name, key)
                         self._check_attributes(section_name, key)
                         self._check_key_requirements(section_name, key)
-                        self._check_key_conflicts(section_name, key)
                         self._check_larger_than_relation(section_name, key)
                         self._check_larger_equal_than_relation(section_name, key)
 
@@ -516,19 +688,19 @@ class Config(ConfigParser):
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         key_type = self.config_scheme[section][key]["type"]
         try:
-            if key_type == "str":
+            if key_type.casefold() == "str":
                 self.get(section, key)
-            elif key_type == "bool":
+            elif key_type.casefold() == "bool":
                 self.getboolean(section, key)
-            elif key_type == "int":
+            elif key_type.casefold() == "int":
                 self.getint(section, key)
-            elif key_type == "float":
+            elif key_type.casefold() == "float":
                 self.getfloat(section, key)
-            elif key_type == "list":
+            elif key_type.casefold() == "list":
                 if not _check_for_config_list(self.get(section, key)):
                     raise ValueError
         except ValueError:
@@ -543,11 +715,11 @@ class Config(ConfigParser):
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         if (
-            self.config_scheme[section][key]["type"] == "bool"
-            and self[section][key].lower() == "true"
+            self.config_scheme[section][key]["type"].casefold() == "bool"
+            and self[section][key].casefold() == "true"
         ):
             if "requires" in self.config_scheme[section][key].keys():
                 requirements = self.config_scheme[section][key]["requires"]
@@ -558,36 +730,17 @@ class Config(ConfigParser):
                             f"key {req[1]} in section {req[0]} to be present.\n"
                         )
 
-    def _check_key_conflicts(self, section: str, key: str) -> None:
-        """Checks, whether conflicting keys are present.
-
-        Args:
-            section: The corresponding section
-            key: The corresponding key
-        """
-
-        if self.has_option(section, key):
-            if "conflicts" in self.config_scheme[section][key].keys():
-                conflicts = self.config_scheme[section][key]["conflicts"]
-                for conflict in conflicts:
-                    if self.has_option(conflict[0], conflict[1]):
-                        if self.getboolean(conflict[0], conflict[1]):
-                            self.config_errors.append(
-                                f"Key {conflict[1]} in section {conflict[0]} "
-                                f"conflicts with key {key} in section {section}.\n"
-                            )
-
     def _check_possible_options(self, section: str, key: str) -> None:
         """Checks, whether the given option is possible.
 
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         if "possible_options" in self.config_scheme[section][key].keys():
             if (
-                self[section][key]
+                self[section][key].casefold()
                 not in self.config_scheme[section][key]["possible_options"]
             ):
                 self.config_errors.append(
@@ -602,16 +755,13 @@ class Config(ConfigParser):
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         if "larger_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_than"]
-            if self.has_option(partner[0], partner[1]):
-                lower_value = self.getfloat(partner[0], partner[1])
-            else:
-                lower_value = self.config_scheme[partner[0]][partner[1]]["fallback"]
-            if not lower_value < higher_value:
+            lower_value = self.getfloat(partner[0], partner[1])
+            if lower_value >= higher_value:
                 self.config_errors.append(
                     f"The value of key {key} in section {section} is smaller than "
                     f"the value of key {partner[1]} in section {partner[0]}, "
@@ -624,16 +774,13 @@ class Config(ConfigParser):
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         if "larger_equal_than" in self.config_scheme[section][key].keys():
             higher_value = self.getfloat(section, key)
             partner = self.config_scheme[section][key]["larger_equal_than"]
-            if self.has_option(partner[0], partner[1]):
-                lower_value = self.getfloat(partner[0], partner[1])
-            else:
-                lower_value = self.config_scheme[partner[0]][partner[1]]["fallback"]
-            if not lower_value <= higher_value:
+            lower_value = self.getfloat(partner[0], partner[1])
+            if lower_value > higher_value:
                 self.config_errors.append(
                     f"The value of key {key} in section {section} is smaller than "
                     f"the value of key {partner[1]} in section {partner[0]}, "
@@ -646,8 +793,8 @@ class Config(ConfigParser):
         Args:
             section: The corresponding section
             key: The corresponding key
-        """
 
+        """
         if "attributes" in self.config_scheme[section][key].keys():
             key_attributes = self.config_scheme[section][key]["attributes"]
             self._check_file_attribute(section, key, key_attributes)
@@ -665,8 +812,8 @@ class Config(ConfigParser):
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
-        """
 
+        """
         if "file" in key_attributes:
             file = Path(self.get(section, key))
             if not file.is_file():
@@ -686,8 +833,8 @@ class Config(ConfigParser):
             section: The corresponding section.
             key: The corresponding key.
             extension: The file extension.
-        """
 
+        """
         path_to_file = self.get(section, key)
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
@@ -704,8 +851,8 @@ class Config(ConfigParser):
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
-        """
 
+        """
         if "non_negative" in key_attributes:
             if self.getfloat(section, key) < 0:
                 self.config_errors.append(
@@ -721,8 +868,8 @@ class Config(ConfigParser):
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
-        """
 
+        """
         if "positive" in key_attributes:
             if self.getfloat(section, key) <= 0:
                 self.config_errors.append(
@@ -739,8 +886,8 @@ class Config(ConfigParser):
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
-        """
 
+        """
         if "less_than_one" in key_attributes:
             if self.getfloat(section, key) >= 1:
                 self.config_errors.append(
@@ -757,8 +904,8 @@ class Config(ConfigParser):
             section: The corresponding section
             key: The corresponding key
             key_attributes: The list of attributes for key.
-        """
 
+        """
         if "larger_than_one" in key_attributes:
             if self.getfloat(section, key) <= 1:
                 self.config_errors.append(

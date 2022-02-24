@@ -24,28 +24,30 @@ from typing import TYPE_CHECKING
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
+    from cashocs import types
     from cashocs._optimization import line_search as ls
-    from cashocs._optimization import optimization_problem as op
 
 
 class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
     """A gradient descent method."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, line_search: ls.LineSearch
+        self,
+        optimization_problem: types.OptimizationProblem,
+        line_search: ls.LineSearch,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
-        """
 
+        """
         super().__init__(optimization_problem)
         self.line_search = line_search
 
     def run(self) -> None:
         """Performs the optimization with the gradient descent method."""
-
         self.initialize_solver()
 
         while True:
@@ -70,7 +72,6 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the gradient descent method."""
-
         for i in range(len(self.gradient)):
             self.search_direction[i].vector().vec().aypx(
                 0.0, -self.gradient[i].vector().vec()

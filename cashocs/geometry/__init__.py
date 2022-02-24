@@ -17,7 +17,7 @@
 
 """Mesh generation and import tools.
 
-This module consists of tools for for the fast generation or import of meshes into
+This module consists of tools for the fast generation or import of meshes into
 fenics. The :py:func:`import_mesh <cashocs.geometry.import_mesh>` function is used to
 import (converted) GMSH mesh files, and the :py:func:`regular_mesh
 <cashocs.geometry.regular_mesh>` and :py:func:`regular_box_mesh
@@ -27,10 +27,14 @@ great for testing.
 
 from cashocs.geometry.boundary_distance import compute_boundary_distance
 from cashocs.geometry.deformation_handler import DeformationHandler
-from cashocs.geometry.measure import generate_measure, _EmptyMeasure
-from cashocs.geometry.mesh import import_mesh, regular_box_mesh, regular_mesh
+from cashocs.geometry.measure import _EmptyMeasure
+from cashocs.geometry.measure import generate_measure
+from cashocs.geometry.mesh import import_mesh
+from cashocs.geometry.mesh import regular_box_mesh
+from cashocs.geometry.mesh import regular_mesh
 from cashocs.geometry.mesh_handler import _MeshHandler
-from cashocs.geometry.mesh_quality import compute_mesh_quality, MeshQuality
+from cashocs.geometry.mesh_quality import compute_mesh_quality
+from cashocs.geometry.mesh_quality import MeshQuality
 
 __all__ = [
     "compute_mesh_quality",

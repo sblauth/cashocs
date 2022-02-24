@@ -22,9 +22,9 @@
 import os
 import subprocess
 
+from fenics import *
 import numpy as np
 import pytest
-from fenics import *
 
 import cashocs
 from cashocs._exceptions import NotConvergedError
@@ -349,7 +349,7 @@ def test_shape_volume_regularization():
     mesh.bounding_box_tree().build(mesh)
     config.set("Regularization", "factor_volume", "1.0")
     radius = rng.uniform(0.33, 0.66)
-    config.set("Regularization", "target_volume", str(np.pi * radius ** 2))
+    config.set("Regularization", "target_volume", str(np.pi * radius**2))
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
@@ -363,7 +363,7 @@ def test_shape_volume_regularization():
     min_coordinate = -np.min(mesh.coordinates())
     assert abs(max_coordinate - radius) < 5e-3
     assert abs(min_coordinate - radius) < 5e-3
-    assert 0.5 * pow(assemble(1 * dx) - np.pi * radius ** 2, 2) < 1e-10
+    assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
 
 
 def test_shape_surface_regularization():
@@ -586,7 +586,7 @@ def test_scalar_tracking_regularization():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     radius = rng.uniform(0.33, 0.66)
-    tracking_goal = np.pi * radius ** 2
+    tracking_goal = np.pi * radius**2
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
     J_tracking = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goal}
@@ -603,7 +603,7 @@ def test_scalar_tracking_regularization():
     min_coordinate = -np.min(mesh.coordinates())
     assert abs(max_coordinate - radius) < 5e-3
     assert abs(min_coordinate - radius) < 5e-3
-    assert 0.5 * pow(assemble(1 * dx) - np.pi * radius ** 2, 2) < 1e-10
+    assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
 
 
 def test_scalar_tracking_norm():

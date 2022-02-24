@@ -28,7 +28,7 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 
 
@@ -40,27 +40,28 @@ class DeformationHandler:
     """
 
     def __init__(self, mesh: fenics.Mesh) -> None:
-        """
+        """Initializes self.
+
         Args:
             mesh: The fenics mesh which is to be deformed.
-        """
 
+        """
         self.mesh = mesh
-        self.dx = measure._NamedMeasure("dx", self.mesh)
+        self.dx = measure.NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
-        self.VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
-        self.DG0 = fenics.FunctionSpace(mesh, "DG", 0)
+        self.vector_cg_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
+        self.dg_function_space = fenics.FunctionSpace(mesh, "DG", 0)
         self.bbtree = self.mesh.bounding_box_tree()
         self._setup_a_priori()
-        self.v2d = fenics.vertex_to_dof_map(self.VCG).reshape(
+        self.v2d = fenics.vertex_to_dof_map(self.vector_cg_space).reshape(
             (-1, self.mesh.geometry().dim())
         )
-        self.d2v = fenics.dof_to_vertex_map(self.VCG)
+        self.d2v = fenics.dof_to_vertex_map(self.vector_cg_space)
 
         cells = self.mesh.cells()
         flat_cells = cells.flatten().tolist()
-        self.cell_counter = collections.Counter(flat_cells)
+        self.cell_counter: collections.Counter = collections.Counter(flat_cells)
         self.occurrences = np.array(
             [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
         )
@@ -68,7 +69,6 @@ class DeformationHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-
         self.options_prior = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -79,19 +79,22 @@ class DeformationHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
+        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
-        self.transformation_container = fenics.Function(self.VCG)
+        self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
 
-        self.a_prior = (
-            fenics.TrialFunction(self.DG0) * fenics.TestFunction(self.DG0) * self.dx
+        # pylint: disable=invalid-name
+        self.A_prior = (
+            fenics.TrialFunction(self.dg_function_space)
+            * fenics.TestFunction(self.dg_function_space)
+            * self.dx
         )
-        self.L_prior = (
+        self.l_prior = (
             fenics.det(
                 fenics.Identity(dim) + fenics.grad(self.transformation_container)
             )
-            * fenics.TestFunction(self.DG0)
+            * fenics.TestFunction(self.dg_function_space)
             * self.dx
         )
 
@@ -110,19 +113,18 @@ class DeformationHandler:
 
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
-        """
 
+        """
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        # noinspection PyPep8Naming
-        x = utils._assemble_and_solve_linear(
-            self.a_prior,
-            self.L_prior,
+        x = _utils.assemble_and_solve_linear(
+            self.A_prior,
+            self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
-        min_det = np.min(x[:])
+        min_det: float = np.min(x[:])
 
         return min_det > 0
 
@@ -139,8 +141,8 @@ class DeformationHandler:
         Notes:
             fenics itself does not check whether the used mesh is a valid finite
             element mesh, so this check has to be done manually.
-        """
 
+        """
         self_intersections = False
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
@@ -160,7 +162,6 @@ class DeformationHandler:
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
         """
-
         self.mesh.coordinates()[:, :] = self.old_coordinates
         del self.old_coordinates
         self.bbtree.build(self.mesh)
@@ -187,8 +188,8 @@ class DeformationHandler:
 
         Returns:
             ``True`` if the mesh movement was successful, ``False`` otherwise.
-        """
 
+        """
         if isinstance(transformation, np.ndarray):
             if not transformation.shape == self.coordinates.shape:
                 raise _exceptions.CashocsException(
@@ -231,20 +232,10 @@ class DeformationHandler:
 
         Returns:
             The deformation vector field.
+
         """
-
-        if not (coordinate_deformation.shape == self.shape_coordinates):
-            raise _exceptions.InputError(
-                "cashocs.geometry.DeformationHandler.coordinate_to_dof",
-                "coordinate_deformation",
-                (
-                    "Shape of coordinate deformation has to be the same as "
-                    "self.mesh.coordinates().shape"
-                ),
-            )
-
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
-        dof_deformation = fenics.Function(self.VCG)
+        dof_deformation = fenics.Function(self.vector_cg_space)
         dof_deformation.vector()[:] = dof_vector
 
         return dof_deformation
@@ -257,8 +248,8 @@ class DeformationHandler:
 
         Returns:
             The array which can be used to deform the mesh coordinates.
-        """
 
+        """
         if not (
             dof_deformation.ufl_element().family() == "Lagrange"
             and dof_deformation.ufl_element().degree() == 1
@@ -269,8 +260,7 @@ class DeformationHandler:
                 "dof_deformation has to be a piecewise linear Lagrange vector field.",
             )
 
-        coordinate_deformation = dof_deformation.vector().vec()[self.v2d]
-
+        coordinate_deformation: np.ndarray = dof_deformation.vector().vec()[self.v2d]
         return coordinate_deformation
 
     def assign_coordinates(self, coordinates: np.ndarray) -> bool:
@@ -281,20 +271,8 @@ class DeformationHandler:
 
         Returns:
             ``True`` if the assignment was possible, ``False`` if not.
-        """
 
-        if not self.mesh.geometric_dimension() == coordinates.shape[1]:
-            raise _exceptions.InputError(
-                "DeformationHandler.assign_coordinates",
-                "coordinates",
-                "The dimension of coordinates is wrong.",
-            )
-        if not self.mesh.num_vertices() == coordinates.shape[0]:
-            raise _exceptions.InputError(
-                "DeformationHandler.assign_coordinates",
-                "coordinates",
-                "The number of vertices is wrong.",
-            )
+        """
         self.old_coordinates = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
@@ -348,6 +326,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     _cpp_object = fenics.compile_cpp_code(_cpp_code)
 
     def __init__(self) -> None:
+        """Initializes self."""
         pass
 
     @classmethod
@@ -358,8 +337,9 @@ PYBIND11_MODULE(SIGNATURE, m)
             mesh: A FEM mesh.
 
         Returns:
-            An array of cell indices, where array[i] contains the indices of all cells
-            that vertex i collides with.
-        """
+            An array of cell indices, where ``array[i]`` contains the indices of all
+            cells that vertex ``i`` collides with.
 
-        return cls._cpp_object.compute_collisions(mesh)
+        """
+        collisions: np.ndarray = cls._cpp_object.compute_collisions(mesh)
+        return collisions

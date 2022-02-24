@@ -19,11 +19,11 @@
 
 from __future__ import annotations
 
-from typing import Union, List, Optional, Dict
+from typing import Any, Dict, List, Optional, Union
 
 import fenics
-import ufl
 from typing_extensions import Literal
+import ufl
 
 from cashocs import _exceptions
 
@@ -45,14 +45,16 @@ class _EmptyMeasure(ufl.Measure):
             Constant(0)*u*dm
 
         so that ``fenics.assemble(u*dm)`` generates zeros.
+
     """
 
     def __init__(self, measure: fenics.Measure) -> None:
-        """
+        """Initializes self.
+
         Args:
             measure: The underlying UFL measure.
-        """
 
+        """
         super().__init__(measure.integral_type())
         self.measure = measure
 
@@ -65,8 +67,8 @@ class _EmptyMeasure(ufl.Measure):
 
         Returns:
             The resulting UFL form.
-        """
 
+        """
         return fenics.Constant(0) * other * self.measure
 
 
@@ -98,8 +100,8 @@ def generate_measure(
             mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(25)
             top_bottom_measure = cashocs.geometry.generate_measure([3,4], ds)
             fenics.assemble(1*top_bottom_measure)
-    """
 
+    """
     if len(idx) == 0:
         out_measure = _EmptyMeasure(measure)
 
@@ -112,7 +114,7 @@ def generate_measure(
     return out_measure
 
 
-class _NamedMeasure(ufl.Measure):
+class NamedMeasure(ufl.Measure):
     """A named integration measure, which can use strings for defining subdomains."""
 
     def __init__(
@@ -122,10 +124,9 @@ class _NamedMeasure(ufl.Measure):
         subdomain_id: str = "everywhere",
         metadata: Optional[Dict] = None,
         subdomain_data: Optional[fenics.MeshFunction] = None,
-        physical_groups=None,
+        physical_groups: Optional[Dict[str, Dict[str, int]]] = None,
     ) -> None:
         """See base class."""
-
         super().__init__(
             integral_type,
             domain=domain,
@@ -133,23 +134,25 @@ class _NamedMeasure(ufl.Measure):
             metadata=metadata,
             subdomain_data=subdomain_data,
         )
-        self.physical_groups = physical_groups
+        if physical_groups is None:
+            self.physical_groups = {}
+        else:
+            self.physical_groups = physical_groups
 
     def __call__(
         self,
-        subdomain_id=None,
-        metadata=None,
-        domain=None,
-        subdomain_data=None,
-        degree=None,
-        scheme=None,
-        rule=None,
-    ):
+        subdomain_id: Any = None,
+        metadata: Any = None,
+        domain: Any = None,
+        subdomain_data: Any = None,
+        degree: Any = None,
+        scheme: Any = None,
+        rule: Any = None,
+    ) -> Optional[ufl.Measure]:
         """See base class.
 
         This implementation also allows strings for subdomain id.
         """
-
         if isinstance(subdomain_id, int):
             return super().__call__(
                 subdomain_id=subdomain_id,
@@ -163,7 +166,7 @@ class _NamedMeasure(ufl.Measure):
 
         elif isinstance(subdomain_id, str):
             if (
-                subdomain_id in self.physical_groups["dx"].keys()
+                subdomain_id in self.physical_groups["dx"]
                 and self._integral_type == "cell"
             ):
                 integer_id = self.physical_groups["dx"][subdomain_id]
@@ -176,7 +179,7 @@ class _NamedMeasure(ufl.Measure):
                 integer_id = self.physical_groups["ds"][subdomain_id]
             else:
                 raise _exceptions.InputError(
-                    "cashocs.geometry.measure._NamedMeasure", "subdomain_id"
+                    "cashocs.geometry.measure.NamedMeasure", "subdomain_id"
                 )
 
             return super().__call__(
@@ -189,5 +192,9 @@ class _NamedMeasure(ufl.Measure):
                 rule=rule,
             )
 
-        elif isinstance(subdomain_id, (list, tuple)):
+        elif isinstance(subdomain_id, (list)) and all(
+            isinstance(x, int) for x in subdomain_id
+        ):
             return generate_measure(subdomain_id, self)
+
+        return None

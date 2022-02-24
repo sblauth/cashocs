@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Blauth"
+  given-names: "Sebastian"
+  orcid: "https://orcid.org/ 0000-0001-9173-0866"
+title: "cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software"
+doi: 10.5281/zenodo.4035939
+url: "https://github.com/sblauth/cashocs"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Blauth"
+    given-names: "Sebastian"
+    orcid: "https://orcid.org/ 0000-0001-9173-0866"
+  doi: "10.1016/j.softx.2020.100646"
+  journal: "SoftwareX"
+  month: 1
+  start: 1
+  end: 7
+  title: "cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software"
+  volume: 13
+  year: 2021

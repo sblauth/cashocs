@@ -25,8 +25,8 @@ import fenics
 import numpy as np
 
 if TYPE_CHECKING:
-    from cashocs import _forms
     from cashocs import _pde_problems
+    from cashocs import types
 
 
 class ReducedCostFunctional:
@@ -34,15 +34,16 @@ class ReducedCostFunctional:
 
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
+        form_handler: types.FormHandler,
         state_problem: _pde_problems.StateProblem,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object corresponding to the state system.
-        """
 
+        """
         self.form_handler = form_handler
         self.state_problem = state_problem
 
@@ -55,12 +56,11 @@ class ReducedCostFunctional:
 
         Returns:
             The value of the reduced cost functional
-        """
 
+        """
         self.state_problem.solve()
 
-        val = fenics.assemble(self.form_handler.cost_functional_form)
-
+        val: float = fenics.assemble(self.form_handler.cost_functional_form)
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(

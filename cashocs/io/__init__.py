@@ -18,7 +18,8 @@
 """Module for inputs and outputs."""
 
 from cashocs.io.config import Config
-from cashocs.io.config import load_config, create_config
+from cashocs.io.config import create_config
+from cashocs.io.config import load_config
 from cashocs.io.mesh import write_out_mesh
 from cashocs.io.output import OutputManager
 

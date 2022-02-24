@@ -4,13 +4,15 @@ Created on 04/02/2022, 13.31
 @author: blauths
 """
 
-from fenics import *
-import cashocs
-import cashocs.space_mapping.shape_optimization as sosm
-import cashocs._cli
-import numpy as np
-import subprocess
 import os
+import subprocess
+
+from fenics import *
+import numpy as np
+
+import cashocs
+import cashocs._cli
+import cashocs.space_mapping.shape_optimization as sosm
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

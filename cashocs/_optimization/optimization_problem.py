@@ -25,25 +25,26 @@ optimization problems.
 from __future__ import annotations
 
 import abc
-import configparser
 import copy
 import json
-from typing import Dict, List, Union, Optional, Callable, TYPE_CHECKING
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl
 
 from cashocs import _exceptions
-from cashocs import _forms
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import io
-from cashocs import utils
 
 if TYPE_CHECKING:
-    from cashocs._optimization.optimization_variable_abstractions import (
-        OptimizationVariableAbstractions,
-    )
+    from cashocs import _pde_problems
+    from cashocs import types
+    from cashocs._optimization import cost_functional
+    from cashocs._optimization import line_search as ls
+    from cashocs._optimization import optimization_algorithms
+    from cashocs._optimization import optimization_variable_abstractions as ova
 
 
 class OptimizationProblem(abc.ABC):
@@ -56,26 +57,45 @@ class OptimizationProblem(abc.ABC):
     optimization problems.
     """
 
+    gradient: List[fenics.Function]
+    reduced_cost_functional: cost_functional.ReducedCostFunctional
+    gradient_problem: types.GradientProblem
+    output_manager: io.OutputManager
+    form_handler: types.FormHandler
+    optimization_variable_abstractions: ova.OptimizationVariableAbstractions
+    adjoint_problem: _pde_problems.AdjointProblem
+    state_problem: _pde_problems.StateProblem
+    uses_custom_scalar_product: bool = False
+    temp_dict: Optional[Dict]
+    algorithm: str
+    line_search: ls.LineSearch
+    hessian_problem: _pde_problems.HessianProblem
+    solver: optimization_algorithms.OptimizationAlgorithm
+    config: io.Config
+
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
+        config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[List[List[str]], List[List[List[str]]]]
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
-        r"""
+        r"""Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -126,20 +146,19 @@ class OptimizationProblem(abc.ABC):
             ``state_forms[i]`` is the weak form of the PDE for ``states[i]`` with
             boundary conditions ``bcs_list[i]`` and corresponding adjoint state
             ``adjoints[i]``.
+
         """
+        self.has_cashocs_remesh_flag, self.temp_dir = _utils.parse_remesh()
 
-        self.has_cashocs_remesh_flag, self.temp_dir = utils._parse_remesh()
-
-        self.state_forms = utils.enlist(state_forms)
+        self.state_forms = _utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)
-        self.bcs_list = utils._check_and_enlist_bcs(bcs_list)
+        self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-        self.cost_functional_list = utils.enlist(cost_functional_form)
-        self.cost_functional_form = utils.summation(self.cost_functional_list)
+        self.cost_functional_list = _utils.enlist(cost_functional_form)
+        self.cost_functional_form = _utils.summation(self.cost_functional_list)
 
-        self.states = utils.enlist(states)
-        self.adjoints = utils.enlist(adjoints)
-        self.gradient = None
+        self.states = _utils.enlist(states)
+        self.adjoints = _utils.enlist(adjoints)
 
         self.use_scalar_tracking = False
         self.use_min_max_terms = False
@@ -155,55 +174,81 @@ class OptimizationProblem(abc.ABC):
             desired_weights,
         )
 
-        self._check_length_of_variables()
-
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
-        self.state_problem = None
-        self.adjoint_problem = None
-        self.gradient_problem = None
-        self.temp_dict = None
-
-        self.algorithm = None
-        self.line_search = None
-        self.hessian_problem = None
-        self.solver = None
-
-        self.form_handler: Optional[_forms.FormHandler] = None
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
-        self.reduced_cost_functional = None
-        self.output_manager: Optional[io.OutputManager] = None
-        self.uses_custom_scalar_product = False
 
-        self.optimization_variable_abstractions: Optional[
-            OptimizationVariableAbstractions
-        ] = None
-        self.is_shape_problem = False
-        self.is_control_problem = False
+        self._is_shape_problem = False
+        self._is_control_problem = False
+
+    @property
+    def is_shape_problem(self) -> bool:
+        """Returns a boolean flag, ``True`` if self is a shape optimization problem."""
+        return self._is_shape_problem
+
+    @is_shape_problem.setter
+    def is_shape_problem(self, value: bool) -> None:
+        """Setter method for is_shape_problem."""
+        self._is_shape_problem = value
+        self._is_control_problem = not value
+
+    @property
+    def is_control_problem(self) -> bool:
+        """Returns a boolean flag, ``True`` if self is an optimal control problem."""
+        return self._is_control_problem
+
+    @is_control_problem.setter
+    def is_control_problem(self, value: bool) -> None:
+        """Setter method for is_control_problem."""
+        self._is_shape_problem = not value
+        self._is_control_problem = value
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:
         """Ensures that the PDEs are solved again, and no cache is used."""
-
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
 
     def _parse_optional_inputs(
         self,
-        config: configparser.ConfigParser,
-        initial_guess: List[fenics.Function],
-        ksp_options: Union[List[List[str]], List[List[List[str]]]],
-        adjoint_ksp_options: Union[List[List[str]], List[List[List[str]]]],
-        scalar_tracking_forms: Dict,
-        min_max_terms: Dict,
-        desired_weights: List[float],
+        config: Optional[io.Config],
+        initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ],
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ],
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]],
+        min_max_terms: Optional[Union[List[Dict], Dict]],
+        desired_weights: Optional[Union[List[float], float]],
     ) -> None:
+        """Initializes the optional input parameters.
 
+        Args:
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems.
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems.
+            scalar_tracking_forms: A list of dictionaries that define scalar tracking
+                type cost functionals, where an integral value should be brought to a
+                desired value. Each dict needs to have the keys ``'integrand'`` and
+                ``'tracking_goal'``.
+            min_max_terms: Additional terms for the cost functional, not be used
+                directly.
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration.
+
+        """
         if config is None:
             self.config = io.Config()
-            self.config.add_section("OptimizationRoutine")
-            self.config.set("OptimizationRoutine", "algorithm", "none")
         else:
             self.config = copy.deepcopy(config)
 
@@ -212,7 +257,7 @@ class OptimizationProblem(abc.ABC):
         if initial_guess is None:
             self.initial_guess = initial_guess
         else:
-            self.initial_guess = utils.enlist(initial_guess)
+            self.initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
             self.ksp_options = []
@@ -223,33 +268,33 @@ class OptimizationProblem(abc.ABC):
                 ["mat_mumps_icntl_24", 1],
             ]
 
-            for i in range(self.state_dim):
+            for _ in range(self.state_dim):
                 self.ksp_options.append(option)
         else:
-            self.ksp_options = utils._check_and_enlist_ksp_options(ksp_options)
+            self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
         self.adjoint_ksp_options = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
-            else utils._check_and_enlist_ksp_options(adjoint_ksp_options)
+            else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
         if scalar_tracking_forms is None:
             self.scalar_tracking_forms = scalar_tracking_forms
         else:
-            self.scalar_tracking_forms = utils.enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms = _utils.enlist(scalar_tracking_forms)
             self.use_scalar_tracking = True
 
         if min_max_terms is None:
             self.min_max_terms = min_max_terms
         else:
             self.use_min_max_terms = True
-            self.min_max_terms = utils.enlist(min_max_terms)
+            self.min_max_terms = _utils.enlist(min_max_terms)
 
         if desired_weights is None:
             self.desired_weights = desired_weights
         else:
-            self.desired_weights = utils.enlist(desired_weights)
+            self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
             if scalar_tracking_forms is not None and not isinstance(
@@ -264,65 +309,12 @@ class OptimizationProblem(abc.ABC):
                     ),
                 )
 
-    def _check_length_of_variables(self) -> None:
-
-        if not len(self.bcs_list) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "bcs_list",
-                "Length of states does not match.",
-            )
-        if not len(self.adjoints) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "adjoints",
-                "Length of states does not match.",
-            )
-
-        if self.initial_guess is not None:
-            if not len(self.initial_guess) == self.state_dim:
-                raise _exceptions.InputError(
-                    "cashocs.optimization_problem.OptimizationProblem",
-                    "initial_guess",
-                    "Length of states does not match.",
-                )
-
-        if not len(self.ksp_options) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "ksp_options",
-                "Length of states does not match.",
-            )
-        if not len(self.adjoint_ksp_options) == self.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem",
-                "ksp_options",
-                "Length of states does not match.",
-            )
-
-        if self.desired_weights is not None:
-            len_scalar_tracking = (
-                0 if not self.use_scalar_tracking else len(self.scalar_tracking_forms)
-            )
-            desired_length = len(self.cost_functional_list) + len_scalar_tracking
-
-            if not len(self.desired_weights) == desired_length:
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimization_problem."
-                        "OptimizationProblem"
-                    ),
-                    "desired_weights",
-                    "length of desired_weights does not fit",
-                )
-
     def compute_state_variables(self) -> None:
         """Solves the state system.
 
         This can be used for debugging purposes and to validate the solver.
         Updates and overwrites the user input for the state variables.
         """
-
         self.state_problem.solve()
 
     def compute_adjoint_variables(self) -> None:
@@ -330,10 +322,9 @@ class OptimizationProblem(abc.ABC):
 
         This can be used for debugging purposes and solver validation.
         Updates / overwrites the user input for the adjoint variables.
-        The solve of the corresponding state system needed to determine
+        The solution of the corresponding state system needed to determine
         the adjoints is carried out automatically.
         """
-
         self.state_problem.solve()
         self.adjoint_problem.solve()
 
@@ -353,57 +344,16 @@ class OptimizationProblem(abc.ABC):
             adjoint_forms: The UFL forms of the adjoint system(s).
             adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint
                 system(s).
-        """
 
-        mod_forms = utils.enlist(adjoint_forms)
+        """
+        mod_forms = _utils.enlist(adjoint_forms)
 
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
             for i in range(self.state_dim):
                 mod_bcs_list.append([])
         else:
-            mod_bcs_list = utils._check_and_enlist_bcs(adjoint_bcs_list)
-
-        if not len(mod_forms) == self.form_handler.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
-                "adjoint_forms",
-                "Length of adjoint_forms does not match",
-            )
-        if not len(mod_bcs_list) == self.form_handler.state_dim:
-            raise _exceptions.InputError(
-                "cashocs.optimization_problem.OptimizationProblem.supply_adjoint_forms",
-                "adjoint_bcs_list",
-                "Length of adjoint_bcs_list does not match",
-            )
-
-        for idx, form in enumerate(mod_forms):
-            if len(form.arguments()) == 2:
-                raise _exceptions.InputError(
-                    "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    (
-                        "Do not use TrialFunction for the adjoints, but "
-                        "the actual Function you passed to th OptimalControlProblem."
-                    ),
-                )
-            elif len(form.arguments()) == 0:
-                raise _exceptions.InputError(
-                    "cashocs.ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    "The specified adjoint_forms must include a TestFunction object.",
-                )
-
-            if (
-                not form.arguments()[0].ufl_function_space()
-                == self.form_handler.adjoint_spaces[idx]
-            ):
-                raise _exceptions.InputError(
-                    "cashocs..ShapeOptimizationProblem.supply_adjoint_forms",
-                    "adjoint_forms",
-                    "The TestFunction has to be chosen from the "
-                    "same space as the corresponding adjoint.",
-                )
+            mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)
 
         self.form_handler.bcs_list_ad = mod_bcs_list
 
@@ -421,13 +371,12 @@ class OptimizationProblem(abc.ABC):
         (
             self.form_handler.adjoint_eq_lhs,
             self.form_handler.adjoint_eq_rhs,
-        ) = utils._split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
+        ) = _utils.split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
 
         self.has_custom_adjoint = True
 
     def _check_for_custom_forms(self) -> None:
         """Checks, whether custom user forms are used and if they are compatible."""
-
         if self.has_custom_adjoint and not self.has_custom_derivative:
             _loggers.warning(
                 "You only supplied the adjoint system. "
@@ -445,7 +394,7 @@ class OptimizationProblem(abc.ABC):
                 "or check your approach with the cashocs.verification module."
             )
 
-        if self.algorithm == "newton" and (
+        if self.algorithm.casefold() == "newton" and (
             self.has_custom_adjoint or self.has_custom_derivative
         ):
             raise _exceptions.InputError(
@@ -462,9 +411,9 @@ class OptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
-        """
 
-        self.form_handler._pre_hook = function
+        """
+        self.form_handler.pre_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
@@ -475,9 +424,9 @@ class OptimizationProblem(abc.ABC):
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
-        """
 
-        self.form_handler._post_hook = function
+        """
+        self.form_handler.post_hook = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
@@ -485,15 +434,15 @@ class OptimizationProblem(abc.ABC):
     def inject_pre_post_hook(
         self, pre_function: Callable, post_function: Callable
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook
+        """Changes the a-priori (pre) and a-posteriori (post) hook.
 
         Args:
             pre_function: A function without arguments, which is to be called before
                 each solve of the state system
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
-        """
 
+        """
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
@@ -529,7 +478,7 @@ class OptimizationProblem(abc.ABC):
                 taken. Default is ``None``.
 
         Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the solve
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
 
             - a purely relative one (if only ``rtol`` is specified), i.e.,
@@ -546,9 +495,9 @@ class OptimizationProblem(abc.ABC):
 
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
-        """
 
-        self.algorithm = utils._optimization_algorithm_configuration(
+        """
+        self.algorithm = _utils.optimization_algorithm_configuration(
             self.config, algorithm
         )
 
@@ -568,13 +517,13 @@ class OptimizationProblem(abc.ABC):
         self._check_for_custom_forms()
         self.output_manager = io.OutputManager(self)
 
-    def _shift_cost_functional(self, shift: float = 0.0) -> None:
+    def shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.
 
         Args:
             shift: The constant, by which the cost functional is shifted.
-        """
 
+        """
         self.form_handler.cost_functional_shift = shift
 
     @abc.abstractmethod
@@ -584,11 +533,12 @@ class OptimizationProblem(abc.ABC):
         Returns:
             The result of the gradient test. If this is (approximately) 2 or larger,
             everything works as expected.
-        """
 
+        """
         pass
 
     def _compute_initial_function_values(self) -> None:
+        """Computes the cost functional values for the initial iteration."""
         self.state_problem.solve()
         self.initial_function_values = []
         for i in range(len(self.cost_functional_list)):
@@ -628,7 +578,6 @@ class OptimizationProblem(abc.ABC):
 
     def _scale_cost_functional(self):
         """Scales the terms of the cost functional and scalar_tracking forms."""
-
         _loggers.info(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "
@@ -639,7 +588,7 @@ class OptimizationProblem(abc.ABC):
             self._compute_initial_function_values()
 
         else:
-            with open(f"{self.temp_dir}/temp_dict.json", "r") as file:
+            with open(f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
                 temp_dict = json.load(file)
             self.initial_function_values = temp_dict["initial_function_values"]
             if self.use_scalar_tracking:

@@ -23,8 +23,6 @@ from fenics import *
 
 import cashocs
 
-
-
 config = cashocs.load_config("./config.ini")
 
 meshlevel = 15

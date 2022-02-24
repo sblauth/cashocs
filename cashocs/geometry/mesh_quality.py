@@ -21,20 +21,17 @@ from __future__ import annotations
 
 import fenics
 import numpy as np
-import ufl
 from petsc4py import PETSc
-from typing_extensions import Literal
+import ufl
 
-from cashocs import utils
+from cashocs import _utils
 from cashocs.geometry import measure
 
 
 def compute_mesh_quality(
     mesh: fenics.Mesh,
-    quality_type: Literal["min", "minimum", "avg", "average"] = "min",
-    quality_measure: Literal[
-        "skewness", "maximum_angle", "radius_ratios", "condition_number"
-    ] = "skewness",
+    quality_type: str = "min",
+    quality_measure: str = "skewness",
 ) -> float:
     """This computes the mesh quality of a given mesh.
 
@@ -48,8 +45,8 @@ def compute_mesh_quality(
     Returns:
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
         and 1 the best possible quality.
-    """
 
+    """
     min_functions = {
         "skewness": MeshQuality.min_skewness,
         "maximum_angle": MeshQuality.min_maximum_angle,
@@ -96,6 +93,7 @@ class MeshQuality:
             avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
 
         This works analogously for any mesh compatible with FEniCS.
+
     """
 
     _cpp_code_mesh_quality = """
@@ -272,6 +270,7 @@ PYBIND11_MODULE(SIGNATURE, m)
     _quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
 
     def __init__(self) -> None:
+        """Initializes self."""
         pass
 
     @classmethod
@@ -301,9 +300,10 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The minimum skewness of the mesh.
-        """
 
-        return np.min(cls._quality_object.skewness(mesh).array())
+        """
+        quality: float = np.min(cls._quality_object.skewness(mesh).array())
+        return quality
 
     @classmethod
     def avg_skewness(cls, mesh: fenics.Mesh) -> float:
@@ -332,9 +332,10 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The average skewness of the mesh.
-        """
 
-        return np.average(cls._quality_object.skewness(mesh).array())
+        """
+        quality: float = np.average(cls._quality_object.skewness(mesh).array())
+        return quality
 
     @classmethod
     def min_maximum_angle(cls, mesh: fenics.Mesh) -> float:
@@ -357,9 +358,10 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The minimum value of the maximum angle quality measure.
-        """
 
-        return np.min(cls._quality_object.maximum_angle(mesh).array())
+        """
+        quality: float = np.min(cls._quality_object.maximum_angle(mesh).array())
+        return quality
 
     @classmethod
     def avg_maximum_angle(cls, mesh: fenics.Mesh) -> float:
@@ -382,15 +384,16 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The average quality, based on the maximum angle measure.
+
         """
+        quality: float = np.average(cls._quality_object.maximum_angle(mesh).array())
+        return quality
 
-        return np.average(cls._quality_object.maximum_angle(mesh).array())
-
-    @staticmethod
-    def min_radius_ratios(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def min_radius_ratios(cls, mesh: fenics.Mesh) -> float:
         r"""Computes the minimal radius ratio of the mesh.
 
-        This measures the ratio of the element's inradius to it's circumradius,
+        This measures the ratio of the element's inradius to its circumradius,
         normalized by the geometric dimension. This is computed via
 
         .. math:: d \frac{r}{R},
@@ -404,16 +407,17 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The minimal radius ratio of the mesh.
+
         """
-
         # noinspection PyArgumentList
-        return np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+        quality: float = np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+        return quality
 
-    @staticmethod
-    def avg_radius_ratios(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def avg_radius_ratios(cls, mesh: fenics.Mesh) -> float:
         r"""Computes the average radius ratio of the mesh.
 
-        This measures the ratio of the element's inradius to it's circumradius,
+        This measures the ratio of the element's inradius to its circumradius,
         normalized by the geometric dimension. This is computed via
 
         .. math:: d \frac{r}{R},
@@ -427,13 +431,14 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The average radius ratio of the mesh.
+
         """
-
         # noinspection PyArgumentList
-        return np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+        quality: float = np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+        return quality
 
-    @staticmethod
-    def min_condition_number(mesh: fenics.Mesh) -> float:
+    @classmethod
+    def min_condition_number(cls, mesh: fenics.Mesh) -> float:
         r"""Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
@@ -445,8 +450,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The minimal condition number quality measure.
-        """
 
+        """
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
@@ -461,9 +466,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         ]
         # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
-        utils._setup_petsc_options([ksp], [options])
+        _utils.setup_petsc_options([ksp], [options])
 
-        dx = measure._NamedMeasure("dx", mesh)
+        dx = measure.NamedMeasure("dx", mesh)
         lhs = (
             fenics.TrialFunction(function_space_dg0)
             * fenics.TestFunction(function_space_dg0)
@@ -478,18 +483,18 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        # noinspection PyPep8Naming
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
         )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
 
-        return cond.vector().vec().min()[1]
+        quality: float = cond.vector().vec().min()[1]
+        return quality
 
-    @staticmethod
-    def avg_condition_number(mesh):
+    @classmethod
+    def avg_condition_number(cls, mesh: fenics.Mesh) -> float:
         """Computes quality based on the condition number of the reference mapping.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
@@ -501,8 +506,8 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         Returns:
             The average mesh quality based on the condition number.
-        """
 
+        """
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
@@ -517,9 +522,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         ]
         # noinspection PyUnresolvedReferences
         ksp = PETSc.KSP().create()
-        utils._setup_petsc_options([ksp], [options])
+        _utils.setup_petsc_options([ksp], [options])
 
-        dx = measure._NamedMeasure("dx", mesh)
+        dx = measure.NamedMeasure("dx", mesh)
         lhs = (
             fenics.TrialFunction(function_space_dg0)
             * fenics.TestFunction(function_space_dg0)
@@ -534,7 +539,7 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         cond = fenics.Function(function_space_dg0)
 
-        utils._assemble_and_solve_linear(
+        _utils.assemble_and_solve_linear(
             lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
         )
         cond.vector().apply("")
@@ -542,4 +547,5 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().vec().reciprocal()
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
 
-        return cond.vector().vec().sum() / cond.vector().vec().getSize()
+        quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
+        return quality

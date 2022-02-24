@@ -21,13 +21,13 @@
 
 import os
 
+from fenics import *
 import numpy as np
 import pytest
-from fenics import *
 
 import cashocs
-from cashocs._exceptions import InputError, NotConvergedError
-
+from cashocs._exceptions import InputError
+from cashocs._exceptions import NotConvergedError
 
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -521,8 +521,8 @@ def test_hooks():
     grad.vector()[:] = ocp.compute_gradient()[0].vector()[:]
 
     ocp.inject_pre_post_hook(pre_function, post_function)
-    assert ocp.form_handler._pre_hook == pre_function
-    assert ocp.form_handler._post_hook == post_function
+    assert ocp.form_handler.pre_hook == pre_function
+    assert ocp.form_handler.post_hook == post_function
 
     ocp.compute_state_variables()
     assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15
@@ -688,3 +688,18 @@ def test_small_stepsize1():
     with pytest.raises(NotConvergedError) as e_info:
         ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=2)
     assert "Armijo rule failed." in str(e_info.value)
+
+
+def test_control_bcs():
+    u.vector()[:] = 0.0
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    value = rng.rand()
+    control_bcs_list = cashocs.create_bcs_list(
+        V, Constant(value), boundaries, [1, 2, 3, 4]
+    )
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config, control_bcs_list=control_bcs_list
+    )
+    ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=9)
+    assert np.sqrt(assemble(pow(u - value, 2) * ds)) < 1e-15
+    assert ocp.solver.relative_norm <= ocp.solver.rtol

@@ -17,5 +17,5 @@
 
 """The space_mapping module contains utilities for using the space mapping technique."""
 
-from cashocs.space_mapping import optimal_control
-from cashocs.space_mapping import shape_optimization
+from cashocs.space_mapping import optimal_control  # noqa: F401
+from cashocs.space_mapping import shape_optimization  # noqa: F401

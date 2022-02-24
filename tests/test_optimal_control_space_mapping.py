@@ -5,12 +5,12 @@ Created on 13/08/2021, 09.06
 """
 
 import os
-import cashocs
-import cashocs.space_mapping.optimal_control as ocsm
-import numpy as np
 
 from fenics import *
+import numpy as np
 
+import cashocs
+import cashocs.space_mapping.optimal_control as ocsm
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

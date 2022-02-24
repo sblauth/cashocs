@@ -20,26 +20,27 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List
+from typing import List, TYPE_CHECKING
 
 import fenics
 
-from cashocs import utils
+from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import types
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
-        """
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         self.config = optimization_problem.config
         self.form_handler = optimization_problem.form_handler
         self.gradient = optimization_problem.gradient
@@ -52,14 +53,12 @@ class LineSearch(abc.ABC):
         self.is_shape_problem = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
-        self.stepsize = self.config.getfloat(
-            "OptimizationRoutine", "initial_stepsize", fallback=1.0
-        )
+        self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
 
-        algorithm = utils._optimization_algorithm_configuration(self.config)
-        self.is_newton_like = algorithm == "lbfgs"
-        self.is_newton = algorithm == "newton"
-        self.is_steepest_descent = algorithm == "gradient_descent"
+        algorithm = _utils.optimization_algorithm_configuration(self.config)
+        self.is_newton_like = algorithm.casefold() == "lbfgs"
+        self.is_newton = algorithm.casefold() == "newton"
+        self.is_steepest_descent = algorithm.casefold() == "gradient_descent"
         if self.is_newton:
             self.stepsize = 1.0
 
@@ -73,15 +72,16 @@ class LineSearch(abc.ABC):
 
         Notes:
             This is the function that should be called in the optimization algorithm,
-            it consists of a call to self.search and self.post_line_search afterwards.
+            it consists of a call to ``self.search`` and ``self.post_line_search``
+            afterwards.
 
         Args:
             solver: The optimization algorithm.
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
-        """
 
+        """
         self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
 
@@ -96,11 +96,10 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
-        """
 
+        """
         pass
 
     def post_line_search(self) -> None:
         """Performs tasks after the line search was successful."""
-
         self.form_handler.update_scalar_product()

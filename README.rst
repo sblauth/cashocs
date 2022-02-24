@@ -24,7 +24,7 @@
 |
 
 .. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=tests
-    :target: https://github.com/sblauth/cashocs/actions/workflows/ci.yml
+    :target: https://github.com/sblauth/cashocs/actions/workflows/cached_tests.yml
 
 .. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen
     :target: https://codecov.io/gh/sblauth/cashocs

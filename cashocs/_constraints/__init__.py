@@ -17,11 +17,12 @@
 
 """Module for treatment of additional (in-)equality constraints for optimization."""
 
+from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
-    ConstrainedOptimalControlProblem,
     ConstrainedShapeOptimizationProblem,
 )
-from cashocs._constraints.constraints import EqualityConstraint, InequalityConstraint
+from cashocs._constraints.constraints import EqualityConstraint
+from cashocs._constraints.constraints import InequalityConstraint
 
 __all__ = [
     "ConstrainedOptimalControlProblem",

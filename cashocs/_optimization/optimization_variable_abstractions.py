@@ -24,27 +24,29 @@ the same optimization algorithms can be used for different types of problems.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
     from cashocs import geometry
+    from cashocs import types
 
 
 class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
-        """
+    mesh_handler: geometry._MeshHandler  # pylint: disable=protected-access
+
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
-        self.mesh_handler: Optional[geometry._MeshHandler] = None
 
     @abc.abstractmethod
     def compute_decrease_measure(
@@ -57,19 +59,18 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The decrease measure for the Armijo test.
-        """
 
+        """
         pass
 
     @abc.abstractmethod
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
-
         pass
 
     @abc.abstractmethod
     def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
+        self, search_direction: List[fenics.Function], stepsize: float, beta: float
     ) -> float:
         """Updates the optimization variables based on a line search.
 
@@ -81,8 +82,8 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The stepsize which was found to be acceptable.
-        """
 
+        """
         pass
 
     @abc.abstractmethod
@@ -91,8 +92,8 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The norm of the gradient.
-        """
 
+        """
         pass
 
     @abc.abstractmethod
@@ -107,8 +108,8 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             The number of times the stepsize has to be "halved" before the actual trial.
-        """
 
+        """
         pass
 
     @abc.abstractmethod
@@ -117,8 +118,8 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Returns:
             A boolean, which indicates whether remeshing is required.
-        """
 
+        """
         pass
 
     @abc.abstractmethod
@@ -129,6 +130,6 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         Args:
             search_direction: The current search direction (will be overwritten).
-        """
 
+        """
         pass

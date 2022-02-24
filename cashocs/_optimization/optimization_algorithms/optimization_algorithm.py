@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
 
@@ -28,18 +28,21 @@ from cashocs import _exceptions
 from cashocs import _loggers
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_problem as op
+    from cashocs import types
 
 
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
-        """
+    stepsize: float = 1.0
+
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+        """Initializes self.
+
         Args:
             optimization_problem: The corresponding optimization problem.
-        """
 
+        """
         self.line_search_broken = False
         self.has_curvature_info = False
 
@@ -52,7 +55,8 @@ class OptimizationAlgorithm(abc.ABC):
         self.cost_functional = optimization_problem.reduced_cost_functional
         self.gradient = optimization_problem.gradient
         self.search_direction = [
-            fenics.Function(V) for V in self.form_handler.control_spaces
+            fenics.Function(function_space)
+            for function_space in self.form_handler.control_spaces
         ]
 
         self.optimization_variable_abstractions = (
@@ -64,7 +68,6 @@ class OptimizationAlgorithm(abc.ABC):
         self.objective_value = 1.0
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
-        self.stepsize = 1.0
 
         self.require_control_constraints = False
 
@@ -74,17 +77,15 @@ class OptimizationAlgorithm(abc.ABC):
         self.converged = False
         self.converged_reason = 0
 
-        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol", fallback=1e-3)
-        self.atol = self.config.getfloat("OptimizationRoutine", "atol", fallback=0.0)
+        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
+        self.atol = self.config.getfloat("OptimizationRoutine", "atol")
         self.maximum_iterations = self.config.getint(
-            "OptimizationRoutine", "maximum_iterations", fallback=100
+            "OptimizationRoutine", "maximum_iterations"
         )
-        self.soft_exit = self.config.getboolean(
-            "OptimizationRoutine", "soft_exit", fallback=False
-        )
+        self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
         if optimization_problem.is_shape_problem:
-            self.temp_dict = optimization_problem.temp_dict
+            self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
         else:
             self.temp_dict = None
 
@@ -93,7 +94,6 @@ class OptimizationAlgorithm(abc.ABC):
     @abc.abstractmethod
     def run(self) -> None:
         """Solves the optimization problem."""
-
         pass
 
     def compute_gradient_norm(self) -> float:
@@ -101,18 +101,16 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             The computed gradient norm.
-        """
 
+        """
         return self.optimization_variable_abstractions.compute_gradient_norm()
 
     def output(self) -> None:
-        """Writes the output (to console and files)."""
-
+        """Writes the output to console and files."""
         self.output_manager.output(self)
 
     def output_summary(self) -> None:
         """Writes the summary of the optimization (to files and console)."""
-
         self.output_manager.output_summary(self)
 
     def nonconvergence(self) -> bool:
@@ -120,8 +118,8 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             A flag which is True, when the algorithm did not converge
-        """
 
+        """
         if self.iteration >= self.maximum_iterations:
             self.converged_reason = -1
         if self.line_search_broken:
@@ -131,21 +129,22 @@ class OptimizationAlgorithm(abc.ABC):
         if self.remeshing_its:
             self.converged_reason = -4
 
-        if self.converged_reason < 0:
-            return True
-        else:
-            return False
+        return bool(self.converged_reason < 0)
 
     def _exit(self, message: str) -> None:
+        """Exits the optimization algorithm and prints message.
 
+        Args:
+            message: The message that should be printed on exit.
+
+        """
         if self.soft_exit:
             print(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
     def post_processing(self) -> None:
-        """Does a post processing after the optimization algorithm terminates."""
-
+        """Does a post-processing after the optimization algorithm terminates."""
         if self.converged:
             self.output()
             self.output_summary()
@@ -186,8 +185,8 @@ class OptimizationAlgorithm(abc.ABC):
 
         Returns:
             A flag, which is True if the algorithm converged.
-        """
 
+        """
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
         try:
@@ -204,7 +203,6 @@ class OptimizationAlgorithm(abc.ABC):
 
     def compute_gradient(self) -> None:
         """Computes the gradient of the reduced cost functional."""
-
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
         self.gradient_problem.solve()
@@ -214,7 +212,6 @@ class OptimizationAlgorithm(abc.ABC):
 
         Reverts the direction to the negative gradient if an ascent direction is found.
         """
-
         directional_derivative = self.form_handler.scalar_product(
             self.gradient, self.search_direction
         )
@@ -228,7 +225,6 @@ class OptimizationAlgorithm(abc.ABC):
 
     def initialize_solver(self) -> None:
         """Initializes the solver."""
-
         self.converged = False
 
         try:

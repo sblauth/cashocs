@@ -1,0 +1,75 @@
+output-format: grouped
+
+inherits:
+  - strictness_veryhigh
+strictness: veryhigh
+test-warnings: true
+doc-warnings: true
+member-warnings: true
+ignore-paths:
+  - docs
+ignore-patterns:
+  - (^|/)skip(this)?(/|$)
+autodetect: true
+max-line-length: 88
+
+bandit:
+  run: true
+
+dodgy:
+  run: true
+
+frosted:
+  run: false
+
+mccabe:
+  run: true
+  options:
+    max-complexity: 10
+
+pep8:
+  run: true
+  options:
+    max-line-length: 88
+  disable:
+    - N803
+    - N806
+
+pep257:
+  run: true
+  disable:
+    - D203
+    - D204
+    - D213
+    - D215
+    - D400
+    - D401
+    - D404
+    - D406
+    - D407
+    - D408
+    - D409
+
+pyflakes:
+  run: true
+
+pylint:
+  run: true
+  options:
+    max-line-length: 88
+
+pyroma:
+  run: true
+
+mypy:
+  run: false
+  options:
+    disallow-untyped-defs: true
+    ignore-missing-imports: true
+    no-implicit-optional: true
+    check-untyped-defs: true
+    warn-return-any: true
+    follow-imports: skip
+
+vulture:
+  run: false

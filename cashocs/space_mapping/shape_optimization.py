@@ -20,34 +20,41 @@
 from __future__ import annotations
 
 import abc
-import configparser
-
-from typing import Union, List, Dict, Optional
-
-from typing_extensions import Literal
-
-import numpy as np
-import fenics
-import ufl
 import collections
+import configparser
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
-from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
+import fenics
+import numpy as np
+from typing_extensions import Literal
+import ufl
+
 from cashocs import _exceptions
-from cashocs import utils
+from cashocs import _utils
 from cashocs import geometry
+from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
+
+if TYPE_CHECKING:
+    from cashocs import io
 
 
-class ParentFineModel(abc.ABC):
-    """Base class for the fine model in shape optimization.
+class FineModel(abc.ABC):
+    """Base class for the fine model in space mapping shape optimization.
 
     Attributes:
         mesh: The FEM mesh for the fine model.
         cost_functional_value: The current cost functional value of the fine model.
+
     """
 
-    def __init__(self, mesh):
-        """Initializes self."""
+    def __init__(self, mesh: fenics.Mesh):
+        """Initializes self.
 
+        Args:
+            mesh: The finite element mesh of the coarse model, used for the space
+                mapping with the fine model.
+
+        """
         self.mesh = fenics.Mesh(mesh)
         self.cost_functional_value = None
 
@@ -56,12 +63,14 @@ class ParentFineModel(abc.ABC):
         """Solves and evaluates the fine model.
 
         This needs to be overwritten with a custom implementation.
-        """
 
+        """
         pass
 
 
 class CoarseModel:
+    """Coarse Model for space mapping shape optimization."""
+
     def __init__(
         self,
         state_forms: Union[ufl.Form, List[ufl.Form]],
@@ -75,7 +84,7 @@ class CoarseModel:
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[List[List[List[str]]]] = None,
@@ -84,7 +93,25 @@ class CoarseModel:
         min_max_terms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
     ):
+        """Initializes self.
 
+        Args:
+            state_forms: The list of weak forms for the coare state problem
+            bcs_list: The list of boundary conditions for the coarse problem
+            cost_functional_form: The cost functional for the coarse problem
+            states: The state variables for the coarse problem
+            adjoints: The adjoint variables for the coarse problem
+            boundaries: A fenics MeshFunction which marks the boundaries.
+            config: The configuration for the problem
+            shape_scalar_product: The scalar product for the shape optimization problem
+            initial_guess: The initial guess for solving a nonlinear state equation
+            ksp_options: The list of PETSc options for the state equations
+            adjoint_ksp_options: The list of PETSc options for the adjoint equations
+            scalar_tracking_forms: The list of scalar tracking forms
+            min_max_terms: The list of min and max terms (squared)
+            desired_weights: The desired weights for the cost functional
+
+        """
         self.state_forms = state_forms
         self.bcs_list = bcs_list
         self.cost_functional_form = cost_functional_form
@@ -123,12 +150,14 @@ class CoarseModel:
         )
 
     def optimize(self) -> None:
-
+        """Solves the coarse model optimization problem."""
         self.shape_optimization_problem.solve()
         self.coordinates_optimal = self.mesh.coordinates().copy()
 
 
 class ParameterExtraction:
+    """Parameter extraction for space mapping shape optimization."""
+
     def __init__(
         self,
         coarse_model: CoarseModel,
@@ -138,12 +167,23 @@ class ParameterExtraction:
         scalar_tracking_forms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
+        """Initializes self.
 
+        Args:
+            coarse_model: The coarse model optimization problem
+            cost_functional_form: The cost functional for the parameter extraction
+            states: The state variables for the parameter extraction
+            config: The configuration for the parameter extraction
+            scalar_tracking_forms: The scalar tracking forms for the parameter
+                extraction
+            desired_weights: The list of desired weights for the parameter extraction
+
+        """
         self.coarse_model = coarse_model
         self.mesh = coarse_model.mesh
         self.cost_functional_form = cost_functional_form
 
-        self.states = utils.enlist(states)
+        self.states = _utils.enlist(states)
 
         self.config = config
         self.scalar_tracking_forms = scalar_tracking_forms
@@ -187,7 +227,12 @@ class ParameterExtraction:
         self.shape_optimization_problem = None
 
     def _solve(self, initial_guess: np.ndarray = None) -> None:
+        """Solves the parameter extraction problem.
 
+        Args:
+            initial_guess: The initial guesses for solving the problem.
+
+        """
         if initial_guess is None:
             self.deformation_handler.assign_coordinates(self.coordinates_initial)
         else:
@@ -213,9 +258,11 @@ class ParameterExtraction:
 
 
 class SpaceMapping:
+    """Space mapping method for shape optimization."""
+
     def __init__(
         self,
-        fine_model: ParentFineModel,
+        fine_model: FineModel,
         coarse_model: CoarseModel,
         parameter_extraction: ParameterExtraction,
         method: Literal[
@@ -229,7 +276,27 @@ class SpaceMapping:
         memory_size: int = 10,
         verbose: bool = True,
     ) -> None:
+        """Initializes self.
 
+        Args:
+            fine_model: The fine model optimization problem
+            coarse_model: The coarse model optimization problem
+            parameter_extraction: The parameter extraction problem
+            method: A string, which indicates which method is used to solve the space
+                mapping. Can be one of "broyden", "bfgs", "lbfgs", "sd",
+                "steepest descent", or "ncg". Default is "broyden".
+            max_iter: Maximum number of space mapping iterations
+            tol: The tolerance used for solving the space mapping iteration
+            use_backtracking_line_search: A boolean flag, which indicates whether a
+                backtracking line search should be used for the space mapping.
+            broyden_type: A string, either "good" or "bad", determining the type of
+                Broyden's method used. Default is "good"
+            cg_type: A string, either "FR", "PR", "HS", "DY", "HZ", which indicates
+                which NCG variant is used for solving the space mapping. Default is "FR"
+            memory_size: The size of the memory for Broyden's method and the BFGS method
+            verbose: A boolean flag which indicates, whether the output of the space
+                mapping method should be verbose. Default is ``True``.
+        """
         self.fine_model = fine_model
         self.coarse_model = coarse_model
         self.parameter_extraction = parameter_extraction
@@ -285,8 +352,8 @@ class SpaceMapping:
         self.history_rho = collections.deque()
         self.history_alpha = collections.deque()
 
-    def solve(self) -> None:
-
+    def _compute_initial_guess(self) -> None:
+        """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
         self.z_star = [
             self.deformation_handler_coarse.coordinate_to_dof(
@@ -298,6 +365,10 @@ class SpaceMapping:
         )
         self.current_mesh_quality = geometry.compute_mesh_quality(self.fine_model.mesh)
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
+
+    def solve(self) -> None:
+        """Solves the problem with the space mapping method."""
+        self._compute_initial_guess()
 
         self.fine_model.solve_and_evaluate()
         # self.parameter_extraction._solve()
@@ -334,70 +405,8 @@ class SpaceMapping:
 
             self.stepsize = 1.0
             self.p_prev[0].vector()[:] = self.p_current[0].vector()[:]
-            if not self.use_backtracking_line_search:
-                success = self.deformation_handler_fine.move_mesh(self.h[0])
-                if not success:
-                    raise _exceptions.CashocsException(
-                        "The assignment of mesh coordinates was not "
-                        "possible due to intersections"
-                    )
 
-                self.fine_model.solve_and_evaluate()
-                # self.parameter_extraction._solve()
-                self.parameter_extraction._solve(
-                    initial_guess=self.coarse_model.coordinates_optimal
-                )
-                self.p_current[0].vector()[
-                    :
-                ] = self.deformation_handler_coarse.coordinate_to_dof(
-                    self.parameter_extraction.mesh.coordinates()[:, :]
-                    - self.coordinates_initial
-                ).vector()[
-                    :
-                ]
-                self.eps = self._compute_eps()
-
-            else:
-                self.x_save = self.x.coordinates().copy()
-
-                while True:
-                    if self.stepsize <= 1e-4:
-                        raise _exceptions.NotConvergedError(
-                            "Space Mapping Backtracking Line Search",
-                            "The line search did not converge.",
-                        )
-
-                    self.transformation.vector()[:] = (
-                        self.stepsize * self.h[0].vector()[:]
-                    )
-                    success = self.deformation_handler_fine.move_mesh(
-                        self.transformation
-                    )
-                    if success:
-
-                        self.fine_model.solve_and_evaluate()
-                        # self.parameter_extraction._solve()
-                        self.parameter_extraction._solve(
-                            self.coarse_model.coordinates_optimal
-                        )
-                        self.p_current[0].vector()[
-                            :
-                        ] = self.deformation_handler_coarse.coordinate_to_dof(
-                            self.parameter_extraction.mesh.coordinates()[:, :]
-                            - self.coordinates_initial
-                        ).vector()[
-                            :
-                        ]
-                        eps_new = self._compute_eps()
-
-                        if eps_new <= self.eps:
-                            self.eps = eps_new
-                            break
-                        else:
-                            self.stepsize /= 2
-
-                    else:
-                        self.stepsize /= 2
+            self._update_iterates()
 
             self.iteration += 1
             self.current_mesh_quality = geometry.compute_mesh_quality(
@@ -419,57 +428,8 @@ class SpaceMapping:
             if self.iteration >= self.max_iter:
                 break
 
-            if self.method == "broyden":
-                self.temp[0].vector()[:] = (
-                    self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
-                )
-                self._compute_broyden_application(self.temp, self.v)
-
-                if self.memory_size > 0:
-                    if self.broyden_type == "good":
-                        divisor = self._scalar_product(self.h, self.v)
-                        self.u[0].vector()[:] = (
-                            self.h[0].vector()[:] - self.v[0].vector()[:]
-                        ) / divisor
-
-                        self.history_s.append([xx.copy(True) for xx in self.u])
-                        self.history_y.append([xx.copy(True) for xx in self.h])
-
-                    elif self.broyden_type == "bad":
-                        divisor = self._scalar_product(self.temp, self.temp)
-                        self.u[0].vector()[:] = (
-                            self.h[0].vector()[:] - self.v[0].vector()[:]
-                        ) / divisor
-
-                        self.history_s.append([xx.copy(True) for xx in self.u])
-                        self.history_y.append([xx.copy(True) for xx in self.temp])
-
-                    if len(self.history_s) > self.memory_size:
-                        self.history_s.popleft()
-                        self.history_y.popleft()
-
-            elif self.method == "bfgs":
-                if self.memory_size > 0:
-                    self.temp[0].vector()[:] = (
-                        self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
-                    )
-
-                    self.history_y.appendleft([xx.copy(True) for xx in self.temp])
-                    self.history_s.appendleft([xx.copy(True) for xx in self.h])
-                    curvature_condition = self._scalar_product(self.temp, self.h)
-
-                    if curvature_condition <= 0.0:
-                        self.history_s.clear()
-                        self.history_y.clear()
-                        self.history_rho.clear()
-                    else:
-                        rho = 1 / curvature_condition
-                        self.history_rho.appendleft(rho)
-
-                    if len(self.history_s) > self.memory_size:
-                        self.history_s.pop()
-                        self.history_y.pop()
-                        self.history_rho.pop()
+            self._update_broyden_approximation()
+            self._update_bfgs_approximation()
 
         if self.converged:
             output = (
@@ -480,10 +440,138 @@ class SpaceMapping:
             if self.verbose:
                 print(output)
 
+    def _update_broyden_approximation(self) -> None:
+        """Updates the approximation of the mapping function with Broyden's method."""
+        if self.method == "broyden":
+            self.temp[0].vector()[:] = (
+                self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
+            )
+            self._compute_broyden_application(self.temp, self.v)
+
+            if self.memory_size > 0:
+                if self.broyden_type == "good":
+                    divisor = self._scalar_product(self.h, self.v)
+                    self.u[0].vector()[:] = (
+                        self.h[0].vector()[:] - self.v[0].vector()[:]
+                    ) / divisor
+
+                    self.history_s.append([xx.copy(True) for xx in self.u])
+                    self.history_y.append([xx.copy(True) for xx in self.h])
+
+                elif self.broyden_type == "bad":
+                    divisor = self._scalar_product(self.temp, self.temp)
+                    self.u[0].vector()[:] = (
+                        self.h[0].vector()[:] - self.v[0].vector()[:]
+                    ) / divisor
+
+                    self.history_s.append([xx.copy(True) for xx in self.u])
+                    self.history_y.append([xx.copy(True) for xx in self.temp])
+
+                if len(self.history_s) > self.memory_size:
+                    self.history_s.popleft()
+                    self.history_y.popleft()
+
+    def _update_bfgs_approximation(self) -> None:
+        """Updates the approximation of the mapping function with the BFGS method."""
+        if self.method == "bfgs":
+            if self.memory_size > 0:
+                self.temp[0].vector()[:] = (
+                    self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
+                )
+
+                self.history_y.appendleft([xx.copy(True) for xx in self.temp])
+                self.history_s.appendleft([xx.copy(True) for xx in self.h])
+                curvature_condition = self._scalar_product(self.temp, self.h)
+
+                if curvature_condition <= 0.0:
+                    self.history_s.clear()
+                    self.history_y.clear()
+                    self.history_rho.clear()
+                else:
+                    rho = 1 / curvature_condition
+                    self.history_rho.appendleft(rho)
+
+                if len(self.history_s) > self.memory_size:
+                    self.history_s.pop()
+                    self.history_y.pop()
+                    self.history_rho.pop()
+
+    def _update_iterates(self) -> None:
+        """Updates the iterates either directly or via a line search."""
+        if not self.use_backtracking_line_search:
+            success = self.deformation_handler_fine.move_mesh(self.h[0])
+            if not success:
+                raise _exceptions.CashocsException(
+                    "The assignment of mesh coordinates was not "
+                    "possible due to intersections"
+                )
+
+            self.fine_model.solve_and_evaluate()
+            # self.parameter_extraction._solve()
+            self.parameter_extraction._solve(
+                initial_guess=self.coarse_model.coordinates_optimal
+            )
+            self.p_current[0].vector()[
+                :
+            ] = self.deformation_handler_coarse.coordinate_to_dof(
+                self.parameter_extraction.mesh.coordinates()[:, :]
+                - self.coordinates_initial
+            ).vector()[
+                :
+            ]
+            self.eps = self._compute_eps()
+
+        else:
+            self.x_save = self.x.coordinates().copy()
+
+            while True:
+                if self.stepsize <= 1e-4:
+                    raise _exceptions.NotConvergedError(
+                        "Space Mapping Backtracking Line Search",
+                        "The line search did not converge.",
+                    )
+
+                self.transformation.vector()[:] = self.stepsize * self.h[0].vector()[:]
+                success = self.deformation_handler_fine.move_mesh(self.transformation)
+                if success:
+
+                    self.fine_model.solve_and_evaluate()
+                    # self.parameter_extraction._solve()
+                    self.parameter_extraction._solve(
+                        self.coarse_model.coordinates_optimal
+                    )
+                    self.p_current[0].vector()[
+                        :
+                    ] = self.deformation_handler_coarse.coordinate_to_dof(
+                        self.parameter_extraction.mesh.coordinates()[:, :]
+                        - self.coordinates_initial
+                    ).vector()[
+                        :
+                    ]
+                    eps_new = self._compute_eps()
+
+                    if eps_new <= self.eps:
+                        self.eps = eps_new
+                        break
+                    else:
+                        self.stepsize /= 2
+
+                else:
+                    self.stepsize /= 2
+
     def _scalar_product(
         self, a: List[fenics.Function], b: List[fenics.Function]
     ) -> float:
+        """Computes the scalar product between ``a`` and ``b``.
 
+        Args:
+            a: The first input for the scalar product
+            b: The second input for the scalar product
+
+        Returns:
+            The scalar product between ``a`` and ``b``
+
+        """
         return self.coarse_model.shape_optimization_problem.form_handler.scalar_product(
             a, b
         )
@@ -491,6 +579,13 @@ class SpaceMapping:
     def _compute_search_direction(
         self, q: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
+        """Computes the search direction for a given rhs ``q``, saved to ``out``.
+
+        Args:
+            q: The rhs for computing the search direction
+            out: The output list of functions, in which the search direction is stored.
+
+        """
         if self.method == "steepest_descent":
             return self._compute_steepest_descent_application(q, out)
         elif self.method == "broyden":
@@ -510,12 +605,26 @@ class SpaceMapping:
     def _compute_steepest_descent_application(
         q: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
+        """Computes the search direction for the steepest descent method.
+
+        Args:
+            q: The rhs for computing the search direction
+            out: The output list of functions, in which the search direction is stored.
+
+        """
         for i in range(len(out)):
             out[i].vector()[:] = q[i].vector()[:]
 
     def _compute_broyden_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
+        """Computes the search direction for Broyden's method.
+
+        Args:
+            q: The rhs for computing the search direction
+            out: The output list of functions, in which the search direction is stored.
+
+        """
         out[0].vector()[:] = q[0].vector()[:]
 
         for i in range(len(self.history_s)):
@@ -533,6 +642,13 @@ class SpaceMapping:
     def _compute_bfgs_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
+        """Computes the search direction for the LBFGS method.
+
+        Args:
+            q: The rhs for computing the search direction
+            out: The output list of functions, in which the search direction is stored.
+
+        """
         if self.memory_size > 0 and len(self.history_s) > 0:
             self.history_alpha.clear()
             out[0].vector()[:] = q[0].vector()[:]
@@ -563,36 +679,34 @@ class SpaceMapping:
     def _compute_ncg_direction(
         self, q: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
+        """Computes the search direction for the NCG methods.
+
+        Args:
+            q: The rhs for computing the search direction
+            out: The output list of functions, in which the search direction is stored.
+
+        """
         if self.iteration > 0:
+            self.difference[0].vector()[:] = (
+                q[0].vector()[:] - self.dir_prev[0].vector()[:]
+            )
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "PR":
-                self.difference[0].vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
-                )
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "HS":
-                self.difference[0].vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
-                )
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "DY":
-                self.difference[0].vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
-                )
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
                 self.beta = beta_num / beta_denom
             elif self.cg_type == "HZ":
-                self.difference[0].vector()[:] = (
-                    q[0].vector()[:] - self.dir_prev[0].vector()[:]
-                )
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
@@ -606,7 +720,7 @@ class SpaceMapping:
         out[0].vector()[:] = q[0].vector()[:] + self.beta * out[0].vector()[:]
 
     def _compute_eps(self) -> float:
-
+        """Computes and returns the termination parameter epsilon."""
         self.diff[0].vector()[:] = (
             self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
         )

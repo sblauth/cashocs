@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 
 class ColorFormatter(logging.Formatter):
@@ -36,24 +37,22 @@ class ColorFormatter(logging.Formatter):
     light_blue = "\x1b[0;36m"
     reset = "\x1b[0m"
 
-    format = "%(name)s - %(levelname)s - %(message)s"
+    my_format = "%(name)s - %(levelname)s - %(message)s"
 
     FORMATS = {
-        logging.DEBUG: green + format + reset,
-        logging.INFO: blue + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset,
+        logging.DEBUG: green + my_format + reset,
+        logging.INFO: blue + my_format + reset,
+        logging.WARNING: yellow + my_format + reset,
+        logging.ERROR: red + my_format + reset,
+        logging.CRITICAL: bold_red + my_format + reset,
     }
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """See base class."""
-
         super().__init__(*args, **kwargs)
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """See base class."""
-
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
 
@@ -99,6 +98,7 @@ def set_log_level(level: int) -> None:
         To set the log level of cashocs, use this method as follows::
 
             import cashocs
+
             cashocs.set_log_level(cashocs.LogLevel.WARNING)
 
         which only shows messages with a level of ``WARNING`` or higher.
@@ -106,7 +106,6 @@ def set_log_level(level: int) -> None:
         or ``CRITICAL``.
 
     """
-
     _cashocs_logger.setLevel(level)
 
 
@@ -115,8 +114,8 @@ def debug(message: str) -> None:
 
     Args:
         message: The message to be issued.
-    """
 
+    """
     _cashocs_logger.debug(message)
 
 
@@ -125,8 +124,8 @@ def info(message: str) -> None:
 
     Args:
         message: The message to be issued.
-    """
 
+    """
     _cashocs_logger.info(message)
 
 
@@ -135,8 +134,8 @@ def warning(message: str) -> None:
 
     Args:
         message: The message to be issued.
-    """
 
+    """
     _cashocs_logger.warning(message)
 
 
@@ -145,8 +144,8 @@ def error(message: str) -> None:
 
     Args:
         message: The message to be issued.
-    """
 
+    """
     _cashocs_logger.error(message)
 
 
@@ -155,6 +154,6 @@ def critical(message: str) -> None:
 
     Args:
         message: The message to be issued.
-    """
 
+    """
     _cashocs_logger.critical(message)

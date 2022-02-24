@@ -15,30 +15,37 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Constrained optimization problems, with additional equality / inequality constraints.
-"""
+"""Constrained optimization problems, additional (in-)equality constraints."""
 
 from __future__ import annotations
 
 import abc
-import configparser
-from typing import List, Dict, Optional, Union, Callable
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-import ufl
 from typing_extensions import Literal
+import ufl
 
-from cashocs import _exceptions
-from cashocs import utils
-from cashocs._constraints import constraints
+from cashocs import _utils
 from cashocs._constraints import solvers
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
+if TYPE_CHECKING:
+    from cashocs import io
+    from cashocs import types
+
+
+def _hook() -> None:
+    return None
+
 
 class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
+
+    solver: Union[solvers.AugmentedLagrangianMethod, solvers.QuadraticPenaltyMethod]
+    scalar_tracking_forms_initial: Optional[List[Dict]]
 
     def __init__(
         self,
@@ -49,20 +56,19 @@ class ConstrainedOptimizationProblem(abc.ABC):
         cost_functional_form: Union[List[ufl.Form], ufl.Form],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[
-            List[
-                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
-            ],
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[List[types.Constraint], types.Constraint],
+        config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[List[Dict]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -98,8 +104,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
-        """
 
+        """
         self.state_forms = state_forms
         self.bcs_list = bcs_list
         self.states = states
@@ -109,19 +115,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
-        self.solver = None
+        self.current_function_value = 0.0
 
-        self.cost_functional_form_initial = utils.enlist(cost_functional_form)
+        self._pre_hook = _hook
+        self._post_hook = _hook
+
+        self.cost_functional_form_initial = _utils.enlist(cost_functional_form)
         if scalar_tracking_forms is not None:
-            self.scalar_tracking_forms_initial = utils.enlist(scalar_tracking_forms)
+            self.scalar_tracking_forms_initial = _utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraint_list = utils.enlist(constraint_list)
+        self.constraint_list = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
-        self.iterations = 0
-        self.initial_norm = 1.0
+        self.initial_norm = 0.0
         self.constraint_violation = 0.0
         self.constraint_violation_prev = 0.0
 
@@ -161,27 +169,15 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 means that ``mu_0 = 1`` is used.
             lambda_0: Initial guess for the Lagrange multipliers. Default is ``None``,
                 which corresponds to a zero guess.
-        """
 
-        if method in ["Augmented Lagrangian", "AL"]:
+        """
+        if method.casefold() in ["augmented lagrangian", "al"]:
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
-        elif method in ["Quadratic Penalty", "QP"]:
+        elif method.casefold() in ["quadratic penalty", "qp"]:
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
-            )
-        else:
-            raise _exceptions.InputError(
-                (
-                    "cashocs._constraints.constrained_problems."
-                    "ConstrainedOptimizationProblem.solve"
-                ),
-                "method",
-                (
-                    "The parameter `method` should be either 'AL' or "
-                    "'Augmented Lagrangian' or 'QP' or 'Quadratic Penalty'"
-                ),
             )
 
         self.solver.solve(
@@ -197,13 +193,14 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         Returns:
             The 2-norm of the total constraint violation.
-        """
 
+        """
         s = 0.0
         for constraint in self.constraint_list:
             s += pow(constraint.constraint_violation(), 2)
 
-        return np.sqrt(s)
+        violation: float = np.sqrt(s)
+        return violation
 
     @abc.abstractmethod
     def _solve_inner_problem(
@@ -222,40 +219,32 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
-        """
 
+        """
         self.rtol = inner_rtol or tol
 
-    def _pre_hook(self) -> None:
-        pass
-
-    def _post_hook(self) -> None:
-        pass
-
-    def inject_pre_hook(self, function: Callable) -> None:
+    def inject_pre_hook(self, function: Callable[[], None]) -> None:
         """Changes the a-priori hook of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
-        """
 
-        # noinspection PyAttributeOutsideInit
+        """
         self._pre_hook = function
 
-    def inject_post_hook(self, function: Callable) -> None:
+    def inject_post_hook(self, function: Callable[[], None]) -> None:
         """Changes the a-posteriori hook of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
-        """
 
-        # noinspection PyAttributeOutsideInit
+        """
         self._post_hook = function
 
     def inject_pre_post_hook(
-        self, pre_function: Callable, post_function: Callable
+        self, pre_function: Callable[[], None], post_function: Callable[[], None]
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
 
@@ -264,8 +253,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 each solve of the state system
             post_function: A function without arguments, which is to be called after
                 each computation of the (shape) gradient
-        """
 
+        """
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
@@ -283,22 +272,28 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-            List[
-                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
-            ],
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
+        control_bcs_list: Optional[
+            Union[
+                fenics.DirichletBC,
+                List[fenics.DirichletBC],
+                List[List[fenics.DirichletBC]],
+            ]
+        ] = None,
     ) -> None:
-        r"""
+        r"""Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -343,8 +338,10 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
-        """
+            control_bcs_list: A list of boundary conditions for the control variables.
+                This is passed analogously to ``bcs_list``. Default is ``None``.
 
+        """
         super().__init__(
             state_forms,
             bcs_list,
@@ -361,6 +358,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
         self.controls = controls
         self.riesz_scalar_products = riesz_scalar_products
+        self.control_bcs_list = control_bcs_list
         self.control_constraints = control_constraints
 
     def _solve_inner_problem(
@@ -379,8 +377,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
-        """
 
+        """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
         optimal_control_problem = optimal_control.OptimalControlProblem(
@@ -398,26 +396,40 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             adjoint_ksp_options=self.adjoint_ksp_options,
             scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
             min_max_terms=self.solver.inner_min_max_terms,
+            control_bcs_list=self.control_bcs_list,
         )
 
         optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        optimal_control_problem._shift_cost_functional(
+        optimal_control_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
 
-        optimization_variable_abstractions = (
-            optimal_control_problem.optimization_variable_abstractions
-        )
         if inner_atol is not None:
             atol = inner_atol
         else:
-            if self.iterations == 1:
-                self.initial_norm = (
-                    optimization_variable_abstractions.compute_gradient_norm()
-                )
             atol = self.initial_norm * tol / 10.0
 
         optimal_control_problem.solve(rtol=self.rtol, atol=atol)
+        if self.solver.iterations == 1:
+            self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
+
+        temp_problem = optimal_control.OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form_initial,
+            self.states,
+            self.controls,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            control_constraints=self.control_constraints,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
+        )
+        temp_problem.state_problem.has_solution = True
+        self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
 
 
 class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
@@ -436,19 +448,20 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        constraint_list: Union[
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-            List[constraints.EqualityConstraint, constraints.InequalityConstraint],
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Dict] = None,
     ) -> None:
-        """
+        """Initializes self.
+
         Args:
             state_forms: The weak form of the state equation (user implemented). Can be
                 either a single UFL form, or a (ordered) list of UFL forms.
@@ -492,8 +505,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 desired value. Each dict needs to have the keys ``'integrand'`` and
                 ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
                 are considered.
-        """
 
+        """
         super().__init__(
             state_forms,
             bcs_list,
@@ -527,8 +540,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
-        """
 
+        """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
@@ -547,20 +560,32 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             min_max_terms=self.solver.inner_min_max_terms,
         )
         shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
-        shape_optimization_problem._shift_cost_functional(
+        shape_optimization_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
 
-        optimization_variable_abstractions = (
-            shape_optimization_problem.optimization_variable_abstractions
-        )
         if inner_atol is not None:
             atol = inner_atol
         else:
-            if self.iterations == 1:
-                self.initial_norm = (
-                    optimization_variable_abstractions.compute_gradient_norm()
-                )
             atol = self.initial_norm * tol / 10.0
 
         shape_optimization_problem.solve(rtol=self.rtol, atol=atol)
+        if self.solver.iterations == 1:
+            self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
+
+        temp_problem = shape_optimization.ShapeOptimizationProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form_initial,
+            self.states,
+            self.adjoints,
+            self.boundaries,
+            config=self.config,
+            shape_scalar_product=self.shape_scalar_product,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
+        )
+        temp_problem.state_problem.has_solution = True
+        self.current_function_value = temp_problem.reduced_cost_functional.evaluate()

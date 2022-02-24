@@ -22,7 +22,7 @@
 import argparse
 import json
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import meshio
 import numpy as np
@@ -30,7 +30,6 @@ import numpy as np
 
 def _generate_parser() -> argparse.ArgumentParser:
     """Returns a parser for command line arguments."""
-
     parser = argparse.ArgumentParser(
         prog="cashocs-convert", description="Convert GMSH to XDMF."
     )
@@ -47,6 +46,7 @@ def _generate_parser() -> argparse.ArgumentParser:
 
 
 def check_file_extension(file: str, required_extension: str) -> None:
+    """Checks whether a given file extension is correct."""
     if not file.split(".")[-1] == required_extension:
         raise Exception(
             f"Cannot use {file} due to wrong format.",
@@ -64,8 +64,8 @@ def write_mesh(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
-    """
 
+    """
     cells_str = "triangle"
     if meshdim == 2:
         cells_str = "triangle"
@@ -83,7 +83,7 @@ def write_subdomains(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out an xdmf file with meshio corresponding to the subdomains.
+    """Writes out a xdmf file with meshio corresponding to the subdomains.
 
     Args:
         meshdim: The dimension of the mesh.
@@ -92,8 +92,8 @@ def write_subdomains(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
-    """
 
+    """
     cells_str = "triangle"
     if meshdim == 2:
         cells_str = "triangle"
@@ -117,7 +117,7 @@ def write_boundaries(
     cells_dict: dict,
     ostring: str,
 ) -> None:
-    """Write out an xdmf file with meshio corresponding to the boundaries.
+    """Writes out a xdmf file with meshio corresponding to the boundaries.
 
     Args:
         meshdim: The dimension of the mesh.
@@ -126,8 +126,8 @@ def write_boundaries(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
-    """
 
+    """
     facet_str = "line"
     if meshdim == 2:
         facet_str = "line"
@@ -152,18 +152,18 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
         meshdim: The dimension of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
-    """
 
-    physical_groups = {"dx": {}, "ds": {}}
+    """
+    physical_groups: Dict[str, Dict[str, int]] = {"dx": {}, "ds": {}}
     has_physical_groups = False
-    with open(inputfile, "r") as infile:
+    with open(inputfile, "r", encoding="utf-8") as infile:
         for line in infile:
             line = line.strip()
             if line == "$PhysicalNames":
                 has_physical_groups = True
                 info_line = next(infile).strip()
                 no_physical_groups = int(info_line)
-                for i in range(no_physical_groups):
+                for _ in range(no_physical_groups):
                     physical_line = next(infile).strip().split()
                     phys_dim = int(physical_line[0])
                     phys_tag = int(physical_line[1])
@@ -181,7 +181,9 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
                 break
 
         if has_physical_groups:
-            with open(f"{ostring}_physical_groups.json", "w") as ofile:
+            with open(
+                f"{ostring}_physical_groups.json", "w", encoding="utf-8"
+            ) as ofile:
                 json.dump(physical_groups, ofile)
 
 
@@ -191,8 +193,8 @@ def convert(argv: Optional[List[str]] = None) -> None:
     Args:
         argv: Command line options. The first parameter is the input .msh file,
             the second is the output .xdmf file
-    """
 
+    """
     start_time = time.time()
 
     parser = _generate_parser()

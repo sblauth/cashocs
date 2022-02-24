@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 from typing import List, TYPE_CHECKING
@@ -33,16 +33,74 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
+from cashocs import _utils
 from cashocs import io
-from cashocs import utils
 from cashocs.geometry import deformation_handler
 from cashocs.geometry import mesh_quality
 
 if TYPE_CHECKING:
+    from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
     )
-    from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
+
+
+def _remove_gmsh_parametrizations(mesh_file: str) -> None:
+    """Removes the parametrizations section from a Gmsh file.
+
+    This is needed in case several remeshing iterations have to be executed.
+
+    Args:
+        mesh_file: Path to the Gmsh file, has to end in .msh.
+
+    """
+    temp_location = f"{mesh_file[:-4]}_temp.msh"
+
+    with open(mesh_file, "r", encoding="utf-8") as in_file, open(
+        temp_location, "w", encoding="utf-8"
+    ) as temp_file:
+
+        parametrizations_section = False
+
+        for line in in_file:
+
+            if line == "$Parametrizations\n":
+                parametrizations_section = True
+
+            if not parametrizations_section:
+                temp_file.write(line)
+            else:
+                pass
+
+            if line == "$EndParametrizations\n":
+                parametrizations_section = False
+
+    subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603
+
+
+def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover
+    """Filters the command line arguments for the cashocs remesh flag.
+
+    Args:
+        temp_dir: Path to directory for the temp files
+
+    """
+    arg_list = sys.argv.copy()
+    idx_cashocs_remesh_flag = [
+        i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
+    ]
+    if len(idx_cashocs_remesh_flag) == 1:
+        arg_list.pop(idx_cashocs_remesh_flag[0])
+
+    idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
+    if len(idx_temp_dir) == 1:
+        arg_list.pop(idx_temp_dir[0])
+
+    idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
+    if len(idx_temp_dir_flag) == 1:
+        arg_list.pop(idx_temp_dir_flag[0])
+
+    return arg_list
 
 
 class _MeshHandler:
@@ -53,11 +111,12 @@ class _MeshHandler:
     """
 
     def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
-        """
+        """Initializes self.
+
         Args:
             shape_optimization_problem: The corresponding shape optimization problem.
-        """
 
+        """
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
         self.mesh = self.form_handler.mesh
@@ -67,19 +126,11 @@ class _MeshHandler:
         self.config = self.form_handler.config
 
         # setup from config
-        self.volume_change = float(
-            self.config.get("MeshQuality", "volume_change", fallback="inf")
-        )
-        self.angle_change = float(
-            self.config.get("MeshQuality", "angle_change", fallback="inf")
-        )
+        self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
+        self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
 
-        self.mesh_quality_tol_lower = self.config.getfloat(
-            "MeshQuality", "tol_lower", fallback=0.0
-        )
-        self.mesh_quality_tol_upper = self.config.getfloat(
-            "MeshQuality", "tol_upper", fallback=1e-15
-        )
+        self.mesh_quality_tol_lower = self.config.getfloat("MeshQuality", "tol_lower")
+        self.mesh_quality_tol_upper = self.config.getfloat("MeshQuality", "tol_upper")
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             _loggers.warning(
@@ -87,11 +138,9 @@ class _MeshHandler:
                 "one (tol_upper). This may slow down the optimization considerably."
             )
 
-        self.mesh_quality_measure = self.config.get(
-            "MeshQuality", "measure", fallback="skewness"
-        )
+        self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
 
-        self.mesh_quality_type = self.config.get("MeshQuality", "type", fallback="min")
+        self.mesh_quality_type = self.config.get("MeshQuality", "type")
 
         self.current_mesh_quality = 1.0
         self.current_mesh_quality = mesh_quality.compute_mesh_quality(
@@ -102,10 +151,8 @@ class _MeshHandler:
         self._setup_a_priori()
 
         # Remeshing initializations
-        self.do_remesh = self.config.getboolean("Mesh", "remesh", fallback=False)
-        self.save_optimized_mesh = self.config.getboolean(
-            "Output", "save_mesh", fallback=False
-        )
+        self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
+        self.save_optimized_mesh = self.config.getboolean("Output", "save_mesh")
 
         if self.do_remesh or self.save_optimized_mesh:
             self.mesh_directory = os.path.dirname(
@@ -135,7 +182,9 @@ class _MeshHandler:
             self.gmsh_file_init = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
             )
-            subprocess.run(["cp", self.gmsh_file, self.gmsh_file_init], check=True)
+            subprocess.run(  # nosec 603
+                ["cp", self.gmsh_file, self.gmsh_file_init], check=True
+            )
             self.gmsh_file = self.gmsh_file_init
 
     def move_mesh(self, transformation: fenics.Function) -> bool:
@@ -150,8 +199,8 @@ class _MeshHandler:
 
         Args:
             transformation: The transformation for the mesh, a vector CG1 Function.
-        """
 
+        """
         if not (
             transformation.ufl_element().family() == "Lagrange"
             and transformation.ufl_element().degree() == 1
@@ -177,12 +226,10 @@ class _MeshHandler:
         is not sufficient, or when the solution algorithm terminates, e.g., due
         to lack of sufficient decrease in the Armijo rule
         """
-
         self.deformation_handler.revert_transformation()
 
     def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
-
         self.options_frobenius = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -193,18 +240,18 @@ class _MeshHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_frobenius = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
+        _utils.setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
-        self.trial_dg0 = fenics.TrialFunction(self.form_handler.DG0)
-        self.test_dg0 = fenics.TestFunction(self.form_handler.DG0)
+        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
+        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
 
-        if not (self.angle_change == float("inf")):
+        if self.angle_change != float("inf"):
             self.search_direction_container = fenics.Function(
                 self.form_handler.deformation_space
             )
 
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
-            self.L_frobenius = (
+            self.l_frobenius = (
                 fenics.sqrt(
                     fenics.inner(
                         fenics.grad(self.search_direction_container),
@@ -235,8 +282,8 @@ class _MeshHandler:
 
         Returns:
             A guess for the number of "Armijo halvings" to get a better stepsize.
-        """
 
+        """
         if self.angle_change == float("inf"):
             return 0
 
@@ -244,17 +291,15 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
-            x = utils._assemble_and_solve_linear(
+            x = _utils.assemble_and_solve_linear(
                 self.a_frobenius,
-                self.L_frobenius,
+                self.l_frobenius,
                 ksp=self.ksp_frobenius,
                 ksp_options=self.options_frobenius,
             )
 
             frobenius_norm = np.max(x[:])
-            beta_armijo = self.config.getfloat(
-                "OptimizationRoutine", "beta_armijo", fallback=2
-            )
+            beta_armijo = self.config.getfloat("OptimizationRoutine", "beta_armijo")
 
             return int(
                 np.maximum(
@@ -268,7 +313,6 @@ class _MeshHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-
         self.options_prior = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
@@ -279,15 +323,16 @@ class _MeshHandler:
         ]
         # noinspection PyUnresolvedReferences
         self.ksp_prior = PETSc.KSP().create()
-        utils._setup_petsc_options([self.ksp_prior], [self.options_prior])
+        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(
             self.form_handler.deformation_space
         )
         dim = self.mesh.geometric_dimension()
 
-        self.a_prior = self.trial_dg0 * self.test_dg0 * self.dx
-        self.L_prior = (
+        # pylint: disable=invalid-name
+        self.A_prior = self.trial_dg0 * self.test_dg0 * self.dx
+        self.l_prior = (
             fenics.det(
                 fenics.Identity(dim) + fenics.grad(self.transformation_container)
             )
@@ -310,21 +355,20 @@ class _MeshHandler:
 
         Returns:
             A boolean that indicates whether the desired transformation is feasible.
-        """
 
+        """
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
-        # noinspection PyPep8Naming
-        x = utils._assemble_and_solve_linear(
-            self.a_prior,
-            self.L_prior,
+        x = _utils.assemble_and_solve_linear(
+            self.A_prior,
+            self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
 
-        min_det = np.min(x[:])
-        max_det = np.max(x[:])
+        min_det: float = np.min(x[:])
+        max_det: float = np.max(x[:])
 
         return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
 
@@ -337,9 +381,9 @@ class _MeshHandler:
         Args:
             input_mesh_file: Path to the mesh file used for generating the new .geo
                 file.
-        """
 
-        with open(self.remesh_geo_file, "w") as file:
+        """
+        with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
             temp_name = os.path.split(input_mesh_file)[1]
 
             file.write(f"Merge '{temp_name}';\n")
@@ -347,10 +391,9 @@ class _MeshHandler:
             file.write("\n")
 
             geo_file = self.temp_dict["geo_file"]
-            with open(geo_file, "r") as f:
+            with open(geo_file, "r", encoding="utf-8") as f:
                 for line in f:
                     if line[0].islower():
-                        # if line[:2] == "lc":
                         file.write(line)
                     if line[:5] == "Field":
                         file.write(line)
@@ -361,137 +404,62 @@ class _MeshHandler:
                     if line[:5] == "Mesh.":
                         file.write(line)
 
-    @staticmethod
-    def _remove_gmsh_parametrizations(mesh_file: str) -> None:
-        """Removes the parametrizations section from a Gmsh file.
-
-        This is needed in case several remeshing iterations have to be executed.
-
-        Args:
-            mesh_file: Path to the Gmsh file, has to end in .msh.
-        """
-
-        temp_location = f"{mesh_file[:-4]}_temp.msh"
-
-        with open(mesh_file, "r") as in_file, open(temp_location, "w") as temp_file:
-
-            parametrizations_section = False
-
-            for line in in_file:
-
-                if line == "$Parametrizations\n":
-                    parametrizations_section = True
-
-                if not parametrizations_section:
-                    temp_file.write(line)
-                else:
-                    pass
-
-                if line == "$EndParametrizations\n":
-                    parametrizations_section = False
-
-        subprocess.run(["mv", temp_location, mesh_file], check=True)
-
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file):
-            subprocess.run(["rm", gmsh_file], check=True)
+            subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
 
         gmsh_pre_remesh_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if os.path.isfile(gmsh_pre_remesh_file):
-            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)
+            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
 
         mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         if os.path.isfile(mesh_h5_file):
-            subprocess.run(["rm", mesh_h5_file], check=True)
+            subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
 
         mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
         if os.path.isfile(mesh_xdmf_file):
-            subprocess.run(["rm", mesh_xdmf_file], check=True)
+            subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
 
         boundaries_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if os.path.isfile(boundaries_h5_file):
-            subprocess.run(["rm", boundaries_h5_file], check=True)
+            subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
 
         boundaries_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if os.path.isfile(boundaries_xdmf_file):
-            subprocess.run(["rm", boundaries_xdmf_file], check=True)
+            subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
 
         subdomains_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if os.path.isfile(subdomains_h5_file):
-            subprocess.run(["rm", subdomains_h5_file], check=True)
+            subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
 
         subdomains_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if os.path.isfile(subdomains_xdmf_file):
-            subprocess.run(["rm", subdomains_xdmf_file], check=True)
-
-    @staticmethod
-    def filter_sys_argv(temp_dir: str):  # pragma: no cover
-        """Filters the command line arguments for the cashocs remesh flag
-
-        Args:
-            temp_dir: Path to directory for the temp files
-        """
-
-        arg_list = sys.argv.copy()
-        idx_cashocs_remesh_flag = [
-            i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
-        ]
-        if len(idx_cashocs_remesh_flag) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--cashocs_remesh",
-                "The --cashocs_remesh flag should only be present once.",
-            )
-        elif len(idx_cashocs_remesh_flag) == 1:
-            arg_list.pop(idx_cashocs_remesh_flag[0])
-
-        idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-        if len(idx_temp_dir) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--temp_dir",
-                "The --temp_dir flag should only be present once.",
-            )
-        elif len(idx_temp_dir) == 1:
-            arg_list.pop(idx_temp_dir[0])
-
-        idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
-        if len(idx_temp_dir) > 1:
-            raise _exceptions.InputError(
-                "Command line options",
-                "--temp_dir",
-                "The --temp_dir flag should only be present once.",
-            )
-        elif len(idx_temp_dir_flag) == 1:
-            arg_list.pop(idx_temp_dir_flag[0])
-
-        return arg_list
+            subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
 
     def _restart_script(self, temp_dir: str) -> None:
         """Restarts the python script with itself and replaces the process.
 
         Args:
               temp_dir: Path to the directory for temporary files.
-        """
 
-        if not self.config.getboolean("Debug", "restart", fallback=False):
-            os.execv(
+        """
+        if not self.config.getboolean("Debug", "restart"):
+            os.execv(  # nosec 606
                 sys.executable,
                 [sys.executable]
-                + self.filter_sys_argv(temp_dir)
+                + filter_sys_argv(temp_dir)
                 + ["--cashocs_remesh"]
                 + ["--temp_dir"]
                 + [temp_dir],
@@ -502,7 +470,7 @@ class _MeshHandler:
                 "Restart of script with remeshed geometry is cancelled."
             )
 
-    def remesh(self, solver: OptimizationAlgorithm):
+    def remesh(self, solver: OptimizationAlgorithm) -> None:
         """Remeshes the current geometry with Gmsh.
 
         Performs a remeshing of the geometry, and then restarts the optimization problem
@@ -510,8 +478,8 @@ class _MeshHandler:
 
         Args:
             solver: The optimization algorithm used to solve the problem.
-        """
 
+        """
         if self.do_remesh:
             self.remesh_counter += 1
             temp_file = (
@@ -551,16 +519,16 @@ class _MeshHandler:
                 "-o",
                 new_gmsh_file,
             ]
-            if not self.config.getboolean("Mesh", "show_gmsh_output", fallback=False):
-                subprocess.run(
+            if not self.config.getboolean("Mesh", "show_gmsh_output"):
+                subprocess.run(  # nosec 603
                     gmsh_cmd_list,
                     check=True,
                     stdout=subprocess.DEVNULL,
                 )
             else:
-                subprocess.run(gmsh_cmd_list, check=True)
+                subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
 
-            self._remove_gmsh_parametrizations(new_gmsh_file)
+            _remove_gmsh_parametrizations(new_gmsh_file)
 
             self.temp_dict["remesh_counter"] = self.remesh_counter
             self.temp_dict["remesh_directory"] = self.remesh_directory
@@ -568,7 +536,7 @@ class _MeshHandler:
 
             new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
-            subprocess.run(
+            subprocess.run(  # nosec 603
                 ["cashocs-convert", new_gmsh_file, new_xdmf_file],
                 check=True,
             )
@@ -587,7 +555,7 @@ class _MeshHandler:
 
             temp_dir = self.temp_dict["temp_dir"]
 
-            with open(f"{temp_dir}/temp_dict.json", "w") as file:
+            with open(f"{temp_dir}/temp_dict.json", "w", encoding="utf-8") as file:
                 json.dump(self.temp_dict, file)
 
             self._restart_script(temp_dir)
