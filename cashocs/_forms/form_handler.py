@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 from petsc4py import PETSc
@@ -30,7 +30,6 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
-    from cashocs._forms import shape_regularization
 
 
 def _get_subdx(
@@ -85,6 +84,11 @@ class FormHandler(abc.ABC):
     riesz_projection_matrices: List[PETSc.Mat]
     uses_custom_scalar_product: bool = False
     gradient_forms_rhs: List[ufl.Form]
+    bcs_shape: List[fenics.DirichletBC]
+    shape_regularization: shape_regularization.ShapeRegularization
+    shape_derivative: ufl.Form
+    scalar_product_matrix: fenics.PETScMatrix
+    mu_lame: fenics.Function
 
     def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
         """Initializes self.
@@ -109,14 +113,6 @@ class FormHandler(abc.ABC):
 
         self.cost_functional_form = optimization_problem.cost_functional_form
         self.state_forms = optimization_problem.state_forms
-
-        self.shape_regularization: Optional[
-            shape_regularization.ShapeRegularization
-        ] = None
-        self.shape_derivative = None
-        self.bcs_shape = None
-        self.scalar_product_matrix = None
-        self.mu_lame = None
 
         self.lagrangian_form = self.cost_functional_form + _utils.summation(
             self.state_forms
@@ -257,7 +253,8 @@ class FormHandler(abc.ABC):
             for i in range(self.state_dim):
                 for j, bc in enumerate(self.bcs_list[i]):
                     idx = bc.function_space().id()
-                    subdx = _get_subdx(self.state_spaces[i], idx, ls=[])
+                    subdx: List[int] = []
+                    _get_subdx(self.state_spaces[i], idx, ls=subdx)
                     adjoint_space = self.adjoint_spaces[i]
                     for num in subdx:
                         adjoint_space = adjoint_space.sub(num)

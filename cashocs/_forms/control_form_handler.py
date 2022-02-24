@@ -82,14 +82,14 @@ class ControlFormHandler(form_handler.FormHandler):
         ]
 
         # Define the necessary functions
-        self.states_prime = [
+        self.states_prime: List[fenics.Function] = [
             fenics.Function(function_space) for function_space in self.state_spaces
         ]
-        self.adjoints_prime = [
+        self.adjoints_prime: List[fenics.Function] = [
             fenics.Function(function_space) for function_space in self.adjoint_spaces
         ]
 
-        self.test_directions = [
+        self.test_directions: List[fenics.Function] = [
             fenics.Function(function_space) for function_space in self.control_spaces
         ]
 
@@ -410,7 +410,7 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.state_dim)
         ]
 
-        self.sensitivity_eqs_lhs = [
+        self.sensitivity_eqs_lhs: List[ufl.Form] = [
             fenics.derivative(
                 self.sensitivity_eqs_temp[i],
                 self.states[i],
@@ -429,7 +429,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Need to distinguish cases due to empty sum in case state_dim = 1
         if self.state_dim > 1:
             # pylint: disable=invalid-unary-operand-type
-            self.sensitivity_eqs_rhs = [
+            self.sensitivity_eqs_rhs: List[ufl.Form] = [
                 -_utils.summation(
                     [
                         fenics.derivative(

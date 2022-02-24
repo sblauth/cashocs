@@ -41,6 +41,10 @@ if TYPE_CHECKING:
 class HessianProblem:
     """PDE Problem used to solve the (reduced) Hessian problem."""
 
+    states_prime: List[fenics.Function]
+    adjoints_prime: List[fenics.Function]
+    bcs_list_ad: List[fenics.DirichletBC]
+
     def __init__(
         self,
         form_handler: _forms.ControlFormHandler,
@@ -154,10 +158,6 @@ class HessianProblem:
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
         self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
         self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
-
-        self.states_prime = None
-        self.adjoints_prime = None
-        self.bcs_list_ad = None
 
         self.no_sensitivity_solves = 0
         # noinspection PyUnresolvedReferences

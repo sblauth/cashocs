@@ -64,7 +64,7 @@ def picard_iteration(
     inner_verbose: bool = False,
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
-    ksp_options: Optional[List[List[Union[str, int]]]] = None,
+    ksp_options: Optional[List[List[List[Union[str, int]]]]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
@@ -105,14 +105,6 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-    dim = len(u_list)
-
-    derived_ksps = _setup_obj(ksps, dim)
-    derived_ksp_options = _setup_obj(ksp_options, dim)
-    # noinspection PyPep8Naming
-    A_tensors = _setup_obj(A_tensors, dim)
-    b_tensors = _setup_obj(b_tensors, dim)
-
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9
     gamma = 0.9
@@ -152,6 +144,11 @@ def picard_iteration(
                 np.maximum(eta, 0.5 * tol / res),
             )
 
+            ksp = ksps[j] if ksps is not None else None
+            ksp_option = ksp_options[j] if ksp_options is not None else None
+            A_tensor = A_tensors[j] if A_tensors is not None else None
+            b_tensor = b_tensors[j] if b_tensors is not None else None
+
             newton_solver.newton_solve(
                 form_list[j],
                 u_list[j],
@@ -162,10 +159,10 @@ def picard_iteration(
                 damped=inner_damped,
                 inexact=inner_inexact,
                 verbose=inner_verbose,
-                ksp=derived_ksps[j],
-                ksp_options=derived_ksp_options[j],
-                A_tensor=A_tensors[j],
-                b_tensor=b_tensors[j],
+                ksp=ksp,
+                ksp_options=ksp_option,
+                A_tensor=A_tensor,
+                b_tensor=b_tensor,
                 is_linear=inner_is_linear,
             )
 

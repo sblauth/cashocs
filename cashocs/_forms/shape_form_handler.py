@@ -90,7 +90,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
 
-        self.shape_regularization = shape_regularization.ShapeRegularization(self)
+        self.shape_regularization: shape_regularization.ShapeRegularization = (
+            shape_regularization.ShapeRegularization(self)
+        )
 
         fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
         self.use_fixed_dimensions = False

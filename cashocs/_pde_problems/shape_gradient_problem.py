@@ -61,6 +61,8 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         """
         super().__init__(form_handler)
+        self.form_handler: _forms.ShapeFormHandler
+
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 

@@ -29,7 +29,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _forms
+    from cashocs import types
 
 
 class StateProblem(pde_problem.PDEProblem):
@@ -37,7 +37,7 @@ class StateProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
+        form_handler: types.FormHandler,
         initial_guess: List[fenics.Function],
         temp_dict: Optional[Dict] = None,
     ) -> None:
@@ -93,9 +93,9 @@ class StateProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
 
-        try:
+        if self.temp_dict is not None:
             self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
-        except TypeError:
+        else:
             self.number_of_solves = 0
 
     def _update_scalar_tracking_terms(self) -> None:
