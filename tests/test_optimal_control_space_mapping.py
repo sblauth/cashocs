@@ -28,7 +28,7 @@ y_des = Expression(
 bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
 
 
-class FineModel(ocsm.ParentFineModel):
+class FineModel(ocsm.FineModel):
     def __init__(self):
         super().__init__()
 

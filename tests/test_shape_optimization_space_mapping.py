@@ -45,7 +45,7 @@ p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
 V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
 
 
-class FineModel(sosm.ParentFineModel):
+class FineModel(sosm.FineModel):
     def __init__(self, mesh, V):
         super().__init__(mesh)
         self.V_coarse = V
