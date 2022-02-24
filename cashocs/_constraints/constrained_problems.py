@@ -20,8 +20,7 @@
 from __future__ import annotations
 
 import abc
-import configparser
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -29,10 +28,13 @@ from typing_extensions import Literal
 import ufl
 
 from cashocs import _utils
-from cashocs._constraints import constraints
 from cashocs._constraints import solvers
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
+
+if TYPE_CHECKING:
+    from cashocs import io
+    from cashocs import types
 
 
 def _hook() -> None:
@@ -43,6 +45,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
     solver: Union[solvers.AugmentedLagrangianMethod, solvers.QuadraticPenaltyMethod]
+    scalar_tracking_forms_initial: Optional[List[Dict]]
 
     def __init__(
         self,
@@ -53,17 +56,15 @@ class ConstrainedOptimizationProblem(abc.ABC):
         cost_functional_form: Union[List[ufl.Form], ufl.Form],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[
-            List[
-                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
-            ],
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[List[types.Constraint], types.Constraint],
+        config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
         """Initializes self.
@@ -271,19 +272,17 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-            List[
-                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
-            ],
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         control_bcs_list: Optional[
             Union[
@@ -449,18 +448,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        constraint_list: Union[
-            constraints.EqualityConstraint,
-            constraints.InequalityConstraint,
-            List[
-                Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
-            ],
-        ],
-        config: Optional[configparser.ConfigParser] = None,
+        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Dict] = None,
     ) -> None:
         """Initializes self.

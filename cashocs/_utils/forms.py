@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, TypeVar, Union
+from typing import Any, List, Optional, Tuple, TypeVar, Union
 
 import fenics
 import ufl
@@ -31,7 +31,7 @@ T = TypeVar("T")
 
 
 # noinspection PyUnresolvedReferences
-def summation(x: List[T]) -> T:
+def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL
@@ -63,7 +63,7 @@ def summation(x: List[T]) -> T:
 
 
 # noinspection PyUnresolvedReferences
-def multiplication(x: List[T]) -> T:
+def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct a UFL form.
@@ -225,7 +225,7 @@ def create_dirichlet_bcs(
     ],
     boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
-    **kwargs,
+    **kwargs: Any,
 ) -> List[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
@@ -305,7 +305,7 @@ def create_bcs_list(
     ],
     boundaries: fenics.MeshFunction,
     idcs: Union[List[Union[int, str]], int, str],
-    **kwargs,
+    **kwargs: Any,
 ) -> List[fenics.DirichletBC]:  # pragma: no cover
     """Create several Dirichlet boundary conditions at once.
 

@@ -75,21 +75,23 @@ class OptimizationProblem(abc.ABC):
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[List[List[str]], List[List[List[str]]]]
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         r"""Initializes self.
@@ -212,11 +214,15 @@ class OptimizationProblem(abc.ABC):
         self,
         config: Optional[io.Config],
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
-        ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]],
-        adjoint_ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]],
-        scalar_tracking_forms: Optional[Dict],
-        min_max_terms: Optional[Dict],
-        desired_weights: Optional[List[float]],
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ],
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ],
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]],
+        min_max_terms: Optional[Union[List[Dict], Dict]],
+        desired_weights: Optional[Union[List[float], float]],
     ) -> None:
         """Initializes the optional input parameters.
 

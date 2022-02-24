@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TypeVar, Union
+from typing import List, Optional, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 import numpy as np
@@ -29,6 +29,9 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs.nonlinear_solvers import newton_solver
+
+if TYPE_CHECKING:
+    from cashocs import types
 
 T = TypeVar("T")
 
@@ -64,7 +67,7 @@ def picard_iteration(
     inner_verbose: bool = False,
     inner_max_its: int = 25,
     ksps: Optional[List[PETSc.KSP]] = None,
-    ksp_options: Optional[List[List[List[Union[str, int]]]]] = None,
+    ksp_options: Optional[types.KspOptions] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,

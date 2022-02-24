@@ -67,9 +67,11 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.control_dim)]
 
-        gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
+        gradient_tol: float = self.config.getfloat(
+            "OptimizationRoutine", "gradient_tol"
+        )
 
-        gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
+        gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 
         option = []
         if gradient_method.casefold() == "direct":

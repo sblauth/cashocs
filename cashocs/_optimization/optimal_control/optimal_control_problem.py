@@ -19,8 +19,7 @@
 
 from __future__ import annotations
 
-import configparser
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -38,6 +37,10 @@ from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 
+if TYPE_CHECKING:
+    from cashocs import io
+    from cashocs import types
+
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):
     """Implements an optimal control problem.
@@ -52,30 +55,36 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     ``y1`` and so on).
     """
 
+    controls: List[fenics.Function]
+
     def __new__(
         cls,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        controls: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
+        config: Optional[io.Config] = None,
+        riesz_scalar_products: Optional[Union[List[ufl.Form]], ufl.Form] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
-        min_max_terms: Optional[List[Dict]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
         control_bcs_list: Optional[
             Union[
-                fenics.DirichletBC,
-                List[fenics.DirichletBC],
                 List[List[fenics.DirichletBC]],
+                List[fenics.DirichletBC],
+                fenics.DirichletBC,
             ]
         ] = None,
     ) -> OptimalControlProblem:
@@ -167,28 +176,32 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
+            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        controls: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
+        config: Optional[io.Config] = None,
+        riesz_scalar_products: Optional[Union[List[ufl.Form]], ufl.Form] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
-        min_max_terms: Optional[List[Dict]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
         control_bcs_list: Optional[
             Union[
-                fenics.DirichletBC,
-                List[fenics.DirichletBC],
                 List[List[fenics.DirichletBC]],
+                List[fenics.DirichletBC],
+                fenics.DirichletBC,
             ]
         ] = None,
     ) -> None:
@@ -298,7 +311,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         # end overloading
 
         self.is_control_problem = True
-        self.form_handler = _forms.ControlFormHandler(self)
+        self.form_handler: _forms.ControlFormHandler = _forms.ControlFormHandler(self)
 
         self.state_spaces = self.form_handler.state_spaces
         self.control_spaces = self.form_handler.control_spaces

@@ -60,7 +60,7 @@ class ReducedCostFunctional:
         """
         self.state_problem.solve()
 
-        val = fenics.assemble(self.form_handler.cost_functional_form)
+        val: float = fenics.assemble(self.form_handler.cost_functional_form)
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(

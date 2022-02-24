@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 def _initialize_control_variable(
-    ocp: optimal_control.OptimalControlProblem, u: List[fenics.Function]
+    ocp: optimal_control.OptimalControlProblem, u: Optional[List[fenics.Function]]
 ) -> List[fenics.Function]:
     """Initializes the control variable, so that it can be restored later.
 
@@ -146,7 +146,8 @@ def control_gradient_test(
     for j in range(ocp.control_dim):
         ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
 
-    return np.min(rates)
+    min_rate: float = np.min(rates)
+    return min_rate
 
 
 def shape_gradient_test(
@@ -227,7 +228,6 @@ def shape_gradient_test(
         )
 
     rates = compute_convergence_rates(epsilons, residuals)
-
     return np.min(rates)
 
 
@@ -245,12 +245,12 @@ def compute_convergence_rates(
         The computed convergence rates
 
     """
-    rates = []
+    rates: List[float] = []
     for i in range(1, len(epsilons)):
-        rates.append(
-            np.log(residuals[i] / residuals[i - 1])
-            / np.log(epsilons[i] / epsilons[i - 1])
+        rate: float = np.log(residuals[i] / residuals[i - 1]) / np.log(
+            epsilons[i] / epsilons[i - 1]
         )
+        rates.append(rate)
 
     if verbose:
         print(f"Taylor test convergence rate: {rates}")

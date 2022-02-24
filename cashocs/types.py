@@ -17,13 +17,14 @@
 
 """Type hints for cashocs."""
 
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import fenics
 
 from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import geometry
+from cashocs._constraints import constraints
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
@@ -42,3 +43,6 @@ MeshTuple = Tuple[
     fenics.Measure,
     fenics.Measure,
 ]
+
+KspOptions = List[List[List[Union[str, int, float]]]]
+Constraint = Union[constraints.EqualityConstraint, constraints.InequalityConstraint]

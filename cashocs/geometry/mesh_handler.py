@@ -151,7 +151,7 @@ class _MeshHandler:
         self._setup_a_priori()
 
         # Remeshing initializations
-        self.do_remesh = self.config.getboolean("Mesh", "remesh")
+        self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
         self.save_optimized_mesh = self.config.getboolean("Output", "save_mesh")
 
         if self.do_remesh or self.save_optimized_mesh:

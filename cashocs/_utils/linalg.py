@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -27,6 +27,9 @@ from petsc4py import PETSc
 import ufl
 
 from cashocs import _exceptions
+
+if TYPE_CHECKING:
+    from cashocs import types
 
 
 def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
@@ -123,9 +126,7 @@ def assemble_petsc_system(
 
 
 # noinspection PyUnresolvedReferences
-def setup_petsc_options(
-    ksps: List[PETSc.KSP], ksp_options: List[List[List[str]]]
-) -> None:
+def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
@@ -156,7 +157,7 @@ def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     x: Optional[PETSc.Vec] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:
@@ -188,7 +189,7 @@ def solve_linear_problem(
     """
     if ksp is None:
         ksp = PETSc.KSP().create()
-        options = [
+        options: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "lu"],
             ["pc_factor_mat_solver_type", "mumps"],
@@ -240,7 +241,7 @@ def assemble_and_solve_linear(
     b: Optional[fenics.PETScVector] = None,
     x: Optional[PETSc.Vec] = None,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[str]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:

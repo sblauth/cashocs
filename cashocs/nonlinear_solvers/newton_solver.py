@@ -57,7 +57,7 @@ class _NewtonSolver:
         inexact: bool = True,
         verbose: bool = True,
         ksp: Optional[PETSc.KSP] = None,
-        ksp_options: Optional[List[List[Union[str, int]]]] = None,
+        ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
@@ -378,7 +378,7 @@ def newton_solve(
     inexact: bool = True,
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[Union[str, int]]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
@@ -487,7 +487,7 @@ def damped_newton_solve(
     damped: bool = True,
     verbose: bool = True,
     ksp: Optional[PETSc.KSP] = None,
-    ksp_options: Optional[List[List[Union[str, int]]]] = None,
+    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
 ) -> fenics.Function:  # pragma: no cover
     r"""Damped Newton solve interface, only here for compatibility reasons.
 

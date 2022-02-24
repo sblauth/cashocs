@@ -21,16 +21,19 @@ from __future__ import annotations
 
 import argparse
 import configparser
-from typing import List, Optional, Tuple, TypeVar, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 
 from cashocs import _exceptions
 
+if TYPE_CHECKING:
+    from cashocs import types
+
 T = TypeVar("T")
 
 
-def enlist(arg: Union[T, List[T]]) -> List[T]:
+def enlist(arg: Union[List[T], T]) -> List[T]:
     """Wraps the input argument into a list, if it isn't a list already.
 
     Args:
@@ -108,8 +111,8 @@ def check_and_enlist_control_constraints(
 
 
 def check_and_enlist_ksp_options(
-    ksp_options: Union[List[List[str]], List[List[List[str]]]]
-) -> List[List[List[str]]]:
+    ksp_options: Union[List[List[Union[str, int, float]]], types.KspOptions]
+) -> types.KspOptions:
     """Wraps ksp options into a list suitable for cashocs.
 
     Args:
@@ -122,7 +125,7 @@ def check_and_enlist_ksp_options(
     if (
         isinstance(ksp_options, list)
         and isinstance(ksp_options[0], list)
-        and isinstance(ksp_options[0][0], str)
+        and isinstance(ksp_options[0][0], (str, int, float))
     ):
         return [ksp_options[:]]
 

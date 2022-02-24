@@ -19,13 +19,12 @@
 
 from __future__ import annotations
 
-import configparser
 import json
 import os
 import subprocess  # nosec B404
 import sys
 import tempfile
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -46,6 +45,10 @@ from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 
+if TYPE_CHECKING:
+    from cashocs import io
+    from cashocs import types
+
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A shape optimization problem.
@@ -62,24 +65,27 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def __new__(
         cls,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC,
-            List[fenics.DirichletBC],
             List[List[fenics.DirichletBC]],
-            None,
+            List[fenics.DirichletBC],
+            fenics.DirichletBC,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> ShapeOptimizationProblem:
         """Initializes self.
@@ -186,24 +192,27 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
-            fenics.DirichletBC,
-            List[fenics.DirichletBC],
             List[List[fenics.DirichletBC]],
-            None,
+            List[fenics.DirichletBC],
+            fenics.DirichletBC,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
-        min_max_terms: Optional[Dict] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
+        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         """Initializes self.
@@ -307,7 +316,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         self.is_shape_problem = True
-        self.form_handler = _forms.ShapeFormHandler(self)
+        self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(self)
 
         if self.do_remesh and not self.has_cashocs_remesh_flag:
             # noinspection PyUnresolvedReferences

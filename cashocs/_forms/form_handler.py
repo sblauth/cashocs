@@ -111,7 +111,7 @@ class FormHandler(abc.ABC):
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
         self.use_scalar_tracking = self.optimization_problem.use_scalar_tracking
-        self.use_min_max_terms = optimization_problem.use_min_max_terms
+        self.use_min_max_terms: bool = optimization_problem.use_min_max_terms
         self.min_max_forms = optimization_problem.min_max_terms
         self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
 
@@ -189,7 +189,7 @@ class FormHandler(abc.ABC):
         else:
             self.state_adjoint_equal_spaces = False
 
-        self.mesh = self.state_spaces[0].mesh()
+        self.mesh: fenics.Mesh = self.state_spaces[0].mesh()
         self.dx = fenics.Measure("dx", self.mesh)
 
         self.trial_functions_state = [

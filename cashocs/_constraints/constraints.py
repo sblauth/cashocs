@@ -36,6 +36,11 @@ class Constraint(abc.ABC):
 
     linear_term: Union[ufl.Form, ufl.core.expr.Expr]
     quadratic_term: Union[ufl.Form, Dict]
+    multiplier: fenics.Function
+    target: float
+    min_max_term: Dict
+    lower_bound: Union[fenics.Function, float]
+    upper_bound: Union[fenics.Function, float]
 
     def __init__(
         self,
