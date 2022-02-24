@@ -36,6 +36,8 @@ if TYPE_CHECKING:
 class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
+    mesh_handler: geometry._MeshHandler
+
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
 
@@ -45,7 +47,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         """
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
-        self.mesh_handler: Optional[geometry._MeshHandler] = None
 
     @abc.abstractmethod
     def compute_decrease_measure(
@@ -69,7 +70,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
+        self, search_direction: List[fenics.Function], stepsize: float, beta: float
     ) -> float:
         """Updates the optimization variables based on a line search.
 

@@ -474,11 +474,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             the control variables.
 
         """
-        mod_derivatives = None
-        if isinstance(derivatives, list) and len(derivatives) > 0:
-            mod_derivatives = derivatives
-        elif isinstance(derivatives, ufl.form.Form):
+        mod_derivatives: List[ufl.Form]
+        if isinstance(derivatives, ufl.form.Form):
             mod_derivatives = [derivatives]
+        else:
+            mod_derivatives = derivatives
 
         self.form_handler.setup_assemblers(
             self.form_handler.riesz_scalar_products,
@@ -564,7 +564,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             return _utils.enlist(riesz_scalar_products)
 
     def _parse_control_constraints(
-        self, control_constraints
+        self,
+        control_constraints: Optional[List[List[fenics.Function, float]]],
     ) -> List[List[fenics.Function]]:
         """Checks, whether the given control constraints are feasible.
 
@@ -575,6 +576,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             The (wrapped) list of control constraints.
 
         """
+        temp_control_constraints: List[List[Union[fenics.Function, float]]]
         if control_constraints is None:
             temp_control_constraints = []
             for control in self.controls:
@@ -589,21 +591,19 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             )
 
         # recast floats into functions for compatibility
-        lower_bound = None
-        upper_bound = None
-        formatted_control_constraints = []
+        formatted_control_constraints: List[List[fenics.Function]] = []
         for idx, pair in enumerate(temp_control_constraints):
-            if isinstance(pair[0], (float, int)):
+            if isinstance(pair[0], fenics.Function):
+                lower_bound = pair[0]
+            else:
                 lower_bound = fenics.Function(self.controls[idx].function_space())
                 lower_bound.vector().vec().set(pair[0])
-            elif isinstance(pair[0], fenics.Function):
-                lower_bound = pair[0]
 
-            if isinstance(pair[1], (float, int)):
+            if isinstance(pair[1], fenics.Function):
+                upper_bound = pair[1]
+            else:
                 upper_bound = fenics.Function(self.controls[idx].function_space())
                 upper_bound.vector().vec().set(pair[1])
-            elif isinstance(pair[1], fenics.Function):
-                upper_bound = pair[1]
 
             formatted_control_constraints.append([lower_bound, upper_bound])
 

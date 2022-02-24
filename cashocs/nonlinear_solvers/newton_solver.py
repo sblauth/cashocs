@@ -36,7 +36,9 @@ class _NewtonSolver:
     """A Newton solver."""
 
     assembler_shift: fenics.SystemAssembler
-    residual_shift = fenics.PETScVector
+    residual_shift: fenics.PETScVector
+    A_matrix: fenics.PETScMatrix  # pylint: disable=invalid-name
+    b: fenics.PETScVector
 
     # noinspection PyUnresolvedReferences,PyPep8Naming
     def __init__(
@@ -174,8 +176,6 @@ class _NewtonSolver:
             )
             self.residual_shift = fenics.PETScVector()
 
-        self.b = None
-        self.A_matrix = None  # pylint: disable=invalid-name
         self.breakdown = False
         self.res = 1.0
         self.res_0 = 1.0

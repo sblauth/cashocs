@@ -24,7 +24,7 @@ import functools
 import json
 import os
 import time
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import fenics
 import numpy as np
@@ -274,7 +274,7 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
         xdmf_boundaries.read(boundaries_mvc, "boundaries")
         xdmf_boundaries.close()
 
-    physical_groups = None
+    physical_groups: Optional[Dict[str, Dict[str, int]]] = None
     if os.path.isfile(f"{file_string}_physical_groups.json"):
         with open(f"{file_string}_physical_groups.json", "r", encoding="utf-8") as file:
             physical_groups = json.load(file)

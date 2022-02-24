@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, TypeVar, Union
 
 import fenics
 import ufl
@@ -27,11 +27,11 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _loggers
 
+T = TypeVar("T")
+
 
 # noinspection PyUnresolvedReferences
-def summation(
-    x: List[Union[ufl.core.expr.Expr, int, float]]
-) -> Union[ufl.core.expr.Expr, int, float]:
+def summation(x: List[T]) -> T:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL
@@ -63,9 +63,7 @@ def summation(
 
 
 # noinspection PyUnresolvedReferences
-def multiplication(
-    x: List[Union[ufl.core.expr.Expr, int, float]]
-) -> Union[ufl.core.expr.Expr, int, float]:
+def multiplication(x: List[T]) -> T:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct a UFL form.
@@ -206,11 +204,11 @@ def moreau_yosida_regularization(
             * measure
         )
 
-    if upper_threshold is not None and lower_threshold is not None:
+    if reg_lower is not None and reg_upper is not None:
         return reg_lower + reg_upper
-    elif upper_threshold is None and lower_threshold is not None:
+    elif reg_lower is not None and reg_upper is None:
         return reg_lower
-    elif upper_threshold is not None and lower_threshold is None:
+    elif reg_lower is None and reg_upper is not None:
         return reg_upper
 
 

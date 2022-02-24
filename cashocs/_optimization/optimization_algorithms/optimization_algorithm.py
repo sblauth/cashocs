@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
 
@@ -85,7 +85,7 @@ class OptimizationAlgorithm(abc.ABC):
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
         if optimization_problem.is_shape_problem:
-            self.temp_dict = optimization_problem.temp_dict
+            self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
         else:
             self.temp_dict = None
 

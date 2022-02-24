@@ -42,9 +42,9 @@ if TYPE_CHECKING:
     from cashocs import _pde_problems
     from cashocs import types
     from cashocs._optimization import cost_functional
-    from cashocs._optimization.optimization_variable_abstractions import (
-        OptimizationVariableAbstractions,
-    )
+    from cashocs._optimization import line_search as ls
+    from cashocs._optimization import optimization_algorithms
+    from cashocs._optimization import optimization_variable_abstractions as ova
 
 
 class OptimizationProblem(abc.ABC):
@@ -62,12 +62,16 @@ class OptimizationProblem(abc.ABC):
     gradient_problem: types.GradientProblem
     output_manager: io.OutputManager
     form_handler: types.FormHandler
-    optimization_variable_abstractions: OptimizationVariableAbstractions
+    optimization_variable_abstractions: ova.OptimizationVariableAbstractions
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
     temp_dict: Optional[Dict]
     algorithm: str
+    line_search: ls.LineSearch
+    hessian_problem: _pde_problems.HessianProblem
+    solver: optimization_algorithms.OptimizationAlgorithm
+    config: io.Config
 
     def __init__(
         self,
@@ -170,10 +174,6 @@ class OptimizationProblem(abc.ABC):
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
-        self.line_search = None
-        self.hessian_problem = None
-        self.solver = None
-
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
 
@@ -210,13 +210,13 @@ class OptimizationProblem(abc.ABC):
 
     def _parse_optional_inputs(
         self,
-        config: io.Config,
-        initial_guess: List[fenics.Function],
-        ksp_options: Union[List[List[str]], List[List[List[str]]]],
-        adjoint_ksp_options: Union[List[List[str]], List[List[List[str]]]],
-        scalar_tracking_forms: Dict,
-        min_max_terms: Dict,
-        desired_weights: List[float],
+        config: Optional[io.Config],
+        initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
+        ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]],
+        adjoint_ksp_options: Optional[Union[List[List[str]], List[List[List[str]]]]],
+        scalar_tracking_forms: Optional[Dict],
+        min_max_terms: Optional[Dict],
+        desired_weights: Optional[List[float]],
     ) -> None:
         """Initializes the optional input parameters.
 

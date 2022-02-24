@@ -114,7 +114,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
-        self.current_function_value = None
+        self.current_function_value = 0.0
 
         self._pre_hook = _hook
         self._post_hook = _hook

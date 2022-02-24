@@ -285,7 +285,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         # shape_scalar_product
         self.shape_scalar_product = shape_scalar_product
         if shape_scalar_product is None:
-            self.deformation_space = None
+            self.deformation_space: Optional[fenics.FunctionSpace] = None
         else:
             self.deformation_space = self.shape_scalar_product.arguments()[
                 0

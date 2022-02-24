@@ -29,7 +29,8 @@ import ufl
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import _optimization as op
+    from cashocs import io
+    from cashocs import types
 
 
 def _get_subdx(
@@ -89,21 +90,26 @@ class FormHandler(abc.ABC):
     shape_derivative: ufl.Form
     scalar_product_matrix: fenics.PETScMatrix
     mu_lame: fenics.Function
+    config: io.Config
+    cost_functional_form: ufl.Form
+    scalar_cost_functional_integrands: List[ufl.Form]
+    scalar_cost_functional_integrand_values: List[fenics.Function]
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem
 
         """
-        self.bcs_list = optimization_problem.bcs_list
+        self.optimization_problem = optimization_problem
+        self.bcs_list: List[List[fenics.DirichletBC]] = optimization_problem.bcs_list
         self.states = optimization_problem.states
         self.adjoints = optimization_problem.adjoints
         self.config = optimization_problem.config
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
-        self.use_scalar_tracking = optimization_problem.use_scalar_tracking
+        self.use_scalar_tracking = self.optimization_problem.use_scalar_tracking
         self.use_min_max_terms = optimization_problem.use_min_max_terms
         self.min_max_forms = optimization_problem.min_max_terms
         self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
@@ -140,7 +146,7 @@ class FormHandler(abc.ABC):
                 for mesh in dummy_meshes
             ]
 
-            self.no_scalar_tracking_terms = len(self.scalar_tracking_goals)
+            self.no_scalar_tracking_terms: int = len(self.scalar_tracking_goals)
             try:
                 for j in range(self.no_scalar_tracking_terms):
                     self.scalar_weights[j].vector().vec().set(
