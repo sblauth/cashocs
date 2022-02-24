@@ -194,7 +194,9 @@ class _NewtonSolver:
         """Assembles the matrix for solving the linear problem."""
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
-        self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
+        self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
+            self.A_fenics
+        ).mat()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""

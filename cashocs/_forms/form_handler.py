@@ -31,6 +31,7 @@ from cashocs import _utils
 if TYPE_CHECKING:
     from cashocs import io
     from cashocs import types
+    from cashocs._forms import shape_regularization as sr
 
 
 def _get_subdx(
@@ -86,7 +87,7 @@ class FormHandler(abc.ABC):
     uses_custom_scalar_product: bool = False
     gradient_forms_rhs: List[ufl.Form]
     bcs_shape: List[fenics.DirichletBC]
-    shape_regularization: shape_regularization.ShapeRegularization
+    shape_regularization: sr.ShapeRegularization
     shape_derivative: ufl.Form
     scalar_product_matrix: fenics.PETScMatrix
     mu_lame: fenics.Function

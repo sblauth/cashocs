@@ -210,6 +210,12 @@ def moreau_yosida_regularization(
         return reg_lower
     elif reg_lower is None and reg_upper is not None:
         return reg_upper
+    else:
+        raise _exceptions.InputError(
+            "cashocs._utils.moreau_yosida_regularization",
+            "upper_threshold, lower_threshold",
+            "At least one of the threshold parameters has to be defined.",
+        )
 
 
 def create_dirichlet_bcs(

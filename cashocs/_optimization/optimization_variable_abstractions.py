@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 class OptimizationVariableAbstractions(abc.ABC):
     """Base class for abstracting optimization variables."""
 
-    mesh_handler: geometry._MeshHandler
+    mesh_handler: geometry._MeshHandler  # pylint: disable=protected-access
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
