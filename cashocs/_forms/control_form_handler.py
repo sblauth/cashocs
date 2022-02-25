@@ -53,6 +53,12 @@ class ControlFormHandler(form_handler.FormHandler):
     w_2: List[ufl.Form]
     w_3: List[ufl.Form]
     hessian_rhs: List[ufl.Form]
+    states_prime: List[fenics.Function]
+    adjoints_prime: List[fenics.Function]
+    test_directions: List[fenics.Function]
+    trial_functions_control: List[fenics.Function]
+    test_functions_control: List[fenics.Function]
+    temp: List[fenics.Function]
 
     def __init__(
         self, optimization_problem: optimal_control.OptimalControlProblem
@@ -77,36 +83,9 @@ class ControlFormHandler(form_handler.FormHandler):
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
 
-        self.gradient = [
-            fenics.Function(function_space) for function_space in self.control_spaces
-        ]
+        self.gradient = _utils.create_function_list(self.control_spaces)
 
-        # Define the necessary functions
-        self.states_prime: List[fenics.Function] = [
-            fenics.Function(function_space) for function_space in self.state_spaces
-        ]
-        self.adjoints_prime: List[fenics.Function] = [
-            fenics.Function(function_space) for function_space in self.adjoint_spaces
-        ]
-
-        self.test_directions: List[fenics.Function] = [
-            fenics.Function(function_space) for function_space in self.control_spaces
-        ]
-
-        self.trial_functions_control = [
-            fenics.TrialFunction(function_space)
-            for function_space in self.control_spaces
-        ]
-        self.test_functions_control = [
-            fenics.TestFunction(function_space)
-            for function_space in self.control_spaces
-        ]
-
-        self.temp = [
-            fenics.Function(function_space) for function_space in self.control_spaces
-        ]
-
-        # Compute the necessary equations
+        self._init_helpers()
         self._compute_gradient_equations()
 
         if self.opt_algo.casefold() == "newton":
@@ -115,6 +94,21 @@ class ControlFormHandler(form_handler.FormHandler):
         self.setup_assemblers(
             self.riesz_scalar_products, self.gradient_forms_rhs, self.control_bcs_list
         )
+
+    def _init_helpers(self) -> None:
+        """Initializes the helper functions needed for the form handler."""
+        self.states_prime = _utils.create_function_list(self.state_spaces)
+        self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
+        self.test_directions = _utils.create_function_list(self.control_spaces)
+        self.temp = _utils.create_function_list(self.control_spaces)
+        self.trial_functions_control = [
+            fenics.TrialFunction(function_space)
+            for function_space in self.control_spaces
+        ]
+        self.test_functions_control = [
+            fenics.TestFunction(function_space)
+            for function_space in self.control_spaces
+        ]
 
     def setup_assemblers(
         self,

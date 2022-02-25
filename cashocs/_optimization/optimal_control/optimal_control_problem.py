@@ -23,7 +23,6 @@ from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from typing_extensions import Literal
 import ufl
 
 from cashocs import _exceptions
@@ -56,6 +55,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     """
 
     controls: List[fenics.Function]
+    control_spaces: List[fenics.FunctionSpace]
 
     def __new__(
         cls,
@@ -68,7 +68,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[List[ufl.Form]], ufl.Form] = None,
+        riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -152,7 +152,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         if use_scaling:
             unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(
+            unscaled_problem.__init__(  # type: ignore
                 state_forms,
                 bcs_list,
                 cost_functional_form,
@@ -185,7 +185,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[List[ufl.Form]], ufl.Form] = None,
+        riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -289,16 +289,19 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         )
 
         self.use_control_bcs = False
+        self.control_bcs_list: Union[List[List[fenics.DirichletBC]], List[None]]
         if control_bcs_list is not None:
             self.control_bcs_list_inhomogeneous = _utils.check_and_enlist_bcs(
                 control_bcs_list
             )
-            self.control_bcs_list = []
+            self.control_bcs_list = []  # type: ignore
             for list_bcs in self.control_bcs_list_inhomogeneous:
-                hom_bcs = [fenics.DirichletBC(bc) for bc in list_bcs]
+                hom_bcs: List[fenics.DirichletBC] = [
+                    fenics.DirichletBC(bc) for bc in list_bcs
+                ]
                 for bc in hom_bcs:
                     bc.homogenize()
-                self.control_bcs_list.append(hom_bcs)
+                self.control_bcs_list.append(hom_bcs)  # type: ignore
 
             self.use_control_bcs = True
         else:
@@ -317,9 +320,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.control_spaces = self.form_handler.control_spaces
         self.adjoint_spaces = self.form_handler.adjoint_spaces
 
-        self.projected_difference = [
-            fenics.Function(function_space) for function_space in self.control_spaces
-        ]
+        self.projected_difference = _utils.create_function_list(self.control_spaces)
 
         self.state_problem = _pde_problems.StateProblem(
             self.form_handler, self.initial_guess
@@ -327,8 +328,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.form_handler, self.state_problem
         )
-        self.gradient_problem = _pde_problems.ControlGradientProblem(
-            self.form_handler, self.state_problem, self.adjoint_problem
+        self.gradient_problem: _pde_problems.ControlGradientProblem = (
+            _pde_problems.ControlGradientProblem(
+                self.form_handler, self.state_problem, self.adjoint_problem
+            )
         )
 
         self.algorithm = _utils.optimization_algorithm_configuration(self.config)
@@ -358,18 +361,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def solve(
         self,
-        algorithm: Optional[
-            Literal[
-                "gradient_descent",
-                "gd",
-                "conjugate_gradient",
-                "nonlinear_cg",
-                "ncg",
-                "lbfgs",
-                "bfgs",
-                "newton",
-            ]
-        ] = None,
+        algorithm: Optional[str] = None,
         rtol: Optional[float] = None,
         atol: Optional[float] = None,
         max_iter: Optional[int] = None,
@@ -578,7 +570,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def _parse_control_constraints(
         self,
-        control_constraints: Optional[List[List[fenics.Function, float]]],
+        control_constraints: Optional[List[List[Union[float, fenics.Function]]]],
     ) -> List[List[fenics.Function]]:
         """Checks, whether the given control constraints are feasible.
 
@@ -626,7 +618,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """Checks, whether given control constraints are valid."""
         self.require_control_constraints = [False] * self.control_dim
         for idx, pair in enumerate(self.control_constraints):
-            if not np.alltrue(pair[0].vector()[:] < pair[1].vector()[:]):
+            if not np.all(pair[0].vector()[:] < pair[1].vector()[:]):
                 raise _exceptions.InputError(
                     (
                         "cashocs._optimization.optimal_control."

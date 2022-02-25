@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 import fenics
 import numpy as np
@@ -170,7 +170,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         return None
 
     def _compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]]
+        self, search_direction: List[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 

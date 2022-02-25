@@ -19,12 +19,13 @@
 
 from __future__ import annotations
 
-from collections import deque
+import collections
 from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
+from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
@@ -34,6 +35,11 @@ if TYPE_CHECKING:
 
 class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
     """A limited memory BFGS method."""
+
+    history_s: collections.deque
+    history_y: collections.deque
+    history_rho: collections.deque
+    history_alpha: collections.deque
 
     def __init__(
         self,
@@ -50,31 +56,24 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         super().__init__(optimization_problem)
         self.line_search = line_search
 
-        self.temp = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
 
+        self._init_helpers()
+
+    def _init_helpers(self) -> None:
+        """Initializes the helper functions."""
+        self.temp = _utils.create_function_list(self.form_handler.control_spaces)
         if self.bfgs_memory_size > 0:
-            self.history_s = deque()
-            self.history_y = deque()
-            self.history_rho = deque()
-            self.history_alpha = deque()
-            self.gradient_prev = [
-                fenics.Function(function_space)
-                for function_space in self.form_handler.control_spaces
-            ]
-            self.y_k = [
-                fenics.Function(function_space)
-                for function_space in self.form_handler.control_spaces
-            ]
-            self.s_k = [
-                fenics.Function(function_space)
-                for function_space in self.form_handler.control_spaces
-            ]
+            self.history_s = collections.deque()
+            self.history_y = collections.deque()
+            self.history_rho = collections.deque()
+            self.history_alpha = collections.deque()
+            self.gradient_prev = _utils.create_function_list(
+                self.form_handler.control_spaces
+            )
+            self.y_k = _utils.create_function_list(self.form_handler.control_spaces)
+            self.s_k = _utils.create_function_list(self.form_handler.control_spaces)
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""

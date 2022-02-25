@@ -29,16 +29,18 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _forms
+    from cashocs import types
     from cashocs._pde_problems import state_problem as sp
 
 
 class AdjointProblem(pde_problem.PDEProblem):
     """This class implements the adjoint problem as well as its solver."""
 
+    number_of_solves: int
+
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
+        form_handler: types.FormHandler,
         state_problem: sp.StateProblem,
         temp_dict: Optional[Dict] = None,
     ) -> None:
@@ -60,10 +62,12 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.adjoints = self.form_handler.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
-        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
-        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+        self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol: float = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter: int = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose: bool = self.config.getboolean(
+            "StateSystem", "picard_verbose"
+        )
 
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]

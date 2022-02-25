@@ -24,7 +24,7 @@ the same optimization algorithms can be used for different types of problems.
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import fenics
 
@@ -50,7 +50,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]] = None
+        self, search_direction: List[fenics.Function]
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 

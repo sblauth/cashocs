@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -48,6 +48,7 @@ class ShapeFormHandler(form_handler.FormHandler):
     """
 
     scalar_product_matrix: fenics.PETScMatrix
+    material_derivative: ufl.Form
 
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem
@@ -60,8 +61,10 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         super().__init__(optimization_problem)
 
-        self.has_cashocs_remesh_flag = optimization_problem.has_cashocs_remesh_flag
-        self.temp_dir = optimization_problem.temp_dir
+        self.has_cashocs_remesh_flag: bool = (
+            optimization_problem.has_cashocs_remesh_flag
+        )
+        self.temp_dir: Optional[str] = optimization_problem.temp_dir
         self.boundaries = optimization_problem.boundaries
         self.shape_scalar_product = optimization_problem.shape_scalar_product
         self.uses_custom_scalar_product = (
@@ -290,7 +293,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _parse_pull_back_coefficients(self) -> None:
         """Parses the coefficients which are available for adding pullbacks."""
-        self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
+        self.state_adjoint_ids: List[int] = [coeff.id() for coeff in self.states] + [
             coeff.id() for coeff in self.adjoints
         ]
 
@@ -435,7 +438,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             trial = fenics.TrialFunction(self.deformation_space)
             test = fenics.TestFunction(self.deformation_space)
 
-            self.riesz_scalar_product = (
+            self.riesz_scalar_product: ufl.Form = (
                 fenics.Constant(2)
                 * self.mu_lame
                 / self.volumes
@@ -466,7 +469,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
                 self.inhomogeneous_mu = True
 
-                self.options_mu = [
+                self.options_mu: List[List[Union[str, int, float]]] = [
                     ["ksp_type", "cg"],
                     ["pc_type", "hypre"],
                     ["pc_hypre_type", "boomeramg"],
@@ -673,7 +676,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 (p - 2) / 2.0,
             )
             # noinspection PyTypeChecker
-            self.p_laplace_form = (
+            self.p_laplace_form: ufl.Form = (
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)

@@ -34,6 +34,7 @@ pep8:
   disable:
     - N803
     - N806
+    - N815
 
 pep257:
   run: true

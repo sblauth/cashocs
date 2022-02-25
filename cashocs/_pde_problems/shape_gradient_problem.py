@@ -24,7 +24,7 @@ shape gradient with a Riesz projection.
 from __future__ import annotations
 
 import configparser
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -78,7 +78,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
         if gradient_method.casefold() == "direct":
-            self.ksp_options = [
+            self.ksp_options: List[List[Union[str, int, float]]] = [
                 ["ksp_type", "preonly"],
                 ["pc_type", "lu"],
                 ["pc_factor_mat_solver_type", "mumps"],
@@ -232,7 +232,7 @@ class _PLaplaceProjector:
             gradient_method = config.get("OptimizationRoutine", "gradient_method")
 
             if gradient_method.casefold() == "direct":
-                self.ksp_options = [
+                self.ksp_options: List[List[Union[str, int, float]]] = [
                     ["ksp_type", "preonly"],
                     ["pc_type", "lu"],
                     ["pc_factor_mat_solver_type", "mumps"],

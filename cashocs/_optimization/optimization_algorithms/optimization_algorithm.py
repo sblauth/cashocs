@@ -22,10 +22,9 @@ from __future__ import annotations
 import abc
 from typing import Dict, Optional, TYPE_CHECKING
 
-import fenics
-
 from cashocs import _exceptions
 from cashocs import _loggers
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import types
@@ -54,10 +53,9 @@ class OptimizationAlgorithm(abc.ABC):
         self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
         self.gradient = optimization_problem.gradient
-        self.search_direction = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
+        self.search_direction = _utils.create_function_list(
+            self.form_handler.control_spaces
+        )
 
         self.optimization_variable_abstractions = (
             optimization_problem.optimization_variable_abstractions
@@ -227,14 +225,18 @@ class OptimizationAlgorithm(abc.ABC):
         """Initializes the solver."""
         self.converged = False
 
-        try:
-            self.iteration = self.temp_dict["OptimizationRoutine"].get(
-                "iteration_counter", 0
-            )
-            self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
-                "gradient_norm_initial", 0.0
-            )
-        except (TypeError, AttributeError):
+        if self.temp_dict is not None:
+            try:
+                self.iteration = self.temp_dict["OptimizationRoutine"].get(
+                    "iteration_counter", 0
+                )
+                self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
+                    "gradient_norm_initial", 0.0
+                )
+            except TypeError:
+                self.iteration = 0
+                self.gradient_norm_initial = 0.0
+        else:
             self.iteration = 0
             self.gradient_norm_initial = 0.0
 

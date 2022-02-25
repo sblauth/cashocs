@@ -87,7 +87,7 @@ def control_gradient_test(
         larger, everything works as expected.
 
     """
-    rng = rng or np.random
+    custom_rng = rng or np.random
 
     initial_state = []
     for j in range(ocp.control_dim):
@@ -101,7 +101,7 @@ def control_gradient_test(
         h = []
         for function_space in ocp.form_handler.control_spaces:
             temp = fenics.Function(function_space)
-            temp.vector()[:] = rng.rand(function_space.dim())
+            temp.vector()[:] = custom_rng.rand(function_space.dim())
             h.append(temp)
 
     for j in range(ocp.control_dim):
@@ -228,7 +228,8 @@ def shape_gradient_test(
         )
 
     rates = compute_convergence_rates(epsilons, residuals)
-    return np.min(rates)
+    result: float = np.min(rates)
+    return result
 
 
 def compute_convergence_rates(

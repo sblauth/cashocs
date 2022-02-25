@@ -35,10 +35,12 @@ if TYPE_CHECKING:
 class StateProblem(pde_problem.PDEProblem):
     """The state system."""
 
+    number_of_solves: int
+
     def __init__(
         self,
         form_handler: types.FormHandler,
-        initial_guess: List[fenics.Function],
+        initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.

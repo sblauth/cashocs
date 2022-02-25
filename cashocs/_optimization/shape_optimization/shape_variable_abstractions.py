@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -48,14 +48,14 @@ class ShapeVariableAbstractions(
         self.mesh_handler = optimization_problem.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
 
-        temp_dict = optimization_problem.temp_dict
-        if self.mesh_handler.do_remesh:
+        if self.mesh_handler.do_remesh and optimization_problem.temp_dict is not None:
+            temp_dict = optimization_problem.temp_dict
             optimization_problem.output_manager.set_remesh(
                 temp_dict.get("remesh_counter", 0)
             )
 
     def compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]] = None
+        self, search_direction: List[fenics.Function]
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 
@@ -75,14 +75,17 @@ class ShapeVariableAbstractions(
             The norm of the gradient.
 
         """
-        return np.sqrt(self.form_handler.scalar_product(self.gradient, self.gradient))
+        res: float = np.sqrt(
+            self.form_handler.scalar_product(self.gradient, self.gradient)
+        )
+        return res
 
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
         self.mesh_handler.revert_transformation()
 
     def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
+        self, search_direction: List[fenics.Function], stepsize: float, beta: float
     ) -> float:
         """Updates the optimization variables based on a line search.
 

@@ -32,6 +32,7 @@ from cashocs._utils.forms import summation
 from cashocs._utils.helpers import check_and_enlist_bcs
 from cashocs._utils.helpers import check_and_enlist_control_constraints
 from cashocs._utils.helpers import check_and_enlist_ksp_options
+from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.helpers import parse_remesh
@@ -62,4 +63,5 @@ __all__ = [
     "create_bcs_list",
     "assemble_and_solve_linear",
     "split_linear_forms",
+    "create_function_list",
 ]
