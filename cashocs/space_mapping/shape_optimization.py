@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import abc
 import collections
-import configparser
 from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -36,6 +35,7 @@ from cashocs._optimization.shape_optimization import shape_optimization_problem 
 
 if TYPE_CHECKING:
     from cashocs import io
+    from cashocs import types
 
 
 class FineModel(abc.ABC):
@@ -59,7 +59,7 @@ class FineModel(abc.ABC):
         self.cost_functional_value = None
 
     @abc.abstractmethod
-    def solve_and_evaluate(self):
+    def solve_and_evaluate(self) -> None:
         """Solves and evaluates the fine model.
 
         This needs to be overwritten with a custom implementation.
@@ -70,6 +70,8 @@ class FineModel(abc.ABC):
 
 class CoarseModel:
     """Coarse Model for space mapping shape optimization."""
+
+    coordinates_optimal: np.ndarray
 
     def __init__(
         self,
@@ -87,8 +89,12 @@ class CoarseModel:
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Dict] = None,
         min_max_terms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
@@ -130,7 +136,6 @@ class CoarseModel:
         # noinspection PyUnresolvedReferences
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
-        self.coordinates_optimal = None
 
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
@@ -163,7 +168,7 @@ class ParameterExtraction:
         coarse_model: CoarseModel,
         cost_functional_form: Union[ufl.Form, List[ufl.Form]],
         states: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
+        config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
@@ -189,10 +194,9 @@ class ParameterExtraction:
         self.scalar_tracking_forms = scalar_tracking_forms
         self.desired_weights = desired_weights
 
-        self.adjoints = [
-            fenics.Function(V)
-            for V in coarse_model.shape_optimization_problem.form_handler.adjoint_spaces
-        ]
+        self.adjoints = _utils.create_function_list(
+            coarse_model.shape_optimization_problem.form_handler.adjoint_spaces
+        )
 
         dict_states = {
             coarse_model.shape_optimization_problem.states[i]: self.states[i]
@@ -224,9 +228,7 @@ class ParameterExtraction:
         self.coordinates_initial = coarse_model.coordinates_initial
         self.deformation_handler = geometry.DeformationHandler(self.mesh)
 
-        self.shape_optimization_problem = None
-
-    def _solve(self, initial_guess: np.ndarray = None) -> None:
+    def _solve(self, initial_guess: Optional[np.ndarray] = None) -> None:
         """Solves the parameter extraction problem.
 
         Args:
@@ -238,20 +240,22 @@ class ParameterExtraction:
         else:
             self.deformation_handler.assign_coordinates(initial_guess)
 
-        self.shape_optimization_problem = sop.ShapeOptimizationProblem(
-            self.state_forms,
-            self.bcs_list,
-            self.cost_functional_form,
-            self.states,
-            self.adjoints,
-            self.boundaries,
-            config=self.config,
-            shape_scalar_product=self.shape_scalar_product,
-            initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            desired_weights=self.desired_weights,
-            scalar_tracking_forms=self.scalar_tracking_forms,
+        self.shape_optimization_problem: sop.ShapeOptimizationProblem = (
+            sop.ShapeOptimizationProblem(
+                self.state_forms,
+                self.bcs_list,
+                self.cost_functional_form,
+                self.states,
+                self.adjoints,
+                self.boundaries,
+                config=self.config,
+                shape_scalar_product=self.shape_scalar_product,
+                initial_guess=self.initial_guess,
+                ksp_options=self.ksp_options,
+                adjoint_ksp_options=self.adjoint_ksp_options,
+                desired_weights=self.desired_weights,
+                scalar_tracking_forms=self.scalar_tracking_forms,
+            )
         )
 
         self.shape_optimization_problem.solve()
@@ -296,6 +300,7 @@ class SpaceMapping:
             memory_size: The size of the memory for Broyden's method and the BFGS method
             verbose: A boolean flag which indicates, whether the output of the space
                 mapping method should be verbose. Default is ``True``.
+
         """
         self.fine_model = fine_model
         self.coarse_model = coarse_model
@@ -321,7 +326,7 @@ class SpaceMapping:
 
         self.x = self.fine_model.mesh
 
-        self.VCG = fenics.VectorFunctionSpace(self.x, "CG", 1)
+        self.deformation_space = fenics.VectorFunctionSpace(self.x, "CG", 1)
         self.deformation_handler_fine = geometry.DeformationHandler(
             self.fine_model.mesh
         )
@@ -329,28 +334,28 @@ class SpaceMapping:
             self.coarse_model.mesh
         )
 
-        self.z_star = [fenics.Function(self.VCG)]
+        self.z_star = [fenics.Function(self.deformation_space)]
         self.norm_z_star = 1.0
-        self.p_current = [fenics.Function(self.VCG)]
-        self.p_prev = [fenics.Function(self.VCG)]
-        self.h = [fenics.Function(self.VCG)]
-        self.v = [fenics.Function(self.VCG)]
-        self.u = [fenics.Function(self.VCG)]
-        self.transformation = fenics.Function(self.VCG)
+        self.p_current = [fenics.Function(self.deformation_space)]
+        self.p_prev = [fenics.Function(self.deformation_space)]
+        self.h = [fenics.Function(self.deformation_space)]
+        self.v = [fenics.Function(self.deformation_space)]
+        self.u = [fenics.Function(self.deformation_space)]
+        self.transformation = fenics.Function(self.deformation_space)
 
         self.stepsize = 1.0
         self.x_save = None
         self.current_mesh_quality = 1.0
 
-        self.diff = [fenics.Function(self.VCG)]
-        self.temp = [fenics.Function(self.VCG)]
-        self.dir_prev = [fenics.Function(self.VCG)]
-        self.difference = [fenics.Function(self.VCG)]
+        self.diff = [fenics.Function(self.deformation_space)]
+        self.temp = [fenics.Function(self.deformation_space)]
+        self.dir_prev = [fenics.Function(self.deformation_space)]
+        self.difference = [fenics.Function(self.deformation_space)]
 
-        self.history_s = collections.deque()
-        self.history_y = collections.deque()
-        self.history_rho = collections.deque()
-        self.history_alpha = collections.deque()
+        self.history_s: collections.deque = collections.deque()
+        self.history_y: collections.deque = collections.deque()
+        self.history_rho: collections.deque = collections.deque()
+        self.history_alpha: collections.deque = collections.deque()
 
     def _compute_initial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
@@ -372,7 +377,7 @@ class SpaceMapping:
 
         self.fine_model.solve_and_evaluate()
         # self.parameter_extraction._solve()
-        self.parameter_extraction._solve(
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
             initial_guess=self.coarse_model.coordinates_optimal
         )
         self.p_current[0].vector()[
@@ -508,7 +513,7 @@ class SpaceMapping:
 
             self.fine_model.solve_and_evaluate()
             # self.parameter_extraction._solve()
-            self.parameter_extraction._solve(
+            self.parameter_extraction._solve(  # pylint: disable=protected-access
                 initial_guess=self.coarse_model.coordinates_optimal
             )
             self.p_current[0].vector()[
@@ -537,6 +542,7 @@ class SpaceMapping:
 
                     self.fine_model.solve_and_evaluate()
                     # self.parameter_extraction._solve()
+                    # pylint: disable=protected-access
                     self.parameter_extraction._solve(
                         self.coarse_model.coordinates_optimal
                     )
@@ -724,6 +730,8 @@ class SpaceMapping:
         self.diff[0].vector()[:] = (
             self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
         )
-        eps = np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
+        eps: float = (
+            np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
+        )
 
         return eps

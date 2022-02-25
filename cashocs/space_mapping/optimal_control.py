@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import abc
 import collections
-import configparser
 from typing import Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -35,6 +34,7 @@ from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 
 if TYPE_CHECKING:
     from cashocs import io
+    from cashocs import types
 
 
 class FineModel(abc.ABC):
@@ -46,10 +46,12 @@ class FineModel(abc.ABC):
 
     """
 
+    controls: List[fenics.Function]
+    cost_functional_value: float
+
     def __init__(self) -> None:
         """Initializes self."""
-        self.controls = None
-        self.cost_functional_value = None
+        pass
 
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
@@ -66,20 +68,24 @@ class CoarseModel:
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
+        state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        controls: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[List[List[List[str]]]] = None,
-        adjoint_ksp_options: Optional[List[List[List[str]]]] = None,
+        ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
@@ -146,13 +152,15 @@ class CoarseModel:
 class ParameterExtraction:
     """Parameter extraction for optimal control problems."""
 
+    controls: List[fenics.Function]
+
     def __init__(
         self,
         coarse_model: CoarseModel,
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        config: Optional[configparser.ConfigParser] = None,
+        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        states: Union[List[fenics.Function], fenics.Function],
+        controls: Union[List[fenics.Function], fenics.Function],
+        config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
@@ -179,10 +187,9 @@ class ParameterExtraction:
         self.scalar_tracking_forms = scalar_tracking_forms
         self.desired_weights = desired_weights
 
-        self.adjoints = [
-            fenics.Function(V)
-            for V in coarse_model.optimal_control_problem.form_handler.adjoint_spaces
-        ]
+        self.adjoints = _utils.create_function_list(
+            coarse_model.optimal_control_problem.form_handler.adjoint_spaces
+        )
 
         dict_states = {
             coarse_model.optimal_control_problem.states[i]: self.states[i]
@@ -217,8 +224,6 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
 
-        self.optimal_control_problem = None
-
     def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
         """Solves the parameter extraction problem.
 
@@ -233,21 +238,23 @@ class ParameterExtraction:
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = initial_guesses[i].vector()[:]
 
-        self.optimal_control_problem = ocp.OptimalControlProblem(
-            self.state_forms,
-            self.bcs_list,
-            self.cost_functional_form,
-            self.states,
-            self.controls,
-            self.adjoints,
-            config=self.config,
-            riesz_scalar_products=self.riesz_scalar_products,
-            control_constraints=self.control_constraints,
-            initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            desired_weights=self.desired_weights,
-            scalar_tracking_forms=self.scalar_tracking_forms,
+        self.optimal_control_problem: ocp.OptimalControlProblem = (
+            ocp.OptimalControlProblem(
+                self.state_forms,
+                self.bcs_list,
+                self.cost_functional_form,
+                self.states,
+                self.controls,
+                self.adjoints,
+                config=self.config,
+                riesz_scalar_products=self.riesz_scalar_products,
+                control_constraints=self.control_constraints,
+                initial_guess=self.initial_guess,
+                ksp_options=self.ksp_options,
+                adjoint_ksp_options=self.adjoint_ksp_options,
+                desired_weights=self.desired_weights,
+                scalar_tracking_forms=self.scalar_tracking_forms,
+            )
         )
 
         self.optimal_control_problem.solve()
@@ -324,7 +331,7 @@ class SpaceMapping:
             self.coarse_model.optimal_control_problem.form_handler.control_dim
         )
 
-        self.x = _utils.enlist(self.fine_model.controls)
+        self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
@@ -340,22 +347,22 @@ class SpaceMapping:
         ]
 
         self.p_current = self.parameter_extraction.controls
-        self.p_prev = [fenics.Function(V) for V in control_spaces_coarse]
-        self.h = [fenics.Function(V) for V in control_spaces_coarse]
-        self.v = [fenics.Function(V) for V in control_spaces_coarse]
-        self.u = [fenics.Function(V) for V in control_spaces_coarse]
+        self.p_prev = _utils.create_function_list(control_spaces_coarse)
+        self.h = _utils.create_function_list(control_spaces_coarse)
+        self.v = _utils.create_function_list(control_spaces_coarse)
+        self.u = _utils.create_function_list(control_spaces_coarse)
 
-        self.x_save = [fenics.Function(V) for V in control_spaces_fine]
+        self.x_save = _utils.create_function_list(control_spaces_fine)
 
-        self.diff = [fenics.Function(V) for V in control_spaces_coarse]
-        self.temp = [fenics.Function(V) for V in control_spaces_coarse]
-        self.dir_prev = [fenics.Function(V) for V in control_spaces_coarse]
-        self.difference = [fenics.Function(V) for V in control_spaces_coarse]
+        self.diff = _utils.create_function_list(control_spaces_coarse)
+        self.temp = _utils.create_function_list(control_spaces_coarse)
+        self.dir_prev = _utils.create_function_list(control_spaces_coarse)
+        self.difference = _utils.create_function_list(control_spaces_coarse)
 
-        self.history_s = collections.deque()
-        self.history_y = collections.deque()
-        self.history_rho = collections.deque()
-        self.history_alpha = collections.deque()
+        self.history_s: collections.deque = collections.deque()
+        self.history_y: collections.deque = collections.deque()
+        self.history_rho: collections.deque = collections.deque()
+        self.history_alpha: collections.deque = collections.deque()
 
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
@@ -372,7 +379,7 @@ class SpaceMapping:
         self._compute_intial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve(
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
             initial_guesses=[
                 self.ips_to_coarse[i].interpolate(self.x[i])
                 for i in range(self.control_dim)
@@ -504,7 +511,7 @@ class SpaceMapping:
                 )
 
             self.fine_model.solve_and_evaluate()
-            self.parameter_extraction._solve(
+            self.parameter_extraction._solve(  # pylint: disable=protected-access
                 initial_guesses=[
                     self.ips_to_coarse[i].interpolate(self.x[i])
                     for i in range(self.control_dim)
@@ -525,7 +532,7 @@ class SpaceMapping:
                         * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
                     )
                 self.fine_model.solve_and_evaluate()
-                self.parameter_extraction._solve(
+                self.parameter_extraction._solve(  # pylint: disable=protected-access
                     initial_guesses=[
                         self.ips_to_coarse[i].interpolate(self.x[i])
                         for i in range(self.control_dim)
@@ -720,6 +727,8 @@ class SpaceMapping:
             self.diff[i].vector()[:] = (
                 self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
             )
-            eps = np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
+        eps: float = (
+            np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
+        )
 
-            return eps
+        return eps
