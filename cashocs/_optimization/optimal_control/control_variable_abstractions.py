@@ -24,6 +24,7 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 import numpy as np
 
+from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
@@ -47,10 +48,9 @@ class ControlVariableAbstractions(
         super().__init__(optimization_problem)
 
         self.controls = optimization_problem.controls
-        self.control_temp = [
-            fenics.Function(function_space)
-            for function_space in optimization_problem.control_spaces
-        ]
+        self.control_temp = _utils.create_function_list(
+            optimization_problem.control_spaces
+        )
         for i in range(len(self.controls)):
             self.control_temp[i].vector().vec().aypx(
                 0.0, self.controls[i].vector().vec()
@@ -100,7 +100,7 @@ class ControlVariableAbstractions(
             )
 
     def update_optimization_variables(
-        self, search_direction, stepsize: float, beta: float
+        self, search_direction: List[fenics.Function], stepsize: float, beta: float
     ) -> float:
         """Updates the optimization variables based on a line search.
 
@@ -132,7 +132,8 @@ class ControlVariableAbstractions(
             The norm of the gradient.
 
         """
-        return np.sqrt(self._stationary_measure_squared())
+        result: float = np.sqrt(self._stationary_measure_squared())
+        return result
 
     def _stationary_measure_squared(self) -> float:
         """Computes the stationary measure (squared) corresponding to box-constraints.

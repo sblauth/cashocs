@@ -244,7 +244,7 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
             mesh_file = input_arg.get("Mesh", "mesh_file")
         else:
             with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-                temp_dict = json.load(file)
+                temp_dict: Dict = json.load(file)
             mesh_file = temp_dict["mesh_file"]
 
     file_string = mesh_file[:-5]

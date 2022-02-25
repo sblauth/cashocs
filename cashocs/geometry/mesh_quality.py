@@ -19,6 +19,8 @@
 
 from __future__ import annotations
 
+from typing import List, Union
+
 import fenics
 import numpy as np
 from petsc4py import PETSc
@@ -456,7 +458,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
-        options = [
+        options: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
             ["pc_jacobi_type", "diagonal"],
@@ -512,7 +514,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
-        options = [
+        options: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
             ["pc_jacobi_type", "diagonal"],

@@ -21,8 +21,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import fenics
-
+from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
@@ -48,14 +47,10 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         super().__init__(optimization_problem)
         self.line_search = line_search
 
-        self.gradient_prev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.difference = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
+        self.gradient_prev = _utils.create_function_list(
+            self.form_handler.control_spaces
+        )
+        self.difference = _utils.create_function_list(self.form_handler.control_spaces)
 
         self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(

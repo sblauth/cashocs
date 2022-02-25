@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 class StateProblem(pde_problem.PDEProblem):
     """The state system."""
 
+    number_of_solves: int
+
     def __init__(
         self,
         form_handler: types.FormHandler,

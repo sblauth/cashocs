@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import collections
-from typing import Union
+from typing import List, Union
 
 import fenics
 import numpy as np
@@ -69,7 +69,7 @@ class DeformationHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-        self.options_prior = [
+        self.options_prior: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
             ["pc_jacobi_type", "diagonal"],

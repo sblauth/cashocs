@@ -143,7 +143,7 @@ def check_and_enlist_ksp_options(
         )
 
 
-def parse_remesh() -> Tuple[bool, str]:
+def parse_remesh() -> Tuple[bool, Optional[str]]:
     """Parses command line arguments for the remeshing flag.
 
     Returns:
@@ -163,7 +163,7 @@ def parse_remesh() -> Tuple[bool, str]:
     )
     args = parser.parse_args()
 
-    temp_dir = args.temp_dir or None
+    temp_dir: Optional[str] = args.temp_dir or None
     cashocs_remesh_flag = bool(args.cashocs_remesh)
 
     return cashocs_remesh_flag, temp_dir
@@ -217,3 +217,22 @@ def optimization_algorithm_configuration(
         config.set("OptimizationRoutine", "algorithm", internal_algorithm)
 
     return internal_algorithm
+
+
+def create_function_list(
+    function_spaces: List[fenics.FunctionSpace],
+) -> List[fenics.Function]:
+    """Creates a list of functions.
+
+    Args:
+        function_spaces: The function spaces, where the resulting functions should be in
+
+    Returns:
+        A list of functions
+
+    """
+    function_list = [
+        fenics.Function(function_space) for function_space in function_spaces
+    ]
+
+    return function_list

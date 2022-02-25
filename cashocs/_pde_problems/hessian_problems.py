@@ -44,6 +44,25 @@ class HessianProblem:
     states_prime: List[fenics.Function]
     adjoints_prime: List[fenics.Function]
     bcs_list_ad: List[fenics.DirichletBC]
+    delta_control: List[fenics.Function]
+    residual: List[fenics.Function]
+    state_A_tensors: List[fenics.PETScMatrix]
+    adjoint_A_tensors: List[fenics.PETScMatrix]
+    state_b_tensors: List[fenics.PETScVector]
+    adjoint_b_tensors: List[fenics.PETScVector]
+    temp1: List[fenics.Function]
+    temp2: List[fenics.Function]
+    p: List[fenics.Function]
+    p_prev: List[fenics.Function]
+    p_pprev: List[fenics.Function]
+    s: List[fenics.Function]
+    s_prev: List[fenics.Function]
+    s_pprev: List[fenics.Function]
+    q: List[fenics.Function]
+    q_prev: List[fenics.Function]
+    hessian_actions: List[fenics.Function]
+    inactive_part: List[fenics.Function]
+    active_part: List[fenics.Function]
 
     def __init__(
         self,
@@ -70,87 +89,12 @@ class HessianProblem:
         self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
 
         self.test_directions = self.form_handler.test_directions
-        self.residual = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.delta_control = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
 
-        # pylint: disable=invalid-name
-        self.state_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
-        ]
-        self.state_b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
-        ]
-        # pylint: disable=invalid-name
-        self.adjoint_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
-        ]
-        self.adjoint_b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
-        ]
+        self._init_helper_functions()
+        self._init_linalg()
 
         self.state_dim = self.form_handler.state_dim
         self.control_dim = self.form_handler.control_dim
-
-        self.temp1 = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.temp2 = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-
-        self.p = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.p_prev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.p_pprev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.s = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.s_prev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.s_pprev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.q = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.q_prev = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-
-        self.hessian_actions = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.inactive_part = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
-        self.active_part = [
-            fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
-        ]
 
         self.controls = self.form_handler.controls
 
@@ -193,6 +137,47 @@ class HessianProblem:
         _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
         for i, ksp in enumerate(self.ksps):
             ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
+
+    def _init_helper_functions(self) -> None:
+        """Initializes the helper functions."""
+        self.residual = _utils.create_function_list(self.form_handler.control_spaces)
+        self.delta_control = _utils.create_function_list(
+            self.form_handler.control_spaces
+        )
+        self.temp1 = _utils.create_function_list(self.form_handler.control_spaces)
+        self.temp2 = _utils.create_function_list(self.form_handler.control_spaces)
+        self.p = _utils.create_function_list(self.form_handler.control_spaces)
+        self.p_prev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.p_pprev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.s = _utils.create_function_list(self.form_handler.control_spaces)
+        self.s_prev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.s_pprev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.q = _utils.create_function_list(self.form_handler.control_spaces)
+        self.q_prev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.hessian_actions = _utils.create_function_list(
+            self.form_handler.control_spaces
+        )
+        self.inactive_part = _utils.create_function_list(
+            self.form_handler.control_spaces
+        )
+        self.active_part = _utils.create_function_list(self.form_handler.control_spaces)
+
+    def _init_linalg(self) -> None:
+        """Initializes linear algebra matrices and vectors."""
+        # pylint: disable=invalid-name
+        self.state_A_tensors = [
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+        ]
+        self.state_b_tensors = [
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+        ]
+        # pylint: disable=invalid-name
+        self.adjoint_A_tensors = [
+            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+        ]
+        self.adjoint_b_tensors = [
+            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+        ]
 
     def hessian_application(
         self, h: List[fenics.Function], out: List[fenics.Function]

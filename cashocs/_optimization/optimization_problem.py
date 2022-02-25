@@ -66,6 +66,7 @@ class OptimizationProblem(abc.ABC):
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
+    use_scalar_tracking: bool = False
     temp_dict: Optional[Dict]
     algorithm: str
     line_search: ls.LineSearch
@@ -157,10 +158,9 @@ class OptimizationProblem(abc.ABC):
         self.cost_functional_list = _utils.enlist(cost_functional_form)
         self.cost_functional_form = _utils.summation(self.cost_functional_list)
 
-        self.states = _utils.enlist(states)
-        self.adjoints = _utils.enlist(adjoints)
+        self.states: List[fenics.Function] = _utils.enlist(states)
+        self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
 
-        self.use_scalar_tracking = False
         self.use_min_max_terms = False
         self.use_scaling = False
 
@@ -347,7 +347,7 @@ class OptimizationProblem(abc.ABC):
 
         """
         mod_forms = _utils.enlist(adjoint_forms)
-
+        mod_bcs_list: List
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
             for i in range(self.state_dim):
@@ -527,7 +527,7 @@ class OptimizationProblem(abc.ABC):
         self.form_handler.cost_functional_shift = shift
 
     @abc.abstractmethod
-    def gradient_test(self):
+    def gradient_test(self) -> float:
         """Test the correctness of the computed gradient with finite differences.
 
         Returns:
@@ -576,7 +576,7 @@ class OptimizationProblem(abc.ABC):
 
                 self.initial_scalar_tracking_values.append(val)
 
-    def _scale_cost_functional(self):
+    def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional and scalar_tracking forms."""
         _loggers.info(
             "You are using the automatic scaling functionality of cashocs."
@@ -589,7 +589,7 @@ class OptimizationProblem(abc.ABC):
 
         else:
             with open(f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-                temp_dict = json.load(file)
+                temp_dict: Dict = json.load(file)
             self.initial_function_values = temp_dict["initial_function_values"]
             if self.use_scalar_tracking:
                 self.initial_scalar_tracking_values = temp_dict[

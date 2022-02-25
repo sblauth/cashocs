@@ -76,7 +76,7 @@ class ConstrainedSolver(abc.ABC):
             self.lmbd = [0.0] * self.constraint_dim
 
         for constraint in self.constraints:
-            if constraint.is_pointwise_constraint:
+            if constraint.is_pointwise_constraint and constraint.measure is not None:
                 mesh = constraint.measure.ufl_domain().ufl_cargo()
                 self.cg_function_space = fenics.FunctionSpace(mesh, "CG", 1)
                 break
@@ -91,8 +91,8 @@ class ConstrainedSolver(abc.ABC):
         self.beta = 10.0
         self.inner_cost_functional_shift = 0.0
 
-        self.inner_scalar_tracking_forms: List[Dict] = []
-        self.inner_min_max_terms: List[Dict] = []
+        self.inner_scalar_tracking_forms: Optional[List[Dict]] = []
+        self.inner_min_max_terms: Optional[List[Dict]] = []
 
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
@@ -101,18 +101,19 @@ class ConstrainedSolver(abc.ABC):
 
     def _post_process_cost_functional(self) -> None:
         """Ensures that scalar_tracking_forms and min_max_terms are correct."""
-        if len(self.inner_scalar_tracking_forms) == 0:
-            self.inner_scalar_tracking_forms = (
-                self.constrained_problem.scalar_tracking_forms_initial
-            )
-        else:
-            if self.constrained_problem.scalar_tracking_forms_initial is not None:
-                self.inner_scalar_tracking_forms += (
+        if self.inner_scalar_tracking_forms is not None:
+            if len(self.inner_scalar_tracking_forms) == 0:
+                self.inner_scalar_tracking_forms = (
                     self.constrained_problem.scalar_tracking_forms_initial
                 )
-
-        if len(self.inner_min_max_terms) == 0:
-            self.inner_min_max_terms = None
+            else:
+                if self.constrained_problem.scalar_tracking_forms_initial is not None:
+                    self.inner_scalar_tracking_forms += (
+                        self.constrained_problem.scalar_tracking_forms_initial
+                    )
+        if self.inner_min_max_terms is not None:
+            if len(self.inner_min_max_terms) == 0:
+                self.inner_min_max_terms = None
 
     @abc.abstractmethod
     def solve(

@@ -24,7 +24,8 @@ import os
 import subprocess  # nosec B404
 import sys
 import tempfile
-from typing import Dict, List, Optional, TYPE_CHECKING, Union
+from types import TracebackType
+from typing import Dict, List, Optional, Type, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -413,7 +414,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 with open(
                     f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
                 ) as file:
-                    self.temp_dict = json.load(file)
+                    self.temp_dict: Dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -524,7 +525,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         (only needed for remeshing)
         """
 
-        def custom_except_hook(exctype, value, traceback) -> None:  # pragma: no cover
+        def custom_except_hook(
+            exctype: Type[BaseException], value: BaseException, traceback: TracebackType
+        ) -> None:  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
             Args:

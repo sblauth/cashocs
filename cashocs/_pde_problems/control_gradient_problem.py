@@ -23,7 +23,7 @@ cost functional.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 from petsc4py import PETSc
@@ -73,7 +73,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 
-        option = []
+        option: List[List[Union[str, int, float]]] = []
         if gradient_method.casefold() == "direct":
             option = [
                 ["ksp_type", "preonly"],

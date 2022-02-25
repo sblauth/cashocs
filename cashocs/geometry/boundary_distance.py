@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import fenics
 import numpy as np
@@ -32,7 +32,7 @@ from cashocs.geometry import measure
 def compute_boundary_distance(
     mesh: fenics.Mesh,
     boundaries: Optional[fenics.MeshFunction] = None,
-    boundary_idcs: Optional[List[int]] = None,
+    boundary_idcs: Optional[List[Union[int, str]]] = None,
     tol: float = 1e-1,
     max_iter: int = 10,
 ) -> fenics.Function:
@@ -67,7 +67,7 @@ def compute_boundary_distance(
 
     # noinspection PyUnresolvedReferences
     ksp = PETSc.KSP().create()
-    ksp_options = [
+    ksp_options: List[List[Union[str, int, float]]] = [
         ["ksp_type", "cg"],
         ["pc_type", "hypre"],
         ["pc_hypre_type", "boomeramg"],

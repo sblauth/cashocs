@@ -87,7 +87,10 @@ class LineSearch(abc.ABC):
 
     @abc.abstractmethod
     def search(
-        self, solver, search_direction: List[fenics.Function], has_curvature_info: bool
+        self,
+        solver: optimization_algorithms.OptimizationAlgorithm,
+        search_direction: List[fenics.Function],
+        has_curvature_info: bool,
     ) -> None:
         """Performs a line search.
 

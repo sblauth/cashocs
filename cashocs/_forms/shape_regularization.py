@@ -25,7 +25,7 @@ and barycenter, and desired ones.
 from __future__ import annotations
 
 import json
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -531,7 +531,7 @@ class ShapeRegularization:
                 with open(
                     f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
                 ) as file:
-                    temp_dict = json.load(file)
+                    temp_dict: Dict = json.load(file)
 
                 self.mu_volume = temp_dict["Regularization"]["mu_volume"]
                 self.mu_surface = temp_dict["Regularization"]["mu_surface"]
