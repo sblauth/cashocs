@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import argparse
 import configparser
-from typing import List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
+from typing import cast, List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 
@@ -97,10 +97,16 @@ def check_and_enlist_control_constraints(
     if isinstance(control_constraints, list) and isinstance(
         control_constraints[0], list
     ):
+        control_constraints = cast(
+            List[List[Union[float, int, fenics.Function]]], control_constraints
+        )
         return control_constraints
     elif isinstance(control_constraints, list) and not isinstance(
         control_constraints[0], list
     ):
+        control_constraints = cast(
+            List[Union[float, int, fenics.Function]], control_constraints
+        )
         return [control_constraints]
     else:
         raise _exceptions.InputError(
@@ -127,6 +133,7 @@ def check_and_enlist_ksp_options(
         and isinstance(ksp_options[0], list)
         and isinstance(ksp_options[0][0], (str, int, float))
     ):
+        ksp_options = cast(List[List[Union[str, int, float]]], ksp_options)
         return [ksp_options[:]]
 
     elif (
@@ -134,6 +141,7 @@ def check_and_enlist_ksp_options(
         and isinstance(ksp_options[0], list)
         and isinstance(ksp_options[0][0], list)
     ):
+        ksp_options = cast(types.KspOptions, ksp_options)
         return ksp_options[:]
     else:
         raise _exceptions.InputError(

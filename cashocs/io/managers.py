@@ -286,11 +286,13 @@ class TempFileManager:
         """
         if self.is_shape_problem:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-            if mesh_handler.do_remesh and not self.config.getboolean(
-                "Debug", "remeshing"
+            if (
+                mesh_handler.do_remesh
+                and not self.config.getboolean("Debug", "remeshing")
+                and mesh_handler.temp_dict is not None
             ):
                 subprocess.run(  # nosec B603
-                    ["rm", "-r", mesh_handler.temp_dir],
+                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
                     check=True,
                 )
                 subprocess.run(  # nosec B603

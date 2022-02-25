@@ -73,6 +73,7 @@ class OptimizationProblem(abc.ABC):
     hessian_problem: _pde_problems.HessianProblem
     solver: optimization_algorithms.OptimizationAlgorithm
     config: io.Config
+    initial_guess: Optional[List[fenics.Function]]
 
     def __init__(
         self,
@@ -84,7 +85,7 @@ class OptimizationProblem(abc.ABC):
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
+        initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
         ksp_options: Optional[
             Union[types.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
@@ -260,8 +261,8 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            self.ksp_options = []
-            option = [
+            self.ksp_options: types.KspOptions = []
+            option: List[List[Union[str, int, float]]] = [
                 ["ksp_type", "preonly"],
                 ["pc_type", "lu"],
                 ["pc_factor_mat_solver_type", "mumps"],
@@ -273,7 +274,7 @@ class OptimizationProblem(abc.ABC):
         else:
             self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
-        self.adjoint_ksp_options = (
+        self.adjoint_ksp_options: types.KspOptions = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
@@ -554,7 +555,7 @@ class OptimizationProblem(abc.ABC):
 
             self.initial_function_values.append(val)
 
-        if self.use_scalar_tracking:
+        if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
             self.initial_scalar_tracking_values = []
             for i in range(len(self.scalar_tracking_forms)):
                 val = 0.5 * pow(
@@ -584,27 +585,30 @@ class OptimizationProblem(abc.ABC):
             "functional yourself or if you supply custom forms."
         )
 
-        if not self.has_cashocs_remesh_flag:
-            self._compute_initial_function_values()
+        if self.use_scaling and self.desired_weights is not None:
+            if not self.has_cashocs_remesh_flag:
+                self._compute_initial_function_values()
 
-        else:
-            with open(f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-                temp_dict: Dict = json.load(file)
-            self.initial_function_values = temp_dict["initial_function_values"]
-            if self.use_scalar_tracking:
-                self.initial_scalar_tracking_values = temp_dict[
-                    "initial_scalar_tracking_values"
-                ]
+            else:
+                with open(
+                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
+                ) as file:
+                    temp_dict: Dict = json.load(file)
+                self.initial_function_values = temp_dict["initial_function_values"]
+                if self.use_scalar_tracking:
+                    self.initial_scalar_tracking_values = temp_dict[
+                        "initial_scalar_tracking_values"
+                    ]
 
-        for i in range(len(self.cost_functional_list)):
-            const = fenics.Constant(
-                np.abs(self.desired_weights[i] / self.initial_function_values[i])
-            )
-            self.cost_functional_list[i] = const * self.cost_functional_list[i]
-
-        if self.use_scalar_tracking:
-            for i in range(len(self.scalar_tracking_forms)):
-                self.scalar_tracking_forms[-1 - i]["weight"] = abs(
-                    self.desired_weights[-1 - i]
-                    / self.initial_scalar_tracking_values[-1 - i]
+            for i in range(len(self.cost_functional_list)):
+                const = fenics.Constant(
+                    np.abs(self.desired_weights[i] / self.initial_function_values[i])
                 )
+                self.cost_functional_list[i] = const * self.cost_functional_list[i]
+
+            if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
+                for i in range(len(self.scalar_tracking_forms)):
+                    self.scalar_tracking_forms[-1 - i]["weight"] = abs(
+                        self.desired_weights[-1 - i]
+                        / self.initial_scalar_tracking_values[-1 - i]
+                    )

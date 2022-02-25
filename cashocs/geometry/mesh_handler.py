@@ -25,7 +25,7 @@ import os
 import subprocess  # nosec B404
 import sys
 import tempfile
-from typing import List, TYPE_CHECKING
+from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -112,6 +112,7 @@ class _MeshHandler:
 
     current_mesh_quality: float
     mesh_quality_measure: str
+    temp_dict: Optional[Dict]
 
     def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
         """Initializes self.
@@ -132,8 +133,12 @@ class _MeshHandler:
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
         self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
 
-        self.mesh_quality_tol_lower = self.config.getfloat("MeshQuality", "tol_lower")
-        self.mesh_quality_tol_upper = self.config.getfloat("MeshQuality", "tol_upper")
+        self.mesh_quality_tol_lower: float = self.config.getfloat(
+            "MeshQuality", "tol_lower"
+        )
+        self.mesh_quality_tol_upper: float = self.config.getfloat(
+            "MeshQuality", "tol_upper"
+        )
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             _loggers.warning(
@@ -233,7 +238,7 @@ class _MeshHandler:
 
     def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
-        self.options_frobenius = [
+        self.options_frobenius: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
             ["pc_jacobi_type", "diagonal"],
@@ -316,7 +321,7 @@ class _MeshHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-        self.options_prior = [
+        self.options_prior: List[List[Union[str, int, float]]] = [
             ["ksp_type", "preonly"],
             ["pc_type", "jacobi"],
             ["pc_jacobi_type", "diagonal"],
@@ -393,6 +398,7 @@ class _MeshHandler:
             file.write("CreateGeometry;\n")
             file.write("\n")
 
+            self.temp_dict = cast(Dict, self.temp_dict)
             geo_file = self.temp_dict["geo_file"]
             with open(geo_file, "r", encoding="utf-8") as f:
                 for line in f:
@@ -483,7 +489,7 @@ class _MeshHandler:
             solver: The optimization algorithm used to solve the problem.
 
         """
-        if self.do_remesh:
+        if self.do_remesh and self.temp_dict is not None:
             self.remesh_counter += 1
             temp_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"

@@ -29,7 +29,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _forms
+    from cashocs import types
     from cashocs._pde_problems import state_problem as sp
 
 
@@ -40,7 +40,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
+        form_handler: types.FormHandler,
         state_problem: sp.StateProblem,
         temp_dict: Optional[Dict] = None,
     ) -> None:

@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, TYPE_CHECKING, Union
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 from petsc4py import PETSc
@@ -116,7 +116,7 @@ class FormHandler(abc.ABC):
         self.min_max_forms = optimization_problem.min_max_terms
         self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
 
-        self.is_shape_problem = optimization_problem.is_shape_problem
+        self.is_shape_problem: bool = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
         self.cost_functional_form = optimization_problem.cost_functional_form
@@ -125,13 +125,13 @@ class FormHandler(abc.ABC):
         self.lagrangian_form: ufl.Form = self.cost_functional_form + _utils.summation(
             self.state_forms
         )
-        self.cost_functional_shift = 0.0
+        self.cost_functional_shift: float = 0.0
 
         if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
             self.scalar_cost_functional_integrands = [
                 d["integrand"] for d in self.scalar_tracking_forms
             ]
-            self.scalar_tracking_goals = [
+            self.scalar_tracking_goals: List[float] = [
                 d["tracking_goal"] for d in self.scalar_tracking_forms
             ]
 
@@ -143,7 +143,7 @@ class FormHandler(abc.ABC):
                 fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
                 for mesh in dummy_meshes
             ]
-            self.scalar_weights = [
+            self.scalar_weights: List[fenics.Function] = [
                 fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
                 for mesh in dummy_meshes
             ]
@@ -159,22 +159,28 @@ class FormHandler(abc.ABC):
                     self.scalar_weights[j].vector().vec().set(1.0)
 
         if self.use_min_max_terms and self.min_max_forms is not None:
-            self.min_max_integrands = [d["integrand"] for d in self.min_max_forms]
-            self.min_max_lower_bounds = [d["lower_bound"] for d in self.min_max_forms]
-            self.min_max_upper_bounds = [d["upper_bound"] for d in self.min_max_forms]
+            self.min_max_integrands: list[ufl.Form] = [
+                d["integrand"] for d in self.min_max_forms
+            ]
+            self.min_max_lower_bounds: List[Optional[Union[float, fenics.Function]]] = [
+                d["lower_bound"] for d in self.min_max_forms
+            ]
+            self.min_max_upper_bounds: List[Optional[Union[float, fenics.Function]]] = [
+                d["upper_bound"] for d in self.min_max_forms
+            ]
 
             dummy_meshes = [
                 integrand.integrals()[0].ufl_domain().ufl_cargo()
                 for integrand in self.min_max_integrands
             ]
-            self.min_max_integrand_values = [
+            self.min_max_integrand_values: List[fenics.Function] = [
                 fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
                 for mesh in dummy_meshes
             ]
 
-            self.no_min_max_terms = len(self.min_max_integrands)
-            self.min_max_mu = []
-            self.min_max_lambda = []
+            self.no_min_max_terms: int = len(self.min_max_integrands)
+            self.min_max_mu: List[float] = []
+            self.min_max_lambda: List[float] = []
             for j in range(self.no_min_max_terms):
                 self.min_max_mu.append(self.min_max_forms[j]["mu"])
                 self.min_max_lambda.append(self.min_max_forms[j]["lambda"])

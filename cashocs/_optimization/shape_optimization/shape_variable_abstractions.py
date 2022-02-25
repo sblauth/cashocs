@@ -48,7 +48,7 @@ class ShapeVariableAbstractions(
         self.mesh_handler = optimization_problem.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
 
-        if self.mesh_handler.do_remesh:
+        if self.mesh_handler.do_remesh and optimization_problem.temp_dict is not None:
             temp_dict = optimization_problem.temp_dict
             optimization_problem.output_manager.set_remesh(
                 temp_dict.get("remesh_counter", 0)

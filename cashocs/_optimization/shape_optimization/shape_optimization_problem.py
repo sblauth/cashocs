@@ -25,12 +25,11 @@ import subprocess  # nosec B404
 import sys
 import tempfile
 from types import TracebackType
-from typing import Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, Type, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
 import numpy as np
-from typing_extensions import Literal
 import ufl
 import ufl.algorithms
 
@@ -63,6 +62,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1`` and so
     on).
     """
+
+    temp_dict: Optional[Dict]
 
     def __new__(
         cls,
@@ -146,7 +147,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         if use_scaling:
             unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(
+            unscaled_problem.__init__(  # type: ignore
                 state_forms,
                 bcs_list,
                 cost_functional_form,
@@ -292,12 +293,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.boundaries = boundaries
 
-        # shape_scalar_product
         self.shape_scalar_product = shape_scalar_product
         if shape_scalar_product is None:
             self.deformation_space: Optional[fenics.FunctionSpace] = None
         else:
-            self.deformation_space = self.shape_scalar_product.arguments()[
+            self.deformation_space = shape_scalar_product.arguments()[
                 0
             ].ufl_function_space()
 
@@ -319,7 +319,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.is_shape_problem = True
         self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(self)
 
-        if self.do_remesh and not self.has_cashocs_remesh_flag:
+        if (
+            self.do_remesh
+            and not self.has_cashocs_remesh_flag
+            and self.temp_dict is not None
+        ):
             # noinspection PyUnresolvedReferences
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
@@ -382,7 +386,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
             if not self.has_cashocs_remesh_flag:
                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-                self.temp_dir = tempfile.mkdtemp(
+                self.temp_dir: str = tempfile.mkdtemp(
                     prefix="._cashocs_remesh_temp_", dir=self.directory
                 )
                 self._change_except_hook()
@@ -414,7 +418,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 with open(
                     f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
                 ) as file:
-                    self.temp_dict: Dict = json.load(file)
+                    self.temp_dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -429,17 +433,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def solve(
         self,
-        algorithm: Optional[
-            Literal[
-                "gradient_descent",
-                "gd",
-                "conjugate_gradient",
-                "nonlinear_cg",
-                "ncg",
-                "lbfgs",
-                "bfgs",
-            ]
-        ] = None,
+        algorithm: Optional[str] = None,
         rtol: Optional[float] = None,
         atol: Optional[float] = None,
         max_iter: Optional[int] = None,
@@ -526,8 +520,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """
 
         def custom_except_hook(
-            exctype: Type[BaseException], value: BaseException, traceback: TracebackType
-        ) -> None:  # pragma: no cover
+            exctype: Type[BaseException],
+            value: BaseException,
+            traceback: Optional[TracebackType],
+        ) -> Any:  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
             Args:
@@ -545,7 +541,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
-            sys.__excepthook__(exctype, value, traceback)
+            sys.__excepthook__(exctype, value, traceback)  # type: ignore
 
         sys.excepthook = custom_except_hook
 

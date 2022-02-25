@@ -23,7 +23,7 @@ in the truncated Newton method.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -35,6 +35,7 @@ from cashocs import nonlinear_solvers
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import types
     from cashocs._pde_problems import control_gradient_problem
 
 
@@ -46,8 +47,8 @@ class HessianProblem:
     bcs_list_ad: List[fenics.DirichletBC]
     delta_control: List[fenics.Function]
     residual: List[fenics.Function]
-    state_A_tensors: List[fenics.PETScMatrix]
-    adjoint_A_tensors: List[fenics.PETScMatrix]
+    state_A_tensors: List[fenics.PETScMatrix]  # pylint: disable=invalid-name
+    adjoint_A_tensors: List[fenics.PETScMatrix]  # pylint: disable=invalid-name
     state_b_tensors: List[fenics.PETScVector]
     adjoint_b_tensors: List[fenics.PETScVector]
     temp1: List[fenics.Function]
@@ -121,7 +122,7 @@ class HessianProblem:
         # noinspection PyUnresolvedReferences
         self.ksps = [PETSc.KSP().create() for _ in range(self.control_dim)]
 
-        option = [
+        option: List[List[Union[str, int, float]]] = [
             ["ksp_type", "cg"],
             ["pc_type", "hypre"],
             ["pc_hypre_type", "boomeramg"],
@@ -130,7 +131,7 @@ class HessianProblem:
             ["ksp_atol", 1e-50],
             ["ksp_max_it", 100],
         ]
-        self.riesz_ksp_options = []
+        self.riesz_ksp_options: types.KspOptions = []
         for i in range(self.control_dim):
             self.riesz_ksp_options.append(option)
 

@@ -125,7 +125,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.scalar_tracking_forms_initial = _utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraint_list = _utils.enlist(constraint_list)
+        self.constraint_list: List[types.Constraint] = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
