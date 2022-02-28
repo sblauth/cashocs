@@ -112,7 +112,7 @@ def test_ocsm_parameter_extraction_single():
     parameter_extraction._solve()
     control_pe = u_pe.vector()[:]
     assert (
-        np.max(np.abs(control_ocp - control_pe)) / np.max(np.abs(control_ocp)) < 1e-10
+        np.max(np.abs(control_ocp - control_pe)) / np.max(np.abs(control_ocp)) < 1e-14
     )
 
 
@@ -137,8 +137,8 @@ def test_ocsm_parameter_extraction_multiple():
 
     e = [e_y, e_z]
 
-    bcs1 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
-    bcs2 = cashocs.create_bcs_list(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+    bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     bcs_list = [bcs1, bcs2]
 
@@ -188,8 +188,8 @@ def test_ocsm_parameter_extraction_multiple():
     )
     parameter_extraction._solve()
 
-    assert np.max(np.abs(u_ocp - u_pe.vector()[:])) / np.max(np.abs(u_ocp)) < 1e-10
-    assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-10
+    assert np.max(np.abs(u_ocp - u_pe.vector()[:])) / np.max(np.abs(u_ocp)) < 1e-14
+    assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-14
 
 
 def test_ocsm_broyden_good():
@@ -249,12 +249,12 @@ def test_ocsm_steepest_descent():
         coarse_model,
         parameter_extraction,
         method="sd",
-        max_iter=25,
-        tol=1e-1,
+        max_iter=8,
+        tol=2.5e-1,
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.0020279694112894232) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.009679680378323535) <= 1e-10
 
 
 def test_ocsm_ncg_FR():
@@ -281,12 +281,12 @@ def test_ocsm_ncg_PR():
         parameter_extraction,
         method="ncg",
         cg_type="PR",
-        max_iter=26,
-        tol=1e-1,
+        max_iter=9,
+        tol=2.5e-1,
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.002089331560588185) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.009238357434572573) <= 1e-10
 
 
 def test_ocsm_ncg_HS():
@@ -297,12 +297,12 @@ def test_ocsm_ncg_HS():
         parameter_extraction,
         method="ncg",
         cg_type="HS",
-        max_iter=43,
-        tol=1e-1,
+        max_iter=14,
+        tol=2.5e-1,
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.002036712799807993) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.009774404589612233) <= 1e-10
 
 
 def test_ocsm_ncg_DY():
@@ -329,9 +329,9 @@ def test_ocsm_ncg_HZ():
         parameter_extraction,
         method="ncg",
         cg_type="HZ",
-        max_iter=27,
-        tol=1e-1,
+        max_iter=5,
+        tol=2.5e-1,
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.0009045867413986848) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.008838073135261797) <= 1e-10
