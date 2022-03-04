@@ -124,11 +124,14 @@ class ControlFormHandler(form_handler.FormHandler):
             bcs: The boundary conditions for the projection.
 
         """
+        modified_scalar_product_forms = _utils.bilinear_boundary_form_modification(
+            scalar_product_forms
+        )
         try:
             self.assemblers = []
             for i in range(self.control_dim):
                 assembler = fenics.SystemAssembler(
-                    scalar_product_forms[i],
+                    modified_scalar_product_forms[i],
                     derivatives[i],
                     bcs[i],
                 )
@@ -146,7 +149,7 @@ class ControlFormHandler(form_handler.FormHandler):
                     ),
                 )
                 assembler = fenics.SystemAssembler(
-                    scalar_product_forms[i],
+                    modified_scalar_product_forms[i],
                     derivatives[i],
                     bcs[i],
                     form_compiler_parameters={"quadrature_degree": estimated_degree},

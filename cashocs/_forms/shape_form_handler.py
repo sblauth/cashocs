@@ -161,22 +161,27 @@ class ShapeFormHandler(form_handler.FormHandler):
             bcs: The boundary conditions for the projection
 
         """
+        modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            [scalar_product]
+        )[0]
         retry_assembler_setup = False
         if not self.degree_estimation:
             try:
                 self.assembler = fenics.SystemAssembler(
-                    scalar_product, shape_derivative, bcs
+                    modified_scalar_product, shape_derivative, bcs
                 )
             except (AssertionError, ValueError):
                 retry_assembler_setup = True
 
         if retry_assembler_setup or self.degree_estimation:
             estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(scalar_product),
+                ufl.algorithms.estimate_total_polynomial_degree(
+                    modified_scalar_product
+                ),
                 ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
             )
             self.assembler = fenics.SystemAssembler(
-                scalar_product,
+                modified_scalar_product,
                 shape_derivative,
                 bcs,
                 form_compiler_parameters={"quadrature_degree": estimated_degree},

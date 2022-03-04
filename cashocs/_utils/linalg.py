@@ -27,6 +27,7 @@ from petsc4py import PETSc
 import ufl
 
 from cashocs import _exceptions
+from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
     from cashocs import types
@@ -104,12 +105,13 @@ def assemble_petsc_system(
         allows for well-posed problems on the boundary etc.
 
     """
+    mod_lhs_form = forms_module.bilinear_boundary_form_modification([lhs_form])[0]
     if A_tensor is None:
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
     fenics.assemble_system(
-        lhs_form,
+        mod_lhs_form,
         rhs_form,
         bcs,
         keep_diagonal=True,

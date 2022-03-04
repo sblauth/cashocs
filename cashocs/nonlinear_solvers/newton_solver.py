@@ -121,7 +121,10 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
 
-        self.derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
+        temp_derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
+        self.derivative = _utils.bilinear_boundary_form_modification([temp_derivative])[
+            0
+        ]
 
         # Setup increment and function for monotonicity test
         self.function_space = u.function_space()
