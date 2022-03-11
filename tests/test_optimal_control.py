@@ -564,27 +564,25 @@ def test_scaling_scalar_only():
 
     u.vector()[:] = 40
 
-    J = Constant(0) * dx
     norm_y = y * y * dx
     norm_u = u * u * dx
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
-    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
-    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_y, J_u]
+    J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
+    J = [J_y, J_u]
 
-    desired_weights = rng.rand(3).tolist()
-    summ = sum(desired_weights[1:])
+    desired_weights = rng.rand(2).tolist()
+    summ = sum(desired_weights)
 
     test_ocp = cashocs.OptimalControlProblem(
         F,
         bcs,
-        [J],
+        J,
         y,
         u,
         p,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_ocp.reduced_cost_functional.evaluate()
 
@@ -603,9 +601,9 @@ def test_scaling_scalar_and_single_cost():
     norm_y = y * y * dx
     norm_u = u * u * dx
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
-    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
-    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_y, J_u]
+    J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
+    J_test = [J, J_y, J_u]
 
     desired_weights = rng.rand(3).tolist()
     summ = sum(desired_weights)
@@ -613,13 +611,12 @@ def test_scaling_scalar_and_single_cost():
     test_ocp = cashocs.OptimalControlProblem(
         F,
         bcs,
-        [J],
+        J_test,
         y,
         u,
         p,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_ocp.reduced_cost_functional.evaluate()
 
@@ -638,13 +635,11 @@ def test_scaling_all():
     norm_y = y * y * dx
     norm_u = u * u * dx
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
-    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
-    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_y, J_u]
-
+    J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
     J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
     J2 = Constant(0.5) * u * u * dx
-    J_list = [J1, J2]
+    J_list = [J1, J2, J_y, J_u]
 
     desired_weights = rng.rand(4).tolist()
     summ = sum(desired_weights)
@@ -658,7 +653,6 @@ def test_scaling_all():
         p,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_ocp.reduced_cost_functional.evaluate()
 

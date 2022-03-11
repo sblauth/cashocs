@@ -20,12 +20,13 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Set, Tuple, TYPE_CHECKING, Union
+from typing import List, Optional, Set, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl
 
+from cashocs import _exceptions
 from cashocs import _utils
 
 if TYPE_CHECKING:
@@ -343,7 +344,7 @@ class ScalarTrackingFunctional(Functional):
             scaling_factor: The scaling factor used to scale the functional
 
         """
-        pass
+        self.weight.vector().vec().set(scaling_factor)
 
     def update(self) -> None:
         """Updates the functional after solving the state equation."""
@@ -354,9 +355,32 @@ class ScalarTrackingFunctional(Functional):
 class MinMaxFunctional(Functional):
     """Cost functional involving a maximum of 0 and a integral term squared."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        integrand: ufl.Form,
+        lower_bound: Optional[Union[float, int]] = None,
+        upper_bound: Optional[Union[float, int]] = None,
+        mu: Union[float, int] = 1.0,
+        lambd: Union[float, int] = 0.0,
+    ) -> None:
         """Initializes self."""
         super().__init__()
+        self.integrand = integrand
+
+        if upper_bound is None and lower_bound is None:
+            raise _exceptions.InputError(
+                "cashocs.MinMaxFunctional",
+                "lower_bound and upper_bound",
+                "At least one of lower_bound or upper_bound must not be None.",
+            )
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        mesh = self.integrand.integrals()[0].ufl_domain().ufl_cargo()
+        self.integrand_value = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+        self.mu = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+        self.mu.vector().vec().set(mu)
+        self.lambd = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+        self.lambd.vector().vec().set(lambd)
 
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -365,7 +389,39 @@ class MinMaxFunctional(Functional):
             The current value of the functional.
 
         """
-        pass
+        min_max_integrand_value = fenics.assemble(self.integrand)
+        self.integrand_value.vector().vec().set(min_max_integrand_value)
+
+        val = 0.0
+        if self.lower_bound is not None:
+            val += (
+                1
+                / (2 * self.mu.vector().vec()[0])
+                * pow(
+                    np.minimum(
+                        0.0,
+                        self.lambd.vector().vec()[0]
+                        + self.mu.vector().vec()[0]
+                        * (min_max_integrand_value - self.lower_bound),
+                    ),
+                    2,
+                )
+            )
+        if self.upper_bound is not None:
+            val += (
+                1
+                / (2 * self.mu.vector().vec()[0])
+                * pow(
+                    np.maximum(
+                        0.0,
+                        self.lambd.vector().vec()[0]
+                        + self.mu.vector().vec()[0]
+                        * (min_max_integrand_value - self.upper_bound),
+                    ),
+                    2,
+                )
+            )
+        return val
 
     def derivative(
         self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
@@ -380,7 +436,30 @@ class MinMaxFunctional(Functional):
             A form of the resulting derivative
 
         """
-        pass
+        derivative_list = []
+        if self.lower_bound is not None:
+            term_lower = self.lambd + self.mu * (
+                self.integrand_value - self.lower_bound
+            )
+            derivative = fenics.derivative(
+                _utils.min_(fenics.Constant(0.0), term_lower) * self.integrand,
+                argument,
+                direction,
+            )
+            derivative_list.append(derivative)
+
+        if self.upper_bound is not None:
+            term_upper = self.lambd + self.mu * (
+                self.integrand_value - self.upper_bound
+            )
+            derivative = fenics.derivative(
+                _utils.max_(fenics.Constant(0.0), term_upper) * self.integrand,
+                argument,
+                direction,
+            )
+            derivative_list.append(derivative)
+
+        return _utils.summation(derivative_list)
 
     def coefficients(self) -> Tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
@@ -389,7 +468,8 @@ class MinMaxFunctional(Functional):
             The set of used coefficients.
 
         """
-        pass
+        coeffs: Tuple[fenics.Function] = self.integrand.coefficients()
+        return coeffs
 
     def scale(self, scaling_factor: Union[float, int]) -> None:
         """Scales the functional by a scalar.
@@ -399,6 +479,11 @@ class MinMaxFunctional(Functional):
 
         """
         pass
+
+    def update(self) -> None:
+        """Updates the functional after solving the state equation."""
+        min_max_integrand_value = fenics.assemble(self.integrand)
+        self.integrand_value.vector().vec().set(min_max_integrand_value)
 
 
 class Lagrangian:
