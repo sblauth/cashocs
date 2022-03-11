@@ -184,6 +184,21 @@ class Functional(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def scale(self, scaling_factor: Union[float, int]) -> None:
+        """Scales the functional by a scalar.
+
+        Args:
+            scaling_factor: The scaling factor used to scale the functional
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def update(self) -> None:
+        """Updates the functional after solving the state equation."""
+        pass
+
 
 class IntegralFunctional(Functional):
     """A functional which is given by the integral of ``form``."""
@@ -233,20 +248,45 @@ class IntegralFunctional(Functional):
         coeffs: Tuple[fenics.Function] = self.form.coefficients()
         return coeffs
 
+    def scale(self, scaling_factor: Union[float, int]) -> None:
+        """Scales the functional by a scalar.
+
+        Args:
+            scaling_factor: The scaling factor used to scale the functional
+
+        """
+        self.form = fenics.Constant(scaling_factor) * self.form
+
+    def update(self) -> None:
+        """Updates the functional after solving the state equation."""
+        pass
+
 
 class ScalarTrackingFunctional(Functional):
     """Tracking cost functional for scalar quantities arising due to integration."""
 
-    def __init__(self, integrand: ufl.Form, target: Union[float, int]) -> None:
+    def __init__(
+        self,
+        integrand: ufl.Form,
+        tracking_goal: Union[float, int],
+        weight: Union[float, int] = 1.0,
+    ) -> None:
         """Initializes self.
 
         Args:
             integrand: The integrand of the functional
-            target: A real number, which the integral of the integrand should track
+            tracking_goal: A real number, which the integral of the integrand should
+                track
+            weight: A real number which gives the scaling factor for this functional
+
         """
         super().__init__()
         self.integrand = integrand
-        self.target = target
+        self.tracking_goal = tracking_goal
+        mesh = self.integrand.integrals()[0].ufl_domain().ufl_cargo()
+        self.integrand_value = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+        self.weight = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
+        self.weight.vector().vec().set(weight)
 
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -255,7 +295,14 @@ class ScalarTrackingFunctional(Functional):
             The current value of the functional.
 
         """
-        pass
+        scalar_integral_value = fenics.assemble(self.integrand)
+        self.integrand_value.vector().vec().set(scalar_integral_value)
+        val: float = (
+            self.weight.vector().vec()[0]
+            / 2.0
+            * pow(scalar_integral_value - self.tracking_goal, 2)
+        )
+        return val
 
     def derivative(
         self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
@@ -270,7 +317,14 @@ class ScalarTrackingFunctional(Functional):
             A form of the resulting derivative
 
         """
-        pass
+        derivative = fenics.derivative(
+            self.weight
+            * (self.integrand_value - fenics.Constant(self.tracking_goal))
+            * self.integrand,
+            argument,
+            direction,
+        )
+        return derivative
 
     def coefficients(self) -> Tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
@@ -281,6 +335,20 @@ class ScalarTrackingFunctional(Functional):
         """
         coeffs: Tuple[fenics.Function] = self.integrand.coefficients()
         return coeffs
+
+    def scale(self, scaling_factor: Union[float, int]) -> None:
+        """Scales the functional by a scalar.
+
+        Args:
+            scaling_factor: The scaling factor used to scale the functional
+
+        """
+        pass
+
+    def update(self) -> None:
+        """Updates the functional after solving the state equation."""
+        scalar_integral_value = fenics.assemble(self.integrand)
+        self.integrand_value.vector().vec().set(scalar_integral_value)
 
 
 class MinMaxFunctional(Functional):
@@ -323,13 +391,22 @@ class MinMaxFunctional(Functional):
         """
         pass
 
+    def scale(self, scaling_factor: Union[float, int]) -> None:
+        """Scales the functional by a scalar.
+
+        Args:
+            scaling_factor: The scaling factor used to scale the functional
+
+        """
+        pass
+
 
 class Lagrangian:
     """A Lagrangian function for the optimization problem."""
 
     def __init__(
         self,
-        cost_functional_list: List[IntegralFunctional],
+        cost_functional_list: List[types.CostFunctional],
         state_forms: List[ufl.Form],
     ) -> None:
         """Initializes self.

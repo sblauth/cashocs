@@ -102,6 +102,8 @@ class StateProblem(pde_problem.PDEProblem):
 
     def _update_scalar_tracking_terms(self) -> None:
         """Updates the scalar_tracking_forms with current function values."""
+        for function in self.form_handler.cost_functional_list:
+            function.update()
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(

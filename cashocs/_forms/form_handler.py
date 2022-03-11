@@ -96,7 +96,7 @@ class FormHandler(abc.ABC):
     scalar_cost_functional_integrands: List[ufl.Form]
     scalar_cost_functional_integrand_values: List[fenics.Function]
     states: List[fenics.Function]
-    cost_functional_list: List[cost_functional.IntegralFunctional]
+    cost_functional_list: List[types.CostFunctional]
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.

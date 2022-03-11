@@ -74,7 +74,7 @@ class OptimizationProblem(abc.ABC):
     solver: optimization_algorithms.OptimizationAlgorithm
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
-    cost_functional_list: List[cost_functional.IntegralFunctional]
+    cost_functional_list: List[types.CostFunctional]
 
     def __init__(
         self,
@@ -82,7 +82,9 @@ class OptimizationProblem(abc.ABC):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
@@ -212,7 +214,10 @@ class OptimizationProblem(abc.ABC):
         self.adjoint_problem.has_solution = False
 
     def _parse_cost_functional_form(
-        self, cost_functional_form: Union[List[ufl.Form], ufl.Form]
+        self,
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
     ) -> None:
         """Parses the cost functional form for use in cashocs."""
         self.input_cost_functional_list = _utils.enlist(cost_functional_form)
@@ -222,6 +227,15 @@ class OptimizationProblem(abc.ABC):
                 self.cost_functional_list.append(
                     cost_functional.IntegralFunctional(functional)
                 )
+            elif isinstance(
+                functional,
+                (
+                    cost_functional.IntegralFunctional,
+                    cost_functional.ScalarTrackingFunctional,
+                    cost_functional.MinMaxFunctional,
+                ),
+            ):
+                self.cost_functional_list.append(functional)
 
     def _parse_optional_inputs(
         self,
@@ -613,13 +627,14 @@ class OptimizationProblem(abc.ABC):
                     ]
 
             for i, functional in enumerate(self.cost_functional_list):
-                const = fenics.Constant(
-                    np.abs(self.desired_weights[i] / self.initial_function_values[i])
+                scaling_factor = np.abs(
+                    self.desired_weights[i] / self.initial_function_values[i]
                 )
-                functional.form = const * functional.form
-                self.input_cost_functional_list[
-                    i
-                ] = functional.form  # TODO: replace this in cashocs v2
+                functional.scale(scaling_factor)
+                if isinstance(functional, cost_functional.IntegralFunctional):
+                    self.input_cost_functional_list[
+                        i
+                    ] = functional.form  # TODO: replace this in cashocs v2
 
             if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
                 for i in range(len(self.scalar_tracking_forms)):

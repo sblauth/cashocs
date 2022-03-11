@@ -53,7 +53,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraint_list: Union[List[types.Constraint], types.Constraint],
@@ -268,7 +270,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         bcs_list: Union[
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
@@ -444,7 +448,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             List[List[fenics.DirichletBC]],
             None,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
