@@ -304,7 +304,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
 
-        for coeff in self.lagrangian_form.coefficients():
+        for coeff in self.lagrangian.coefficients():
             self._check_coefficient_id(coeff)
 
         if self.use_scalar_tracking:
@@ -332,10 +332,8 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             for coeff in self.material_derivative_coeffs:
 
-                self.material_derivative = fenics.derivative(
-                    self.lagrangian_form,
-                    coeff,
-                    fenics.dot(fenics.grad(coeff), self.test_vector_field),
+                self.material_derivative = self.lagrangian.derivative(
+                    coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
 
                 self._add_scalar_tracking_pull_backs(coeff)
@@ -355,10 +353,8 @@ class ShapeFormHandler(form_handler.FormHandler):
         A corresponding warning whenever this could be the case is issued.
         """
         # Shape derivative of Lagrangian w/o regularization and pullbacks
-        self.shape_derivative = fenics.derivative(
-            self.lagrangian_form,
-            fenics.SpatialCoordinate(self.mesh),
-            self.test_vector_field,
+        self.shape_derivative = self.lagrangian.derivative(
+            fenics.SpatialCoordinate(self.mesh), self.test_vector_field
         )
 
         self._compute_scalar_tracking_shape_derivative()

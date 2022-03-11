@@ -27,6 +27,7 @@ from petsc4py import PETSc
 import ufl
 
 from cashocs import _utils
+from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import io
@@ -92,10 +93,10 @@ class FormHandler(abc.ABC):
     scalar_product_matrix: fenics.PETScMatrix
     mu_lame: fenics.Function
     config: io.Config
-    cost_functional_form: ufl.Form
     scalar_cost_functional_integrands: List[ufl.Form]
     scalar_cost_functional_integrand_values: List[fenics.Function]
     states: List[fenics.Function]
+    cost_functional_list: List[cost_functional.IntegralFunctional]
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
@@ -119,11 +120,11 @@ class FormHandler(abc.ABC):
         self.is_shape_problem: bool = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
-        self.cost_functional_form = optimization_problem.cost_functional_form
+        self.cost_functional_list = optimization_problem.cost_functional_list
         self.state_forms = optimization_problem.state_forms
 
-        self.lagrangian_form: ufl.Form = self.cost_functional_form + _utils.summation(
-            self.state_forms
+        self.lagrangian = cost_functional.Lagrangian(
+            self.cost_functional_list, self.state_forms
         )
         self.cost_functional_shift: float = 0.0
 
@@ -343,11 +344,7 @@ class FormHandler(abc.ABC):
     def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
         self.adjoint_eq_forms: List[ufl.Form] = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.states[i],
-                self.test_functions_adjoint[i],
-            )
+            self.lagrangian.derivative(self.states[i], self.test_functions_adjoint[i])
             for i in range(self.state_dim)
         ]
 

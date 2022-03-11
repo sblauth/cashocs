@@ -171,6 +171,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 control_bcs_list=control_bcs_list,
             )
             unscaled_problem._scale_cost_functional()  # overwrites cost functional list
+            cost_functional_form = 1
 
         return super().__new__(cls)
 

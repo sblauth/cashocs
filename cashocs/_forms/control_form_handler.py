@@ -344,11 +344,7 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
         self.gradient_forms_rhs = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.controls[i],
-                self.test_functions_control[i],
-            )
+            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
             for i in range(self.control_dim)
         ]
 
@@ -474,19 +470,11 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
         self.lagrangian_y = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.states[i],
-                self.test_functions_state[i],
-            )
+            self.lagrangian.derivative(self.states[i], self.test_functions_state[i])
             for i in range(self.state_dim)
         ]
         self.lagrangian_u = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.controls[i],
-                self.test_functions_control[i],
-            )
+            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
             for i in range(self.control_dim)
         ]
 

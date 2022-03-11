@@ -19,10 +19,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import abc
+from typing import List, Set, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
+import ufl
+
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
@@ -60,7 +64,11 @@ class ReducedCostFunctional:
         """
         self.state_problem.solve()
 
-        val: float = fenics.assemble(self.form_handler.cost_functional_form)
+        vals = [
+            functional.evaluate()
+            for functional in self.form_handler.cost_functional_list
+        ]
+        val = sum(vals)
         if self.form_handler.use_scalar_tracking:
             for j in range(self.form_handler.no_scalar_tracking_terms):
                 scalar_integral_value = fenics.assemble(
@@ -131,3 +139,246 @@ class ReducedCostFunctional:
             val += self.form_handler.shape_regularization.compute_objective()
 
         return val
+
+
+class Functional(abc.ABC):
+    """Base class for all cost functionals."""
+
+    def __init__(self) -> None:
+        """Initialize the functional."""
+        pass
+
+    @abc.abstractmethod
+    def evaluate(self) -> float:
+        """Evaluates the functional.
+
+        Returns:
+            The current value of the functional.
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the functional w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the functional is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def coefficients(self) -> Tuple[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
+
+        Returns:
+            The set of used coefficients.
+
+        """
+        pass
+
+
+class IntegralFunctional(Functional):
+    """A functional which is given by the integral of ``form``."""
+
+    def __init__(self, form: ufl.Form) -> None:
+        """Initializes self.
+
+        Args:
+            form: The form of the integrand, which is to be calculated for evaluating
+                the functional.
+        """
+        super().__init__()
+        self.form = form
+
+    def evaluate(self) -> float:
+        """Evaluates the functional.
+
+        Returns:
+            The current value of the functional.
+
+        """
+        val: float = fenics.assemble(self.form)
+        return val
+
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the functional w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the functional is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        return fenics.derivative(self.form, argument, direction)
+
+    def coefficients(self) -> Tuple[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
+
+        Returns:
+            The set of used coefficients.
+
+        """
+        coeffs: Tuple[fenics.Function] = self.form.coefficients()
+        return coeffs
+
+
+class ScalarTrackingFunctional(Functional):
+    """Tracking cost functional for scalar quantities arising due to integration."""
+
+    def __init__(self, integrand: ufl.Form, target: Union[float, int]) -> None:
+        """Initializes self.
+
+        Args:
+            integrand: The integrand of the functional
+            target: A real number, which the integral of the integrand should track
+        """
+        super().__init__()
+        self.integrand = integrand
+        self.target = target
+
+    def evaluate(self) -> float:
+        """Evaluates the functional.
+
+        Returns:
+            The current value of the functional.
+
+        """
+        pass
+
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the functional w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the functional is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        pass
+
+    def coefficients(self) -> Tuple[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
+
+        Returns:
+            The set of used coefficients.
+
+        """
+        coeffs: Tuple[fenics.Function] = self.integrand.coefficients()
+        return coeffs
+
+
+class MinMaxFunctional(Functional):
+    """Cost functional involving a maximum of 0 and a integral term squared."""
+
+    def __init__(self) -> None:
+        """Initializes self."""
+        super().__init__()
+
+    def evaluate(self) -> float:
+        """Evaluates the functional.
+
+        Returns:
+            The current value of the functional.
+
+        """
+        pass
+
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the functional w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the functional is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        pass
+
+    def coefficients(self) -> Tuple[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
+
+        Returns:
+            The set of used coefficients.
+
+        """
+        pass
+
+
+class Lagrangian:
+    """A Lagrangian function for the optimization problem."""
+
+    def __init__(
+        self,
+        cost_functional_list: List[IntegralFunctional],
+        state_forms: List[ufl.Form],
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            cost_functional_list: The list of cost functionals.
+            state_forms: The list of state forms.
+
+        """
+        self.cost_functional_list = cost_functional_list
+        self.state_forms = state_forms
+        self.summed_state_forms = _utils.summation(self.state_forms)
+
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the Lagrangian w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the Lagrangian is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        cost_functional_derivative_list = [
+            functional.derivative(argument, direction)
+            for functional in self.cost_functional_list
+        ]
+        cost_functional_derivative = _utils.summation(cost_functional_derivative_list)
+        state_forms_derivative = fenics.derivative(
+            self.summed_state_forms, argument, direction
+        )
+        derivative = cost_functional_derivative + state_forms_derivative
+        return derivative
+
+    def coefficients(self) -> Set[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
+
+        Returns:
+            The set of used coefficients.
+
+        """
+        state_coeffs = set(self.summed_state_forms.coefficients())
+        functional_coeffs = [
+            set(functional.coefficients()) for functional in self.cost_functional_list
+        ]
+        coeffs = set().union(*functional_coeffs)
+        coeffs.union(state_coeffs)
+
+        return coeffs
