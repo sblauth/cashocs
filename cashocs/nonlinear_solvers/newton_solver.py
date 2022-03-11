@@ -116,10 +116,11 @@ class _NewtonSolver:
         self.norm_type = norm_type
         self.damped = damped
         self.inexact = inexact
-        self.verbose = verbose
         self.A_tensor = A_tensor  # pylint: disable=invalid-name
         self.b_tensor = b_tensor
         self.is_linear = is_linear
+
+        self.verbose = verbose if not self.is_linear else False
 
         temp_derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
         self.derivative = _utils.bilinear_boundary_form_modification([temp_derivative])[
