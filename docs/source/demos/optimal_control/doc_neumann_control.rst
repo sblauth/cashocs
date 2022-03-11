@@ -39,12 +39,13 @@ Initially, the code is again identical to the previous ones (see :ref:`demo_pois
 i.e., we have ::
 
     from fenics import *
+
     import cashocs
 
+    config = cashocs.load_config("config.ini")
 
-    config = cashocs.load_config('./config.ini')
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-    V = FunctionSpace(mesh, 'CG', 1)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
@@ -57,19 +58,20 @@ Definition of the state equation
 Now, the definition of the state problem obviously differs from the
 previous two examples, and we use ::
 
-    e = inner(grad(y), grad(p))*dx + y*p*dx - u*p*ds
+    e = inner(grad(y), grad(p)) * dx + y * p * dx - u * p * ds
+
 
 which directly puts the Neumann boundary condition into the weak form.
 For this problem, we do not have Dirichlet boundary conditions, so that we
 use ::
 
-    bcs = None
+    bcs = []
 
 .. hint::
 
-    Alternatively, we could have also used a empty list, i.e., ::
+    Alternatively, we could have also used ::
 
-        bcs = []
+        bcs = None
 
 
 Definition of the cost functional
@@ -78,9 +80,9 @@ Definition of the cost functional
 The definition of the cost functional is nearly identical to before,
 only the integration measure for the regularization term changes, so that we have ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
 
 As the default Hilbert space for a control is :math:`L^2(\Omega)`, we now
 also have to change this, to accommodate for the fact that the control
@@ -88,7 +90,7 @@ variable u now lies in the space :math:`L^2(\Gamma)`, i.e., it is
 only defined on the boundary. This is done by defining the scalar
 product of the corresponding Hilbert space, which we do with ::
 
-    scalar_product = TrialFunction(V)*TestFunction(V)*ds
+    scalar_product = TrialFunction(V) * TestFunction(V) * ds
 
 The scalar_product always has to be a symmetric, coercive and continuous
 bilinear form, so that it induces an actual scalar product on the
@@ -112,7 +114,10 @@ With this, we can now define the optimal control problem with the
 additional keyword argument ``riesz_scalar_products`` and solve it with the
 :py:meth:`ocp.solve() <cashocs.OptimalControlProblem.solve>` command ::
 
-    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product
+    )
     ocp.solve()
 
 

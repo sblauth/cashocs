@@ -46,17 +46,17 @@ Initialization
 The initial setup is identical to the previous cases (see, :ref:`demo_poisson`), where we again use ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
 which defines the geometry and the function space.
 
-Defintion of the Functions
-**************************
+Defintion of the Problems
+*************************
 
 We now first define the state equation corresponding to the state :math:`y`. This
 is done in analogy to :ref:`demo_poisson` ::
@@ -110,49 +110,28 @@ Note, that the control variables are completely independent of the state
 and adjoint ones, so that the relative ordering between these objects does
 not matter.
 
-Defintion of the state system
-*****************************
-
-
-Now, we can define the PDE constraints corresponding to ``y`` and ``z``, which
-read in FEniCS syntax ::
-
-    e_y = inner(grad(y), grad(p))*dx - u*p*dx
-    e_z = inner(grad(z), grad(q))*dx - (y + v)*q*dx
-
-Again, the state equations have to be gathered into a list, where the order
-has to be in analogy to the list y, i.e., ::
-
-    e = [e_y, e_z]
-
-Finally, the boundary conditions for both states are homogeneous
-Dirichlet conditions, which we generate via ::
-
-    bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-    bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-
-    bcs_list = [bcs1, bcs2]
-
-and who are also put into a joint list ``bcs_list``.
-
 Defintion of the cost functional and optimization problem
 *********************************************************
 
 
 For the optimization problem we now define the cost functional via ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
-    z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+    z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
     alpha = 1e-6
     beta = 1e-4
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx \
-    	+ Constant(0.5*alpha)*u*u*dx + Constant(0.5*beta)*v*v*dx
+    J = (
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx
+        + Constant(0.5) * (z - z_d) * (z - z_d) * dx
+        + Constant(0.5 * alpha) * u * u * dx
+        + Constant(0.5 * beta) * v * v * dx
+    )
 
 This setup is sufficient to now define the optimal control problem and solve
 it, via ::
 
-    optimization_problem = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
-    optimization_problem.solve()
+    ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+    ocp.solve()
 
 The result should look like this
 

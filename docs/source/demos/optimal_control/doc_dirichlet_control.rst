@@ -88,15 +88,15 @@ Initialization
 The beginning of the program is nearly the same as for :ref:`demo_poisson` ::
 
     from fenics import *
-    import cashocs
     import numpy as np
 
+    import cashocs
 
-    config = cashocs.load_config('config.ini')
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
+    config = cashocs.load_config("config.ini")
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
     n = FacetNormal(mesh)
     h = MaxCellEdgeLength(mesh)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
@@ -129,26 +129,34 @@ Afterwards, we implement the weak form using Nitsche's method, as described abov
 is given by the code segment ::
 
     eta = Constant(1e4)
-    e = inner(grad(y), grad(p))*dx - inner(grad(y), n)*p*ds - inner(grad(p), n)*(y - u)*ds + eta/h*(y - u)*p*ds - Constant(1)*p*dx
+    e = (
+        inner(grad(y), grad(p)) * dx
+        - inner(grad(y), n) * p * ds
+        - inner(grad(p), n) * (y - u) * ds
+        + eta / h * (y - u) * p * ds
+        - Constant(1) * p * dx
+    )
 
 Finally, we can define the optimization problem similarly to :ref:`demo_neumann_control` ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-4
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*ds
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
 
 As for :ref:`demo_neumann_control`, we have to define a scalar product on
 :math:`L^2(\Gamma)` to get meaningful results (as the control is only defined on the boundary),
 which we do with ::
 
-    scalar_product = TrialFunction(V)*TestFunction(V)*ds
+    scalar_product = TrialFunction(V) * TestFunction(V) * ds
 
 Solution of the optimization problem
 ************************************
 
 The optimal control problem is solved with the usual syntax ::
 
-    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product)
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product
+    )
     ocp.solve()
 
 The result should look like this
@@ -161,7 +169,7 @@ The result should look like this
     using this approach. Therefore, we first compute the indices of all DOF's
     that lie on the boundary via ::
 
-        bcs = cashocs.create_dirichlet_bcs(V, 1, boundaries, [1,2,3,4])
+        bcs = cashocs.create_dirichlet_bcs(V, 1, boundaries, [1, 2, 3, 4])
         bdry_idx = Function(V)
         [bc.apply(bdry_idx.vector()) for bc in bcs]
         mask = np.where(bdry_idx.vector()[:] == 1)[0]
@@ -176,12 +184,18 @@ The result should look like this
     Finally, we compute the relative errors in the :math:`L^\infty(\Gamma)` and
     :math:`L^2(\Gamma)` norms and print the result ::
 
-        error_inf = np.max(np.abs(y_bdry.vector()[:] - u_bdry.vector()[:])) / np.max(np.abs(u_bdry.vector()[:])) * 100
-        error_l2 = np.sqrt(assemble((y - u)*(y - u)*ds)) / np.sqrt(assemble(u*u*ds)) * 100
+        error_inf = (
+            np.max(np.abs(y_bdry.vector()[:] - u_bdry.vector()[:]))
+            / np.max(np.abs(u_bdry.vector()[:]))
+            * 100
+        )
+        error_l2 = (
+            np.sqrt(assemble((y - u) * (y - u) * ds)) / np.sqrt(assemble(u * u * ds)) * 100
+        )
 
-        print('Error regarding the (weak) imposition of the boundary values')
-        print('Error L^\infty: ' + format(error_inf, '.3e') + ' %')
-        print('Error L^2: ' + format(error_l2, '.3e') + ' %')
+        print("Error regarding the (weak) imposition of the boundary values")
+        print("Error L^\infty: " + format(error_inf, ".3e") + " %")
+        print("Error L^2: " + format(error_l2, ".3e") + " %")
 
     We see, that with ``eta = 1e4`` we get a relative error of under 5e-3 % in the
     :math:`L^\infty(\Omega)` norm, and under 5e-4 in the :math:`L^2(\Omega)` norm, which is

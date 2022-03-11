@@ -38,6 +38,7 @@ Initialization
 We start the problem by using a wildcard import for FEniCS, and by importing cashocs ::
 
     from fenics import *
+
     import cashocs
 
 As for the case of optimal control problems, we can specify the verbosity of cashocs with
@@ -58,7 +59,7 @@ Next, we have to define the mesh. As the above problem is posed on the unit disc
 initially, we define this via FEniCS commands (cashocs only has rectangular meshes built
 in). This is done via the following code ::
 
-    meshlevel = 10
+    meshlevel = 15
     degree = 1
     dim = 2
     mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
@@ -66,7 +67,7 @@ in). This is done via the following code ::
 Next up, we define the :py:class:`fenics.Measure` objects, which we need to define
 the problem. For the volume measure, we can simply invoke ::
 
-    dx = Measure('dx', mesh)
+    dx = Measure("dx", mesh)
 
 However, for the surface measure, we need to mark the boundary. This is required since
 cashocs distinguishes between three types of boundaries: The deformable boundary, the
@@ -75,10 +76,10 @@ coordinate axis (see :ref:`the relevant documentation of the config files <confi
 case of a completely deformable boundary, which makes things rather
 easy. We mark this boundary with the marker ``1`` with the following piece of code ::
 
-    boundary = CompiledSubDomain('on_boundary')
-    boundaries = MeshFunction('size_t', mesh, dim=1)
+    boundary = CompiledSubDomain("on_boundary")
+    boundaries = MeshFunction("size_t", mesh, dim=1)
     boundary.mark(boundaries, 1)
-    ds = Measure('ds', mesh, subdomain_data=boundaries)
+    ds = Measure("ds", mesh, subdomain_data=boundaries)
 
 .. note::
 
@@ -102,7 +103,7 @@ cashocs.
 After having defined the initial geometry, we define a :py:class:`fenics.FunctionSpace` consisting of
 piecewise linear Lagrange elements via ::
 
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)
     p = Function(V)
 
@@ -119,11 +120,11 @@ This also defines our state variable :math:`u` as ``u``, and the adjoint state :
 The right-hand side of the PDE constraint is then defined as ::
 
     x = SpatialCoordinate(mesh)
-    f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
 which allows us to define the weak form of the state equation via ::
 
-    e = inner(grad(u), grad(p))*dx - f*p*dx
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
     bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
 The optimization problem and its solution
@@ -131,11 +132,13 @@ The optimization problem and its solution
 
 We are now almost done, the only thing left to do is to define the cost functional ::
 
-    J = u*dx
+    J = u * dx
+
 
 and the shape optimization problem ::
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
 
 This can then be solved in complete analogy to :ref:`demo_poisson` with
 the :py:meth:`sop.solve() <cashocs.ShapeOptimizationProblem.solve>` command ::

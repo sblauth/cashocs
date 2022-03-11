@@ -108,6 +108,12 @@ DeformationHandler
 	:undoc-members:
 	:inherited-members:
 	:noindex:
+	
+
+.. autoclass:: cashocs.Interpolator
+	:members:
+	:undoc-members:
+	:inherited-members:
 
 Functions
 ---------
@@ -189,5 +195,4 @@ of the sub-module.
    sub_modules/geometry
    sub_modules/io
    sub_modules/nonlinear_solvers
-   sub_modules/utils
    sub_modules/verification

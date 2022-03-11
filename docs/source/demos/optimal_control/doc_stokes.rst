@@ -54,10 +54,10 @@ Initialization
 The initialization is the same as in :ref:`demo_poisson`, i.e., ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('./config.ini')
+    config = cashocs.load_config("./config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(30)
 
 For the solution of the Stokes (and adjoint Stokes) system, which have a saddle point
@@ -67,10 +67,10 @@ For this demo, we use the classical Taylor-Hood elements of piecewise
 quadratic Lagrange elements for the velocity, and piecewise linear ones for the pressure,
 which are LBB-stable. These are defined as ::
 
-    v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
-    p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+    v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
     V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
-    U = VectorFunctionSpace(mesh, 'CG', 1)
+    U = VectorFunctionSpace(mesh, "CG", 1)
 
 Moreover, we have defined the control space ``U`` as :py:class:`fenics.FunctionSpace` with piecewise linear
 Lagrange elements.
@@ -91,7 +91,7 @@ velocity, and ``q`` the one of the adjoint pressure.
 
 Next up is the definition of the Stokes system. This can be done via ::
 
-    e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx - inner(c, v)*dx
+    e = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx - inner(c, v) * dx
 
 .. note::
 
@@ -103,11 +103,15 @@ Next up is the definition of the Stokes system. This can be done via ::
 The boundary conditions for this system can be defined as follows ::
 
     def pressure_point(x, on_boundary):
-    	return on_boundary and near(x[0], 0) and near(x[1], 0)
-    no_slip_bcs = cashocs.create_dirichlet_bcs(V.sub(0), Constant((0,0)), boundaries, [1,2,3])
-    lid_velocity = Expression(('4*x[0]*(1-x[0])', '0.0'), degree=2)
+        return near(x[0], 0) and near(x[1], 0)
+
+
+    no_slip_bcs = cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0, 0)), boundaries, [1, 2, 3]
+    )
+    lid_velocity = Expression(("4*x[0]*(1-x[0])", "0.0"), degree=2)
     bc_lid = DirichletBC(V.sub(0), lid_velocity, boundaries, 4)
-    bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method='pointwise')
+    bc_pressure = DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")
     bcs = no_slip_bcs + [bc_lid, bc_pressure]
 
 Here, we first define the point :math:`x^\text{pres}`, where the pressure is set to 0.
@@ -125,8 +129,17 @@ ones we considered. The only difference is the fact that we now have to use :py:
 to multiply the vector valued functions ``u``, ``u_d`` and ``c`` ::
 
     alpha = 1e-5
-    u_d = Expression(('sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])', '-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])'), degree=2)
-    J = Constant(0.5)*inner(u - u_d, u - u_d)*dx + Constant(0.5*alpha)*inner(c, c)*dx
+    u_d = Expression(
+        (
+            "sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])",
+            "-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])",
+        ),
+        degree=2,
+    )
+    J = (
+        Constant(0.5) * inner(u - u_d, u - u_d) * dx
+        + Constant(0.5 * alpha) * inner(c, c) * dx
+    )
 
 As in :ref:`demo_monolithic_problems`, we then set up the optimization problem ``ocp`` and solve it
 with the command :py:meth:`ocp.solve() <cashocs.OptimalControlProblem.solve>` ::

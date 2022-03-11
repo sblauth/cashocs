@@ -43,18 +43,18 @@ Initialization
 The initialization works exactly as in :ref:`demo_poisson` ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
     u = Function(V)
 
-    e = inner(grad(y), grad(p))*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx - u * p * dx
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Definition of the iterative solvers
@@ -64,12 +64,12 @@ The options for the state and adjoint systems are defined as follows. For the st
 system we have ::
 
     ksp_options = [
-    	['ksp_type', 'cg'],
-    	['pc_type', 'hypre'],
-    	['pc_hypre_type', 'boomeramg'],
-    	['ksp_rtol', 1e-10],
-    	['ksp_atol', 1e-13],
-    	['ksp_max_it', 100],
+        ["ksp_type", "cg"],
+        ["pc_type", "hypre"],
+        ["pc_hypre_type", "boomeramg"],
+        ["ksp_rtol", 1e-10],
+        ["ksp_atol", 1e-13],
+        ["ksp_max_it", 100],
     ]
 
 This is a list of lists, where the inner ones have either 1 or 2 entries,
@@ -83,24 +83,24 @@ under "Options Database Keys".
 
     For example, the first command ::
 
-        ['ksp_type', 'cg'],
+        ["ksp_type", "cg"],
 
     can be found in `KSPSetType <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetType.html#KSPSetType>`_, and the corresponding options are shown
     under `KSPTYPE <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html#KSPType>`_. Here, we see that the above line corresponds to using the
     conjugate gradient method as krylov solver. The following two lines ::
 
-        ['pc_type', 'hypre'],
-        ['pc_hypre_type', 'boomeramg'],
+        ["pc_type", "hypre"],
+        ["pc_hypre_type", "boomeramg"],
 
     specify that we use the algebraic multigrid preconditioner BOOMERAMG from HYPRE.
     This is documented in `PCSetType <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSetType.html#PCSetType>`_,
     `PCTYPE <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html>`_, and
     `PCHYPRETYPE <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html>`_. Finally, the last three lines ::
 
-        ['ksp_rtol', '1e-10'],
-        ['ksp_atol', '1e-13'],
-        ['ksp_max_it', 100],
-
+        ["ksp_rtol", 1e-10],
+        ["ksp_atol", 1e-13],
+        ["ksp_max_it", 100],
+        
     specify that we use a relative tolerance of 1e-10, an absolute one of 1e-13, and
     at most 100 iterations for each solve of the linear system, cf. `KSPSetTolerances
     <https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetTolerances.html#KSPSetTolerances>`_.
@@ -110,11 +110,11 @@ the adjoint system should be solved exactly the same as the state system. This i
 can also define PETSc options for the adjoint system, which we do with ::
 
     adjoint_ksp_options = [
-    	['ksp_type', 'minres'],
-    	['pc_type', 'icc'],
-    	['pc_factor_levels', 0],
-    	['ksp_rtol', 1e-6],
-    	['ksp_atol', 1e-15],
+        ["ksp_type", "minres"],
+        ["pc_type", "icc"],
+        ["pc_factor_levels", 0],
+        ["ksp_rtol", 1e-6],
+        ["ksp_atol", 1e-15],
     ]
 
 As can be seen, we now use a completely different solver, namely MINRES
@@ -140,11 +140,21 @@ rather different from the ones of the state system, as is shown here.
 
 With these definitions, we can now proceed as in :ref:`demo_poisson` and solve the optimization problem with ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 
-    ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config, ksp_options=ksp_options, adjoint_ksp_options=adjoint_ksp_options)
+    ocp = cashocs.OptimalControlProblem(
+        e,
+        bcs,
+        J,
+        y,
+        u,
+        p,
+        config,
+        ksp_options=ksp_options,
+        adjoint_ksp_options=adjoint_ksp_options,
+    )
     ocp.solve()
 
 .. note::

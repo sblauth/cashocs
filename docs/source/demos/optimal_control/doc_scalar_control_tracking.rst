@@ -50,19 +50,17 @@ and its setup are completely analogous to :ref:`demo_poisson` ::
 
     import cashocs
 
-
-
     cashocs.set_log_level(cashocs.LogLevel.INFO)
-    config = cashocs.load_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
     u = Function(V)
     u.vector()[:] = 1.0
 
-    e = inner(grad(y), grad(p))*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx - u * p * dx
 
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
@@ -73,7 +71,7 @@ Definition of the scalar tracking type cost functional
 Next, we define the cost functional. To do this in cashocs, we first have to set
 the usual cost functional to :math:`0` by writing the line ::
 
-    J = Constant(0)*dx
+    J = Constant(0) * dx
 
 This ensures that only the other terms will be active
 
@@ -110,7 +108,7 @@ We do this by defining a python dictionary, which includes these terms with the
 keywords ``'integrand'`` and ``'tracking_goal'``. For our model problem, the integrand
 is given by :math:`y^2 \text{ d}x`, which is defined in FEniCS via the line ::
 
-    integrand = y*y*dx
+    integrand = y * y * dx
 
 For the desired value of the (squared) norm of :math:`y` we use the value :math:`1.0`,
 i.e., we define ::
@@ -119,7 +117,7 @@ i.e., we define ::
 
 This is then put into a dictionary as follows ::
 
-    J_tracking = {'integrand' : integrand, 'tracking_goal' : tracking_goal}
+    J_tracking = {"integrand": integrand, "tracking_goal": tracking_goal}
 
 .. note::
 
@@ -138,7 +136,12 @@ now use the keyword argument ::
 
 to specify the correct cost functional for our problem.
 As usual, this is then solved with the :py:meth:`solve <cashocs.OptimalControlProblem.solve>`
-method of the optimization problem.
+method of the optimization problem ::
+
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs, J, y, u, p, config, scalar_tracking_forms=J_tracking
+    )
+    ocp.solve()
 
 Finally, we visualize the results using matplotlib and the following code ::
 

@@ -40,32 +40,32 @@ to the definition of the :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptim
 the code is identical to the one in :ref:`demo_shape_poisson`, and given by ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('./config.ini')
+    config = cashocs.load_config("./config.ini")
 
     meshlevel = 15
     degree = 1
     dim = 2
     mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-    dx = Measure('dx', mesh)
-    boundary = CompiledSubDomain('on_boundary')
-    boundaries = MeshFunction('size_t', mesh, dim=1)
+    dx = Measure("dx", mesh)
+    boundary = CompiledSubDomain("on_boundary")
+    boundaries = MeshFunction("size_t", mesh, dim=1)
     boundary.mark(boundaries, 1)
-    ds = Measure('ds', mesh, subdomain_data=boundaries)
+    ds = Measure("ds", mesh, subdomain_data=boundaries)
 
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)
     p = Function(V)
 
     x = SpatialCoordinate(mesh)
-    f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
-    e = inner(grad(u), grad(p))*dx - f*p*dx
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
     bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-    J = u*dx
+    J = u * dx
 
 
 Definition of the scalar product
@@ -76,11 +76,14 @@ proceed analogously to :ref:`demo_neumann_control` and define the corresponding 
 in FEniCS. However, note that one has to use a :py:class:`fenics.VectorFunctionSpace` with
 piecewise linear Lagrange elements, i.e., one has to define the corresponding function space as ::
 
-    VCG = VectorFunctionSpace(mesh, 'CG', 1)
+    VCG = VectorFunctionSpace(mesh, "CG", 1)
 
 With this, we can now define the bilinear form as follows ::
 
-    shape_scalar_product = inner((grad(TrialFunction(VCG))), (grad(TestFunction(VCG))))*dx + inner(TrialFunction(VCG), TestFunction(VCG))*dx
+    shape_scalar_product = (
+        inner((grad(TrialFunction(VCG))), (grad(TestFunction(VCG)))) * dx
+        + inner(TrialFunction(VCG), TestFunction(VCG)) * dx
+    )
 
 .. note::
 
@@ -95,7 +98,9 @@ With this, we can now define the bilinear form as follows ::
 Finally, we can set up the :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>`
 and solve it with the lines ::
 
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product)
+    sop = cashocs.ShapeOptimizationProblem(
+        e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
+    )
     sop.solve()
 
 

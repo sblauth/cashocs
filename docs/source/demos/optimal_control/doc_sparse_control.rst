@@ -37,23 +37,23 @@ the one of :ref:`demo_poisson` is in line 18, and is highlighted here.
     :emphasize-lines: 18
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('config.ini')
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-    V = FunctionSpace(mesh, 'CG', 1)
+    config = cashocs.load_config("config.ini")
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
     u = Function(V)
 
-    e = inner(grad(y), grad(p))*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx - u * p * dx
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-4
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*abs(u)*dx
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * abs(u) * dx
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()
@@ -61,7 +61,7 @@ the one of :ref:`demo_poisson` is in line 18, and is highlighted here.
 Note, that for the regularization term we now do not use ``Constant(0.5*alpha)*u*u*dx``,
 which corresponds to the :math:`L^2(\Omega)` norm squared, but rather ::
 
-    Constant(0.5*alpha)*abs(u)*dx
+    Constant(0.5 * alpha) * abs(u) * dx
 
 which corresponds to the :math:`L^1(\Omega)` norm. Other than that, the code is identical.
 The visualization of the code also shows, that we have indeed a sparse control

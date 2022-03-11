@@ -46,12 +46,12 @@ is tackled almost as easily as the one in :ref:`demo_poisson`. In particular, th
 up to the definition of the weak form of the PDE constraint, is identical, and we have ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
@@ -61,7 +61,7 @@ For the definition of the state constraints, we use essentially the same syntax 
 we would use for the problem in FEniCS, i.e., we write ::
 
     c = Constant(1e2)
-    e = inner(grad(y), grad(p))*dx + c*pow(y, 3)*p*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx + c * pow(y, 3) * p * dx - u * p * dx
 
 .. note::
 
@@ -76,15 +76,16 @@ Finally, the boundary conditions are defined as before ::
 
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
+
 Solution of the optimization problem
 ************************************
 
 To define and solve the optimization problem, we now proceed exactly as in
 :ref:`demo_poisson`, and use ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()

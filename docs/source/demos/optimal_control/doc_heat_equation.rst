@@ -80,21 +80,21 @@ Initialization
 
 This section is the same as for all previous problems and is done via ::
 
-    from fenics import *
-    import cashocs
-    import numpy as np
+        from fenics import *
+        import numpy as np
 
+        import cashocs
 
-    config = cashocs.load_config('config.ini')
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
-    V = FunctionSpace(mesh, 'CG', 1)
+        config = cashocs.load_config("config.ini")
+        mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
+        V = FunctionSpace(mesh, "CG", 1)
 
 Next up, we specify the temporal discretization via ::
 
     dt = 1 / 10
     t_start = dt
     t_end = 1.0
-    t_array = np.linspace(t_start, t_end, int(1/dt))
+    t_array = np.linspace(t_start, t_end, int(1 / dt))
 
 Here, ``t_array`` is a numpy array containing all time steps. Note, that we do **not**
 include t=0 in the array. This is due to the fact, that the initial condition
@@ -113,7 +113,7 @@ Note, that ``states[k]`` corresponds to :math:`y_{k+1}` since indices start at
 As the boundary conditions are not time dependent, we can initialize them now, and
 repeat them in a list, since they are the same for every state ::
 
-    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
     bcs_list = [bcs for i in range(len(t_array))]
 
 To define the sequence of PDEs, we will use a loop over all time steps. But before we
@@ -131,28 +131,39 @@ For the desired state, we define it with the help of a :py:class:`fenics.Express
 dependent on an additional parameter which models the time ::
 
     alpha = 1e-5
-    y_d_expr = Expression('exp(-20*(pow(x[0] - 0.5 - 0.25*cos(2*pi*t), 2) + pow(x[1] - 0.5 - 0.25*sin(2*pi*t), 2)))', degree=1, t=0.0)
+    y_d_expr = Expression(
+        "exp(-20*(pow(x[0] - 0.5 - 0.25*cos(2*pi*t), 2) + pow(x[1] - 0.5 - 0.25*sin(2*pi*t), 2)))",
+        degree=1,
+        t=0.0,
+    )
 
 Next, we have the following for loop, which we describe in detail after stating it here ::
 
     for k in range(len(t_array)):
-    	t = t_array[k]
-    	y_d_expr.t = t
+        t = t_array[k]
+        y_d_expr.t = t
 
-    	y = states[k]
-    	if k == 0:
-    		y_prev = Function(V)
-    	else:
-    		y_prev = states[k - 1]
-    	p = adjoints[k]
-    	u = controls[k]
+        y = states[k]
+        if k == 0:
+            y_prev = Function(V)
+        else:
+            y_prev = states[k - 1]
+        p = adjoints[k]
+        u = controls[k]
 
-    	state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
+        state_eq = (
+            Constant(1 / dt) * (y - y_prev) * p * dx
+            + inner(grad(y), grad(p)) * dx
+            - u * p * dx
+        )
 
-    	e.append(state_eq)
-    	y_d.append(interpolate(y_d_expr, V))
+        e.append(state_eq)
+        y_d.append(interpolate(y_d_expr, V))
 
-    	J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
+        J_list.append(
+            Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
+            + Constant(0.5 * dt * alpha) * u * u * dx
+        )
 
 .. note::
 
@@ -179,7 +190,11 @@ Next, we have the following for loop, which we describe in detail after stating 
 
     This allow us to define the state equation at time t as ::
 
-        state_eq = Constant(1/dt)*(y - y_prev)*p*dx + inner(grad(y), grad(p))*dx - u*p*dx
+        state_eq = (
+            Constant(1 / dt) * (y - y_prev) * p * dx
+            + inner(grad(y), grad(p)) * dx
+            - u * p * dx
+        )
 
     This is then appended to the list of state constraints ::
 
@@ -191,14 +206,17 @@ Next, we have the following for loop, which we describe in detail after stating 
 
     Finally, we can define the k-th summand of the cost functional via ::
 
-        J_list.append(Constant(0.5*dt) * (y - y_d[k]) * (y - y_d[k]) * dx + Constant(0.5 * dt * alpha) * u * u * dx)
+        J_list.append(
+            Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
+            + Constant(0.5 * dt * alpha) * u * u * dx
+        )
 
     and directly append this to the cost functional list.
 
 To sum up over all elements of
 this list, cashocs includes the function :py:func:`cashocs.utils.summation`, which we call ::
 
-    J = cashocs.utils.summation(J_list)
+    J = cashocs._utils.summation(J_list)
 
 Finally, we can define an optimal control problem as before, and solve it as in the previous demos (see, e.g., :ref:`demo_poisson`) ::
 
@@ -208,18 +226,18 @@ Finally, we can define an optimal control problem as before, and solve it as in 
 For a postprocessing, which visualizes the resulting optimal control and optimal state,
 the following lines are added at the end ::
 
-    u_file = File('./visualization/u.pvd')
-    y_file = File('./visualization/y.pvd')
+    u_file = File("./visualization/u.pvd")
+    y_file = File("./visualization/y.pvd")
     temp_u = Function(V)
     temp_y = Function(V)
 
     for k in range(len(t_array)):
-    	t = t_array[k]
+        t = t_array[k]
 
-    	temp_u.vector()[:] = controls[k].vector()[:]
-    	u_file << temp_u, t
+        temp_u.vector()[:] = controls[k].vector()[:]
+        u_file << temp_u, t
 
-    	temp_y.vector()[:] = states[k].vector()[:]
-    	y_file << temp_y, t
+        temp_y.vector()[:] = states[k].vector()[:]
+        y_file << temp_y, t
 
 which saves the result in the directory ``./visualization/`` as paraview .pvd files.
