@@ -398,8 +398,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
-            min_max_terms=self.solver.inner_min_max_terms,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
             control_bcs_list=self.control_bcs_list,
         )
 
@@ -562,8 +561,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
-            min_max_terms=self.solver.inner_min_max_terms,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
         )
         shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
         shape_optimization_problem.shift_cost_functional(
