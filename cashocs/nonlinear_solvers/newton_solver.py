@@ -299,6 +299,13 @@ class _NewtonSolver:
                     )
                 break
 
+        if self.res > self.tol and not self.is_linear:
+            raise _exceptions.NotConvergedError(
+                "Newton solver",
+                f"The Newton solver did not converge after "
+                f"{self.iterations:d} iterations.",
+            )
+
         return self.u
 
     def _check_for_divergence(self) -> None:
