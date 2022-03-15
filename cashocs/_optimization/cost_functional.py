@@ -146,6 +146,7 @@ class IntegralFunctional(Functional):
         Args:
             form: The form of the integrand, which is to be calculated for evaluating
                 the functional.
+
         """
         super().__init__()
         self.form = form
