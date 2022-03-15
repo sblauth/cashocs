@@ -526,7 +526,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         def custom_except_hook(
             exctype: Type[BaseException],
             value: BaseException,
-            traceback: Optional[TracebackType],
+            traceback: TracebackType,
         ) -> Any:  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
@@ -545,9 +545,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
-            sys.__excepthook__(exctype, value, traceback)  # type: ignore
+            sys.__excepthook__(exctype, value, traceback)
 
-        sys.excepthook = custom_except_hook
+        sys.excepthook = custom_except_hook  # type: ignore
 
     def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.
