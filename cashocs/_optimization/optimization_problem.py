@@ -361,18 +361,6 @@ class OptimizationProblem(abc.ABC):
                     "cashocs.ScalarTrackingFunctional",
                 )
 
-            if scalar_tracking_forms is not None and not isinstance(
-                scalar_tracking_forms, list
-            ):
-                raise _exceptions.InputError(
-                    "OptimizationProblem",
-                    "scalar_tracking_forms",
-                    (
-                        "If you supply desired weights, "
-                        "you have to supply a matching list in scalar_tracking_forms"
-                    ),
-                )
-
     def compute_state_variables(self) -> None:
         """Solves the state system.
 
@@ -618,28 +606,6 @@ class OptimizationProblem(abc.ABC):
 
             self.initial_function_values.append(val)
 
-        if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
-            self.initial_scalar_tracking_values: List[float] = []
-            for i in range(len(self.scalar_tracking_forms)):
-                val = 0.5 * pow(
-                    fenics.assemble(
-                        self.form_handler.scalar_cost_functional_integrands[i]
-                    )
-                    - self.form_handler.scalar_tracking_goals[i],
-                    2,
-                )
-
-                if abs(val) <= 1e-15:
-                    val = 1.0
-                    _loggers.info(
-                        f"Term {i:d} of the scalar tracking cost functional "
-                        f"vanishes for the initial iteration. Multiplying "
-                        f"this term with the factor you supplied in desired "
-                        f"weights."
-                    )
-
-                self.initial_scalar_tracking_values.append(val)
-
     def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional and scalar_tracking forms."""
         _loggers.info(
@@ -658,10 +624,6 @@ class OptimizationProblem(abc.ABC):
                 ) as file:
                     temp_dict: Dict = json.load(file)
                 self.initial_function_values = temp_dict["initial_function_values"]
-                if self.use_scalar_tracking:
-                    self.initial_scalar_tracking_values = temp_dict[
-                        "initial_scalar_tracking_values"
-                    ]
 
             for i, functional in enumerate(self.cost_functional_list):
                 scaling_factor = np.abs(
@@ -670,10 +632,3 @@ class OptimizationProblem(abc.ABC):
                 functional.scale(scaling_factor)
                 if isinstance(functional, cost_functional.IntegralFunctional):
                     self.input_cost_functional_list[i] = functional.form
-
-            if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
-                for i in range(len(self.scalar_tracking_forms)):
-                    self.scalar_tracking_forms[-1 - i]["weight"] = abs(
-                        self.desired_weights[-1 - i]
-                        / self.initial_scalar_tracking_values[-1 - i]
-                    )

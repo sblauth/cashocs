@@ -172,10 +172,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 problem.initial_function_values = (
                     unscaled_problem.initial_function_values
                 )
-                if unscaled_problem.use_scalar_tracking:
-                    problem.initial_scalar_tracking_values = (
-                        unscaled_problem.initial_scalar_tracking_values
-                    )
 
             if (
                 not unscaled_problem.has_cashocs_remesh_flag
@@ -410,10 +406,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                         self.temp_dict[
                             "initial_function_values"
                         ] = self.initial_function_values
-                        if self.use_scalar_tracking:
-                            self.temp_dict[
-                                "initial_scalar_tracking_values"
-                            ] = self.initial_scalar_tracking_values
                 except AttributeError:  # this happens for the unscaled problem
                     pass
 
