@@ -277,10 +277,13 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[
                     self.idx_active[j]
                 ]
+                self.temp[j].vector().apply("")
                 b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
+                b[j].vector().apply("")
 
             else:
                 b[j].vector().vec().set(0.0)
+                b[j].vector().apply("")
 
         return b
 
@@ -307,11 +310,14 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[
                     self.idx_inactive[j]
                 ]
+                self.temp[j].vector().apply("")
                 b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
+                b[j].vector().apply("")
 
             else:
                 if not b[j].vector().vec().equal(a[j].vector().vec()):
                     b[j].vector().vec().aypx(0.0, a[j].vector().vec())
+                    b[j].vector().apply("")
 
         return b
 
@@ -339,6 +345,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 a[j].vector().vec().pointwiseMax(
                     a[j].vector().vec(), self.control_constraints[j][0].vector().vec()
                 )
+                a[j].vector().apply("")
 
         return a
 

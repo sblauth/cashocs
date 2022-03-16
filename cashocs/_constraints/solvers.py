@@ -85,6 +85,7 @@ class ConstrainedSolver(abc.ABC):
         for i, constraint in enumerate(self.constraints):
             if constraint.is_pointwise_constraint:
                 constraint.multiplier.vector().vec().set(self.lmbd[i])
+                constraint.multiplier.vector().apply("")
                 self.lmbd[i] = constraint.multiplier
 
         self.constraint_violation = 0.0
@@ -218,6 +219,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     )
 
                     constraint.quadratic_functional.weight.vector().vec().set(self.mu)
+                    constraint.quadratic_functional.weight.vector().apply("")
                     self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.measure is not None:
@@ -237,11 +239,14 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.min_max_term.mu.vector().vec().set(self.mu)
+                    constraint.min_max_term.mu.vector().apply("")
                     constraint.min_max_term.lambd.vector().vec().set(self.lmbd[i])
+                    constraint.min_max_term.lambd.vector().apply("")
                     self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector().vec().set(self.mu)
+                    constraint.weight.vector().apply("")
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
         self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
@@ -307,6 +312,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             self.constraints[index].min_max_term.lambd.vector().vec().set(
                 self.lmbd[index]
             )
+            self.constraints[index].min_max_term.lambd.vector().apply("")
 
         elif self.constraints[index].is_pointwise_constraint:
             project_terms = []
@@ -502,6 +508,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.quadratic_functional.weight.vector().vec().set(self.mu)
+                    constraint.quadratic_functional.weight.vector().apply("")
                     self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.is_pointwise_constraint:
@@ -514,10 +521,14 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
                     constraint.min_max_term.mu.vector().vec().set(self.mu)
+                    constraint.min_max_term.mu.vector().apply("")
                     constraint.min_max_term.lambd.vector().vec().set(0.0)
+                    constraint.min_max_term.lambd.vector().apply("")
                     self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector().vec().set(self.mu)
+                    constraint.weight.vector().apply("")
                     constraint.multiplier.vector().vec().set(0.0)
+                    constraint.multiplier.vector().apply("")
                     self.inner_cost_functional_form += constraint.cost_functional_terms

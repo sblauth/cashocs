@@ -218,6 +218,7 @@ class OptimizationAlgorithm(abc.ABC):
                 self.search_direction[i].vector().vec().aypx(
                     0.0, -self.gradient[i].vector().vec()
                 )
+                self.search_direction[i].vector().apply("")
             self.has_curvature_info = False
 
     def initialize_solver(self) -> None:

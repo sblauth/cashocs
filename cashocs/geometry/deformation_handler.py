@@ -118,15 +118,16 @@ class DeformationHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
+        self.transformation_container.vector().apply("")
         x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
             ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
-        min_det: float = np.min(x[:])
+        min_det: float = x.min()[1]
 
-        return min_det > 0
+        return bool(min_det > 0)
 
     def _test_a_posteriori(self) -> bool:
         """Checks the quality of the transformation after the actual mesh is moved.

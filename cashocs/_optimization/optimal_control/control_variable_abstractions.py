@@ -55,6 +55,7 @@ class ControlVariableAbstractions(
             self.control_temp[i].vector().vec().aypx(
                 0.0, self.controls[i].vector().vec()
             )
+            self.control_temp[i].vector().apply("")
 
         self.control_constraints = optimization_problem.control_constraints
 
@@ -80,6 +81,7 @@ class ControlVariableAbstractions(
                 0.0,
                 self.controls[j].vector().vec() - self.control_temp[j].vector().vec(),
             )
+            self.projected_difference[j].vector().apply("")
 
         return self.form_handler.scalar_product(
             self.gradient, self.projected_difference
@@ -91,6 +93,7 @@ class ControlVariableAbstractions(
             self.control_temp[i].vector().vec().aypx(
                 0.0, self.controls[i].vector().vec()
             )
+            self.control_temp[i].vector().apply("")
 
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
@@ -98,6 +101,7 @@ class ControlVariableAbstractions(
             self.controls[i].vector().vec().aypx(
                 0.0, self.control_temp[i].vector().vec()
             )
+            self.controls[i].vector().apply("")
 
     def update_optimization_variables(
         self, search_direction: List[fenics.Function], stepsize: float, beta: float
@@ -120,6 +124,7 @@ class ControlVariableAbstractions(
             self.controls[j].vector().vec().axpy(
                 stepsize, search_direction[j].vector().vec()
             )
+            self.controls[j].vector().apply("")
 
         self.form_handler.project_to_admissible_set(self.controls)
 
@@ -149,6 +154,7 @@ class ControlVariableAbstractions(
             self.projected_difference[j].vector().vec().aypx(
                 0.0, self.controls[j].vector().vec() - self.gradient[j].vector().vec()
             )
+            self.projected_difference[j].vector().apply("")
 
         self.form_handler.project_to_admissible_set(self.projected_difference)
 
@@ -158,6 +164,7 @@ class ControlVariableAbstractions(
                 self.controls[j].vector().vec()
                 - self.projected_difference[j].vector().vec(),
             )
+            self.projected_difference[j].vector().apply("")
 
         return self.form_handler.scalar_product(
             self.projected_difference, self.projected_difference
@@ -213,3 +220,4 @@ class ControlVariableAbstractions(
             ).nonzero()[0]
 
             search_direction[j].vector()[idx] = 0.0
+            search_direction[j].vector().apply("")

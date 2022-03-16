@@ -78,6 +78,7 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.search_direction[i].vector().vec().aypx(
                         0.0, -self.gradient[i].vector().vec()
                     )
+                    self.search_direction[i].vector().apply("")
                 self.has_curvature_info = False
                 self.line_search_broken = False
 

@@ -299,6 +299,7 @@ class _MeshHandler:
             self.search_direction_container.vector().vec().aypx(
                 0.0, search_direction[0].vector().vec()
             )
+            self.search_direction_container.vector().apply("")
             x = _utils.assemble_and_solve_linear(
                 self.a_frobenius,
                 self.l_frobenius,
@@ -306,7 +307,7 @@ class _MeshHandler:
                 ksp_options=self.options_frobenius,
             )
 
-            frobenius_norm = np.max(x[:])
+            frobenius_norm = x.max()[1]
             beta_armijo = self.config.getfloat("OptimizationRoutine", "beta_armijo")
 
             return int(
@@ -368,6 +369,7 @@ class _MeshHandler:
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
+        self.transformation_container.vector().apply("")
         x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
@@ -375,10 +377,12 @@ class _MeshHandler:
             ksp_options=self.options_prior,
         )
 
-        min_det: float = np.min(x[:])
-        max_det: float = np.max(x[:])
+        min_det: float = x.min()[1]
+        max_det: float = x.max()[1]
 
-        return (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
+        return bool(
+            (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
+        )
 
     def _generate_remesh_geo(self, input_mesh_file: str) -> None:
         """Generates a .geo file used for remeshing.

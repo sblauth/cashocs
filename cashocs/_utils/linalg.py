@@ -377,6 +377,7 @@ class Interpolator:
 
         """
         v = fenics.Function(self.target_space)
+        # TODO: Replace this with .mult
         v.vector()[:] = (self.transfer_matrix * u.vector())[:]
 
         return v

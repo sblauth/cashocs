@@ -251,6 +251,7 @@ class _PLaplaceProjector:
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
         self.solution.vector().vec().set(0.0)
+        self.solution.vector().apply("")
         for nonlinear_form in self.form_list:
             nonlinear_solvers.newton_solve(
                 nonlinear_form,

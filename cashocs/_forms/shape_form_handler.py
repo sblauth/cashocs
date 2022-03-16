@@ -295,6 +295,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.mu_lame: Any = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
+        self.mu_lame.vector().apply("")
 
         if self.shape_scalar_product is None:
             # Use the default linear elasticity approach
@@ -311,6 +312,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
                 vol_max = self.volumes.vector().vec().max()[1]
                 self.volumes.vector().vec().scale(1 / vol_max)
+                self.volumes.vector().apply("")
 
             else:
                 self.volumes = fenics.Constant(1.0)
@@ -462,9 +464,11 @@ class ShapeFormHandler(form_handler.FormHandler):
                         x.sqrtabs()
 
                     self.mu_lame.vector().vec().aypx(0.0, x)
+                    self.mu_lame.vector().apply("")
 
                 else:
                     self.mu_lame.vector().vec().set(self.mu_fix)
+                    self.mu_lame.vector().apply("")
 
             else:
                 self.distance.vector().vec().aypx(
@@ -475,15 +479,14 @@ class ShapeFormHandler(form_handler.FormHandler):
                     .vector()
                     .vec(),
                 )
+                self.distance.vector().apply("")
                 self.mu_lame.vector().vec().aypx(
                     0.0,
                     fenics.interpolate(self.mu_expression, self.cg_function_space)
                     .vector()
                     .vec(),
                 )
-
-            # for mpi compatibility
-            self.mu_lame.vector().apply("")
+                self.mu_lame.vector().apply("")
 
     def _project_scalar_product(self) -> None:
         """Ensures, that only free dimensions can be deformed."""
@@ -512,8 +515,10 @@ class ShapeFormHandler(form_handler.FormHandler):
                 .vector()
                 .vec(),
             )
+            self.volumes.vector().apply("")
             vol_max = self.volumes.vector().vec().max()[1]
             self.volumes.vector().vec().scale(1 / vol_max)
+            self.volumes.vector().apply("")
 
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()
