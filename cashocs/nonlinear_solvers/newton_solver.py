@@ -259,6 +259,7 @@ class _NewtonSolver:
             self.lmbd = 1.0
             self.breakdown = False
             self.u_save.vector().vec().aypx(0.0, self.u.vector().vec())
+            self.u_save.vector().apply("")
 
             self._compute_eta_inexact()
             _utils.solve_linear_problem(
@@ -273,12 +274,14 @@ class _NewtonSolver:
 
             if self.is_linear:
                 self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().apply("")
                 break
 
             if self.damped:
                 self._backtracking_line_search()
             else:
                 self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().apply("")
 
             self._compute_residual()
 
@@ -348,6 +351,7 @@ class _NewtonSolver:
         """Performs a backtracking line search for the damped Newton method."""
         while True:
             self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
+            self.u.vector().apply("")
             self._compute_residual()
             _utils.solve_linear_problem(
                 ksp=self.ksp,
@@ -366,6 +370,7 @@ class _NewtonSolver:
                 break
             else:
                 self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+                self.u.vector().apply("")
                 self.lmbd /= 2
 
             if self.lmbd < 1e-6:
