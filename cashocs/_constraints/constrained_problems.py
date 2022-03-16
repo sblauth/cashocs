@@ -53,7 +53,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraint_list: Union[List[types.Constraint], types.Constraint],
@@ -268,7 +270,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         bcs_list: Union[
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
@@ -394,8 +398,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
-            min_max_terms=self.solver.inner_min_max_terms,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
             control_bcs_list=self.control_bcs_list,
         )
 
@@ -444,7 +447,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             List[List[fenics.DirichletBC]],
             None,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
@@ -556,8 +561,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.solver.inner_scalar_tracking_forms,
-            min_max_terms=self.solver.inner_min_max_terms,
+            scalar_tracking_forms=self.scalar_tracking_forms_initial,
         )
         shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
         shape_optimization_problem.shift_cost_functional(

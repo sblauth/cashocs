@@ -20,13 +20,14 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, List, TYPE_CHECKING, Union
 
 import fenics
 from petsc4py import PETSc
 import ufl
 
 from cashocs import _utils
+from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import io
@@ -92,10 +93,10 @@ class FormHandler(abc.ABC):
     scalar_product_matrix: fenics.PETScMatrix
     mu_lame: fenics.Function
     config: io.Config
-    cost_functional_form: ufl.Form
     scalar_cost_functional_integrands: List[ufl.Form]
     scalar_cost_functional_integrand_values: List[fenics.Function]
     states: List[fenics.Function]
+    cost_functional_list: List[types.CostFunctional]
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
@@ -111,79 +112,17 @@ class FormHandler(abc.ABC):
         self.config = optimization_problem.config
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
-        self.use_scalar_tracking: bool = self.optimization_problem.use_scalar_tracking
-        self.use_min_max_terms: bool = optimization_problem.use_min_max_terms
-        self.min_max_forms = optimization_problem.min_max_terms
-        self.scalar_tracking_forms = optimization_problem.scalar_tracking_forms
 
         self.is_shape_problem: bool = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
-        self.cost_functional_form = optimization_problem.cost_functional_form
+        self.cost_functional_list = optimization_problem.cost_functional_list
         self.state_forms = optimization_problem.state_forms
 
-        self.lagrangian_form: ufl.Form = self.cost_functional_form + _utils.summation(
-            self.state_forms
+        self.lagrangian = cost_functional.Lagrangian(
+            self.cost_functional_list, self.state_forms
         )
         self.cost_functional_shift: float = 0.0
-
-        if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
-            self.scalar_cost_functional_integrands = [
-                d["integrand"] for d in self.scalar_tracking_forms
-            ]
-            self.scalar_tracking_goals: List[float] = [
-                d["tracking_goal"] for d in self.scalar_tracking_forms
-            ]
-
-            dummy_meshes = [
-                integrand.integrals()[0].ufl_domain().ufl_cargo()
-                for integrand in self.scalar_cost_functional_integrands
-            ]
-            self.scalar_cost_functional_integrand_values = [
-                fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
-                for mesh in dummy_meshes
-            ]
-            self.scalar_weights: List[fenics.Function] = [
-                fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
-                for mesh in dummy_meshes
-            ]
-
-            self.no_scalar_tracking_terms: int = len(self.scalar_tracking_goals)
-            try:
-                for j in range(self.no_scalar_tracking_terms):
-                    self.scalar_weights[j].vector().vec().set(
-                        self.scalar_tracking_forms[j]["weight"]
-                    )
-            except KeyError:
-                for j in range(self.no_scalar_tracking_terms):
-                    self.scalar_weights[j].vector().vec().set(1.0)
-
-        if self.use_min_max_terms and self.min_max_forms is not None:
-            self.min_max_integrands: list[ufl.Form] = [
-                d["integrand"] for d in self.min_max_forms
-            ]
-            self.min_max_lower_bounds: List[Optional[Union[float, fenics.Function]]] = [
-                d["lower_bound"] for d in self.min_max_forms
-            ]
-            self.min_max_upper_bounds: List[Optional[Union[float, fenics.Function]]] = [
-                d["upper_bound"] for d in self.min_max_forms
-            ]
-
-            dummy_meshes = [
-                integrand.integrals()[0].ufl_domain().ufl_cargo()
-                for integrand in self.min_max_integrands
-            ]
-            self.min_max_integrand_values: List[fenics.Function] = [
-                fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
-                for mesh in dummy_meshes
-            ]
-
-            self.no_min_max_terms: int = len(self.min_max_integrands)
-            self.min_max_mu: List[float] = []
-            self.min_max_lambda: List[float] = []
-            for j in range(self.no_min_max_terms):
-                self.min_max_mu.append(self.min_max_forms[j]["mu"])
-                self.min_max_lambda.append(self.min_max_forms[j]["lambda"])
 
         self.state_dim = len(self.states)
         self.state_spaces = [x.function_space() for x in self.states]
@@ -291,68 +230,12 @@ class FormHandler(abc.ABC):
                             adjoint_space, bdry_value, bc.sub_domain
                         )
 
-    def _compute_adjoint_scalar_tracking_forms(self) -> None:
-        """Compute the part arising due to scalar_tracking_terms."""
-        if self.use_scalar_tracking:
-            for i in range(self.state_dim):
-                for j in range(self.no_scalar_tracking_terms):
-                    self.adjoint_eq_forms[i] += (
-                        self.scalar_weights[j]
-                        * (
-                            self.scalar_cost_functional_integrand_values[j]
-                            - fenics.Constant(self.scalar_tracking_goals[j])
-                        )
-                        * fenics.derivative(
-                            self.scalar_cost_functional_integrands[j],
-                            self.states[i],
-                            self.test_functions_adjoint[i],
-                        )
-                    )
-
-    def _compute_adjoint_min_max_forms(self) -> None:
-        """Compute the part arising due to min_max_terms."""
-        if self.use_min_max_terms:
-            for i in range(self.state_dim):
-                for j in range(self.no_min_max_terms):
-                    if self.min_max_lower_bounds[j] is not None:
-                        term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                            self.min_max_integrand_values[j]
-                            - self.min_max_lower_bounds[j]
-                        )
-                        self.adjoint_eq_forms[i] += _utils.min_(
-                            fenics.Constant(0.0), term_lower
-                        ) * fenics.derivative(
-                            self.min_max_integrands[j],
-                            self.states[i],
-                            self.test_functions_adjoint[i],
-                        )
-
-                    if self.min_max_upper_bounds[j] is not None:
-                        term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                            self.min_max_integrand_values[j]
-                            - self.min_max_upper_bounds[j]
-                        )
-                        self.adjoint_eq_forms[i] += _utils.max_(
-                            fenics.Constant(0.0), term_upper
-                        ) * fenics.derivative(
-                            self.min_max_integrands[j],
-                            self.states[i],
-                            self.test_functions_adjoint[i],
-                        )
-
     def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
         self.adjoint_eq_forms: List[ufl.Form] = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.states[i],
-                self.test_functions_adjoint[i],
-            )
+            self.lagrangian.derivative(self.states[i], self.test_functions_adjoint[i])
             for i in range(self.state_dim)
         ]
-
-        self._compute_adjoint_scalar_tracking_forms()
-        self._compute_adjoint_min_max_forms()
 
         self.linear_adjoint_eq_forms: List[ufl.Form] = [
             ufl.replace(

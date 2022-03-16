@@ -188,100 +188,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
         self.assembler.keep_diagonal = True
 
-    def _compute_scalar_tracking_shape_derivative(self) -> None:
-        """Calculates the shape derivative of scalar_tracking_forms."""
-        if self.use_scalar_tracking:
-            for j in range(self.no_scalar_tracking_terms):
-                self.shape_derivative += fenics.derivative(
-                    self.scalar_weights[j]
-                    * (
-                        self.scalar_cost_functional_integrand_values[j]
-                        - fenics.Constant(self.scalar_tracking_goals[j])
-                    )
-                    * self.scalar_cost_functional_integrands[j],
-                    fenics.SpatialCoordinate(self.mesh),
-                    self.test_vector_field,
-                )
-
-    def _compute_min_max_shape_derivative(self) -> None:
-        """Calculates the shape derivative of min_max_terms."""
-        if self.use_min_max_terms:
-            for j in range(self.no_min_max_terms):
-                if self.min_max_lower_bounds[j] is not None:
-                    term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                        self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
-                    )
-                    self.shape_derivative += fenics.derivative(
-                        _utils.min_(fenics.Constant(0.0), term_lower)
-                        * self.min_max_integrands[j],
-                        fenics.SpatialCoordinate(self.mesh),
-                        self.test_vector_field,
-                    )
-
-                if self.min_max_upper_bounds[j] is not None:
-                    term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                        self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
-                    )
-                    self.shape_derivative += fenics.derivative(
-                        _utils.max_(fenics.Constant(0.0), term_upper)
-                        * self.min_max_integrands[j],
-                        fenics.SpatialCoordinate(self.mesh),
-                        self.test_vector_field,
-                    )
-
-    # noinspection PyUnresolvedReferences
-    def _add_scalar_tracking_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pullbacks for scalar_tracking_forms.
-
-        Args:
-            coeff: The coefficient after which the Lagrangian is differentiated.
-
-        """
-        if self.use_scalar_tracking:
-            for j in range(self.no_scalar_tracking_terms):
-                self.material_derivative += fenics.derivative(
-                    self.scalar_weights[j]
-                    * (
-                        self.scalar_cost_functional_integrand_values[j]
-                        - fenics.Constant(self.scalar_tracking_goals[j])
-                    )
-                    * self.scalar_cost_functional_integrands[j],
-                    coeff,
-                    fenics.dot(fenics.grad(coeff), self.test_vector_field),
-                )
-
-    # noinspection PyUnresolvedReferences
-    def _add_min_max_pull_backs(self, coeff: ufl.core.expr.Expr) -> None:
-        """Adds pullbacks for min_max_terms.
-
-        Args:
-            coeff: The coefficient after which the Lagrangian is differentiated.
-
-        """
-        if self.use_min_max_terms:
-            for j in range(self.no_min_max_terms):
-                if self.min_max_lower_bounds[j] is not None:
-                    term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                        self.min_max_integrand_values[j] - self.min_max_lower_bounds[j]
-                    )
-                    self.material_derivative += fenics.derivative(
-                        _utils.min_(fenics.Constant(0.0), term_lower)
-                        * self.min_max_integrands[j],
-                        coeff,
-                        fenics.dot(fenics.grad(coeff), self.test_vector_field),
-                    )
-
-                if self.min_max_upper_bounds[j] is not None:
-                    term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                        self.min_max_integrand_values[j] - self.min_max_upper_bounds[j]
-                    )
-                    self.material_derivative += fenics.derivative(
-                        _utils.max_(fenics.Constant(0.0), term_upper)
-                        * self.min_max_integrands[j],
-                        coeff,
-                        fenics.dot(fenics.grad(coeff), self.test_vector_field),
-                    )
-
     # noinspection PyUnresolvedReferences
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
@@ -304,18 +210,8 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
 
-        for coeff in self.lagrangian_form.coefficients():
+        for coeff in self.lagrangian.coefficients():
             self._check_coefficient_id(coeff)
-
-        if self.use_scalar_tracking:
-            for j in range(self.no_scalar_tracking_terms):
-                for coeff in self.scalar_cost_functional_integrands[j].coefficients():
-                    self._check_coefficient_id(coeff)
-
-        if self.use_min_max_terms:
-            for j in range(self.no_min_max_terms):
-                for coeff in self.min_max_integrands[j].coefficients():
-                    self._check_coefficient_id(coeff)
 
         if len(self.material_derivative_coeffs) > 0:
             _loggers.warning(
@@ -332,14 +228,9 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             for coeff in self.material_derivative_coeffs:
 
-                self.material_derivative = fenics.derivative(
-                    self.lagrangian_form,
-                    coeff,
-                    fenics.dot(fenics.grad(coeff), self.test_vector_field),
+                self.material_derivative = self.lagrangian.derivative(
+                    coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
-
-                self._add_scalar_tracking_pull_backs(coeff)
-                self._add_min_max_pull_backs(coeff)
 
                 self.material_derivative = ufl.algorithms.expand_derivatives(
                     self.material_derivative
@@ -355,14 +246,10 @@ class ShapeFormHandler(form_handler.FormHandler):
         A corresponding warning whenever this could be the case is issued.
         """
         # Shape derivative of Lagrangian w/o regularization and pullbacks
-        self.shape_derivative = fenics.derivative(
-            self.lagrangian_form,
-            fenics.SpatialCoordinate(self.mesh),
-            self.test_vector_field,
+        self.shape_derivative = self.lagrangian.derivative(
+            fenics.SpatialCoordinate(self.mesh), self.test_vector_field
         )
 
-        self._compute_scalar_tracking_shape_derivative()
-        self._compute_min_max_shape_derivative()
         self._add_pull_backs()
 
         # Add regularization

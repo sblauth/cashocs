@@ -100,27 +100,9 @@ class StateProblem(pde_problem.PDEProblem):
         else:
             self.number_of_solves = 0
 
-    def _update_scalar_tracking_terms(self) -> None:
-        """Updates the scalar_tracking_forms with current function values."""
-        if self.form_handler.use_scalar_tracking:
-            for j in range(self.form_handler.no_scalar_tracking_terms):
-                scalar_integral_value = fenics.assemble(
-                    self.form_handler.scalar_cost_functional_integrands[j]
-                )
-                self.form_handler.scalar_cost_functional_integrand_values[
-                    j
-                ].vector().vec().set(scalar_integral_value)
-
-    def _update_min_max_terms(self) -> None:
-        """Updates the min_max_terms with current function values."""
-        if self.form_handler.use_min_max_terms:
-            for j in range(self.form_handler.no_min_max_terms):
-                min_max_integral_value = fenics.assemble(
-                    self.form_handler.min_max_integrands[j]
-                )
-                self.form_handler.min_max_integrand_values[j].vector().vec().set(
-                    min_max_integral_value
-                )
+    def _update_cost_functionals(self) -> None:
+        for functional in self.form_handler.cost_functional_list:
+            functional.update()
 
     def solve(self) -> List[fenics.Function]:
         """Solves the state system.
@@ -196,7 +178,6 @@ class StateProblem(pde_problem.PDEProblem):
             self.has_solution = True
             self.number_of_solves += 1
 
-            self._update_scalar_tracking_terms()
-            self._update_min_max_terms()
+            self._update_cost_functionals()
 
         return self.states

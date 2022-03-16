@@ -588,11 +588,8 @@ def test_scalar_tracking_regularization():
     radius = rng.uniform(0.33, 0.66)
     tracking_goal = np.pi * radius**2
     config.set("MeshQuality", "volume_change", "10")
-    J_vol = Constant(0) * dx
-    J_tracking = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goal}
-    sop = cashocs.ShapeOptimizationProblem(
-        e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
-    )
+    J_tracking = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goal)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -614,13 +611,9 @@ def test_scalar_tracking_norm():
 
     tracking_goal = rng.uniform(0.25, 0.75)
     norm_u = u * u * dx
-    J_tracking = {"integrand": norm_u, "tracking_goal": tracking_goal}
+    J_tracking = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal)
 
-    J_vol = Constant(0) * dx
-
-    sop = cashocs.ShapeOptimizationProblem(
-        e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
-    )
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -850,25 +843,23 @@ def test_scaling_scalar_only():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    J = Constant(0) * dx
     tracking_goals = rng.uniform(0.25, 0.75, 2)
-    J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
-    J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
+    J_scalar1 = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goals[0])
+    J_scalar2 = cashocs.ScalarTrackingFunctional(Constant(1) * ds, tracking_goals[1])
     J_scalar = [J_scalar1, J_scalar2]
 
-    desired_weights = rng.rand(3).tolist()
-    summ = np.sum(desired_weights[1:])
+    desired_weights = rng.rand(2).tolist()
+    summ = np.sum(desired_weights)
 
     test_sop = cashocs.ShapeOptimizationProblem(
         e,
         bcs,
-        [J],
+        J_scalar,
         u,
         p,
         boundaries,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_sop.reduced_cost_functional.evaluate()
 
@@ -887,9 +878,9 @@ def test_scaling_scalar_and_single_cost():
 
     J = u * dx
     tracking_goals = rng.uniform(0.25, 0.75, 2)
-    J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
-    J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_scalar1, J_scalar2]
+    J_scalar1 = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goals[0])
+    J_scalar2 = cashocs.ScalarTrackingFunctional(Constant(1) * ds, tracking_goals[1])
+    J_list = [J, J_scalar1, J_scalar2]
 
     desired_weights = rng.rand(3).tolist()
     summ = -desired_weights[0] + np.sum(desired_weights[1:])
@@ -897,13 +888,12 @@ def test_scaling_scalar_and_single_cost():
     test_sop = cashocs.ShapeOptimizationProblem(
         e,
         bcs,
-        [J],
+        J_list,
         u,
         p,
         boundaries,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_sop.reduced_cost_functional.evaluate()
 
@@ -922,11 +912,11 @@ def test_scaling_all():
 
     J1 = u * dx
     J2 = u * u * dx
-    J_list = [J1, J2]
+
     tracking_goals = rng.uniform(0.25, 0.75, 2)
-    J_scalar1 = {"integrand": Constant(1) * dx, "tracking_goal": tracking_goals[0]}
-    J_scalar2 = {"integrand": Constant(1) * ds, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_scalar1, J_scalar2]
+    J_scalar1 = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goals[0])
+    J_scalar2 = cashocs.ScalarTrackingFunctional(Constant(1) * ds, tracking_goals[1])
+    J_list = [J1, J2, J_scalar1, J_scalar2]
 
     desired_weights = rng.rand(4).tolist()
     summ = -desired_weights[0] + np.sum(desired_weights[1:])
@@ -940,7 +930,6 @@ def test_scaling_all():
         boundaries,
         config,
         desired_weights=desired_weights,
-        scalar_tracking_forms=J_scalar,
     )
     val = test_sop.reduced_cost_functional.evaluate()
 

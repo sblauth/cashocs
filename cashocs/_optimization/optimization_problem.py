@@ -37,11 +37,11 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
+from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
     from cashocs import types
-    from cashocs._optimization import cost_functional
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
@@ -74,6 +74,7 @@ class OptimizationProblem(abc.ABC):
     solver: optimization_algorithms.OptimizationAlgorithm
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
+    cost_functional_list: List[types.CostFunctional]
 
     def __init__(
         self,
@@ -81,7 +82,9 @@ class OptimizationProblem(abc.ABC):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
@@ -156,8 +159,7 @@ class OptimizationProblem(abc.ABC):
         self.state_dim = len(self.state_forms)
         self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-        self.cost_functional_list = _utils.enlist(cost_functional_form)
-        self.cost_functional_form = _utils.summation(self.cost_functional_list)
+        self._parse_cost_functional_form(cost_functional_form)
 
         self.states: List[fenics.Function] = _utils.enlist(states)
         self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
@@ -210,6 +212,53 @@ class OptimizationProblem(abc.ABC):
         """Ensures that the PDEs are solved again, and no cache is used."""
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
+
+    def _parse_cost_functional_form(
+        self,
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
+    ) -> None:
+        """Parses the cost functional form for use in cashocs."""
+        self.input_cost_functional_list = _utils.enlist(cost_functional_form)
+        self.cost_functional_list = []
+        for functional in self.input_cost_functional_list:
+            if isinstance(functional, ufl.Form):
+                self.cost_functional_list.append(
+                    cost_functional.IntegralFunctional(functional)
+                )
+            elif isinstance(
+                functional,
+                (
+                    cost_functional.IntegralFunctional,
+                    cost_functional.ScalarTrackingFunctional,
+                    cost_functional.MinMaxFunctional,
+                ),
+            ):
+                self.cost_functional_list.append(functional)
+
+    def _parse_scalar_tracking_forms(
+        self, scalar_tracking_forms: Optional[Union[List[Dict], Dict]]
+    ) -> None:
+        self.scalar_tracking_legacy_mode = False
+        if scalar_tracking_forms is None:
+            self.scalar_tracking_forms = scalar_tracking_forms
+        else:
+            self.scalar_tracking_forms = None
+
+            for functional in _utils.enlist(scalar_tracking_forms):
+                integrand = functional["integrand"]
+                tracking_goal = functional["tracking_goal"]
+                try:
+                    weight = functional["weight"]
+                except KeyError:
+                    weight = 1.0
+                scalar_tracking_functional = cost_functional.ScalarTrackingFunctional(
+                    integrand, tracking_goal, weight
+                )
+                self.cost_functional_list.append(scalar_tracking_functional)
+            self.use_scalar_tracking = False
+            self.scalar_tracking_legacy_mode = True
 
     def _parse_optional_inputs(
         self,
@@ -280,17 +329,23 @@ class OptimizationProblem(abc.ABC):
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
-        if scalar_tracking_forms is None:
-            self.scalar_tracking_forms = scalar_tracking_forms
-        else:
-            self.scalar_tracking_forms = _utils.enlist(scalar_tracking_forms)
-            self.use_scalar_tracking = True
+        self._parse_scalar_tracking_forms(scalar_tracking_forms)
 
         if min_max_terms is None:
             self.min_max_terms = min_max_terms
         else:
-            self.use_min_max_terms = True
-            self.min_max_terms = _utils.enlist(min_max_terms)
+            self.min_max_terms = None
+            self.use_min_max_terms = False
+            for functional in _utils.enlist(min_max_terms):
+                integrand = functional["integrand"]
+                lower_bound = functional["lower_bound"]
+                upper_bound = functional["upper_bound"]
+                mu = functional["mu"]
+                lambd = functional["lambda"]
+                min_max_functional = cost_functional.MinMaxFunctional(
+                    integrand, lower_bound, upper_bound, mu, lambd
+                )
+                self.cost_functional_list.append(min_max_functional)
 
         if desired_weights is None:
             self.desired_weights = desired_weights
@@ -298,16 +353,12 @@ class OptimizationProblem(abc.ABC):
             self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
-            if scalar_tracking_forms is not None and not isinstance(
-                scalar_tracking_forms, list
-            ):
+            if self.use_scaling and self.scalar_tracking_legacy_mode:
                 raise _exceptions.InputError(
                     "OptimizationProblem",
                     "scalar_tracking_forms",
-                    (
-                        "If you supply desired weights, "
-                        "you have to supply a matching list in scalar_tracking_forms"
-                    ),
+                    "Scaling of scalar_tracking_forms is now only possible when using "
+                    "cashocs.ScalarTrackingFunctional",
                 )
 
     def compute_state_variables(self) -> None:
@@ -541,9 +592,9 @@ class OptimizationProblem(abc.ABC):
     def _compute_initial_function_values(self) -> None:
         """Computes the cost functional values for the initial iteration."""
         self.state_problem.solve()
-        self.initial_function_values = []
-        for i in range(len(self.cost_functional_list)):
-            val = fenics.assemble(self.cost_functional_list[i])
+        self.initial_function_values: List[float] = []
+        for i, functional in enumerate(self.cost_functional_list):
+            val = functional.evaluate()
 
             if abs(val) <= 1e-15:
                 val = 1.0
@@ -554,28 +605,6 @@ class OptimizationProblem(abc.ABC):
                 )
 
             self.initial_function_values.append(val)
-
-        if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
-            self.initial_scalar_tracking_values = []
-            for i in range(len(self.scalar_tracking_forms)):
-                val = 0.5 * pow(
-                    fenics.assemble(
-                        self.form_handler.scalar_cost_functional_integrands[i]
-                    )
-                    - self.form_handler.scalar_tracking_goals[i],
-                    2,
-                )
-
-                if abs(val) <= 1e-15:
-                    val = 1.0
-                    _loggers.info(
-                        f"Term {i:d} of the scalar tracking cost functional "
-                        f"vanishes for the initial iteration. Multiplying "
-                        f"this term with the factor you supplied in desired "
-                        f"weights."
-                    )
-
-                self.initial_scalar_tracking_values.append(val)
 
     def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional and scalar_tracking forms."""
@@ -595,20 +624,11 @@ class OptimizationProblem(abc.ABC):
                 ) as file:
                     temp_dict: Dict = json.load(file)
                 self.initial_function_values = temp_dict["initial_function_values"]
-                if self.use_scalar_tracking:
-                    self.initial_scalar_tracking_values = temp_dict[
-                        "initial_scalar_tracking_values"
-                    ]
 
-            for i in range(len(self.cost_functional_list)):
-                const = fenics.Constant(
-                    np.abs(self.desired_weights[i] / self.initial_function_values[i])
+            for i, functional in enumerate(self.cost_functional_list):
+                scaling_factor = np.abs(
+                    self.desired_weights[i] / self.initial_function_values[i]
                 )
-                self.cost_functional_list[i] = const * self.cost_functional_list[i]
-
-            if self.use_scalar_tracking and self.scalar_tracking_forms is not None:
-                for i in range(len(self.scalar_tracking_forms)):
-                    self.scalar_tracking_forms[-1 - i]["weight"] = abs(
-                        self.desired_weights[-1 - i]
-                        / self.initial_scalar_tracking_values[-1 - i]
-                    )
+                functional.scale(scaling_factor)
+                if isinstance(functional, cost_functional.IntegralFunctional):
+                    self.input_cost_functional_list[i] = functional.form

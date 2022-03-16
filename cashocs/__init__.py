@@ -33,6 +33,9 @@ from cashocs._constraints.constraints import InequalityConstraint
 from cashocs._loggers import LogLevel
 from cashocs._loggers import set_log_level
 from cashocs._optimization import verification
+from cashocs._optimization.cost_functional import IntegralFunctional
+from cashocs._optimization.cost_functional import MinMaxFunctional
+from cashocs._optimization.cost_functional import ScalarTrackingFunctional
 from cashocs._optimization.optimal_control.optimal_control_problem import (
     OptimalControlProblem,
 )
@@ -78,4 +81,7 @@ __all__ = [
     "InequalityConstraint",
     "set_log_level",
     "Interpolator",
+    "IntegralFunctional",
+    "ScalarTrackingFunctional",
+    "MinMaxFunctional",
 ]
