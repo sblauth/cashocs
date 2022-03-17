@@ -213,7 +213,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_output_str(solver))
 
     def print_to_file(
@@ -225,7 +225,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt:
+        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             if solver.iteration == 0:
                 file_attr = "w"
             else:
@@ -245,7 +245,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_summary_str(solver))
 
     def print_file_summary(
@@ -257,7 +257,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt:
+        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(solver))
 

@@ -133,8 +133,8 @@ class ConstrainedSolver(abc.ABC):
             f"    Constraint violation: {self.constraint_violation:.3e}",
             f"    Penalty parameter mu: {self.mu:.3e}",
         ]
-
-        print("".join(strs))
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            print("".join(strs))
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -414,11 +414,13 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                print(f"{self.solver_name} converged successfully.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print(f"{self.solver_name} did not converge.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} did not converge.\n")
                 break
 
 
@@ -491,11 +493,13 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             self.print_results()
 
             if self.constraint_violation <= convergence_tol:
-                print(f"{self.solver_name} converged successfully.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print(f"{self.solver_name} did not converge.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} did not converge.\n")
                 break
 
     def _update_cost_functional(self) -> None:

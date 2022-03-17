@@ -128,7 +128,7 @@ def picard_iteration(
         if i == 0:
             res_0 = res
             tol = atol + rtol * res_0
-        if verbose:
+        if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(
                 f"Picard iteration {i:d}: "
                 f"||res|| (abs): {res:.3e}   "
@@ -169,5 +169,5 @@ def picard_iteration(
                 is_linear=inner_is_linear,
             )
 
-    if verbose:
+    if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         print("")

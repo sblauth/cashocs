@@ -22,6 +22,8 @@ from __future__ import annotations
 import abc
 from typing import Dict, Optional, TYPE_CHECKING
 
+import fenics
+
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
@@ -136,7 +138,7 @@ class OptimizationAlgorithm(abc.ABC):
             message: The message that should be printed on exit.
 
         """
-        if self.soft_exit:
+        if self.soft_exit and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
