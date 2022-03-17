@@ -193,6 +193,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[j].vector().vec().axpy(
                     1.0, self.temp[j].vector().vec()
                 )
+                self.search_direction[j].vector().apply("")
                 self.search_direction[j].vector().vec().scale(-1.0)
                 self.search_direction[j].vector().apply("")
 

@@ -104,7 +104,7 @@ def control_gradient_test(
         h = []
         for function_space in ocp.form_handler.control_spaces:
             temp = fenics.Function(function_space)
-            temp.vector().set_local(custom_rng.rand(temp.vector().local_size()))
+            temp.vector().set_local(custom_rng.rand(function_space.dim()))
             temp.vector().apply("")
             h.append(temp)
 
@@ -130,6 +130,7 @@ def control_gradient_test(
     for eps in epsilons:
         for j in range(ocp.control_dim):
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+            ocp.controls[j].vector().apply("")
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
             ocp.controls[j].vector().apply("")
         # noinspection PyProtectedMember
@@ -179,10 +180,12 @@ def shape_gradient_test(
         h = [fenics.Function(sop.form_handler.deformation_space)]
         if rng is not None:
             # noinspection PyArgumentList
-            h[0].vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
+            h[0].vector().set_local(rng.rand(sop.form_handler.deformation_space.dim()))
             h[0].vector().apply("")
         else:
-            h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
+            h[0].vector().set_local(
+                np.random.rand(sop.form_handler.deformation_space.dim())
+            )
             h[0].vector().apply("")
 
     # ensure that the shape boundary conditions are applied
@@ -190,7 +193,9 @@ def shape_gradient_test(
         bc.apply(h[0].vector())
 
     if sop.form_handler.use_fixed_dimensions:
-        h[0].vector()[sop.form_handler.fixed_indices] = 0.0
+        h[0].vector().vec()[sop.form_handler.fixed_indices] = np.array(
+            [0.0] * len(sop.form_handler.fixed_indices)
+        )
         h[0].vector().apply("")
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
@@ -211,6 +216,7 @@ def shape_gradient_test(
 
     for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
+        transformation.vector().apply("")
         transformation.vector().vec().scale(eps)
         transformation.vector().apply("")
         if sop.mesh_handler.move_mesh(transformation):

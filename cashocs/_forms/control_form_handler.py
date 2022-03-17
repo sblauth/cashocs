@@ -239,6 +239,16 @@ class ControlFormHandler(form_handler.FormHandler):
                         )
                     )[0]
                 )
+                self.idx_inactive.append(
+                    np.nonzero(
+                        np.logical_and(
+                            self.controls[j].vector()[:]
+                            > self.control_constraints[j][0].vector()[:],
+                            self.controls[j].vector()[:]
+                            < self.control_constraints[j][1].vector()[:],
+                        )
+                    )[0]
+                )
             else:
                 self.idx_active_lower.append([])
                 self.idx_active_upper.append([])
@@ -248,11 +258,6 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             temp_active.sort()
             self.idx_active.append(temp_active)
-            self.idx_inactive.append(
-                np.setdiff1d(
-                    np.arange(self.control_spaces[j].dim()), self.idx_active[j]
-                )
-            )
 
     def restrict_to_active_set(
         self, a: List[fenics.Function], b: List[fenics.Function]
@@ -274,6 +279,7 @@ class ControlFormHandler(form_handler.FormHandler):
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
+                self.temp[j].vector().apply("")
                 self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[
                     self.idx_active[j]
                 ]
@@ -307,6 +313,7 @@ class ControlFormHandler(form_handler.FormHandler):
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
+                self.temp[j].vector().apply("")
                 self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[
                     self.idx_inactive[j]
                 ]
@@ -342,6 +349,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 a[j].vector().vec().pointwiseMin(
                     self.control_constraints[j][1].vector().vec(), a[j].vector().vec()
                 )
+                a[j].vector().apply("")
                 a[j].vector().vec().pointwiseMax(
                     a[j].vector().vec(), self.control_constraints[j][0].vector().vec()
                 )

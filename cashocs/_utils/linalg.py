@@ -359,7 +359,7 @@ class Interpolator:
         # noinspection PyTypeChecker
         self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(
             self.origin_space, self.target_space
-        )
+        ).mat()
 
     def interpolate(self, u: fenics.Function) -> fenics.Function:
         """Interpolates function to target space.
@@ -377,7 +377,10 @@ class Interpolator:
 
         """
         v = fenics.Function(self.target_space)
-        # TODO: Replace this with .mult
-        v.vector()[:] = (self.transfer_matrix * u.vector())[:]
+        x = fenics.as_backend_type(u.vector()).vec()
+        _, temp = self.transfer_matrix.getVecs()
+        self.transfer_matrix.mult(x, temp)
+        v.vector().vec().aypx(0.0, temp)
+        v.vector().apply("")
 
         return v

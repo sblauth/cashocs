@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Any, List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -293,7 +293,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
-        self.mu_lame: Any = fenics.Function(self.cg_function_space)
+        self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
         self.mu_lame.vector().apply("")
 

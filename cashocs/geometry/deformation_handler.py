@@ -237,7 +237,7 @@ class DeformationHandler:
         """
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
         dof_deformation = fenics.Function(self.vector_cg_space)
-        dof_deformation.vector()[:] = dof_vector
+        dof_deformation.vector().set_local(dof_vector)
 
         return dof_deformation
 

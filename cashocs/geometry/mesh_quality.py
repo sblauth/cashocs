@@ -490,6 +490,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
+        cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
         cond.vector().apply("")
 
@@ -548,6 +549,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().apply("")
 
         cond.vector().vec().reciprocal()
+        cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
         cond.vector().apply("")
 

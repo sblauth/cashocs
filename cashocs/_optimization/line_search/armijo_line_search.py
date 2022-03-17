@@ -107,7 +107,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         """
         self.search_direction_inf = np.max(
             [
-                np.max(np.abs(search_direction[i].vector()[:]))
+                search_direction[i].vector().norm("linf")
                 for i in range(len(self.gradient))
             ]
         )
