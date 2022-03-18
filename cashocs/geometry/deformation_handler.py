@@ -148,8 +148,9 @@ class DeformationHandler:
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
             self_intersections = True
+        list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
 
-        if self_intersections:
+        if any(list_self_intersections):
             self.revert_transformation()
             _loggers.debug("Mesh transformation rejected due to a posteriori check.")
             return False
@@ -238,6 +239,7 @@ class DeformationHandler:
         dof_vector = coordinate_deformation.reshape(-1)[self.d2v]
         dof_deformation = fenics.Function(self.vector_cg_space)
         dof_deformation.vector().set_local(dof_vector)
+        dof_deformation.vector().apply("")
 
         return dof_deformation
 
@@ -261,7 +263,8 @@ class DeformationHandler:
                 "dof_deformation has to be a piecewise linear Lagrange vector field.",
             )
 
-        coordinate_deformation: np.ndarray = dof_deformation.vector().vec()[self.v2d]
+        vertex_values = dof_deformation.compute_vertex_values()
+        coordinate_deformation: np.ndarray = vertex_values.reshape(2, -1).T
         return coordinate_deformation
 
     def assign_coordinates(self, coordinates: np.ndarray) -> bool:

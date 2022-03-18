@@ -104,7 +104,9 @@ def control_gradient_test(
         h = []
         for function_space in ocp.form_handler.control_spaces:
             temp = fenics.Function(function_space)
-            temp.vector().set_local(custom_rng.rand(function_space.dim()))
+            temp.vector().vec().setValues(
+                range(function_space.dim()), custom_rng.rand(function_space.dim())
+            )
             temp.vector().apply("")
             h.append(temp)
 
@@ -176,17 +178,14 @@ def shape_gradient_test(
         larger, everything works as expected.
 
     """
+    custom_rng = rng or np.random
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
-        if rng is not None:
-            # noinspection PyArgumentList
-            h[0].vector().set_local(rng.rand(sop.form_handler.deformation_space.dim()))
-            h[0].vector().apply("")
-        else:
-            h[0].vector().set_local(
-                np.random.rand(sop.form_handler.deformation_space.dim())
-            )
-            h[0].vector().apply("")
+        h[0].vector().vec().setValues(
+            range(sop.form_handler.deformation_space.dim()),
+            custom_rng.rand(sop.form_handler.deformation_space.dim()),
+        )
+        h[0].vector().apply("")
 
     # ensure that the shape boundary conditions are applied
     for bc in sop.form_handler.bcs_shape:

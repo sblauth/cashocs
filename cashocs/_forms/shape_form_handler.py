@@ -500,6 +500,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             copy_mat.mat().transpose()
 
             self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
+            self.fe_scalar_product_matrix.apply("")
 
     def update_scalar_product(self) -> None:
         """Updates the linear elasticity equations to the current geometry.
