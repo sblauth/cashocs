@@ -138,8 +138,9 @@ class OptimizationAlgorithm(abc.ABC):
             message: The message that should be printed on exit.
 
         """
-        if self.soft_exit and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(message)
+        if self.soft_exit:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
