@@ -56,7 +56,36 @@ def create_point_representation(
     return mod_line
 
 
-def write_out_mesh(
+def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
+    """Gathers the mesh coordinates on process 0 to write out the mesh to a Gmsh file.
+
+    Args:
+        mesh: The corresponding mesh.
+
+    Returns:
+        A numpy array which contains the vertex coordinates of the mesh
+
+    """
+    comm = fenics.MPI.comm_world
+    rank = comm.Get_rank()
+    top = mesh.topology()
+    global_vertex_indices = top.global_indices(0)
+    num_global_vertices = mesh.num_entities_global(0)
+    local_mesh_coordinates = mesh.coordinates().copy()
+    local_coordinates_list = comm.gather(local_mesh_coordinates, root=0)
+    vertex_map_list = comm.gather(global_vertex_indices, root=0)
+
+    if rank == 0:
+        coordinates = np.zeros((num_global_vertices, local_mesh_coordinates.shape[1]))
+        for coords, verts in zip(local_coordinates_list, vertex_map_list):
+            coordinates[verts] = coords
+    else:
+        coordinates = np.zeros((1, 1))
+
+    return coordinates
+
+
+def write_out_mesh(  # noqa: C901
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
     """Writes out mesh as Gmsh .msh file.
@@ -81,48 +110,49 @@ def write_out_mesh(
     if not pathlib.Path(out_msh_file).parent.is_dir():
         pathlib.Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
 
-    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
-        out_msh_file, "w", encoding="utf-8"
-    ) as new_file:
+    points = gather_coordinates(mesh)
 
-        points = mesh.coordinates()
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
+            out_msh_file, "w", encoding="utf-8"
+        ) as new_file:
 
-        node_section = False
-        info_section = False
-        subnode_counter = 0
-        subwrite_counter = 0
-        idcs = np.zeros(1, dtype=int)
+            node_section = False
+            info_section = False
+            subnode_counter = 0
+            subwrite_counter = 0
+            idcs = np.zeros(1, dtype=int)
 
-        for line in old_file:
-            if line == "$EndNodes\n":
-                node_section = False
+            for line in old_file:
+                if line == "$EndNodes\n":
+                    node_section = False
 
-            if not node_section:
-                new_file.write(line)
-            else:
-                split_line = line.split(" ")
-                if info_section:
+                if not node_section:
                     new_file.write(line)
-                    info_section = False
                 else:
-                    if len(split_line) == 4:
-                        num_subnodes = int(split_line[-1][:-1])
-                        subnode_counter = 0
-                        subwrite_counter = 0
-                        idcs = np.zeros(num_subnodes, dtype=int)
+                    split_line = line.split(" ")
+                    if info_section:
                         new_file.write(line)
-                    elif len(split_line) == 1:
-                        idcs[subnode_counter] = int(split_line[0][:-1]) - 1
-                        subnode_counter += 1
-                        new_file.write(line)
-                    elif len(split_line) == 3:
-                        mod_line = create_point_representation(
-                            dim, points, idcs, subwrite_counter
-                        )
+                        info_section = False
+                    else:
+                        if len(split_line) == 4:
+                            num_subnodes = int(split_line[-1][:-1])
+                            subnode_counter = 0
+                            subwrite_counter = 0
+                            idcs = np.zeros(num_subnodes, dtype=int)
+                            new_file.write(line)
+                        elif len(split_line) == 1:
+                            idcs[subnode_counter] = int(split_line[0][:-1]) - 1
+                            subnode_counter += 1
+                            new_file.write(line)
+                        elif len(split_line) == 3:
+                            mod_line = create_point_representation(
+                                dim, points, idcs, subwrite_counter
+                            )
 
-                        new_file.write(mod_line)
-                        subwrite_counter += 1
+                            new_file.write(mod_line)
+                            subwrite_counter += 1
 
-            if line == "$Nodes\n":
-                node_section = True
-                info_section = True
+                if line == "$Nodes\n":
+                    node_section = True
+                    info_section = True

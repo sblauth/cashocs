@@ -176,6 +176,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             if (
                 not unscaled_problem.has_cashocs_remesh_flag
                 and unscaled_problem.do_remesh
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603
                     ["rm", "-r", unscaled_problem.temp_dir], check=True
@@ -386,9 +387,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
             if not self.has_cashocs_remesh_flag:
                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-                self.temp_dir: str = tempfile.mkdtemp(
-                    prefix="._cashocs_remesh_temp_", dir=self.directory
-                )
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    temp_dir: str = tempfile.mkdtemp(
+                        prefix="._cashocs_remesh_temp_", dir=self.directory
+                    )
+                else:
+                    temp_dir = ""
+                self.temp_dir: str = fenics.MPI.comm_world.bcast(temp_dir, root=0)
+
                 self._change_except_hook()
                 self.temp_dict = {
                     "temp_dir": self.temp_dir,
@@ -532,7 +538,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "An exception was raised by cashocs, "
                 "deleting the created temporary files."
             )
-            if not self.config.getboolean("Debug", "remeshing"):
+            if (
+                not self.config.getboolean("Debug", "remeshing")
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            ):
                 subprocess.run(["rm", "-r", self.temp_dir], check=True)  # nosec B603
                 subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True

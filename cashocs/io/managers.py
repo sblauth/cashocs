@@ -181,7 +181,7 @@ class ResultManager:
         self.output_dict["state_solves"] = solver.state_problem.number_of_solves
         self.output_dict["adjoint_solves"] = solver.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = solver.iteration
-        if self.save_results:
+        if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
 
@@ -290,6 +290,7 @@ class TempFileManager:
                 mesh_handler.do_remesh
                 and not self.config.getboolean("Debug", "remeshing")
                 and mesh_handler.temp_dict is not None
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603
                     ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
