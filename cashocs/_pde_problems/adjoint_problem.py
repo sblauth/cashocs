@@ -121,9 +121,9 @@ class AdjointProblem(pde_problem.PDEProblem):
 
             else:
                 nonlinear_solvers.picard_iteration(
-                    self.form_handler.adjoint_eq_forms,
-                    self.adjoints,
-                    self.bcs_list_ad,
+                    self.form_handler.adjoint_eq_forms[::-1],
+                    self.adjoints[::-1],
+                    self.bcs_list_ad[::-1],
                     max_iter=self.picard_max_iter,
                     rtol=self.picard_rtol,
                     atol=self.picard_atol,
@@ -132,10 +132,10 @@ class AdjointProblem(pde_problem.PDEProblem):
                     inner_inexact=False,
                     inner_verbose=False,
                     inner_max_its=2,
-                    ksps=self.ksps,
-                    ksp_options=self.form_handler.adjoint_ksp_options,
-                    A_tensors=self.A_tensors,
-                    b_tensors=self.b_tensors,
+                    ksps=self.ksps[::-1],
+                    ksp_options=self.form_handler.adjoint_ksp_options[::-1],
+                    A_tensors=self.A_tensors[::-1],
+                    b_tensors=self.b_tensors[::-1],
                     inner_is_linear=True,
                 )
 
