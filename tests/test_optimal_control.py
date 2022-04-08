@@ -361,15 +361,12 @@ def test_scalar_norm_optimization():
 
     u.vector()[:] = 1e-3
 
-    J = Constant(0) * dx
     norm_y = y * y * dx
     tracking_goal = rng.uniform(0.25, 0.75)
-    J_norm = {"integrand": norm_y, "tracking_goal": tracking_goal}
+    J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal)
     config.set("OptimizationRoutine", "initial_stepsize", "4e3")
 
-    test_ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
-    )
+    test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.solve(algorithm="bfgs", rtol=1e-3)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
@@ -384,23 +381,20 @@ def test_scalar_tracking_weight():
 
     u.vector()[:] = 1e-3
 
-    J = Constant(0) * dx
     norm_y = y * y * dx
     tracking_goal = rng.uniform(0.25, 0.75)
     weight = rng.uniform(1.0, 1e3)
-    J_norm = {"integrand": norm_y, "tracking_goal": tracking_goal, "weight": 1.0}
+    J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal, weight=1.0)
     config.set("OptimizationRoutine", "initial_stepsize", "4e3")
 
-    test_ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
-    )
+    test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.compute_state_variables()
     initial_function_value = 0.5 * pow(assemble(norm_y) - tracking_goal, 2)
-    J_norm["weight"] = weight / initial_function_value
-
-    test_ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_norm
+    J = cashocs.ScalarTrackingFunctional(
+        norm_y, tracking_goal, weight=weight / initial_function_value
     )
+
+    test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.compute_state_variables()
     val = test_ocp.reduced_cost_functional.evaluate()
     assert np.abs(val - weight) < 1e-15
@@ -415,18 +409,15 @@ def test_scalar_multiple_norms():
 
     u.vector()[:] = 40
 
-    J = Constant(0) * dx
     norm_y = y * y * dx
     norm_u = u * u * dx
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
-    J_y = {"integrand": norm_y, "tracking_goal": tracking_goals[0]}
-    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[1]}
-    J_scalar = [J_y, J_u]
+    J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
+    J = [J_y, J_u]
     config.set("OptimizationRoutine", "initial_stepsize", "1e-4")
 
-    test_ocp = cashocs.OptimalControlProblem(
-        F, bcs, J, y, u, p, config, scalar_tracking_forms=J_scalar
-    )
+    test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.solve(algorithm="bfgs", rtol=1e-6, max_iter=500)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-2
