@@ -45,8 +45,8 @@ f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-J_1 = u * dx
-J_2 = Constant(1) * dx
+J_1 = cashocs.IntegralFunctional(u * dx)
+J_2 = cashocs.IntegralFunctional(Constant(1) * dx)
 J_list = [J_1, J_2]
 
 desired_weights = [1, 2]

@@ -231,13 +231,13 @@ The shape optimization problem
 ******************************
 
 The cost functional is then defined by first creating the individual summands,
-and then summing them up::
+and then adding them to a list::
 
-    J1 = Constant(0.5) * pow(u1 - measurements[0], 2) * ds
-    J2 = Constant(0.5) * pow(u2 - measurements[1], 2) * ds
-    J3 = Constant(0.5) * pow(u3 - measurements[2], 2) * ds
+    J1 = cashocs.IntegralFunctional(Constant(0.5) * pow(u1 - measurements[0], 2) * ds)
+    J2 = cashocs.IntegralFunctional(Constant(0.5) * pow(u2 - measurements[1], 2) * ds)
+    J3 = cashocs.IntegralFunctional(Constant(0.5) * pow(u3 - measurements[2], 2) * ds)
 
-    J = J1 + J2 + J3
+    J = [J1, J2, J3]
 
 where we use a coefficient of :math:`\nu_i = 1` for all cases.
 

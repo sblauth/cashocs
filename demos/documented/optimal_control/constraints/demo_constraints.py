@@ -39,7 +39,9 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 alpha = 1e-4
-J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+J = cashocs.IntegralFunctional(
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+)
 
 bottom_left = Expression("(x[0] <= 0.5) && (x[1] <= 0.5) ? 1.0 : 0.0", degree=0)
 bottom_right = Expression("(x[0] >= 0.5) && (x[1] <= 0.5) ? 1.0 : 0.0", degree=0)

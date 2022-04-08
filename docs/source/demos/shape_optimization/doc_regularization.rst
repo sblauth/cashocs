@@ -89,7 +89,9 @@ The first three summands of the cost functional can then be defined as ::
     alpha_vol = 1e-1
     alpha_surf = 1e-1
 
-    J = u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+    J = cashocs.IntegralFunctional(
+        u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+    )
 
 The remaining two parts are specified via :download:`config.ini
 </../../demos/documented/shape_optimization/regularization/config.ini>`, where

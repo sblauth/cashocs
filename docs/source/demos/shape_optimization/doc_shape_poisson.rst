@@ -132,7 +132,7 @@ The optimization problem and its solution
 
 We are now almost done, the only thing left to do is to define the cost functional ::
 
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
 
 and the shape optimization problem ::

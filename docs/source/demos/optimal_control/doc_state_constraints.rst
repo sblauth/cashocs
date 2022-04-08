@@ -70,7 +70,10 @@ guess for the homotopy method. This is done in complete analogy to :ref:`demo_po
 
     y_d = Expression("sin(2*pi*x[0]*x[1])", degree=1)
     alpha = 1e-3
-    J_init = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    J_init_form = (
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
+    J_init = cashocs.IntegralFunctional(J_init_form)
     ocp_init = cashocs.OptimalControlProblem(e, bcs, J_init, y, u, p, config)
     ocp_init.solve()
 
@@ -94,9 +97,10 @@ Solving the regularized problems is then as simple as writing a ``for`` loop ::
 
     for gamma in gammas:
 
-        J = J_init + cashocs._utils.moreau_yosida_regularization(
+        J_form = J_init_form + cashocs._utils.moreau_yosida_regularization(
             y, gamma, dx, upper_threshold=y_bar
         )
+        J = cashocs.IntegralFunctional(J_form)
 
         ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
         ocp_gamma.solve()
@@ -115,8 +119,8 @@ set up the optimal control problem and solve it, as previously.
     We could have also defined the Moreau-Yosida regularization of the inequality constraint
     directly, with the following code ::
 
-    	J = (
-    		J_init
+    	J = cashocs.IntegralFunctional(
+    		J_init_form
     		+ Constant(1 / (2 * gamma)) * pow(Max(0, Constant(gamma) * (y - y_bar)), 2) * dx
     	)
 

@@ -65,7 +65,7 @@ the code is identical to the one in :ref:`demo_shape_poisson`, and given by ::
     e = inner(grad(u), grad(p)) * dx - f * p * dx
     bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
 
 Definition of the scalar product

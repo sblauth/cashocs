@@ -161,8 +161,10 @@ Next, we have the following for loop, which we describe in detail after stating 
         y_d.append(interpolate(y_d_expr, V))
 
         J_list.append(
-            Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
-            + Constant(0.5 * dt * alpha) * u * u * dx
+            cashocs.IntegralFunctional(
+                Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
+                + Constant(0.5 * dt * alpha) * u * u * dx
+            )
         )
 
 .. note::
@@ -207,20 +209,19 @@ Next, we have the following for loop, which we describe in detail after stating 
     Finally, we can define the k-th summand of the cost functional via ::
 
         J_list.append(
-            Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
-            + Constant(0.5 * dt * alpha) * u * u * dx
+            cashocs.IntegralFunctional(
+                Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
+                + Constant(0.5 * dt * alpha) * u * u * dx
+            )
         )
 
     and directly append this to the cost functional list.
 
-To sum up over all elements of
-this list, cashocs includes the function :py:func:`cashocs.utils.summation`, which we call ::
-
-    J = cashocs._utils.summation(J_list)
-
 Finally, we can define an optimal control problem as before, and solve it as in the previous demos (see, e.g., :ref:`demo_poisson`) ::
 
-    ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+    ocp = cashocs.OptimalControlProblem(
+        e, bcs_list, J_list, states, controls, adjoints, config
+    )
     ocp.solve()
 
 For a postprocessing, which visualizes the resulting optimal control and optimal state,

@@ -93,8 +93,8 @@ by cashocs and then added to obtain the actual cost functional.
 Hence, let us first define the individual terms of the cost functional we consider,
 and place them into a list ::
 
-    J_1 = u * dx
-    J_2 = Constant(1) * dx
+    J_1 = cashocs.IntegralFunctional(u * dx)
+    J_2 = cashocs.IntegralFunctional(Constant(1) * dx)
     J_list = [J_1, J_2]
 
 Afterwards, we have to create a second list which includes the values that the

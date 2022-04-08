@@ -165,7 +165,7 @@ Cost functional and optimization problem
 
 The cost functional is easily defined with the line ::
 
-    J = inner(grad(u), grad(u)) * dx
+    J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx)
 
 
 .. note::

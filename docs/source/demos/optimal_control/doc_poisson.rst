@@ -205,10 +205,13 @@ Then, we define the regularization parameter :math:`\alpha` and the tracking-typ
 cost functional via the commands ::
 
     alpha = 1e-6
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
 
-The cost functional has to be a UFL form, which returns a scalar value
-when evaluated with the assemble command from FEniCS.
+The cost functional is defined via the :py:class:`cashocs.IntegralFunctional`, which means that
+we only have to define the cost functional's integrand, which will then further be treated by cashocs
+as needed for the optimization.
 These definitions are also classical in the sense that they
 would have to be performed in this (or a similar) way in FEniCS
 when one would want to evaluate the (reduced) cost functional,

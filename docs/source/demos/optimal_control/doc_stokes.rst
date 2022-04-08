@@ -136,7 +136,7 @@ to multiply the vector valued functions ``u``, ``u_d`` and ``c`` ::
         ),
         degree=2,
     )
-    J = (
+    J = cashocs.IntegralFunctional(
         Constant(0.5) * inner(u - u_d, u - u_d) * dx
         + Constant(0.5 * alpha) * inner(c, c) * dx
     )

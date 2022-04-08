@@ -64,7 +64,9 @@ The beginning of the program is nearly the same as for :ref:`demo_poisson` ::
 
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-4
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
     
     
 Definition of the additional constraints

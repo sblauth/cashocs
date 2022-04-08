@@ -168,7 +168,7 @@ The definition of the :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimiza
 as well as its solution is now also completely analogous to :ref:`demo_shape_poisson`,
 and is done with the lines ::
 
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.solve()

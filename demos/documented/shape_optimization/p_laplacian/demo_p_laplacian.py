@@ -47,7 +47,7 @@ f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-J = u * dx
+J = cashocs.IntegralFunctional(u * dx)
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 sop.solve()
