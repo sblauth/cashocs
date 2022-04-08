@@ -13,8 +13,8 @@ arise after integration. For this, we investigate the problem
 
 .. math::
 
-    &\min\; J(y,u) = \frac{1}{2} \left\lvert \int_{\Omega} y^2
-    \text{ d}x - C_{des} \right\rvert^2 \\
+    &\min\; J(y,u) = \frac{1}{2} \left( \int_{\Omega} y^2
+    \text{ d}x - C_{des} \right)^2 \\
     &\text{ subject to } \quad \left\lbrace \quad
     \begin{alignedat}{2}
     -\Delta y &= u \quad &&\text{ in } \Omega,\\

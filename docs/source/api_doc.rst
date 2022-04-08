@@ -2,7 +2,8 @@ API Reference
 =============
 
 .. automodule:: cashocs
-
+    :no-members:
+    :no-inherited-members:
 
 Here, we detail the (public) API of cashocs.
 
@@ -22,17 +23,10 @@ problems.
 OptimalControlProblem
 *********************
 .. autoclass:: cashocs.OptimalControlProblem
-	:members:
-	:inherited-members:
-	:show-inheritance:
-
 
 ShapeOptimizationProblem
 ************************
 .. autoclass:: cashocs.ShapeOptimizationProblem
-	:members:
-	:inherited-members:
-	:show-inheritance:
 
 Additionally constrained problems
 ---------------------------------
@@ -40,32 +34,35 @@ Additionally constrained problems
 ConstrainedOptimalControlProblem
 ********************************
 .. autoclass:: cashocs.ConstrainedOptimalControlProblem
-	:members:
-	:inherited-members:
-	:show-inheritance:
 
 ConstrainedShapeOptimizationProblem
 ***********************************
 .. autoclass:: cashocs.ConstrainedShapeOptimizationProblem
-	:members:
-	:inherited-members:
-	:show-inheritance:
 
 
 EqualityConstraint
 ******************
 .. autoclass:: cashocs.EqualityConstraint
-	:members:
-	:inherited-members:
-	:show-inheritance:
 
 InequalityConstraint
 ********************
 .. autoclass:: cashocs.InequalityConstraint
-	:members:
-	:inherited-members:
-	:show-inheritance:
 
+	
+Cost Functionals
+----------------
+
+IntegralFunctional
+******************
+.. autoclass:: cashocs.IntegralFunctional
+
+ScalarTrackingFunctional
+************************
+.. autoclass:: cashocs.ScalarTrackingFunctional
+    
+MinMaxFunctional
+****************
+.. autoclass:: cashocs.MinMaxFunctional
 
 Command Line Interface
 ----------------------
@@ -80,31 +77,24 @@ cashocs-convert
 ***************
 
 .. argparse::
-	:module: cashocs._cli._convert
-	:func: _generate_parser
-	:prog: cashocs-convert
+    :module: cashocs._cli._convert
+    :func: _generate_parser
+    :prog: cashocs-convert
 
 
 MeshQuality
 -----------
 
 .. autoclass:: cashocs.MeshQuality
-	:members:
-	:inherited-members:
-	:noindex:
+    :noindex:
 
 DeformationHandler
 ------------------
 
 .. autoclass:: cashocs.DeformationHandler
-	:members:
-	:inherited-members:
-	:noindex:
-	
+    :noindex:
 
 .. autoclass:: cashocs.Interpolator
-	:members:
-	:inherited-members:
 
 Functions
 ---------
@@ -160,7 +150,6 @@ damped_newton_solve
 *******************
 .. autofunction:: cashocs.damped_newton_solve
 
-
 create_config
 *************
 .. autofunction:: cashocs.create_config
@@ -186,4 +175,3 @@ of the sub-module.
    sub_modules/geometry
    sub_modules/io
    sub_modules/nonlinear_solvers
-   sub_modules/verification

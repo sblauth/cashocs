@@ -36,7 +36,6 @@ u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
-
 Re = 50
 e = (
     inner(grad(u), grad(v)) * dx
@@ -46,46 +45,35 @@ e = (
 )
 
 u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
-bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
+bc_in = cashocs.create_dirichlet_bcs(V.sub(0), u_in, boundaries, 1)
 bc_no_slip = cashocs.create_dirichlet_bcs(
     V.sub(0), Constant((0, 0)), boundaries, [2, 4]
 )
-bcs = [bc_in] + bc_no_slip
+bcs = bc_in + bc_no_slip
 
 
-def pre_fun():
+def pre_hook():
+    up.vector()[:] = 0.0
     v, q = TestFunctions(V)
     e = (
         inner(grad(u), grad(v)) * dx
-        + Constant(Re / 10.0) * dot(grad(u) * u, v) * dx
+        + Constant(Re / 100.0) * dot(grad(u) * u, v) * dx
         - p * div(v) * dx
         - q * div(u) * dx
     )
+    cashocs.newton_solve(e, up, bcs, verbose=False)
 
-    cashocs.newton_solve(e, up, bcs, verbose=True)
+
+def post_hook():
+    print("Performing an action after computing the gradient.")
 
 
 J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
 
-vol_fun = Constant(1) * dx
-vol_init = assemble(vol_fun)
-vol_constraint = cashocs.EqualityConstraint(vol_fun, vol_init)
-
-x = SpatialCoordinate(mesh)
-bc_x_fun = Constant(1 / vol_init) * x[0] * dx
-bc_x_init = assemble(bc_x_fun)
-bc_x_constraint = cashocs.EqualityConstraint(bc_x_fun, bc_x_init)
-
-bc_y_fun = Constant(1 / vol_init) * x[1] * dx
-bc_y_init = assemble(bc_y_fun)
-bc_y_constraint = cashocs.EqualityConstraint(bc_y_fun, bc_y_init)
-
-constraints = [vol_constraint, bc_x_constraint, bc_y_constraint]
-problem = cashocs.ConstrainedShapeOptimizationProblem(
-    e, bcs, J, up, vq, boundaries, constraints, config
-)
-problem.inject_pre_hook(pre_fun)
-problem.solve(method="AL", tol=1e-4, mu_0=1e4)
+problem = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
+# problem.inject_pre_hook(pre_hook)
+problem.inject_post_hook(post_hook)
+problem.solve()
 
 ### Post Processing
 
@@ -113,4 +101,4 @@ plt.colorbar(fig_p, fraction=0.046, pad=0.04)
 plt.title("State variable p")
 
 plt.tight_layout()
-# plt.savefig('./img_pre_post_hooks.png', dpi=150, bbox_inches='tight')
+plt.savefig("./img_pre_post_hooks.png", dpi=150, bbox_inches="tight")
