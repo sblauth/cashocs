@@ -23,7 +23,6 @@ OptimalControlProblem
 *********************
 .. autoclass:: cashocs.OptimalControlProblem
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -32,7 +31,6 @@ ShapeOptimizationProblem
 ************************
 .. autoclass:: cashocs.ShapeOptimizationProblem
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -43,7 +41,6 @@ ConstrainedOptimalControlProblem
 ********************************
 .. autoclass:: cashocs.ConstrainedOptimalControlProblem
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -51,7 +48,6 @@ ConstrainedShapeOptimizationProblem
 ***********************************
 .. autoclass:: cashocs.ConstrainedShapeOptimizationProblem
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -60,7 +56,6 @@ EqualityConstraint
 ******************
 .. autoclass:: cashocs.EqualityConstraint
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -68,7 +63,6 @@ InequalityConstraint
 ********************
 .. autoclass:: cashocs.InequalityConstraint
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:show-inheritance:
 
@@ -96,7 +90,6 @@ MeshQuality
 
 .. autoclass:: cashocs.MeshQuality
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:noindex:
 
@@ -105,14 +98,12 @@ DeformationHandler
 
 .. autoclass:: cashocs.DeformationHandler
 	:members:
-	:undoc-members:
 	:inherited-members:
 	:noindex:
 	
 
 .. autoclass:: cashocs.Interpolator
 	:members:
-	:undoc-members:
 	:inherited-members:
 
 Functions
