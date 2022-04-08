@@ -24,3 +24,4 @@ be treated with cashocs.
    doc_sparse_control
    doc_scalar_control_tracking
    doc_constraints
+   doc_control_boundary_conditions
