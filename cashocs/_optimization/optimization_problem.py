@@ -244,6 +244,12 @@ class OptimizationProblem(abc.ABC):
         if scalar_tracking_forms is None:
             self.scalar_tracking_forms = scalar_tracking_forms
         else:
+            _loggers.warning(
+                "DEPRECATION WARNING: Using the keyword argument scalar_tracking_forms"
+                " is replaced by using cashocs.ScalarTrackingFunctional and appending"
+                "this to the list of cost functionals."
+                "The former usage will be removed in the future."
+            )
             self.scalar_tracking_forms = None
 
             for functional in _utils.enlist(scalar_tracking_forms):
@@ -334,6 +340,12 @@ class OptimizationProblem(abc.ABC):
         if min_max_terms is None:
             self.min_max_terms = min_max_terms
         else:
+            _loggers.warning(
+                "DEPRECATION WARNING: Using the keyword argument min_max_terms"
+                " is replaced by using cashocs.MinMaxFunctional and appending"
+                "this to the list of cost functionals."
+                "The former usage will be removed in the future."
+            )
             self.min_max_terms = None
             self.use_min_max_terms = False
             for functional in _utils.enlist(min_max_terms):
