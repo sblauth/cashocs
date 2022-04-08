@@ -37,15 +37,11 @@ e = inner(grad(y), grad(p)) * dx - u * p * dx
 
 bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-J = Constant(0) * dx
-
 integrand = y * y * dx
 tracking_goal = 1.0
-J_tracking = {"integrand": integrand, "tracking_goal": tracking_goal}
+J_tracking = cashocs.ScalarTrackingFunctional(integrand, tracking_goal)
 
-ocp = cashocs.OptimalControlProblem(
-    e, bcs, J, y, u, p, config, scalar_tracking_forms=J_tracking
-)
+ocp = cashocs.OptimalControlProblem(e, bcs, J_tracking, y, u, p, config)
 ocp.solve()
 
 print("L2-Norm of y squared: " + format(assemble(y * y * dx), ".3e"))

@@ -37,8 +37,9 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
     :ref:`demo_shape_poisson` and :ref:`config_shape_optimization`.
 
     Moreover, we note that some of cashocs functionality is explained only for optimal control, but not
-    for shape optimization problems. This includes the contents of :ref:`demo_picard_iteration`,
-    :ref:`demo_heat_equation`, :ref:`demo_iterative_solvers`, :ref:`demo_state_constraints`.
+    for shape optimization problems. This includes the contents of :ref:`demo_monolithic_problems`,
+    :ref:`demo_picard_iteration`, :ref:`demo_heat_equation`, :ref:`demo_nonlinear_pdes`, 
+    :ref:`demo_iterative_solvers`, :ref:`demo_state_constraints`.
     However, the corresponding functionalities only deal with either the definition
     of the state system, its (numerical) solution, or the definition of suitable
     cost functionals. Therefore, they are straightforward to adapt to the case of

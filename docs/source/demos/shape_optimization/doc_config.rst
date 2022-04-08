@@ -687,6 +687,21 @@ is given by ``use_initial_barycenter = False``.
     sufficient, if the list only has two entries, for the :math:`x` and :math:`y`
     barycenters.
 
+Finally, we have the parameter ``use_relative_scaling`` which is set in the line ::
+
+    use_relative_scaling = False
+
+This boolean flag does the following. For some regularization term :math:`J_\text{reg}(\Omega)` with corresponding
+factor :math:`\mu` (as defined above), the default behavior is given by ``use_relative_scaling = False``
+adds the term :math:`\mu J_\text{reg}(\Omega)` to the cost functional, so that the
+factor specified in the configuration file is actually used as the factor for the regularization term.
+In case ``use_relative_scaling = True``, the behavior is different, and the following term is
+added to the cost functional: :math:`\frac{\mu}{\left\lvert J_\text{reg}(\Omega_0) \right\rvert} J_\text{reg}(\Omega)`,
+where :math:`\Omega_0` is the initial guess for the geometry. In particular, this means
+that the magnitude of the regularization term is equal to :math:`\mu` on the initial geometry.
+This allows a detailed weighting of multiple regularization terms, which is particularly
+useful in case the cost functional is also scaled (see :ref:`demo_scaling`).
+
 .. _config_shape_mesh_quality:
 
 Section MeshQuality
