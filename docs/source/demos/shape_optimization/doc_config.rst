@@ -245,6 +245,21 @@ holds, and if this is not satisfied, the stepsize is updated via :math:`t = \fra
 As default values for these parameters we use ``epsilon_armijo = 1e-4`` as well
 as ``beta_armijo = 2``.
 
+Next, we have a set of two parameters which detail the methods used for computing gradients in cashocs.
+These parameters are ::
+
+    gradient_method = direct
+    
+as well as ::
+
+    gradient_tol = 1e-9
+
+The first parameter, ``gradient_method`` can be either ``direct`` or ``iterative``. In the former case, a
+direct solver is used to compute the gradient (using a Riesz projection) and in the latter case, an
+iterative solver is used to do so. In case we have ``gradient_method = iterative``, the parameter 
+``gradient_tol`` is used to specify the (relative) tolerance for the iterative solver, in the other case 
+the parameter is not used.
+
 The following parameter, ``soft_exit``, is a boolean flag which determines how
 the optimization algorithm is terminated in case it does not converge. If ``soft_exit = True``, then an
 error message is printed, but code after the :py:meth:`solve <cashocs.ShapeOptimizationProblem.solve>` call of the
@@ -947,6 +962,12 @@ in the following.
   * - beta_armijo
     - ``2.0``
     -
+  * - gradient_method
+    - ``direct``
+    - specifies the solver for computing the gradient, can be either ``direct`` or ``iterative``
+  * - gradient_tol
+    - ``1e-9``
+    - the relative tolerance in case an iterative solver is used to compute the gradient.
   * - soft_exit
     - ``False``
     - if ``True``, the optimization algorithm does not raise an exception if

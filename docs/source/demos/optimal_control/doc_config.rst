@@ -223,6 +223,21 @@ if the Armijo condition is not satisfied, i.e., we get :math:`t = \frac{t}{\beta
 step size, where :math:`\beta` corresponds to ``beta_armijo``. The default value
 for this parameter is ``beta_armijo = 2.0``.
 
+Next, we have a set of two parameters which detail the methods used for computing gradients in cashocs.
+These parameters are ::
+
+    gradient_method = direct
+    
+as well as ::
+
+    gradient_tol = 1e-9
+
+The first parameter, ``gradient_method`` can be either ``direct`` or ``iterative``. In the former case, a
+direct solver is used to compute the gradient (using a Riesz projection) and in the latter case, an
+iterative solver is used to do so. In case we have ``gradient_method = iterative``, the parameter 
+``gradient_tol`` is used to specify the (relative) tolerance for the iterative solver, in the other case 
+the parameter is not used.
+
 Finally, we have the parameter ``soft_exit``, which is defined as ::
 
     soft_exit = False
@@ -534,6 +549,12 @@ in the following.
     * - beta_armijo
       - ``2.0``
       -
+    * - gradient_method
+      - ``direct``
+      - specifies the solver for computing the gradient, can be either ``direct`` or ``iterative``
+    * - gradient_tol
+      - ``1e-9``
+      - the relative tolerance in case an iterative solver is used to compute the gradient.
     * - soft_exit
       - ``False``
       - if ``True``, the optimization algorithm does not raise an exception if
