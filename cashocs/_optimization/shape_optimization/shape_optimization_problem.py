@@ -177,7 +177,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 not unscaled_problem.has_cashocs_remesh_flag
                 and unscaled_problem.do_remesh
             ):
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", unscaled_problem.temp_dir], check=True
                 )
                 subprocess.run(  # nosec B603
@@ -533,7 +533,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "deleting the created temporary files."
             )
             if not self.config.getboolean("Debug", "remeshing"):
-                subprocess.run(["rm", "-r", self.temp_dir], check=True)  # nosec B603
+                subprocess.run(  # nosec B603, B607
+                    ["rm", "-r", self.temp_dir],
+                    check=True,
+                )
                 subprocess.run(  # nosec B603
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )

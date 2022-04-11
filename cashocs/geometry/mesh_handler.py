@@ -75,7 +75,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
             if line == "$EndParametrizations\n":
                 parametrizations_section = False
 
-    subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603
+    subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
 
 
 def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover

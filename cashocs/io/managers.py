@@ -291,7 +291,7 @@ class TempFileManager:
                 and not self.config.getboolean("Debug", "remeshing")
                 and mesh_handler.temp_dict is not None
             ):
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
                     check=True,
                 )
