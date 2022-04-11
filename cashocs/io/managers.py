@@ -295,7 +295,7 @@ class TempFileManager:
                     ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
                     check=True,
                 )
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.remesh_directory],
                     check=True,
                 )

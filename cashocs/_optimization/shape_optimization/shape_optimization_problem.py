@@ -537,7 +537,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     ["rm", "-r", self.temp_dir],
                     check=True,
                 )
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
             sys.__excepthook__(exctype, value, traceback)
