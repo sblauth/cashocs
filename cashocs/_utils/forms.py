@@ -351,12 +351,9 @@ def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]
     """
     mod_forms = []
     for form in forms:
-        if len(form.integrals()) == len(form.integrals_by_type("exterior_facet")):
-            trial, test = form.arguments()
-            mesh = trial.function_space().mesh()
-            dx = fenics.Measure("dx", domain=mesh)
-            mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
-        else:
-            mod_forms.append(form)
+        trial, test = form.arguments()
+        mesh = trial.function_space().mesh()
+        dx = fenics.Measure("dx", domain=mesh)
+        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
 
     return mod_forms

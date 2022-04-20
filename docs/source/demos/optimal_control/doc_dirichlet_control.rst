@@ -141,7 +141,9 @@ Finally, we can define the optimization problem similarly to :ref:`demo_neumann_
 
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-4
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
+    )
 
 As for :ref:`demo_neumann_control`, we have to define a scalar product on
 :math:`L^2(\Gamma)` to get meaningful results (as the control is only defined on the boundary),

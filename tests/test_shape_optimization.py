@@ -633,20 +633,16 @@ def test_scalar_tracking_weight():
     tracking_goal = rng.uniform(0.25, 0.75)
     weight = rng.uniform(1.0, 1e3)
     norm_u = u * u * dx
-    J_tracking = {"integrand": norm_u, "tracking_goal": tracking_goal, "weight": 1.0}
+    J = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal, weight=1.0)
 
-    J_vol = Constant(0) * dx
-
-    sop = cashocs.ShapeOptimizationProblem(
-        e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
-    )
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.compute_state_variables()
     initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
-    J_tracking["weight"] = weight / initial_function_value
-
-    sop = cashocs.ShapeOptimizationProblem(
-        e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
+    J = cashocs.ScalarTrackingFunctional(
+        norm_u, tracking_goal, weight=weight / initial_function_value
     )
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.compute_state_variables()
     val = sop.reduced_cost_functional.evaluate()
 
@@ -666,15 +662,11 @@ def test_scalar_tracking_multiple():
     tracking_goals = [0.00541757222440158, 2.8726020865244792]
     norm_u = u * u * dx
     volume = Constant(1) * dx
-    J_u = {"integrand": norm_u, "tracking_goal": tracking_goals[0]}
-    J_volume = {"integrand": volume, "tracking_goal": tracking_goals[1]}
-    J_tracking = [J_u, J_volume]
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[0])
+    J_volume = cashocs.ScalarTrackingFunctional(volume, tracking_goals[1])
+    J = [J_u, J_volume]
 
-    J_vol = Constant(0) * dx
-
-    sop = cashocs.ShapeOptimizationProblem(
-        e, bcs, J_vol, u, p, boundaries, config, scalar_tracking_forms=J_tracking
-    )
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9

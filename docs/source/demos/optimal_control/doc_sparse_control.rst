@@ -53,7 +53,9 @@ the one of :ref:`demo_poisson` is in line 18, and is highlighted here.
 
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-4
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * abs(u) * dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * abs(u) * dx
+    )
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve()

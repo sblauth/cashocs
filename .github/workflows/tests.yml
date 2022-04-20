@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - name: Checkout repository
@@ -33,7 +33,7 @@ jobs:
           pytest">=7.0.0"
           deprecated">=1.2.12"
           gmsh">=4.8"
-          python=3.9
+          python=${{ matrix.python-version }}
 
     - name: Install package
       run: |

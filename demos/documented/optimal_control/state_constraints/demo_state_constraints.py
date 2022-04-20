@@ -37,7 +37,10 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0]*x[1])", degree=1)
 alpha = 1e-3
-J_init = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+J_init_form = (
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+)
+J_init = cashocs.IntegralFunctional(J_init_form)
 ocp_init = cashocs.OptimalControlProblem(e, bcs, J_init, y, u, p, config)
 ocp_init.solve()
 
@@ -47,9 +50,10 @@ gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
 for gamma in gammas:
 
-    J = J_init + cashocs._utils.moreau_yosida_regularization(
+    J_form = J_init_form + cashocs._utils.moreau_yosida_regularization(
         y, gamma, dx, upper_threshold=y_bar
     )
+    J = cashocs.IntegralFunctional(J_form)
 
     ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp_gamma.solve()

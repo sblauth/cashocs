@@ -82,7 +82,9 @@ only the integration measure for the regularization term changes, so that we hav
 
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * ds
+    )
 
 As the default Hilbert space for a control is :math:`L^2(\Omega)`, we now
 also have to change this, to accommodate for the fact that the control

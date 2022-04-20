@@ -40,7 +40,9 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 alpha_vol = 1e-1
 alpha_surf = 1e-1
 
-J = u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+J = cashocs.IntegralFunctional(
+    u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+)
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 sop.solve()
