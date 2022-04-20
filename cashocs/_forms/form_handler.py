@@ -286,6 +286,7 @@ class FormHandler(abc.ABC):
         for j in range(len(self.gradient)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
                 b[j].vector().vec().aypx(0.0, a[j].vector().vec())
+                b[j].vector().apply("")
 
         return b
 
@@ -308,6 +309,7 @@ class FormHandler(abc.ABC):
         """
         for j in range(len(self.gradient)):
             b[j].vector().vec().set(0.0)
+            b[j].vector().apply("")
 
         return b
 

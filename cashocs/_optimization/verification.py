@@ -25,6 +25,7 @@ import fenics
 import numpy as np
 
 from cashocs import _loggers
+from cashocs import io
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control
@@ -49,6 +50,7 @@ def _initialize_control_variable(
         for j in range(ocp.control_dim):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+            temp.vector().apply("")
             u.append(temp)
 
     # check if u and ocp.controls coincide, if yes, make a deepcopy
@@ -59,6 +61,7 @@ def _initialize_control_variable(
         for j in range(ocp.control_dim):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+            temp.vector().apply("")
             u.append(temp)
 
     return u
@@ -93,6 +96,7 @@ def control_gradient_test(
     for j in range(ocp.control_dim):
         temp = fenics.Function(ocp.form_handler.control_spaces[j])
         temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+        temp.vector().apply("")
         initial_state.append(temp)
 
     u = _initialize_control_variable(ocp, u)
@@ -101,11 +105,15 @@ def control_gradient_test(
         h = []
         for function_space in ocp.form_handler.control_spaces:
             temp = fenics.Function(function_space)
-            temp.vector()[:] = custom_rng.rand(function_space.dim())
+            temp.vector().vec().setValues(
+                range(function_space.dim()), custom_rng.rand(function_space.dim())
+            )
+            temp.vector().apply("")
             h.append(temp)
 
     for j in range(ocp.control_dim):
         ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+        ocp.controls[j].vector().apply("")
 
     # Compute the norm of u for scaling purposes.
     scaling = np.sqrt(ocp.form_handler.scalar_product(ocp.controls, ocp.controls))
@@ -125,7 +133,9 @@ def control_gradient_test(
     for eps in epsilons:
         for j in range(ocp.control_dim):
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+            ocp.controls[j].vector().apply("")
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
+            ocp.controls[j].vector().apply("")
         # noinspection PyProtectedMember
         # pylint: disable=protected-access
         ocp._erase_pde_memory()
@@ -145,6 +155,7 @@ def control_gradient_test(
 
     for j in range(ocp.control_dim):
         ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
+        ocp.controls[j].vector().apply("")
 
     min_rate: float = np.min(rates)
     return min_rate
@@ -168,20 +179,22 @@ def shape_gradient_test(
         larger, everything works as expected.
 
     """
+    custom_rng = rng or np.random
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
-        if rng is not None:
-            # noinspection PyArgumentList
-            h[0].vector()[:] = rng.rand(sop.form_handler.deformation_space.dim())
-        else:
-            h[0].vector()[:] = np.random.rand(sop.form_handler.deformation_space.dim())
+        h[0].vector().set_local(custom_rng.rand(h[0].vector().local_size()))
+        h[0].vector().apply("")
 
     # ensure that the shape boundary conditions are applied
     for bc in sop.form_handler.bcs_shape:
         bc.apply(h[0].vector())
+        h[0].vector().apply("")
 
     if sop.form_handler.use_fixed_dimensions:
-        h[0].vector()[sop.form_handler.fixed_indices] = 0.0
+        h[0].vector().vec()[sop.form_handler.fixed_indices] = np.array(
+            [0.0] * len(sop.form_handler.fixed_indices)
+        )
+        h[0].vector().apply("")
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
@@ -192,8 +205,16 @@ def shape_gradient_test(
     shape_grad = sop.compute_shape_gradient()
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
-    box_lower = np.min(sop.mesh_handler.mesh.coordinates())
-    box_upper = np.max(sop.mesh_handler.mesh.coordinates())
+    coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        box_lower = np.min(coords)
+        box_upper = np.max(coords)
+    else:
+        box_lower = 0.0
+        box_upper = 0.0
+
+    box_lower = fenics.MPI.comm_world.bcast(box_lower, root=0)
+    box_upper = fenics.MPI.comm_world.bcast(box_upper, root=0)
     length = box_upper - box_lower
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
@@ -201,7 +222,9 @@ def shape_gradient_test(
 
     for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
+        transformation.vector().apply("")
         transformation.vector().vec().scale(eps)
+        transformation.vector().apply("")
         if sop.mesh_handler.move_mesh(transformation):
             # noinspection PyProtectedMember
             # pylint: disable=protected-access
@@ -253,7 +276,7 @@ def compute_convergence_rates(
         )
         rates.append(rate)
 
-    if verbose:
+    if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         print(f"Taylor test convergence rate: {rates}")
 
     return rates

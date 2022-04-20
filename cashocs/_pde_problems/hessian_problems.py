@@ -198,6 +198,7 @@ class HessianProblem:
         """
         for i in range(self.control_dim):
             self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
+            self.test_directions[i].vector().apply("")
 
         self.states_prime = self.form_handler.states_prime
         self.adjoints_prime = self.form_handler.adjoints_prime
@@ -295,6 +296,7 @@ class HessianProblem:
         """
         for j in range(self.control_dim):
             out[j].vector().vec().set(0.0)
+            out[j].vector().apply("")
 
         self.form_handler.restrict_to_inactive_set(h, self.inactive_part)
         self.hessian_application(self.inactive_part, self.hessian_actions)
@@ -309,6 +311,7 @@ class HessianProblem:
                 self.active_part[j].vector().vec()
                 + self.inactive_part[j].vector().vec(),
             )
+            out[j].vector().apply("")
 
     def newton_solve(self) -> List[fenics.Function]:
         """Solves the Newton step with an iterative method.
@@ -322,6 +325,7 @@ class HessianProblem:
 
         for j in range(self.control_dim):
             self.delta_control[j].vector().vec().set(0.0)
+            self.delta_control[j].vector().apply("")
 
         if self.inner_newton.casefold() == "cg":
             self.cg()
@@ -334,7 +338,9 @@ class HessianProblem:
         """Solves the (truncated) Newton step with a CG method."""
         for j in range(self.control_dim):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
+            self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
+            self.p[j].vector().apply("")
 
         rsold = self.form_handler.scalar_product(self.residual, self.residual)
         eps_0 = np.sqrt(rsold)
@@ -356,7 +362,9 @@ class HessianProblem:
                 self.delta_control[j].vector().vec().axpy(
                     alpha, self.p[j].vector().vec()
                 )
+                self.delta_control[j].vector().apply("")
                 self.residual[j].vector().vec().axpy(-alpha, self.q[j].vector().vec())
+                self.residual[j].vector().apply("")
 
             rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             eps = np.sqrt(rsnew)
@@ -368,6 +376,7 @@ class HessianProblem:
 
             for j in range(self.control_dim):
                 self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
+                self.p[j].vector().apply("")
 
             rsold = rsnew
 
@@ -375,7 +384,9 @@ class HessianProblem:
         """Solves the (truncated) Newton step with a CR method."""
         for j in range(self.control_dim):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
+            self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
+            self.p[j].vector().apply("")
 
         eps_0 = np.sqrt(self.form_handler.scalar_product(self.residual, self.residual))
 
@@ -383,6 +394,7 @@ class HessianProblem:
 
         for j in range(self.control_dim):
             self.q[j].vector().vec().aypx(0.0, self.s[j].vector().vec())
+            self.q[j].vector().apply("")
 
         self.form_handler.restrict_to_active_set(self.residual, self.temp1)
         self.form_handler.restrict_to_active_set(self.s, self.temp2)
@@ -407,7 +419,9 @@ class HessianProblem:
                 self.delta_control[j].vector().vec().axpy(
                     alpha, self.p[j].vector().vec()
                 )
+                self.delta_control[j].vector().apply("")
                 self.residual[j].vector().vec().axpy(-alpha, self.q[j].vector().vec())
+                self.residual[j].vector().apply("")
 
             eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
@@ -433,6 +447,8 @@ class HessianProblem:
 
             for j in range(self.control_dim):
                 self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
+                self.p[j].vector().apply("")
                 self.q[j].vector().vec().aypx(beta, self.s[j].vector().vec())
+                self.q[j].vector().apply("")
 
             rar = rar_new

@@ -22,6 +22,8 @@ from __future__ import annotations
 import abc
 from typing import Dict, Optional, TYPE_CHECKING
 
+import fenics
+
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
@@ -137,7 +139,8 @@ class OptimizationAlgorithm(abc.ABC):
 
         """
         if self.soft_exit:
-            print(message)
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
@@ -218,6 +221,7 @@ class OptimizationAlgorithm(abc.ABC):
                 self.search_direction[i].vector().vec().aypx(
                     0.0, -self.gradient[i].vector().vec()
                 )
+                self.search_direction[i].vector().apply("")
             self.has_curvature_info = False
 
     def initialize_solver(self) -> None:

@@ -149,6 +149,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.difference[i].vector().vec().axpy(
                 -2 * y2 / dy, self.search_direction[i].vector().vec()
             )
+            self.difference[i].vector().apply("")
 
         self.beta = (
             self.form_handler.scalar_product(self.difference, self.gradient) / dy
@@ -175,6 +176,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.search_direction[i].vector().vec().aypx(
                 self.beta, -self.gradient[i].vector().vec()
             )
+            self.search_direction[i].vector().apply("")
 
     def restart(self) -> None:
         """Checks, whether the NCG method should be restarted and does the restart."""
@@ -186,6 +188,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.search_direction[i].vector().vec().aypx(
                         0.0, -self.gradient[i].vector().vec()
                     )
+                    self.search_direction[i].vector().apply("")
                 self.memory = 0
         if self.cg_relative_restart:
             if (
@@ -197,6 +200,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.search_direction[i].vector().vec().aypx(
                         0.0, -self.gradient[i].vector().vec()
                     )
+                    self.search_direction[i].vector().apply("")
 
     def store_previous_gradient(self) -> None:
         """Stores a copy of the gradient of the previous iteration."""
@@ -204,6 +208,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.gradient_prev[i].vector().vec().aypx(
                 0.0, self.gradient[i].vector().vec()
             )
+            self.gradient_prev[i].vector().apply("")
 
     def project_ncg_search_direction(self) -> None:
         """Projects the search direction according to the box constraints."""
@@ -218,3 +223,4 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
                 0.0,
                 self.gradient[i].vector().vec() - self.gradient_prev[i].vector().vec(),
             )
+            self.difference[i].vector().apply("")

@@ -8,6 +8,7 @@ htmlcov
 ### paraview
 *.pvd
 *.vtu
+*.pvtu
 
 ### pip
 /build

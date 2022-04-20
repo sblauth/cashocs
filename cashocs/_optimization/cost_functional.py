@@ -225,6 +225,7 @@ class ScalarTrackingFunctional(Functional):
         self.integrand_value = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.weight = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.weight.vector().vec().set(weight)
+        self.weight.vector().apply("")
 
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -235,6 +236,7 @@ class ScalarTrackingFunctional(Functional):
         """
         scalar_integral_value = fenics.assemble(self.integrand)
         self.integrand_value.vector().vec().set(scalar_integral_value)
+        self.integrand_value.vector().apply("")
         val: float = (
             self.weight.vector().vec()[0]
             / 2.0
@@ -282,11 +284,13 @@ class ScalarTrackingFunctional(Functional):
 
         """
         self.weight.vector().vec().set(scaling_factor)
+        self.weight.vector().apply("")
 
     def update(self) -> None:
         """Updates the functional after solving the state equation."""
         scalar_integral_value = fenics.assemble(self.integrand)
         self.integrand_value.vector().vec().set(scalar_integral_value)
+        self.integrand_value.vector().apply("")
 
 
 class MinMaxFunctional(Functional):
@@ -316,8 +320,10 @@ class MinMaxFunctional(Functional):
         self.integrand_value = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.mu = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.mu.vector().vec().set(mu)
+        self.mu.vector().apply("")
         self.lambd = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.lambd.vector().vec().set(lambd)
+        self.lambd.vector().apply("")
 
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -328,6 +334,7 @@ class MinMaxFunctional(Functional):
         """
         min_max_integrand_value = fenics.assemble(self.integrand)
         self.integrand_value.vector().vec().set(min_max_integrand_value)
+        self.integrand_value.vector().apply("")
 
         val = 0.0
         if self.lower_bound is not None:
@@ -421,6 +428,7 @@ class MinMaxFunctional(Functional):
         """Updates the functional after solving the state equation."""
         min_max_integrand_value = fenics.assemble(self.integrand)
         self.integrand_value.vector().vec().set(min_max_integrand_value)
+        self.integrand_value.vector().apply("")
 
 
 class Lagrangian:

@@ -232,6 +232,7 @@ class ShapeRegularization:
                 b=self.b_curvature.vec(),
                 x=self.kappa_curvature.vector().vec(),
             )
+            self.kappa_curvature.vector().apply("")
 
         else:
             pass

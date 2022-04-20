@@ -47,8 +47,10 @@ def test_int_eq_constraint():
 
 def test_pw_eq_constraint():
     pw_eq_target = Function(V)
-    pw_eq_target.vector()[:] = rng.random(V.dim())
-    u.vector()[:] = rng.random(V.dim())
+    pw_eq_target.vector().set_local(rng.random(pw_eq_target.vector().local_size()))
+    pw_eq_target.vector().apply("")
+    u.vector().set_local(rng.random(u.vector().local_size()))
+    u.vector().apply("")
     pw_eq_constraint = cashocs.EqualityConstraint(u, pw_eq_target, dx)
     assert pw_eq_constraint.constraint_violation() == np.sqrt(
         assemble(pow(u - pw_eq_target, 2) * dx)
@@ -103,9 +105,15 @@ def test_pw_ineq_constraint():
     u.vector()[:] = interpolate(lin_expr, V).vector()[:]
 
     lower_bound = Function(V)
-    lower_bound.vector()[:] = rng.uniform(0.0, 1.0, V.dim())
+    lower_bound.vector().set_local(
+        rng.uniform(0.0, 1.0, lower_bound.vector().local_size())
+    )
+    lower_bound.vector().apply("")
     upper_bound = Function(V)
-    upper_bound.vector()[:] = rng.uniform(-1.0, 0.0, V.dim())
+    upper_bound.vector().set_local(
+        rng.uniform(-1.0, 0.0, upper_bound.vector().local_size())
+    )
+    upper_bound.vector().apply("")
 
     ineq_constraint_lower = cashocs.InequalityConstraint(
         u, lower_bound=lower_bound, measure=dx

@@ -19,6 +19,7 @@ import os
 import subprocess
 
 from fenics import *
+import mpi4py.MPI
 import numpy as np
 
 import cashocs
@@ -50,7 +51,8 @@ def test_time_suffix():
     suffix = ocp.solver.output_manager.suffix
     assert os.path.isdir(dir_path + f"/results_{suffix}")
     assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
-    subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
 
 
 def test_save_pvd_files_ocp():
@@ -69,15 +71,24 @@ def test_save_pvd_files_ocp():
     assert os.path.isfile(dir_path + "/out/history.txt")
     assert os.path.isfile(dir_path + "/out/history.json")
     assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/state_0000004.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/control_0000004.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/adjoint_0000004.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/gradient_0000004.pvtu"
+    )
 
-    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
 
 
 def test_save_pvd_files_mixed():
@@ -120,21 +131,38 @@ def test_save_pvd_files_mixed():
     assert ocp.gradient_test(rng=rng) > 1.9
     ocp.solve(rtol=1e-1)
 
+    MPI.barrier(MPI.comm_world)
+
     assert os.path.isdir(dir_path + "/out")
     assert os.path.isdir(dir_path + "/out/pvd")
     assert os.path.isfile(dir_path + "/out/history.txt")
     assert os.path.isfile(dir_path + "/out/history.json")
     assert os.path.isfile(dir_path + "/out/pvd/state_0_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/state_0_1.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_1000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/state_0_0000004.pvtu"
+    )
+    assert os.path.isfile(dir_path + "/out/pvd/state_0_1000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/state_0_1000004.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/control_0000004.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_0.pvd")
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_1.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_0000004.vtu")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_1000004.vtu")
+    assert os.path.isfile(
+        dir_path + "/out/pvd/adjoint_0_0000004.vtu"
+    ) or os.path.isfile(dir_path + "/out/pvd/adjoint_0_0000004.pvtu")
+    assert os.path.isfile(
+        dir_path + "/out/pvd/adjoint_0_1000004.vtu"
+    ) or os.path.isfile(dir_path + "/out/pvd/adjoint_0_1000004.pvtu")
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/gradient_0000004.pvtu"
+    )
 
-    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
+
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)

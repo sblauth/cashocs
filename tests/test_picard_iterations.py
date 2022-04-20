@@ -132,8 +132,8 @@ def test_picard_gradient_computation():
 
 
 def test_picard_state_solver():
-    u.vector()[:] = rng.normal(0.0, 10.0, size=V.dim())
-    v.vector()[:] = rng.normal(0.0, 10.0, size=V.dim())
+    u.vector().set_local(rng.normal(0.0, 10.0, size=u.vector().local_size()))
+    v.vector().set_local(rng.normal(0.0, 10.0, size=v.vector().local_size()))
     ocp._erase_pde_memory()
     ocp.compute_state_variables()
     ocp_mixed._erase_pde_memory()

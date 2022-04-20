@@ -431,6 +431,9 @@ def test_scalar_multiple_norms():
 def test_different_spaces():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
+    parameters["ghost_mode"] = "shared_vertex"
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
+    V = FunctionSpace(mesh, "CG", 1)
     W = FunctionSpace(mesh, "DG", 1)
 
     y = Function(V)
@@ -679,7 +682,7 @@ def test_control_bcs():
     u.vector()[:] = 0.0
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
     value = rng.rand()
-    control_bcs_list = cashocs.create_bcs_list(
+    control_bcs_list = cashocs.create_dirichlet_bcs(
         V, Constant(value), boundaries, [1, 2, 3, 4]
     )
     ocp = cashocs.OptimalControlProblem(
