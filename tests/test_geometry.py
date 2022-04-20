@@ -353,28 +353,27 @@ def test_empty_measure():
 
 def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-    coordinates_initial = gather_coordinates(mesh)
+    coordinates_initial = mesh.coordinates().copy()
     deformation_handler = cashocs.DeformationHandler(mesh)
-    coordinate_deformation = rng.randn(
-        mesh.coordinates().shape[0], mesh.coordinates().shape[1]
+    VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
+    coordinate_deformation = (
+        fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
+        .compute_vertex_values()
+        .reshape(2, -1)
+        .T
     )
-    h = mesh.hmin()
-    coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
 
     coordinates_transformed = coordinates_initial + coordinate_deformation
 
     vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
     assert deformation_handler.move_mesh(vector_field)
-    coords = gather_coordinates(mesh)
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        assert (
-            np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
-        )
+    # if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
 def test_convert_dof_defo_to_coordinate_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-    coordinates_initial = gather_coordinates(mesh)
+    coordinates_initial = mesh.coordinates().copy()
     deformation_handler = cashocs.DeformationHandler(mesh)
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     defo = fenics.Function(VCG)
@@ -391,28 +390,32 @@ def test_convert_dof_defo_to_coordinate_defo():
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
-def test_move_mesh():
-    mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-    coordinates_initial = gather_coordinates(mesh)
-    deformation_handler = cashocs.DeformationHandler(mesh)
-    coordinate_deformation = rng.randn(
-        mesh.coordinates().shape[0], mesh.coordinates().shape[1]
-    )
-    h = mesh.hmin()
-    coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
+# def test_move_mesh():
+mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
+VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
+coordinates_initial = mesh.coordinates().copy()
+deformation_handler = cashocs.DeformationHandler(mesh)
+coordinate_deformation = (
+    fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
+    .compute_vertex_values()
+    .reshape(2, -1)
+    .T
+)
+h = mesh.hmin()
+coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
 
-    coordinates_added = coordinates_initial + coordinate_deformation
-    assert deformation_handler.move_mesh(coordinate_deformation)
-    coordinates_moved = mesh.coordinates().copy()
-    deformation_handler.revert_transformation()
+coordinates_added = coordinates_initial + coordinate_deformation
+assert deformation_handler.move_mesh(coordinate_deformation)
+coordinates_moved = mesh.coordinates().copy()
+deformation_handler.revert_transformation()
 
-    vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
-    assert deformation_handler.move_mesh(vector_field)
-    coordinates_dof_moved = mesh.coordinates().copy()
+vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
+assert deformation_handler.move_mesh(vector_field)
+coordinates_dof_moved = mesh.coordinates().copy()
 
-    assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
-    assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
-    assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
+assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
+assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
 
 
 def test_eikonal_distance():
