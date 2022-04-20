@@ -85,6 +85,63 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
     return coordinates
 
 
+def parse_file(
+    original_msh_file: str, out_msh_file: str, points: np.ndarray, dim: int
+) -> None:
+    """Parses the mesh file and writes a new, corresponding one.
+
+    Args:
+        original_msh_file: Path to the original GMSH mesh file of the mesh object, has
+            to end with .msh.
+        out_msh_file: Path to the output mesh file, has to end with .msh.
+        points: The mesh coordinates gathered on process 0
+        dim: The dimensionality of the mesh
+
+    """
+    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
+        out_msh_file, "w", encoding="utf-8"
+    ) as new_file:
+        node_section = False
+        info_section = False
+        subnode_counter = 0
+        subwrite_counter = 0
+        idcs = np.zeros(1, dtype=int)
+
+        for line in old_file:
+            if line == "$EndNodes\n":
+                node_section = False
+
+            if not node_section:
+                new_file.write(line)
+            else:
+                split_line = line.split(" ")
+                if info_section:
+                    new_file.write(line)
+                    info_section = False
+                else:
+                    if len(split_line) == 4:
+                        num_subnodes = int(split_line[-1][:-1])
+                        subnode_counter = 0
+                        subwrite_counter = 0
+                        idcs = np.zeros(num_subnodes, dtype=int)
+                        new_file.write(line)
+                    elif len(split_line) == 1:
+                        idcs[subnode_counter] = int(split_line[0][:-1]) - 1
+                        subnode_counter += 1
+                        new_file.write(line)
+                    elif len(split_line) == 3:
+                        mod_line = create_point_representation(
+                            dim, points, idcs, subwrite_counter
+                        )
+
+                        new_file.write(mod_line)
+                        subwrite_counter += 1
+
+            if line == "$Nodes\n":
+                node_section = True
+                info_section = True
+
+
 def write_out_mesh(  # noqa: C901
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
@@ -113,46 +170,4 @@ def write_out_mesh(  # noqa: C901
     points = gather_coordinates(mesh)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
-            out_msh_file, "w", encoding="utf-8"
-        ) as new_file:
-
-            node_section = False
-            info_section = False
-            subnode_counter = 0
-            subwrite_counter = 0
-            idcs = np.zeros(1, dtype=int)
-
-            for line in old_file:
-                if line == "$EndNodes\n":
-                    node_section = False
-
-                if not node_section:
-                    new_file.write(line)
-                else:
-                    split_line = line.split(" ")
-                    if info_section:
-                        new_file.write(line)
-                        info_section = False
-                    else:
-                        if len(split_line) == 4:
-                            num_subnodes = int(split_line[-1][:-1])
-                            subnode_counter = 0
-                            subwrite_counter = 0
-                            idcs = np.zeros(num_subnodes, dtype=int)
-                            new_file.write(line)
-                        elif len(split_line) == 1:
-                            idcs[subnode_counter] = int(split_line[0][:-1]) - 1
-                            subnode_counter += 1
-                            new_file.write(line)
-                        elif len(split_line) == 3:
-                            mod_line = create_point_representation(
-                                dim, points, idcs, subwrite_counter
-                            )
-
-                            new_file.write(mod_line)
-                            subwrite_counter += 1
-
-                if line == "$Nodes\n":
-                    node_section = True
-                    info_section = True
+        parse_file(original_msh_file, out_msh_file, points, dim)
