@@ -152,9 +152,11 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     self.form_handler.fe_shape_derivative_vector
                 )
                 if self.form_handler.use_fixed_dimensions:
-                    self.form_handler.fe_shape_derivative_vector[
-                        self.form_handler.fixed_indices
-                    ] = 0.0
+                    self.form_handler.fe_shape_derivative_vector.vec().setValues(
+                        self.form_handler.fixed_indices,
+                        np.array([0.0] * len(self.form_handler.fixed_indices)),
+                    )
+                    self.form_handler.fe_shape_derivative_vector.apply("")
                 _utils.solve_linear_problem(
                     self.ksp,
                     self.form_handler.scalar_product_matrix,

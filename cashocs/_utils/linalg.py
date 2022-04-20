@@ -376,11 +376,14 @@ class Interpolator:
             The result of the interpolation.
 
         """
-        v = fenics.Function(self.target_space)
-        x = fenics.as_backend_type(u.vector()).vec()
-        _, temp = self.transfer_matrix.getVecs()
-        self.transfer_matrix.mult(x, temp)
-        v.vector().vec().aypx(0.0, temp)
-        v.vector().apply("")
+        if fenics.MPI.comm_world.size <= 1:
+            v = fenics.Function(self.target_space)
+            x = fenics.as_backend_type(u.vector()).vec()
+            _, temp = self.transfer_matrix.getVecs()
+            self.transfer_matrix.mult(x, temp)
+            v.vector().vec().aypx(0.0, temp)
+            v.vector().apply("")
+        else:
+            v = fenics.interpolate(u, self.target_space)
 
         return v
