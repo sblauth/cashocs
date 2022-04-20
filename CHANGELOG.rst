@@ -7,10 +7,10 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-in development
---------------
+1.7.0 (April 20, 2022)
+----------------------
 
-* Working on MPI support for all features of cashocs.
+* MPI Support - cashocs now has full MPI support. All of its features, including remeshing, now work out of the box in parallel. Nearly any script using cashocs can be run in parallel by invoking it via ```mpirun -n p python script.py```, where ```p``` is the number of MPI processes. Note, that running in parallel may sometimes cause unexpected behavior as it is not tested as well as the serial usage. If you should encounter any bugs, please report them.
 
 1.6.0 (April 4, 2022)
 --------------------
