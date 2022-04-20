@@ -25,6 +25,7 @@ import fenics
 import numpy as np
 
 from cashocs import _loggers
+from cashocs import io
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control
@@ -181,15 +182,13 @@ def shape_gradient_test(
     custom_rng = rng or np.random
     if h is None:
         h = [fenics.Function(sop.form_handler.deformation_space)]
-        h[0].vector().vec().setValues(
-            range(sop.form_handler.deformation_space.dim()),
-            custom_rng.rand(sop.form_handler.deformation_space.dim()),
-        )
+        h[0].vector().set_local(custom_rng.rand(h[0].vector().local_size()))
         h[0].vector().apply("")
 
     # ensure that the shape boundary conditions are applied
     for bc in sop.form_handler.bcs_shape:
         bc.apply(h[0].vector())
+        h[0].vector().apply("")
 
     if sop.form_handler.use_fixed_dimensions:
         h[0].vector().vec()[sop.form_handler.fixed_indices] = np.array(
@@ -206,8 +205,16 @@ def shape_gradient_test(
     shape_grad = sop.compute_shape_gradient()
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
-    box_lower = np.min(sop.mesh_handler.mesh.coordinates())
-    box_upper = np.max(sop.mesh_handler.mesh.coordinates())
+    coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        box_lower = np.min(coords)
+        box_upper = np.max(coords)
+    else:
+        box_lower = 0.0
+        box_upper = 0.0
+
+    box_lower = fenics.MPI.comm_world.bcast(box_lower, root=0)
+    box_upper = fenics.MPI.comm_world.bcast(box_upper, root=0)
     length = box_upper - box_lower
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]

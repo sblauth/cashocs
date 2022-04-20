@@ -50,6 +50,38 @@ J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u *
 ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 
 
+def evaluate_function(u, x):
+    comm = u.function_space().mesh().mpi_comm()
+    if comm.size == 1:
+        return u(*x)
+
+    # Find whether the point lies on the partition of the mesh local
+    # to this process, and evaulate u(x)
+    cell, distance = mesh.bounding_box_tree().compute_closest_entity(Point(*x))
+    u_eval = u(*x) if distance < DOLFIN_EPS else None
+
+    # Gather the results on process 0
+    comm = mesh.mpi_comm()
+    computed_u = comm.gather(u_eval, root=0)
+
+    # Verify the results on process 0 to ensure we see the same value
+    # on a process boundary
+    if comm.rank == 0:
+        global_u_evals = np.array(
+            [y for y in computed_u if y is not None], dtype=np.double
+        )
+        assert np.all(np.abs(global_u_evals[0] - global_u_evals) < 1e-9)
+
+        computed_u = global_u_evals[0]
+    else:
+        computed_u = None
+
+    # Broadcast the verified result to all processes
+    computed_u = comm.bcast(computed_u, root=0)
+
+    return computed_u
+
+
 def test_summation():
     a = [1, 2, 3, 4]
 
@@ -59,7 +91,7 @@ def test_summation():
 
     for i in range(dim):
         temp = Function(V)
-        temp.vector()[:] = rng.rand(V.dim())
+        temp.vector().set_local(rng.rand(temp.vector().local_size()))
         funcs.append(temp)
 
     F = cashocs._utils.summation([funcs[i] * test * dx for i in range(dim)])
@@ -83,7 +115,7 @@ def test_multiplication():
 
     for i in range(dim):
         temp = Function(V)
-        temp.vector()[:] = rng.rand(V.dim())
+        temp.vector().set_local(rng.rand(temp.vector().local_size()))
         funcs.append(temp)
 
     F = cashocs._utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
@@ -119,7 +151,7 @@ def test_create_bcs():
     solve(a == L, u, bcs)
 
     assert np.allclose(u_ex.vector()[:], u.vector()[:])
-    assert abs(u(0, 0) - bc_val) < 1e-14
+    assert abs(evaluate_function(u, (0, 0)) - bc_val) < 1e-14
 
 
 def test_interpolator():
@@ -130,7 +162,7 @@ def test_interpolator():
     interp_X = cashocs._utils.Interpolator(V, X)
 
     func_V = Function(V)
-    func_V.vector()[:] = rng.rand(V.dim())
+    func_V.vector().set_local(rng.rand(func_V.vector().local_size()))
 
     fen_W = interpolate(func_V, W)
     fen_X = interpolate(func_V, X)
@@ -144,9 +176,10 @@ def test_interpolator():
 
 def test_create_named_bcs():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    cashocs._cli.convert(
-        [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
-    )
+    if MPI.rank(MPI.comm_world) == 0:
+        cashocs._cli.convert(
+            [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
+        )
 
     mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
@@ -162,7 +195,7 @@ def test_create_named_bcs():
     )
 
     fun1 = Function(V_)
-    fun1.vector()[:] = rng.rand(V_.dim())
+    fun1.vector().set_local(rng.rand(fun1.vector().local_size()))
 
     fun2 = Function(V_)
     fun2.vector()[:] = fun1.vector()[:]
@@ -185,6 +218,7 @@ def test_create_named_bcs():
             e_info.value
         )
 
+    MPI.barrier(MPI.comm_world)
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
@@ -192,20 +226,25 @@ def test_create_named_bcs():
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
     assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+    MPI.barrier(MPI.comm_world)
 
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True)
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True)
-    subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
-    subprocess.run(
-        ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
-    )
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
+        subprocess.run(
+            ["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True
+        )
+        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
+        subprocess.run(
+            ["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True
+        )
+        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
+        subprocess.run(
+            ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
+        )
 
 
 def test_moreau_yosida_regularization():
-
     u.vector()[:] = 1e3
     y_bar = 1e-1
     y_low = 1e-2

@@ -25,17 +25,10 @@ import cashocs
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-meshlevel = 10
-degree = 1
-dim = 2
-mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+    f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+)
 initial_coordinates = mesh.coordinates().copy()
-dx = Measure("dx", mesh)
-ds = Measure("ds", mesh)
-
-boundary = CompiledSubDomain("on_boundary")
-boundaries = MeshFunction("size_t", mesh, dim=1)
-boundary.mark(boundaries, 1)
 
 V = FunctionSpace(mesh, "CG", 1)
 

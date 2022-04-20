@@ -88,17 +88,11 @@ rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 # config = cashocs.load_config(dir_path + "/config_sop.ini")
 
-meshlevel = 10
-degree = 1
-dim = 2
-mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-initial_coordinates = mesh.coordinates().copy()
-dx = Measure("dx", mesh)
-ds = Measure("ds", mesh)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+    f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+)
 
-boundary = CompiledSubDomain("on_boundary")
-boundaries = MeshFunction("size_t", mesh, dim=1)
-boundary.mark(boundaries, 1)
+initial_coordinates = mesh.coordinates().copy()
 
 V = FunctionSpace(mesh, "CG", 1)
 
@@ -134,7 +128,8 @@ def test_move_mesh():
     sop.mesh_handler.revert_transformation()
     assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
-    trafo.vector()[:] = rng.uniform(-1e3, 1e3, V.dim())
+    trafo.vector().set_local(rng.uniform(-1e3, 1e3, size=trafo.vector().local_size()))
+    trafo.vector().apply("")
     sop.mesh_handler.move_mesh(trafo)
     assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
@@ -284,7 +279,7 @@ def test_shape_cg_fr():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=15)
+    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=21)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -295,7 +290,7 @@ def test_shape_cg_pr():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=25)
+    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=16)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -306,7 +301,7 @@ def test_shape_cg_hs():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=23)
+    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=18)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -317,7 +312,7 @@ def test_shape_cg_dy():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=17)
+    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=18)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -328,7 +323,7 @@ def test_shape_cg_hz():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=22)
+    sop.solve("cg", rtol=1e-2, atol=0.0, max_iter=18)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -338,7 +333,7 @@ def test_shape_lbfgs():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=8)
+    sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=7)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -359,8 +354,10 @@ def test_shape_volume_regularization():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
-    max_coordinate = np.max(mesh.coordinates())
-    min_coordinate = -np.min(mesh.coordinates())
+    coords = cashocs.io.mesh.gather_coordinates(mesh)
+    coords = MPI.comm_world.bcast(coords, root=0)
+    max_coordinate = np.max(coords)
+    min_coordinate = -np.min(coords)
     assert abs(max_coordinate - radius) < 5e-3
     assert abs(min_coordinate - radius) < 5e-3
     assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
@@ -383,8 +380,10 @@ def test_shape_surface_regularization():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
-    max_coordinate = np.max(mesh.coordinates())
-    min_coordinate = -np.min(mesh.coordinates())
+    coords = cashocs.io.mesh.gather_coordinates(mesh)
+    coords = MPI.comm_world.bcast(coords, root=0)
+    max_coordinate = np.max(coords)
+    min_coordinate = -np.min(coords)
     assert abs(max_coordinate - radius) < 5e-3
     assert abs(min_coordinate - radius) < 5e-3
     assert 0.5 * pow(assemble(1 * ds) - 2 * np.pi * radius, 2) < 1e-10
@@ -596,8 +595,10 @@ def test_scalar_tracking_regularization():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
-    max_coordinate = np.max(mesh.coordinates())
-    min_coordinate = -np.min(mesh.coordinates())
+    coords = cashocs.io.mesh.gather_coordinates(mesh)
+    coords = MPI.comm_world.bcast(coords, root=0)
+    max_coordinate = np.max(coords)
+    min_coordinate = -np.min(coords)
     assert abs(max_coordinate - radius) < 5e-3
     assert abs(min_coordinate - radius) < 5e-3
     assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
@@ -659,8 +660,6 @@ def test_scalar_tracking_weight():
 def test_scalar_tracking_multiple():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
@@ -681,7 +680,7 @@ def test_scalar_tracking_multiple():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
-    sop.solve("lbfgs", rtol=1e-6, max_iter=50)
+    sop.solve("lbfgs", rtol=1e-7, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goals[0], 2) < 1e-13
     assert 0.5 * pow(assemble(volume) - tracking_goals[1], 2) < 1e-15
 
@@ -726,18 +725,30 @@ def test_save_pvd_files():
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=8)
+
+    MPI.barrier(MPI.comm_world)
+
     assert os.path.isdir(dir_path + "/out")
     assert os.path.isdir(dir_path + "/out/pvd")
     assert os.path.isfile(dir_path + "/out/history.txt")
     assert os.path.isfile(dir_path + "/out/history.json")
     assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000007.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/state_0000006.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/state_0000006.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000007.vtu")
+    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000006.vtu") or os.path.isfile(
+        dir_path + "/out/pvd/adjoint_0000006.pvtu"
+    )
     assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient000007.vtu")
+    assert os.path.isfile(
+        dir_path + "/out/pvd/shape_gradient000006.vtu"
+    ) or os.path.isfile(dir_path + "/out/pvd/shape_gradient000006.pvtu")
 
-    subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
+
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
 
 
 def test_distance_mu():
@@ -764,18 +775,49 @@ def test_distance_mu():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     mu = sop.form_handler.mu_lame
 
-    assert (np.abs(mu(0.5, 0.5) - 10.0) / 10.0) < 1e-10
-    assert (np.abs(mu(0.05, 0.5) - 1.0) / 1.0) < 1e-10
+    def evaluate_function(u, x):
+        comm = u.function_space().mesh().mpi_comm()
+        if comm.size == 1:
+            return u(*x)
 
-    assert (np.abs(mu(0.09, 0.5) - 1.0) / 1.0) < 1e-10
-    assert (np.abs(mu(0.91, 0.5) - 1.0) / 1.0) < 1e-10
-    assert (np.abs(mu(0.5, 0.09) - 1.0) / 1.0) < 1e-10
-    assert (np.abs(mu(0.5, 0.91) - 1.0) / 1.0) < 1e-10
+        # Find whether the point lies on the partition of the mesh local
+        # to this process, and evaulate u(x)
+        cell, distance = mesh.bounding_box_tree().compute_closest_entity(Point(*x))
+        u_eval = u(*x) if distance < DOLFIN_EPS else None
 
-    assert (np.abs(mu(0.5, 0.26) - 10.0) / 10.0) < 1e-10
-    assert (np.abs(mu(0.5, 0.74) - 10.0) / 10.0) < 1e-10
-    assert (np.abs(mu(0.26, 0.5) - 10.0) / 10.0) < 1e-10
-    assert (np.abs(mu(0.74, 0.5) - 10.0) / 10.0) < 1e-10
+        # Gather the results on process 0
+        comm = mesh.mpi_comm()
+        computed_u = comm.gather(u_eval, root=0)
+
+        # Verify the results on process 0 to ensure we see the same value
+        # on a process boundary
+        if comm.rank == 0:
+            global_u_evals = np.array(
+                [y for y in computed_u if y is not None], dtype=np.double
+            )
+            assert np.all(np.abs(global_u_evals[0] - global_u_evals) < 1e-9)
+
+            computed_u = global_u_evals[0]
+        else:
+            computed_u = None
+
+        # Broadcast the verified result to all processes
+        computed_u = comm.bcast(computed_u, root=0)
+
+        return computed_u
+
+    assert (np.abs(evaluate_function(mu, (0.5, 0.5)) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.05, 0.5)) - 1.0) / 1.0) < 1e-10
+
+    assert (np.abs(evaluate_function(mu, (0.09, 0.5)) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.91, 0.5)) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.5, 0.09)) - 1.0) / 1.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.5, 0.91)) - 1.0) / 1.0) < 1e-10
+
+    assert (np.abs(evaluate_function(mu, (0.5, 0.26)) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.5, 0.74)) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.26, 0.5)) - 10.0) / 10.0) < 1e-10
+    assert (np.abs(evaluate_function(mu, (0.74, 0.5)) - 10.0) / 10.0) < 1e-10
 
 
 def test_scaling_shape():
@@ -1012,7 +1054,7 @@ def test_check_config_list():
 
 def test_stepsize2():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("OptimizationRoutine", "initial_stepsize", "1.0")
+    config.set("OptimizationRoutine", "initial_stepsize", "1e-3")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
