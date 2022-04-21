@@ -43,8 +43,7 @@
 cashocs is a computational adjoint-based shape optimization and optimal control
 software for python.
 
-.. contents:: Table of contents
-    :local:
+.. contents:: :local:
 
 Introduction
 ============
