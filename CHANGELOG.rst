@@ -7,6 +7,11 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
+in development
+--------------
+
+* Rename the default branch from "master" to "main"
+
 1.7.0 (April 20, 2022)
 ----------------------
 
