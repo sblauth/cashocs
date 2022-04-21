@@ -43,6 +43,12 @@
 cashocs is a computational adjoint-based shape optimization and optimal control
 software for python.
 
+.. contents:: Table of contents
+    :local:
+
+Introduction
+============
+
 cashocs is based on the finite element package `FEniCS
 <https://fenicsproject.org>`__ and uses its high-level unified form language UFL
 to treat general PDE constrained optimization problems, in particular, shape
