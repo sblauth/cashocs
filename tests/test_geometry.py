@@ -390,32 +390,32 @@ def test_convert_dof_defo_to_coordinate_defo():
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
-# def test_move_mesh():
-mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
-coordinates_initial = mesh.coordinates().copy()
-deformation_handler = cashocs.DeformationHandler(mesh)
-coordinate_deformation = (
-    fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
-    .compute_vertex_values()
-    .reshape(2, -1)
-    .T
-)
-h = mesh.hmin()
-coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
+def test_move_mesh():
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
+    VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
+    coordinates_initial = mesh.coordinates().copy()
+    deformation_handler = cashocs.DeformationHandler(mesh)
+    coordinate_deformation = (
+        fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
+        .compute_vertex_values()
+        .reshape(2, -1)
+        .T
+    )
+    h = mesh.hmin()
+    coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
 
-coordinates_added = coordinates_initial + coordinate_deformation
-assert deformation_handler.move_mesh(coordinate_deformation)
-coordinates_moved = mesh.coordinates().copy()
-deformation_handler.revert_transformation()
+    coordinates_added = coordinates_initial + coordinate_deformation
+    assert deformation_handler.move_mesh(coordinate_deformation)
+    coordinates_moved = mesh.coordinates().copy()
+    deformation_handler.revert_transformation()
 
-vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
-assert deformation_handler.move_mesh(vector_field)
-coordinates_dof_moved = mesh.coordinates().copy()
+    vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
+    assert deformation_handler.move_mesh(vector_field)
+    coordinates_dof_moved = mesh.coordinates().copy()
 
-assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
-assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
-assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
 
 
 def test_eikonal_distance():
