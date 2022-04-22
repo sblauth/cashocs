@@ -52,15 +52,7 @@ The initial code, including the defition of the PDE constraint, is identical to
 
     config = cashocs.load_config("./config.ini")
 
-    meshlevel = 15
-    degree = 1
-    dim = 2
-    mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-    dx = Measure("dx", mesh)
-    boundary = CompiledSubDomain("on_boundary")
-    boundaries = MeshFunction("size_t", mesh, dim=1)
-    boundary.mark(boundaries, 1)
-    ds = Measure("ds", mesh, subdomain_data=boundaries)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
     V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)

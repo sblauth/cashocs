@@ -55,31 +55,10 @@ We read the config file with the :py:func:`load_config <cashocs.load_config>` co
 
     config = cashocs.load_config('./config.ini')
 
-Next, we have to define the mesh. As the above problem is posed on the unit disc
-initially, we define this via FEniCS commands (cashocs only has rectangular meshes built
-in). This is done via the following code ::
+Next, we have to define the mesh. We load the mesh (which was previously generated with Gmsh and converted to xdmf with :ref:`cashocs-convert <cashocs_convert>` ::
 
-    meshlevel = 15
-    degree = 1
-    dim = 2
-    mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
-Next up, we define the :py:class:`fenics.Measure` objects, which we need to define
-the problem. For the volume measure, we can simply invoke ::
-
-    dx = Measure("dx", mesh)
-
-However, for the surface measure, we need to mark the boundary. This is required since
-cashocs distinguishes between three types of boundaries: The deformable boundary, the
-fixed boundary, and boundaries that can only be deformed perpendicular to a certain
-coordinate axis (see :ref:`the relevant documentation of the config files <config_shape_shape_gradient>`). Here, we investigate the
-case of a completely deformable boundary, which makes things rather
-easy. We mark this boundary with the marker ``1`` with the following piece of code ::
-
-    boundary = CompiledSubDomain("on_boundary")
-    boundaries = MeshFunction("size_t", mesh, dim=1)
-    boundary.mark(boundaries, 1)
-    ds = Measure("ds", mesh, subdomain_data=boundaries)
 
 .. note::
 
@@ -91,14 +70,10 @@ easy. We mark this boundary with the marker ``1`` with the following piece of co
 
     which specifies that the boundary marked with 1 is deformable. For our
     example this is exactly what we want, as this means that the entire boundary
-    is variable, due to the previous commands. For a detailed documentation we
+    is variable, due to the fact that the entire boundary is marked by 1 in the Gmsh file. For a detailed documentation we
     refer to :ref:`the corresponding documentation of the ShapeGradient section
     <config_shape_shape_gradient>`.
 
-Note, that all of the alternative ways of marking subdomains or boundaries with
-numbers, as explained in `Langtangen and Logg, Solving PDEs in Python
-<https://doi.org/10.1007/978-3-319-52462-7>`_ also work here. If it is valid for FEniCS, it is also for
-cashocs.
 
 After having defined the initial geometry, we define a :py:class:`fenics.FunctionSpace` consisting of
 piecewise linear Lagrange elements via ::
