@@ -110,6 +110,9 @@ import_mesh
 ***********
 .. autofunction:: cashocs.import_mesh
 
+interval_mesh
+*************
+.. autofunction:: cashocs.interval_mesh
 
 regular_mesh
 ************
