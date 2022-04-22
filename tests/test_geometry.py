@@ -35,6 +35,7 @@ from cashocs.io.mesh import gather_coordinates
 
 c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
 u_mesh = fenics.UnitSquareMesh(5, 5)
+i_mesh = fenics.UnitIntervalMesh(10)
 rng = np.random.RandomState(300696)
 
 
@@ -390,32 +391,32 @@ def test_convert_dof_defo_to_coordinate_defo():
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
-# def test_move_mesh():
-mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
-coordinates_initial = mesh.coordinates().copy()
-deformation_handler = cashocs.DeformationHandler(mesh)
-coordinate_deformation = (
-    fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
-    .compute_vertex_values()
-    .reshape(2, -1)
-    .T
-)
-h = mesh.hmin()
-coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
+def test_move_mesh():
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
+    VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
+    coordinates_initial = mesh.coordinates().copy()
+    deformation_handler = cashocs.DeformationHandler(mesh)
+    coordinate_deformation = (
+        fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
+        .compute_vertex_values()
+        .reshape(2, -1)
+        .T
+    )
+    h = mesh.hmin()
+    coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
 
-coordinates_added = coordinates_initial + coordinate_deformation
-assert deformation_handler.move_mesh(coordinate_deformation)
-coordinates_moved = mesh.coordinates().copy()
-deformation_handler.revert_transformation()
+    coordinates_added = coordinates_initial + coordinate_deformation
+    assert deformation_handler.move_mesh(coordinate_deformation)
+    coordinates_moved = mesh.coordinates().copy()
+    deformation_handler.revert_transformation()
 
-vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
-assert deformation_handler.move_mesh(vector_field)
-coordinates_dof_moved = mesh.coordinates().copy()
+    vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
+    assert deformation_handler.move_mesh(vector_field)
+    coordinates_dof_moved = mesh.coordinates().copy()
 
-assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
-assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
-assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
+    assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
 
 
 def test_eikonal_distance():
@@ -510,3 +511,32 @@ def test_list_measure():
 
     for i in range(3):
         assert m_sum._measures[i] == ref._measures[i]
+
+
+def test_interval_mesh():
+    mesh, _, _, _, _, _ = cashocs.interval_mesh(10)
+    coords = gather_coordinates(mesh)
+    i_coords = gather_coordinates(i_mesh)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert np.allclose(coords, i_coords)
+
+    lens = rng.uniform(0.5, 2, 2)
+    lens.sort()
+    mesh, _, _, _, _, _ = cashocs.interval_mesh(10, lens[0], lens[1])
+    expr = fenics.Expression("x[0]", degree=1)
+    fun = fenics.interpolate(expr, fenics.FunctionSpace(mesh, "CG", 1))
+
+    assert abs(fun.vector().max() - lens[1]) <= 1e-15
+    assert abs(fun.vector().min() - lens[0]) <= 1e-15
+
+    partitions = rng.uniform(0.1, 0.9, 5)
+    partitions = partitions.round(2)
+    partitions.sort()
+    mesh, _, _, dx, _, _ = cashocs.interval_mesh(100, 0, 1, partitions)
+
+    assert abs(fenics.assemble(1 * dx(1)) - partitions[0]) <= 1e-15
+    assert abs(fenics.assemble(1 * dx(2)) - partitions[1] + partitions[0]) <= 1e-15
+    assert abs(fenics.assemble(1 * dx(3)) - partitions[2] + partitions[1]) <= 1e-15
+    assert abs(fenics.assemble(1 * dx(4)) - partitions[3] + partitions[2]) <= 1e-15
+    assert abs(fenics.assemble(1 * dx(5)) - partitions[4] + partitions[3]) <= 1e-15
+    assert abs(fenics.assemble(1 * dx(6)) - 1.0 + partitions[4]) <= 1e-15

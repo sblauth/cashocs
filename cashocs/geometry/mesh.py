@@ -336,7 +336,7 @@ def interval_mesh(
         end: The end of the interval, default is 1.0
         partitions: Points in the interval at which a partition in subdomains should be
             made. The resulting volume measure is sorted ascendingly according to the
-            sub-intervals defined in partitions. Defaults to ``None``.
+            sub-intervals defined in partitions (starting at 1). Defaults to ``None``.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -389,7 +389,7 @@ def interval_mesh(
                 start_point=start_point,
                 end_point=end_point,
             )
-            part.mark(subdomains, i)
+            part.mark(subdomains, i + 1)
 
     dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
     ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)

@@ -30,6 +30,7 @@ from cashocs.geometry.deformation_handler import DeformationHandler
 from cashocs.geometry.measure import _EmptyMeasure
 from cashocs.geometry.measure import generate_measure
 from cashocs.geometry.mesh import import_mesh
+from cashocs.geometry.mesh import interval_mesh
 from cashocs.geometry.mesh import regular_box_mesh
 from cashocs.geometry.mesh import regular_mesh
 from cashocs.geometry.mesh_handler import _MeshHandler
@@ -44,6 +45,7 @@ __all__ = [
     "_EmptyMeasure",
     "import_mesh",
     "regular_mesh",
+    "interval_mesh",
     "regular_box_mesh",
     "_MeshHandler",
     "MeshQuality",

@@ -47,6 +47,7 @@ from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import Interpolator
 from cashocs.geometry import DeformationHandler
 from cashocs.geometry import import_mesh
+from cashocs.geometry import interval_mesh
 from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
@@ -84,4 +85,5 @@ __all__ = [
     "IntegralFunctional",
     "ScalarTrackingFunctional",
     "MinMaxFunctional",
+    "interval_mesh",
 ]
