@@ -14,6 +14,12 @@ in development
 
 * Implement the "guard against poor scaling" for the stepsize computation from Kelley, but only for the initial stepsize
 
+* New configuration file parameters
+
+  * Section OptimizationRoutine
+  
+    * ``safeguard_stepsize`` is a boolean parameter which dis-/enables the guard against poor scaling for the initial iteration
+
 1.7.0 (April 20, 2022)
 ----------------------
 
