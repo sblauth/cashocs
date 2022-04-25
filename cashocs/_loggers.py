@@ -22,6 +22,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import fenics
+
 
 class ColorFormatter(logging.Formatter):
     """Logging Formatter for colored output."""
@@ -116,7 +118,8 @@ def debug(message: str) -> None:
         message: The message to be issued.
 
     """
-    _cashocs_logger.debug(message)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        _cashocs_logger.debug(message)
 
 
 def info(message: str) -> None:
@@ -126,7 +129,8 @@ def info(message: str) -> None:
         message: The message to be issued.
 
     """
-    _cashocs_logger.info(message)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        _cashocs_logger.info(message)
 
 
 def warning(message: str) -> None:
@@ -136,7 +140,8 @@ def warning(message: str) -> None:
         message: The message to be issued.
 
     """
-    _cashocs_logger.warning(message)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        _cashocs_logger.warning(message)
 
 
 def error(message: str) -> None:
@@ -146,7 +151,8 @@ def error(message: str) -> None:
         message: The message to be issued.
 
     """
-    _cashocs_logger.error(message)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        _cashocs_logger.error(message)
 
 
 def critical(message: str) -> None:
@@ -156,4 +162,5 @@ def critical(message: str) -> None:
         message: The message to be issued.
 
     """
-    _cashocs_logger.critical(message)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        _cashocs_logger.critical(message)

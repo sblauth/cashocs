@@ -116,12 +116,16 @@ class _NewtonSolver:
         self.norm_type = norm_type
         self.damped = damped
         self.inexact = inexact
-        self.verbose = verbose
         self.A_tensor = A_tensor  # pylint: disable=invalid-name
         self.b_tensor = b_tensor
         self.is_linear = is_linear
 
-        self.derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
+        self.verbose = verbose if not self.is_linear else False
+
+        temp_derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
+        self.derivative = _utils.bilinear_boundary_form_modification([temp_derivative])[
+            0
+        ]
 
         # Setup increment and function for monotonicity test
         self.function_space = u.function_space()
@@ -183,11 +187,12 @@ class _NewtonSolver:
 
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(
                 f"Newton Iteration {self.iterations:2d} - "
                 f"residual (abs):  {self.res:.3e} (tol = {self.atol:.3e})    "
-                f"residual (rel):  {self.res / self.res_0:.3e} (tol = {self.rtol:.3e})"
+                f"residual (rel):  {self.res / self.res_0:.3e} "
+                f"(tol = {self.rtol:.3e})"
             )
 
     def _assemble_matrix(self) -> None:
@@ -237,7 +242,7 @@ class _NewtonSolver:
 
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
-            if self.verbose:
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print("Residual vanishes, input is already a solution.")
             return self.u
 
@@ -255,6 +260,7 @@ class _NewtonSolver:
             self.lmbd = 1.0
             self.breakdown = False
             self.u_save.vector().vec().aypx(0.0, self.u.vector().vec())
+            self.u_save.vector().apply("")
 
             self._compute_eta_inexact()
             _utils.solve_linear_problem(
@@ -269,12 +275,14 @@ class _NewtonSolver:
 
             if self.is_linear:
                 self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().apply("")
                 break
 
             if self.damped:
                 self._backtracking_line_search()
             else:
                 self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().apply("")
 
             self._compute_residual()
 
@@ -288,12 +296,19 @@ class _NewtonSolver:
             self._print_output()
 
             if self.res <= self.tol:
-                if self.verbose:
+                if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     print(
                         f"\nNewton Solver converged "
                         f"after {self.iterations:d} iterations.\n"
                     )
                 break
+
+        if self.res > self.tol and not self.is_linear:
+            raise _exceptions.NotConvergedError(
+                "Newton solver",
+                f"The Newton solver did not converge after "
+                f"{self.iterations:d} iterations.",
+            )
 
         return self.u
 
@@ -337,6 +352,7 @@ class _NewtonSolver:
         """Performs a backtracking line search for the damped Newton method."""
         while True:
             self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
+            self.u.vector().apply("")
             self._compute_residual()
             _utils.solve_linear_problem(
                 ksp=self.ksp,
@@ -355,6 +371,7 @@ class _NewtonSolver:
                 break
             else:
                 self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+                self.u.vector().apply("")
                 self.lmbd /= 2
 
             if self.lmbd < 1e-6:

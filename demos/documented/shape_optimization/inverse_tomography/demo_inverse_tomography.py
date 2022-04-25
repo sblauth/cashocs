@@ -69,7 +69,18 @@ cg_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
 r_elem = FiniteElement("R", mesh.ufl_cell(), 0)
 V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
 
-measurements = generate_measurements()
+measurement_data = generate_measurements()
+measurements = [
+    Function(V.sub(0).collapse()),
+    Function(V.sub(0).collapse()),
+    Function(V.sub(0).collapse()),
+]
+
+
+def pre_hook():
+    for i, meas in enumerate(measurements):
+        LagrangeInterpolator.interpolate(meas, measurement_data[i])
+
 
 uc1 = Function(V)
 u1, c1 = split(uc1)
@@ -116,13 +127,14 @@ p = [pd1, pd2, pd3]
 
 bcs = [[], [], []]
 
-J1 = Constant(0.5) * pow(u1 - measurements[0], 2) * ds
-J2 = Constant(0.5) * pow(u2 - measurements[1], 2) * ds
-J3 = Constant(0.5) * pow(u3 - measurements[2], 2) * ds
+J1 = cashocs.IntegralFunctional(Constant(0.5) * pow(u1 - measurements[0], 2) * ds)
+J2 = cashocs.IntegralFunctional(Constant(0.5) * pow(u2 - measurements[1], 2) * ds)
+J3 = cashocs.IntegralFunctional(Constant(0.5) * pow(u3 - measurements[2], 2) * ds)
 
-J = J1 + J2 + J3
+J = [J1, J2, J3]
 
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+sop.inject_pre_hook(pre_hook)
 sop.solve()
 
 

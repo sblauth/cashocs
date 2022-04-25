@@ -490,7 +490,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
+        cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
+        cond.vector().apply("")
 
         quality: float = cond.vector().vec().min()[1]
         return quality
@@ -547,7 +549,9 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().apply("")
 
         cond.vector().vec().reciprocal()
+        cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
+        cond.vector().apply("")
 
         quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
         return quality

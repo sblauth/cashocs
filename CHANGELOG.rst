@@ -10,10 +10,37 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
-* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods.
+* Rename the default branch from "master" to "main"
 
-* Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_hook <cashocs.optimization_problem.OptimizationProblem.inject_pre_hook>` and :py:meth:`inject_post_hook <cashocs.optimization_problem.OptimizationProblem.inject_post_hook>`.
+1.7.0 (April 20, 2022)
+----------------------
 
+* MPI Support - cashocs now has full MPI support. All of its features, including remeshing, now work out of the box in parallel. Nearly any script using cashocs can be run in parallel by invoking it via ```mpirun -n p python script.py```, where ```p``` is the number of MPI processes. Note, that running in parallel may sometimes cause unexpected behavior as it is not tested as well as the serial usage. If you should encounter any bugs, please report them.
+
+1.6.0 (April 4, 2022)
+--------------------
+
+* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_constraints.html>`_.
+
+* Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_hook <cashocs.optimization_problem.OptimizationProblem.inject_pre_hook>` and :py:meth:`inject_post_hook <cashocs.optimization_problem.OptimizationProblem.inject_post_hook>`. This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_pre_post_hooks.html>`_.
+
+* Added the possibility to define boundary conditions for control variables. This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_control_boundary_conditions.html>`_.
+
+* Added new style cost functionals, namely :py:class:`cashocs.IntegralFunctional`, :py:class:`cashocs.ScalarTrackingFunctional` and :py:class:`cashocs.MinMaxFunctional`. These allow for a clearer definition of cost functionals and will replace the keyword arguments ``scalar_tracking_forms`` and ``min_max_terms`` in the future. The new style cost functionals allow for greater flexibility and extensibility in the future.
+
+* Added the possibility to choose between a direct and iterative solver for computing (shape) gradients. 
+
+* Reworked the private interface of cashocs for better extensibility. The ``utils`` submodule is now private. Added a new ``io`` submodule for handling in- and output. 
+
+* Reworked the way configuration files are treated in cashocs. Now, they are validated and an exception is raised if a config is found to be invalid. 
+
+* New configuration file parameters:
+
+  * Section OptimizationRoutine
+    
+    * ``gradient_method`` is either ``direct`` or ``iterative`` and specifies that the corresponding type of solver is used to compute the gradient.
+    
+    * ``gradient_tol`` specifies the tolerance which is used in case an iterative solver is used to compute the (shape) gradient.
 
 1.5.0 (December 22, 2021)
 -------------------------

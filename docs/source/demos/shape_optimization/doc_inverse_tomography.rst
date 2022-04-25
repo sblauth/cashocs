@@ -70,6 +70,7 @@ Initialization and generation of synthetic measurements
 We start our code by importing FEniCS and cashocs ::
 
     from fenics import *
+
     import cashocs
 
 Next, we directly define the sample values of :math:`\kappa^\text{in}` and
@@ -82,32 +83,39 @@ In the next part, we generate synthetic measurements, which correspond to :math:
 To do this, we define a function :py:func:`generate_measurements()` as follows ::
 
     def generate_measurements():
-    	mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/reference.xdmf')
+        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+            "./mesh/reference.xdmf"
+        )
 
-    	cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
-    	r_elem = FiniteElement('R', mesh.ufl_cell(), 0)
-    	V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
+        cg_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
+        r_elem = FiniteElement("R", mesh.ufl_cell(), 0)
+        V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
 
-    	u, c = TrialFunctions(V)
-    	v, d = TestFunctions(V)
+        u, c = TrialFunctions(V)
+        v, d = TestFunctions(V)
 
-        a = kappa_out*inner(grad(u), grad(v))*dx(1) + kappa_in*inner(grad(u), grad(v))*dx(2) + u*d*ds + v*c*ds
-    	L1  = Constant(1)*v*(ds(3) + ds(4)) + Constant(-1)*v*(ds(1) + ds(2))
-    	L2  = Constant(1)*v*(ds(3) + ds(2)) + Constant(-1)*v*(ds(1) + ds(4))
-    	L3  = Constant(1)*v*(ds(3) + ds(1)) + Constant(-1)*v*(ds(2) + ds(4))
+        a = (
+            kappa_out * inner(grad(u), grad(v)) * dx(1)
+            + kappa_in * inner(grad(u), grad(v)) * dx(2)
+            + u * d * ds
+            + v * c * ds
+        )
+        L1 = Constant(1) * v * (ds(3) + ds(4)) + Constant(-1) * v * (ds(1) + ds(2))
+        L2 = Constant(1) * v * (ds(3) + ds(2)) + Constant(-1) * v * (ds(1) + ds(4))
+        L3 = Constant(1) * v * (ds(3) + ds(1)) + Constant(-1) * v * (ds(2) + ds(4))
 
-    	meas1 = Function(V)
-    	meas2 = Function(V)
-    	meas3 = Function(V)
-    	solve(a==L1, meas1)
-    	solve(a==L2, meas2)
-    	solve(a==L3, meas3)
+        meas1 = Function(V)
+        meas2 = Function(V)
+        meas3 = Function(V)
+        solve(a == L1, meas1)
+        solve(a == L2, meas2)
+        solve(a == L3, meas3)
 
-    	m1, _ = meas1.split(True)
-    	m2, _ = meas2.split(True)
-    	m3, _ = meas3.split(True)
+        m1, _ = meas1.split(True)
+        m2, _ = meas2.split(True)
+        m3, _ = meas3.split(True)
 
-    	return [m1, m2, m3]
+        return [m1, m2, m3]
 
 .. note::
 
@@ -138,18 +146,18 @@ To do this, we define a function :py:func:`generate_measurements()` as follows :
 
 As usual, we load the config into cashocs with the line ::
 
-    config = cashocs.load_config('./config.ini')
+    config = cashocs.load_config("./config.ini")
 
 Afterwards, we import the mesh into cashocs ::
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
 Next, we define the :py:class:`fenics.FunctionSpace` object, which consists of
 CG1 elements together with a scalar, real element, which acts as a Lagrange multiplier
 for the integral constraint ::
 
-    cg_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
-    r_elem = FiniteElement('R', mesh.ufl_cell(), 0)
+    cg_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
+    r_elem = FiniteElement("R", mesh.ufl_cell(), 0)
     V = FunctionSpace(mesh, MixedElement([cg_elem, r_elem]))
 
 Next, we compute the synthetic measurements via ::
@@ -168,8 +176,14 @@ and define the first state equation with the following lines ::
     u1, c1 = split(uc1)
     pd1 = Function(V)
     p1, d1 = split(pd1)
-    e1 = kappa_out*inner(grad(u1), grad(p1))*dx(1) + kappa_in*inner(grad(u1), grad(p1))*dx(2) + u1*d1*ds + p1*c1*ds \
-    	 - Constant(1)*p1*(ds(3) + ds(4)) - Constant(-1)*p1*(ds(1) + ds(2))
+    e1 = (
+        kappa_out * inner(grad(u1), grad(p1)) * dx(1)
+        + kappa_in * inner(grad(u1), grad(p1)) * dx(2)
+        + u1 * d1 * ds
+        + p1 * c1 * ds
+        - Constant(1) * p1 * (ds(3) + ds(4))
+        - Constant(-1) * p1 * (ds(1) + ds(2))
+    )
 
 The remaining two experiments are defined completely analogously::
 
@@ -177,15 +191,27 @@ The remaining two experiments are defined completely analogously::
     u2, c2 = split(uc2)
     pd2 = Function(V)
     p2, d2 = split(pd2)
-    e2 = kappa_out*inner(grad(u2), grad(p2))*dx(1) + kappa_in*inner(grad(u2), grad(p2))*dx(2) + u2*d2*ds + p2*c2*ds \
-    	 - Constant(1)*p2*(ds(3) + ds(2)) - Constant(-1)*p2*(ds(1) + ds(4))
+    e2 = (
+        kappa_out * inner(grad(u2), grad(p2)) * dx(1)
+        + kappa_in * inner(grad(u2), grad(p2)) * dx(2)
+        + u2 * d2 * ds
+        + p2 * c2 * ds
+        - Constant(1) * p2 * (ds(3) + ds(2))
+        - Constant(-1) * p2 * (ds(1) + ds(4))
+    )
 
     uc3 = Function(V)
     u3, c3 = split(uc3)
     pd3 = Function(V)
     p3, d3 = split(pd3)
-    e3 = kappa_out*inner(grad(u3), grad(p3))*dx(1) + kappa_in*inner(grad(u3), grad(p3))*dx(2) + u3*d3*ds + p3*c3*ds \
-    	 - Constant(1)*p3*(ds(3) + ds(1)) - Constant(-1)*p3*(ds(2) + ds(4))
+    e3 = (
+        kappa_out * inner(grad(u3), grad(p3)) * dx(1)
+        + kappa_in * inner(grad(u3), grad(p3)) * dx(2)
+        + u3 * d3 * ds
+        + p3 * c3 * ds
+        - Constant(1) * p3 * (ds(3) + ds(1))
+        - Constant(-1) * p3 * (ds(2) + ds(4))
+    )
 
 Finally, we group together the state equations as well as the state and adjoint variables
 to (ordered) lists, as in :ref:`demo_multiple_variables` ::
@@ -196,22 +222,22 @@ to (ordered) lists, as in :ref:`demo_multiple_variables` ::
 
 Since the problem only has Neumann boundary conditions, we use ::
 
-    bcs = None
+    bcs = [[], [], []]
 
-the specify this.
+to specify this.
 
 
 The shape optimization problem
 ******************************
 
 The cost functional is then defined by first creating the individual summands,
-and then summing them up::
+and then adding them to a list::
 
-    J1 = Constant(0.5)*pow(u1 - measurements[0], 2)*ds
-    J2 = Constant(0.5)*pow(u2 - measurements[1], 2)*ds
-    J3 = Constant(0.5)*pow(u3 - measurements[2], 2)*ds
+    J1 = cashocs.IntegralFunctional(Constant(0.5) * pow(u1 - measurements[0], 2) * ds)
+    J2 = cashocs.IntegralFunctional(Constant(0.5) * pow(u2 - measurements[1], 2) * ds)
+    J3 = cashocs.IntegralFunctional(Constant(0.5) * pow(u3 - measurements[2], 2) * ds)
 
-    J = J1 + J2 + J3
+    J = [J1, J2, J3]
 
 where we use a coefficient of :math:`\nu_i = 1` for all cases.
 

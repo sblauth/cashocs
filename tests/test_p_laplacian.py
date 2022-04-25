@@ -26,17 +26,11 @@ import cashocs
 rng = np.random.RandomState(300696)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-meshlevel = 10
-degree = 1
-dim = 2
-mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-initial_coordinates = mesh.coordinates().copy()
-dx = Measure("dx", mesh)
-ds = Measure("ds", mesh)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+    f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+)
 
-boundary = CompiledSubDomain("on_boundary")
-boundaries = MeshFunction("size_t", mesh, dim=1)
-boundary.mark(boundaries, 1)
+initial_coordinates = mesh.coordinates().copy()
 
 V = FunctionSpace(mesh, "CG", 1)
 
@@ -74,7 +68,7 @@ def test_2_laplacian():
     config.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
 
     sop1 = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop1.solve(algorithm="gd", rtol=1e-2, max_iter=21)
+    sop1.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
     config.set("ShapeGradient", "use_p_laplacian", "True")
     mesh.coordinates()[:, :] = initial_coordinates
@@ -82,7 +76,7 @@ def test_2_laplacian():
     sop2 = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
     )
-    sop2.solve(algorithm="gd", rtol=1e-2, max_iter=21)
+    sop2.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
     assert (
         np.abs(sop1.solver.objective_value - sop2.solver.objective_value)

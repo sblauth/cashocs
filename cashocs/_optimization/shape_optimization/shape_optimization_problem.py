@@ -73,7 +73,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             List[fenics.DirichletBC],
             fenics.DirichletBC,
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
@@ -170,19 +172,16 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 problem.initial_function_values = (
                     unscaled_problem.initial_function_values
                 )
-                if unscaled_problem.use_scalar_tracking:
-                    problem.initial_scalar_tracking_values = (
-                        unscaled_problem.initial_scalar_tracking_values
-                    )
 
             if (
                 not unscaled_problem.has_cashocs_remesh_flag
                 and unscaled_problem.do_remesh
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", unscaled_problem.temp_dir], check=True
                 )
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
                     check=True,
                 )
@@ -200,7 +199,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             List[fenics.DirichletBC],
             fenics.DirichletBC,
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
@@ -386,9 +387,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
             if not self.has_cashocs_remesh_flag:
                 self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
-                self.temp_dir: str = tempfile.mkdtemp(
-                    prefix="._cashocs_remesh_temp_", dir=self.directory
-                )
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    temp_dir: str = tempfile.mkdtemp(
+                        prefix="._cashocs_remesh_temp_", dir=self.directory
+                    )
+                else:
+                    temp_dir = ""
+                self.temp_dir: str = fenics.MPI.comm_world.bcast(temp_dir, root=0)
+
                 self._change_except_hook()
                 self.temp_dict = {
                     "temp_dir": self.temp_dir,
@@ -406,10 +412,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                         self.temp_dict[
                             "initial_function_values"
                         ] = self.initial_function_values
-                        if self.use_scalar_tracking:
-                            self.temp_dict[
-                                "initial_scalar_tracking_values"
-                            ] = self.initial_scalar_tracking_values
                 except AttributeError:  # this happens for the unscaled problem
                     pass
 
@@ -522,7 +524,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         def custom_except_hook(
             exctype: Type[BaseException],
             value: BaseException,
-            traceback: Optional[TracebackType],
+            traceback: TracebackType,
         ) -> Any:  # pragma: no cover
             """A customized hook which is injected when an exception occurs.
 
@@ -536,14 +538,20 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "An exception was raised by cashocs, "
                 "deleting the created temporary files."
             )
-            if not self.config.getboolean("Debug", "remeshing"):
-                subprocess.run(["rm", "-r", self.temp_dir], check=True)  # nosec B603
-                subprocess.run(  # nosec B603
+            if (
+                not self.config.getboolean("Debug", "remeshing")
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            ):
+                subprocess.run(  # nosec B603, B607
+                    ["rm", "-r", self.temp_dir],
+                    check=True,
+                )
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
-            sys.__excepthook__(exctype, value, traceback)  # type: ignore
+            sys.__excepthook__(exctype, value, traceback)
 
-        sys.excepthook = custom_except_hook
+        sys.excepthook = custom_except_hook  # type: ignore
 
     def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.

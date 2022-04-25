@@ -181,7 +181,7 @@ class ResultManager:
         self.output_dict["state_solves"] = solver.state_problem.number_of_solves
         self.output_dict["adjoint_solves"] = solver.adjoint_problem.number_of_solves
         self.output_dict["iterations"] = solver.iteration
-        if self.save_results:
+        if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
 
@@ -213,7 +213,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_output_str(solver))
 
     def print_to_file(
@@ -225,7 +225,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt:
+        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             if solver.iteration == 0:
                 file_attr = "w"
             else:
@@ -245,7 +245,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_summary_str(solver))
 
     def print_file_summary(
@@ -257,7 +257,7 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt:
+        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(solver))
 
@@ -290,12 +290,13 @@ class TempFileManager:
                 mesh_handler.do_remesh
                 and not self.config.getboolean("Debug", "remeshing")
                 and mesh_handler.temp_dict is not None
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
                     check=True,
                 )
-                subprocess.run(  # nosec B603
+                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.remesh_directory],
                     check=True,
                 )

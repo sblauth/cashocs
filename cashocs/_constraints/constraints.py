@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 import fenics
 import numpy as np
@@ -29,16 +29,15 @@ import ufl.core.expr
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs._optimization import cost_functional
 
 
 class Constraint(abc.ABC):
     """Base class for additional equality and inequality constraints."""
 
-    linear_term: Union[ufl.Form, ufl.core.expr.Expr]
-    quadratic_term: Union[ufl.Form, Dict]
     multiplier: fenics.Function
     target: float
-    min_max_term: Dict
+    min_max_term: cost_functional.MinMaxFunctional
     lower_bound: Union[fenics.Function, float]
     upper_bound: Union[fenics.Function, float]
 
@@ -103,19 +102,19 @@ class EqualityConstraint(Constraint):
         self.target = target
 
         if self.is_integral_constraint:
-            self.linear_term = variable_function
-            self.quadratic_term = {
-                "integrand": variable_function,
-                "tracking_goal": target,
-                "weight": 1.0,
-            }
+            self.linear_form = variable_function
+            self.quadratic_functional = cost_functional.ScalarTrackingFunctional(
+                variable_function, target, 1.0
+            )
 
         elif self.measure is not None:
             mesh = self.measure.ufl_domain().ufl_cargo()
             multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
             self.multiplier = fenics.Function(multiplier_space)
-            self.linear_term = self.multiplier * variable_function * measure
-            self.quadratic_term = (
+            self.linear_functional = cost_functional.IntegralFunctional(
+                self.multiplier * variable_function * measure
+            )
+            self.quadratic_form = (
                 fenics.Constant(0.5) * pow(variable_function - target, 2) * measure
             )
 
@@ -172,13 +171,9 @@ class InequalityConstraint(Constraint):
             )
 
         if self.is_integral_constraint:
-            self.min_max_term = {
-                "integrand": variable_function,
-                "lower_bound": lower_bound,
-                "upper_bound": upper_bound,
-                "mu": 1.0,
-                "lambda": 1.0,
-            }
+            self.min_max_term = cost_functional.MinMaxFunctional(
+                variable_function, lower_bound, upper_bound, 1.0, 1.0
+            )
 
         elif self.measure is not None:
             mesh = self.measure.ufl_domain().ufl_cargo()
@@ -189,7 +184,7 @@ class InequalityConstraint(Constraint):
 
             self.cost_functional_terms = []
             if self.upper_bound is not None:
-                self.cost_functional_terms.append(
+                upper_functional = cost_functional.IntegralFunctional(
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
@@ -202,9 +197,10 @@ class InequalityConstraint(Constraint):
                     )
                     * self.measure
                 )
+                self.cost_functional_terms.append(upper_functional)
 
             if self.lower_bound is not None:
-                self.cost_functional_terms.append(
+                lower_functional = cost_functional.IntegralFunctional(
                     fenics.Constant(1 / 2)
                     / self.weight
                     * pow(
@@ -217,6 +213,7 @@ class InequalityConstraint(Constraint):
                     )
                     * self.measure
                 )
+                self.cost_functional_terms.append(lower_functional)
 
     def constraint_violation(self) -> float:
         """Computes the constraint violation for the problem.
@@ -227,7 +224,7 @@ class InequalityConstraint(Constraint):
         """
         violation: float = 0.0
         if self.is_integral_constraint:
-            min_max_integral = fenics.assemble(self.min_max_term["integrand"])
+            min_max_integral = fenics.assemble(self.min_max_term.integrand)
 
             if self.upper_bound is not None:
                 violation += pow(

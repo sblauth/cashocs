@@ -25,15 +25,7 @@ import cashocs
 
 config = cashocs.load_config("./config.ini")
 
-meshlevel = 15
-degree = 1
-dim = 2
-mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-dx = Measure("dx", mesh)
-boundary = CompiledSubDomain("on_boundary")
-boundaries = MeshFunction("size_t", mesh, dim=1)
-boundary.mark(boundaries, 1)
-ds = Measure("ds", mesh, subdomain_data=boundaries)
+mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
 V = FunctionSpace(mesh, "CG", 1)
 u = Function(V)
@@ -45,7 +37,7 @@ f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-J = u * dx
+J = cashocs.IntegralFunctional(u * dx)
 
 VCG = VectorFunctionSpace(mesh, "CG", 1)
 shape_scalar_product = (

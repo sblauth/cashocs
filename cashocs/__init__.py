@@ -34,6 +34,9 @@ from cashocs._constraints.constraints import InequalityConstraint
 from cashocs._loggers import LogLevel
 from cashocs._loggers import set_log_level
 from cashocs._optimization import verification
+from cashocs._optimization.cost_functional import IntegralFunctional
+from cashocs._optimization.cost_functional import MinMaxFunctional
+from cashocs._optimization.cost_functional import ScalarTrackingFunctional
 from cashocs._optimization.optimal_control.optimal_control_problem import (
     OptimalControlProblem,
 )
@@ -45,6 +48,7 @@ from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import Interpolator
 from cashocs.geometry import DeformationHandler
 from cashocs.geometry import import_mesh
+from cashocs.geometry import interval_mesh
 from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
@@ -54,7 +58,7 @@ from cashocs.nonlinear_solvers import damped_newton_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "1.5.13"
+__version__ = "1.7.2"
 
 __all__ = [
     "import_mesh",
@@ -79,5 +83,9 @@ __all__ = [
     "InequalityConstraint",
     "set_log_level",
     "Interpolator",
+    "IntegralFunctional",
+    "ScalarTrackingFunctional",
+    "MinMaxFunctional",
+    "interval_mesh",
     "space_mapping",
 ]

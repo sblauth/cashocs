@@ -45,26 +45,28 @@ one of :ref:`previous example <demo_poisson>`, so we only restate the correspond
 code in the following ::
 
     from fenics import *
+
     import cashocs
 
+    config = cashocs.load_config("config.ini")
 
-    config = cashocs.load_config('./config.ini')
-
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-    V = FunctionSpace(mesh, 'CG', 1)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
     u = Function(V)
 
-    e = inner(grad(y), grad(p))*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx - u * p * dx
 
-    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1,2,3,4])
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
-
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
+    
 Definition of the control constraints
 *************************************
 
@@ -76,8 +78,8 @@ consider a linear (in the x-direction) corridor for these
 constraints, as it highlights the capabilities of cashocs.
 Hence, we define the lower and upper bounds via ::
 
-    u_a = interpolate(Expression('50*(x[0]-1)', degree=1), V)
-    u_b = interpolate(Expression('50*x[0]', degree=1), V)
+    u_a = interpolate(Expression("50*(x[0]-1)", degree=1), V)
+    u_b = interpolate(Expression("50*x[0]", degree=1), V)
 
 which just corresponds to two functions, generated from
 :py:class:`fenics.Expression` objects via :py:func:`fenics.interpolate`. These are then put
@@ -119,7 +121,11 @@ To check that the box constraints are actually satisfied by our
 solution, we perform an assertion ::
 
     import numpy as np
-    assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(u.vector()[:] <= u_b.vector()[:])
+
+    assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(
+        u.vector()[:] <= u_b.vector()[:]
+    )
+
 
 which shows that they are indeed satisfied. The visualization is carried out analogously
 to before, and should yield the following result

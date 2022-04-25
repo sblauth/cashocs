@@ -9,7 +9,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container:
-      image: sblauth/fast-cashocs:latest
+      image: sblauth/cashocs:latest
 
     steps:
     - name: Delete old installation

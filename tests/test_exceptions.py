@@ -84,12 +84,14 @@ def test_input_error():
 
 def test_petsc_error():
     with pytest.raises(PETScKSPError) as e_info:
-        u.vector()[:] = rng.rand(V.dim())
+        u.vector().set_local(rng.rand(u.vector().local_size()))
+        u.vector().apply("")
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
     assert "PETSc linear solver did not converge." in str(e_info.value)
 
     with pytest.raises(CashocsException):
-        u.vector()[:] = rng.rand(V.dim())
+        u.vector().set_local(rng.rand(u.vector().local_size()))
+        u.vector().apply("")
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()

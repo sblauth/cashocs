@@ -48,12 +48,12 @@ Initialization
 The setup is as in :ref:`demo_poisson` ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.load_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
 However, compared to the previous examples, there is a major change in the config file. As we want to use
 the Picard iteration as solver for the state PDEs, we now specify ::
@@ -84,14 +84,14 @@ The control variables are defined as ::
 Next, we define the state system, using the weak forms from
 :ref:`demo_monolithic_problems` ::
 
-    e_y = inner(grad(y), grad(p))*dx + z*p*dx - u*p*dx
+    e_y = inner(grad(y), grad(p)) * dx + z * p * dx - u * p * dx
     bcs_y = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-    e_z = inner(grad(z), grad(q))*dx + y*q*dx - v*q*dx
+    e_z = inner(grad(z), grad(q)) * dx + y * q * dx - v * q * dx
     bcs_z = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 Finally, we use the same procedure as in :ref:`demo_multiple_variables`, and
-put everything into (ordered) lists
+put everything into (ordered) lists ::
 
     states = [y, z]
     adjoints = [p, q]
@@ -108,16 +108,22 @@ The cost functional is defined as in :ref:`demo_monolithic_problems`, the only
 difference is that ``y`` and ``z`` now are :py:class:`fenics.Function` objects, whereas they
 were generated with the :py:func:`fenics.split` command previously ::
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
-    z_d = Expression('sin(4*pi*x[0])*sin(4*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+    z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
     alpha = 1e-6
     beta = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5)*(z - z_d)*(z - z_d)*dx \
-        + Constant(0.5*alpha)*u*u*dx + Constant(0.5*beta)*v*v*dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx
+        + Constant(0.5) * (z - z_d) * (z - z_d) * dx
+        + Constant(0.5 * alpha) * u * u * dx
+        + Constant(0.5 * beta) * v * v * dx
+    )
 
 Finally, we set up the optimization problem and solve it ::
 
-    optimization_problem = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
+    optimization_problem = cashocs.OptimalControlProblem(
+        e, bcs, J, states, controls, adjoints, config
+    )
     optimization_problem.solve()
 
 The result should look like this

@@ -340,3 +340,20 @@ def create_bcs_list(
     )
 
     return create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs)
+
+
+def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]:
+    """Modifies a bilinear form for the case it is given on the boundary only.
+
+    This avoids a bug in fenics.SystemAssembler where the matrices' sparsity pattern
+    is not initialized correctly.
+
+    """
+    mod_forms = []
+    for form in forms:
+        trial, test = form.arguments()
+        mesh = trial.function_space().mesh()
+        dx = fenics.Measure("dx", domain=mesh)
+        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
+
+    return mod_forms

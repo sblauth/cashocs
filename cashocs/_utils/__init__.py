@@ -22,6 +22,7 @@ interesting for users, so they are part of the public API. Includes wrappers tha
 to shorten the coding for often recurring actions.
 """
 
+from cashocs._utils.forms import bilinear_boundary_form_modification
 from cashocs._utils.forms import create_bcs_list
 from cashocs._utils.forms import create_dirichlet_bcs
 from cashocs._utils.forms import max_
@@ -64,4 +65,5 @@ __all__ = [
     "assemble_and_solve_linear",
     "split_linear_forms",
     "create_function_list",
+    "bilinear_boundary_form_modification",
 ]

@@ -125,6 +125,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[j].vector().vec().axpy(
                     -alpha, self.history_y[i][j].vector().vec()
                 )
+                self.search_direction[j].vector().apply("")
 
     def _second_loop(self) -> None:
         """Performs the second of the two L-BFGS loops."""
@@ -138,6 +139,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.history_alpha[-1 - i] - beta,
                     self.history_s[-1 - i][j].vector().vec(),
                 )
+                self.search_direction[j].vector().apply("")
 
     def _bfgs_scaling(self) -> None:
         """Scales the BFGS search direction."""
@@ -150,6 +152,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
         for j in range(len(self.gradient)):
             self.search_direction[j].vector().vec().scale(factor)
+            self.search_direction[j].vector().apply("")
 
     def compute_search_direction(self, grad: List[fenics.Function]) -> None:
         """Computes the search direction for the BFGS method with a double loop.
@@ -167,6 +170,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[j].vector().vec().aypx(
                     0.0, grad[j].vector().vec()
                 )
+                self.search_direction[j].vector().apply("")
 
             self.form_handler.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
@@ -189,13 +193,16 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[j].vector().vec().axpy(
                     1.0, self.temp[j].vector().vec()
                 )
+                self.search_direction[j].vector().apply("")
                 self.search_direction[j].vector().vec().scale(-1.0)
+                self.search_direction[j].vector().apply("")
 
         else:
             for j in range(len(self.gradient)):
                 self.search_direction[j].vector().vec().aypx(
                     0.0, -grad[j].vector().vec()
                 )
+                self.search_direction[j].vector().apply("")
 
     def store_previous_gradient(self) -> None:
         """Stores a copy of the gradient in the previous iteration."""
@@ -204,6 +211,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.gradient_prev[i].vector().vec().aypx(
                     0.0, self.gradient[i].vector().vec()
                 )
+                self.gradient_prev[i].vector().apply("")
 
     def update_hessian_approximation(self) -> None:
         """Updates the approximation of the inverse Hessian."""
@@ -214,10 +222,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.gradient[i].vector().vec()
                     - self.gradient_prev[i].vector().vec(),
                 )
+                self.y_k[i].vector().apply("")
                 self.s_k[i].vector().vec().aypx(
                     0.0,
                     self.stepsize * self.search_direction[i].vector().vec(),
                 )
+                self.s_k[i].vector().apply("")
 
             self.form_handler.restrict_to_inactive_set(self.y_k, self.y_k)
             self.form_handler.restrict_to_inactive_set(self.s_k, self.s_k)

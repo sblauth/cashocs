@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Dict, List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -29,6 +29,7 @@ import ufl.core.expr
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs._constraints import constraints
+from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs._constraints import constrained_problems
@@ -84,6 +85,7 @@ class ConstrainedSolver(abc.ABC):
         for i, constraint in enumerate(self.constraints):
             if constraint.is_pointwise_constraint:
                 constraint.multiplier.vector().vec().set(self.lmbd[i])
+                constraint.multiplier.vector().apply("")
                 self.lmbd[i] = constraint.multiplier
 
         self.constraint_violation = 0.0
@@ -91,29 +93,10 @@ class ConstrainedSolver(abc.ABC):
         self.beta = 10.0
         self.inner_cost_functional_shift = 0.0
 
-        self.inner_scalar_tracking_forms: Optional[List[Dict]] = []
-        self.inner_min_max_terms: Optional[List[Dict]] = []
-
     @abc.abstractmethod
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
         pass
-
-    def _post_process_cost_functional(self) -> None:
-        """Ensures that scalar_tracking_forms and min_max_terms are correct."""
-        if self.inner_scalar_tracking_forms is not None:
-            if len(self.inner_scalar_tracking_forms) == 0:
-                self.inner_scalar_tracking_forms = (
-                    self.constrained_problem.scalar_tracking_forms_initial
-                )
-            else:
-                if self.constrained_problem.scalar_tracking_forms_initial is not None:
-                    self.inner_scalar_tracking_forms += (
-                        self.constrained_problem.scalar_tracking_forms_initial
-                    )
-        if self.inner_min_max_terms is not None:
-            if len(self.inner_min_max_terms) == 0:
-                self.inner_min_max_terms = None
 
     @abc.abstractmethod
     def solve(
@@ -150,8 +133,8 @@ class ConstrainedSolver(abc.ABC):
             f"    Constraint violation: {self.constraint_violation:.3e}",
             f"    Penalty parameter mu: {self.mu:.3e}",
         ]
-
-        print("".join(strs))
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            print("".join(strs))
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -224,26 +207,28 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             self.constrained_problem.cost_functional_form_initial[:]
         )
 
-        self.inner_scalar_tracking_forms = []
-        self.inner_min_max_terms = []
-
         for i, constraint in enumerate(self.constraints):
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
-                    self.inner_cost_functional_form += [
-                        fenics.Constant(self.lmbd[i]) * constraint.linear_term
-                    ]
+                    linear_functional = cost_functional.IntegralFunctional(
+                        fenics.Constant(self.lmbd[i]) * constraint.linear_form
+                    )
+                    self.inner_cost_functional_form += [linear_functional]
                     self.inner_cost_functional_shifts.append(
                         -self.lmbd[i] * constraint.target
                     )
 
-                    constraint.quadratic_term["weight"] = self.mu
-                    self.inner_scalar_tracking_forms += [constraint.quadratic_term]
+                    constraint.quadratic_functional.weight.vector().vec().set(self.mu)
+                    constraint.quadratic_functional.weight.vector().apply("")
+                    self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.measure is not None:
+                    quad_functional = cost_functional.IntegralFunctional(
+                        fenics.Constant(self.mu) * constraint.quadratic_form
+                    )
                     self.inner_cost_functional_form += [
-                        constraint.linear_term,
-                        fenics.Constant(self.mu) * constraint.quadratic_term,
+                        constraint.linear_functional,
+                        quad_functional,
                     ]
                     self.inner_cost_functional_shifts.append(
                         fenics.assemble(
@@ -253,15 +238,17 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.min_max_term["mu"] = self.mu
-                    constraint.min_max_term["lambda"] = self.lmbd[i]
-                    self.inner_min_max_terms += [constraint.min_max_term]
+                    constraint.min_max_term.mu.vector().vec().set(self.mu)
+                    constraint.min_max_term.mu.vector().apply("")
+                    constraint.min_max_term.lambd.vector().vec().set(self.lmbd[i])
+                    constraint.min_max_term.lambd.vector().apply("")
+                    self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector().vec().set(self.mu)
+                    constraint.weight.vector().apply("")
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
-        self._post_process_cost_functional()
         self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
 
     def _update_equality_multipliers(self, index: int) -> None:
@@ -302,7 +289,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
             upper_term = 0.0
 
             min_max_integral = fenics.assemble(
-                self.constraints[index].min_max_term["integrand"]
+                self.constraints[index].min_max_term.integrand
             )
 
             if self.constraints[index].lower_bound is not None:
@@ -322,7 +309,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 )
 
             self.lmbd[index] = lower_term + upper_term
-            self.constraints[index].min_max_term["lambda"] = self.lmbd[index]
+            self.constraints[index].min_max_term.lambd.vector().vec().set(
+                self.lmbd[index]
+            )
+            self.constraints[index].min_max_term.lambd.vector().apply("")
 
         elif self.constraints[index].is_pointwise_constraint:
             project_terms = []
@@ -424,11 +414,13 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                print(f"{self.solver_name} converged successfully.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print(f"{self.solver_name} did not converge.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} did not converge.\n")
                 break
 
 
@@ -501,11 +493,13 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             self.print_results()
 
             if self.constraint_violation <= convergence_tol:
-                print(f"{self.solver_name} converged successfully.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} converged successfully.\n")
                 break
 
             if self.iterations >= max_iter:
-                print(f"{self.solver_name} did not converge.\n")
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(f"{self.solver_name} did not converge.\n")
                 break
 
     def _update_cost_functional(self) -> None:
@@ -513,29 +507,32 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         self.inner_cost_functional_form = (
             self.constrained_problem.cost_functional_form_initial[:]
         )
-        self.inner_scalar_tracking_forms = []
-        self.inner_min_max_terms = []
 
         for constraint in self.constraints:
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.quadratic_term["weight"] = self.mu
-                    self.inner_scalar_tracking_forms += [constraint.quadratic_term]
+                    constraint.quadratic_functional.weight.vector().vec().set(self.mu)
+                    constraint.quadratic_functional.weight.vector().apply("")
+                    self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.is_pointwise_constraint:
                     self.inner_cost_functional_form += [
-                        fenics.Constant(self.mu) * constraint.quadratic_term,
+                        cost_functional.IntegralFunctional(
+                            fenics.Constant(self.mu) * constraint.quadratic_form
+                        )
                     ]
 
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.min_max_term["mu"] = self.mu
-                    constraint.min_max_term["lambda"] = 0.0
-                    self.inner_min_max_terms += [constraint.min_max_term]
+                    constraint.min_max_term.mu.vector().vec().set(self.mu)
+                    constraint.min_max_term.mu.vector().apply("")
+                    constraint.min_max_term.lambd.vector().vec().set(0.0)
+                    constraint.min_max_term.lambd.vector().apply("")
+                    self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
                     constraint.weight.vector().vec().set(self.mu)
+                    constraint.weight.vector().apply("")
                     constraint.multiplier.vector().vec().set(0.0)
+                    constraint.multiplier.vector().apply("")
                     self.inner_cost_functional_form += constraint.cost_functional_terms
-
-        self._post_process_cost_functional()

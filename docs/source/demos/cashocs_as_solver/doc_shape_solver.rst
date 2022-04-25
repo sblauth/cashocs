@@ -41,32 +41,24 @@ of the optimization problem. For the sake of completeness we recall the correspo
 following ::
 
     from fenics import *
+
     import cashocs
 
+    config = cashocs.load_config("./config.ini")
 
-    config = cashocs.create_config('./config.ini')
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
-    meshlevel = 15
-    degree = 1
-    dim = 2
-    mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-    dx = Measure('dx', mesh)
-    boundary = CompiledSubDomain('on_boundary')
-    boundaries = MeshFunction('size_t', mesh, dim=1)
-    boundary.mark(boundaries, 1)
-    ds = Measure('ds', mesh, subdomain_data=boundaries)
-
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)
     p = Function(V)
 
     x = SpatialCoordinate(mesh)
-    f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
-    e = inner(grad(u), grad(p))*dx - f*p*dx
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
     bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-    J = u*dx
+    J = u * dx
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
@@ -100,8 +92,20 @@ For details, we refer the reader to, e.g., `Delfour and Zolesio, Shapes and Geom
 To supply these weak forms to cashocs, we can use the following code. For the
 shape derivative, we write ::
 
+    def eps(u):
+	return Constant(0.5) * (grad(u) + grad(u).T)
+
+
     vector_field = sop.get_vector_field()
-    dJ = div(vector_field)*u*dx - inner((div(vector_field)*Identity(2) - 2*sym(grad(vector_field)))*grad(u), grad(p))*dx + div(f*vector_field)*p*dx
+    dJ = (
+	div(vector_field) * u * dx
+	- inner(
+	    (div(vector_field) * Identity(2) - 2 * eps(vector_field)) * grad(u),
+	    grad(p),
+	)
+	* dx
+	+ div(f * vector_field) * p * dx
+    )
 
 Note, that we have to call the :py:meth:`get_vector_field <cashocs.ShapeOptimizationProblem.get_vector_field>` method
 which returns the UFL object corresponding to :math:`\mathcal{V}` and which is to be used
@@ -122,7 +126,7 @@ at its place.
 For the adjoint system, the procedure is exactly the same as in :ref:`demo_control_solver`
 and we have the following code ::
 
-    adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - TestFunction(V)*dx
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
     adjoint_bcs = bcs
 
 Again, the format is analogous to the format of the state system, but now we have to

@@ -107,6 +107,7 @@ def compute_boundary_distance(
     rhs = fenics.Constant(1.0) * v * dx
 
     _utils.assemble_and_solve_linear(lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp)
+    u_curr.vector().apply("")
 
     rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
@@ -123,9 +124,11 @@ def compute_boundary_distance(
 
     for _ in range(max_iter):
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
+        u_prev.vector().apply("")
         _utils.assemble_and_solve_linear(
             lhs, rhs, bcs, x=u_curr.vector().vec(), ksp=ksp
         )
+        u_curr.vector().apply("")
         res = np.sqrt(fenics.assemble(residual_form))
 
         if res <= res_0 * tol:

@@ -19,12 +19,13 @@
 
 from __future__ import annotations
 
+import collections
 import configparser
 import functools
 import json
 import os
 import time
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import fenics
 import numpy as np
@@ -170,19 +171,25 @@ def _get_mesh_stats(
 
             """
             word = "importing" if mode.casefold() == "import" else "generating"
+            worded = "imported" if mode.casefold() == "import" else "generated"
+            mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
             start_time = time.time()
             _loggers.info(f"{word.capitalize()} mesh.")
 
             value = func(*args, **kwargs)
+            dim = value[0].geometry().dim()
 
             end_time = time.time()
             _loggers.info(
                 f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s."
             )
             _loggers.info(
-                f"Mesh contains {value[0].num_vertices():,} vertices and "
-                f"{value[0].num_cells():,} cells of type "
-                f"{value[0].ufl_cell().cellname()}\n"
+                f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
+            )
+            _loggers.info(
+                f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
+                f"{value[0].num_entities_global(dim):,} cells of type "
+                f"{value[0].ufl_cell().cellname()}.\n"
             )
             return value
 
@@ -302,6 +309,91 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
 
     # Check the mesh quality of the imported mesh in case a config file is passed
     _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
+
+    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+
+
+@_get_mesh_stats(mode="generate")
+def interval_mesh(
+    n: int = 10,
+    start: float = 0.0,
+    end: float = 1.0,
+    partitions: Optional[List[float]] = None,
+) -> types.MeshTuple:
+    r"""Creates an 1D interval mesh starting at x=0 to x=length.
+
+    This function creates a uniform mesh of a 1D interval, starting at the ``start`` and
+    ending at ``end``. The resulting mesh uses ``n`` sub-intervals to
+    discretize the geometry. The boundary markers are as follows:
+
+     - 1 corresponds to :math:`x=start`
+
+     - 2 corresponds to :math:`x=end`
+
+    Args:
+        n: Number of elements for discretizing the interval, default is 10
+        start: The start of the interval, default is 0.0
+        end: The end of the interval, default is 1.0
+        partitions: Points in the interval at which a partition in subdomains should be
+            made. The resulting volume measure is sorted ascendingly according to the
+            sub-intervals defined in partitions (starting at 1). Defaults to ``None``.
+
+    Returns:
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
+        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
+        function for the boundaries, dx is a volume measure, ds is a surface measure,
+        and dS is a measure for the interior facets.
+
+    """
+    if end <= start:
+        raise _exceptions.InputError(
+            "cashocs.geometry.interval_mesh", "end", "end needs to be larger than start"
+        )
+
+    if partitions is not None:
+        if not all(x < y for x, y in zip(partitions, partitions[1:])):
+            raise _exceptions.InputError(
+                "cashocs.geometry.interval_mesh",
+                "partitions",
+                "partitions must be strictly increasing",
+            )
+
+    n = int(n)
+    dim = 1
+
+    mesh = fenics.IntervalMesh(n, start, end)
+
+    subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
+    boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
+
+    x_min = fenics.CompiledSubDomain(
+        "on_boundary && near(x[0], start, tol)", tol=fenics.DOLFIN_EPS, start=start
+    )
+    x_max = fenics.CompiledSubDomain(
+        "on_boundary && near(x[0], end, tol)", tol=fenics.DOLFIN_EPS, end=end
+    )
+    x_min.mark(boundaries, 1)
+    x_max.mark(boundaries, 2)
+
+    if partitions is not None:
+        padded_partitions = collections.deque(partitions)
+        padded_partitions.appendleft(start)
+        padded_partitions.append(end)
+
+        for i in range(len(padded_partitions) - 1):
+            start_point = padded_partitions[i]
+            end_point = padded_partitions[i + 1]
+
+            part = fenics.CompiledSubDomain(
+                "x[0] >= start_point && x[0] <= end_point",
+                start_point=start_point,
+                end_point=end_point,
+            )
+            part.mark(subdomains, i + 1)
+
+    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
+    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
+    d_interior_facet = measure.NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 

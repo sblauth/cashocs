@@ -47,29 +47,21 @@ The initial code, including the defition of the PDE constraint, is identical to
 :ref:`demo_shape_poisson`, and uses the following code ::
 
     from fenics import *
+
     import cashocs
 
+    config = cashocs.load_config("./config.ini")
 
-    config = cashocs.load_config('./config.ini')
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 
-    meshlevel = 15
-    degree = 1
-    dim = 2
-    mesh = UnitDiscMesh.create(MPI.comm_world, meshlevel, degree, dim)
-    dx = Measure('dx', mesh)
-    boundary = CompiledSubDomain('on_boundary')
-    boundaries = MeshFunction('size_t', mesh, dim=1)
-    boundary.mark(boundaries, 1)
-    ds = Measure('ds', mesh, subdomain_data=boundaries)
-
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)
     p = Function(V)
 
     x = SpatialCoordinate(mesh)
-    f = 2.5*pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
-    e = inner(grad(u), grad(p))*dx - f*p*dx
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
     bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
 Cost functional and regularization
@@ -89,7 +81,9 @@ The first three summands of the cost functional can then be defined as ::
     alpha_vol = 1e-1
     alpha_surf = 1e-1
 
-    J = u*dx + Constant(alpha_vol)*dx + Constant(alpha_surf)*ds
+    J = cashocs.IntegralFunctional(
+        u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
+    )
 
 The remaining two parts are specified via :download:`config.ini
 </../../demos/documented/shape_optimization/regularization/config.ini>`, where

@@ -44,24 +44,24 @@ up to the initialization of the optimization problem, our code is exactly the sa
 in :ref:`demo_poisson`, i.e., we use ::
 
     from fenics import *
+
     import cashocs
 
-
-    config = cashocs.create_config('config.ini')
+    config = cashocs.load_config("config.ini")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
-    V = FunctionSpace(mesh, 'CG', 1)
+    V = FunctionSpace(mesh, "CG", 1)
 
     y = Function(V)
     p = Function(V)
     u = Function(V)
 
-    e = inner(grad(y), grad(p))*dx - u*p*dx
+    e = inner(grad(y), grad(p)) * dx - u * p * dx
 
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-    y_d = Expression('sin(2*pi*x[0])*sin(2*pi*x[1])', degree=1)
+    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
     alpha = 1e-6
-    J = Constant(0.5)*(y - y_d)*(y - y_d)*dx + Constant(0.5*alpha)*u*u*dx
+    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
 
@@ -99,12 +99,15 @@ To specify that cashocs should use these equations instead of the automatically
 computed ones, we have the following code. First, we specify the derivative
 of the reduced cost functional via ::
 
-    dJ = Constant(alpha)*u*TestFunction(V)*dx + p*TestFunction(V)*dx
+    dJ = Constant(alpha) * u * TestFunction(V) * dx + p * TestFunction(V) * dx
+
 
 
 Afterwards, the weak form for the adjoint system is given by ::
 
-    adjoint_form = inner(grad(p), grad(TestFunction(V)))*dx - (y - y_d)*TestFunction(V)*dx
+    adjoint_form = (
+	inner(grad(p), grad(TestFunction(V))) * dx - (y - y_d) * TestFunction(V) * dx
+    )
     adjoint_bcs = bcs
 
 where we can "recycle" the homogeneous Dirichlet boundary conditions used for the state

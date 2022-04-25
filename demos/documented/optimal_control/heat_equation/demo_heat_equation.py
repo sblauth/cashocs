@@ -74,14 +74,16 @@ for k in range(len(t_array)):
     y_d.append(interpolate(y_d_expr, V))
 
     J_list.append(
-        Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
-        + Constant(0.5 * dt * alpha) * u * u * dx
+        cashocs.IntegralFunctional(
+            Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx
+            + Constant(0.5 * dt * alpha) * u * u * dx
+        )
     )
 
 
-J = cashocs._utils.summation(J_list)
-
-ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+ocp = cashocs.OptimalControlProblem(
+    e, bcs_list, J_list, states, controls, adjoints, config
+)
 ocp.solve()
 
 

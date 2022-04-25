@@ -63,7 +63,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -180,7 +182,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         bcs_list: Union[
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
-        cost_functional_form: Union[List[ufl.Form], ufl.Form],
+        cost_functional_form: Union[
+            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+        ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -587,8 +591,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             for control in self.controls:
                 u_a = fenics.Function(control.function_space())
                 u_a.vector().vec().set(float("-inf"))
+                u_a.vector().apply("")
                 u_b = fenics.Function(control.function_space())
                 u_b.vector().vec().set(float("inf"))
+                u_b.vector().apply("")
                 temp_control_constraints.append([u_a, u_b])
         else:
             temp_control_constraints = _utils.check_and_enlist_control_constraints(
@@ -603,12 +609,14 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             else:
                 lower_bound = fenics.Function(self.controls[idx].function_space())
                 lower_bound.vector().vec().set(pair[0])
+                lower_bound.vector().apply("")
 
             if isinstance(pair[1], fenics.Function):
                 upper_bound = pair[1]
             else:
                 upper_bound = fenics.Function(self.controls[idx].function_space())
                 upper_bound.vector().vec().set(pair[1])
+                upper_bound.vector().apply("")
 
             formatted_control_constraints.append([lower_bound, upper_bound])
 

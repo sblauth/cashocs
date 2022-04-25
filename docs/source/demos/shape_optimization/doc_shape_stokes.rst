@@ -88,12 +88,17 @@ Initialization
 
 As for the previous tutorial problems, we start by importing FEniCS and cashocs::
 
-    config = cashocs.load_config('./config.ini')
+    from fenics import *
+
+    import cashocs
+
+    config = cashocs.load_config("./config.ini")
 
 Afterwards we import the (initial) geometry with the :py:func:`import_mesh <cashocs.import_mesh>`
 command ::
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh('./mesh/mesh.xdmf')
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
+
 
 .. note::
 
@@ -120,8 +125,8 @@ The definition of the state system is analogous to the one we considered in
 :ref:`demo_stokes`. Here, we, too, use LBB stable Taylor-Hood elements, which are
 defined as ::
 
-    v_elem = VectorElement('CG', mesh.ufl_cell(), 2)
-    p_elem = FiniteElement('CG', mesh.ufl_cell(), 1)
+    v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
     V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
 
 For the weak form of the PDE, we have the same code as in :ref:`demo_stokes` ::
@@ -131,18 +136,20 @@ For the weak form of the PDE, we have the same code as in :ref:`demo_stokes` ::
     vq = Function(V)
     v, q = split(vq)
 
-    e = inner(grad(u), grad(v))*dx - p*div(v)*dx - q*div(u)*dx
+    e = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
 
 The Dirichlet boundary conditions are slightly different, though. For the inlet
 velocity :math:`u^\text{in}` we use a parabolic profile ::
 
-    u_in = Expression(('-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)', '0.0'), degree=2)
+    u_in = Expression(("-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)", "0.0"), degree=2)
     bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
 
 The wall and obstacle boundaries get a no-slip boundary condition, each, with the
 line ::
 
-    bc_no_slip = cashocs.create_dirichlet_bcs(V.sub(0), Constant((0,0)), boundaries, [2,4])
+    bc_no_slip = cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0, 0)), boundaries, [2, 4]
+    )
 
 Finally, all Dirichlet boundary conditions are gathered into the list ``bcs`` ::
 
@@ -158,7 +165,8 @@ Cost functional and optimization problem
 
 The cost functional is easily defined with the line ::
 
-    J = inner(grad(u), grad(u))*dx
+    J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx)
+
 
 .. note::
 

@@ -29,6 +29,7 @@ import ufl.algorithms
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs._forms import form_handler
+from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control
@@ -124,11 +125,14 @@ class ControlFormHandler(form_handler.FormHandler):
             bcs: The boundary conditions for the projection.
 
         """
+        modified_scalar_product_forms = _utils.bilinear_boundary_form_modification(
+            scalar_product_forms
+        )
         try:
             self.assemblers = []
             for i in range(self.control_dim):
                 assembler = fenics.SystemAssembler(
-                    scalar_product_forms[i],
+                    modified_scalar_product_forms[i],
                     derivatives[i],
                     bcs[i],
                 )
@@ -146,7 +150,7 @@ class ControlFormHandler(form_handler.FormHandler):
                     ),
                 )
                 assembler = fenics.SystemAssembler(
-                    scalar_product_forms[i],
+                    modified_scalar_product_forms[i],
                     derivatives[i],
                     bcs[i],
                     form_compiler_parameters={"quadrature_degree": estimated_degree},
@@ -235,6 +239,16 @@ class ControlFormHandler(form_handler.FormHandler):
                         )
                     )[0]
                 )
+                self.idx_inactive.append(
+                    np.nonzero(
+                        np.logical_and(
+                            self.controls[j].vector()[:]
+                            > self.control_constraints[j][0].vector()[:],
+                            self.controls[j].vector()[:]
+                            < self.control_constraints[j][1].vector()[:],
+                        )
+                    )[0]
+                )
             else:
                 self.idx_active_lower.append([])
                 self.idx_active_upper.append([])
@@ -244,11 +258,6 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             temp_active.sort()
             self.idx_active.append(temp_active)
-            self.idx_inactive.append(
-                np.setdiff1d(
-                    np.arange(self.control_spaces[j].dim()), self.idx_active[j]
-                )
-            )
 
     def restrict_to_active_set(
         self, a: List[fenics.Function], b: List[fenics.Function]
@@ -270,13 +279,17 @@ class ControlFormHandler(form_handler.FormHandler):
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
+                self.temp[j].vector().apply("")
                 self.temp[j].vector()[self.idx_active[j]] = a[j].vector()[
                     self.idx_active[j]
                 ]
+                self.temp[j].vector().apply("")
                 b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
+                b[j].vector().apply("")
 
             else:
                 b[j].vector().vec().set(0.0)
+                b[j].vector().apply("")
 
         return b
 
@@ -300,14 +313,18 @@ class ControlFormHandler(form_handler.FormHandler):
         for j in range(self.control_dim):
             if self.require_control_constraints[j]:
                 self.temp[j].vector().vec().set(0.0)
+                self.temp[j].vector().apply("")
                 self.temp[j].vector()[self.idx_inactive[j]] = a[j].vector()[
                     self.idx_inactive[j]
                 ]
+                self.temp[j].vector().apply("")
                 b[j].vector().vec().aypx(0.0, self.temp[j].vector().vec())
+                b[j].vector().apply("")
 
             else:
                 if not b[j].vector().vec().equal(a[j].vector().vec()):
                     b[j].vector().vec().aypx(0.0, a[j].vector().vec())
+                    b[j].vector().apply("")
 
         return b
 
@@ -332,67 +349,20 @@ class ControlFormHandler(form_handler.FormHandler):
                 a[j].vector().vec().pointwiseMin(
                     self.control_constraints[j][1].vector().vec(), a[j].vector().vec()
                 )
+                a[j].vector().apply("")
                 a[j].vector().vec().pointwiseMax(
                     a[j].vector().vec(), self.control_constraints[j][0].vector().vec()
                 )
+                a[j].vector().apply("")
 
         return a
 
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
         self.gradient_forms_rhs = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.controls[i],
-                self.test_functions_control[i],
-            )
+            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
             for i in range(self.control_dim)
         ]
-
-        if self.use_scalar_tracking:
-            for i in range(self.control_dim):
-                for j in range(self.no_scalar_tracking_terms):
-                    self.gradient_forms_rhs[i] += (
-                        self.scalar_weights[j]
-                        * (
-                            self.scalar_cost_functional_integrand_values[j]
-                            - fenics.Constant(self.scalar_tracking_goals[j])
-                        )
-                        * fenics.derivative(
-                            self.scalar_cost_functional_integrands[j],
-                            self.controls[i],
-                            self.test_functions_control[i],
-                        )
-                    )
-
-        if self.use_min_max_terms:
-            for i in range(self.control_dim):
-                for j in range(self.no_min_max_terms):
-                    if self.min_max_lower_bounds[j] is not None:
-                        term_lower = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                            self.min_max_integrand_values[j]
-                            - self.min_max_lower_bounds[j]
-                        )
-                        self.gradient_forms_rhs[i] += _utils.min_(
-                            fenics.Constant(0.0), term_lower
-                        ) * fenics.derivative(
-                            self.min_max_integrands[j],
-                            self.controls[i],
-                            self.test_functions_control[i],
-                        )
-
-                    if self.min_max_upper_bounds[j] is not None:
-                        term_upper = self.min_max_lambda[j] + self.min_max_mu[j] * (
-                            self.min_max_integrand_values[j]
-                            - self.min_max_upper_bounds[j]
-                        )
-                        self.gradient_forms_rhs[i] += _utils.max_(
-                            fenics.Constant(0.0), term_upper
-                        ) * fenics.derivative(
-                            self.min_max_integrands[j],
-                            self.controls[i],
-                            self.test_functions_control[i],
-                        )
 
     def _compute_sensitivity_equations(self) -> None:
         """Calculates the forms for the (forward) sensitivity equations."""
@@ -471,19 +441,11 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
         self.lagrangian_y = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.states[i],
-                self.test_functions_state[i],
-            )
+            self.lagrangian.derivative(self.states[i], self.test_functions_state[i])
             for i in range(self.state_dim)
         ]
         self.lagrangian_u = [
-            fenics.derivative(
-                self.lagrangian_form,
-                self.controls[i],
-                self.test_functions_control[i],
-            )
+            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
             for i in range(self.control_dim)
         ]
 
@@ -600,7 +562,16 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def compute_newton_forms(self) -> None:
         """Calculates the needed forms for the truncated Newton method."""
-        if self.use_scalar_tracking or self.use_min_max_terms:
+        if any(
+            isinstance(
+                functional,
+                (
+                    cost_functional.ScalarTrackingFunctional,
+                    cost_functional.MinMaxFunctional,
+                ),
+            )
+            for functional in self.cost_functional_list
+        ):
             raise _exceptions.InputError(
                 "cashocs._forms.ShapeFormHandler",
                 "_compute_newton_forms",
