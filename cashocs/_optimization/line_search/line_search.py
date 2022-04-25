@@ -54,6 +54,9 @@ class LineSearch(abc.ABC):
         self.is_control_problem = optimization_problem.is_control_problem
 
         self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
+        self.safeguard_stepsize = self.config.getboolean(
+            "OptimizationRoutine", "safeguard_stepsize"
+        )
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"

@@ -12,6 +12,8 @@ in development
 
 * Rename the default branch from "master" to "main"
 
+* Implement the "guard against poor scaling" for the stepsize computation from Kelley, but only for the initial stepsize
+
 1.7.0 (April 20, 2022)
 ----------------------
 
