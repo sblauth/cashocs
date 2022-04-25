@@ -198,6 +198,13 @@ This can have an important effect on performance of the gradient descent and non
 cg methods, as they do not include a built-in scaling of the step size. The default
 value is ``initial_stepsize = 1.0``.
 
+The next parameter is given by ::
+
+    safeguard_stepsize = True
+    
+This parameter can be used to activate safeguarding of the initial stepsize for line search methods. This helps
+to choose an apropriate stepsize for the initial iteration even if the problem is poorly scaled. 
+
 The next paramter, ``epsilon_armijo``, is defined as follows ::
 
     epsilon_armijo = 1e-4
