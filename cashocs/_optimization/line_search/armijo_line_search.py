@@ -122,6 +122,14 @@ class ArmijoLineSearch(line_search.LineSearch):
         )
         self.stepsize /= pow(self.beta_armijo, num_decreases)
 
+        if self.safeguard_stepsize and solver.iteration == 0:
+            search_direction_norm = np.sqrt(
+                self.form_handler.scalar_product(search_direction, search_direction)
+            )
+            self.stepsize = float(
+                np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
+            )
+
         while True:
 
             if self._check_for_nonconvergence(solver):

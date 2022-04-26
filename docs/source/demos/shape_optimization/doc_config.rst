@@ -232,6 +232,13 @@ Next up, we have the initial guess for the step size, which can be determined vi
 
 The default behavior is given by ``initial_stepsize = 1.0``.
 
+The next parameter is given by ::
+
+    safeguard_stepsize = True
+    
+This parameter can be used to activate safeguarding of the initial stepsize for line search methods. This helps
+to choose an apropriate stepsize for the initial iteration even if the problem is poorly scaled. 
+
 The upcoming parameters are used for the Armijo rule ::
 
     epsilon_armijo = 1e-4

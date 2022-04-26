@@ -44,7 +44,6 @@ Initialization
 The beginning of the program is nearly the same as for :ref:`demo_poisson` ::
 
     from fenics import *
-    import numpy as np
 
     import cashocs
 

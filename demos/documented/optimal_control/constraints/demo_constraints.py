@@ -20,7 +20,6 @@
 """
 
 from fenics import *
-import numpy as np
 
 import cashocs
 

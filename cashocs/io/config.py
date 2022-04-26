@@ -209,6 +209,7 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive"],
                 },
+                "safeguard_stepsize": {"type": "bool"},
                 "epsilon_armijo": {
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
@@ -528,6 +529,7 @@ soft_exit = False
 epsilon_armijo = 1e-4
 beta_armijo = 2.0
 initial_stepsize = 1.0
+safeguard_stepsize = True
 gradient_tol = 1e-9
 gradient_method = direct
 
