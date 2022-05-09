@@ -31,9 +31,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def test_cli():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf"]
-        )
+        cashocs._cli.convert([f"{dir_path}/mesh/mesh.msh"])
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -85,9 +83,7 @@ def test_cli():
 
 def test_convert3D():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf"]
-        )
+        cashocs._cli.convert([f"{dir_path}/mesh/mesh3.msh"])
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh3.xdmf"
     )
@@ -121,15 +117,13 @@ def test_convert3D():
 def test_wrong_formats():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
-            cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
-            )
+            cashocs._cli.convert([f"{dir_path}/mesh/mesh.mesh"])
         assert "due to wrong format." in str(e_info.value)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
 
             cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
+                [f"{dir_path}/mesh/mesh.msh", f"-o", "{dir_path}/mesh/mesh.test"]
             )
         assert "due to wrong format." in str(e_info.value)
