@@ -43,11 +43,7 @@ def test_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(
-            [
-                "cashocs-convert",
-                f"{dir_path}/mesh/mesh.msh",
-                f"{dir_path}/mesh/mesh.xdmf",
-            ],
+            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
             check=True,
         )
 
@@ -104,11 +100,7 @@ def test_mesh_import_from_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(
-            [
-                "cashocs-convert",
-                f"{dir_path}/mesh/mesh.msh",
-                f"{dir_path}/mesh/mesh.xdmf",
-            ],
+            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
             check=True,
         )
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
@@ -271,11 +263,7 @@ def test_write_mesh():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(
-            [
-                "cashocs-convert",
-                f"{dir_path}/mesh/mesh.msh",
-                f"{dir_path}/mesh/mesh.xdmf",
-            ],
+            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
             check=True,
         )
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -288,11 +276,7 @@ def test_write_mesh():
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(
-            [
-                "cashocs-convert",
-                f"{dir_path}/mesh/test.msh",
-                f"{dir_path}/mesh/test.xdmf",
-            ],
+            ["cashocs-convert", f"{dir_path}/mesh/test.msh"],
             check=True,
         )
     test, _, _, _, _, _ = cashocs.import_mesh(dir_path + "/mesh/test.xdmf")
@@ -437,9 +421,7 @@ def test_eikonal_distance():
 def test_named_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
-        )
+        cashocs._cli.convert([f"{dir_path}/mesh/named_mesh.msh"])
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"

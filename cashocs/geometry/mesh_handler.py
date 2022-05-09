@@ -579,7 +579,7 @@ class _MeshHandler:
 
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 subprocess.run(  # nosec 603
-                    ["cashocs-convert", new_gmsh_file, new_xdmf_file],
+                    ["cashocs-convert", new_gmsh_file, "-o", new_xdmf_file],
                     check=True,
                 )
 

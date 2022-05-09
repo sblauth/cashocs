@@ -177,9 +177,7 @@ def test_interpolator():
 def test_create_named_bcs():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if MPI.rank(MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
-        )
+        cashocs._cli.convert([f"{dir_path}/mesh/named_mesh.msh"])
 
     mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
