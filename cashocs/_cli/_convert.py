@@ -37,9 +37,12 @@ def _generate_parser() -> argparse.ArgumentParser:
         "infile", type=str, help="GMSH file to be converted, has to end in .msh"
     )
     parser.add_argument(
-        "outfile",
+        "-o",
+        "--outfile",
         type=str,
         help="XDMF file to which the mesh shall be converted, has to end in .xdmf",
+        default=None,
+        metavar="outfile",
     )
 
     return parser
@@ -201,8 +204,11 @@ def convert(argv: Optional[List[str]] = None) -> None:
     args = parser.parse_args(argv)
 
     inputfile = args.infile
-    outputfile = args.outfile
     check_file_extension(inputfile, "msh")
+
+    outputfile = args.outfile
+    if outputfile is None:
+        outputfile = f"{inputfile[:-4]}.xdmf"
     check_file_extension(outputfile, "xdmf")
 
     ostring = outputfile.split(".")[0]
