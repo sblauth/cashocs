@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import abc
 import collections
-from typing import Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -35,6 +35,10 @@ from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 if TYPE_CHECKING:
     from cashocs import io
     from cashocs import types
+
+
+def _hook() -> None:
+    return None
 
 
 class FineModel(abc.ABC):
@@ -126,6 +130,9 @@ class CoarseModel:
         self.min_max_terms = min_max_terms
         self.desired_weights = desired_weights
 
+        self._pre_hook = _hook
+        self._post_hook = _hook
+
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -146,6 +153,9 @@ class CoarseModel:
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
+        self.optimal_control_problem.inject_pre_post_hook(
+            self._pre_hook, self._post_hook
+        )
         self.optimal_control_problem.solve()
 
 
@@ -186,6 +196,9 @@ class ParameterExtraction:
         self.config = config
         self.scalar_tracking_forms = scalar_tracking_forms
         self.desired_weights = desired_weights
+
+        self._pre_hook = _hook
+        self._post_hook = _hook
 
         self.adjoints = _utils.create_function_list(
             coarse_model.optimal_control_problem.form_handler.adjoint_spaces
@@ -257,6 +270,9 @@ class ParameterExtraction:
             )
         )
 
+        self.optimal_control_problem.inject_pre_post_hook(
+            self._pre_hook, self._post_hook
+        )
         self.optimal_control_problem.solve()
 
 
@@ -732,3 +748,40 @@ class SpaceMapping:
         )
 
         return eps
+
+    def inject_pre_hook(self, function: Callable[[], None]) -> None:
+        """Changes the a-priori hook of the OptimizationProblem.
+
+        Args:
+            function: A custom function without arguments, which will be called before
+                each solve of the state system
+
+        """
+        self.coarse_model._pre_hook = function
+        self.parameter_extraction._pre_hook = function
+
+    def inject_post_hook(self, function: Callable[[], None]) -> None:
+        """Changes the a-posteriori hook of the OptimizationProblem.
+
+        Args:
+            function: A custom function without arguments, which will be called after
+                the computation of the gradient(s)
+
+        """
+        self.coarse_model._post_hook = function
+        self.parameter_extraction._post_hook = function
+
+    def inject_pre_post_hook(
+        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    ) -> None:
+        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+
+        Args:
+            pre_function: A function without arguments, which is to be called before
+                each solve of the state system
+            post_function: A function without arguments, which is to be called after
+                each computation of the (shape) gradient
+
+        """
+        self.inject_pre_hook(pre_function)
+        self.inject_post_hook(post_function)
