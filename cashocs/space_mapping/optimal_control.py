@@ -173,6 +173,7 @@ class ParameterExtraction:
         config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         desired_weights: Optional[List[float]] = None,
+        mode: str = "coarse_optimum",
     ) -> None:
         """Initializes self.
 
@@ -185,6 +186,10 @@ class ParameterExtraction:
             scalar_tracking_forms: The scalar tracking forms for the parameter
                 extraction
             desired_weights: The list of desired weights for the parameter extraction
+            mode: The mode used for the initial guess of the parameter extraction. If
+                this is coarse_optimum, the default, then the coarse model optimum is
+                used as initial guess, if this is initial, then the initial guess for
+                the optimization is used.
 
         """
         self.coarse_model = coarse_model
@@ -194,6 +199,7 @@ class ParameterExtraction:
         self.controls = _utils.enlist(controls)
 
         self.config = config
+        self.mode = mode
         self.scalar_tracking_forms = scalar_tracking_forms
         self.desired_weights = desired_weights
 
@@ -237,17 +243,17 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
 
-    def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
+    def _solve(self, initial_guesses: List[fenics.Function]) -> None:
         """Solves the parameter extraction problem.
 
         Args:
             initial_guesses: The list of initial guesses for solving the problem.
 
         """
-        if initial_guesses is None:
+        if self.mode == "initial":
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = 0.0
-        else:
+        elif self.mode == "coarse_optimum":
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = initial_guesses[i].vector()[:]
 

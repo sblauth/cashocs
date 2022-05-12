@@ -181,6 +181,7 @@ class ParameterExtraction:
         config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
+        mode: str = "coarse_optimum",
     ) -> None:
         """Initializes self.
 
@@ -192,11 +193,16 @@ class ParameterExtraction:
             scalar_tracking_forms: The scalar tracking forms for the parameter
                 extraction
             desired_weights: The list of desired weights for the parameter extraction
+            mode: The mode used for the initial guess of the parameter extraction. If
+                this is coarse_optimum, the default, then the coarse model optimum is
+                used as initial guess, if this is initial, then the initial guess for
+                the optimization is used.
 
         """
         self.coarse_model = coarse_model
         self.mesh = coarse_model.mesh
         self.cost_functional_form = cost_functional_form
+        self.mode = mode
 
         self.states = _utils.enlist(states)
 
@@ -241,17 +247,19 @@ class ParameterExtraction:
         self.coordinates_initial = coarse_model.coordinates_initial
         self.deformation_handler = geometry.DeformationHandler(self.mesh)
 
-    def _solve(self, initial_guess: Optional[np.ndarray] = None) -> None:
+    def _solve(self) -> None:
         """Solves the parameter extraction problem.
 
         Args:
             initial_guess: The initial guesses for solving the problem.
 
         """
-        if initial_guess is None:
+        if self.mode == "initial":
             self.deformation_handler.assign_coordinates(self.coordinates_initial)
-        else:
-            self.deformation_handler.assign_coordinates(initial_guess)
+        elif self.mode == "coarse_optimum":
+            self.deformation_handler.assign_coordinates(
+                self.coarse_model.coordinates_optimal
+            )
 
         self.shape_optimization_problem: sop.ShapeOptimizationProblem = (
             sop.ShapeOptimizationProblem(
@@ -392,10 +400,7 @@ class SpaceMapping:
         self._compute_initial_guess()
 
         self.fine_model.solve_and_evaluate()
-        # self.parameter_extraction._solve()
-        self.parameter_extraction._solve(  # pylint: disable=protected-access
-            initial_guess=self.coarse_model.coordinates_optimal
-        )
+        self.parameter_extraction._solve()
         self.p_current[0].vector()[
             :
         ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -528,10 +533,7 @@ class SpaceMapping:
                 )
 
             self.fine_model.solve_and_evaluate()
-            # self.parameter_extraction._solve()
-            self.parameter_extraction._solve(  # pylint: disable=protected-access
-                initial_guess=self.coarse_model.coordinates_optimal
-            )
+            self.parameter_extraction._solve()
             self.p_current[0].vector()[
                 :
             ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -557,11 +559,8 @@ class SpaceMapping:
                 if success:
 
                     self.fine_model.solve_and_evaluate()
-                    # self.parameter_extraction._solve()
+                    self.parameter_extraction._solve()
                     # pylint: disable=protected-access
-                    self.parameter_extraction._solve(
-                        self.coarse_model.coordinates_optimal
-                    )
                     self.p_current[0].vector()[
                         :
                     ] = self.deformation_handler_coarse.coordinate_to_dof(
