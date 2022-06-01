@@ -252,6 +252,7 @@ class ControlFormHandler(form_handler.FormHandler):
             else:
                 self.idx_active_lower.append([])
                 self.idx_active_upper.append([])
+                self.idx_inactive.append([])
 
             temp_active = np.concatenate(
                 (self.idx_active_lower[j], self.idx_active_upper[j])
