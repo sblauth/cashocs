@@ -216,9 +216,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         if len(self.material_derivative_coeffs) > 0:
             _loggers.warning(
                 "Shape derivative might be wrong, if differential operators "
-                "act on variables other than states and adjoints. \n"
-                "You can check for correctness of the shape derivative "
-                "with cashocs.verification.shape_gradient_test\n"
+                "act on variables other than states and adjoints."
             )
 
     def _add_pull_backs(self) -> None:
