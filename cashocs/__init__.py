@@ -57,7 +57,7 @@ from cashocs.nonlinear_solvers import damped_newton_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "1.7.4"
+__version__ = "1.7.5"
 
 __all__ = [
     "import_mesh",
