@@ -110,10 +110,17 @@ class OutputManager:
         self.history_manager.print_console_summary(solver)
         self.history_manager.print_file_summary(solver)
 
+    def post_process(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """Performs a post processing of the output.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
         self.result_manager.save_to_json(solver)
-
         self.mesh_manager.save_optimized_mesh(solver)
-
         self.temp_file_manager.clear_temp_files(solver)
 
     def set_remesh(self, remesh_counter: int) -> None:
