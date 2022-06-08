@@ -228,8 +228,6 @@ def solve_linear_problem(
     if ksp.getConvergedReason() < 0:
         raise _exceptions.PETScKSPError(ksp.getConvergedReason())
 
-    ksp.destroy()
-
     return x
 
 
