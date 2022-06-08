@@ -23,7 +23,6 @@ from typing import List, Optional, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 
 from cashocs import _exceptions
@@ -66,7 +65,6 @@ def picard_iteration(
     inner_inexact: bool = True,
     inner_verbose: bool = False,
     inner_max_its: int = 25,
-    ksps: Optional[List[PETSc.KSP]] = None,
     ksp_options: Optional[types.KspOptions] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
@@ -92,9 +90,6 @@ def picard_iteration(
             to stdout, default is ``False``.
         inner_max_its: Maximum number of iterations for the inner Newton solver; default
             is 25.
-        ksps: List of PETSc KSP objects for solving the inner (linearized) problems,
-            optional. Default is ``None``, in which case the direct solver mumps is
-            used.
         ksp_options: List of options for the KSP objects.
         A_tensors: List of matrices for the right-hand sides of the inner (linearized)
             equations.
@@ -147,7 +142,6 @@ def picard_iteration(
                 np.maximum(eta, 0.5 * tol / res),
             )
 
-            ksp = ksps[j] if ksps is not None else None
             ksp_option = ksp_options[j] if ksp_options is not None else None
             A_tensor = A_tensors[j] if A_tensors is not None else None
             b_tensor = b_tensors[j] if b_tensors is not None else None
@@ -162,7 +156,6 @@ def picard_iteration(
                 damped=inner_damped,
                 inexact=inner_inexact,
                 verbose=inner_verbose,
-                ksp=ksp,
                 ksp_options=ksp_option,
                 A_tensor=A_tensor,
                 b_tensor=b_tensor,
