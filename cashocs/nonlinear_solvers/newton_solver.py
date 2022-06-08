@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Union
 
 import fenics
@@ -131,12 +132,7 @@ class _NewtonSolver:
         self.ksp_options = ksp_options
 
         if ksp_options is None:
-            self.ksp_options = [
-                ["ksp_type", "preonly"],
-                ["pc_type", "lu"],
-                ["pc_factor_mat_solver_type", "mumps"],
-                ["mat_mumps_icntl_24", 1],
-            ]
+            self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
         else:
             self.ksp_options = ksp_options
 

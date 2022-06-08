@@ -23,6 +23,7 @@ cost functional.
 
 from __future__ import annotations
 
+import copy
 from typing import List, TYPE_CHECKING, Union
 
 import fenics
@@ -70,12 +71,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         option: List[List[Union[str, int, float]]] = []
         if gradient_method.casefold() == "direct":
-            option = [
-                ["ksp_type", "preonly"],
-                ["pc_type", "lu"],
-                ["pc_factor_mat_solver_type", "mumps"],
-                ["mat_mumps_icntl_24", 1],
-            ]
+            option = copy.deepcopy(_utils.linalg.direct_ksp_options)
         elif gradient_method.casefold() == "iterative":
             option = [
                 ["ksp_type", "cg"],

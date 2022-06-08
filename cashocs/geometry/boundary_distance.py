@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Union
 
 import fenics
@@ -65,15 +66,7 @@ def compute_boundary_distance(
     dx = measure.NamedMeasure("dx", mesh)
 
     # noinspection PyUnresolvedReferences
-    ksp_options: List[List[Union[str, int, float]]] = [
-        ["ksp_type", "cg"],
-        ["pc_type", "hypre"],
-        ["pc_hypre_type", "boomeramg"],
-        ["pc_hypre_boomeramg_strong_threshold", 0.7],
-        ["ksp_rtol", 1e-20],
-        ["ksp_atol", 1e-50],
-        ["ksp_max_it", 1000],
-    ]
+    ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
 
     u = fenics.TrialFunction(function_space)
     v = fenics.TestFunction(function_space)

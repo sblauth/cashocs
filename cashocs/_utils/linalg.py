@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
@@ -31,6 +32,23 @@ from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
     from cashocs import types
+
+iterative_ksp_options: List[List[Union[str, int, float]]] = [
+    ["ksp_type", "cg"],
+    ["pc_type", "hypre"],
+    ["pc_hypre_type", "boomeramg"],
+    ["pc_hypre_boomeramg_strong_threshold", 0.7],
+    ["ksp_rtol", 1e-20],
+    ["ksp_atol", 1e-50],
+    ["ksp_max_it", 1000],
+]
+
+direct_ksp_options: List[List[Union[str, int, float]]] = [
+    ["ksp_type", "preonly"],
+    ["pc_type", "lu"],
+    ["pc_factor_mat_solver_type", "mumps"],
+    ["mat_mumps_icntl_24", 1],
+]
 
 
 def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
@@ -208,12 +226,7 @@ def solve_linear_problem(
         x, _ = A.getVecs()
 
     if ksp_options is None:
-        options: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "lu"],
-            ["pc_factor_mat_solver_type", "mumps"],
-            ["mat_mumps_icntl_24", 1],
-        ]
+        options = copy.deepcopy(direct_ksp_options)
     else:
         options = ksp_options
 
