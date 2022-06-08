@@ -28,7 +28,6 @@ from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 
 from cashocs import _loggers
@@ -71,10 +70,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
 
-        # Generate the Krylov solver for the shape gradient problem
-        # noinspection PyUnresolvedReferences
-        self.ksp = PETSc.KSP().create()
-
         gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
         if gradient_method.casefold() == "direct":
@@ -94,8 +89,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 ["ksp_atol", 1e-50],
                 ["ksp_max_it", 250],
             ]
-
-        _utils.setup_petsc_options([self.ksp], [self.ksp_options])
 
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
@@ -158,11 +151,10 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     )
                     self.form_handler.fe_shape_derivative_vector.apply("")
                 _utils.solve_linear_problem(
-                    self.ksp,
-                    self.form_handler.scalar_product_matrix,
-                    self.form_handler.fe_shape_derivative_vector.vec(),
-                    self.gradient[0].vector().vec(),
-                    self.ksp_options,
+                    A=self.form_handler.scalar_product_matrix,
+                    b=self.form_handler.fe_shape_derivative_vector.vec(),
+                    x=self.gradient[0].vector().vec(),
+                    ksp_options=self.ksp_options,
                 )
                 self.gradient[0].vector().apply("")
 

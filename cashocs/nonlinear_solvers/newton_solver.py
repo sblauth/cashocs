@@ -23,7 +23,6 @@ from typing import List, Optional, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 from typing_extensions import Literal
 import ufl
 
@@ -56,7 +55,6 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp: Optional[PETSc.KSP] = None,
         ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
@@ -91,8 +89,6 @@ class _NewtonSolver:
                 is used.
             verbose: If ``True``, prints status of the iteration to the console (default
                 is ``True``).
-            ksp: The PETSc ksp object used to solve the inner (linear) problem if this
-                is ``None`` it uses the direct solver MUMPS (default is ``None``).
             ksp_options: The list of options for the linear solver.
             A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
@@ -134,22 +130,15 @@ class _NewtonSolver:
         self.u_save = fenics.Function(self.function_space)
         self.ksp_options = ksp_options
 
-        if ksp is None:
-            if ksp_options is None:
-                self.ksp_options = [
-                    ["ksp_type", "preonly"],
-                    ["pc_type", "lu"],
-                    ["pc_factor_mat_solver_type", "mumps"],
-                    ["mat_mumps_icntl_24", 1],
-                ]
-            else:
-                self.ksp_options = ksp_options
-
-            self.ksp = PETSc.KSP().create()
-            _utils.setup_petsc_options([self.ksp], [self.ksp_options])
-
+        if ksp_options is None:
+            self.ksp_options = [
+                ["ksp_type", "preonly"],
+                ["pc_type", "lu"],
+                ["pc_factor_mat_solver_type", "mumps"],
+                ["mat_mumps_icntl_24", 1],
+            ]
         else:
-            self.ksp = ksp
+            self.ksp_options = ksp_options
 
         self.iterations = 0
         for bc in self.bcs:
@@ -264,12 +253,12 @@ class _NewtonSolver:
 
             self._compute_eta_inexact()
             _utils.solve_linear_problem(
-                self.ksp,
-                self.A_matrix,
-                self.b,
-                self.du.vector().vec(),
-                self.ksp_options,
+                A=self.A_matrix,
+                b=self.b,
+                x=self.du.vector().vec(),
+                ksp_options=self.ksp_options,
                 rtol=self.eta,
+                atol=self.atol / 10.0,
             )
             self.du.vector().apply("")
 
@@ -355,11 +344,12 @@ class _NewtonSolver:
             self.u.vector().apply("")
             self._compute_residual()
             _utils.solve_linear_problem(
-                ksp=self.ksp,
+                A=self.A_matrix,
                 b=self.b,
                 x=self.ddu.vector().vec(),
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
+                atol=self.atol / 10.0,
             )
             self.ddu.vector().apply("")
 
@@ -394,7 +384,6 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
@@ -427,8 +416,6 @@ def newton_solve(
         inexact: If ``True``, an inexact Newton\'s method is used. Default is ``True``.
         verbose: If ``True``, prints status of the iteration to the console (default is
             ``True``).
-        ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
-            ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
         A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
@@ -479,7 +466,6 @@ def newton_solve(
         damped=damped,
         inexact=inexact,
         verbose=verbose,
-        ksp=ksp,
         ksp_options=ksp_options,
         A_tensor=A_tensor,
         b_tensor=b_tensor,
@@ -503,7 +489,6 @@ def damped_newton_solve(
     norm_type: Literal["l2", "linf"] = "l2",
     damped: bool = True,
     verbose: bool = True,
-    ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
 ) -> fenics.Function:  # pragma: no cover
     r"""Damped Newton solve interface, only here for compatibility reasons.
@@ -530,8 +515,6 @@ def damped_newton_solve(
             ``True``).
         verbose: If ``True``, prints status of the iteration to the console (default is
             ``True``).
-        ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
-            ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
 
     Returns:
@@ -583,6 +566,5 @@ def damped_newton_solve(
         norm_type=norm_type,
         damped=damped,
         verbose=verbose,
-        ksp=ksp,
         ksp_options=ksp_options,
     )

@@ -26,7 +26,6 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING, Union
 
 import fenics
-from petsc4py import PETSc
 
 from cashocs import _utils
 from cashocs._pde_problems import pde_problem
@@ -63,10 +62,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
-        # Initialize the PETSc Krylov solver for the Riesz projection problems
-        # noinspection PyUnresolvedReferences
-        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.control_dim)]
-
         gradient_tol: float = self.config.getfloat(
             "OptimizationRoutine", "gradient_tol"
         )
@@ -93,12 +88,8 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             ]
 
         self.riesz_ksp_options = []
-        for i in range(self.form_handler.control_dim):
+        for _ in range(self.form_handler.control_dim):
             self.riesz_ksp_options.append(option)
-
-        _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
-        for i, ksp in enumerate(self.ksps):
-            ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
         self.b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.control_dim)
@@ -118,7 +109,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             for i in range(self.form_handler.control_dim):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 _utils.solve_linear_problem(
-                    ksp=self.ksps[i],
+                    A=self.form_handler.riesz_projection_matrices[i],
                     b=self.b_tensors[i].vec(),
                     x=self.gradient[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
