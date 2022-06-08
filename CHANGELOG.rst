@@ -10,6 +10,10 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
+* cashocs now has a better memory efficiency
+
+* The ksp keyword argument for solver routines in the _utils module has been removed. Now, KSP objects can be interfaced only directly via ksp_options
+
 * Rename the default branch from "master" to "main"
 
 * Implement the "guard against poor scaling" for the stepsize computation from Kelley, but only for the initial stepsize
