@@ -101,10 +101,7 @@ class _NewtonSolver:
         """
         self.nonlinear_form = nonlinear_form
         self.u = u
-        if isinstance(bcs, fenics.DirichletBC):
-            self.bcs = [bcs]
-        else:
-            self.bcs = bcs
+        self.bcs = _utils.enlist(bcs)
         self.shift = shift
         self.rtol = rtol
         self.atol = atol
@@ -263,12 +260,7 @@ class _NewtonSolver:
                 self.u.vector().apply("")
                 break
 
-            if self.damped:
-                self._backtracking_line_search()
-            else:
-                self.u.vector().vec().axpy(1.0, self.du.vector().vec())
-                self.u.vector().apply("")
-
+            self._backtracking_line_search()
             self._compute_residual()
 
             for bc in self.bcs_hom:
@@ -280,22 +272,34 @@ class _NewtonSolver:
             self.eta_a = self.gamma * pow(self.res / res_prev, 2)
             self._print_output()
 
-            if self.res <= self.tol:
-                if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(
-                        f"\nNewton Solver converged "
-                        f"after {self.iterations:d} iterations.\n"
-                    )
+            if self._check_for_convergence():
                 break
 
+        self._check_if_successful()
+
+        return self.u
+
+    def _check_for_convergence(self) -> bool:
+        """Checks, whether the desired convergence tolerance has been reached."""
+        if self.res <= self.tol:
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(
+                    f"\nNewton Solver converged "
+                    f"after {self.iterations:d} iterations.\n"
+                )
+            return True
+
+        else:
+            return False
+
+    def _check_if_successful(self) -> None:
+        """Checks, whether the attempted solve was successful."""
         if self.res > self.tol and not self.is_linear:
             raise _exceptions.NotConvergedError(
                 "Newton solver",
                 f"The Newton solver did not converge after "
                 f"{self.iterations:d} iterations.",
             )
-
-        return self.u
 
     def _check_for_divergence(self) -> None:
         """Checks, whether the Newton solver diverged."""
@@ -335,34 +339,38 @@ class _NewtonSolver:
 
     def _backtracking_line_search(self) -> None:
         """Performs a backtracking line search for the damped Newton method."""
-        while True:
-            self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
-            self.u.vector().apply("")
-            self._compute_residual()
-            _utils.solve_linear_problem(
-                A=self.A_matrix,
-                b=self.b,
-                x=self.ddu.vector().vec(),
-                ksp_options=self.ksp_options,
-                rtol=self.eta,
-                atol=self.atol / 10.0,
-            )
-            self.ddu.vector().apply("")
-
-            if (
-                self.ddu.vector().norm(self.norm_type)
-                / self.du.vector().norm(self.norm_type)
-                <= 1
-            ):
-                break
-            else:
-                self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+        if self.damped:
+            while True:
+                self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
                 self.u.vector().apply("")
-                self.lmbd /= 2
+                self._compute_residual()
+                _utils.solve_linear_problem(
+                    A=self.A_matrix,
+                    b=self.b,
+                    x=self.ddu.vector().vec(),
+                    ksp_options=self.ksp_options,
+                    rtol=self.eta,
+                    atol=self.atol / 10.0,
+                )
+                self.ddu.vector().apply("")
 
-            if self.lmbd < 1e-6:
-                self.breakdown = True
-                break
+                if (
+                    self.ddu.vector().norm(self.norm_type)
+                    / self.du.vector().norm(self.norm_type)
+                    <= 1
+                ):
+                    break
+                else:
+                    self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+                    self.u.vector().apply("")
+                    self.lmbd /= 2
+
+                if self.lmbd < 1e-6:
+                    self.breakdown = True
+                    break
+        else:
+            self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+            self.u.vector().apply("")
 
 
 # noinspection PyUnresolvedReferences

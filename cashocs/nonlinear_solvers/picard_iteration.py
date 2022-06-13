@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 import numpy as np
@@ -99,6 +99,7 @@ def picard_iteration(
             linear ones, and only a linear solver is used.
 
     """
+    is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
     form_list = _utils.enlist(form_list)
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
@@ -110,20 +111,11 @@ def picard_iteration(
     tol = 1.0
 
     for i in range(max_iter + 1):
-        res = 0.0
-        for j in range(len(u_list)):
-            fenics.assemble(form_list[j], tensor=res_tensor[j])
-            for bc in bcs_list[j]:
-                bc.apply(res_tensor[j])
-
-            # TODO: Include very first solve to adjust absolute tolerance
-            res += pow(res_tensor[j].norm("l2"), 2)
-
-        res = np.sqrt(res)
+        res = _compute_residual(form_list, res_tensor, bcs_list)
         if i == 0:
             res_0 = res
             tol = atol + rtol * res_0
-        if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if is_printing:
             print(
                 f"Picard iteration {i:d}: "
                 f"||res|| (abs): {res:.3e}   "
@@ -142,9 +134,9 @@ def picard_iteration(
                 np.maximum(eta, 0.5 * tol / res),
             )
 
-            ksp_option = ksp_options[j] if ksp_options is not None else None
-            A_tensor = A_tensors[j] if A_tensors is not None else None
-            b_tensor = b_tensors[j] if b_tensors is not None else None
+            ksp_option, A_tensor, b_tensor = _get_linear_solver_options(
+                j, ksp_options, A_tensors, b_tensors
+            )
 
             newton_solver.newton_solve(
                 form_list[j],
@@ -162,5 +154,57 @@ def picard_iteration(
                 is_linear=inner_is_linear,
             )
 
-    if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if is_printing:
         print("")
+
+
+def _compute_residual(
+    form_list: List[ufl.Form],
+    res_tensor: List[fenics.PETScVector],
+    bcs_list: List[List[fenics.DirichletBC]],
+) -> float:
+    """Computes the residual for the picard iteration.
+
+    Args:
+        form_list: The list of forms which make the system.
+        res_tensor: The vectors into which the residual shall be assembled.
+        bcs_list: The list of boundary conditions for the system.
+
+    Returns:
+        The residual of the system to be solved with a Picard iteration.
+
+    """
+    res = 0.0
+    for j in range(len(form_list)):
+        fenics.assemble(form_list[j], tensor=res_tensor[j])
+        for bc in bcs_list[j]:
+            bc.apply(res_tensor[j])
+
+        # TODO: Include very first solve to adjust absolute tolerance
+        res += pow(res_tensor[j].norm("l2"), 2)
+
+    result: float = np.sqrt(res)
+    return result
+
+
+def _get_linear_solver_options(
+    j: int,
+    ksp_options: Optional[types.KspOptions],
+    # pylint: disable=invalid-name
+    A_tensors: Optional[List[fenics.PETScMatrix]],
+    b_tensors: Optional[List[fenics.PETScVector]],
+) -> Tuple[
+    Optional[List[List[Union[str, int, float]]]], fenics.PETScMatrix, fenics.PETScVector
+]:
+    """Computes the arguments for the individual components considered in the iteration.
+
+    Returns:
+        A tuple [ksp_option, A_tensor, b_tensor].
+
+    """
+    ksp_option = ksp_options[j] if ksp_options is not None else None
+    # pylint: disable=invalid-name
+    A_tensor = A_tensors[j] if A_tensors is not None else None
+    b_tensor = b_tensors[j] if b_tensors is not None else None
+
+    return ksp_option, A_tensor, b_tensor

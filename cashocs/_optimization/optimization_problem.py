@@ -362,7 +362,7 @@ class OptimizationProblem(abc.ABC):
             self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
-            if self.use_scaling and self.scalar_tracking_legacy_mode:
+            if self.scalar_tracking_legacy_mode:
                 raise _exceptions.InputError(
                     "OptimizationProblem",
                     "scalar_tracking_forms",
