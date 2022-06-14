@@ -158,11 +158,11 @@ def test_interpolator():
     W = FunctionSpace(mesh, "CG", 2)
     X = FunctionSpace(mesh, "DG", 0)
 
-    interp_W = cashocs._utils.Interpolator(V, W)
-    interp_X = cashocs._utils.Interpolator(V, X)
+    interp_W = cashocs.Interpolator(V, W)
+    interp_X = cashocs.Interpolator(V, X)
 
-    func_V = Function(V)
-    func_V.vector().set_local(rng.rand(func_V.vector().local_size()))
+    expr = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+    func_V = interpolate(expr, V)
 
     fen_W = interpolate(func_V, W)
     fen_X = interpolate(func_V, X)

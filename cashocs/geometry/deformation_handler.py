@@ -24,7 +24,6 @@ from typing import List, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -47,6 +46,7 @@ class DeformationHandler:
 
         """
         self.mesh = mesh
+        self.dim = self.mesh.geometric_dimension()
         self.dx = measure.NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
         self.shape_coordinates = self.old_coordinates.shape
@@ -77,9 +77,6 @@ class DeformationHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        self.ksp_prior = PETSc.KSP().create()
-        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
@@ -122,7 +119,6 @@ class DeformationHandler:
         x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
-            ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
         min_det: float = x.min()[1]
@@ -264,7 +260,7 @@ class DeformationHandler:
             )
 
         vertex_values = dof_deformation.compute_vertex_values()
-        coordinate_deformation: np.ndarray = vertex_values.reshape(2, -1).T
+        coordinate_deformation: np.ndarray = vertex_values.reshape(self.dim, -1).T
         return coordinate_deformation
 
     def assign_coordinates(self, coordinates: np.ndarray) -> bool:

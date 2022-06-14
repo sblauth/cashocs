@@ -113,6 +113,10 @@ class OptimizationAlgorithm(abc.ABC):
         """Writes the summary of the optimization (to files and console)."""
         self.output_manager.output_summary(self)
 
+    def post_process(self) -> None:
+        """Performs the non-console output related post-processing."""
+        self.output_manager.post_process(self)
+
     def nonconvergence(self) -> bool:
         """Checks for nonconvergence of the solution algorithm.
 
@@ -148,19 +152,20 @@ class OptimizationAlgorithm(abc.ABC):
         """Does a post-processing after the optimization algorithm terminates."""
         if self.converged:
             self.output()
+            self.post_process()
             self.output_summary()
 
         else:
             # maximum iterations reached
             if self.converged_reason == -1:
                 self.output()
-                self.output_summary()
+                self.post_process()
                 self._exit("Maximum number of iterations exceeded.")
 
             # Armijo line search failed
             elif self.converged_reason == -2:
                 self.iteration -= 1
-                self.output_summary()
+                self.post_process()
                 self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
@@ -172,13 +177,13 @@ class OptimizationAlgorithm(abc.ABC):
                     )
                     self.optimization_variable_abstractions.mesh_handler.remesh(self)
                 else:
-                    self.output_summary()
+                    self.post_process()
                     self._exit("Mesh quality is too low.")
 
             # Iteration for remeshing is the one exceeding the maximum number
             # of iterations
             elif self.converged_reason == -4:
-                self.output_summary()
+                self.post_process()
                 self._exit("Maximum number of iterations exceeded.")
 
     def convergence_test(self) -> bool:

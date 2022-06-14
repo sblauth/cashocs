@@ -27,6 +27,7 @@ import numpy as np
 from typing_extensions import Literal
 import ufl
 
+from cashocs import _exceptions
 from cashocs import _utils
 from cashocs._constraints import solvers
 from cashocs._optimization import optimal_control
@@ -112,7 +113,10 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.bcs_list = bcs_list
         self.states = states
         self.adjoints = adjoints
-        self.config = config
+        if config is None:
+            self.config = io.Config()
+        else:
+            self.config = config
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
@@ -525,6 +529,11 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             scalar_tracking_forms=scalar_tracking_forms,
         )
+
+        if self.config.getboolean("Mesh", "remesh"):
+            raise _exceptions.CashocsException(
+                "Remeshing is not yet supported for constrained problems"
+            )
 
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product

@@ -232,6 +232,13 @@ Next up, we have the initial guess for the step size, which can be determined vi
 
 The default behavior is given by ``initial_stepsize = 1.0``.
 
+The next parameter is given by ::
+
+    safeguard_stepsize = True
+    
+This parameter can be used to activate safeguarding of the initial stepsize for line search methods. This helps
+to choose an apropriate stepsize for the initial iteration even if the problem is poorly scaled. 
+
 The upcoming parameters are used for the Armijo rule ::
 
     epsilon_armijo = 1e-4
@@ -584,7 +591,7 @@ Furthermore, we have the parameter ``fixed_dimensions``, which enables us to res
 
     fixed_dimensions = []
 
-In case ``fixed_dimensions == []``, there is no restriction on the shape gradient. However, if ``fixed_dimensions`` == [i]``, then the ``i``-th component of the shape gradient is set to 0, so that we have no deformation in the ``i``-th coordinate direction. For example, if ``fixed_dimensions == [0, 2]``, we only have a deformation in the ``y``-component of the mesh. The default is ``fixed_dimensions = []``.
+In case ``fixed_dimensions == []``, there is no restriction on the shape gradient. However, if ``fixed_dimensions == [i]``, then the ``i``-th component of the shape gradient is set to 0, so that we have no deformation in the ``i``-th coordinate direction. For example, if ``fixed_dimensions == [0, 2]``, we only have a deformation in the ``y``-component of the mesh. The default is ``fixed_dimensions = []``.
 
 .. _config_shape_regularization:
 

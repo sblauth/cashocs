@@ -29,7 +29,6 @@ from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -253,9 +252,6 @@ class _MeshHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        self.ksp_frobenius = PETSc.KSP().create()
-        _utils.setup_petsc_options([self.ksp_frobenius], [self.options_frobenius])
 
         self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
@@ -310,7 +306,6 @@ class _MeshHandler:
             x = _utils.assemble_and_solve_linear(
                 self.a_frobenius,
                 self.l_frobenius,
-                ksp=self.ksp_frobenius,
                 ksp_options=self.options_frobenius,
             )
 
@@ -337,9 +332,6 @@ class _MeshHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        self.ksp_prior = PETSc.KSP().create()
-        _utils.setup_petsc_options([self.ksp_prior], [self.options_prior])
 
         self.transformation_container = fenics.Function(
             self.form_handler.deformation_space
@@ -380,7 +372,6 @@ class _MeshHandler:
         x = _utils.assemble_and_solve_linear(
             self.A_prior,
             self.l_prior,
-            ksp=self.ksp_prior,
             ksp_options=self.options_prior,
         )
 
