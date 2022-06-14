@@ -181,7 +181,7 @@ class ParameterExtraction:
         config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Dict] = None,
         desired_weights: Optional[List[float]] = None,
-        mode: str = "coarse_optimum",
+        mode: str = "initial",
     ) -> None:
         """Initializes self.
 
