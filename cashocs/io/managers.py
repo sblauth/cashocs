@@ -48,15 +48,15 @@ def generate_summary_str(
     """
     strs = [
         "\n",
-        f"Statistics --- Total iterations:  {solver.iteration:4d}",
-        f" --- Final objective value:  {solver.objective_value:.3e}",
-        f" --- Final gradient norm:  {solver.relative_norm:.3e} (rel)",
-        "\n",
-        f"           --- State equations solved:  "
-        f"{solver.state_problem.number_of_solves:d}",
-        f" --- Adjoint equations solved:  "
-        f"{solver.adjoint_problem.number_of_solves:d}",
-        "\n",
+        "Optimization was successful.\n",
+        "Statistics:\n",
+        f"    total iterations: {solver.iteration:4d}\n",
+        f"    final objective value: {solver.objective_value:>10.3e}\n",
+        f"    final gradient norm:   {solver.relative_norm:>10.3e}\n",
+        f"    total number of state systems solved:   "
+        f"{solver.state_problem.number_of_solves:4d}\n",
+        f"    total number of adjoint systems solved: "
+        f"{solver.adjoint_problem.number_of_solves:4d}\n",
     ]
 
     return "".join(strs)
@@ -76,39 +76,47 @@ def generate_output_str(
     """
     iteration = solver.iteration
     objective_value = solver.objective_value
-    if iteration == 0:
-        gradient_norm = solver.gradient_norm_initial
-        abs_rel_str = "abs"
-    else:
-        gradient_norm = solver.relative_norm
-        abs_rel_str = "rel"
 
-    if not np.any(solver.require_control_constraints):
-        gradient_str = "Gradient norm"
+    if not np.any(solver.form_handler.require_control_constraints):
+        gradient_str = "grad. norm"
     else:
-        gradient_str = "Stationarity measure"
+        gradient_str = "stat. meas."
 
     if solver.form_handler.is_shape_problem:
         mesh_handler = solver.optimization_variable_abstractions.mesh_handler
         mesh_quality = mesh_handler.current_mesh_quality
-        mesh_quality_measure = mesh_handler.mesh_quality_measure
     else:
         mesh_quality = None
 
+    if iteration % 10 == 0:
+        info_str = (
+            "\niter,  "
+            "cost function,  "
+            f"rel. {gradient_str},  "
+            f"abs. {gradient_str},  "
+        )
+        if mesh_quality is not None:
+            info_str += "mesh qlty,  "
+        info_str += "step size\n\n"
+    else:
+        info_str = ""
+
     strs = [
-        f"Iteration {iteration:4d} - ",
-        f" Objective value:  {objective_value:.3e}",
-        f"    {gradient_str}:  {gradient_norm:.3e} ({abs_rel_str})",
+        f"{iteration:4d},  ",
+        f"{objective_value:>13.3e},  ",
+        f"{solver.relative_norm:>{len(gradient_str) + 5}.3e},  ",
+        f"{solver.gradient_norm:>{len(gradient_str) + 5}.3e},  ",
     ]
     if mesh_quality is not None:
         # noinspection PyUnboundLocalVariable
-        strs.append(f"    Mesh Quality:  {mesh_quality:1.2f} ({mesh_quality_measure})")
+        strs.append(f"{mesh_quality:>9.2f},  ")
+
     if iteration > 0:
-        strs.append(f"    Step size:  {solver.stepsize:.3e}")
+        strs.append(f"{solver.stepsize:>9.3e}")
     if iteration == 0:
         strs.append("\n")
 
-    return "".join(strs)
+    return info_str + "".join(strs)
 
 
 class ResultManager:
