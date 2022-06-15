@@ -12,6 +12,8 @@ in development
 
 * cashocs now has a better memory efficiency
 
+* The printing and file output of cashocs has been modified to better readable and fit the default console window
+
 * The ksp keyword argument for solver routines in the _utils module has been removed. Now, KSP objects can be interfaced only directly via ksp_options
 
 * Rename the default branch from "master" to "main"
