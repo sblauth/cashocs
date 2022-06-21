@@ -58,6 +58,34 @@ from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
 __version__ = "1.7.6"
+__citation__ = """
+@Article{Blauth2021cashocs,
+    author   = {Sebastian Blauth},
+    journal  = {SoftwareX},
+    title    = {{cashocs: A Computational, Adjoint-Based Shape Optimization and
+        Optimal Control Software}},
+    year     = {2021},
+    issn     = {2352-7110},
+    pages    = {100646},
+    volume   = {13},
+    doi      = {https://doi.org/10.1016/j.softx.2020.100646},
+    keywords = {PDE constrained optimization, Adjoint approach, Shape optimization,
+        Optimal control},
+}
+
+@Article{Blauth2021Nonlinear,
+    author   = {Sebastian Blauth},
+    journal  = {SIAM J. Optim.},
+    title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained
+        {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
+    year     = {2021},
+    number   = {3},
+    pages    = {1658--1689},
+    volume   = {31},
+    doi      = {10.1137/20M1367738},
+    fjournal = {SIAM Journal on Optimization},
+}
+"""
 
 __all__ = [
     "import_mesh",
