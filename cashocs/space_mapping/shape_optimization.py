@@ -381,6 +381,38 @@ class SpaceMapping:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
+    def smooth_deformation(self, a: List[fenics.Function]) -> List[fenics.Function]:
+        """Smooths a deformation vector field with a Poincaré-Steklov operator.
+
+        Args:
+            a: The deformation vector field
+
+        Returns:
+            A smoothed deformation vector field, for the use in the scalar product.
+
+        """
+        sop = self.coarse_model.shape_optimization_problem
+
+        lhs = sop.gradient_problem.form_handler.modified_scalar_product
+        rhs = (
+            fenics.dot(
+                fenics.Constant((0.0, 0.0)),
+                sop.gradient_problem.form_handler.test_vector_field,
+            )
+            * sop.form_handler.dx
+        )
+        bc_helper = fenics.Function(sop.form_handler.deformation_space)
+        bc_helper.vector()[:] = a[0].vector()[:]
+        boundary = fenics.CompiledSubDomain("on_boundary")
+        bcs = [
+            fenics.DirichletBC(sop.form_handler.deformation_space, bc_helper, boundary)
+        ]
+
+        result = [fenics.Function(sop.form_handler.deformation_space)]
+        fenics.solve(lhs == rhs, result[0], bcs)
+
+        return result
+
     def _compute_initial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
@@ -431,7 +463,6 @@ class SpaceMapping:
 
             self.stepsize = 1.0
             self.p_prev[0].vector()[:] = self.p_current[0].vector()[:]
-
             self._update_iterates()
 
             self.iteration += 1

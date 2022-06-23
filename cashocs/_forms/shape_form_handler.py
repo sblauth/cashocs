@@ -163,6 +163,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         modified_scalar_product = _utils.bilinear_boundary_form_modification(
             [scalar_product]
         )[0]
+        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            [scalar_product]
+        )[0]
         retry_assembler_setup = False
         if not self.degree_estimation:
             try:
