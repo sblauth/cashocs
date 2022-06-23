@@ -14,7 +14,7 @@ autodetect: true
 max-line-length: 88
 
 bandit:
-  run: true
+  run: false
 
 dodgy:
   run: true
@@ -55,7 +55,7 @@ pyflakes:
   run: true
 
 pylint:
-  run: true
+  run: false
   options:
     max-line-length: 88
 
