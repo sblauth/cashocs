@@ -170,12 +170,24 @@ class _NewtonSolver:
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Newton Iteration {self.iterations:2d} - "
-                f"residual (abs):  {self.res:.3e} (tol = {self.atol:.3e})    "
-                f"residual (rel):  {self.res / self.res_0:.3e} "
-                f"(tol = {self.rtol:.3e})"
+            prefix = "Newton solver:  "
+
+            if self.iterations % 10 == 0:
+                info_str = (
+                    f"\n{prefix}iter,  "
+                    f"abs. residual (abs. tol),  "
+                    f"rel. residual (rel. tol)\n\n"
+                )
+            else:
+                info_str = ""
+
+            print_str = (
+                f"{prefix}{self.iterations:4d},  "
+                f"{self.res:>13.3e} ({self.atol:.2e}),  "
+                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
             )
+
+            print(info_str + print_str)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
