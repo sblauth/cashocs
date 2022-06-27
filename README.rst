@@ -3,39 +3,39 @@
     :align: center
     :target: https://github.com/sblauth/cashocs
 
-.. image:: https://img.shields.io/pypi/v/cashocs
+.. image:: https://img.shields.io/pypi/v/cashocs?style=flat-square
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://img.shields.io/conda/vn/conda-forge/cashocs
+.. image:: https://img.shields.io/conda/vn/conda-forge/cashocs?style=flat-square
     :target: https://anaconda.org/conda-forge/cashocs
 
-.. image:: https://img.shields.io/pypi/pyversions/cashocs
+.. image:: https://img.shields.io/pypi/pyversions/cashocs?style=flat-square
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.4035939-blue
+.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.4035939-informational?style=flat-square
    :target: https://doi.org/10.5281/zenodo.4035939
 
-.. image:: https://img.shields.io/pypi/l/cashocs?color=informational
+.. image:: https://img.shields.io/pypi/l/cashocs?color=informational&style=flat-square
     :target: https://pypi.org/project/cashocs/
 
-.. image:: https://img.shields.io/pypi/dm/cashocs?color=informational
+.. image:: https://img.shields.io/pypi/dm/cashocs?color=informational&style=flat-square
     :target: https://pypistats.org/packages/cashocs
 
 |
 
-.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=tests
+.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=tests&style=flat-square
     :target: https://github.com/sblauth/cashocs/actions/workflows/cached_tests.yml
 
-.. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen
+.. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
     :target: https://codecov.io/gh/sblauth/cashocs
 
-.. image:: https://img.shields.io/lgtm/grade/python/github/sblauth/cashocs
+.. image:: https://img.shields.io/lgtm/grade/python/github/sblauth/cashocs?style=flat-square
     :target: https://lgtm.com/projects/g/sblauth/cashocs
 
-.. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest
+.. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest&style=flat-square
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
     :target: https://github.com/psf/black
 
 |
