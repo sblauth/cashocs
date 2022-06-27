@@ -104,6 +104,8 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
+    prefix = "Picard iteration:  "
+
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9
     gamma = 0.9
@@ -116,11 +118,13 @@ def picard_iteration(
             res_0 = res
             tol = atol + rtol * res_0
         if is_printing:
-            print(
-                f"Picard iteration {i:d}: "
-                f"||res|| (abs): {res:.3e}   "
-                f"||res|| (rel): {res/res_0:.3e}"
-            )
+            if i % 10 == 0:
+                info_str = f"\n{prefix}iter,  abs. residual,  rel. residual\n\n"
+            else:
+                info_str = ""
+            val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
+
+            print(info_str + val_str)
         if res <= tol:
             break
 

@@ -127,14 +127,25 @@ class ConstrainedSolver(abc.ABC):
 
     def print_results(self) -> None:
         """Prints the results of the current iteration to the console."""
-        strs = [
-            f"{self.solver_name} - Iteration {self.iterations:4d} -",
-            f" Objective value: {self.constrained_problem.current_function_value:.3e}",
-            f"    Constraint violation: {self.constraint_violation:.3e}",
-            f"    Penalty parameter mu: {self.mu:.3e}",
-        ]
+        if (self.iterations - 1) % 10 == 0:
+            info_str = (
+                f"\n{self.solver_name}:  iter,  "
+                f"cost function,  "
+                f"constr. violation,  "
+                f"      mu\n\n"
+            )
+        else:
+            info_str = ""
+
+        val_str = (
+            f"{self.solver_name}:  {self.iterations:4d},  "
+            f"{self.constrained_problem.current_function_value:>13.3e},  "
+            f"{self.constraint_violation:>17.3e},  "
+            f"{self.mu:.2e}"
+        )
+
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print("".join(strs))
+            print(info_str + val_str)
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -162,7 +173,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         # pylint: disable=invalid-name
         self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
-        self.solver_name = "Augmented Lagrangian method"
+        self.solver_name = "Augmented Lagrangian"
 
     # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
@@ -445,7 +456,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
-        self.solver_name = "Quadratic Penalty Method"
+        self.solver_name = "Quadratic Penalty"
 
     def solve(
         self,
