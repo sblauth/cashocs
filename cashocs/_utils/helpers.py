@@ -169,7 +169,7 @@ def parse_remesh() -> Tuple[bool, Optional[str]]:
         action="store_true",
         help="Flag which indicates whether remeshing has been performed",
     )
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     temp_dir: Optional[str] = args.temp_dir or None
     cashocs_remesh_flag = bool(args.cashocs_remesh)
