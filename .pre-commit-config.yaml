@@ -1,14 +1,28 @@
 repos:
+
+  - repo: https://github.com/trailofbits/pip-audit
+    rev: v2.3.4
+    hooks:
+      - id: pip-audit
+        args: ["."]
+
+  - repo: https://github.com/regebro/pyroma
+    rev: "4.0"
+    hooks:
+      - id: pyroma
+
   - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:
       - id: black
 
+      
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:
       - id: isort
 
+      
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
     hooks:
@@ -16,16 +30,45 @@ repos:
         additional_dependencies: ["toml"]
         files: cashocs/
 
+        
   - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
     hooks:
       - id: flake8
         files: cashocs/
 
+        
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.4
+    hooks:
+      - id: bandit
+        files: cashocs/
+        
+        
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.14.3
+    hooks:
+      - id: pylint
+        files: cashocs/
+
+        
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.960
+    rev: v0.961
     hooks:
       - id: mypy
         files: cashocs/
         additional_dependencies: ["numpy"]
         args: [--config-file, .mypy.ini]
+
+        
+  - repo: https://github.com/PyCQA/prospector
+    rev: 1.7.7
+    hooks:
+      - id: prospector
+        additional_dependencies:
+          - ".[with_mypy,with_bandit,with_pyroma]"
+        files: cashocs/
+        
+ 
+ci:
+  skip: [pip-audit]

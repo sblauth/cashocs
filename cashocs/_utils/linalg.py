@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
@@ -31,6 +32,23 @@ from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
     from cashocs import types
+
+iterative_ksp_options: List[List[Union[str, int, float]]] = [
+    ["ksp_type", "cg"],
+    ["pc_type", "hypre"],
+    ["pc_hypre_type", "boomeramg"],
+    ["pc_hypre_boomeramg_strong_threshold", 0.7],
+    ["ksp_rtol", 1e-20],
+    ["ksp_atol", 1e-50],
+    ["ksp_max_it", 1000],
+]
+
+direct_ksp_options: List[List[Union[str, int, float]]] = [
+    ["ksp_type", "preonly"],
+    ["pc_type", "lu"],
+    ["pc_factor_mat_solver_type", "mumps"],
+    ["mat_mumps_icntl_24", 1],
+]
 
 
 def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
@@ -155,7 +173,6 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) ->
 
 # noinspection PyUnresolvedReferences
 def solve_linear_problem(
-    ksp: Optional[PETSc.KSP] = None,
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     x: Optional[PETSc.Vec] = None,
@@ -166,8 +183,6 @@ def solve_linear_problem(
     """Solves a finite dimensional linear problem.
 
     Args:
-        ksp: The PETSc KSP object used to solve the problem. None means that the solver
-            mumps is used (default is None).
         A: The PETSc matrix corresponding to the left-hand side of the problem. If
             this is None, then the matrix stored in the ksp object is used. Raises
             an error if no matrix is stored. Default is None.
@@ -189,16 +204,7 @@ def solve_linear_problem(
         The solution vector.
 
     """
-    if ksp is None:
-        ksp = PETSc.KSP().create()
-        options: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "lu"],
-            ["pc_factor_mat_solver_type", "mumps"],
-            ["mat_mumps_icntl_24", 1],
-        ]
-
-        setup_petsc_options([ksp], [options])
+    ksp = PETSc.KSP().create()
 
     if A is not None:
         ksp.setOperators(A)
@@ -219,8 +225,12 @@ def solve_linear_problem(
     if x is None:
         x, _ = A.getVecs()
 
-    if ksp_options is not None:
-        setup_petsc_options([ksp], [ksp_options])
+    if ksp_options is None:
+        options = copy.deepcopy(direct_ksp_options)
+    else:
+        options = ksp_options
+
+    setup_petsc_options([ksp], [options])
 
     if rtol is not None:
         ksp.rtol = rtol
@@ -242,7 +252,6 @@ def assemble_and_solve_linear(
     A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
     x: Optional[PETSc.Vec] = None,
-    ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
@@ -257,8 +266,6 @@ def assemble_and_solve_linear(
         b: A vector into which the rhs is assembled. Default is ``None``.
         x: The PETSc vector that stores the solution of the problem. If this is
             None, then a new vector will be created (and returned).
-        ksp: The PETSc KSP object used to solve the problem. None means that the solver
-            mumps is used (default is None).
         ksp_options: The options for the PETSc ksp object. If this is None (the default)
             a direct method is used.
         rtol: The relative tolerance used in case an iterative solver is used for
@@ -278,7 +285,6 @@ def assemble_and_solve_linear(
         lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
     )
     solution = solve_linear_problem(
-        ksp=ksp,
         A=A_matrix,
         b=b_vector,
         x=x,

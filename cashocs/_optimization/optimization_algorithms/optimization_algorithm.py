@@ -69,8 +69,6 @@ class OptimizationAlgorithm(abc.ABC):
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
 
-        self.require_control_constraints = False
-
         self.requires_remeshing = False
         self.remeshing_its = False
 

@@ -24,7 +24,6 @@ from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 import ufl.algorithms
 
@@ -89,6 +88,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.control_spaces = [self.deformation_space]
         self.control_dim = 1
+        self.require_control_constraints = False
 
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
@@ -369,9 +369,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                     ["ksp_atol", 1e-50],
                     ["ksp_max_it", 100],
                 ]
-                # noinspection PyUnresolvedReferences
-                self.ksp_mu = PETSc.KSP().create()
-                _utils.setup_petsc_options([self.ksp_mu], [self.options_mu])
 
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)
@@ -454,7 +451,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.bcs_mu,
                         A=self.A_mu_matrix,
                         b=self.b_mu,
-                        ksp=self.ksp_mu,
                         ksp_options=self.options_mu,
                     )
 

@@ -23,7 +23,6 @@ from typing import List, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 
 from cashocs import _utils
@@ -466,9 +465,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        ksp = PETSc.KSP().create()
-        _utils.setup_petsc_options([ksp], [options])
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (
@@ -486,7 +482,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond = fenics.Function(function_space_dg0)
 
         _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+            lhs, rhs, x=cond.vector().vec(), ksp_options=options
         )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
@@ -524,9 +520,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        ksp = PETSc.KSP().create()
-        _utils.setup_petsc_options([ksp], [options])
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (
@@ -544,7 +537,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond = fenics.Function(function_space_dg0)
 
         _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+            lhs, rhs, x=cond.vector().vec(), ksp_options=options
         )
         cond.vector().apply("")
 
