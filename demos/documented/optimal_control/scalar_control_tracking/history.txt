@@ -1,18 +1,29 @@
-Iteration    0 -  Objective value:  4.983e-01    Gradient norm:  4.122e-03 (abs)
 
-Iteration    1 -  Objective value:  4.983e-01    Gradient norm:  1.005e+00 (rel)    Step size:  1.000e+00
-Iteration    2 -  Objective value:  4.983e-01    Gradient norm:  1.015e+00 (rel)    Step size:  2.000e+00
-Iteration    3 -  Objective value:  4.982e-01    Gradient norm:  1.036e+00 (rel)    Step size:  4.000e+00
-Iteration    4 -  Objective value:  4.980e-01    Gradient norm:  1.078e+00 (rel)    Step size:  8.000e+00
-Iteration    5 -  Objective value:  4.977e-01    Gradient norm:  1.165e+00 (rel)    Step size:  1.600e+01
-Iteration    6 -  Objective value:  4.969e-01    Gradient norm:  1.353e+00 (rel)    Step size:  3.200e+01
-Iteration    7 -  Objective value:  4.946e-01    Gradient norm:  1.789e+00 (rel)    Step size:  6.400e+01
-Iteration    8 -  Objective value:  4.854e-01    Gradient norm:  2.921e+00 (rel)    Step size:  1.280e+02
-Iteration    9 -  Objective value:  4.264e-01    Gradient norm:  6.254e+00 (rel)    Step size:  2.560e+02
-Iteration   10 -  Objective value:  6.219e-03    Gradient norm:  2.574e+00 (rel)    Step size:  5.120e+02
-Iteration   11 -  Objective value:  1.332e-06    Gradient norm:  4.000e-02 (rel)    Step size:  1.250e-01
-Iteration   12 -  Objective value:  1.131e-08    Gradient norm:  3.682e-03 (rel)    Step size:  1.000e+00
-Iteration   13 -  Objective value:  1.691e-14    Gradient norm:  4.503e-06 (rel)    Step size:  1.000e+00
+iter,  cost function,  rel. grad. norm,  abs. grad. norm,  step size
 
-Statistics --- Total iterations:    13 --- Final objective value:  1.691e-14 --- Final gradient norm:  4.503e-06 (rel)
-           --- State equations solved:  17 --- Adjoint equations solved:  14
+   0,      4.983e-01,        1.000e+00,        4.122e-03,  
+
+   1,      4.983e-01,        1.005e+00,        4.143e-03,  1.000e+00
+   2,      4.983e-01,        1.015e+00,        4.185e-03,  2.000e+00
+   3,      4.982e-01,        1.036e+00,        4.269e-03,  4.000e+00
+   4,      4.980e-01,        1.078e+00,        4.442e-03,  8.000e+00
+   5,      4.977e-01,        1.165e+00,        4.802e-03,  1.600e+01
+   6,      4.969e-01,        1.353e+00,        5.578e-03,  3.200e+01
+   7,      4.946e-01,        1.789e+00,        7.373e-03,  6.400e+01
+   8,      4.854e-01,        2.921e+00,        1.204e-02,  1.280e+02
+   9,      4.264e-01,        6.254e+00,        2.578e-02,  2.560e+02
+
+iter,  cost function,  rel. grad. norm,  abs. grad. norm,  step size
+
+  10,      6.219e-03,        2.574e+00,        1.061e-02,  5.120e+02
+  11,      1.332e-06,        4.000e-02,        1.649e-04,  1.250e-01
+  12,      1.131e-08,        3.682e-03,        1.518e-05,  1.000e+00
+  13,      1.691e-14,        4.503e-06,        1.856e-08,  1.000e+00
+
+Optimization was successful.
+Statistics:
+    total iterations:   13
+    final objective value:  1.691e-14
+    final gradient norm:    4.503e-06
+    total number of state systems solved:     17
+    total number of adjoint systems solved:   14

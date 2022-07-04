@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional, TYPE_CHECKING
 
 import fenics
-from petsc4py import PETSc
 
 from cashocs import _utils
 from cashocs import nonlinear_solvers
@@ -69,10 +68,6 @@ class AdjointProblem(pde_problem.PDEProblem):
             "StateSystem", "picard_verbose"
         )
 
-        # noinspection PyUnresolvedReferences
-        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        _utils.setup_petsc_options(self.ksps, self.form_handler.adjoint_ksp_options)
-
         # pylint: disable=invalid-name
         self.A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
@@ -114,7 +109,6 @@ class AdjointProblem(pde_problem.PDEProblem):
                         A=self.A_tensors[-1 - i],
                         b=self.b_tensors[-1 - i],
                         x=self.adjoints[-1 - i].vector().vec(),
-                        ksp=self.ksps[-1 - i],
                         ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
                     )
                     self.adjoints[-1 - i].vector().apply("")
@@ -132,7 +126,6 @@ class AdjointProblem(pde_problem.PDEProblem):
                     inner_inexact=False,
                     inner_verbose=False,
                     inner_max_its=2,
-                    ksps=self.ksps[::-1],
                     ksp_options=self.form_handler.adjoint_ksp_options[::-1],
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],

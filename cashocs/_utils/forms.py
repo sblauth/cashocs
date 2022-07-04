@@ -179,6 +179,8 @@ def moreau_yosida_regularization(
     if shift_upper is None:
         shift_upper = fenics.Constant(0.0)
 
+    reg = []
+
     if lower_threshold is not None:
         reg_lower = (
             fenics.Constant(1 / (2 * gamma))
@@ -191,6 +193,7 @@ def moreau_yosida_regularization(
             )
             * measure
         )
+        reg.append(reg_lower)
     if upper_threshold is not None:
         reg_upper = (
             fenics.Constant(1 / (2 * gamma))
@@ -203,19 +206,9 @@ def moreau_yosida_regularization(
             )
             * measure
         )
+        reg.append(reg_upper)
 
-    if reg_lower is not None and reg_upper is not None:
-        return reg_lower + reg_upper
-    elif reg_lower is not None and reg_upper is None:
-        return reg_lower
-    elif reg_lower is None and reg_upper is not None:
-        return reg_upper
-    else:
-        raise _exceptions.InputError(
-            "cashocs._utils.moreau_yosida_regularization",
-            "upper_threshold, lower_threshold",
-            "At least one of the threshold parameters has to be defined.",
-        )
+    return summation(reg)
 
 
 def create_dirichlet_bcs(

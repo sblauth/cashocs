@@ -27,7 +27,6 @@ from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 
 from cashocs import _loggers
 from cashocs import _utils
@@ -105,22 +104,6 @@ class HessianProblem:
         self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
 
         self.no_sensitivity_solves = 0
-        # noinspection PyUnresolvedReferences
-        self.state_ksps = [
-            PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
-        ]
-        _utils.setup_petsc_options(self.state_ksps, self.form_handler.state_ksp_options)
-        # noinspection PyUnresolvedReferences
-        self.adjoint_ksps = [
-            PETSc.KSP().create() for _ in range(self.form_handler.state_dim)
-        ]
-        _utils.setup_petsc_options(
-            self.adjoint_ksps, self.form_handler.adjoint_ksp_options
-        )
-
-        # Initialize the PETSc Krylov solver for the Riesz projection problems
-        # noinspection PyUnresolvedReferences
-        self.ksps = [PETSc.KSP().create() for _ in range(self.control_dim)]
 
         option: List[List[Union[str, int, float]]] = [
             ["ksp_type", "cg"],
@@ -132,12 +115,8 @@ class HessianProblem:
             ["ksp_max_it", 100],
         ]
         self.riesz_ksp_options: types.KspOptions = []
-        for i in range(self.control_dim):
+        for _ in range(self.control_dim):
             self.riesz_ksp_options.append(option)
-
-        _utils.setup_petsc_options(self.ksps, self.riesz_ksp_options)
-        for i, ksp in enumerate(self.ksps):
-            ksp.setOperators(self.form_handler.riesz_projection_matrices[i])
 
     def _init_helper_functions(self) -> None:
         """Initializes the helper functions."""
@@ -212,7 +191,6 @@ class HessianProblem:
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
                     x=self.states_prime[i].vector().vec(),
-                    ksp=self.state_ksps[i],
                     ksp_options=self.form_handler.state_ksp_options[i],
                 )
                 self.states_prime[i].vector().apply("")
@@ -223,7 +201,6 @@ class HessianProblem:
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
                     x=self.adjoints_prime[-1 - i].vector().vec(),
-                    ksp=self.adjoint_ksps[-1 - i],
                     ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
                 )
                 self.adjoints_prime[-1 - i].vector().apply("")
@@ -241,7 +218,6 @@ class HessianProblem:
                 inner_inexact=False,
                 inner_verbose=False,
                 inner_max_its=2,
-                ksps=self.state_ksps,
                 ksp_options=self.form_handler.state_ksp_options,
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
@@ -260,7 +236,6 @@ class HessianProblem:
                 inner_inexact=False,
                 inner_verbose=False,
                 inner_max_its=2,
-                ksps=self.adjoint_ksps,
                 ksp_options=self.form_handler.adjoint_ksp_options,
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
@@ -273,7 +248,7 @@ class HessianProblem:
             ).vec()
 
             _utils.solve_linear_problem(
-                self.ksps[i],
+                A=self.form_handler.riesz_projection_matrices[i],
                 b=b,
                 x=out[i].vector().vec(),
                 ksp_options=self.riesz_ksp_options[i],
