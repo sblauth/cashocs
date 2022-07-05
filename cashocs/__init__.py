@@ -57,7 +57,6 @@ from cashocs.nonlinear_solvers import damped_newton_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-
 __version__ = "1.7.8"
 __citation__ = """
 @Article{Blauth2021cashocs,
