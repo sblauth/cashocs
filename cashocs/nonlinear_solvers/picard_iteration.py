@@ -52,6 +52,30 @@ def _setup_obj(obj: T, dim: int) -> Union[T, List[None]]:
         return obj
 
 
+def _create_homogenized_bcs(
+    bcs_list: List[List[fenics.DirichletBC]],
+) -> List[List[fenics.DirichletBC]]:
+    """Copies the bcs_list and homogenizes the boundary conditions.
+
+    Args:
+        bcs_list: The list of boundary conditions
+
+    Returns:
+        The homogenized list of boundary conditions
+
+    """
+    bcs_list_hom = []
+    for i in range(len(bcs_list)):
+        temp_list = []
+        for bc in bcs_list[i]:
+            bc_hom = fenics.DirichletBC(bc)
+            bc_hom.homogenize()
+            temp_list.append(bc_hom)
+        bcs_list_hom.append(temp_list)
+
+    return bcs_list_hom
+
+
 # noinspection PyUnresolvedReferences,PyPep8Naming
 def picard_iteration(
     form_list: Union[List[ufl.form], ufl.Form],
@@ -103,14 +127,7 @@ def picard_iteration(
     form_list = _utils.enlist(form_list)
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
-    bcs_list_hom = []
-    for bc_list in bcs_list:
-        bc_list_hom = []
-        for bc in bc_list:
-            bc_hom = fenics.DirichletBC(bc)
-            bc_hom.homogenize()
-            bc_list_hom.append(bc_hom)
-        bcs_list_hom.append(bc_list_hom)
+    bcs_list_hom = _create_homogenized_bcs(bcs_list)
 
     prefix = "Picard iteration:  "
 
