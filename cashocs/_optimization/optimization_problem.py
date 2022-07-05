@@ -317,12 +317,9 @@ class OptimizationProblem(abc.ABC):
 
         if ksp_options is None:
             self.ksp_options: types.KspOptions = []
-            option: List[List[Union[str, int, float]]] = [
-                ["ksp_type", "preonly"],
-                ["pc_type", "lu"],
-                ["pc_factor_mat_solver_type", "mumps"],
-                ["mat_mumps_icntl_24", 1],
-            ]
+            option: List[List[Union[str, int, float]]] = copy.deepcopy(
+                _utils.linalg.direct_ksp_options
+            )
 
             for _ in range(self.state_dim):
                 self.ksp_options.append(option)
@@ -365,7 +362,7 @@ class OptimizationProblem(abc.ABC):
             self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
-            if self.use_scaling and self.scalar_tracking_legacy_mode:
+            if self.scalar_tracking_legacy_mode:
                 raise _exceptions.InputError(
                     "OptimizationProblem",
                     "scalar_tracking_forms",

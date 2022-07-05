@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional, TYPE_CHECKING
 
 import fenics
-from petsc4py import PETSc
 
 from cashocs import _utils
 from cashocs import nonlinear_solvers
@@ -70,19 +69,6 @@ class StateProblem(pde_problem.PDEProblem):
         self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
         self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
         self.newton_iter = self.config.getint("StateSystem", "newton_iter")
-
-        self.newton_atols = [1] * self.form_handler.state_dim
-
-        # noinspection PyUnresolvedReferences
-        self.ksps = [PETSc.KSP().create() for _ in range(self.form_handler.state_dim)]
-        _utils.setup_petsc_options(self.ksps, self.form_handler.state_ksp_options)
-
-        # adapt the tolerances so that the Newton system can be solved successfully
-        if not self.form_handler.state_is_linear:
-            for ksp in self.ksps:
-                ksp.setTolerances(
-                    rtol=self.newton_rtol / 100, atol=self.newton_atol / 100
-                )
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -132,7 +118,6 @@ class StateProblem(pde_problem.PDEProblem):
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
                             x=self.states[i].vector().vec(),
-                            ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
                         )
                         self.states[i].vector().apply("")
@@ -149,7 +134,6 @@ class StateProblem(pde_problem.PDEProblem):
                             damped=self.newton_damped,
                             inexact=self.newton_inexact,
                             verbose=self.newton_verbose,
-                            ksp=self.ksps[i],
                             ksp_options=self.form_handler.state_ksp_options[i],
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
@@ -168,7 +152,6 @@ class StateProblem(pde_problem.PDEProblem):
                     inner_inexact=self.newton_inexact,
                     inner_verbose=self.newton_verbose,
                     inner_max_its=self.newton_iter,
-                    ksps=self.ksps,
                     ksp_options=self.form_handler.state_ksp_options,
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
