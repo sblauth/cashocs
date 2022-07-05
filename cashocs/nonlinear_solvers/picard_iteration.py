@@ -107,6 +107,14 @@ def picard_iteration(
     form_list = _utils.enlist(form_list)
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
+    bcs_list_hom = []
+    for bc_list in bcs_list:
+        bc_list_hom = []
+        for bc in bc_list:
+            bc_hom = fenics.DirichletBC(bc)
+            bc_hom.homogenize()
+            bc_list_hom.append(bc_hom)
+        bcs_list_hom.append(bc_list_hom)
 
     res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
     eta_max = 0.9
@@ -118,7 +126,7 @@ def picard_iteration(
         res = 0.0
         for j in range(len(u_list)):
             fenics.assemble(form_list[j], tensor=res_tensor[j])
-            for bc in bcs_list[j]:
+            for bc in bcs_list_hom[j]:
                 bc.apply(res_tensor[j])
 
             # TODO: Include very first solve to adjust absolute tolerance
