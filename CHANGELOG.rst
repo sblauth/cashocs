@@ -7,8 +7,8 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-in development
---------------
+1.8.0 (July 6, 2022)
+--------------------
 
 * cashocs now has a better memory efficiency
 

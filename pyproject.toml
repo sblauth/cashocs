@@ -1,6 +1,6 @@
 [project]
 name = "cashocs"
-version = "1.7.6"
+version = "1.8.0"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 dependencies = [
   "meshio>=4.1.0",
