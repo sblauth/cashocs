@@ -277,6 +277,6 @@ def compute_convergence_rates(
         rates.append(rate)
 
     if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        print(f"Taylor test convergence rate: {rates}")
+        print(f"Taylor test convergence rate: {rates}", flush=True)
 
     return rates

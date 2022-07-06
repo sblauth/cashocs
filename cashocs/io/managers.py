@@ -222,7 +222,7 @@ class HistoryManager:
 
         """
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(solver))
+            print(generate_output_str(solver), flush=True)
 
     def print_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -254,7 +254,7 @@ class HistoryManager:
 
         """
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(solver))
+            print(generate_summary_str(solver), flush=True)
 
     def print_file_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm

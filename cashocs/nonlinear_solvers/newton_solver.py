@@ -187,7 +187,7 @@ class _NewtonSolver:
                 f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
             )
 
-            print(info_str + print_str)
+            print(info_str + print_str, flush=True)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
@@ -237,7 +237,7 @@ class _NewtonSolver:
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.")
+                print("Residual vanishes, input is already a solution.", flush=True)
             return self.u
 
         self.res = self.res_0
@@ -297,7 +297,8 @@ class _NewtonSolver:
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(
                     f"\nNewton Solver converged "
-                    f"after {self.iterations:d} iterations.\n"
+                    f"after {self.iterations:d} iterations.\n",
+                    flush=True,
                 )
             return True
 

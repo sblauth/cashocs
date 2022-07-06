@@ -230,7 +230,8 @@ def convert(argv: Optional[List[str]] = None) -> None:
     end_time = time.time()
     print(
         f"cashocs - info: Successfully converted {inputfile} to {outputfile} "
-        f"in {end_time - start_time:.2f} s"
+        f"in {end_time - start_time:.2f} s",
+        flush=True,
     )
 
 

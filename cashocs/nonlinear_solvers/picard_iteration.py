@@ -149,7 +149,7 @@ def picard_iteration(
                 info_str = ""
             val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
 
-            print(info_str + val_str)
+            print(info_str + val_str, flush=True)
         if res <= tol:
             break
 
@@ -184,7 +184,7 @@ def picard_iteration(
             )
 
     if is_printing:
-        print("")
+        print("", flush=True)
 
 
 def _compute_residual(
