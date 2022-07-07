@@ -1,11 +1,5 @@
 repos:
 
-  - repo: https://github.com/trailofbits/pip-audit
-    rev: v2.4.0
-    hooks:
-      - id: pip-audit
-        args: ["."]
-
   - repo: https://github.com/regebro/pyroma
     rev: "4.0"
     hooks:

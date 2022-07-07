@@ -1,13 +1,3 @@
-[project]
-name = "cashocs"
-version = "1.8.0"
-description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
-dependencies = [
-  "meshio>=4.1.0",
-  "numpy>=1.21.0",
-  "typing_extensions"
-]
-
 [build-system]
 requires = [
     "setuptools>=51",
