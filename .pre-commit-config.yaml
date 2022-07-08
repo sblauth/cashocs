@@ -62,7 +62,3 @@ repos:
         additional_dependencies:
           - ".[with_mypy,with_bandit,with_pyroma]"
         files: cashocs/
-        
- 
-ci:
-  skip: [pip-audit]
