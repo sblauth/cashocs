@@ -25,29 +25,10 @@ from typing import Any
 import fenics
 
 
-class ColorFormatter(logging.Formatter):
+class CashocsFormatter(logging.Formatter):
     """Logging Formatter for colored output."""
 
-    black = "\x1b[0;30m"
-    grey = "\x1b[0;37m"
-    green = "\x1b[0;32m"
-    yellow = "\x1b[0;33m"
-    red = "\x1b[0;31m"
-    bold_red = "\x1b[1;31m"
-    purple = "\x1b[0;35m"
-    blue = "\x1b[0;34m"
-    light_blue = "\x1b[0;36m"
-    reset = "\x1b[0m"
-
     my_format = "%(name)s - %(levelname)s - %(message)s"
-
-    FORMATS = {
-        logging.DEBUG: green + my_format + reset,
-        logging.INFO: blue + my_format + reset,
-        logging.WARNING: yellow + my_format + reset,
-        logging.ERROR: red + my_format + reset,
-        logging.CRITICAL: bold_red + my_format + reset,
-    }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """See base class."""
@@ -55,9 +36,7 @@ class ColorFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """See base class."""
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-
+        formatter = logging.Formatter(self.my_format)
         return formatter.format(record)
 
 
@@ -73,7 +52,7 @@ class LogLevel:
 
 _cashocs_logger = logging.getLogger("cashocs")
 _cashocs_handler = logging.StreamHandler()
-_cashocs_formatter = ColorFormatter()
+_cashocs_formatter = CashocsFormatter()
 _cashocs_handler.setFormatter(_cashocs_formatter)
 _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
