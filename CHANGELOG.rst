@@ -11,6 +11,8 @@ in development
 
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 
+* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+
 
 1.8.0 (July 6, 2022)
 --------------------
