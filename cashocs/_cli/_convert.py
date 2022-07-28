@@ -47,7 +47,7 @@ def _generate_parser() -> argparse.ArgumentParser:
 
 def check_file_extension(file: str, required_extension: str) -> None:
     """Checks whether a given file extension is correct."""
-    if not file.split(".")[-1] == required_extension:
+    if not file.rsplit(".", 1)[-1] == required_extension:
         raise Exception(
             f"Cannot use {file} due to wrong format.",
         )
@@ -207,7 +207,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     check_file_extension(inputfile, "msh")
     check_file_extension(outputfile, "xdmf")
 
-    ostring = outputfile.split(".")[0]
+    ostring = outputfile.rsplit(".", 1)[0]
 
     mesh_collection = meshio.read(inputfile)
 
