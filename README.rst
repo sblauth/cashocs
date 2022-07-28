@@ -29,8 +29,8 @@
 .. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
     :target: https://codecov.io/gh/sblauth/cashocs
 
-.. image:: https://img.shields.io/lgtm/grade/python/github/sblauth/cashocs?style=flat-square
-    :target: https://lgtm.com/projects/g/sblauth/cashocs
+.. image:: https://img.shields.io/codacy/grade/4debea4be12c495391e1310025851e55?style=flat-square   :alt: Codacy grade
+    :target: https://app.codacy.com/gh/sblauth/cashocs/dashboard?branch=main
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest&style=flat-square
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
