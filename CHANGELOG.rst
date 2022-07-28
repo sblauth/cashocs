@@ -11,6 +11,10 @@ in development
 
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 
+* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+
+* implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
+
 
 1.8.0 (July 6, 2022)
 --------------------
@@ -39,7 +43,7 @@ in development
 
 
 1.6.0 (April 4, 2022)
---------------------
+---------------------
 
 * Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_constraints.html>`_.
 

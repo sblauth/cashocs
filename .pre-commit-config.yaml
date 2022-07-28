@@ -40,14 +40,14 @@ repos:
         
         
   - repo: https://github.com/PyCQA/pylint
-    rev: v2.14.4
+    rev: v2.14.5
     hooks:
       - id: pylint
         files: cashocs/
 
         
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.961
+    rev: v0.971
     hooks:
       - id: mypy
         files: cashocs/
@@ -62,4 +62,3 @@ repos:
         additional_dependencies:
           - ".[with_mypy,with_bandit,with_pyroma]"
         files: cashocs/
-        

@@ -51,6 +51,7 @@ from cashocs.geometry import interval_mesh
 from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
+from cashocs.io import convert
 from cashocs.io import create_config
 from cashocs.io import load_config
 from cashocs.nonlinear_solvers import damped_newton_solve
@@ -115,4 +116,5 @@ __all__ = [
     "ScalarTrackingFunctional",
     "MinMaxFunctional",
     "interval_mesh",
+    "convert",
 ]
