@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import abc
 import collections
+import json
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -51,6 +52,8 @@ class FineModel(abc.ABC):
 
     """
 
+    cost_functional_value: float
+
     def __init__(self, mesh: fenics.Mesh):
         """Initializes self.
 
@@ -60,7 +63,6 @@ class FineModel(abc.ABC):
 
         """
         self.mesh = fenics.Mesh(mesh)
-        self.cost_functional_value = None
 
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
@@ -381,6 +383,22 @@ class SpaceMapping:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
+        self.space_mapping_history: Dict[str, List[float]] = {
+            "cost_function_value": [],
+            "eps": [],
+            "stepsize": [],
+            "MeshQuality": [],
+        }
+
+    def update_history(self) -> None:
+        """Updates the space mapping history."""
+        self.space_mapping_history["cost_function_value"].append(
+            self.fine_model.cost_functional_value
+        )
+        self.space_mapping_history["eps"].append(self.eps)
+        self.space_mapping_history["stepsize"].append(self.stepsize)
+        self.space_mapping_history["MeshQuality"].append(self.current_mesh_quality)
+
     def smooth_deformation(self, a: List[fenics.Function]) -> List[fenics.Function]:
         """Smooths a deformation vector field with a Poincaré-Steklov operator.
 
@@ -443,6 +461,7 @@ class SpaceMapping:
         ]
         self.eps = self._compute_eps()
 
+        self.update_history()
         if self.verbose:
             print(
                 f"Space Mapping - Iteration {self.iteration:3d}:"
@@ -469,6 +488,7 @@ class SpaceMapping:
             self.current_mesh_quality = geometry.compute_mesh_quality(
                 self.fine_model.mesh
             )
+            self.update_history()
             if self.verbose:
                 print(
                     f"Space Mapping - Iteration {self.iteration:3d}:"
@@ -489,6 +509,8 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
+            with open("./sm_history.json", "w") as file:
+                json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
                 f"Space mapping iterations: {self.iteration:4d} --- "

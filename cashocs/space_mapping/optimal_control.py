@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import abc
 import collections
+import json
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -386,6 +387,20 @@ class SpaceMapping:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
+        self.space_mapping_history: Dict[str, List[float]] = {
+            "cost_function_value": [],
+            "eps": [],
+            "stepsize": [],
+        }
+
+    def update_history(self) -> None:
+        """Updates the space mapping history."""
+        self.space_mapping_history["cost_function_value"].append(
+            self.fine_model.cost_functional_value
+        )
+        self.space_mapping_history["eps"].append(self.eps)
+        self.space_mapping_history["stepsize"].append(self.stepsize)
+
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
@@ -409,6 +424,7 @@ class SpaceMapping:
         )
         self.eps = self._compute_eps()
 
+        self.update_history()
         if self.verbose:
             print(
                 f"Space Mapping - Iteration {self.iteration:3d}:    "
@@ -434,6 +450,7 @@ class SpaceMapping:
             self._update_iterates()
 
             self.iteration += 1
+            self.update_history()
             if self.verbose:
                 print(
                     f"Space Mapping - Iteration {self.iteration:3d}:    "
@@ -453,6 +470,8 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
+            with open("./sm_history.json", "w") as file:
+                json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
                 f"Space mapping iterations: {self.iteration:4d} --- "
