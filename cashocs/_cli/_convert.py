@@ -47,19 +47,19 @@ def _generate_parser() -> argparse.ArgumentParser:
 
 def check_file_extension(file: str, required_extension: str) -> None:
     """Checks whether a given file extension is correct."""
-    if not file.split(".")[-1] == required_extension:
+    if not file.rsplit(".", 1)[-1] == required_extension:
         raise Exception(
             f"Cannot use {file} due to wrong format.",
         )
 
 
 def write_mesh(
-    meshdim: int, points: np.ndarray, cells_dict: dict, ostring: str
+    topological_dimension: int, points: np.ndarray, cells_dict: dict, ostring: str
 ) -> None:
     """Write out the main mesh with meshio.
 
     Args:
-        meshdim: The dimension of the mesh.
+        topological_dimension: The topological dimension of the mesh.
         points: The array of points.
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
@@ -67,9 +67,9 @@ def write_mesh(
 
     """
     cells_str = "triangle"
-    if meshdim == 2:
+    if topological_dimension == 2:
         cells_str = "triangle"
-    elif meshdim == 3:
+    elif topological_dimension == 3:
         cells_str = "tetra"
 
     xdmf_mesh = meshio.Mesh(points=points, cells={cells_str: cells_dict[cells_str]})
@@ -77,7 +77,7 @@ def write_mesh(
 
 
 def write_subdomains(
-    meshdim: int,
+    topological_dimension: int,
     cell_data_dict: dict,
     points: np.ndarray,
     cells_dict: dict,
@@ -86,7 +86,7 @@ def write_subdomains(
     """Writes out a xdmf file with meshio corresponding to the subdomains.
 
     Args:
-        meshdim: The dimension of the mesh.
+        topological_dimension: The topological dimension of the mesh.
         cell_data_dict: The cell_data_dict of the mesh.
         points: The array of points.
         cells_dict: The cells_dict of the mesh.
@@ -95,9 +95,9 @@ def write_subdomains(
 
     """
     cells_str = "triangle"
-    if meshdim == 2:
+    if topological_dimension == 2:
         cells_str = "triangle"
-    elif meshdim == 3:
+    elif topological_dimension == 3:
         cells_str = "tetra"
 
     if "gmsh:physical" in cell_data_dict.keys():
@@ -111,7 +111,7 @@ def write_subdomains(
 
 
 def write_boundaries(
-    meshdim: int,
+    topological_dimension: int,
     cell_data_dict: dict,
     points: np.ndarray,
     cells_dict: dict,
@@ -120,7 +120,7 @@ def write_boundaries(
     """Writes out a xdmf file with meshio corresponding to the boundaries.
 
     Args:
-        meshdim: The dimension of the mesh.
+        topological_dimension: The topological dimension of the mesh.
         cell_data_dict: The cell_data_dict of the mesh.
         points: The array of points.
         cells_dict: The cells_dict of the mesh.
@@ -129,9 +129,9 @@ def write_boundaries(
 
     """
     facet_str = "line"
-    if meshdim == 2:
+    if topological_dimension == 2:
         facet_str = "line"
-    elif meshdim == 3:
+    elif topological_dimension == 3:
         facet_str = "triangle"
 
     if "gmsh:physical" in cell_data_dict.keys():
@@ -144,12 +144,14 @@ def write_boundaries(
             meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
 
 
-def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None:
+def check_for_physical_names(
+    inputfile: str, topological_dimension: int, ostring: str
+) -> None:
     """Checks and extracts physical tags if they are given as strings.
 
     Args:
         inputfile: Path to the input file.
-        meshdim: The dimension of the mesh.
+        topological_dimension: The dimension of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
 
@@ -173,9 +175,9 @@ def check_for_physical_names(inputfile: str, meshdim: int, ostring: str) -> None
                     if '"' in phys_name:
                         phys_name = phys_name.replace('"', "")
 
-                    if phys_dim == meshdim:
+                    if phys_dim == topological_dimension:
                         physical_groups["dx"][phys_name] = phys_tag
-                    elif phys_dim == meshdim - 1:
+                    elif phys_dim == topological_dimension - 1:
                         physical_groups["ds"][phys_name] = phys_tag
 
                 break
@@ -205,7 +207,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     check_file_extension(inputfile, "msh")
     check_file_extension(outputfile, "xdmf")
 
-    ostring = outputfile.split(".")[0]
+    ostring = outputfile.rsplit(".", 1)[0]
 
     mesh_collection = meshio.read(inputfile)
 
@@ -215,22 +217,26 @@ def convert(argv: Optional[List[str]] = None) -> None:
 
     # Check, whether we have a 2D or 3D mesh:
     keyvals = cells_dict.keys()
-    meshdim = 2
+    topological_dimension = 2
     if "tetra" in keyvals:
-        meshdim = 3
+        topological_dimension = 3
     elif "triangle" in keyvals:
-        meshdim = 2
-        points = points[:, :2]
+        topological_dimension = 2
+        # check if geometrical dimension matches topological dimension
+        z_coords = points[:, 2]
+        if np.abs(np.max(z_coords) - np.min(z_coords)) <= 1e-15:
+            points = points[:, :2]
 
-    write_mesh(meshdim, points, cells_dict, ostring)
-    write_subdomains(meshdim, cell_data_dict, points, cells_dict, ostring)
-    write_boundaries(meshdim, cell_data_dict, points, cells_dict, ostring)
-    check_for_physical_names(inputfile, meshdim, ostring)
+    write_mesh(topological_dimension, points, cells_dict, ostring)
+    write_subdomains(topological_dimension, cell_data_dict, points, cells_dict, ostring)
+    write_boundaries(topological_dimension, cell_data_dict, points, cells_dict, ostring)
+    check_for_physical_names(inputfile, topological_dimension, ostring)
 
     end_time = time.time()
     print(
         f"cashocs - info: Successfully converted {inputfile} to {outputfile} "
-        f"in {end_time - start_time:.2f} s"
+        f"in {end_time - start_time:.2f} s",
+        flush=True,
     )
 
 

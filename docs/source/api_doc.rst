@@ -106,6 +106,10 @@ often, so that they are directly callable via ``cashocs.function`` for any of
 the functions shown below. Note, that they are repeated in the API reference for
 their :ref:`respective sub-modules <sub_modules>`.
 
+convert
+*******
+.. autofunction:: cashocs.convert
+
 import_mesh
 ***********
 .. autofunction:: cashocs.import_mesh

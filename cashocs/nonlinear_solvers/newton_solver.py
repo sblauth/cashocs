@@ -170,12 +170,24 @@ class _NewtonSolver:
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Newton Iteration {self.iterations:2d} - "
-                f"residual (abs):  {self.res:.3e} (tol = {self.atol:.3e})    "
-                f"residual (rel):  {self.res / self.res_0:.3e} "
-                f"(tol = {self.rtol:.3e})"
+            prefix = "Newton solver:  "
+
+            if self.iterations % 10 == 0:
+                info_str = (
+                    f"\n{prefix}iter,  "
+                    f"abs. residual (abs. tol),  "
+                    f"rel. residual (rel. tol)\n\n"
+                )
+            else:
+                info_str = ""
+
+            print_str = (
+                f"{prefix}{self.iterations:4d},  "
+                f"{self.res:>13.3e} ({self.atol:.2e}),  "
+                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
             )
+
+            print(info_str + print_str, flush=True)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
@@ -225,7 +237,7 @@ class _NewtonSolver:
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.")
+                print("Residual vanishes, input is already a solution.", flush=True)
             return self.u
 
         self.res = self.res_0
@@ -285,7 +297,8 @@ class _NewtonSolver:
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(
                     f"\nNewton Solver converged "
-                    f"after {self.iterations:d} iterations.\n"
+                    f"after {self.iterations:d} iterations.\n",
+                    flush=True,
                 )
             return True
 
