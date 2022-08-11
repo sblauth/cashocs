@@ -628,6 +628,12 @@ class SpaceMapping:
             return self._compute_bfgs_application(q, out)
         elif self.method == "ncg":
             return self._compute_ncg_direction(q, out)
+        else:
+            raise _exceptions.InputError(
+                "cashocs.space_mapping.optimal_control.SpaceMapping",
+                "method",
+                "The method is not supported.",
+            )
 
     def _compute_steepest_descent_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
