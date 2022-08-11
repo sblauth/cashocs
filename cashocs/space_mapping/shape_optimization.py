@@ -142,7 +142,6 @@ class CoarseModel:
         self._pre_hook = _hook
         self._post_hook = _hook
 
-        # noinspection PyUnresolvedReferences
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
 
@@ -409,24 +408,30 @@ class SpaceMapping:
             A smoothed deformation vector field, for the use in the scalar product.
 
         """
-        sop = self.coarse_model.shape_optimization_problem
+        shape_optimization_problem = self.coarse_model.shape_optimization_problem
+        form_handler = shape_optimization_problem.form_handler
 
-        lhs = sop.gradient_problem.form_handler.modified_scalar_product
+        lhs = form_handler.modified_scalar_product
         rhs = (
-            fenics.dot(
-                fenics.Constant((0.0, 0.0)),
-                sop.gradient_problem.form_handler.test_vector_field,
-            )
-            * sop.form_handler.dx
+            fenics.dot(fenics.Constant((0.0, 0.0)), form_handler.test_vector_field)
+            * shape_optimization_problem.form_handler.dx
         )
-        bc_helper = fenics.Function(sop.form_handler.deformation_space)
+        bc_helper = fenics.Function(
+            shape_optimization_problem.form_handler.deformation_space
+        )
         bc_helper.vector()[:] = a[0].vector()[:]
         boundary = fenics.CompiledSubDomain("on_boundary")
         bcs = [
-            fenics.DirichletBC(sop.form_handler.deformation_space, bc_helper, boundary)
+            fenics.DirichletBC(
+                shape_optimization_problem.form_handler.deformation_space,
+                bc_helper,
+                boundary,
+            )
         ]
 
-        result = [fenics.Function(sop.form_handler.deformation_space)]
+        result = [
+            fenics.Function(shape_optimization_problem.form_handler.deformation_space)
+        ]
         fenics.solve(lhs == rhs, result[0], bcs)
 
         return result
@@ -450,7 +455,7 @@ class SpaceMapping:
         self._compute_initial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()
+        self.parameter_extraction._solve()  # pylint: disable=protected-access
         self.p_current[0].vector()[
             :
         ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -509,7 +514,7 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
-            with open("./sm_history.json", "w") as file:
+            with open("./sm_history.json", "w", encoding="utf-8") as file:
                 json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
@@ -586,7 +591,7 @@ class SpaceMapping:
                 )
 
             self.fine_model.solve_and_evaluate()
-            self.parameter_extraction._solve()
+            self.parameter_extraction._solve()  # pylint: disable=protected-access
             self.p_current[0].vector()[
                 :
             ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -612,8 +617,8 @@ class SpaceMapping:
                 if success:
 
                     self.fine_model.solve_and_evaluate()
-                    self.parameter_extraction._solve()
                     # pylint: disable=protected-access
+                    self.parameter_extraction._solve()
                     self.p_current[0].vector()[
                         :
                     ] = self.deformation_handler_coarse.coordinate_to_dof(
@@ -812,7 +817,8 @@ class SpaceMapping:
                 each solve of the state system
 
         """
-        self.coarse_model._pre_hook = function
+        self.coarse_model._pre_hook = function  # pylint: disable=protected-access
+        # pylint: disable=protected-access
         self.parameter_extraction._pre_hook = function
 
     def inject_post_hook(self, function: Callable[[], None]) -> None:
@@ -823,7 +829,8 @@ class SpaceMapping:
                 the computation of the gradient(s)
 
         """
-        self.coarse_model._post_hook = function
+        self.coarse_model._post_hook = function  # pylint: disable=protected-access
+        # pylint: disable=protected-access
         self.parameter_extraction._post_hook = function
 
     def inject_pre_post_hook(

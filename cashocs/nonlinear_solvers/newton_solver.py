@@ -40,7 +40,6 @@ class _NewtonSolver:
     A_matrix: fenics.PETScMatrix  # pylint: disable=invalid-name
     b: fenics.PETScVector
 
-    # noinspection PyUnresolvedReferences,PyPep8Naming
     def __init__(
         self,
         nonlinear_form: ufl.Form,
@@ -386,7 +385,6 @@ class _NewtonSolver:
             self.u.vector().apply("")
 
 
-# noinspection PyUnresolvedReferences
 def newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
@@ -493,7 +491,6 @@ def newton_solve(
     return solution
 
 
-# noinspection PyUnresolvedReferences
 def damped_newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,

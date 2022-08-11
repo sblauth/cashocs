@@ -83,7 +83,6 @@ class FormHandler(abc.ABC):
     deformation_space: fenics.FunctionSpace
     controls: List[fenics.Function]
     control_dim: int
-    # noinspection PyUnresolvedReferences
     riesz_projection_matrices: List[PETSc.Mat]
     uses_custom_scalar_product: bool = False
     gradient_forms_rhs: List[ufl.Form]

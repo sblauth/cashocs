@@ -175,7 +175,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
 
-    # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
@@ -279,7 +278,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constraints[index].variable_function
                 - self.constraints[index].target
             )
-            # noinspection PyTypeChecker
             self._project_pointwise_multiplier(
                 project_term,
                 self.constraints[index].measure,
@@ -353,7 +351,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     )
                 )
 
-            # noinspection PyTypeChecker
             self._project_pointwise_multiplier(
                 project_terms,
                 self.constraints[index].measure,
@@ -406,7 +403,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
                 tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
@@ -492,7 +488,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(tol=tol)
 

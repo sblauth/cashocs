@@ -82,7 +82,6 @@ def _check_imported_mesh_quality(
         mesh_quality_measure = input_arg.get("MeshQuality", "measure")
         mesh_quality_type = input_arg.get("MeshQuality", "type")
 
-        # noinspection PyTypeChecker
         current_mesh_quality = mesh_quality.compute_mesh_quality(
             mesh, mesh_quality_type, mesh_quality_measure
         )
@@ -300,7 +299,6 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
     )
 
     # Add an attribute to the mesh to show with what procedure it was generated
-    # noinspection PyProtectedMember
     # pylint: disable=protected-access
     mesh._set_config_flag()
     # Add the physical groups to the mesh in case they are present
@@ -609,7 +607,6 @@ def regular_box_mesh(
             if start_z < end_z:
                 lx = end_x - start_x
                 ly = end_y - start_y
-                # noinspection PyTypeChecker
                 lz = end_z - start_z
                 sizes = [lx, ly, lz]
                 dim = 3

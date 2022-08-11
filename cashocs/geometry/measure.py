@@ -58,7 +58,6 @@ class _EmptyMeasure(ufl.Measure):
         super().__init__(measure.integral_type())
         self.measure = measure
 
-    # noinspection PyUnresolvedReferences
     def __rmul__(self, other: ufl.core.expr.Expr) -> ufl.Form:
         """Multiplies the empty measure to the right.
 

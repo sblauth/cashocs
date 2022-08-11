@@ -96,7 +96,6 @@ def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.
     return lhs_list, rhs_list
 
 
-# noinspection PyUnresolvedReferences
 def assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -138,14 +137,12 @@ def assemble_petsc_system(
     )
     A_tensor.ident_zeros()
 
-    # noinspection PyPep8Naming
     A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
 
     return A, b
 
 
-# noinspection PyUnresolvedReferences
 def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) -> None:
     """Sets up an (iterative) linear solver.
 
@@ -162,7 +159,6 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) ->
     opts = fenics.PETScOptions
 
     for i in range(len(ksps)):
-        # noinspection PyArgumentList
         opts.clear()
 
         for option in ksp_options[i]:
@@ -171,7 +167,6 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) ->
         ksps[i].setFromOptions()
 
 
-# noinspection PyUnresolvedReferences
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
@@ -209,7 +204,6 @@ def solve_linear_problem(
     if A is not None:
         ksp.setOperators(A)
     else:
-        # noinspection PyPep8Naming
         A = ksp.getOperators()[0]
         if A.size[0] == -1 and A.size[1] == -1:
             raise _exceptions.InputError(
@@ -244,7 +238,6 @@ def solve_linear_problem(
     return x
 
 
-# noinspection PyUnresolvedReferences
 def assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -280,7 +273,6 @@ def assemble_and_solve_linear(
 
     """
     # pylint: disable=invalid-name
-    # noinspection PyPep8Naming
     A_matrix, b_vector = assemble_petsc_system(
         lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
     )
@@ -362,7 +354,6 @@ class Interpolator:
 
         self.origin_space = origin_space
         self.target_space = target_space
-        # noinspection PyTypeChecker
         self.transfer_matrix = fenics.PETScDMCollection.create_transfer_matrix(
             self.origin_space, self.target_space
         ).mat()

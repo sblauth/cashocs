@@ -470,7 +470,7 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
-            with open("./sm_history.json", "w") as file:
+            with open("./sm_history.json", "w", encoding="utf-8") as file:
                 json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
@@ -782,7 +782,8 @@ class SpaceMapping:
                 each solve of the state system
 
         """
-        self.coarse_model._pre_hook = function
+        self.coarse_model._pre_hook = function  # pylint: disable=protected-access
+        # pylint: disable=protected-access
         self.parameter_extraction._pre_hook = function
 
     def inject_post_hook(self, function: Callable[[], None]) -> None:
@@ -793,7 +794,8 @@ class SpaceMapping:
                 the computation of the gradient(s)
 
         """
-        self.coarse_model._post_hook = function
+        self.coarse_model._post_hook = function  # pylint: disable=protected-access
+        # pylint: disable=protected-access
         self.parameter_extraction._post_hook = function
 
     def inject_pre_post_hook(

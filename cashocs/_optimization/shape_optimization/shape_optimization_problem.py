@@ -325,7 +325,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             and not self.has_cashocs_remesh_flag
             and self.temp_dict is not None
         ):
-            # noinspection PyUnresolvedReferences
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
                 "mu_surface": self.form_handler.shape_regularization.mu_surface,
@@ -364,7 +363,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         try:
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             if not self.states[0].function_space().mesh()._config_flag:
                 raise _exceptions.InputError(
