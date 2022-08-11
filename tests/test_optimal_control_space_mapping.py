@@ -303,7 +303,7 @@ def test_ocsm_ncg_HS():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 1e-5
 
 
 def test_ocsm_ncg_DY():
@@ -335,4 +335,4 @@ def test_ocsm_ncg_HZ():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 1e-7
