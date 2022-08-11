@@ -156,7 +156,7 @@ def test_sosm_broyden_good():
 
     space_mapping.solve()
 
-    assert np.abs(fine_model.cost_functional_value - 1.1411246509315137e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 7.064559500661198e-07) <= 1e-10
 
 
 def test_sosm_broyden_bad():
@@ -178,7 +178,7 @@ def test_sosm_broyden_bad():
         coarse_model,
         parameter_extraction,
         method="broyden",
-        max_iter=2,
+        max_iter=3,
         tol=1e-2,
         use_backtracking_line_search=False,
         broyden_type="bad",
@@ -187,7 +187,7 @@ def test_sosm_broyden_bad():
 
     space_mapping.solve()
 
-    assert np.abs(fine_model.cost_functional_value - 1.0004296125430009e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 5.7097314142792985e-08) <= 1e-10
 
 
 def test_sosm_bfgs():
@@ -217,7 +217,7 @@ def test_sosm_bfgs():
 
     space_mapping.solve()
 
-    assert np.abs(fine_model.cost_functional_value - 6.137180661797483e-08) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 4.054967883850159e-08) <= 1e-10
 
 
 def test_sosm_steepest_descent():
@@ -239,13 +239,13 @@ def test_sosm_steepest_descent():
         coarse_model,
         parameter_extraction,
         method="sd",
-        max_iter=4,
+        max_iter=5,
         tol=1e-2,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 3.9787978564879444e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 4.1434175702773817e-07) <= 1e-10
 
 
 def test_sosm_ncg_FR():
@@ -268,13 +268,13 @@ def test_sosm_ncg_FR():
         parameter_extraction,
         method="ncg",
         cg_type="FR",
-        max_iter=3,
+        max_iter=4,
         tol=1e-2,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 2.1132230989713998e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 9.097862180684929e-08) <= 1e-10
 
 
 def test_sosm_ncg_PR():
@@ -297,13 +297,13 @@ def test_sosm_ncg_PR():
         parameter_extraction,
         method="ncg",
         cg_type="PR",
-        max_iter=6,
+        max_iter=7,
         tol=1e-2,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 1.7182464251272293e-06) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 1.2796532274209625e-06) <= 1e-10
 
 
 def test_sosm_ncg_HS():
@@ -326,13 +326,13 @@ def test_sosm_ncg_HS():
         parameter_extraction,
         method="ncg",
         cg_type="HS",
-        max_iter=7,
-        tol=1e-2,
+        max_iter=2,
+        tol=3e-1,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 4.7279082253303074e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.0012610364722555078) <= 1e-10
 
 
 def test_sosm_ncg_DY():
@@ -355,13 +355,13 @@ def test_sosm_ncg_DY():
         parameter_extraction,
         method="ncg",
         cg_type="DY",
-        max_iter=2,
+        max_iter=3,
         tol=1e-2,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 4.1219921973250485e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 2.1065112245987872e-07) <= 1e-10
 
 
 def test_sosm_ncg_HZ():
@@ -384,10 +384,10 @@ def test_sosm_ncg_HZ():
         parameter_extraction,
         method="ncg",
         cg_type="HZ",
-        max_iter=6,
+        max_iter=4,
         tol=1e-2,
         use_backtracking_line_search=False,
     )
 
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 4.152932424198904e-07) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 8.460165047783625e-07) <= 1e-10

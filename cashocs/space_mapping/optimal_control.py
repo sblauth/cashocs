@@ -174,7 +174,7 @@ class ParameterExtraction:
         config: Optional[io.Config] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         desired_weights: Optional[List[float]] = None,
-        mode: str = "coarse_optimum",
+        mode: str = "initial",
     ) -> None:
         """Initializes self.
 
@@ -244,7 +244,7 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
 
-    def _solve(self, initial_guesses: List[fenics.Function]) -> None:
+    def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
         """Solves the parameter extraction problem.
 
         Args:
@@ -254,9 +254,13 @@ class ParameterExtraction:
         if self.mode == "initial":
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = 0.0
-        elif self.mode == "coarse_optimum":
+        elif self.mode == "coarse_optimum" and initial_guesses is not None:
             for i in range(len(self.controls)):
                 self.controls[i].vector()[:] = initial_guesses[i].vector()[:]
+        else:
+            raise _exceptions.InputError(
+                "ParameterExtraction._solve", "initial_guesses", ""
+            )
 
         self.optimal_control_problem: ocp.OptimalControlProblem = (
             ocp.OptimalControlProblem(
@@ -302,6 +306,7 @@ class SpaceMapping:
         memory_size: int = 10,
         scaling_factor: float = 1.0,
         verbose: bool = True,
+        save_history: bool = False,
     ) -> None:
         """Initializes self.
 
@@ -325,6 +330,9 @@ class SpaceMapping:
                 control variables between fine and coarse model.
             verbose: A boolean flag which indicates, whether the output of the space
                 mapping method should be verbose. Default is ``True``.
+            save_history: A boolean flag which indicates, whether the history of the
+                space mapping method should be saved to a .json file. Default is
+                ``False``.
 
         """
         self.fine_model = fine_model
@@ -343,10 +351,12 @@ class SpaceMapping:
         self.memory_size = memory_size
         self.scaling_factor = scaling_factor
         self.verbose = verbose
+        self.save_history = save_history
 
         self.eps = 1.0
         self.converged = False
         self.iteration = 0
+        self.stepsize = 1.0
 
         self.z_star = self.coarse_model.optimal_control_problem.controls
         self.norm_z_star = 1.0
@@ -411,17 +421,20 @@ class SpaceMapping:
             )
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
 
+    def test_for_nonconvergence(self) -> None:
+        """Tests, whether maximum number of iterations are exceeded."""
+        if self.iteration >= self.max_iter:
+            raise _exceptions.NotConvergedError(
+                "Space Mapping",
+                "Maximum number of iterations exceeded.",
+            )
+
     def solve(self) -> None:
         """Solves the space mapping problem."""
         self._compute_intial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve(  # pylint: disable=protected-access
-            initial_guesses=[
-                self.ips_to_coarse[i].interpolate(self.x[i])
-                for i in range(self.control_dim)
-            ]
-        )
+        self.parameter_extraction._solve()  # pylint: disable=protected-access
         self.eps = self._compute_eps()
 
         self.update_history()
@@ -463,15 +476,16 @@ class SpaceMapping:
             if self.eps <= self.tol:
                 self.converged = True
                 break
-            if self.iteration >= self.max_iter:
-                break
+
+            self.test_for_nonconvergence()
 
             self._update_broyden_approximation()
             self._update_bfgs_approximation()
 
         if self.converged:
-            with open("./sm_history.json", "w", encoding="utf-8") as file:
-                json.dump(self.space_mapping_history, file)
+            if self.save_history:
+                with open("./sm_history.json", "w", encoding="utf-8") as file:
+                    json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
                 f"Space mapping iterations: {self.iteration:4d} --- "

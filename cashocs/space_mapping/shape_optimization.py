@@ -304,6 +304,7 @@ class SpaceMapping:
         cg_type: Literal["FR", "PR", "HS", "DY", "HZ"] = "FR",
         memory_size: int = 10,
         verbose: bool = True,
+        save_history: bool = False,
     ) -> None:
         """Initializes self.
 
@@ -325,6 +326,9 @@ class SpaceMapping:
             memory_size: The size of the memory for Broyden's method and the BFGS method
             verbose: A boolean flag which indicates, whether the output of the space
                 mapping method should be verbose. Default is ``True``.
+            save_history: A boolean flag which indicates, whether the history of the
+                space mapping method should be saved to a .json file. Default is
+                ``False``.
 
         """
         self.fine_model = fine_model
@@ -342,6 +346,7 @@ class SpaceMapping:
         self.cg_type = cg_type
         self.memory_size = memory_size
         self.verbose = verbose
+        self.save_history = save_history
 
         self.coordinates_initial = self.coarse_model.coordinates_initial
 
@@ -397,6 +402,14 @@ class SpaceMapping:
         self.space_mapping_history["eps"].append(self.eps)
         self.space_mapping_history["stepsize"].append(self.stepsize)
         self.space_mapping_history["MeshQuality"].append(self.current_mesh_quality)
+
+    def test_for_nonconvergence(self) -> None:
+        """Tests, whether maximum number of iterations are exceeded."""
+        if self.iteration >= self.max_iter:
+            raise _exceptions.NotConvergedError(
+                "Space Mapping",
+                "Maximum number of iterations exceeded.",
+            )
 
     def smooth_deformation(self, a: List[fenics.Function]) -> List[fenics.Function]:
         """Smooths a deformation vector field with a Poincaré-Steklov operator.
@@ -507,15 +520,15 @@ class SpaceMapping:
             if self.eps <= self.tol:
                 self.converged = True
                 break
-            if self.iteration >= self.max_iter:
-                break
+            self.test_for_nonconvergence()
 
             self._update_broyden_approximation()
             self._update_bfgs_approximation()
 
         if self.converged:
-            with open("./sm_history.json", "w", encoding="utf-8") as file:
-                json.dump(self.space_mapping_history, file)
+            if self.save_history:
+                with open("./sm_history.json", "w", encoding="utf-8") as file:
+                    json.dump(self.space_mapping_history, file)
             output = (
                 f"\nStatistics --- "
                 f"Space mapping iterations: {self.iteration:4d} --- "
