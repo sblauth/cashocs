@@ -97,7 +97,7 @@ def test_ocsm_parameter_extraction_single():
 
     assert (
         np.max(np.abs(control_ocp - control_coarse_model)) / np.max(np.abs(control_ocp))
-        < 1e-14
+        < 1e-10
     )
 
     u_pe = Function(V)
@@ -113,7 +113,7 @@ def test_ocsm_parameter_extraction_single():
     parameter_extraction._solve()
     control_pe = u_pe.vector()[:]
     assert (
-        np.max(np.abs(control_ocp - control_pe)) / np.max(np.abs(control_ocp)) < 1e-14
+        np.max(np.abs(control_ocp - control_pe)) / np.max(np.abs(control_ocp)) < 1e-10
     )
 
 
@@ -168,8 +168,8 @@ def test_ocsm_parameter_extraction_multiple():
     u_cm = u.vector()[:]
     v_cm = v.vector()[:]
 
-    assert np.max(np.abs(u_ocp - u_cm)) / np.max(np.abs(u_ocp)) < 1e-14
-    assert np.max(np.abs(v_ocp - v_cm)) / np.max(np.abs(v_ocp)) < 1e-14
+    assert np.max(np.abs(u_ocp - u_cm)) / np.max(np.abs(u_ocp)) < 1e-10
+    assert np.max(np.abs(v_ocp - v_cm)) / np.max(np.abs(v_ocp)) < 1e-10
 
     u_pe = Function(V)
     v_pe = Function(V)
@@ -189,8 +189,8 @@ def test_ocsm_parameter_extraction_multiple():
     )
     parameter_extraction._solve()
 
-    assert np.max(np.abs(u_ocp - u_pe.vector()[:])) / np.max(np.abs(u_ocp)) < 1e-14
-    assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-14
+    assert np.max(np.abs(u_ocp - u_pe.vector()[:])) / np.max(np.abs(u_ocp)) < 1e-10
+    assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-10
 
 
 def test_ocsm_broyden_good():
@@ -207,7 +207,7 @@ def test_ocsm_broyden_good():
         memory_size=4,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 9.940664295004186e-05) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 9.940664295004186e-05) <= 1e-8
 
 
 def test_ocsm_broyden_bad():
@@ -224,7 +224,7 @@ def test_ocsm_broyden_bad():
         memory_size=4,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 1e-8
 
 
 def test_ocsm_bfgs():
@@ -240,7 +240,7 @@ def test_ocsm_bfgs():
         memory_size=5,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00015157187957497788) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.00015157187957497788) <= 1e-8
 
 
 def test_ocsm_steepest_descent():
@@ -255,7 +255,7 @@ def test_ocsm_steepest_descent():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 1e-8
 
 
 def test_ocsm_ncg_FR():
@@ -271,7 +271,7 @@ def test_ocsm_ncg_FR():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.001158786222806518) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.001158786222806518) <= 1e-8
 
 
 def test_ocsm_ncg_PR():
@@ -287,7 +287,7 @@ def test_ocsm_ncg_PR():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.008117963107823976) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.008117963107823976) <= 1e-8
 
 
 def test_ocsm_ncg_HS():
@@ -303,7 +303,7 @@ def test_ocsm_ncg_HS():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 1e-8
 
 
 def test_ocsm_ncg_DY():
@@ -319,7 +319,7 @@ def test_ocsm_ncg_DY():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00048424837926872125) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.00048424837926872125) <= 1e-8
 
 
 def test_ocsm_ncg_HZ():
@@ -335,4 +335,4 @@ def test_ocsm_ncg_HZ():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 1e-10
+    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 1e-8
