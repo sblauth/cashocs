@@ -410,7 +410,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimal radius ratio of the mesh.
 
         """
-        # noinspection PyArgumentList
         quality: float = np.min(fenics.MeshQuality.radius_ratios(mesh).array())
         return quality
 
@@ -434,7 +433,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average radius ratio of the mesh.
 
         """
-        # noinspection PyArgumentList
         quality: float = np.average(fenics.MeshQuality.radius_ratios(mesh).array())
         return quality
 

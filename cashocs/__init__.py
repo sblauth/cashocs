@@ -24,6 +24,7 @@ optimization problems, in particular, shape optimization and optimal control pro
 The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
+from cashocs import space_mapping
 from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
     ConstrainedShapeOptimizationProblem,
@@ -117,4 +118,5 @@ __all__ = [
     "MinMaxFunctional",
     "interval_mesh",
     "convert",
+    "space_mapping",
 ]

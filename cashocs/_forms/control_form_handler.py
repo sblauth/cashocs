@@ -123,6 +123,9 @@ class ControlFormHandler(form_handler.FormHandler):
         modified_scalar_product_forms = _utils.bilinear_boundary_form_modification(
             scalar_product_forms
         )
+        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            scalar_product_forms
+        )
         try:
             self.assemblers = []
             for i in range(self.control_dim):

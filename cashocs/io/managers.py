@@ -108,7 +108,6 @@ def generate_output_str(
         f"{solver.gradient_norm:>{len(gradient_str) + 5}.3e},  ",
     ]
     if mesh_quality is not None:
-        # noinspection PyUnboundLocalVariable
         strs.append(f"{mesh_quality:>9.2f},  ")
 
     if iteration > 0:

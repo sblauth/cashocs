@@ -141,8 +141,8 @@ def check_and_enlist_ksp_options(
         and isinstance(ksp_options[0], list)
         and isinstance(ksp_options[0][0], list)
     ):
-        ksp_options = cast(types.KspOptions, ksp_options)
-        return ksp_options[:]
+        # ksp_options = cast(types.KspOptions, ksp_options)
+        return ksp_options[:]  # type: ignore
     else:
         raise _exceptions.InputError(
             "cashocs._utils.check_and_enlist_ksp_options",

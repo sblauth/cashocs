@@ -30,7 +30,6 @@ from cashocs import _loggers
 T = TypeVar("T")
 
 
-# noinspection PyUnresolvedReferences
 def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """Sums elements of a list in a UFL friendly fashion.
 
@@ -62,7 +61,6 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-# noinspection PyUnresolvedReferences
 def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
@@ -87,7 +85,6 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-# noinspection PyUnresolvedReferences
 def max_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -104,7 +101,6 @@ def max_(
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
-# noinspection PyUnresolvedReferences
 def min_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -121,7 +117,6 @@ def min_(
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
-# noinspection PyUnresolvedReferences
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,

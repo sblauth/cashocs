@@ -76,7 +76,6 @@ def _create_homogenized_bcs(
     return bcs_list_hom
 
 
-# noinspection PyUnresolvedReferences,PyPep8Naming
 def picard_iteration(
     form_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],

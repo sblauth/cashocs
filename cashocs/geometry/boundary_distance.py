@@ -65,7 +65,6 @@ def compute_boundary_distance(
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure.NamedMeasure("dx", mesh)
 
-    # noinspection PyUnresolvedReferences
     ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
 
     u = fenics.TrialFunction(function_space)

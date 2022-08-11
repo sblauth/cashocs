@@ -127,7 +127,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
             if not self.scalar_product_matrix.isSymmetric(1e-15):
-                # noinspection PyArgumentList
                 if (
                     not (
                         self.scalar_product_matrix
@@ -164,6 +163,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         modified_scalar_product = _utils.bilinear_boundary_form_modification(
             [scalar_product]
         )[0]
+        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            [scalar_product]
+        )[0]
         retry_assembler_setup = False
         if not self.degree_estimation:
             try:
@@ -188,7 +190,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
         self.assembler.keep_diagonal = True
 
-    # noinspection PyUnresolvedReferences
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
 
@@ -566,7 +567,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                 ),
                 (p - 2) / 2.0,
             )
-            # noinspection PyTypeChecker
             self.p_laplace_form: ufl.Form = (
                 fenics.inner(
                     self.mu_lame
