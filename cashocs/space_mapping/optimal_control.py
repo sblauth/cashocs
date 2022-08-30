@@ -253,10 +253,14 @@ class ParameterExtraction:
         """
         if self.mode == "initial":
             for i in range(len(self.controls)):
-                self.controls[i].vector()[:] = 0.0
+                self.controls[i].vector().vec().set(0.0)
+                self.controls[i].vector().apply("")
         elif self.mode == "coarse_optimum" and initial_guesses is not None:
             for i in range(len(self.controls)):
-                self.controls[i].vector()[:] = initial_guesses[i].vector()[:]
+                self.controls[i].vector().vec().aypx(
+                    0.0, initial_guesses[i].vector().vec()
+                )
+                self.controls[i].vector().apply("")
         else:
             raise _exceptions.InputError(
                 "ParameterExtraction._solve", "initial_guesses", ""
@@ -415,10 +419,12 @@ class SpaceMapping:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
         for i in range(self.control_dim):
-            self.x[i].vector()[:] = (
+            self.x[i].vector().vec().aypx(
+                0.0,
                 self.scaling_factor
-                * self.ips_to_fine[i].interpolate(self.z_star[i]).vector()[:]
+                * self.ips_to_fine[i].interpolate(self.z_star[i]).vector().vec(),
             )
+            self.x[i].vector().apply("")
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
 
     def test_for_nonconvergence(self) -> None:
@@ -438,39 +444,48 @@ class SpaceMapping:
         self.eps = self._compute_eps()
 
         self.update_history()
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(
                 f"Space Mapping - Iteration {self.iteration:3d}:    "
                 f"Cost functional value = "
                 f"{self.fine_model.cost_functional_value:.3e}    "
-                f"eps = {self.eps:.3e}\n"
+                f"eps = {self.eps:.3e}\n",
+                flush=True,
             )
 
         while not self.converged:
             for i in range(self.control_dim):
-                self.dir_prev[i].vector()[:] = -(
-                    self.p_prev[i].vector()[:] - self.z_star[i].vector()[:]
+                self.dir_prev[i].vector().vec().aypx(
+                    0.0,
+                    -(self.p_prev[i].vector().vec() - self.z_star[i].vector().vec()),
                 )
-                self.temp[i].vector()[:] = -(
-                    self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
+                self.dir_prev[i].vector().apply("")
+                self.temp[i].vector().vec().aypx(
+                    0.0,
+                    -(self.p_current[i].vector().vec() - self.z_star[i].vector().vec()),
                 )
+                self.temp[i].vector().apply("")
 
             self._compute_search_direction(self.temp, self.h)
 
             for i in range(self.control_dim):
-                self.p_prev[i].vector()[:] = self.p_current[i].vector()[:]
+                self.p_prev[i].vector().vec().aypx(
+                    0.0, self.p_current[i].vector().vec()
+                )
+                self.p_prev[i].vector().apply("")
 
             self._update_iterates()
 
             self.iteration += 1
             self.update_history()
-            if self.verbose:
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(
                     f"Space Mapping - Iteration {self.iteration:3d}:    "
                     f"Cost functional value = "
                     f"{self.fine_model.cost_functional_value:.3e}    "
                     f"eps = {self.eps:.3e}"
-                    f"    step size = {self.stepsize:.3e}"
+                    f"    step size = {self.stepsize:.3e}",
+                    flush=True,
                 )
 
             if self.eps <= self.tol:
@@ -483,7 +498,7 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
-            if self.save_history:
+            if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
                     json.dump(self.space_mapping_history, file)
             output = (
@@ -491,25 +506,30 @@ class SpaceMapping:
                 f"Space mapping iterations: {self.iteration:4d} --- "
                 f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
             )
-            if self.verbose:
-                print(output)
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(output, flush=True)
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
         if self.method == "broyden":
             for i in range(self.control_dim):
-                self.temp[i].vector()[:] = (
-                    self.p_current[i].vector()[:] - self.p_prev[i].vector()[:]
+                self.temp[i].vector().vec().aypx(
+                    0.0,
+                    self.p_current[i].vector().vec() - self.p_prev[i].vector().vec(),
                 )
+                self.temp[i].vector().apply("")
             self._compute_broyden_application(self.temp, self.v)
 
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
                     for i in range(self.control_dim):
-                        self.u[i].vector()[:] = (
-                            self.h[i].vector()[:] - self.v[i].vector()[:]
-                        ) / divisor
+                        self.u[i].vector().vec().aypx(
+                            0.0,
+                            (self.h[i].vector().vec() - self.v[i].vector().vec())
+                            / divisor,
+                        )
+                        self.u[i].vector().apply("")
 
                     self.history_s.append([xx.copy(True) for xx in self.u])
                     self.history_y.append([xx.copy(True) for xx in self.h])
@@ -517,9 +537,12 @@ class SpaceMapping:
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
                     for i in range(self.control_dim):
-                        self.u[i].vector()[:] = (
-                            self.h[i].vector()[:] - self.v[i].vector()[:]
-                        ) / divisor
+                        self.u[i].vector().vec().aypx(
+                            0.0,
+                            (self.h[i].vector().vec() - self.v[i].vector().vec())
+                            / divisor,
+                        )
+                        self.u[i].vector().apply("")
 
                         self.history_s.append([xx.copy(True) for xx in self.u])
                         self.history_y.append([xx.copy(True) for xx in self.temp])
@@ -533,9 +556,12 @@ class SpaceMapping:
         if self.method == "bfgs":
             if self.memory_size > 0:
                 for i in range(self.control_dim):
-                    self.temp[i].vector()[:] = (
-                        self.p_current[i].vector()[:] - self.p_prev[i].vector()[:]
+                    self.temp[i].vector().vec().aypx(
+                        0.0,
+                        self.p_current[i].vector().vec()
+                        - self.p_prev[i].vector().vec(),
                     )
+                    self.temp[i].vector().apply("")
 
                 self.history_y.appendleft([xx.copy(True) for xx in self.temp])
                 self.history_s.appendleft([xx.copy(True) for xx in self.h])
@@ -547,7 +573,7 @@ class SpaceMapping:
                     self.history_rho.clear()
 
                 else:
-                    rho = 1 / curvature_condition
+                    rho = 1.0 / curvature_condition
                     self.history_rho.appendleft(rho)
 
                 if len(self.history_s) > self.memory_size:
@@ -560,10 +586,11 @@ class SpaceMapping:
         self.stepsize = 1.0
         if not self.use_backtracking_line_search:
             for i in range(self.control_dim):
-                self.x[i].vector()[:] += (
-                    self.scaling_factor
-                    * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
+                self.x[i].vector().vec().axpy(
+                    self.scaling_factor,
+                    self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
                 )
+                self.x[i].vector().apply("")
 
             self.fine_model.solve_and_evaluate()
             self.parameter_extraction._solve(  # pylint: disable=protected-access
@@ -576,16 +603,18 @@ class SpaceMapping:
 
         else:
             for i in range(self.control_dim):
-                self.x_save[i].vector()[:] = self.x[i].vector()[:]
+                self.x_save[i].vector().vec().aypx(0.0, self.x[i].vector().vec())
+                self.x_save[i].vector().apply("")
 
             while True:
                 for i in range(self.control_dim):
-                    self.x[i].vector()[:] = self.x_save[i].vector()[:]
-                    self.x[i].vector()[:] += (
-                        self.scaling_factor
-                        * self.stepsize
-                        * self.ips_to_fine[i].interpolate(self.h[i]).vector()[:]
+                    self.x[i].vector().vec().aypx(0.0, self.x_save[i].vector().vec())
+                    self.x[i].vector().apply("")
+                    self.x[i].vector().vec().axpy(
+                        self.scaling_factor * self.stepsize,
+                        self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
                     )
+                    self.x[i].vector().apply("")
                 self.fine_model.solve_and_evaluate()
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     initial_guesses=[
@@ -660,7 +689,8 @@ class SpaceMapping:
 
         """
         for i in range(self.control_dim):
-            out[i].vector()[:] = q[i].vector()[:]
+            out[i].vector().vec().aypx(0.0, q[i].vector().vec())
+            out[i].vector().apply("")
 
     def _compute_broyden_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -673,7 +703,8 @@ class SpaceMapping:
 
         """
         for j in range(self.control_dim):
-            out[j].vector()[:] = q[j].vector()[:]
+            out[j].vector().vec().aypx(0.0, q[j].vector().vec())
+            out[j].vector().apply("")
 
         for i in range(len(self.history_s)):
             if self.broyden_type == "good":
@@ -688,7 +719,8 @@ class SpaceMapping:
                 )
 
             for j in range(self.control_dim):
-                out[j].vector()[:] += alpha * self.history_s[i][j].vector()[:]
+                out[j].vector().vec().axpy(alpha, self.history_s[i][j].vector().vec())
+                out[j].vector().apply("")
 
     def _compute_bfgs_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -701,7 +733,8 @@ class SpaceMapping:
 
         """
         for j in range(self.control_dim):
-            out[j].vector()[:] = q[j].vector()[:]
+            out[j].vector().vec().aypx(0.0, q[j].vector().vec())
+            out[j].vector().apply("")
 
         if len(self.history_s) > 0:
             self.history_alpha.clear()
@@ -712,22 +745,28 @@ class SpaceMapping:
                 )
                 self.history_alpha.append(alpha)
                 for j in range(self.control_dim):
-                    out[j].vector()[:] -= alpha * self.history_y[i][j].vector()[:]
+                    out[j].vector().vec().axpy(
+                        -alpha, self.history_y[i][j].vector().vec()
+                    )
+                    out[j].vector().apply("")
 
             bfgs_factor = self._scalar_product(
                 self.history_y[0], self.history_s[0]
             ) / self._scalar_product(self.history_y[0], self.history_y[0])
             for j in range(self.control_dim):
-                out[j].vector()[:] *= bfgs_factor
+                out[j].vector().vec().scale(bfgs_factor)
+                out[j].vector().apply("")
 
             for i, _ in enumerate(self.history_s):
                 beta = self.history_rho[-1 - i] * self._scalar_product(
                     self.history_y[-1 - i], out
                 )
                 for j in range(self.control_dim):
-                    out[j].vector()[:] += self.history_s[-1 - i][j].vector()[:] * (
-                        self.history_alpha[-1 - i] - beta
+                    out[j].vector().vec().axpy(
+                        self.history_alpha[-1 - i] - beta,
+                        self.history_s[-1 - i][j].vector().vec(),
                     )
+                    out[j].vector().apply("")
 
     def _compute_ncg_direction(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -741,9 +780,10 @@ class SpaceMapping:
         """
         if self.iteration > 0:
             for i in range(self.control_dim):
-                self.difference[i].vector()[:] = (
-                    q[i].vector()[:] - self.dir_prev[i].vector()[:]
+                self.difference[i].vector().vec().aypx(
+                    0.0, q[i].vector().vec() - self.dir_prev[i].vector().vec()
                 )
+                self.difference[i].vector().apply("")
 
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
@@ -770,24 +810,28 @@ class SpaceMapping:
                 y2 = self._scalar_product(self.difference, self.difference)
 
                 for i in range(self.control_dim):
-                    self.difference[i].vector()[:] = (
-                        -self.difference[i].vector()[:]
-                        - 2 * y2 / dy * out[i].vector()[:]
+                    self.difference[i].vector().vec().aypx(
+                        0.0,
+                        -self.difference[i].vector().vec()
+                        - 2 * y2 / dy * out[i].vector().vec(),
                     )
+                    self.difference[i].vector().apply("")
                 self.beta = -self._scalar_product(self.difference, q) / dy
 
         else:
             self.beta = 0.0
 
         for i in range(self.control_dim):
-            out[i].vector()[:] = q[i].vector()[:] + self.beta * out[i].vector()[:]
+            out[i].vector().vec().aypx(self.beta, q[i].vector().vec())
+            out[i].vector().apply("")
 
     def _compute_eps(self) -> float:
         """Computes and returns the termination parameter epsilon."""
         for i in range(self.control_dim):
-            self.diff[i].vector()[:] = (
-                self.p_current[i].vector()[:] - self.z_star[i].vector()[:]
+            self.diff[i].vector().vec().aypx(
+                0.0, self.p_current[i].vector().vec() - self.z_star[i].vector().vec()
             )
+            self.diff[i].vector().apply("")
         eps: float = (
             np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
         )

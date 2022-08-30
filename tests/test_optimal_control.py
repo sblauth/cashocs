@@ -692,12 +692,11 @@ def test_control_bcs():
     assert np.sqrt(assemble(pow(u - value, 2) * ds)) < 1e-15
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
-    # def test_safeguard_gd():
 
-
-u.vector()[:] = 0.0
-config = cashocs.load_config(dir_path + "/config_ocp.ini")
-config.set("OptimizationRoutine", "safeguard_stepsize", "True")
-ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=50)
-assert ocp.solver.relative_norm <= ocp.solver.rtol
+def test_safeguard_gd():
+    u.vector().vec().set(0.0)
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("OptimizationRoutine", "safeguard_stepsize", "True")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=50)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
