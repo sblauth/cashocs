@@ -55,15 +55,10 @@ class FineModel(sosm.FineModel):
         cashocs.io.write_out_mesh(
             self.mesh, f"{dir_path}/sm_mesh/mesh.msh", f"{dir_path}/sm_mesh/fine.msh"
         )
-        subprocess.run(
-            [
-                "cashocs-convert",
-                f"{dir_path}/sm_mesh/fine.msh",
-                f"{dir_path}/sm_mesh/fine.xdmf",
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-        )
+        if MPI.rank(MPI.comm_world) == 0:
+            cashocs.convert(
+                f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf"
+            )
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
             f"{dir_path}/sm_mesh/fine.xdmf"
@@ -248,146 +243,146 @@ def test_sosm_steepest_descent():
     assert np.abs(fine_model.cost_functional_value - 4.1434175702773817e-07) <= 1e-10
 
 
-# def test_sosm_ncg_FR():
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
-#     fine_model = FineModel(mesh, V)
-#     up_param = Function(V)
-#     u_param, p_param = split(up_param)
-#     u_des_param = fine_model.u
-#     J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
-#     parameter_extraction = sosm.ParameterExtraction(
-#         coarse_model, J_param, up_param, config=cfg
-#     )
-#
-#     space_mapping = sosm.SpaceMapping(
-#         fine_model,
-#         coarse_model,
-#         parameter_extraction,
-#         method="ncg",
-#         cg_type="FR",
-#         max_iter=4,
-#         tol=1e-2,
-#         use_backtracking_line_search=False,
-#     )
-#
-#     space_mapping.solve()
-#     assert np.abs(fine_model.cost_functional_value - 9.097862180684929e-08) <= 1e-10
-#
-#
-# def test_sosm_ncg_PR():
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
-#     fine_model = FineModel(mesh, V)
-#     up_param = Function(V)
-#     u_param, p_param = split(up_param)
-#     u_des_param = fine_model.u
-#     J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
-#     parameter_extraction = sosm.ParameterExtraction(
-#         coarse_model, J_param, up_param, config=cfg
-#     )
-#
-#     space_mapping = sosm.SpaceMapping(
-#         fine_model,
-#         coarse_model,
-#         parameter_extraction,
-#         method="ncg",
-#         cg_type="PR",
-#         max_iter=7,
-#         tol=1e-2,
-#         use_backtracking_line_search=False,
-#     )
-#
-#     space_mapping.solve()
-#     assert np.abs(fine_model.cost_functional_value - 1.2796532274209625e-06) <= 1e-10
-#
-#
-# def test_sosm_ncg_HS():
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
-#     fine_model = FineModel(mesh, V)
-#     up_param = Function(V)
-#     u_param, p_param = split(up_param)
-#     u_des_param = fine_model.u
-#     J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
-#     parameter_extraction = sosm.ParameterExtraction(
-#         coarse_model, J_param, up_param, config=cfg
-#     )
-#
-#     space_mapping = sosm.SpaceMapping(
-#         fine_model,
-#         coarse_model,
-#         parameter_extraction,
-#         method="ncg",
-#         cg_type="HS",
-#         max_iter=2,
-#         tol=3e-1,
-#         use_backtracking_line_search=False,
-#     )
-#
-#     space_mapping.solve()
-#     assert np.abs(fine_model.cost_functional_value - 0.0012610364722555078) <= 1e-10
-#
-#
-# def test_sosm_ncg_DY():
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
-#     fine_model = FineModel(mesh, V)
-#     up_param = Function(V)
-#     u_param, p_param = split(up_param)
-#     u_des_param = fine_model.u
-#     J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
-#     parameter_extraction = sosm.ParameterExtraction(
-#         coarse_model, J_param, up_param, config=cfg
-#     )
-#
-#     space_mapping = sosm.SpaceMapping(
-#         fine_model,
-#         coarse_model,
-#         parameter_extraction,
-#         method="ncg",
-#         cg_type="DY",
-#         max_iter=3,
-#         tol=1e-2,
-#         use_backtracking_line_search=False,
-#     )
-#
-#     space_mapping.solve()
-#     assert np.abs(fine_model.cost_functional_value - 2.1065112245987872e-07) <= 1e-10
-#
-#
-# def test_sosm_ncg_HZ():
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
-#     fine_model = FineModel(mesh, V)
-#     up_param = Function(V)
-#     u_param, p_param = split(up_param)
-#     u_des_param = fine_model.u
-#     J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
-#     parameter_extraction = sosm.ParameterExtraction(
-#         coarse_model, J_param, up_param, config=cfg
-#     )
-#
-#     space_mapping = sosm.SpaceMapping(
-#         fine_model,
-#         coarse_model,
-#         parameter_extraction,
-#         method="ncg",
-#         cg_type="HZ",
-#         max_iter=4,
-#         tol=1e-2,
-#         use_backtracking_line_search=False,
-#     )
-#
-#     space_mapping.solve()
-#     assert np.abs(fine_model.cost_functional_value - 8.460165047783625e-07) <= 1e-10
+def test_sosm_ncg_FR():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
+    fine_model = FineModel(mesh, V)
+    up_param = Function(V)
+    u_param, p_param = split(up_param)
+    u_des_param = fine_model.u
+    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    parameter_extraction = sosm.ParameterExtraction(
+        coarse_model, J_param, up_param, config=cfg
+    )
+
+    space_mapping = sosm.SpaceMapping(
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="ncg",
+        cg_type="FR",
+        max_iter=4,
+        tol=1e-2,
+        use_backtracking_line_search=False,
+    )
+
+    space_mapping.solve()
+    assert np.abs(fine_model.cost_functional_value - 9.097862180684929e-08) <= 1e-10
+
+
+def test_sosm_ncg_PR():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
+    fine_model = FineModel(mesh, V)
+    up_param = Function(V)
+    u_param, p_param = split(up_param)
+    u_des_param = fine_model.u
+    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    parameter_extraction = sosm.ParameterExtraction(
+        coarse_model, J_param, up_param, config=cfg
+    )
+
+    space_mapping = sosm.SpaceMapping(
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="ncg",
+        cg_type="PR",
+        max_iter=7,
+        tol=1e-2,
+        use_backtracking_line_search=False,
+    )
+
+    space_mapping.solve()
+    assert np.abs(fine_model.cost_functional_value - 1.2796532274209625e-06) <= 1e-10
+
+
+def test_sosm_ncg_HS():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
+    fine_model = FineModel(mesh, V)
+    up_param = Function(V)
+    u_param, p_param = split(up_param)
+    u_des_param = fine_model.u
+    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    parameter_extraction = sosm.ParameterExtraction(
+        coarse_model, J_param, up_param, config=cfg
+    )
+
+    space_mapping = sosm.SpaceMapping(
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="ncg",
+        cg_type="HS",
+        max_iter=2,
+        tol=3e-1,
+        use_backtracking_line_search=False,
+    )
+
+    space_mapping.solve()
+    assert np.abs(fine_model.cost_functional_value - 0.0012610364722555078) <= 1e-10
+
+
+def test_sosm_ncg_DY():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
+    fine_model = FineModel(mesh, V)
+    up_param = Function(V)
+    u_param, p_param = split(up_param)
+    u_des_param = fine_model.u
+    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    parameter_extraction = sosm.ParameterExtraction(
+        coarse_model, J_param, up_param, config=cfg
+    )
+
+    space_mapping = sosm.SpaceMapping(
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="ncg",
+        cg_type="DY",
+        max_iter=3,
+        tol=1e-2,
+        use_backtracking_line_search=False,
+    )
+
+    space_mapping.solve()
+    assert np.abs(fine_model.cost_functional_value - 2.1065112245987872e-07) <= 1e-10
+
+
+def test_sosm_ncg_HZ():
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    coarse_model = sosm.CoarseModel(F, bcs, J, up, vq, boundaries, config=cfg)
+    fine_model = FineModel(mesh, V)
+    up_param = Function(V)
+    u_param, p_param = split(up_param)
+    u_des_param = fine_model.u
+    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    parameter_extraction = sosm.ParameterExtraction(
+        coarse_model, J_param, up_param, config=cfg
+    )
+
+    space_mapping = sosm.SpaceMapping(
+        fine_model,
+        coarse_model,
+        parameter_extraction,
+        method="ncg",
+        cg_type="HZ",
+        max_iter=4,
+        tol=1e-2,
+        use_backtracking_line_search=False,
+    )
+
+    space_mapping.solve()
+    assert np.abs(fine_model.cost_functional_value - 8.460165047783625e-07) <= 1e-10

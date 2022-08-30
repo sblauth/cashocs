@@ -432,7 +432,8 @@ class SpaceMapping:
         bc_helper = fenics.Function(
             shape_optimization_problem.form_handler.deformation_space
         )
-        bc_helper.vector()[:] = a[0].vector()[:]
+        bc_helper.vector().vec().aypx(0, a[0].vector().vec())
+        bc_helper.vector().apply("")
         boundary = fenics.CompiledSubDomain("on_boundary")
         bcs = [
             fenics.DirichletBC(
@@ -469,37 +470,43 @@ class SpaceMapping:
 
         self.fine_model.solve_and_evaluate()
         self.parameter_extraction._solve()  # pylint: disable=protected-access
-        self.p_current[0].vector()[
-            :
-        ] = self.deformation_handler_coarse.coordinate_to_dof(
-            self.parameter_extraction.mesh.coordinates()[:, :]
-            - self.coordinates_initial
-        ).vector()[
-            :
-        ]
+        self.p_current[0].vector().vec().aypx(
+            0.0,
+            self.deformation_handler_coarse.coordinate_to_dof(
+                self.parameter_extraction.mesh.coordinates()[:, :]
+                - self.coordinates_initial
+            )
+            .vector()
+            .vec(),
+        )
+        self.p_current[0].vector().apply("")
         self.eps = self._compute_eps()
 
         self.update_history()
-        if self.verbose:
+        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(
                 f"Space Mapping - Iteration {self.iteration:3d}:"
                 f"    Cost functional value = "
                 f"{self.fine_model.cost_functional_value:.3e}"
                 f"    eps = {self.eps:.3e}"
-                f"    Mesh Quality = {self.current_mesh_quality:1.2f}\n"
+                f"    Mesh Quality = {self.current_mesh_quality:1.2f}\n",
+                flush=True,
             )
 
         while not self.converged:
-            self.dir_prev[0].vector()[:] = -(
-                self.p_prev[0].vector()[:] - self.z_star[0].vector()[:]
+            self.dir_prev[0].vector().vec().aypx(
+                0.0, -(self.p_prev[0].vector().vec() - self.z_star[0].vector().vec())
             )
-            self.temp[0].vector()[:] = -(
-                self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
+            self.dir_prev[0].vector().apply("")
+            self.temp[0].vector().vec().aypx(
+                0.0, -(self.p_current[0].vector().vec() - self.z_star[0].vector().vec())
             )
+            self.temp[0].vector().apply("")
             self._compute_search_direction(self.temp, self.h)
 
             self.stepsize = 1.0
-            self.p_prev[0].vector()[:] = self.p_current[0].vector()[:]
+            self.p_prev[0].vector().vec().aypx(0.0, self.p_current[0].vector().vec())
+            self.p_prev[0].vector().apply("")
             self._update_iterates()
 
             self.iteration += 1
@@ -507,14 +514,15 @@ class SpaceMapping:
                 self.fine_model.mesh
             )
             self.update_history()
-            if self.verbose:
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(
                     f"Space Mapping - Iteration {self.iteration:3d}:"
                     f"    Cost functional value = "
                     f"{self.fine_model.cost_functional_value:.3e}"
                     f"    eps = {self.eps:.3e}"
                     f"    Mesh Quality = {self.current_mesh_quality:1.2f}"
-                    f"    step size = {self.stepsize:.3e}"
+                    f"    step size = {self.stepsize:.3e}",
+                    flush=True,
                 )
 
             if self.eps <= self.tol:
@@ -526,7 +534,7 @@ class SpaceMapping:
             self._update_bfgs_approximation()
 
         if self.converged:
-            if self.save_history:
+            if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
                     json.dump(self.space_mapping_history, file)
             output = (
@@ -534,32 +542,37 @@ class SpaceMapping:
                 f"Space mapping iterations: {self.iteration:4d} --- "
                 f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
             )
-            if self.verbose:
-                print(output)
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(output, flush=True)
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
         if self.method == "broyden":
-            self.temp[0].vector()[:] = (
-                self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
+            self.temp[0].vector().vec().aypx(
+                0.0, self.p_current[0].vector().vec() - self.p_prev[0].vector().vec()
             )
+            self.temp[0].vector().apply("")
             self._compute_broyden_application(self.temp, self.v)
 
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
-                    self.u[0].vector()[:] = (
-                        self.h[0].vector()[:] - self.v[0].vector()[:]
-                    ) / divisor
+                    self.u[0].vector().vec().aypx(
+                        0.0,
+                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                    )
+                    self.u[0].vector().apply("")
 
                     self.history_s.append([xx.copy(True) for xx in self.u])
                     self.history_y.append([xx.copy(True) for xx in self.h])
 
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
-                    self.u[0].vector()[:] = (
-                        self.h[0].vector()[:] - self.v[0].vector()[:]
-                    ) / divisor
+                    self.u[0].vector().vec().aypx(
+                        0.0,
+                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                    )
+                    self.u[0].vector().apply("")
 
                     self.history_s.append([xx.copy(True) for xx in self.u])
                     self.history_y.append([xx.copy(True) for xx in self.temp])
@@ -572,9 +585,11 @@ class SpaceMapping:
         """Updates the approximation of the mapping function with the BFGS method."""
         if self.method == "bfgs":
             if self.memory_size > 0:
-                self.temp[0].vector()[:] = (
-                    self.p_current[0].vector()[:] - self.p_prev[0].vector()[:]
+                self.temp[0].vector().vec().aypx(
+                    0.0,
+                    self.p_current[0].vector().vec() - self.p_prev[0].vector().vec(),
                 )
+                self.temp[0].vector().apply("")
 
                 self.history_y.appendleft([xx.copy(True) for xx in self.temp])
                 self.history_s.appendleft([xx.copy(True) for xx in self.h])
@@ -605,14 +620,16 @@ class SpaceMapping:
 
             self.fine_model.solve_and_evaluate()
             self.parameter_extraction._solve()  # pylint: disable=protected-access
-            self.p_current[0].vector()[
-                :
-            ] = self.deformation_handler_coarse.coordinate_to_dof(
-                self.parameter_extraction.mesh.coordinates()[:, :]
-                - self.coordinates_initial
-            ).vector()[
-                :
-            ]
+            self.p_current[0].vector().vec().aypx(
+                0.0,
+                self.deformation_handler_coarse.coordinate_to_dof(
+                    self.parameter_extraction.mesh.coordinates()[:, :]
+                    - self.coordinates_initial
+                )
+                .vector()
+                .vec(),
+            )
+            self.p_current[0].vector().apply("")
             self.eps = self._compute_eps()
 
         else:
@@ -624,22 +641,26 @@ class SpaceMapping:
                         "Space Mapping Backtracking Line Search",
                         "The line search did not converge.",
                     )
-
-                self.transformation.vector()[:] = self.stepsize * self.h[0].vector()[:]
+                self.transformation.vector().vec().aypx(
+                    0.0, self.stepsize * self.h[0].vector().vec()
+                )
+                self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
 
                     self.fine_model.solve_and_evaluate()
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve()
-                    self.p_current[0].vector()[
-                        :
-                    ] = self.deformation_handler_coarse.coordinate_to_dof(
-                        self.parameter_extraction.mesh.coordinates()[:, :]
-                        - self.coordinates_initial
-                    ).vector()[
-                        :
-                    ]
+                    self.p_current[0].vector().vec().aypx(
+                        0.0,
+                        self.deformation_handler_coarse.coordinate_to_dof(
+                            self.parameter_extraction.mesh.coordinates()[:, :]
+                            - self.coordinates_initial
+                        )
+                        .vector()
+                        .vec(),
+                    )
+                    self.p_current[0].vector().apply("")
                     eps_new = self._compute_eps()
 
                     if eps_new <= self.eps:
@@ -705,7 +726,8 @@ class SpaceMapping:
 
         """
         for i in range(len(out)):
-            out[i].vector()[:] = q[i].vector()[:]
+            out[i].vector().vec().aypx(0.0, q[i].vector().vec())
+            out[i].vector().apply("")
 
     def _compute_broyden_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -717,7 +739,8 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        out[0].vector()[:] = q[0].vector()[:]
+        out[0].vector().vec().aypx(0.0, q[0].vector().vec())
+        out[0].vector().apply("")
 
         for i in range(len(self.history_s)):
             if self.broyden_type == "good":
@@ -729,7 +752,8 @@ class SpaceMapping:
                     "Type of Broyden's method has to be either 'good' or 'bad'."
                 )
 
-            out[0].vector()[:] += alpha * self.history_s[i][0].vector()[:]
+            out[0].vector().vec().axpy(alpha, self.history_s[i][0].vector().vec())
+            out[0].vector().apply("")
 
     def _compute_bfgs_application(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -743,30 +767,36 @@ class SpaceMapping:
         """
         if self.memory_size > 0 and len(self.history_s) > 0:
             self.history_alpha.clear()
-            out[0].vector()[:] = q[0].vector()[:]
+            out[0].vector().vec().aypx(0.0, q[0].vector().vec())
+            out[0].vector().apply("")
 
             for i, _ in enumerate(self.history_s):
                 alpha = self.history_rho[i] * self._scalar_product(
                     self.history_s[i], out
                 )
                 self.history_alpha.append(alpha)
-                out[0].vector()[:] -= alpha * self.history_y[i][0].vector()[:]
+                out[0].vector().vec().axpy(-alpha, self.history_y[i][0].vector().vec())
+                out[0].vector().apply("")
 
             bfgs_factor = self._scalar_product(
                 self.history_y[0], self.history_s[0]
             ) / self._scalar_product(self.history_y[0], self.history_y[0])
-            out[0].vector()[:] *= bfgs_factor
+            out[0].vector().vec().scale(bfgs_factor)
+            out[0].vector().apply("")
 
             for i, _ in enumerate(self.history_s):
                 beta = self.history_rho[-1 - i] * self._scalar_product(
                     self.history_y[-1 - i], out
                 )
-                out[0].vector()[:] += self.history_s[-1 - i][0].vector()[:] * (
-                    self.history_alpha[-1 - i] - beta
+                out[0].vector().vec().axpy(
+                    self.history_alpha[-1 - i] - beta,
+                    self.history_s[-1 - i][0].vector().vec(),
                 )
+                out[0].vector().apply("")
 
         else:
-            out[0].vector()[:] = q[0].vector()[:]
+            out[0].vector().vec().aypx(0.0, q[0].vector().vec())
+            out[0].vector().apply("")
 
     def _compute_ncg_direction(
         self, q: List[fenics.Function], out: List[fenics.Function]
@@ -779,9 +809,11 @@ class SpaceMapping:
 
         """
         if self.iteration > 0:
-            self.difference[0].vector()[:] = (
-                q[0].vector()[:] - self.dir_prev[0].vector()[:]
+            self.difference[0].vector().vec().aypx(
+                0.0, q[0].vector().vec() - self.dir_prev[0].vector().vec()
             )
+            self.difference[0].vector().apply("")
+
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
@@ -802,20 +834,25 @@ class SpaceMapping:
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                self.difference[0].vector()[:] = (
-                    -self.difference[0].vector()[:] - 2 * y2 / dy * out[0].vector()[:]
+                self.difference[0].vector().vec().aypx(
+                    0.0,
+                    -self.difference[0].vector().vec()
+                    - 2 * y2 / dy * out[0].vector().vec(),
                 )
+                self.difference[0].vector().apply("")
                 self.beta = -self._scalar_product(self.difference, q) / dy
         else:
             self.beta = 0.0
 
-        out[0].vector()[:] = q[0].vector()[:] + self.beta * out[0].vector()[:]
+        out[0].vector().vec().aypx(self.beta, q[0].vector().vec())
+        out[0].vector().apply("")
 
     def _compute_eps(self) -> float:
         """Computes and returns the termination parameter epsilon."""
-        self.diff[0].vector()[:] = (
-            self.p_current[0].vector()[:] - self.z_star[0].vector()[:]
+        self.diff[0].vector().vec().aypx(
+            0.0, self.p_current[0].vector().vec() - self.z_star[0].vector().vec()
         )
+        self.diff[0].vector().apply("")
         eps: float = (
             np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
         )
