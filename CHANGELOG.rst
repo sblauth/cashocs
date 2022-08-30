@@ -9,6 +9,8 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
+* Added space mapping methods to cashocs
+
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 
 * cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
