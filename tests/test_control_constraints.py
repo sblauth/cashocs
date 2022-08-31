@@ -39,7 +39,7 @@ J = pow(u - 0.5, 2) * dx
 
 
 def test_int_eq_constraint():
-    y.vector()[:] = 0.0
+    y.vector().vec().set(0.0)
     int_eq_target = rng.uniform(-1.0, 1.0)
     int_eq_constraint = cashocs.EqualityConstraint(y * y * dx, int_eq_target)
     assert int_eq_constraint.constraint_violation() == abs(int_eq_target)
