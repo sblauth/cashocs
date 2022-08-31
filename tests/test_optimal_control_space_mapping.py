@@ -250,7 +250,7 @@ def test_ocsm_steepest_descent():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 2e-8
 
 
 def test_ocsm_ncg_FR():
@@ -298,7 +298,7 @@ def test_ocsm_ncg_HS():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 5e-5
+    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 6e-5
 
 
 def test_ocsm_ncg_DY():

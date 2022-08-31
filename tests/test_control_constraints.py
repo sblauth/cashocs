@@ -58,6 +58,8 @@ def test_pw_eq_constraint():
 
 
 def test_int_ineq_constraint():
+    rng = np.random.RandomState(300696)
+
     bounds = rng.random(2)
     bounds.sort()
     lower_bound = bounds[0]
@@ -73,30 +75,37 @@ def test_int_ineq_constraint():
     )
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound - shift_tol
+    u.vector().vec().set(lower_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_lower.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound + shift_tol
+    u.vector().vec().set(lower_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_lower.constraint_violation() - 0.0) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound + shift_tol
+    u.vector().vec().set(upper_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_upper.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound - shift_tol
+    u.vector().vec().set(upper_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_upper.constraint_violation() - 0.0) < 1e-14
 
-    u.vector()[:] = (upper_bound + lower_bound) / 2.0
+    u.vector().vec().set((upper_bound + lower_bound) / 2.0)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - 0.0) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound + shift_tol
+    u.vector().vec().set(upper_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound - shift_tol
+    u.vector().vec().set(lower_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
 
 

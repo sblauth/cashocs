@@ -339,6 +339,7 @@ def test_shape_lbfgs():
 
 def test_shape_volume_regularization():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -365,6 +366,7 @@ def test_shape_volume_regularization():
 
 def test_shape_surface_regularization():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -391,6 +393,7 @@ def test_shape_surface_regularization():
 
 def test_shape_barycenter_regularization():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -423,6 +426,7 @@ def test_shape_barycenter_regularization():
 
 def test_shape_barycenter_regularization_hole():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/barycenter_hole/mesh.xdmf"
@@ -581,6 +585,7 @@ def test_curvature_computation():
 
 def test_scalar_tracking_regularization():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -605,6 +610,7 @@ def test_scalar_tracking_regularization():
 
 
 def test_scalar_tracking_norm():
+    rng = np.random.RandomState(300696)
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -625,6 +631,7 @@ def test_scalar_tracking_norm():
 
 
 def test_scalar_tracking_weight():
+    rng = np.random.RandomState(300696)
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -655,6 +662,7 @@ def test_scalar_tracking_weight():
 
 def test_scalar_tracking_multiple():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -814,6 +822,7 @@ def test_distance_mu():
 
 def test_scaling_shape():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -839,6 +848,7 @@ def test_scaling_shape():
 
 def test_scaling_shape_regularization():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     no_iterations = 5
     test_weights = rng.rand(no_iterations, 4)
@@ -873,6 +883,7 @@ def test_scaling_shape_regularization():
 
 def test_scaling_scalar_only():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -906,6 +917,7 @@ def test_scaling_scalar_only():
 
 def test_scaling_scalar_and_single_cost():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -940,6 +952,7 @@ def test_scaling_scalar_and_single_cost():
 
 def test_scaling_all():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

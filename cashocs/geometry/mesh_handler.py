@@ -416,6 +416,8 @@ class _MeshHandler:
                         if line[:5] == "Mesh.":
                             file.write(line)
 
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
@@ -569,10 +571,7 @@ class _MeshHandler:
             new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                subprocess.run(  # nosec 603
-                    ["cashocs-convert", new_gmsh_file, new_xdmf_file],
-                    check=True,
-                )
+                io.convert(new_gmsh_file, new_xdmf_file)
 
             self.clean_previous_gmsh_files()
 

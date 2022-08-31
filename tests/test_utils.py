@@ -131,6 +131,8 @@ def test_multiplication():
 
 
 def test_create_bcs():
+    rng = np.random.RandomState(300696)
+
     trial = TrialFunction(V)
     test = TestFunction(V)
     a = inner(grad(trial), grad(test)) * dx

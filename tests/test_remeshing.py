@@ -195,20 +195,17 @@ def test_reentry():
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 def test_remeshing():
-    if MPI.comm_world.size > 1:
-        if MPI.rank(MPI.comm_world) == 0:
-            subprocess.run(
-                [
-                    "mpirun",
-                    "-n",
-                    f"{MPI.comm_world.size}",
-                    "python",
-                    f"{dir_path}/remeshing_script.py",
-                ],
-                check=True,
-            )
-    else:
-        subprocess.run(["python", f"{dir_path}/remeshing_script.py"], check=True)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(
+            [
+                "mpirun",
+                "-n",
+                f"{MPI.comm_world.size}",
+                "python",
+                f"{dir_path}/remeshing_script.py",
+            ],
+            check=True,
+        )
 
     MPI.barrier(MPI.comm_world)
     assert any(
@@ -284,6 +281,8 @@ def test_remeshing_functionality():
 
 
 def test_remesh_scaling():
+    rng = np.random.RandomState(300696)
+
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")

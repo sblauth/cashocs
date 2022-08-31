@@ -9,7 +9,7 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
-* Added space mapping methods to cashocs
+* Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.
 
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 

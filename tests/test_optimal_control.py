@@ -695,6 +695,7 @@ def test_control_bcs():
 
 def test_safeguard_gd():
     u.vector().vec().set(0.0)
+    u.vector().apply("")
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
     config.set("OptimizationRoutine", "safeguard_stepsize", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
