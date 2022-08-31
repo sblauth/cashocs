@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '17 22 * * *'
 
+env:
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  OMP_NUM_THREADS: 2
+    
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -34,7 +39,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        coverage run --source=cashocs -m pytest
+        coverage run --source=cashocs -m pytest tests/
 
     - name: Generate .xml coverage results
       shell: bash -l {0}

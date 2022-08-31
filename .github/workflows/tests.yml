@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '17 22 * * *'
 
+env:
+  OMP_NUM_THREADS: 2
+    
 jobs:
   tests:
     name: Test (py=${{ matrix.python-version}}, {{ $matrix.os }})
@@ -42,4 +45,8 @@ jobs:
 
     - name: Run tests
       run: |
-        python3 -m pytest
+        python3 -m pytest tests/
+    
+    - name: Run demos
+      run: |
+        python3 -m pytest demos/test.py
