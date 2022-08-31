@@ -37,6 +37,7 @@ jobs:
           deprecated">=1.2.12"
           gmsh">=4.8"
           mpich
+          matplotlib
           python=${{ matrix.python-version }}
 
     - name: Install package
