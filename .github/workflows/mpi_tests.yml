@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    name: MPI tests (${{ matrix.os }}, python ${{ matrix.python-version }})
+    name: MPI (py=${{ matrix.python-version }} n=${{ matrix.no-cores}} , ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.7", "3.8", "3.9", "3.10"]
-        no-cores: [1, 2, 3, 4, 5, 6]
+        no-cores: [1, 2, 3]
 
     steps:
     - name: Checkout repository
