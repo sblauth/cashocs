@@ -179,11 +179,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", unscaled_problem.temp_dir], check=True
+                    ["rm", "-r", unscaled_problem.temp_dir],
+                    check=True,
+                    stdin=subprocess.DEVNULL,
                 )
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
                     check=True,
+                    stdin=subprocess.DEVNULL,
                 )
 
             return problem
@@ -541,11 +544,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.temp_dir],
-                    check=True,
+                    ["rm", "-r", self.temp_dir], check=True, stdin=subprocess.DEVNULL
                 )
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
+                    ["rm", "-r", self.mesh_handler.remesh_directory],
+                    check=True,
+                    stdin=subprocess.DEVNULL,
                 )
             sys.__excepthook__(exctype, value, traceback)
 

@@ -302,10 +302,12 @@ class TempFileManager:
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
                     check=True,
+                    stdin=subprocess.DEVNULL,
                 )
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.remesh_directory],
                     check=True,
+                    stdin=subprocess.DEVNULL,
                 )
 
 
