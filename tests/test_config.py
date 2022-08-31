@@ -236,7 +236,8 @@ def test_incomplete_requirements_config():
 
 
 def test_no_config():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     cwd = os.getcwd()
     try:
         if MPI.rank(MPI.comm_world) == 0:

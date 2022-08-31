@@ -200,10 +200,12 @@ def test_create_named_bcs():
     fun1.vector().set_local(rng.rand(fun1.vector().local_size()))
 
     fun2 = Function(V_)
-    fun2.vector()[:] = fun1.vector()[:]
+    fun2.vector().vec().aypx(0.0, fun1.vector().vec())
+    fun2.vector().apply("")
 
     fun3 = Function(V_)
-    fun3.vector()[:] = fun1.vector()[:]
+    fun3.vector().vec().aypx(0.0, fun1.vector().vec())
+    fun3.vector().apply("")
 
     [bc.apply(fun1.vector()) for bc in bcs_int]
     [bc.apply(fun2.vector()) for bc in bcs_str]
@@ -247,7 +249,8 @@ def test_create_named_bcs():
 
 
 def test_moreau_yosida_regularization():
-    u.vector()[:] = 1e3
+    u.vector().vec().set(1e3)
+    u.vector().apply("")
     y_bar = 1e-1
     y_low = 1e-2
     gamma = 1e3

@@ -66,7 +66,8 @@ ocp_ksp = cashocs.OptimalControlProblem(
 
 def test_not_converged_error():
     with pytest.raises(NotConvergedError) as e_info:
-        u.vector()[:] = 0.0
+        u.vector().vec().set(0.0)
+        u.vector().apply("")
         ocp._erase_pde_memory()
         ocp.solve("gd", 1e-10, 0.0, 1)
     assert "failed to converge" in str(e_info.value)

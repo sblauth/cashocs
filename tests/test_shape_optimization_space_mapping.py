@@ -94,9 +94,10 @@ class FineModel(sosm.FineModel):
 
         u_temp, _ = up.split(True)
         u_temp.set_allow_extrapolation(True)
-        self.u.vector()[:] = interpolate(
-            u_temp, self.V_coarse.sub(0).collapse()
-        ).vector()[:]
+        self.u.vector().vec().aypx(
+            0.0, interpolate(u_temp, self.V_coarse.sub(0).collapse()).vector().vec()
+        )
+        self.u.vector().apply("")
 
 
 up = Function(V)

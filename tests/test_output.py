@@ -63,7 +63,8 @@ def test_save_pvd_files_ocp():
     config.set("Output", "save_pvd_adjoint", "True")
     config.set("Output", "save_pvd_gradient", "True")
     config.set("Output", "result_dir", dir_path + "/out")
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
