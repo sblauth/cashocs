@@ -47,7 +47,3 @@ jobs:
     - name: Run tests
       run: |
         mpirun -n ${{ matrix.no-cores }} python3 -m pytest tests/
-    
-    - name: Run demos
-      run: |
-        mpirun -n ${{ matrix.no-cores }} python3 -m pytest demos/test.py

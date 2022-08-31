@@ -203,18 +203,21 @@ def test_reentry():
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 def test_remeshing():
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            [
-                "mpirun",
-                "-n",
-                f"{MPI.comm_world.size}",
-                "python",
-                f"{dir_path}/remeshing_script.py",
-            ],
-            check=True,
-            stdin=subprocess.DEVNULL,
-        )
+    if MPI.comm_world.size > 1:
+        if MPI.rank(MPI.comm_world) == 0:
+            subprocess.run(
+                [
+                    "mpirun",
+                    "-n",
+                    f"{MPI.comm_world.size}",
+                    sys.executable,
+                    f"{dir_path}/remeshing_script.py",
+                ],
+                check=True,
+                stdin=subprocess.DEVNULL,
+            )
+    else:
+        subprocess.run([sys.executable, f"{dir_path}/remeshing_script.py"], check=True)
 
     MPI.barrier(MPI.comm_world)
     assert any(
