@@ -257,30 +257,33 @@ def test_first_remeshing_step():
 #             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
 #         )
 #         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
-#
-#
-# def test_remeshing_functionality():
-#     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-#     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
-#     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-#     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     MPI.barrier(MPI.comm_world)
-#     assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/mesh_0.msh")
-#
-#     sop.mesh_handler._generate_remesh_geo(config.get("Mesh", "gmsh_file"))
-#     assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/remesh.geo")
-#
-#     with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:
-#         file_contents = file.read()
-#         test_contents = "Merge 'mesh.msh';\nCreateGeometry;\n\nlc = 5e-2;\nField[1] = Distance;\nField[1].NNodesByEdge = 1000;\nField[1].NodesList = {2};\nField[2] = Threshold;\nField[2].IField = 1;\nField[2].DistMin = 1e-1;\nField[2].DistMax = 5e-1;\nField[2].LcMin = lc / 10;\nField[2].LcMax = lc;\nBackground Field = 2;\n"
-#
-#         assert file_contents == test_contents
-#
-#     MPI.barrier(MPI.comm_world)
-#     if MPI.rank(MPI.comm_world) == 0:
-#         subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
+
+
+def test_remeshing_functionality():
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    MPI.barrier(MPI.comm_world)
+    assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/mesh_0.msh")
+
+    sop.mesh_handler._generate_remesh_geo(config.get("Mesh", "gmsh_file"))
+    assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/remesh.geo")
+
+    if MPI.rank(MPI.comm_world) == 0:
+        with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:
+            file_contents = file.read()
+            test_contents = "Merge 'mesh.msh';\nCreateGeometry;\n\nlc = 5e-2;\nField[1] = Distance;\nField[1].NNodesByEdge = 1000;\nField[1].NodesList = {2};\nField[2] = Threshold;\nField[2].IField = 1;\nField[2].DistMin = 1e-1;\nField[2].DistMax = 5e-1;\nField[2].LcMin = lc / 10;\nField[2].LcMax = lc;\nBackground Field = 2;\n"
+
+            assert file_contents == test_contents
+    else:
+        pass
+
+    MPI.barrier(MPI.comm_world)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
 
 
 def test_remesh_scaling():
