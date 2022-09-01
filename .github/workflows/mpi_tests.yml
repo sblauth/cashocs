@@ -46,4 +46,4 @@ jobs:
 
     - name: Run tests
       run: |
-        mpirun -n ${{ matrix.no-cores }} python3 -m pytest -x tests/
+        mpirun -n ${{ matrix.no-cores }} python3 -m pytest tests/
