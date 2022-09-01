@@ -427,10 +427,20 @@ def test_shape_barycenter_regularization():
 def test_shape_barycenter_regularization_hole():
     rng = np.random.RandomState(300696)
 
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("Regularization", "factor_volume", "1e2")
+    config.set("Regularization", "use_initial_volume", "True")
+    config.set("Regularization", "factor_barycenter", "1.0")
+    config.set("Regularization", "measure_hole", "True")
+    pos_x = rng.uniform(0.2, 0.4)
+    pos_y = rng.uniform(-0.4, -0.2)
+    config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
+    config.set("MeshQuality", "volume_change", "10")
+
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/barycenter_hole/mesh.xdmf"
     )
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
     V = FunctionSpace(mesh, "CG", 1)
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
     x = SpatialCoordinate(mesh)
@@ -441,14 +451,6 @@ def test_shape_barycenter_regularization_hole():
 
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-    config.set("Regularization", "factor_volume", "1e2")
-    config.set("Regularization", "use_initial_volume", "True")
-    config.set("Regularization", "factor_barycenter", "1.0")
-    # config.set("Regularization", "measure_hole", "True")
-    pos_x = rng.uniform(0.2, 0.4)
-    pos_y = rng.uniform(-0.4, -0.2)
-    config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
-    config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
     MPI.barrier(MPI.comm_world)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
@@ -687,6 +689,11 @@ def test_scalar_tracking_multiple():
 
 def test_inhomogeneous_mu():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
+    config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
+    config.set("ShapeGradient", "mu_fix", "1.0")
+    config.set("ShapeGradient", "mu_def", "10.0")
+    config.set("ShapeGradient", "inhomogeneous", "True")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
     V = FunctionSpace(mesh, "CG", 1)
@@ -702,11 +709,7 @@ def test_inhomogeneous_mu():
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
     J = u * dx
-    config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
-    config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
-    config.set("ShapeGradient", "mu_fix", "1.0")
-    config.set("ShapeGradient", "mu_def", "10.0")
-    # config.set("ShapeGradient", "inhomogeneous", "True")
+
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
