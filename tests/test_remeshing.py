@@ -281,29 +281,29 @@ def test_first_remeshing_step():
 #     MPI.barrier(MPI.comm_world)
 #     if MPI.rank(MPI.comm_world) == 0:
 #         subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
-#
-#
-# def test_remesh_scaling():
-#     rng = np.random.RandomState(300696)
-#
-#     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-#     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
-#     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-#     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-#
-#     with patch.object(sys, "argv", [os.path.realpath(__file__)]):
-#         w_des = rng.rand(1)[0]
-#         sop = cashocs.ShapeOptimizationProblem(
-#             e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]
-#         )
-#         val = sop.reduced_cost_functional.evaluate()
-#         assert np.abs(np.abs(val) - w_des) < 1e-14
-#
-#     MPI.barrier(MPI.comm_world)
-#     if MPI.rank(MPI.comm_world) == 0:
-#         subprocess.run(
-#             [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-#         )
-#         subprocess.run(
-#             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
-#         )
+
+
+def test_remesh_scaling():
+    rng = np.random.RandomState(300696)
+
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+
+    with patch.object(sys, "argv", [os.path.realpath(__file__)]):
+        w_des = rng.rand(1)[0]
+        sop = cashocs.ShapeOptimizationProblem(
+            e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]
+        )
+        val = sop.reduced_cost_functional.evaluate()
+        assert np.abs(np.abs(val) - w_des) < 1e-14
+
+    MPI.barrier(MPI.comm_world)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(
+            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+        )
+        subprocess.run(
+            [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
+        )

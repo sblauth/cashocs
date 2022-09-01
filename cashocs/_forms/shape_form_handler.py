@@ -312,7 +312,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     .vector()
                     .vec(),
                 )
-                self.volumes.vector().apply()
+                self.volumes.vector().apply("")
 
                 vol_max = self.volumes.vector().max()
                 self.volumes.vector().vec().scale(1 / vol_max)
