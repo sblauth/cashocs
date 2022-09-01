@@ -51,3 +51,7 @@ jobs:
     - name: Run demos
       run: |
         python3 -m pytest demos/test.py
+    
+    - name: Run demos in parallel
+      run: |
+        python3 -m pytest demos/test_mpi.py
