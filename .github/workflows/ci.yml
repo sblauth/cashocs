@@ -7,7 +7,7 @@ on:
     - cron: '17 22 * * *'
     
 jobs:
-  serial tests:
+  serial_tests:
     name: Serial test (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
@@ -48,7 +48,7 @@ jobs:
         python3 -m pytest tests/
 
         
-  parallel tests:
+  parallel_tests:
     name: Parallel test (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
@@ -90,7 +90,7 @@ jobs:
 
         
         
-  serial demos:
+  serial_demos:
     name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
@@ -132,7 +132,7 @@ jobs:
 
         
         
-  parallel demos:
+  parallel_demos:
     name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
