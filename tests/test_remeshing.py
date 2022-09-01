@@ -125,21 +125,13 @@ def test_first_remeshing_step():
     MPI.barrier(MPI.comm_world)
 
     if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            ["rm", "-r", f"{dir_path}/temp"], check=True, stdin=subprocess.DEVNULL
-        )
+        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
 
         subprocess.run(
-            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"],
-            shell=True,
-            check=True,
-            stdin=subprocess.DEVNULL,
+            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
         )
         subprocess.run(
-            [f"rm -r {dir_path}/._cashocs_remesh_temp_*"],
-            shell=True,
-            check=True,
-            stdin=subprocess.DEVNULL,
+            [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
 
 
@@ -214,7 +206,6 @@ def test_remeshing():
                 f"{dir_path}/remeshing_script.py",
             ],
             check=True,
-            stdin=subprocess.DEVNULL,
         )
     # else:
     #     subprocess.run([sys.executable, f"{dir_path}/remeshing_script.py"], check=True)

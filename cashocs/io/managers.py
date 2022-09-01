@@ -300,14 +300,10 @@ class TempFileManager:
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
-                    check=True,
-                    stdin=subprocess.DEVNULL,
+                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]], check=True
                 )
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.remesh_directory],
-                    check=True,
-                    stdin=subprocess.DEVNULL,
+                    ["rm", "-r", mesh_handler.remesh_directory], check=True
                 )
 
 
