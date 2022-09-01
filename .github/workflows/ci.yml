@@ -86,12 +86,12 @@ jobs:
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest
+        mpirun -n 2 python3 -m pytest tests/
 
         
         
   serial_demos:
-    name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
+    name: Serial demos (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -133,7 +133,7 @@ jobs:
         
         
   parallel_demos:
-    name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
+    name: Parallel demos (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
