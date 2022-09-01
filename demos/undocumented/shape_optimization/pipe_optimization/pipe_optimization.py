@@ -22,7 +22,7 @@ import cashocs
 # load the config
 config = cashocs.load_config("./config.ini")
 # define the Reynold's number
-Re = 4e2
+Re = 350.0
 
 # import the mesh and geometry
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
