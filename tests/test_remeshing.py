@@ -66,20 +66,20 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 J = u * dx
 
 
-# def test_verification_remeshing():
-#     dir_path = os.path.dirname(os.path.realpath(__file__))
-#
-#     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-#     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
-#     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-#     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#
+def test_verification_remeshing():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+
 # @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
 # def test_first_remeshing_step():
 #     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")

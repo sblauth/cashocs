@@ -309,7 +309,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     fenics.CellVolume(self.mesh), self.dg_function_space
                 )
 
-                vol_max = self.volumes.vector().vec().max()[1]
+                vol_max = self.volumes.vector().max()
                 self.volumes.vector().vec().scale(1 / vol_max)
                 self.volumes.vector().apply("")
 

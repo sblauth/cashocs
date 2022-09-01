@@ -111,16 +111,14 @@ can also define PETSc options for the adjoint system, which we do with ::
 
     adjoint_ksp_options = [
         ["ksp_type", "minres"],
-        ["pc_type", "icc"],
-        ["pc_factor_levels", 0],
+        ["pc_type", "jacobi"],
         ["ksp_rtol", 1e-6],
         ["ksp_atol", 1e-15],
     ]
 
 As can be seen, we now use a completely different solver, namely MINRES
-(the minimal residual method) with an ICC (incomplete Cholesky factorization)
-preconditioner with zero levels of fill, i.e., it uses the sparsity pattern of
-the system matrix. Finally, the tolerances for the adjoint solver can also be
+(the minimal residual method) with a jacobi
+preconditioner. Finally, the tolerances for the adjoint solver can also be
 rather different from the ones of the state system, as is shown here.
 
 .. hint::

@@ -198,6 +198,7 @@ def test_create_named_bcs():
 
     fun1 = Function(V_)
     fun1.vector().set_local(rng.rand(fun1.vector().local_size()))
+    fun1.vector().apply("")
 
     fun2 = Function(V_)
     fun2.vector().vec().aypx(0.0, fun1.vector().vec())
