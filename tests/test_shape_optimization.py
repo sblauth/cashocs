@@ -425,7 +425,6 @@ def test_shape_barycenter_regularization():
 
 
 def test_shape_barycenter_regularization_hole():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
     rng = np.random.RandomState(300696)
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -451,7 +450,9 @@ def test_shape_barycenter_regularization_hole():
     config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
     config.set("MeshQuality", "volume_change", "10")
     J_vol = Constant(0) * dx
+    MPI.barrier(MPI.comm_world)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
+    MPI.barrier(MPI.comm_world)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
