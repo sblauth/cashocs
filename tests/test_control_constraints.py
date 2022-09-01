@@ -173,8 +173,8 @@ def test_int_eq_constraints_only():
     )
     problem.solve(method="AL", tol=1e-1)
 
-    rank = MPI.rank(MPI.comm_world)
-    raise Exception(f"DEBUG: {rank = }   {constraint.constraint_violation() = }")
+    # rank = MPI.rank(MPI.comm_world)
+    # raise Exception(f"DEBUG: {rank = }   {constraint.constraint_violation() = }")
 
     assert constraint.constraint_violation() < 1e-2
 
