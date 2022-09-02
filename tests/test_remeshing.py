@@ -134,8 +134,12 @@ def test_first_remeshing_step():
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
 
+    MPI.barrier(MPI.comm_world)
+    assert True
+
 
 def test_reentry():
+    MPI.barrier(MPI.comm_world)
     old_sys_argv = sys.argv[:]
     sys.argv.append("--cashocs_remesh")
     sys.argv.append("--temp_dir")
@@ -175,28 +179,28 @@ def test_reentry():
 
     MPI.barrier(MPI.comm_world)
 
-    # assert os.path.isdir(dir_path + "/temp")
-    # assert os.path.isdir(dir_path + "/temp/pvd")
-    # assert os.path.isfile(dir_path + "/temp/history.txt")
-    # assert os.path.isfile(dir_path + "/temp/history.json")
-    # assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    # assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
-    # assert os.path.isfile(
-    #     dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
-    # ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
-    # assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
-    # assert os.path.isfile(
-    #     dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
-    # ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
-    # assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
-    # assert os.path.isfile(
-    #     dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
-    # ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
-    #
-    # MPI.barrier(MPI.comm_world)
-    #
-    # if MPI.rank(MPI.comm_world) == 0:
-    #     subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    assert os.path.isdir(dir_path + "/temp")
+    assert os.path.isdir(dir_path + "/temp/pvd")
+    assert os.path.isfile(dir_path + "/temp/history.txt")
+    assert os.path.isfile(dir_path + "/temp/history.json")
+    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
+    assert os.path.isfile(
+        dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
+    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
+    assert os.path.isfile(
+        dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
+    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
+    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
+    assert os.path.isfile(
+        dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
+    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
+
+    MPI.barrier(MPI.comm_world)
+
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
 
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
