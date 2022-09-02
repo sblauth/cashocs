@@ -170,13 +170,13 @@ def test_reentry():
 
     J = u * dx
 
-    # sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     # sop.solve(max_iter=10)
-    #
-    # MPI.barrier(MPI.comm_world)
-    #
-    # sys.argv = old_sys_argv[:]
-    #
+
+    MPI.barrier(MPI.comm_world)
+
+    sys.argv = old_sys_argv[:]
+
     # MPI.barrier(MPI.comm_world)
     #
     # assert os.path.isdir(dir_path + "/temp")
