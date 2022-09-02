@@ -201,8 +201,6 @@ def shape_gradient_test(
     current_cost_functional = sop.reduced_cost_functional.evaluate()
     shape_grad = sop.compute_shape_gradient()
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
-    print(f"DEBUG: {shape_derivative_h = }")
-    print(f"DEBUG: {current_cost_functional = }")
 
     coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -218,6 +216,9 @@ def shape_gradient_test(
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
     residuals = []
+    print(f"DEBUG: {box_lower = }")
+    print(f"DEBUG: {box_upper = }")
+    print(f"DEBUG: {epsilons = }")
 
     for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
@@ -228,7 +229,6 @@ def shape_gradient_test(
             # pylint: disable=protected-access
             sop._erase_pde_memory()
             perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
-            print(f"DEBUG: {perturbed_cost_functional}")
 
             res = abs(
                 perturbed_cost_functional
