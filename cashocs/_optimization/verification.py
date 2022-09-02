@@ -201,6 +201,8 @@ def shape_gradient_test(
     current_cost_functional = sop.reduced_cost_functional.evaluate()
     shape_grad = sop.compute_shape_gradient()
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
+    print(f"DEBUG: {shape_derivative_h = }")
+    print(f"DEBUG: {current_cost_functional = }")
 
     coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -226,6 +228,7 @@ def shape_gradient_test(
             # pylint: disable=protected-access
             sop._erase_pde_memory()
             perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
+            print(f"DEBUG: {perturbed_cost_functional}")
 
             res = abs(
                 perturbed_cost_functional
@@ -246,7 +249,6 @@ def shape_gradient_test(
             "The Taylor remainder is close to 0, results may be inaccurate."
         )
 
-    print(f"DEBUG: {residuals = }")
     rates = compute_convergence_rates(epsilons, residuals)
     result: float = np.min(rates)
     return result
