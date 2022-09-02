@@ -246,6 +246,7 @@ def shape_gradient_test(
             "The Taylor remainder is close to 0, results may be inaccurate."
         )
 
+    print(f"DEBUG: {residuals = }")
     rates = compute_convergence_rates(epsilons, residuals)
     result: float = np.min(rates)
     return result

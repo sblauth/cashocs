@@ -688,6 +688,8 @@ def test_scalar_tracking_multiple():
 
 
 def test_inhomogeneous_mu():
+    rng = np.random.RandomState(300696)
+
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
     config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
