@@ -223,7 +223,7 @@ def test_ocsm_broyden_bad():
         memory_size=4,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 2e-8
 
 
 def test_ocsm_bfgs():

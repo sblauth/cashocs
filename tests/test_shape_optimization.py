@@ -451,10 +451,10 @@ def test_shape_barycenter_regularization_hole():
 
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-    initial_volume = assemble(1 * dx)
     J_vol = Constant(0) * dx
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
+    rng = np.random.RandomState(300696)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -711,9 +711,9 @@ def test_inhomogeneous_mu():
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
     J = u * dx
-    vol = assemble(1 * dx)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    rng = np.random.RandomState(300696)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
