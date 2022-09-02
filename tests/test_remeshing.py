@@ -138,67 +138,67 @@ def test_first_remeshing_step():
     assert True
 
 
-def test_reentry():
-    with patch.object(
-        sys,
-        "argv",
-        [
-            os.path.realpath(__file__),
-            "--cashocs_remesh",
-            "--temp_dir",
-            f"{dir_path}/temp_test_directory",
-        ],
-    ):
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-        config.set("Output", "result_dir", dir_path + "/temp/")
-        config.set("Debug", "remeshing", "True")
-
-        MPI.barrier(MPI.comm_world)
-
-        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
-
-        V = FunctionSpace(mesh, "CG", 1)
-        u = Function(V)
-        p = Function(V)
-
-        x = SpatialCoordinate(mesh)
-        f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-
-        e = inner(grad(u), grad(p)) * dx - f * p * dx
-        bcs = DirichletBC(V, Constant(0), boundaries, 1)
-
-        J = u * dx
-
-        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-        sop.solve(max_iter=10)
-
-    MPI.barrier(MPI.comm_world)
-
-    assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/pvd")
-    assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/history.json")
-    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
-
-    MPI.barrier(MPI.comm_world)
-
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+# def test_reentry():
+#     with patch.object(
+#         sys,
+#         "argv",
+#         [
+#             os.path.realpath(__file__),
+#             "--cashocs_remesh",
+#             "--temp_dir",
+#             f"{dir_path}/temp_test_directory",
+#         ],
+#     ):
+#         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+#         config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+#         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+#         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+#         config.set("Output", "result_dir", dir_path + "/temp/")
+#         config.set("Debug", "remeshing", "True")
+#
+#         MPI.barrier(MPI.comm_world)
+#
+#         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
+#
+#         V = FunctionSpace(mesh, "CG", 1)
+#         u = Function(V)
+#         p = Function(V)
+#
+#         x = SpatialCoordinate(mesh)
+#         f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+#
+#         e = inner(grad(u), grad(p)) * dx - f * p * dx
+#         bcs = DirichletBC(V, Constant(0), boundaries, 1)
+#
+#         J = u * dx
+#
+#         sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+#         sop.solve(max_iter=10)
+#
+#     MPI.barrier(MPI.comm_world)
+#
+#     assert os.path.isdir(dir_path + "/temp")
+#     assert os.path.isdir(dir_path + "/temp/pvd")
+#     assert os.path.isfile(dir_path + "/temp/history.txt")
+#     assert os.path.isfile(dir_path + "/temp/history.json")
+#     assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
+#     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
+#     assert os.path.isfile(
+#         dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
+#     ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
+#     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
+#     assert os.path.isfile(
+#         dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
+#     ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
+#     assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
+#     assert os.path.isfile(
+#         dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
+#     ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
+#
+#     MPI.barrier(MPI.comm_world)
+#
+#     if MPI.rank(MPI.comm_world) == 0:
+#         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
 
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
