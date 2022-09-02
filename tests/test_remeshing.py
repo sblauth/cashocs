@@ -171,7 +171,7 @@ def test_reentry():
     #
     # MPI.barrier(MPI.comm_world)
     #
-    # sys.argv = old_sys_argv[:]
+    sys.argv = old_sys_argv[:]
     #
     # MPI.barrier(MPI.comm_world)
     #
