@@ -57,7 +57,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Install prerequistes
-      run: conda create -n test -c conda-forge fenics=2019 meshio">="5.0.0" pytest">=7.0.0" deprecated">=1.2.12" gmsh">=4.8" mpich matplotlib python=3.9
+      run: |
+        conda create -n test -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" deprecated">=1.2.12" gmsh">=4.8" mpich matplotlib python=3.9
     
     - name: Install package
       run: |
