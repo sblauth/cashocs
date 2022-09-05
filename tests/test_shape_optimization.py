@@ -460,266 +460,265 @@ def test_shape_barycenter_regularization_hole():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
-#
-# def test_custom_supply_shape():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     vfield = user_sop.get_vector_field()
-#     I = Identity(2)
-#
-#     adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
-#     dJ = (
-#         u * div(vfield) * dx
-#         - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
-#         + div(f * vfield) * p * dx
-#     )
-#
-#     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
-#
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#
-#     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
-#
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#
-#
-# def test_supply_from_custom_fspace():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     VCG = VectorFunctionSpace(mesh, "CG", 1)
-#     vfield = TestFunction(VCG)
-#     I = Identity(2)
-#
-#     adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
-#     dJ = (
-#         u * div(vfield) * dx
-#         - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
-#         + div(f * vfield) * p * dx
-#     )
-#
-#     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
-#
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#
-#
-# def test_custom_shape_scalar_product():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     config.set("ShapeGradient", "damping_factor", "0.0")
-#
-#     space = VectorFunctionSpace(mesh, "CG", 1)
-#     shape_scalar_product = (
-#         Constant(1)
-#         * inner((grad(TrialFunction(space))), (grad(TestFunction(space))))
-#         * dx
-#         + inner(TrialFunction(space), TestFunction(space)) * dx
-#     )
-#
-#     config.set("ShapeGradient", "damping_factor", "0.2")
-#
-#     sop = cashocs.ShapeOptimizationProblem(
-#         e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
-#     )
-#     sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=8)
-#
-#     assert sop.solver.relative_norm < sop.solver.rtol
-#
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     vfield = user_sop.get_vector_field()
-#     I = Identity(2)
-#
-#     adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
-#     dJ = (
-#         u * div(vfield) * dx
-#         - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
-#         + div(f * vfield) * p * dx
-#     )
-#
-#     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
-#
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#
-#     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
-#
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-#
-#
-# def test_curvature_computation():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     config.set("Regularization", "factor_curvature", "1.0")
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#
-#     sop.form_handler.shape_regularization.compute_curvature()
-#
-#     kappa = sop.form_handler.shape_regularization.kappa_curvature
-#     mean_curvature = assemble(sqrt(inner(kappa, kappa)) * ds) / assemble(1 * ds)
-#
-#     assert abs(mean_curvature - 1) < 1e-3
-#
-#
-# def test_scalar_tracking_regularization():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#     rng = np.random.RandomState(300696)
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#     radius = rng.uniform(0.33, 0.66)
-#     tracking_goal = np.pi * radius**2
-#     config.set("MeshQuality", "volume_change", "10")
-#     J_tracking = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goal)
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
-#
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#     sop.solve("lbfgs", rtol=1e-6, max_iter=50)
-#     coords = cashocs.io.mesh.gather_coordinates(mesh)
-#     coords = MPI.comm_world.bcast(coords, root=0)
-#     max_coordinate = np.max(coords)
-#     min_coordinate = -np.min(coords)
-#     assert abs(max_coordinate - radius) < 5e-3
-#     assert abs(min_coordinate - radius) < 5e-3
-#     assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
-#
-#
-# def test_scalar_tracking_norm():
-#     rng = np.random.RandomState(300696)
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     tracking_goal = rng.uniform(0.25, 0.75)
-#     norm_u = u * u * dx
-#     J_tracking = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal)
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
-#
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#     sop.solve("lbfgs", rtol=1e-5, max_iter=50)
-#     assert 0.5 * pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
-#
-#
-# def test_scalar_tracking_weight():
-#     rng = np.random.RandomState(300696)
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     tracking_goal = rng.uniform(0.25, 0.75)
-#     weight = rng.uniform(1.0, 1e3)
-#     norm_u = u * u * dx
-#     J = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal, weight=1.0)
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     sop.compute_state_variables()
-#     initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
-#     J = cashocs.ScalarTrackingFunctional(
-#         norm_u, tracking_goal, weight=weight / initial_function_value
-#     )
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     sop.compute_state_variables()
-#     val = sop.reduced_cost_functional.evaluate()
-#
-#     assert np.abs(val - weight) < 1e-15
-#
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#
-# def test_scalar_tracking_multiple():
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#     rng = np.random.RandomState(300696)
-#
-#     mesh.coordinates()[:, :] = initial_coordinates
-#     mesh.bounding_box_tree().build(mesh)
-#
-#     tracking_goals = [0.00541757222440158, 2.8726020865244792]
-#     norm_u = u * u * dx
-#     volume = Constant(1) * dx
-#     J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[0])
-#     J_volume = cashocs.ScalarTrackingFunctional(volume, tracking_goals[1])
-#     J = [J_u, J_volume]
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#     sop.solve("lbfgs", rtol=1e-7, max_iter=50)
-#     assert 0.5 * pow(assemble(norm_u) - tracking_goals[0], 2) < 1e-13
-#     assert 0.5 * pow(assemble(volume) - tracking_goals[1], 2) < 1e-15
-#
-#
-# def test_inhomogeneous_mu():
-#     rng = np.random.RandomState(300696)
-#
-#     config = cashocs.load_config(dir_path + "/config_sop.ini")
-#     config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
-#     config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
-#     config.set("ShapeGradient", "mu_fix", "1.0")
-#     config.set("ShapeGradient", "mu_def", "10.0")
-#     config.set("ShapeGradient", "inhomogeneous", "True")
-#
-#     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
-#     V = FunctionSpace(mesh, "CG", 1)
-#
-#     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-#
-#     x = SpatialCoordinate(mesh)
-#     f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-#
-#     u = Function(V)
-#     p = Function(V)
-#
-#     e = inner(grad(u), grad(p)) * dx - f * p * dx
-#
-#     J = u * dx
-#
-#     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-#     rng = np.random.RandomState(300696)
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-#
-#
+def test_custom_supply_shape():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    vfield = user_sop.get_vector_field()
+    I = Identity(2)
+
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
+    dJ = (
+        u * div(vfield) * dx
+        - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
+        + div(f * vfield) * p * dx
+    )
+
+    user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+
+    user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
+
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+
+
+def test_supply_from_custom_fspace():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    VCG = VectorFunctionSpace(mesh, "CG", 1)
+    vfield = TestFunction(VCG)
+    I = Identity(2)
+
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
+    dJ = (
+        u * div(vfield) * dx
+        - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
+        + div(f * vfield) * p * dx
+    )
+
+    user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+
+
+def test_custom_shape_scalar_product():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("ShapeGradient", "damping_factor", "0.0")
+
+    space = VectorFunctionSpace(mesh, "CG", 1)
+    shape_scalar_product = (
+        Constant(1)
+        * inner((grad(TrialFunction(space))), (grad(TestFunction(space))))
+        * dx
+        + inner(TrialFunction(space), TestFunction(space)) * dx
+    )
+
+    config.set("ShapeGradient", "damping_factor", "0.2")
+
+    sop = cashocs.ShapeOptimizationProblem(
+        e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
+    )
+    sop.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=8)
+
+    assert sop.solver.relative_norm < sop.solver.rtol
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    vfield = user_sop.get_vector_field()
+    I = Identity(2)
+
+    adjoint_form = inner(grad(p), grad(TestFunction(V))) * dx - TestFunction(V) * dx
+    dJ = (
+        u * div(vfield) * dx
+        - inner((div(vfield) * I - 2 * eps(vfield)) * grad(u), grad(p)) * dx
+        + div(f * vfield) * p * dx
+    )
+
+    user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
+
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+
+    user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
+
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+
+
+def test_curvature_computation():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    config.set("Regularization", "factor_curvature", "1.0")
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+    sop.form_handler.shape_regularization.compute_curvature()
+
+    kappa = sop.form_handler.shape_regularization.kappa_curvature
+    mean_curvature = assemble(sqrt(inner(kappa, kappa)) * ds) / assemble(1 * ds)
+
+    assert abs(mean_curvature - 1) < 1e-3
+
+
+def test_scalar_tracking_regularization():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    radius = rng.uniform(0.33, 0.66)
+    tracking_goal = np.pi * radius**2
+    config.set("MeshQuality", "volume_change", "10")
+    J_tracking = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goal)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+    sop.solve("lbfgs", rtol=1e-6, max_iter=50)
+    coords = cashocs.io.mesh.gather_coordinates(mesh)
+    coords = MPI.comm_world.bcast(coords, root=0)
+    max_coordinate = np.max(coords)
+    min_coordinate = -np.min(coords)
+    assert abs(max_coordinate - radius) < 5e-3
+    assert abs(min_coordinate - radius) < 5e-3
+    assert 0.5 * pow(assemble(1 * dx) - np.pi * radius**2, 2) < 1e-10
+
+
+def test_scalar_tracking_norm():
+    rng = np.random.RandomState(300696)
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    tracking_goal = rng.uniform(0.25, 0.75)
+    norm_u = u * u * dx
+    J_tracking = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal)
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+    sop.solve("lbfgs", rtol=1e-5, max_iter=50)
+    assert 0.5 * pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
+
+
+def test_scalar_tracking_weight():
+    rng = np.random.RandomState(300696)
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    tracking_goal = rng.uniform(0.25, 0.75)
+    weight = rng.uniform(1.0, 1e3)
+    norm_u = u * u * dx
+    J = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal, weight=1.0)
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.compute_state_variables()
+    initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
+    J = cashocs.ScalarTrackingFunctional(
+        norm_u, tracking_goal, weight=weight / initial_function_value
+    )
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.compute_state_variables()
+    val = sop.reduced_cost_functional.evaluate()
+
+    assert np.abs(val - weight) < 1e-15
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+
+def test_scalar_tracking_multiple():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    rng = np.random.RandomState(300696)
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    tracking_goals = [0.00541757222440158, 2.8726020865244792]
+    norm_u = u * u * dx
+    volume = Constant(1) * dx
+    J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[0])
+    J_volume = cashocs.ScalarTrackingFunctional(volume, tracking_goals[1])
+    J = [J_u, J_volume]
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+    sop.solve("lbfgs", rtol=1e-7, max_iter=50)
+    assert 0.5 * pow(assemble(norm_u) - tracking_goals[0], 2) < 1e-13
+    assert 0.5 * pow(assemble(volume) - tracking_goals[1], 2) < 1e-15
+
+
+def test_inhomogeneous_mu():
+    rng = np.random.RandomState(300696)
+
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "shape_bdry_def", "[1,2]")
+    config.set("ShapeGradient", "shape_bdry_fix", "[3,4]")
+    config.set("ShapeGradient", "mu_fix", "1.0")
+    config.set("ShapeGradient", "mu_def", "10.0")
+    config.set("ShapeGradient", "inhomogeneous", "True")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(20)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    u = Function(V)
+    p = Function(V)
+
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+
+    J = u * dx
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    rng = np.random.RandomState(300696)
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
+
 # def test_save_pvd_files():
 #     config = cashocs.load_config(dir_path + "/config_sop.ini")
 #     config.set("Output", "save_pvd", "True")
