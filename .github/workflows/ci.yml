@@ -46,50 +46,71 @@ jobs:
         OMP_NUM_THREADS: 2
       run: |
         python3 -m pytest tests/
-
-        
-  parallel_tests:
-    name: Parallel test (py=${{ matrix.python-version}}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash -l {0}
+  
+  
+  para_test:
+    name: Parallel test debug
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
-    - name: Install micromamba
-      uses: mamba-org/provision-with-micromamba@main
-      with:
-        environment-file: .github/micromamba/testenv.yml
-        extra-specs: |
-          fenics=2019
-          meshio">=5.0.0"
-          pytest">=7.0.0"
-          deprecated">=1.2.12"
-          gmsh">=4.8"
-          mpich
-          matplotlib
-          python=${{ matrix.python-version }}
-
+    - name: Install prerequistes
+      run: conda create -n test -c conda-forge fenics=2019 meshio">="5.0.0" pytest">=7.0.0" deprecated">=1.2.12" gmsh">=4.8" mpich matplotlib python=3.9
+    
     - name: Install package
       run: |
-        pip install .
+        conda run -n test pip install .
     
     - name: Run tests in parallel
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest -p no:cacheprovider tests/test_shape_optimization.py
+        conda run -n test mpirun -n 2 python3 -m pytest -p no:cacheprovider tests/test_shape_optimization.py
 
-        
-        
+#  parallel_tests:
+#    name: Parallel test (py=${{ matrix.python-version}}, ${{ matrix.os }})
+#    runs-on: ${{ matrix.os }}
+#    defaults:
+#      run:
+#        shell: bash -l {0}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: [ubuntu-latest]
+#        python-version: ["3.7", "3.8", "3.9", "3.10"]
+#
+#    steps:
+#    - name: Checkout repository
+#      uses: actions/checkout@v2
+#
+#    - name: Install micromamba
+#      uses: mamba-org/provision-with-micromamba@main
+#      with:
+#        environment-file: .github/micromamba/testenv.yml
+#        extra-specs: |
+#          fenics=2019
+#          meshio">=5.0.0"
+#          pytest">=7.0.0"
+#          deprecated">=1.2.12"
+#          gmsh">=4.8"
+#          mpich
+#          matplotlib
+#          python=${{ matrix.python-version }}
+#
+#    - name: Install package
+#      run: |
+#        pip install .
+#    
+#    - name: Run tests in parallel
+#      env: 
+#        OMP_NUM_THREADS: 1
+#      run: |
+#        mpirun -n 2 python3 -m pytest -p no:cacheprovider tests/test_shape_optimization.py
+#
+#        
+#        
   serial_demos:
     name: Serial demos (py=${{ matrix.python-version}}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
