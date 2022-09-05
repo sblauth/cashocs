@@ -216,9 +216,6 @@ def shape_gradient_test(
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
     residuals = []
-    print(f"DEBUG: {box_lower = }")
-    print(f"DEBUG: {box_upper = }")
-    print(f"DEBUG: {epsilons = }")
 
     for eps in epsilons:
         transformation.vector().vec().aypx(0.0, h[0].vector().vec())
