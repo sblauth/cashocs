@@ -86,7 +86,7 @@ jobs:
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest tests/test_shape_optimization.py
+        mpirun -n 2 python3 -m pytest tests/
 
         
         
