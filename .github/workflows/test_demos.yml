@@ -1,0 +1,84 @@
+name: cashocs ci
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '02 23 * * *'
+
+jobs:
+  serial_demos:
+    name: Serial demos
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: .github/micromamba/testenv.yml
+        extra-specs: |
+          fenics=2019
+          meshio">=5.0.0"
+          pytest">=7.0.0"
+          deprecated">=1.2.12"
+          gmsh">=4.8"
+          matplotlib
+          python=3.10
+
+    - name: Install package
+      run: |
+        pip install .
+    
+    - name: Run demos
+      env: 
+        OMP_NUM_THREADS: 2
+      run: |
+        python3 -m pytest demos/test.py
+
+        
+        
+  parallel_demos:
+    name: Parallel demos (${{ matrix.mpi }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        mpi: [mpich, openmpi]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: .github/micromamba/testenv.yml
+        extra-specs: |
+          fenics=2019
+          meshio">=5.0.0"
+          pytest">=7.0.0"
+          deprecated">=1.2.12"
+          gmsh">=4.8"
+          ${{ matrix.mpi }}
+          matplotlib
+          python=3.10
+
+    - name: Install package
+      run: |
+        pip install .
+        
+    - name: Run demos in parallel
+      env:
+        OMP_NUM_THREADS: 1
+      run: |
+        python3 -m pytest demos/test_mpi.py

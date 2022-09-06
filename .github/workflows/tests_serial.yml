@@ -1,0 +1,49 @@
+name: serial tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '17 22 * * *'
+    
+    
+jobs:
+  serial_tests:
+    name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: .github/micromamba/testenv.yml
+        extra-specs: |
+          fenics=2019
+          meshio">=5.0.0"
+          pytest">=7.0.0"
+          deprecated">=1.2.12"
+          gmsh">=4.8"
+          matplotlib
+          python=${{ matrix.python-version }}
+
+    - name: Install package
+      run: |
+        pip install .
+
+    - name: Run tests
+      env: 
+        OMP_NUM_THREADS: 2
+      run: |
+        python3 -m pytest tests/ --ignore=tests/test_remeshing_parallel.py
+ 
