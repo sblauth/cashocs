@@ -211,7 +211,7 @@ def test_shape_derivative_constrained():
         sop_expr.form_handler.shape_derivative,
         form_compiler_parameters={"quadrature_degree": 10},
     )[:]
-    ### degree estimation is only needed to avoid pytest warnings regarding numpy. This is only a fenics problem.
+    # degree estimation is only needed to avoid pytest warnings regarding numpy. This is only a fenics problem.
 
     exact_sd = assemble(exact_shape_derivative)[:]
     assert np.allclose(exact_sd, cashocs_sd_coord)

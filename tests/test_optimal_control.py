@@ -492,6 +492,8 @@ def test_different_spaces():
     ocp.solve(algorithm="bfgs")
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
+    parameters["ghost_mode"] = "none"
+
 
 def test_nonlinear_state_eq():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")

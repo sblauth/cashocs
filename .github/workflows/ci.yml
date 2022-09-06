@@ -45,7 +45,7 @@ jobs:
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        python3 -m pytest tests/
+        python3 -m pytest tests/ --ignore=tests/test_remeshing_parallel.py
  
 
  
@@ -87,7 +87,8 @@ jobs:
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest -s tests/test_shape_optimization.py
+        mpirun -n 2 python3 -m pytest tests/
+        python3 -m pytest tests/test_remeshing_parallel.py
 
         
         
