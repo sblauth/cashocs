@@ -44,15 +44,13 @@ jobs:
         
         
   parallel_demos:
-    name: Parallel demos (${{ matrix.mpi }})
+    name: Parallel demos
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     strategy:
       fail-fast: false
-      matrix:
-        mpi: [mpich, openmpi]
 
     steps:
     - name: Checkout repository
@@ -67,7 +65,7 @@ jobs:
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
-          ${{ matrix.mpi }}
+          mpich
           matplotlib
           python=3.10
 
