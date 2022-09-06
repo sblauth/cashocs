@@ -55,10 +55,7 @@ class FineModel(sosm.FineModel):
         cashocs.io.write_out_mesh(
             self.mesh, f"{dir_path}/sm_mesh/mesh.msh", f"{dir_path}/sm_mesh/fine.msh"
         )
-        if MPI.rank(MPI.comm_world) == 0:
-            cashocs.convert(
-                f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf"
-            )
+        cashocs.convert(f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
             f"{dir_path}/sm_mesh/fine.xdmf"
@@ -94,9 +91,10 @@ class FineModel(sosm.FineModel):
 
         u_temp, _ = up.split(True)
         u_temp.set_allow_extrapolation(True)
-        self.u.vector()[:] = interpolate(
-            u_temp, self.V_coarse.sub(0).collapse()
-        ).vector()[:]
+        self.u.vector().vec().aypx(
+            0.0, interpolate(u_temp, self.V_coarse.sub(0).collapse()).vector().vec()
+        )
+        self.u.vector().apply("")
 
 
 up = Function(V)

@@ -238,7 +238,7 @@ class ScalarTrackingFunctional(Functional):
         self.integrand_value.vector().vec().set(scalar_integral_value)
         self.integrand_value.vector().apply("")
         val: float = (
-            self.weight.vector().vec()[0]
+            self.weight.vector().vec().sum()
             / 2.0
             * pow(scalar_integral_value - self.tracking_goal, 2)
         )
@@ -340,12 +340,12 @@ class MinMaxFunctional(Functional):
         if self.lower_bound is not None:
             val += (
                 1
-                / (2 * self.mu.vector().vec()[0])
+                / (2 * self.mu.vector().vec().sum())
                 * pow(
                     np.minimum(
                         0.0,
-                        self.lambd.vector().vec()[0]
-                        + self.mu.vector().vec()[0]
+                        self.lambd.vector().vec().sum()
+                        + self.mu.vector().vec().sum()
                         * (min_max_integrand_value - self.lower_bound),
                     ),
                     2,
@@ -354,12 +354,12 @@ class MinMaxFunctional(Functional):
         if self.upper_bound is not None:
             val += (
                 1
-                / (2 * self.mu.vector().vec()[0])
+                / (2 * self.mu.vector().vec().sum())
                 * pow(
                     np.maximum(
                         0.0,
-                        self.lambd.vector().vec()[0]
-                        + self.mu.vector().vec()[0]
+                        self.lambd.vector().vec().sum()
+                        + self.mu.vector().vec().sum()
                         * (min_max_integrand_value - self.upper_bound),
                     ),
                     2,

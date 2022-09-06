@@ -74,8 +74,10 @@ def test_control_gradient_multiple():
 
 
 def test_control_gd_multiple():
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp._erase_pde_memory()
     ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=47)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
@@ -85,8 +87,10 @@ def test_control_cg_fr_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "FR")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -98,8 +102,10 @@ def test_control_cg_pr_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "PR")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -111,8 +117,10 @@ def test_control_cg_hs_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "HS")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -124,8 +132,10 @@ def test_control_cg_dy_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "DY")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -137,8 +147,10 @@ def test_control_cg_hz_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "HZ")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -147,8 +159,10 @@ def test_control_cg_hz_multiple():
 
 
 def test_control_bfgs_multiple():
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp._erase_pde_memory()
     ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=11)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
@@ -158,8 +172,10 @@ def test_control_newton_cg_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoTNM", "inner_newton", "cg")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )
@@ -171,8 +187,10 @@ def test_control_newton_cr_multiple():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoTNM", "inner_newton", "cr")
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(
         e, bcs_list, J, states, controls, adjoints, config
     )

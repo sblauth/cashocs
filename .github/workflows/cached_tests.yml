@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '17 22 * * *'
 
+env:
+  OMP_NUM_THREADS: 2
+    
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -34,7 +37,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        coverage run --source=cashocs -m pytest
+        coverage run --source=cashocs -m pytest tests/ --ignore=tests/test_remeshing_parallel.py
 
     - name: Generate .xml coverage results
       shell: bash -l {0}

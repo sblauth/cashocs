@@ -143,6 +143,7 @@ class OptimizationAlgorithm(abc.ABC):
         if self.soft_exit:
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 

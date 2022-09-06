@@ -45,8 +45,7 @@ ksp_options = [
 
 adjoint_ksp_options = [
     ["ksp_type", "minres"],
-    ["pc_type", "icc"],
-    ["pc_factor_levels", 0],
+    ["pc_type", "jacobi"],
     ["ksp_rtol", 1e-6],
     ["ksp_atol", 1e-15],
 ]

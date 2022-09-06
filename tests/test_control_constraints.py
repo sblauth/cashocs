@@ -39,7 +39,8 @@ J = pow(u - 0.5, 2) * dx
 
 
 def test_int_eq_constraint():
-    y.vector()[:] = 0.0
+    y.vector().vec().set(0.0)
+    y.vector().apply("")
     int_eq_target = rng.uniform(-1.0, 1.0)
     int_eq_constraint = cashocs.EqualityConstraint(y * y * dx, int_eq_target)
     assert int_eq_constraint.constraint_violation() == abs(int_eq_target)
@@ -58,6 +59,8 @@ def test_pw_eq_constraint():
 
 
 def test_int_ineq_constraint():
+    rng = np.random.RandomState(300696)
+
     bounds = rng.random(2)
     bounds.sort()
     lower_bound = bounds[0]
@@ -73,36 +76,44 @@ def test_int_ineq_constraint():
     )
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound - shift_tol
+    u.vector().vec().set(lower_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_lower.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound + shift_tol
+    u.vector().vec().set(lower_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_lower.constraint_violation() - 0.0) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound + shift_tol
+    u.vector().vec().set(upper_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_upper.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound - shift_tol
+    u.vector().vec().set(upper_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_upper.constraint_violation() - 0.0) < 1e-14
 
-    u.vector()[:] = (upper_bound + lower_bound) / 2.0
+    u.vector().vec().set((upper_bound + lower_bound) / 2.0)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - 0.0) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = upper_bound + shift_tol
+    u.vector().vec().set(upper_bound + shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
 
     shift_tol = rng.random()
-    u.vector()[:] = lower_bound - shift_tol
+    u.vector().vec().set(lower_bound - shift_tol)
+    u.vector().apply("")
     assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
 
 
 def test_pw_ineq_constraint():
     lin_expr = Expression("2*(x[0] - 0.5)", degree=1)
-    u.vector()[:] = interpolate(lin_expr, V).vector()[:]
+    u.vector().vec().aypx(0.0, interpolate(lin_expr, V).vector().vec())
+    u.vector().apply("")
 
     lower_bound = Function(V)
     lower_bound.vector().set_local(
@@ -152,7 +163,8 @@ def test_pw_ineq_constraint():
 
 
 def test_int_eq_constraints_only():
-    u.vector()[:] = 1.0
+    u.vector().vec().set(1.0)
+    u.vector().apply("")
     constraint = cashocs.EqualityConstraint(y * y * dx, 1.0)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("Output", "verbose", "False")
@@ -162,7 +174,8 @@ def test_int_eq_constraints_only():
     problem.solve(method="AL", tol=1e-1)
     assert constraint.constraint_violation() < 1e-2
 
-    u.vector()[:] = 1.0
+    u.vector().vec().set(1.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
@@ -171,7 +184,8 @@ def test_int_eq_constraints_only():
 
 
 def test_pw_eq_constraints_only():
-    u.vector()[:] = 1.0
+    u.vector().vec().set(1.0)
+    u.vector().apply("")
     constraint = cashocs.EqualityConstraint(y + u, 0.0, dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("Output", "verbose", "False")
@@ -181,7 +195,8 @@ def test_pw_eq_constraints_only():
     problem.solve(method="AL", tol=1e-1)
     assert constraint.constraint_violation() < 1e-2
 
-    u.vector()[:] = 1.0
+    u.vector().vec().set(1.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
@@ -190,7 +205,8 @@ def test_pw_eq_constraints_only():
 
 
 def test_int_ineq_constraints_only():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     J = pow(y - Constant(1.0), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     constraint = cashocs.InequalityConstraint(y * y * dx, upper_bound=0.5)
@@ -200,14 +216,16 @@ def test_int_ineq_constraints_only():
     problem.solve(method="AL", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     J = pow(y - Constant(0.1), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     constraint = cashocs.InequalityConstraint(y * y * dx, lower_bound=0.5)
@@ -217,13 +235,15 @@ def test_int_ineq_constraints_only():
     problem.solve(method="AL", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
 
 def test_pw_ineq_constraints_only():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     J = pow(y - Constant(1.0), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "250")
@@ -234,14 +254,16 @@ def test_pw_ineq_constraints_only():
     problem.solve(method="AL", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
     problem.solve(method="QP", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     J = pow(y - Constant(-1), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "250")
@@ -252,7 +274,8 @@ def test_pw_ineq_constraints_only():
     problem.solve(method="AL", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
@@ -260,7 +283,8 @@ def test_pw_ineq_constraints_only():
     assert constraint.constraint_violation() <= 1e-3
 
     lin_expr = Expression("2*(x[0] - 0.5)", degree=1)
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     J = pow(y - lin_expr, 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "250")
@@ -273,7 +297,8 @@ def test_pw_ineq_constraints_only():
     problem.solve(method="AL", tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )

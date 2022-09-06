@@ -26,6 +26,7 @@ import cashocs
 
 set_log_level(LogLevel.CRITICAL)
 config = cashocs.load_config("config.ini")
+parameters["ghost_mode"] = "shared_vertex"
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(50)
 

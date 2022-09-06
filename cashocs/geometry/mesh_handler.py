@@ -75,6 +75,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
                     parametrizations_section = False
 
         subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover
@@ -181,6 +182,7 @@ class _MeshHandler:
                 self.remesh_directory: str = fenics.MPI.comm_world.bcast(
                     remesh_directory, root=0
                 )
+                fenics.MPI.barrier(fenics.MPI.comm_world)
             else:
                 self.remesh_directory = self.temp_dict["remesh_directory"]
             if not os.path.isdir(os.path.realpath(self.remesh_directory)):
@@ -199,6 +201,7 @@ class _MeshHandler:
                 subprocess.run(  # nosec 603
                     ["cp", self.gmsh_file, self.gmsh_file_init], check=True
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             self.gmsh_file = self.gmsh_file_init
 
     def move_mesh(self, transformation: fenics.Function) -> bool:
@@ -416,11 +419,14 @@ class _MeshHandler:
                         if line[:5] == "Mesh.":
                             file.write(line)
 
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
         if os.path.isfile(gmsh_file) and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         gmsh_pre_remesh_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
@@ -430,10 +436,12 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         if os.path.isfile(mesh_h5_file) and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
         if (
@@ -441,6 +449,7 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
@@ -450,6 +459,7 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
@@ -459,6 +469,7 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_h5_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
@@ -468,6 +479,7 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_xdmf_file = (
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
@@ -477,6 +489,7 @@ class _MeshHandler:
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _restart_script(self, temp_dir: str) -> None:
         """Restarts the python script with itself and replaces the process.
@@ -559,6 +572,7 @@ class _MeshHandler:
                     )
                 else:
                     subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
             _remove_gmsh_parametrizations(new_gmsh_file)
 
@@ -568,11 +582,7 @@ class _MeshHandler:
 
             new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                subprocess.run(  # nosec 603
-                    ["cashocs-convert", new_gmsh_file, new_xdmf_file],
-                    check=True,
-                )
+            io.convert(new_gmsh_file, new_xdmf_file)
 
             self.clean_previous_gmsh_files()
 
@@ -591,5 +601,6 @@ class _MeshHandler:
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open(f"{temp_dir}/temp_dict.json", "w", encoding="utf-8") as file:
                     json.dump(self.temp_dict, file)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
             self._restart_script(temp_dir)

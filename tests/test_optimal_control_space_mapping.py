@@ -90,7 +90,8 @@ def test_ocsm_parameter_extraction_single():
     ocp.solve()
     control_ocp = u.vector()[:]
 
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     coarse_model = ocsm.CoarseModel(F, bcs, J, y, u, p, config=config)
     coarse_model.optimize()
     control_coarse_model = u.vector()[:]
@@ -156,8 +157,10 @@ def test_ocsm_parameter_extraction_multiple():
     u_ocp = u.vector()[:]
     v_ocp = v.vector()[:]
 
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     coarse_model = ocsm.CoarseModel(e, bcs_list, J, states, controls, adjoints, config)
     coarse_model.optimize()
     u_cm = u.vector()[:]
@@ -206,7 +209,8 @@ def test_ocsm_broyden_good():
 
 
 def test_ocsm_broyden_bad():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -219,11 +223,12 @@ def test_ocsm_broyden_bad():
         memory_size=4,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 2e-8
 
 
 def test_ocsm_bfgs():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -239,7 +244,8 @@ def test_ocsm_bfgs():
 
 
 def test_ocsm_steepest_descent():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -250,11 +256,12 @@ def test_ocsm_steepest_descent():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 1e-8
+    assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 2e-8
 
 
 def test_ocsm_ncg_FR():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -270,7 +277,8 @@ def test_ocsm_ncg_FR():
 
 
 def test_ocsm_ncg_PR():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -286,7 +294,8 @@ def test_ocsm_ncg_PR():
 
 
 def test_ocsm_ncg_HS():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -298,11 +307,12 @@ def test_ocsm_ncg_HS():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 5e-5
+    assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 6e-5
 
 
 def test_ocsm_ncg_DY():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -318,7 +328,8 @@ def test_ocsm_ncg_DY():
 
 
 def test_ocsm_ncg_HZ():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -330,4 +341,4 @@ def test_ocsm_ncg_HZ():
         use_backtracking_line_search=False,
     )
     space_mapping.solve()
-    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 1e-7
+    assert np.abs(fine_model.cost_functional_value - 0.005701000695522027) <= 2e-7

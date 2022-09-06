@@ -191,6 +191,7 @@ class ResultManager:
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 class HistoryManager:
@@ -222,6 +223,7 @@ class HistoryManager:
         """
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_output_str(solver), flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def print_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -242,6 +244,7 @@ class HistoryManager:
                 f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
             ) as file:
                 file.write(f"{generate_output_str(solver)}\n")
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def print_console_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -254,6 +257,7 @@ class HistoryManager:
         """
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_summary_str(solver), flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def print_file_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -267,6 +271,7 @@ class HistoryManager:
         if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(solver))
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 class TempFileManager:
@@ -300,13 +305,12 @@ class TempFileManager:
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]],
-                    check=True,
+                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]], check=True
                 )
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.remesh_directory],
-                    check=True,
+                    ["rm", "-r", mesh_handler.remesh_directory], check=True
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 class MeshManager:

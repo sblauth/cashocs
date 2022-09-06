@@ -43,6 +43,10 @@ if query is not None:
 else:
     has_gmsh = False
 
+is_parallel = False
+if MPI.comm_world.size > 1:
+    is_parallel = True
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -67,6 +71,7 @@ J = u * dx
 
 
 def test_verification_remeshing():
+    MPI.barrier(MPI.comm_world)
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
@@ -75,9 +80,13 @@ def test_verification_remeshing():
     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    MPI.barrier(MPI.comm_world)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    MPI.barrier(MPI.comm_world)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    MPI.barrier(MPI.comm_world)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    MPI.barrier(MPI.comm_world)
 
 
 @pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
@@ -133,39 +142,45 @@ def test_first_remeshing_step():
         subprocess.run(
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
+    MPI.barrier(MPI.comm_world)
 
 
 def test_reentry():
-    old_sys_argv = sys.argv[:]
-    sys.argv.append("--cashocs_remesh")
-    sys.argv.append("--temp_dir")
-    sys.argv.append(f"{dir_path}/temp_test_directory")
+    with patch.object(
+        sys,
+        "argv",
+        [
+            os.path.realpath(__file__),
+            "--cashocs_remesh",
+            "--temp_dir",
+            f"{dir_path}/temp_test_directory",
+        ],
+    ):
+        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+        config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+        config.set("Output", "result_dir", dir_path + "/temp/")
+        config.set("Debug", "remeshing", "True")
 
-    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
-    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-    config.set("Output", "result_dir", dir_path + "/temp/")
-    config.set("Debug", "remeshing", "True")
+        MPI.barrier(MPI.comm_world)
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
+        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
 
-    V = FunctionSpace(mesh, "CG", 1)
-    u = Function(V)
-    p = Function(V)
+        V = FunctionSpace(mesh, "CG", 1)
+        u = Function(V)
+        p = Function(V)
 
-    x = SpatialCoordinate(mesh)
-    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+        x = SpatialCoordinate(mesh)
+        f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
-    e = inner(grad(u), grad(p)) * dx - f * p * dx
-    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+        e = inner(grad(u), grad(p)) * dx - f * p * dx
+        bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
-    J = u * dx
+        J = u * dx
 
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(max_iter=10)
-
-    sys.argv = old_sys_argv[:]
+        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+        sop.solve(max_iter=10)
 
     MPI.barrier(MPI.comm_world)
 
@@ -191,24 +206,15 @@ def test_reentry():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
-@pytest.mark.skipif(not has_gmsh, reason="This test requires Gmsh")
+@pytest.mark.skipif(
+    not has_gmsh or is_parallel,
+    reason="This test requires Gmsh and cannot be run in parallel",
+)
 def test_remeshing():
-    if MPI.comm_world.size > 1:
-        if MPI.rank(MPI.comm_world) == 0:
-            subprocess.run(
-                [
-                    "mpirun",
-                    "-n",
-                    f"{MPI.comm_world.size}",
-                    "python",
-                    f"{dir_path}/remeshing_script.py",
-                ],
-                check=True,
-            )
-    else:
-        subprocess.run(["python", f"{dir_path}/remeshing_script.py"], check=True)
+    subprocess.run([sys.executable, f"{dir_path}/remeshing_script.py"], check=True)
 
     MPI.barrier(MPI.comm_world)
     assert any(
@@ -257,6 +263,7 @@ def test_remeshing():
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_remeshing_functionality():
@@ -272,18 +279,21 @@ def test_remeshing_functionality():
     sop.mesh_handler._generate_remesh_geo(config.get("Mesh", "gmsh_file"))
     assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/remesh.geo")
 
-    with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:
-        file_contents = file.read()
-        test_contents = "Merge 'mesh.msh';\nCreateGeometry;\n\nlc = 5e-2;\nField[1] = Distance;\nField[1].NNodesByEdge = 1000;\nField[1].NodesList = {2};\nField[2] = Threshold;\nField[2].IField = 1;\nField[2].DistMin = 1e-1;\nField[2].DistMax = 5e-1;\nField[2].LcMin = lc / 10;\nField[2].LcMax = lc;\nBackground Field = 2;\n"
+    if MPI.rank(MPI.comm_world) == 0:
+        with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:
+            file_contents = file.read()
+            test_contents = "Merge 'mesh.msh';\nCreateGeometry;\n\nlc = 5e-2;\nField[1] = Distance;\nField[1].NNodesByEdge = 1000;\nField[1].NodesList = {2};\nField[2] = Threshold;\nField[2].IField = 1;\nField[2].DistMin = 1e-1;\nField[2].DistMax = 5e-1;\nField[2].LcMin = lc / 10;\nField[2].LcMax = lc;\nBackground Field = 2;\n"
 
-        assert file_contents == test_contents
-
+            assert file_contents == test_contents
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_remesh_scaling():
+    rng = np.random.RandomState(300696)
+
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
@@ -305,3 +315,4 @@ def test_remesh_scaling():
         subprocess.run(
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
+    MPI.barrier(MPI.comm_world)

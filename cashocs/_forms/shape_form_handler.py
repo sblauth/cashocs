@@ -291,6 +291,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
+        self.volumes = fenics.Function(self.dg_function_space)
 
         self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
@@ -305,11 +306,15 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
 
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
-                self.volumes = fenics.project(
-                    fenics.CellVolume(self.mesh), self.dg_function_space
+                self.volumes.vector().vec().aypx(
+                    0.0,
+                    fenics.project(fenics.CellVolume(self.mesh), self.dg_function_space)
+                    .vector()
+                    .vec(),
                 )
+                self.volumes.vector().apply("")
 
-                vol_max = self.volumes.vector().vec().max()[1]
+                vol_max = self.volumes.vector().max()
                 self.volumes.vector().vec().scale(1 / vol_max)
                 self.volumes.vector().apply("")
 

@@ -209,6 +209,7 @@ def shape_gradient_test(
     else:
         box_lower = 0.0
         box_upper = 0.0
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     box_lower = fenics.MPI.comm_world.bcast(box_lower, root=0)
     box_upper = fenics.MPI.comm_world.bcast(box_upper, root=0)
@@ -274,5 +275,6 @@ def compute_convergence_rates(
 
     if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         print(f"Taylor test convergence rate: {rates}", flush=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     return rates
