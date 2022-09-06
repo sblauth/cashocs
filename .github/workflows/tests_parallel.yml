@@ -28,12 +28,12 @@ jobs:
       with:
         environment-file: .github/micromamba/testenv.yml
         extra-specs: |
+          python=${{ matrix.python-version }}
           fenics=2019
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
           ${{ matrix.mpi }}
-          python=${{ matrix.python-version }}
 
     - name: Install package
       run: |

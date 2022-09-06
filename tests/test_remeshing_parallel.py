@@ -78,7 +78,7 @@ def test_remeshing():
         [
             "mpirun",
             "-n",
-            f"{MPI.comm_world.size}",
+            "2",
             "python",
             f"{dir_path}/remeshing_script.py",
         ],
