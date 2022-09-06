@@ -1,4 +1,4 @@
-name: serial tests
+name: serial tests (ubuntu)
 
 on:
   workflow_dispatch:
@@ -9,15 +9,14 @@ on:
     
 jobs:
   serial_tests:
-    name: Test (py=${{ matrix.python-version}}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Test (py=${{ matrix.python-version}})
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-12]
         python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
