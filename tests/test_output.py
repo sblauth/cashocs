@@ -53,6 +53,7 @@ def test_time_suffix():
     assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_save_pvd_files_ocp():
@@ -92,6 +93,7 @@ def test_save_pvd_files_ocp():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_save_pvd_files_mixed():
@@ -169,3 +171,4 @@ def test_save_pvd_files_mixed():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)

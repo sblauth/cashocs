@@ -133,3 +133,4 @@ def test_remeshing():
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)

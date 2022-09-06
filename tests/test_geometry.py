@@ -41,8 +41,7 @@ rng = np.random.RandomState(300696)
 
 def test_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -76,8 +75,8 @@ def test_mesh_import():
     fe_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(fe_coords, gmsh_coords)
-
     fenics.MPI.barrier(fenics.MPI.comm_world)
+
     assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
     assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.xdmf")
@@ -93,12 +92,12 @@ def test_mesh_import():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_mesh_import_from_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(cfg)
@@ -131,6 +130,7 @@ def test_mesh_import_from_config():
     fe_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(fe_coords, gmsh_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
@@ -139,6 +139,7 @@ def test_mesh_import_from_config():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_regular_mesh():
@@ -165,6 +166,7 @@ def test_regular_mesh():
 
         assert np.alltrue(abs(np.max(s_coords, axis=0) - max_vals) < 1e-14)
         assert np.alltrue(abs(np.min(s_coords, axis=0) - min_vals) < 1e-14)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     t_mesh, _, _, _, _, _ = cashocs.regular_box_mesh(
         2, start_x=0.0, end_x=lens[0], start_y=0.0, end_y=lens[1]
@@ -173,6 +175,7 @@ def test_regular_mesh():
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(t_coords, r_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_mesh_quality_2D():
@@ -257,8 +260,7 @@ def test_mesh_quality_3D():
 
 def test_write_mesh():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -267,8 +269,7 @@ def test_write_mesh():
         mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
     )
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs.convert(f"{dir_path}/mesh/test.msh", f"{dir_path}/mesh/test.xdmf")
+    cashocs.convert(f"{dir_path}/mesh/test.msh", f"{dir_path}/mesh/test.xdmf")
     test, _, _, _, _, _ = cashocs.import_mesh(dir_path + "/mesh/test.xdmf")
 
     test_coords = gather_coordinates(test)
@@ -290,6 +291,7 @@ def test_write_mesh():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_empty_measure():
@@ -342,7 +344,6 @@ def test_convert_coordinate_defo_to_dof_defo():
 
     vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
     assert deformation_handler.move_mesh(vector_field)
-    # if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
@@ -395,6 +396,7 @@ def test_move_mesh():
         assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
         assert np.max(np.abs(coordinates_dof_moved - coordinates_added)) <= 1e-15
         assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_eikonal_distance():
@@ -414,10 +416,9 @@ def test_eikonal_distance():
 
 def test_named_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"]
-        )
+    cashocs.convert(
+        f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
+    )
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
@@ -467,6 +468,7 @@ def test_named_mesh_import():
         subprocess.run(
             ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
         )
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_create_measure():
@@ -499,6 +501,7 @@ def test_interval_mesh():
     i_coords = gather_coordinates(i_mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(coords, i_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     lens = rng.uniform(0.5, 2, 2)
     lens.sort()

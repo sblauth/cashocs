@@ -753,6 +753,7 @@ def test_save_pvd_files():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_distance_mu():

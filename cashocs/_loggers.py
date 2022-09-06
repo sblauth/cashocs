@@ -99,6 +99,7 @@ def debug(message: str) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         _cashocs_logger.debug(message)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def info(message: str) -> None:
@@ -110,6 +111,7 @@ def info(message: str) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         _cashocs_logger.info(message)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def warning(message: str) -> None:
@@ -121,6 +123,7 @@ def warning(message: str) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         _cashocs_logger.warning(message)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def error(message: str) -> None:
@@ -132,6 +135,7 @@ def error(message: str) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         _cashocs_logger.error(message)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def critical(message: str) -> None:
@@ -143,3 +147,4 @@ def critical(message: str) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         _cashocs_logger.critical(message)
+    fenics.MPI.barrier(fenics.MPI.comm_world)

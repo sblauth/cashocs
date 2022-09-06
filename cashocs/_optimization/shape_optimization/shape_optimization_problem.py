@@ -185,6 +185,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
                     check=True,
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
             return problem
 
@@ -391,6 +392,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     )
                 else:
                     temp_dir = ""
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 self.temp_dir: str = fenics.MPI.comm_world.bcast(temp_dir, root=0)
 
                 self._change_except_hook()
@@ -546,6 +548,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             sys.__excepthook__(exctype, value, traceback)
 
         sys.excepthook = custom_except_hook  # type: ignore

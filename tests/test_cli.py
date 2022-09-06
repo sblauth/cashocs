@@ -30,10 +30,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_cli():
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf"]
-        )
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -66,6 +63,7 @@ def test_cli():
     mesh_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(mesh_coords, gmsh_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
@@ -81,11 +79,11 @@ def test_cli():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_convert_wrapper():
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs.convert(f"{dir_path}/mesh/mesh.msh")
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -118,6 +116,7 @@ def test_convert_wrapper():
     mesh_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(mesh_coords, gmsh_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
@@ -133,13 +132,11 @@ def test_convert_wrapper():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_convert3D():
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert(
-            [f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf"]
-        )
+    cashocs.convert(f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh3.xdmf"
     )
@@ -168,6 +165,7 @@ def test_convert3D():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_wrong_formats():
@@ -177,11 +175,12 @@ def test_wrong_formats():
                 [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
             )
         assert "due to wrong format." in str(e_info.value)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
-
             cashocs._cli.convert(
                 [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
             )
         assert "due to wrong format." in str(e_info.value)
+    fenics.MPI.barrier(fenics.MPI.comm_world)

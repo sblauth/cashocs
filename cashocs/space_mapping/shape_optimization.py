@@ -492,6 +492,7 @@ class SpaceMapping:
                 f"    Mesh Quality = {self.current_mesh_quality:1.2f}\n",
                 flush=True,
             )
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
         while not self.converged:
             self.dir_prev[0].vector().vec().aypx(
@@ -524,6 +525,7 @@ class SpaceMapping:
                     f"    step size = {self.stepsize:.3e}",
                     flush=True,
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
             if self.eps <= self.tol:
                 self.converged = True
@@ -537,6 +539,7 @@ class SpaceMapping:
             if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
                     json.dump(self.space_mapping_history, file)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             output = (
                 f"\nStatistics --- "
                 f"Space mapping iterations: {self.iteration:4d} --- "
@@ -544,6 +547,7 @@ class SpaceMapping:
             )
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(output, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""

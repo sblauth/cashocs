@@ -39,6 +39,7 @@ def test_set_log_level(caplog):
         assert "jkl" in caplog.text
         assert "mno" in caplog.text
         caplog.clear()
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     cashocs.set_log_level(cashocs.LogLevel.INFO)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -53,6 +54,7 @@ def test_set_log_level(caplog):
         assert "jkl" in caplog.text
         assert "mno" in caplog.text
         caplog.clear()
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     cashocs.set_log_level(cashocs.LogLevel.WARNING)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -67,6 +69,7 @@ def test_set_log_level(caplog):
         assert "jkl" in caplog.text
         assert "mno" in caplog.text
         caplog.clear()
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     cashocs.set_log_level(cashocs.LogLevel.ERROR)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -81,6 +84,7 @@ def test_set_log_level(caplog):
         assert "jkl" in caplog.text
         assert "mno" in caplog.text
         caplog.clear()
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     cashocs.set_log_level(cashocs.LogLevel.CRITICAL)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -95,3 +99,4 @@ def test_set_log_level(caplog):
         assert not "jkl" in caplog.text
         assert "mno" in caplog.text
         caplog.clear()
+    fenics.MPI.barrier(fenics.MPI.comm_world)

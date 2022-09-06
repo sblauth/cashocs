@@ -142,7 +142,6 @@ def test_first_remeshing_step():
         subprocess.run(
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
-
     MPI.barrier(MPI.comm_world)
 
 
@@ -207,6 +206,7 @@ def test_reentry():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 @pytest.mark.skipif(
@@ -263,6 +263,7 @@ def test_remeshing():
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
         subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_remeshing_functionality():
@@ -284,12 +285,10 @@ def test_remeshing_functionality():
             test_contents = "Merge 'mesh.msh';\nCreateGeometry;\n\nlc = 5e-2;\nField[1] = Distance;\nField[1].NNodesByEdge = 1000;\nField[1].NodesList = {2};\nField[2] = Threshold;\nField[2].IField = 1;\nField[2].DistMin = 1e-1;\nField[2].DistMax = 5e-1;\nField[2].LcMin = lc / 10;\nField[2].LcMax = lc;\nBackground Field = 2;\n"
 
             assert file_contents == test_contents
-    else:
-        pass
-
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{sop.mesh_handler.remesh_directory}"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_remesh_scaling():
@@ -316,3 +315,4 @@ def test_remesh_scaling():
         subprocess.run(
             [f"rm -r {dir_path}/._cashocs_remesh_temp_*"], shell=True, check=True
         )
+    MPI.barrier(MPI.comm_world)

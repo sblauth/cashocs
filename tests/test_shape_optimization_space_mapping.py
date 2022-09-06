@@ -55,10 +55,7 @@ class FineModel(sosm.FineModel):
         cashocs.io.write_out_mesh(
             self.mesh, f"{dir_path}/sm_mesh/mesh.msh", f"{dir_path}/sm_mesh/fine.msh"
         )
-        if MPI.rank(MPI.comm_world) == 0:
-            cashocs.convert(
-                f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf"
-            )
+        cashocs.convert(f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
             f"{dir_path}/sm_mesh/fine.xdmf"

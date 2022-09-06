@@ -187,6 +187,7 @@ class _NewtonSolver:
             )
 
             print(info_str + print_str, flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
@@ -237,6 +238,7 @@ class _NewtonSolver:
         if self.res_0 == 0.0:  # pragma: no cover
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print("Residual vanishes, input is already a solution.", flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             return self.u
 
         self.res = self.res_0
@@ -299,6 +301,7 @@ class _NewtonSolver:
                     f"after {self.iterations:d} iterations.\n",
                     flush=True,
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             return True
 
         else:

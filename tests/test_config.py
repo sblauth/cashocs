@@ -242,6 +242,7 @@ def test_no_config():
     try:
         if MPI.rank(MPI.comm_world) == 0:
             os.chdir("./tests")
+        MPI.barrier(MPI.comm_world)
         ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p)
         with pytest.raises(InputError) as e_info:
             ocp.solve(rtol=1e-2, atol=0.0, max_iter=7)
@@ -259,6 +260,7 @@ def test_no_config():
         MPI.barrier(MPI.comm_world)
         if MPI.rank(MPI.comm_world) == 0:
             subprocess.run(["rm", "-r", f"{dir_path}/results"], check=True)
+        MPI.barrier(MPI.comm_world)
     except:
         raise Exception("Failed to change the working directory")
     finally:
