@@ -24,12 +24,12 @@ jobs:
       with:
         environment-file: .github/micromamba/testenv.yml
         extra-specs: |
-          python=3.10
           fenics=2019
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
           matplotlib
+          python=3.10
 
     - name: Install package
       run: |
@@ -63,13 +63,13 @@ jobs:
       with:
         environment-file: .github/micromamba/testenv.yml
         extra-specs: |
-          python=3.10
           fenics=2019
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
           ${{ matrix.mpi }}
           matplotlib
+          python=3.10
 
     - name: Install package
       run: |

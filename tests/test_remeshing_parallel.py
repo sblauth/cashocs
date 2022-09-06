@@ -46,6 +46,11 @@ is_parallel = False
 if MPI.comm_world.size > 1:
     is_parallel = True
 
+uses_ompi = False
+query = shutil.which("ompi_info")
+if query is not None:
+    uses_ompi = True
+
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -70,21 +75,15 @@ J = u * dx
 
 
 @pytest.mark.skipif(
-    not has_gmsh or is_parallel,
-    reason="This test requires Gmsh and cannot be run in parallel",
+    not has_gmsh or is_parallel or uses_ompi,
+    reason="This test requires Gmsh and cannot be run in parallel. "
+    "Remeshing in parallel only works for mpich, not openmpi",
 )
 def test_remeshing():
     subprocess.run(
-        [
-            "mpirun",
-            "-n",
-            "2",
-            "python",
-            f"{dir_path}/remeshing_script.py",
-        ],
+        ["mpirun", "-n", "2", sys.executable, f"{dir_path}/remeshing_script.py"],
         check=True,
     )
-    subprocess.run([sys.executable, f"{dir_path}/remeshing_script.py"], check=True)
 
     MPI.barrier(MPI.comm_world)
     assert any(
