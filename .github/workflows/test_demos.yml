@@ -66,7 +66,6 @@ jobs:
           fenics=2019
           meshio">=5.0.0"
           pytest">=7.0.0"
-          deprecated">=1.2.12"
           gmsh">=4.8"
           ${{ matrix.mpi }}
           matplotlib
