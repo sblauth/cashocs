@@ -18,6 +18,9 @@ jobs:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
         mpi: [mpich, openmpi]
+      exclude:
+        - python-version: "3.8"
+          mpi: openmpi
 
     steps:
     - name: Checkout repository
