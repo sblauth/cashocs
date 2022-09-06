@@ -1,4 +1,4 @@
-name: cashocs ci
+name: test demos
 
 on:
   workflow_dispatch:
