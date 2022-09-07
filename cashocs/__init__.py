@@ -59,7 +59,7 @@ from cashocs.nonlinear_solvers import damped_newton_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "1.8.4"
+__version__ = "1.8.5"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
