@@ -1,4 +1,4 @@
-name: Build and publish
+name: Release on GitHub and PyPI
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  tests:
+  run_tests:
+    name: Run tests before publishing
     runs-on: ubuntu-latest
     container:
       image: sblauth/cashocs:latest

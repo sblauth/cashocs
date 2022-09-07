@@ -1,4 +1,4 @@
-name: serial tests (ubuntu)
+name: Tests (ubuntu, serial)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
     
 jobs:
   serial_tests:
-    name: Test (py=${{ matrix.python-version}})
+    name: Test (py=${{ matrix.python-version}}, ubuntu-latest)
     runs-on: ubuntu-latest
     defaults:
       run:

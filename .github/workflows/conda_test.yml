@@ -1,4 +1,4 @@
-name: Test conda package
+name: Test conda installation
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   conda_test:
-    name: Test conda package
+    name: Test conda installation
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-12]

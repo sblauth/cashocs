@@ -1,4 +1,4 @@
-name: cached tests
+name: Tests
 
 on:
   push:
@@ -12,6 +12,7 @@ env:
     
 jobs:
   tests:
+    name: Tests
     runs-on: ubuntu-latest
     container:
       image: sblauth/cashocs:latest

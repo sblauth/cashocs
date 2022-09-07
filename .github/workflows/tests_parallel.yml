@@ -1,4 +1,4 @@
-name: parallel tests
+name: Tests (ubuntu, parallel)
 
 on:
   workflow_dispatch:
