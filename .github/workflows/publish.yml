@@ -33,7 +33,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pytest
+        pytest tests/ --ignore=tests/test_remeshing_parallel.py
 
 
   release:
