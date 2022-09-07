@@ -132,8 +132,8 @@ The parameter ``newton_damped``, which is set via ::
 
 is a boolean flag, indicating whether a damping strategy should be performed for the
 Newton method, or whether the classical Newton-Raphson iteration shall be used. This
-defaults to ``True``, but for some problems it might be beneficial (and faster) to not
-use damping.
+defaults to ``False`` (as this is faster), but for some problems it might be beneficial to
+use damping in order to enhance the convergence of the nonlinear solver.
 
 Additionally, we have the boolean parameter ``newton_inexact``, defined via ::
 
@@ -927,7 +927,7 @@ in the following.
       - ``50``
       - maximum iterations for Newton's method
     * - newton_damped
-      - ``True``
+      - ``False``
       - if ``True``, damping is enabled
     * - newton_inexact
       - ``False``

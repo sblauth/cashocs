@@ -151,11 +151,11 @@ Manual Installation
     To verify that the installation was successful, run the tests for cashocs
     with ::
 
-        python3 -m pytest
+        python3 -m pytest tests/
 
     or simply ::
 
-        pytest
+        pytest tests/
 
     from the source / repository root directory. Note, that it might take some
     time to perform all of these tests for the very first time, as FEniCS

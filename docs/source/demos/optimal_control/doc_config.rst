@@ -88,7 +88,7 @@ Moreover, we have the boolean ``newton_damped`` ::
     newton_damped = True
 
 which determines whether a damping should be used (in case this is ``True``) or not
-(otherwise). This parameter defaults to ``True`` if nothing is given.
+(otherwise). This parameter defaults to ``False`` if nothing is given.
 
 Additionally, we have the boolean parameter ``newton_inexact``, defined via ::
 
@@ -501,7 +501,7 @@ in the following.
       - ``50``
       - maximum iterations for Newton's method
     * - newton_damped
-      - ``True``
+      - ``False``
       - if ``True``, damping is enabled
     * - newton_inexact
       - ``False``
