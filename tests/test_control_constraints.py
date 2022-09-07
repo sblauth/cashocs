@@ -266,7 +266,7 @@ def test_pw_ineq_constraints_only():
     u.vector().apply("")
     J = pow(y - Constant(-1), 2) * dx
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
-    cfg.set("OptimizationRoutine", "maximum_iterations", "250")
+    cfg.set("OptimizationRoutine", "maximum_iterations", "500")
     constraint = cashocs.InequalityConstraint(y, lower_bound=-0.5, measure=dx)
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
