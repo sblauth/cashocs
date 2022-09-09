@@ -23,6 +23,7 @@ import abc
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
+import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -155,6 +156,9 @@ class OptimizationAlgorithm(abc.ABC):
             self.output_summary()
 
         else:
+            self.objective_value = self.cost_functional.evaluate()
+            self.gradient_norm = np.NAN
+            self.relative_norm = np.nan
             # maximum iterations reached
             if self.converged_reason == -1:
                 self.output()
