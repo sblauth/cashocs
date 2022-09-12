@@ -58,7 +58,9 @@ def test_state_adjoint_problems():
     L_adjoint = -(state - y_d) * test * dx
 
     y_d.vector().set_local(rng.rand(y_d.vector().local_size()))
+    y_d.vector().apply("")
     u.vector().set_local(rng.rand(u.vector().local_size()))
+    u.vector().apply("")
 
     ocp.compute_state_variables()
     ocp.compute_adjoint_variables()
@@ -80,7 +82,9 @@ def test_control_gradient():
 
     ocp._erase_pde_memory()
     y_d.vector().set_local(rng.rand(y_d.vector().local_size()))
+    y_d.vector().apply("")
     u.vector().set_local(rng.rand(u.vector().local_size()))
+    u.vector().apply("")
 
     c_gradient = ocp.compute_gradient()[0]
     solve(a == L, gradient)

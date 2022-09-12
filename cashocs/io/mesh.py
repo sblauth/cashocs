@@ -81,6 +81,7 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
             coordinates[verts] = coords
     else:
         coordinates = np.zeros((1, 1))
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     return coordinates
 

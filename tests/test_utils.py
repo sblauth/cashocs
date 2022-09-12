@@ -92,6 +92,7 @@ def test_summation():
     for i in range(dim):
         temp = Function(V)
         temp.vector().set_local(rng.rand(temp.vector().local_size()))
+        temp.vector().apply("")
         funcs.append(temp)
 
     F = cashocs._utils.summation([funcs[i] * test * dx for i in range(dim)])
@@ -116,6 +117,7 @@ def test_multiplication():
     for i in range(dim):
         temp = Function(V)
         temp.vector().set_local(rng.rand(temp.vector().local_size()))
+        temp.vector().apply("")
         funcs.append(temp)
 
     F = cashocs._utils.multiplication([funcs[i] for i in range(dim)]) * test * dx

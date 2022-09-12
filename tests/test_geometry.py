@@ -100,6 +100,7 @@ def test_mesh_import_from_config():
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(cfg)
 
     gmsh_coords = np.array(
@@ -143,6 +144,7 @@ def test_mesh_import_from_config():
 
 
 def test_regular_mesh():
+    rng = np.random.RandomState(300696)
     lens = rng.uniform(0.5, 2, 2)
     r_mesh, _, _, _, _, _ = cashocs.regular_mesh(2, lens[0], lens[1])
 
@@ -179,7 +181,7 @@ def test_regular_mesh():
 
 
 def test_mesh_quality_2D():
-    mesh, _, _, _, _, _ = cashocs.regular_mesh(2)
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(4)
 
     opt_angle = 60 / 360 * 2 * np.pi
     alpha_1 = 90 / 360 * 2 * np.pi
@@ -215,7 +217,7 @@ def test_mesh_quality_2D():
 
 
 def test_mesh_quality_3D():
-    mesh, _, _, _, _, _ = cashocs.regular_mesh(2, 1.0, 1.0, 1.0)
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(4, 1.0, 1.0, 1.0)
     opt_angle = np.arccos(1 / 3)
     dh_min_max = fenics.MeshQuality.dihedral_angles_min_max(mesh)
     alpha_min = dh_min_max[0]
@@ -308,6 +310,7 @@ def test_empty_measure():
 
     fun = fenics.Function(V)
     fun.vector().set_local(rng.rand(fun.vector().local_size()))
+    fun.vector().apply("")
 
     d1 = cashocs.geometry._EmptyMeasure(dx)
     d2 = cashocs.geometry._EmptyMeasure(ds)
