@@ -131,7 +131,7 @@ void angles_triangle(const Cell& cell, std::vector<double>& angs)
   e2 /= e2.norm();
 
   angs[0] = acos(e0.dot(e1));
-  angs[1] = acos(e0.dot(e2));
+  angs[1] = acos(-e0.dot(e2));
   angs[2] = acos(e1.dot(e2));
 }
 
