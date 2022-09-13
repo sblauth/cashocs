@@ -236,10 +236,13 @@ def test_incomplete_requirements_config():
 
 
 def test_no_config():
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     cwd = os.getcwd()
     try:
-        os.chdir("./tests")
+        if MPI.rank(MPI.comm_world) == 0:
+            os.chdir("./tests")
+        MPI.barrier(MPI.comm_world)
         ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p)
         with pytest.raises(InputError) as e_info:
             ocp.solve(rtol=1e-2, atol=0.0, max_iter=7)
@@ -249,10 +252,15 @@ def test_no_config():
         ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
         assert ocp.solver.relative_norm <= ocp.solver.rtol
 
+        MPI.barrier(MPI.comm_world)
         assert os.path.isdir(dir_path + "/results")
         assert os.path.isfile(dir_path + "/results/history.txt")
         assert os.path.isfile(dir_path + "/results/history.json")
-        subprocess.run(["rm", "-r", f"{dir_path}/results"], check=True)
+
+        MPI.barrier(MPI.comm_world)
+        if MPI.rank(MPI.comm_world) == 0:
+            subprocess.run(["rm", "-r", f"{dir_path}/results"], check=True)
+        MPI.barrier(MPI.comm_world)
     except:
         raise Exception("Failed to change the working directory")
     finally:

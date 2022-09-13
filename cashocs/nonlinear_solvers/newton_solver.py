@@ -19,11 +19,11 @@
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 from typing_extensions import Literal
 import ufl
 
@@ -40,7 +40,6 @@ class _NewtonSolver:
     A_matrix: fenics.PETScMatrix  # pylint: disable=invalid-name
     b: fenics.PETScVector
 
-    # noinspection PyUnresolvedReferences,PyPep8Naming
     def __init__(
         self,
         nonlinear_form: ufl.Form,
@@ -56,7 +55,6 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp: Optional[PETSc.KSP] = None,
         ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
@@ -91,8 +89,6 @@ class _NewtonSolver:
                 is used.
             verbose: If ``True``, prints status of the iteration to the console (default
                 is ``True``).
-            ksp: The PETSc ksp object used to solve the inner (linear) problem if this
-                is ``None`` it uses the direct solver MUMPS (default is ``None``).
             ksp_options: The list of options for the linear solver.
             A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
@@ -104,10 +100,7 @@ class _NewtonSolver:
         """
         self.nonlinear_form = nonlinear_form
         self.u = u
-        if isinstance(bcs, fenics.DirichletBC):
-            self.bcs = [bcs]
-        else:
-            self.bcs = bcs
+        self.bcs = _utils.enlist(bcs)
         self.shift = shift
         self.rtol = rtol
         self.atol = atol
@@ -134,22 +127,10 @@ class _NewtonSolver:
         self.u_save = fenics.Function(self.function_space)
         self.ksp_options = ksp_options
 
-        if ksp is None:
-            if ksp_options is None:
-                self.ksp_options = [
-                    ["ksp_type", "preonly"],
-                    ["pc_type", "lu"],
-                    ["pc_factor_mat_solver_type", "mumps"],
-                    ["mat_mumps_icntl_24", 1],
-                ]
-            else:
-                self.ksp_options = ksp_options
-
-            self.ksp = PETSc.KSP().create()
-            _utils.setup_petsc_options([self.ksp], [self.ksp_options])
-
+        if ksp_options is None:
+            self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
         else:
-            self.ksp = ksp
+            self.ksp_options = ksp_options
 
         self.iterations = 0
         for bc in self.bcs:
@@ -188,12 +169,25 @@ class _NewtonSolver:
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Newton Iteration {self.iterations:2d} - "
-                f"residual (abs):  {self.res:.3e} (tol = {self.atol:.3e})    "
-                f"residual (rel):  {self.res / self.res_0:.3e} "
-                f"(tol = {self.rtol:.3e})"
+            prefix = "Newton solver:  "
+
+            if self.iterations % 10 == 0:
+                info_str = (
+                    f"\n{prefix}iter,  "
+                    f"abs. residual (abs. tol),  "
+                    f"rel. residual (rel. tol)\n\n"
+                )
+            else:
+                info_str = ""
+
+            print_str = (
+                f"{prefix}{self.iterations:4d},  "
+                f"{self.res:>13.3e} ({self.atol:.2e}),  "
+                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
             )
+
+            print(info_str + print_str, flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
@@ -243,7 +237,8 @@ class _NewtonSolver:
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.")
+                print("Residual vanishes, input is already a solution.", flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             return self.u
 
         self.res = self.res_0
@@ -264,12 +259,12 @@ class _NewtonSolver:
 
             self._compute_eta_inexact()
             _utils.solve_linear_problem(
-                self.ksp,
-                self.A_matrix,
-                self.b,
-                self.du.vector().vec(),
-                self.ksp_options,
+                A=self.A_matrix,
+                b=self.b,
+                x=self.du.vector().vec(),
+                ksp_options=self.ksp_options,
                 rtol=self.eta,
+                atol=self.atol / 10.0,
             )
             self.du.vector().apply("")
 
@@ -278,12 +273,7 @@ class _NewtonSolver:
                 self.u.vector().apply("")
                 break
 
-            if self.damped:
-                self._backtracking_line_search()
-            else:
-                self.u.vector().vec().axpy(1.0, self.du.vector().vec())
-                self.u.vector().apply("")
-
+            self._backtracking_line_search()
             self._compute_residual()
 
             for bc in self.bcs_hom:
@@ -295,22 +285,36 @@ class _NewtonSolver:
             self.eta_a = self.gamma * pow(self.res / res_prev, 2)
             self._print_output()
 
-            if self.res <= self.tol:
-                if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(
-                        f"\nNewton Solver converged "
-                        f"after {self.iterations:d} iterations.\n"
-                    )
+            if self._check_for_convergence():
                 break
 
+        self._check_if_successful()
+
+        return self.u
+
+    def _check_for_convergence(self) -> bool:
+        """Checks, whether the desired convergence tolerance has been reached."""
+        if self.res <= self.tol:
+            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(
+                    f"\nNewton Solver converged "
+                    f"after {self.iterations:d} iterations.\n",
+                    flush=True,
+                )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            return True
+
+        else:
+            return False
+
+    def _check_if_successful(self) -> None:
+        """Checks, whether the attempted solve was successful."""
         if self.res > self.tol and not self.is_linear:
             raise _exceptions.NotConvergedError(
                 "Newton solver",
                 f"The Newton solver did not converge after "
                 f"{self.iterations:d} iterations.",
             )
-
-        return self.u
 
     def _check_for_divergence(self) -> None:
         """Checks, whether the Newton solver diverged."""
@@ -350,36 +354,40 @@ class _NewtonSolver:
 
     def _backtracking_line_search(self) -> None:
         """Performs a backtracking line search for the damped Newton method."""
-        while True:
-            self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
-            self.u.vector().apply("")
-            self._compute_residual()
-            _utils.solve_linear_problem(
-                ksp=self.ksp,
-                b=self.b,
-                x=self.ddu.vector().vec(),
-                ksp_options=self.ksp_options,
-                rtol=self.eta,
-            )
-            self.ddu.vector().apply("")
-
-            if (
-                self.ddu.vector().norm(self.norm_type)
-                / self.du.vector().norm(self.norm_type)
-                <= 1
-            ):
-                break
-            else:
-                self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+        if self.damped:
+            while True:
+                self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
                 self.u.vector().apply("")
-                self.lmbd /= 2
+                self._compute_residual()
+                _utils.solve_linear_problem(
+                    A=self.A_matrix,
+                    b=self.b,
+                    x=self.ddu.vector().vec(),
+                    ksp_options=self.ksp_options,
+                    rtol=self.eta,
+                    atol=self.atol / 10.0,
+                )
+                self.ddu.vector().apply("")
 
-            if self.lmbd < 1e-6:
-                self.breakdown = True
-                break
+                if (
+                    self.ddu.vector().norm(self.norm_type)
+                    / self.du.vector().norm(self.norm_type)
+                    <= 1
+                ):
+                    break
+                else:
+                    self.u.vector().vec().aypx(0.0, self.u_save.vector().vec())
+                    self.u.vector().apply("")
+                    self.lmbd /= 2
+
+                if self.lmbd < 1e-6:
+                    self.breakdown = True
+                    break
+        else:
+            self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+            self.u.vector().apply("")
 
 
-# noinspection PyUnresolvedReferences
 def newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
@@ -394,7 +402,6 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
@@ -427,8 +434,6 @@ def newton_solve(
         inexact: If ``True``, an inexact Newton\'s method is used. Default is ``True``.
         verbose: If ``True``, prints status of the iteration to the console (default is
             ``True``).
-        ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
-            ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
         A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
@@ -479,7 +484,6 @@ def newton_solve(
         damped=damped,
         inexact=inexact,
         verbose=verbose,
-        ksp=ksp,
         ksp_options=ksp_options,
         A_tensor=A_tensor,
         b_tensor=b_tensor,
@@ -490,7 +494,6 @@ def newton_solve(
     return solution
 
 
-# noinspection PyUnresolvedReferences
 def damped_newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
@@ -503,7 +506,6 @@ def damped_newton_solve(
     norm_type: Literal["l2", "linf"] = "l2",
     damped: bool = True,
     verbose: bool = True,
-    ksp: Optional[PETSc.KSP] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
 ) -> fenics.Function:  # pragma: no cover
     r"""Damped Newton solve interface, only here for compatibility reasons.
@@ -530,8 +532,6 @@ def damped_newton_solve(
             ``True``).
         verbose: If ``True``, prints status of the iteration to the console (default is
             ``True``).
-        ksp: The PETSc ksp object used to solve the inner (linear) problem if this is
-            ``None`` it uses the direct solver MUMPS (default is ``None``).
         ksp_options: The list of options for the linear solver.
 
     Returns:
@@ -583,6 +583,5 @@ def damped_newton_solve(
         norm_type=norm_type,
         damped=damped,
         verbose=verbose,
-        ksp=ksp,
         ksp_options=ksp_options,
     )

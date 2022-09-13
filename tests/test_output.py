@@ -53,6 +53,7 @@ def test_time_suffix():
     assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_save_pvd_files_ocp():
@@ -63,9 +64,11 @@ def test_save_pvd_files_ocp():
     config.set("Output", "save_pvd_adjoint", "True")
     config.set("Output", "save_pvd_gradient", "True")
     config.set("Output", "result_dir", dir_path + "/out")
-    u.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
+    MPI.barrier(MPI.comm_world)
     assert os.path.isdir(dir_path + "/out")
     assert os.path.isdir(dir_path + "/out/pvd")
     assert os.path.isfile(dir_path + "/out/history.txt")
@@ -86,9 +89,11 @@ def test_save_pvd_files_ocp():
     assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu") or os.path.isfile(
         dir_path + "/out/pvd/gradient_0000004.pvtu"
     )
+    MPI.barrier(MPI.comm_world)
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_save_pvd_files_mixed():
@@ -166,3 +171,4 @@ def test_save_pvd_files_mixed():
 
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)

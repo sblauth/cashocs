@@ -1,0 +1,29 @@
+name: Test conda installation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '42 23 * * *'
+
+jobs:
+  conda_test:
+    name: Test conda installation
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-12]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Update conda_test
+        run: |
+          conda update conda
+      
+      - name: Install cashocs
+        run: conda create -n test -c conda-forge cashocs python=3.10
+      
+      - name: Test if package was installed properly
+        run: |
+          conda run -n test python -c "import cashocs; cashocs.regular_mesh(16)"
+          conda run -n test mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
+        

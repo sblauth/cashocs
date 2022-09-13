@@ -185,6 +185,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
                     check=True,
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
             return problem
 
@@ -325,7 +326,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             and not self.has_cashocs_remesh_flag
             and self.temp_dict is not None
         ):
-            # noinspection PyUnresolvedReferences
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
                 "mu_surface": self.form_handler.shape_regularization.mu_surface,
@@ -364,7 +364,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         try:
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             if not self.states[0].function_space().mesh()._config_flag:
                 raise _exceptions.InputError(
@@ -393,6 +392,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     )
                 else:
                     temp_dir = ""
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 self.temp_dir: str = fenics.MPI.comm_world.bcast(temp_dir, root=0)
 
                 self._change_except_hook()
@@ -543,12 +543,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.temp_dir],
-                    check=True,
+                    ["rm", "-r", self.temp_dir], check=True
                 )
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=True
                 )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
             sys.__excepthook__(exctype, value, traceback)
 
         sys.excepthook = custom_except_hook  # type: ignore

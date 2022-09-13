@@ -6,9 +6,26 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-
 in development
 --------------
+
+* Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.
+
+* cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
+
+* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+
+* implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
+
+
+1.8.0 (July 6, 2022)
+--------------------
+
+* cashocs now has a better memory efficiency
+
+* The printing and file output of cashocs has been modified to better readable and fit the default console window
+
+* The ksp keyword argument for solver routines in the _utils module has been removed. Now, KSP objects can be interfaced only directly via ksp_options
 
 * Rename the default branch from "master" to "main"
 
@@ -20,13 +37,15 @@ in development
   
     * ``safeguard_stepsize`` is a boolean parameter which dis-/enables the guard against poor scaling for the initial iteration
 
+    
 1.7.0 (April 20, 2022)
 ----------------------
 
 * MPI Support - cashocs now has full MPI support. All of its features, including remeshing, now work out of the box in parallel. Nearly any script using cashocs can be run in parallel by invoking it via ```mpirun -n p python script.py```, where ```p``` is the number of MPI processes. Note, that running in parallel may sometimes cause unexpected behavior as it is not tested as well as the serial usage. If you should encounter any bugs, please report them.
 
+
 1.6.0 (April 4, 2022)
---------------------
+---------------------
 
 * Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_constraints.html>`_.
 
@@ -50,6 +69,7 @@ in development
     
     * ``gradient_tol`` specifies the tolerance which is used in case an iterative solver is used to compute the (shape) gradient.
 
+    
 1.5.0 (December 22, 2021)
 -------------------------
 
@@ -75,11 +95,11 @@ in development
 
     * ``update_inhomogeneous`` is a boolean parameter, which allows to update the cell volume when using ``inhomogeneous=True`` in the ShapeGradient section. This makes small elements have a higher stiffness and updates this over the course of the optimization. Default is ``False``
 
+    
 1.4.0 (September 3, 2021)
 -------------------------
 
 * Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation
-
 
 * Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is ``scalar_tracking_forms``, which is a dictionary consisting of ``'integrand'``, which is the integrand of the scalar quantity, and ``'tracking_goal'``, which is the (scalar) value that shall be achieved. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_eikonal_stiffness.html>`_.
 
@@ -117,7 +137,6 @@ in development
 1.3.0 (June 11, 2021)
 ---------------------
 
-
 * Improved the remeshing workflow and fixed several smaller bugs concerning it
 
 * New configuration file parameters:
@@ -133,7 +152,6 @@ in development
 
 1.2.0 (December 01, 2020)
 -------------------------
-
 
 * Users can now supply their own bilinear form (or scalar product) for the computation of the shape gradient, which is then used instead of the linear elasticity formulation. This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_custom_scalar_product.html>`_.
 
@@ -155,7 +173,6 @@ in development
 1.1.0 (November 13, 2020)
 -------------------------
 
-
 * Added the functionality for cashocs to be used as a solver only, where users can specify their custom adjoint equations and (shape) derivatives for the optimization problems. This is documented at `<https://cashocs.readthedocs.io/en/latest/demos/cashocs_as_solver/solver_index.html>`_.
 
 * Using ``cashocs.create_config`` is deprecated and replaced by ``cashocs.load_config``, but the former will still be supported.
@@ -171,7 +188,6 @@ in development
 
 1.0.0 (September 18, 2020)
 --------------------------
-
 
 * Initial release of cashocs.
 

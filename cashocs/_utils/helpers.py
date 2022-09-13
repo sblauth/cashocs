@@ -141,8 +141,8 @@ def check_and_enlist_ksp_options(
         and isinstance(ksp_options[0], list)
         and isinstance(ksp_options[0][0], list)
     ):
-        ksp_options = cast(types.KspOptions, ksp_options)
-        return ksp_options[:]
+        # ksp_options = cast(types.KspOptions, ksp_options)
+        return ksp_options[:]  # type: ignore
     else:
         raise _exceptions.InputError(
             "cashocs._utils.check_and_enlist_ksp_options",
@@ -169,7 +169,7 @@ def parse_remesh() -> Tuple[bool, Optional[str]]:
         action="store_true",
         help="Flag which indicates whether remeshing has been performed",
     )
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     temp_dir: Optional[str] = args.temp_dir or None
     cashocs_remesh_flag = bool(args.cashocs_remesh)

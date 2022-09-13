@@ -30,7 +30,6 @@ from cashocs import _loggers
 T = TypeVar("T")
 
 
-# noinspection PyUnresolvedReferences
 def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """Sums elements of a list in a UFL friendly fashion.
 
@@ -62,7 +61,6 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-# noinspection PyUnresolvedReferences
 def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
@@ -87,7 +85,6 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-# noinspection PyUnresolvedReferences
 def max_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -104,7 +101,6 @@ def max_(
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
-# noinspection PyUnresolvedReferences
 def min_(
     a: Union[float, fenics.Function], b: Union[float, fenics.Function]
 ) -> ufl.core.expr.Expr:
@@ -121,7 +117,6 @@ def min_(
     return (a + b - abs(a - b)) / fenics.Constant(2.0)
 
 
-# noinspection PyUnresolvedReferences
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
@@ -179,6 +174,8 @@ def moreau_yosida_regularization(
     if shift_upper is None:
         shift_upper = fenics.Constant(0.0)
 
+    reg = []
+
     if lower_threshold is not None:
         reg_lower = (
             fenics.Constant(1 / (2 * gamma))
@@ -191,6 +188,7 @@ def moreau_yosida_regularization(
             )
             * measure
         )
+        reg.append(reg_lower)
     if upper_threshold is not None:
         reg_upper = (
             fenics.Constant(1 / (2 * gamma))
@@ -203,19 +201,9 @@ def moreau_yosida_regularization(
             )
             * measure
         )
+        reg.append(reg_upper)
 
-    if reg_lower is not None and reg_upper is not None:
-        return reg_lower + reg_upper
-    elif reg_lower is not None and reg_upper is None:
-        return reg_lower
-    elif reg_lower is None and reg_upper is not None:
-        return reg_upper
-    else:
-        raise _exceptions.InputError(
-            "cashocs._utils.moreau_yosida_regularization",
-            "upper_threshold, lower_threshold",
-            "At least one of the threshold parameters has to be defined.",
-        )
+    return summation(reg)
 
 
 def create_dirichlet_bcs(

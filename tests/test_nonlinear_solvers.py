@@ -41,8 +41,10 @@ def test_newton_solver():
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
     solve(F == 0, u, bcs)
-    u_fen.vector()[:] = u.vector()[:]
-    u.vector()[:] = 0.0
+    u_fen.vector().vec().aypx(0.0, u.vector().vec())
+    u_fen.vector().apply("")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
     cashocs.newton_solve(
         F,
         u,

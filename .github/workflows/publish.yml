@@ -1,4 +1,4 @@
-name: Build and publish
+name: Release on GitHub and PyPI
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  tests:
+  run_tests:
+    name: Run tests before publishing
     runs-on: ubuntu-latest
     container:
       image: sblauth/cashocs:latest
@@ -32,14 +33,14 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pytest
+        pytest tests/ --ignore=tests/test_remeshing_parallel.py
 
 
   release:
     name: Create Release
     runs-on: ubuntu-latest
     needs:
-      - tests
+      - run_tests
     steps:
     
     - name: Checkout repository
@@ -63,7 +64,7 @@ jobs:
     name: Build and publish python package
     runs-on: ubuntu-latest
     needs:
-      - tests
+      - run_tests
 
     steps:
     - name: Checkout repository

@@ -24,7 +24,6 @@ from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 import ufl.algorithms
 
@@ -89,6 +88,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.control_spaces = [self.deformation_space]
         self.control_dim = 1
+        self.require_control_constraints = False
 
         self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field = fenics.TestFunction(self.deformation_space)
@@ -127,7 +127,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
             if not self.scalar_product_matrix.isSymmetric(1e-15):
-                # noinspection PyArgumentList
                 if (
                     not (
                         self.scalar_product_matrix
@@ -164,6 +163,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         modified_scalar_product = _utils.bilinear_boundary_form_modification(
             [scalar_product]
         )[0]
+        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            [scalar_product]
+        )[0]
         retry_assembler_setup = False
         if not self.degree_estimation:
             try:
@@ -188,7 +190,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
         self.assembler.keep_diagonal = True
 
-    # noinspection PyUnresolvedReferences
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
 
@@ -216,9 +217,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         if len(self.material_derivative_coeffs) > 0:
             _loggers.warning(
                 "Shape derivative might be wrong, if differential operators "
-                "act on variables other than states and adjoints. \n"
-                "You can check for correctness of the shape derivative "
-                "with cashocs.verification.shape_gradient_test\n"
+                "act on variables other than states and adjoints."
             )
 
     def _add_pull_backs(self) -> None:
@@ -292,6 +291,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
+        self.volumes = fenics.Function(self.dg_function_space)
 
         self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
         self.mu_lame.vector().vec().set(1.0)
@@ -306,11 +306,15 @@ class ShapeFormHandler(form_handler.FormHandler):
             )
 
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
-                self.volumes = fenics.project(
-                    fenics.CellVolume(self.mesh), self.dg_function_space
+                self.volumes.vector().vec().aypx(
+                    0.0,
+                    fenics.project(fenics.CellVolume(self.mesh), self.dg_function_space)
+                    .vector()
+                    .vec(),
                 )
+                self.volumes.vector().apply("")
 
-                vol_max = self.volumes.vector().vec().max()[1]
+                vol_max = self.volumes.vector().max()
                 self.volumes.vector().vec().scale(1 / vol_max)
                 self.volumes.vector().apply("")
 
@@ -371,9 +375,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                     ["ksp_atol", 1e-50],
                     ["ksp_max_it", 100],
                 ]
-                # noinspection PyUnresolvedReferences
-                self.ksp_mu = PETSc.KSP().create()
-                _utils.setup_petsc_options([self.ksp_mu], [self.options_mu])
 
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)
@@ -456,7 +457,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                         self.bcs_mu,
                         A=self.A_mu_matrix,
                         b=self.b_mu,
-                        ksp=self.ksp_mu,
                         ksp_options=self.options_mu,
                     )
 
@@ -572,7 +572,6 @@ class ShapeFormHandler(form_handler.FormHandler):
                 ),
                 (p - 2) / 2.0,
             )
-            # noinspection PyTypeChecker
             self.p_laplace_form: ufl.Form = (
                 fenics.inner(
                     self.mu_lame

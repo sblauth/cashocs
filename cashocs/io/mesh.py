@@ -81,6 +81,7 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
             coordinates[verts] = coords
     else:
         coordinates = np.zeros((1, 1))
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     return coordinates
 
@@ -171,3 +172,4 @@ def write_out_mesh(  # noqa: C901
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         parse_file(original_msh_file, out_msh_file, points, dim)
+    fenics.MPI.barrier(fenics.MPI.comm_world)

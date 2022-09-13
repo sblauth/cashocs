@@ -133,7 +133,9 @@ def test_picard_gradient_computation():
 
 def test_picard_state_solver():
     u.vector().set_local(rng.normal(0.0, 10.0, size=u.vector().local_size()))
+    u.vector().apply("")
     v.vector().set_local(rng.normal(0.0, 10.0, size=v.vector().local_size()))
+    v.vector().apply("")
     ocp._erase_pde_memory()
     ocp.compute_state_variables()
     ocp_mixed._erase_pde_memory()
@@ -174,8 +176,10 @@ def test_picard_solver_for_optimization():
     u_picard = Function(V)
     v_picard = Function(V)
 
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp._erase_pde_memory()
     ocp.solve("newton", 1e-6, 0.0, 2)
     assert ocp.solver.relative_norm <= 1e-6
@@ -183,8 +187,10 @@ def test_picard_solver_for_optimization():
     u_picard.vector()[:] = u.vector()[:]
     v_picard.vector()[:] = v.vector()[:]
 
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp_mixed._erase_pde_memory()
     ocp_mixed.solve("newton", 1e-6, 0.0, 2)
     assert ocp_mixed.solver.relative_norm < 1e-6
@@ -198,8 +204,10 @@ def test_picard_solver_for_optimization():
 
 
 def test_picard_nonlinear():
-    u.vector()[:] = 0.0
-    v.vector()[:] = 0.0
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     config.set("StateSystem", "is_linear", "False")
 
     ocp_nonlinear = cashocs.OptimalControlProblem(

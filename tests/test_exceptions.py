@@ -66,19 +66,23 @@ ocp_ksp = cashocs.OptimalControlProblem(
 
 def test_not_converged_error():
     with pytest.raises(NotConvergedError) as e_info:
-        u.vector()[:] = 0.0
+        u.vector().vec().set(0.0)
+        u.vector().apply("")
         ocp._erase_pde_memory()
         ocp.solve("gd", 1e-10, 0.0, 1)
+    MPI.barrier(MPI.comm_world)
     assert "failed to converge" in str(e_info.value)
 
     with pytest.raises(CashocsException):
         ocp.solve("gd", 1e-10, 0.0, 0)
+    MPI.barrier(MPI.comm_world)
 
 
 def test_input_error():
     with pytest.raises(InputError) as e_info:
         bcs = [None]
         ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    MPI.barrier(MPI.comm_world)
     assert "Not a valid input for object" in str(e_info.value)
 
 
@@ -88,6 +92,7 @@ def test_petsc_error():
         u.vector().apply("")
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
+    MPI.barrier(MPI.comm_world)
     assert "PETSc linear solver did not converge." in str(e_info.value)
 
     with pytest.raises(CashocsException):
@@ -95,3 +100,4 @@ def test_petsc_error():
         u.vector().apply("")
         ocp_ksp._erase_pde_memory()
         ocp_ksp.compute_state_variables()
+    MPI.barrier(MPI.comm_world)

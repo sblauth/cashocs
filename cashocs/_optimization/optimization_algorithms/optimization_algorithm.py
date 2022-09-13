@@ -23,6 +23,7 @@ import abc
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
+import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -69,8 +70,6 @@ class OptimizationAlgorithm(abc.ABC):
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
 
-        self.require_control_constraints = False
-
         self.requires_remeshing = False
         self.remeshing_its = False
 
@@ -113,6 +112,10 @@ class OptimizationAlgorithm(abc.ABC):
         """Writes the summary of the optimization (to files and console)."""
         self.output_manager.output_summary(self)
 
+    def post_process(self) -> None:
+        """Performs the non-console output related post-processing."""
+        self.output_manager.post_process(self)
+
     def nonconvergence(self) -> bool:
         """Checks for nonconvergence of the solution algorithm.
 
@@ -140,7 +143,8 @@ class OptimizationAlgorithm(abc.ABC):
         """
         if self.soft_exit:
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(message)
+                print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
@@ -148,19 +152,23 @@ class OptimizationAlgorithm(abc.ABC):
         """Does a post-processing after the optimization algorithm terminates."""
         if self.converged:
             self.output()
+            self.post_process()
             self.output_summary()
 
         else:
+            self.objective_value = self.cost_functional.evaluate()
+            self.gradient_norm = np.NAN
+            self.relative_norm = np.nan
             # maximum iterations reached
             if self.converged_reason == -1:
                 self.output()
-                self.output_summary()
+                self.post_process()
                 self._exit("Maximum number of iterations exceeded.")
 
             # Armijo line search failed
             elif self.converged_reason == -2:
                 self.iteration -= 1
-                self.output_summary()
+                self.post_process()
                 self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
@@ -172,13 +180,13 @@ class OptimizationAlgorithm(abc.ABC):
                     )
                     self.optimization_variable_abstractions.mesh_handler.remesh(self)
                 else:
-                    self.output_summary()
+                    self.post_process()
                     self._exit("Mesh quality is too low.")
 
             # Iteration for remeshing is the one exceeding the maximum number
             # of iterations
             elif self.converged_reason == -4:
-                self.output_summary()
+                self.post_process()
                 self._exit("Maximum number of iterations exceeded.")
 
     def convergence_test(self) -> bool:

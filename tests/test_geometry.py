@@ -41,11 +41,7 @@ rng = np.random.RandomState(300696)
 
 def test_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(
-            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
-            check=True,
-        )
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -79,6 +75,7 @@ def test_mesh_import():
     fe_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(fe_coords, gmsh_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
@@ -86,6 +83,7 @@ def test_mesh_import():
     assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.h5")
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
     assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
@@ -94,17 +92,15 @@ def test_mesh_import():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_mesh_import_from_config():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(
-            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
-            check=True,
-        )
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(cfg)
 
     gmsh_coords = np.array(
@@ -135,6 +131,7 @@ def test_mesh_import_from_config():
     fe_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(fe_coords, gmsh_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
@@ -143,9 +140,11 @@ def test_mesh_import_from_config():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_regular_mesh():
+    rng = np.random.RandomState(300696)
     lens = rng.uniform(0.5, 2, 2)
     r_mesh, _, _, _, _, _ = cashocs.regular_mesh(2, lens[0], lens[1])
 
@@ -169,6 +168,7 @@ def test_regular_mesh():
 
         assert np.alltrue(abs(np.max(s_coords, axis=0) - max_vals) < 1e-14)
         assert np.alltrue(abs(np.min(s_coords, axis=0) - min_vals) < 1e-14)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     t_mesh, _, _, _, _, _ = cashocs.regular_box_mesh(
         2, start_x=0.0, end_x=lens[0], start_y=0.0, end_y=lens[1]
@@ -177,10 +177,11 @@ def test_regular_mesh():
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(t_coords, r_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_mesh_quality_2D():
-    mesh, _, _, _, _, _ = cashocs.regular_mesh(2)
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(4)
 
     opt_angle = 60 / 360 * 2 * np.pi
     alpha_1 = 90 / 360 * 2 * np.pi
@@ -216,7 +217,7 @@ def test_mesh_quality_2D():
 
 
 def test_mesh_quality_3D():
-    mesh, _, _, _, _, _ = cashocs.regular_mesh(2, 1.0, 1.0, 1.0)
+    mesh, _, _, _, _, _ = cashocs.regular_mesh(4, 1.0, 1.0, 1.0)
     opt_angle = np.arccos(1 / 3)
     dh_min_max = fenics.MeshQuality.dihedral_angles_min_max(mesh)
     alpha_min = dh_min_max[0]
@@ -261,11 +262,7 @@ def test_mesh_quality_3D():
 
 def test_write_mesh():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(
-            ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
-            check=True,
-        )
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
     )
@@ -274,11 +271,7 @@ def test_write_mesh():
         mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
     )
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(
-            ["cashocs-convert", f"{dir_path}/mesh/test.msh"],
-            check=True,
-        )
+    cashocs.convert(f"{dir_path}/mesh/test.msh", f"{dir_path}/mesh/test.xdmf")
     test, _, _, _, _, _ = cashocs.import_mesh(dir_path + "/mesh/test.xdmf")
 
     test_coords = gather_coordinates(test)
@@ -300,6 +293,7 @@ def test_write_mesh():
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_empty_measure():
@@ -316,6 +310,7 @@ def test_empty_measure():
 
     fun = fenics.Function(V)
     fun.vector().set_local(rng.rand(fun.vector().local_size()))
+    fun.vector().apply("")
 
     d1 = cashocs.geometry._EmptyMeasure(dx)
     d2 = cashocs.geometry._EmptyMeasure(ds)
@@ -352,7 +347,6 @@ def test_convert_coordinate_defo_to_dof_defo():
 
     vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
     assert deformation_handler.move_mesh(vector_field)
-    # if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
@@ -377,30 +371,35 @@ def test_convert_dof_defo_to_coordinate_defo():
 
 def test_move_mesh():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
-    VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     coordinates_initial = mesh.coordinates().copy()
     deformation_handler = cashocs.DeformationHandler(mesh)
-    coordinate_deformation = (
-        fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
-        .compute_vertex_values()
-        .reshape(2, -1)
-        .T
-    )
-    h = mesh.hmin()
-    coordinate_deformation *= h / (4.0 * np.max(np.abs(coordinate_deformation)))
 
-    coordinates_added = coordinates_initial + coordinate_deformation
+    coordinate_deformation = coordinates_initial.copy()
+    h = mesh.hmin()
+    coordinate_deformation *= h / (4.0 * 0.09)
+
+    coords_added = coordinates_initial + coordinate_deformation
+    mesh.coordinates()[:, :] = coords_added
+    coordinates_added = gather_coordinates(mesh)
+    mesh.coordinates()[:, :] = coordinates_initial
+    mesh.bounding_box_tree().build(mesh)
+
     assert deformation_handler.move_mesh(coordinate_deformation)
-    coordinates_moved = mesh.coordinates().copy()
+    coordinates_moved = gather_coordinates(mesh)
+
     deformation_handler.revert_transformation()
+
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     vector_field = deformation_handler.coordinate_to_dof(coordinate_deformation)
     assert deformation_handler.move_mesh(vector_field)
-    coordinates_dof_moved = mesh.coordinates().copy()
+    coordinates_dof_moved = gather_coordinates(mesh)
 
-    assert np.max(np.abs(coordinates_added - coordinates_dof_moved)) <= 1e-15
-    assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
-    assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert np.max(np.abs(coordinates_added - coordinates_moved)) <= 1e-15
+        assert np.max(np.abs(coordinates_dof_moved - coordinates_added)) <= 1e-15
+        assert np.max(np.abs(coordinates_dof_moved - coordinates_moved)) <= 1e-15
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_eikonal_distance():
@@ -420,8 +419,9 @@ def test_eikonal_distance():
 
 def test_named_mesh_import():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        cashocs._cli.convert([f"{dir_path}/mesh/named_mesh.msh"])
+    cashocs.convert(
+        f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
+    )
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
@@ -471,6 +471,7 @@ def test_named_mesh_import():
         subprocess.run(
             ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
         )
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def test_create_measure():
@@ -496,11 +497,14 @@ def test_list_measure():
 
 
 def test_interval_mesh():
+    rng = np.random.RandomState(300696)
+
     mesh, _, _, _, _, _ = cashocs.interval_mesh(10)
     coords = gather_coordinates(mesh)
     i_coords = gather_coordinates(i_mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(coords, i_coords)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     lens = rng.uniform(0.5, 2, 2)
     lens.sort()

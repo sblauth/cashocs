@@ -132,8 +132,8 @@ The parameter ``newton_damped``, which is set via ::
 
 is a boolean flag, indicating whether a damping strategy should be performed for the
 Newton method, or whether the classical Newton-Raphson iteration shall be used. This
-defaults to ``True``, but for some problems it might be beneficial (and faster) to not
-use damping.
+defaults to ``False`` (as this is faster), but for some problems it might be beneficial to
+use damping in order to enhance the convergence of the nonlinear solver.
 
 Additionally, we have the boolean parameter ``newton_inexact``, defined via ::
 
@@ -591,7 +591,7 @@ Furthermore, we have the parameter ``fixed_dimensions``, which enables us to res
 
     fixed_dimensions = []
 
-In case ``fixed_dimensions == []``, there is no restriction on the shape gradient. However, if ``fixed_dimensions`` == [i]``, then the ``i``-th component of the shape gradient is set to 0, so that we have no deformation in the ``i``-th coordinate direction. For example, if ``fixed_dimensions == [0, 2]``, we only have a deformation in the ``y``-component of the mesh. The default is ``fixed_dimensions = []``.
+In case ``fixed_dimensions == []``, there is no restriction on the shape gradient. However, if ``fixed_dimensions == [i]``, then the ``i``-th component of the shape gradient is set to 0, so that we have no deformation in the ``i``-th coordinate direction. For example, if ``fixed_dimensions == [0, 2]``, we only have a deformation in the ``y``-component of the mesh. The default is ``fixed_dimensions = []``.
 
 .. _config_shape_regularization:
 
@@ -927,7 +927,7 @@ in the following.
       - ``50``
       - maximum iterations for Newton's method
     * - newton_damped
-      - ``True``
+      - ``False``
       - if ``True``, damping is enabled
     * - newton_inexact
       - ``False``

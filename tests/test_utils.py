@@ -92,6 +92,7 @@ def test_summation():
     for i in range(dim):
         temp = Function(V)
         temp.vector().set_local(rng.rand(temp.vector().local_size()))
+        temp.vector().apply("")
         funcs.append(temp)
 
     F = cashocs._utils.summation([funcs[i] * test * dx for i in range(dim)])
@@ -116,6 +117,7 @@ def test_multiplication():
     for i in range(dim):
         temp = Function(V)
         temp.vector().set_local(rng.rand(temp.vector().local_size()))
+        temp.vector().apply("")
         funcs.append(temp)
 
     F = cashocs._utils.multiplication([funcs[i] for i in range(dim)]) * test * dx
@@ -131,6 +133,8 @@ def test_multiplication():
 
 
 def test_create_bcs():
+    rng = np.random.RandomState(300696)
+
     trial = TrialFunction(V)
     test = TestFunction(V)
     a = inner(grad(trial), grad(test)) * dx
@@ -158,11 +162,11 @@ def test_interpolator():
     W = FunctionSpace(mesh, "CG", 2)
     X = FunctionSpace(mesh, "DG", 0)
 
-    interp_W = cashocs._utils.Interpolator(V, W)
-    interp_X = cashocs._utils.Interpolator(V, X)
+    interp_W = cashocs.Interpolator(V, W)
+    interp_X = cashocs.Interpolator(V, X)
 
-    func_V = Function(V)
-    func_V.vector().set_local(rng.rand(func_V.vector().local_size()))
+    expr = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+    func_V = interpolate(expr, V)
 
     fen_W = interpolate(func_V, W)
     fen_X = interpolate(func_V, X)
@@ -176,8 +180,9 @@ def test_interpolator():
 
 def test_create_named_bcs():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if MPI.rank(MPI.comm_world) == 0:
-        cashocs._cli.convert([f"{dir_path}/mesh/named_mesh.msh"])
+    cashocs.convert(
+        f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
+    )
 
     mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         f"{dir_path}/mesh/named_mesh.xdmf"
@@ -194,12 +199,15 @@ def test_create_named_bcs():
 
     fun1 = Function(V_)
     fun1.vector().set_local(rng.rand(fun1.vector().local_size()))
+    fun1.vector().apply("")
 
     fun2 = Function(V_)
-    fun2.vector()[:] = fun1.vector()[:]
+    fun2.vector().vec().aypx(0.0, fun1.vector().vec())
+    fun2.vector().apply("")
 
     fun3 = Function(V_)
-    fun3.vector()[:] = fun1.vector()[:]
+    fun3.vector().vec().aypx(0.0, fun1.vector().vec())
+    fun3.vector().apply("")
 
     [bc.apply(fun1.vector()) for bc in bcs_int]
     [bc.apply(fun2.vector()) for bc in bcs_str]
@@ -240,10 +248,12 @@ def test_create_named_bcs():
         subprocess.run(
             ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
         )
+    MPI.barrier(MPI.comm_world)
 
 
 def test_moreau_yosida_regularization():
-    u.vector()[:] = 1e3
+    u.vector().vec().set(1e3)
+    u.vector().apply("")
     y_bar = 1e-1
     y_low = 1e-2
     gamma = 1e3

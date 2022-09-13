@@ -1,44 +1,58 @@
-name: tests
+name: Tests
 
 on:
-  workflow_dispatch:
+  push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '17 22 * * *'
 
+env:
+  OMP_NUM_THREADS: 2
+    
 jobs:
   tests:
-    name: tests (${{ matrix.os }}, python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash -l {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+    name: Tests
+    runs-on: ubuntu-latest
+    container:
+      image: sblauth/cashocs:latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install micromamba
-      uses: mamba-org/provision-with-micromamba@main
-      with:
-        environment-file: .github/micromamba/testenv.yml
-        extra-specs: |
-          fenics=2019
-          meshio">=5.0.0"
-          pytest">=7.0.0"
-          deprecated">=1.2.12"
-          gmsh">=4.8"
-          python=${{ matrix.python-version }}
-
-    - name: Install package
+    - name: Delete current installation in docker image
+      shell: bash -l {0}
       run: |
+        conda activate cashocs
+        pip uninstall -y cashocs
+        rm -R /root/cashocs
+
+    - name: Checkout repository
+      uses: actions/checkout@v2 
+
+    - name: Install cashocs
+      shell: bash -l {0}
+      run: |
+        conda activate cashocs
         pip install .
 
-    - name: Run tests and generate coverage
+    - name: Run tests
+      shell: bash -l {0}
       run: |
-        pytest
+        conda activate cashocs
+        coverage run --source=cashocs -m pytest tests/ --ignore=tests/test_remeshing_parallel.py
+
+    - name: Generate .xml coverage results
+      shell: bash -l {0}
+      run: |
+        conda activate cashocs
+        coverage xml
+
+    - name: Upload coverage to codecov.io
+      uses: codecov/codecov-action@v1
+      with:
+        files: coverage.xml
+
+    - name: Upload coverage to codacy
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage.xml

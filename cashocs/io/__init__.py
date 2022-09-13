@@ -20,7 +20,15 @@
 from cashocs.io.config import Config
 from cashocs.io.config import create_config
 from cashocs.io.config import load_config
+from cashocs.io.convert import convert
 from cashocs.io.mesh import write_out_mesh
 from cashocs.io.output import OutputManager
 
-__all__ = ["Config", "load_config", "create_config", "write_out_mesh", "OutputManager"]
+__all__ = [
+    "convert",
+    "Config",
+    "load_config",
+    "create_config",
+    "write_out_mesh",
+    "OutputManager",
+]

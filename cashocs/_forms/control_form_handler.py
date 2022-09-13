@@ -57,7 +57,6 @@ class ControlFormHandler(form_handler.FormHandler):
     states_prime: List[fenics.Function]
     adjoints_prime: List[fenics.Function]
     test_directions: List[fenics.Function]
-    trial_functions_control: List[fenics.Function]
     test_functions_control: List[fenics.Function]
     temp: List[fenics.Function]
 
@@ -102,10 +101,6 @@ class ControlFormHandler(form_handler.FormHandler):
         self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
         self.test_directions = _utils.create_function_list(self.control_spaces)
         self.temp = _utils.create_function_list(self.control_spaces)
-        self.trial_functions_control = [
-            fenics.TrialFunction(function_space)
-            for function_space in self.control_spaces
-        ]
         self.test_functions_control = [
             fenics.TestFunction(function_space)
             for function_space in self.control_spaces
@@ -126,6 +121,9 @@ class ControlFormHandler(form_handler.FormHandler):
 
         """
         modified_scalar_product_forms = _utils.bilinear_boundary_form_modification(
+            scalar_product_forms
+        )
+        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
             scalar_product_forms
         )
         try:
@@ -158,17 +156,17 @@ class ControlFormHandler(form_handler.FormHandler):
                 assembler.keep_diagonal = True
                 self.assemblers.append(assembler)
 
-        fenics_scalar_product_matrices = [
-            fenics.PETScMatrix() for _ in range(self.control_dim)
-        ]
+        fenics_scalar_product_matrices = []
+        self.riesz_projection_matrices = []
 
         for i in range(self.control_dim):
-            self.assemblers[i].assemble(fenics_scalar_product_matrices[i])
+            fenics_matrix = fenics.PETScMatrix()
+            fenics_scalar_product_matrices.append(fenics_matrix)
+
+            self.assemblers[i].assemble(fenics_matrix)
             fenics_scalar_product_matrices[i].ident_zeros()
 
-        self.riesz_projection_matrices = [
-            fenics_scalar_product_matrices[i].mat() for i in range(self.control_dim)
-        ]
+            self.riesz_projection_matrices.append(fenics_matrix.mat())
 
         # Test for symmetry of the scalar products
         for i in range(self.control_dim):
@@ -252,6 +250,7 @@ class ControlFormHandler(form_handler.FormHandler):
             else:
                 self.idx_active_lower.append([])
                 self.idx_active_upper.append([])
+                self.idx_inactive.append([])
 
             temp_active = np.concatenate(
                 (self.idx_active_lower[j], self.idx_active_upper[j])
@@ -602,8 +601,9 @@ class ControlFormHandler(form_handler.FormHandler):
 
         self._compute_adjoint_sensitivity_equations()
 
-        self.w_3 = [
-            -self.adjoint_sensitivity_eqs_rhs[i] for i in range(self.control_dim)
-        ]
-
-        self.hessian_rhs = [self.w_2[i] + self.w_3[i] for i in range(self.control_dim)]
+        self.w_3 = []
+        self.hessian_rhs = []
+        for i in range(self.control_dim):
+            w3_i = -self.adjoint_sensitivity_eqs_rhs[i]
+            self.w_3.append(w3_i)
+            self.hessian_rhs.append(self.w_2[i] + self.w_3[i])

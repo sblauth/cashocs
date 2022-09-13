@@ -82,7 +82,6 @@ def _check_imported_mesh_quality(
         mesh_quality_measure = input_arg.get("MeshQuality", "measure")
         mesh_quality_type = input_arg.get("MeshQuality", "type")
 
-        # noinspection PyTypeChecker
         current_mesh_quality = mesh_quality.compute_mesh_quality(
             mesh, mesh_quality_type, mesh_quality_measure
         )
@@ -300,7 +299,6 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
     )
 
     # Add an attribute to the mesh to show with what procedure it was generated
-    # noinspection PyProtectedMember
     # pylint: disable=protected-access
     mesh._set_config_flag()
     # Add the physical groups to the mesh in case they are present
@@ -596,22 +594,6 @@ def regular_box_mesh(
     """
     n = int(n)
 
-    if start_x >= end_x:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_box_mesh",
-            "start_x",
-            "Incorrect input for the x-coordinate. "
-            "start_x has to be smaller than end_x.",
-        )
-    if start_y >= end_y:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_box_mesh",
-            "start_y",
-            "Incorrect input for the y-coordinate. "
-            "start_y has to be smaller than end_y.",
-        )
-
-    fail_z = False
     dim = 2
     sizes = [1.0, 1.0]
 
@@ -622,29 +604,22 @@ def regular_box_mesh(
         dim = 2
     else:
         if start_z is not None and end_z is not None:
-            if start_z >= end_z:
-                fail_z = True
-            else:
+            if start_z < end_z:
                 lx = end_x - start_x
                 ly = end_y - start_y
-                # noinspection PyTypeChecker
                 lz = end_z - start_z
                 sizes = [lx, ly, lz]
                 dim = 3
-
-        elif start_z is None and end_z is not None:
-            fail_z = True
         else:
-            fail_z = True
+            raise _exceptions.InputError(
+                "cashocs.geometry.regular_box_mesh",
+                "start_z",
+                "Incorrect input for the z-coordinate. "
+                "start_z has to be smaller than end_z, "
+                "or only one of them is specified.",
+            )
 
-    if fail_z:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_box_mesh",
-            "start_z",
-            "Incorrect input for the z-coordinate. "
-            "start_z has to be smaller than end_z, "
-            "or only one of them is specified.",
-        )
+    _check_sizes(sizes)
 
     size_min = np.min(sizes)
     num_points = [int(np.round(length / size_min * n)) for length in sizes]
@@ -702,3 +677,13 @@ def regular_box_mesh(
     d_interior_facet = measure.NamedMeasure("dS", mesh)
 
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+
+
+def _check_sizes(sizes: List[float]) -> None:
+    for size in sizes:
+        if size <= 0:
+            raise _exceptions.InputError(
+                "cashocs.geometry.regular_box_mesh",
+                "start_",
+                "The start values have to be smaller than the end values.",
+            )

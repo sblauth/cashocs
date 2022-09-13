@@ -127,14 +127,26 @@ class ConstrainedSolver(abc.ABC):
 
     def print_results(self) -> None:
         """Prints the results of the current iteration to the console."""
-        strs = [
-            f"{self.solver_name} - Iteration {self.iterations:4d} -",
-            f" Objective value: {self.constrained_problem.current_function_value:.3e}",
-            f"    Constraint violation: {self.constraint_violation:.3e}",
-            f"    Penalty parameter mu: {self.mu:.3e}",
-        ]
+        if (self.iterations - 1) % 10 == 0:
+            info_str = (
+                f"\n{self.solver_name}:  iter,  "
+                f"cost function,  "
+                f"constr. violation,  "
+                f"      mu\n\n"
+            )
+        else:
+            info_str = ""
+
+        val_str = (
+            f"{self.solver_name}:  {self.iterations:4d},  "
+            f"{self.constrained_problem.current_function_value:>13.3e},  "
+            f"{self.constraint_violation:>17.3e},  "
+            f"{self.mu:.2e}"
+        )
+
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print("".join(strs))
+            print(info_str + val_str, flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -162,9 +174,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         # pylint: disable=invalid-name
         self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
-        self.solver_name = "Augmented Lagrangian method"
+        self.solver_name = "Augmented Lagrangian"
 
-    # noinspection PyPep8Naming
     def _project_pointwise_multiplier(
         self,
         project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
@@ -268,7 +279,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constraints[index].variable_function
                 - self.constraints[index].target
             )
-            # noinspection PyTypeChecker
             self._project_pointwise_multiplier(
                 project_term,
                 self.constraints[index].measure,
@@ -342,7 +352,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                     )
                 )
 
-            # noinspection PyTypeChecker
             self._project_pointwise_multiplier(
                 project_terms,
                 self.constraints[index].measure,
@@ -395,7 +404,6 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
                 tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
@@ -415,12 +423,14 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             if self.constraint_violation <= convergence_tol:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n")
+                    print(f"{self.solver_name} converged successfully.\n", flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 break
 
             if self.iterations >= max_iter:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n")
+                    print(f"{self.solver_name} did not converge.\n", flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 break
 
 
@@ -445,7 +455,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
-        self.solver_name = "Quadratic Penalty Method"
+        self.solver_name = "Quadratic Penalty"
 
     def solve(
         self,
@@ -481,7 +491,6 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             self._update_cost_functional()
 
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(tol=tol)
 
@@ -494,12 +503,14 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             if self.constraint_violation <= convergence_tol:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n")
+                    print(f"{self.solver_name} converged successfully.\n", flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 break
 
             if self.iterations >= max_iter:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n")
+                    print(f"{self.solver_name} did not converge.\n", flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
                 break
 
     def _update_cost_functional(self) -> None:

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+import fenics
+
 import cashocs
 from cashocs._loggers import critical
 from cashocs._loggers import debug
@@ -30,24 +32,29 @@ def test_set_log_level(caplog):
     warning("ghi")
     error("jkl")
     critical("mno")
-    assert "abc" in caplog.text
-    assert "def" in caplog.text
-    assert "ghi" in caplog.text
-    assert "jkl" in caplog.text
-    assert "mno" in caplog.text
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert "abc" in caplog.text
+        assert "def" in caplog.text
+        assert "ghi" in caplog.text
+        assert "jkl" in caplog.text
+        assert "mno" in caplog.text
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.INFO)
+
     debug("abc")
     info("def")
     warning("ghi")
     error("jkl")
     critical("mno")
-    assert not "abc" in caplog.text
-    assert "def" in caplog.text
-    assert "ghi" in caplog.text
-    assert "jkl" in caplog.text
-    assert "mno" in caplog.text
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert not "abc" in caplog.text
+        assert "def" in caplog.text
+        assert "ghi" in caplog.text
+        assert "jkl" in caplog.text
+        assert "mno" in caplog.text
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.WARNING)
@@ -56,11 +63,13 @@ def test_set_log_level(caplog):
     warning("ghi")
     error("jkl")
     critical("mno")
-    assert not "abc" in caplog.text
-    assert not "def" in caplog.text
-    assert "ghi" in caplog.text
-    assert "jkl" in caplog.text
-    assert "mno" in caplog.text
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert not "abc" in caplog.text
+        assert not "def" in caplog.text
+        assert "ghi" in caplog.text
+        assert "jkl" in caplog.text
+        assert "mno" in caplog.text
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.ERROR)
@@ -69,11 +78,13 @@ def test_set_log_level(caplog):
     warning("ghi")
     error("jkl")
     critical("mno")
-    assert not "abc" in caplog.text
-    assert not "def" in caplog.text
-    assert not "ghi" in caplog.text
-    assert "jkl" in caplog.text
-    assert "mno" in caplog.text
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert not "abc" in caplog.text
+        assert not "def" in caplog.text
+        assert not "ghi" in caplog.text
+        assert "jkl" in caplog.text
+        assert "mno" in caplog.text
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.CRITICAL)
@@ -82,9 +93,11 @@ def test_set_log_level(caplog):
     warning("ghi")
     error("jkl")
     critical("mno")
-    assert not "abc" in caplog.text
-    assert not "def" in caplog.text
-    assert not "ghi" in caplog.text
-    assert not "jkl" in caplog.text
-    assert "mno" in caplog.text
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        assert not "abc" in caplog.text
+        assert not "def" in caplog.text
+        assert not "ghi" in caplog.text
+        assert not "jkl" in caplog.text
+        assert "mno" in caplog.text
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()

@@ -23,7 +23,6 @@ from typing import List, Union
 
 import fenics
 import numpy as np
-from petsc4py import PETSc
 import ufl
 
 from cashocs import _utils
@@ -132,7 +131,7 @@ void angles_triangle(const Cell& cell, std::vector<double>& angs)
   e2 /= e2.norm();
 
   angs[0] = acos(e0.dot(e1));
-  angs[1] = acos(e0.dot(e2));
+  angs[1] = acos(-e0.dot(e2));
   angs[2] = acos(e1.dot(e2));
 }
 
@@ -411,7 +410,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimal radius ratio of the mesh.
 
         """
-        # noinspection PyArgumentList
         quality: float = np.min(fenics.MeshQuality.radius_ratios(mesh).array())
         return quality
 
@@ -435,7 +433,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average radius ratio of the mesh.
 
         """
-        # noinspection PyArgumentList
         quality: float = np.average(fenics.MeshQuality.radius_ratios(mesh).array())
         return quality
 
@@ -466,9 +463,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        ksp = PETSc.KSP().create()
-        _utils.setup_petsc_options([ksp], [options])
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (
@@ -486,7 +480,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond = fenics.Function(function_space_dg0)
 
         _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+            lhs, rhs, x=cond.vector().vec(), ksp_options=options
         )
         cond.vector().apply("")
         cond.vector().vec().reciprocal()
@@ -524,9 +518,6 @@ PYBIND11_MODULE(SIGNATURE, m)
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        # noinspection PyUnresolvedReferences
-        ksp = PETSc.KSP().create()
-        _utils.setup_petsc_options([ksp], [options])
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (
@@ -544,7 +535,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond = fenics.Function(function_space_dg0)
 
         _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp=ksp, ksp_options=options
+            lhs, rhs, x=cond.vector().vec(), ksp_options=options
         )
         cond.vector().apply("")
 

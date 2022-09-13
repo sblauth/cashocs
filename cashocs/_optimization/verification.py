@@ -120,7 +120,6 @@ def control_gradient_test(
     if scaling < 1e-3:
         scaling = 1.0
 
-    # noinspection PyProtectedMember
     # pylint: disable=protected-access
     ocp._erase_pde_memory()
     cost_functional_at_u = ocp.reduced_cost_functional.evaluate()
@@ -136,7 +135,6 @@ def control_gradient_test(
             ocp.controls[j].vector().apply("")
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
             ocp.controls[j].vector().apply("")
-        # noinspection PyProtectedMember
         # pylint: disable=protected-access
         ocp._erase_pde_memory()
         cost_functional_at_v = ocp.reduced_cost_functional.evaluate()
@@ -198,7 +196,6 @@ def shape_gradient_test(
 
     transformation = fenics.Function(sop.form_handler.deformation_space)
 
-    # noinspection PyProtectedMember
     # pylint: disable=protected-access
     sop._erase_pde_memory()
     current_cost_functional = sop.reduced_cost_functional.evaluate()
@@ -212,6 +209,7 @@ def shape_gradient_test(
     else:
         box_lower = 0.0
         box_upper = 0.0
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     box_lower = fenics.MPI.comm_world.bcast(box_lower, root=0)
     box_upper = fenics.MPI.comm_world.bcast(box_upper, root=0)
@@ -226,7 +224,6 @@ def shape_gradient_test(
         transformation.vector().vec().scale(eps)
         transformation.vector().apply("")
         if sop.mesh_handler.move_mesh(transformation):
-            # noinspection PyProtectedMember
             # pylint: disable=protected-access
             sop._erase_pde_memory()
             perturbed_cost_functional = sop.reduced_cost_functional.evaluate()
@@ -277,6 +274,7 @@ def compute_convergence_rates(
         rates.append(rate)
 
     if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        print(f"Taylor test convergence rate: {rates}")
+        print(f"Taylor test convergence rate: {rates}", flush=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     return rates
