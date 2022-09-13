@@ -17,6 +17,13 @@ in development
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* BFGS methods can now be used in a restarted fashion, if desired
+
+* New configuration file parameters
+
+  * Section AlgoLBFGS
+  
+    * ``bfgs_periodic_restart`` is an integer parameter. If this is 0 (the default), no restarting is done. If this is >0, then the BFGS method is restarted after as many iterations, as given in the parameter
 
 1.8.0 (July 6, 2022)
 --------------------
