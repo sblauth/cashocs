@@ -36,8 +36,8 @@ def convert(input_file: str, output_file: Optional[str] = None) -> None:
     """
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         if output_file is None:
-            input_name = input_file.rsplit(".", 1)[0]
-            output_file = f"{input_name}.xdmf"
+            cli_convert([input_file])
+        else:
+            cli_convert([input_file, "-o", output_file])
 
-        cli_convert([input_file, output_file])
     fenics.MPI.barrier(fenics.MPI.comm_world)
