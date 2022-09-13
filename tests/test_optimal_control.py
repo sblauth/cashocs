@@ -205,6 +205,19 @@ def test_control_bfgs():
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
+def test_control_bfgs_restarted():
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    config.set("AlgoLBFGS", "bfgs_periodic_restart", "2")
+
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=20)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
 def test_control_newton_cg():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 

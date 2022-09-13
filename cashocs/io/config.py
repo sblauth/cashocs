@@ -238,6 +238,10 @@ class Config(ConfigParser):
                 "use_bfgs_scaling": {
                     "type": "bool",
                 },
+                "bfgs_periodic_restart": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
+                },
             },
             "AlgoCG": {
                 "cg_method": {
@@ -589,6 +593,7 @@ inner_newton_atol = 0.0
 [AlgoLBFGS]
 bfgs_memory_size = 5
 use_bfgs_scaling = True
+bfgs_periodic_restart = 0
 
 [AlgoCG]
 cg_method = DY

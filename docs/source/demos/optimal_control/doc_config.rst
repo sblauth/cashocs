@@ -286,6 +286,12 @@ This determines, whether one should use a scaling of the initial Hessian approxi
 (see `Nocedal and Wright, Numerical Optimization <https://doi.org/10.1007/978-0-387-40065-5>`_).
 This is usually very beneficial and should be kept enabled, which it is by default.
 
+Third, we have the parameter ``bfgs_periodic_restart``, which is set in the line ::
+
+    bfgs_periodic_restart = 0
+   
+This is a non-negative integer value, which indicates the number of BFGS iterations, before a reinitialization takes place. In case that this is ``0`` (which is the default), no restarts are performed. 
+
 .. _config_ocp_algocg:
 
 Section AlgoCG
@@ -583,6 +589,9 @@ in the following.
     * - use_bfgs_scaling
       - ``True``
       - if ``True``, uses a scaled identity mapping as initial guess for the inverse Hessian
+    * - bfgs_periodic_restart
+      - ``0``
+      - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
 
 
 [AlgoCG]
