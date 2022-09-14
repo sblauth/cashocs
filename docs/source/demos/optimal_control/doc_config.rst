@@ -261,6 +261,30 @@ The following sections describe parameters that belong to the certain solution
 algorithms.
 
 
+.. _config_ocp_linesearch
+
+Section LineSearch
+------------------
+
+In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter ::
+
+    method = armijo
+    
+Possible options are ``armijo``, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and ``polynomial``, which uses polynomial models of the cost functional restricted to the line to generate "better" guesses for the stepsize. The default is ``armijo``. However, this will change in the future and users are encouraged to try the new polynomial line search models.
+
+The next parameter, ``polynomial_model``, specifies, which type of polynomials are used to generate new trial stepsizes. It is set via ::
+
+    polynomial_model = cubic
+    
+The parameter can either be ``quadratic`` or ``cubic``. If this is ``quadratic``, a quadratic interpolation polynomial along the search direction is generated and this is minimized analytically to generate a new trial stepsize. Here, only the current function value, the direction derivative of the cost functional in direction of the search direction, and the most recent trial stepsize are used to generate the polynomial. In case that ``polynomial_model`` is chosen to be ``cubic``, the last two trial stepsizes (when available) are used in addition to the current cost functional value and the directional derivative, to generate a cubic model of the one-dimensional cost functional, which is then minimized to compute a new trial stepsize.
+
+For the polynomial models, we also have a safeguarding procedure, which ensures that trial stepsizes cannot be chosen too large or too small, and which can be configured with the following two parameters. The trial stepsizes generate by the polynomial models are projected to the interval :math:`[\beta_{low} \alpha, \beta_{high} \alpha]`, where :math:`\alpha` is the previous trial stepsize and :math:`\beta_{low}, \beta_{high}` are factors which can be set via the parameters ``factor_low`` and ``factor_high``. In the config file, this can look like this ::
+
+    factor_high = 0.5
+    factor_low = 0.1
+
+and the values specified here are also the default values for these parameters.
+
 .. _config_ocp_algolbfgs:
 
 Section AlgoLBFGS
@@ -573,6 +597,28 @@ in the following.
       - if ``True``, the optimization algorithm does not raise an exception if
         it did not converge
 
+        
+[LineSearch]
+************
+
+.. list-table::
+    :header-rows: 1
+    
+    * - Parameter
+      - Default value
+      - Remarks
+    * - method
+      - ``armijo``
+      - ``armijo`` is a simple backtracking line search, whereas ``polynomial`` uses polynomial models to compute trial stepsizes.
+    * - polynomial_model
+      - ``cubic``
+      - This specifies, whether a ``cubic`` or ``quadratic`` model is used for computing trial stepsizes
+    * - factor_high
+      - ``0.5``
+      - Safeguard for stepsize, upper bound
+    * - factor_low
+      - ``0.1``
+      - Safeguard for stepsize, lower bound
 
 [AlgoLBFGS]
 ***********
