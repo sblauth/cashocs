@@ -230,6 +230,25 @@ class Config(ConfigParser):
                     "type": "bool",
                 },
             },
+            "LineSearch": {
+                "method": {
+                    "type": "str",
+                    "possible_options": ["armijo", "polynomial"],
+                },
+                "polynomial_model": {
+                    "type": "str",
+                    "possible_options": ["cubic", "quadratic"],
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                },
+                "factor_high": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                    "larger_than": ("LineSearch", "factor_low"),
+                },
+            },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
                     "type": "int",
@@ -536,6 +555,12 @@ initial_stepsize = 1.0
 safeguard_stepsize = True
 gradient_tol = 1e-9
 gradient_method = direct
+
+[LineSearch]
+method = armijo
+polynomial_model = cubic
+factor_high = 0.5
+factor_low = 0.1
 
 [ShapeGradient]
 lambda_lame = 0.0

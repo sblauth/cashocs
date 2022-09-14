@@ -488,7 +488,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             shape_variable_abstractions.ShapeVariableAbstractions(self)
         )
-        self.line_search = line_search.ArmijoLineSearch(self)
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            self.line_search = line_search.ArmijoLineSearch(self)
+        elif line_search_type == "polynomial":
+            self.line_search = line_search.PolynomialLineSearch(self)
 
         # TODO: Do not pass the line search (unnecessary)
         if self.algorithm.casefold() == "gradient_descent":
