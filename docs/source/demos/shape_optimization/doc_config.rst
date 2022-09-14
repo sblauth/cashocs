@@ -1119,6 +1119,9 @@ in the following.
     * - shape_bdry_fix_z
       - ``[]``
       - list of indices for boundaries with fixed z values
+    * - fixed_dimensions
+      - ``[]``
+      - a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)
     * - use_pull_back
       - ``True``
       - if ``False``, shape derivative might be wrong; no pull-back for the material derivative is performed;
