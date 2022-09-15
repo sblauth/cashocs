@@ -241,15 +241,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.history_y.appendleft([x.copy(True) for x in self.y_k])
             self.history_s.appendleft([x.copy(True) for x in self.s_k])
             curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
+            denominator = np.sqrt(
+                self.form_handler.scalar_product(self.s_k, self.s_k)
+                * self.form_handler.scalar_product(self.y_k, self.y_k)
+            )
 
-            if (
-                curvature_condition
-                / np.sqrt(
-                    self.form_handler.scalar_product(self.s_k, self.s_k)
-                    * self.form_handler.scalar_product(self.y_k, self.y_k)
-                )
-                <= 1e-14
-            ):
+            if denominator <= 1e-15 or curvature_condition / denominator <= 1e-14:
                 self.has_curvature_info = False
 
                 self.history_s.clear()
