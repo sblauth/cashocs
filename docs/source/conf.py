@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinxarg.ext",
     "sphinx_copybutton",
+    "sphinx.ext.viewcode",
 ]
 
 napoleon_google_docstring = True
@@ -87,10 +88,12 @@ exclude_patterns = ["_build"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 html_logo = "logo.png"
 html_theme_options = {
     "logo_only": True,
+    "repository_url": "https://github.com/sblauth/cashocs",
+    "use_repository_button": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

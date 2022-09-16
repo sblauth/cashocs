@@ -12,7 +12,7 @@ cashocs Documentation
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Topic Areas:
 
    installation
    getting_started
