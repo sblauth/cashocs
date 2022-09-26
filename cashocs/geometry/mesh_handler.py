@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
@@ -163,8 +164,8 @@ class _MeshHandler:
         self.save_optimized_mesh: bool = self.config.getboolean("Output", "save_mesh")
 
         if self.do_remesh or self.save_optimized_mesh:
-            self.mesh_directory = os.path.dirname(
-                os.path.realpath(self.config.get("Mesh", "gmsh_file"))
+            self.mesh_directory = (
+                pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
             )
 
         if self.do_remesh and shape_optimization_problem.temp_dict is not None:
@@ -185,8 +186,9 @@ class _MeshHandler:
                 fenics.MPI.barrier(fenics.MPI.comm_world)
             else:
                 self.remesh_directory = self.temp_dict["remesh_directory"]
-            if not os.path.isdir(os.path.realpath(self.remesh_directory)):
-                os.mkdir(self.remesh_directory)
+            remesh_path = pathlib.Path(self.remesh_directory)
+            if not remesh_path.is_dir():
+                remesh_path.mkdir()
             self.remesh_geo_file = f"{self.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
@@ -398,7 +400,7 @@ class _MeshHandler:
         """
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
-                temp_name = os.path.split(input_mesh_file)[1]
+                temp_name = pathlib.Path(input_mesh_file).name
 
                 file.write(f"Merge '{temp_name}';\n")
                 file.write("CreateGeometry;\n")
@@ -424,7 +426,10 @@ class _MeshHandler:
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
         gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
-        if os.path.isfile(gmsh_file) and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if (
+            pathlib.Path(gmsh_file).is_file()
+            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+        ):
             subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
@@ -432,20 +437,23 @@ class _MeshHandler:
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if (
-            os.path.isfile(gmsh_pre_remesh_file)
+            pathlib.Path(gmsh_pre_remesh_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
-        if os.path.isfile(mesh_h5_file) and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if (
+            pathlib.Path(mesh_h5_file).is_file()
+            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+        ):
             subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
         if (
-            os.path.isfile(mesh_xdmf_file)
+            pathlib.Path(mesh_xdmf_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
@@ -455,7 +463,7 @@ class _MeshHandler:
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if (
-            os.path.isfile(boundaries_h5_file)
+            pathlib.Path(boundaries_h5_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
@@ -465,7 +473,7 @@ class _MeshHandler:
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if (
-            os.path.isfile(boundaries_xdmf_file)
+            pathlib.Path(boundaries_xdmf_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
@@ -475,7 +483,7 @@ class _MeshHandler:
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if (
-            os.path.isfile(subdomains_h5_file)
+            pathlib.Path(subdomains_h5_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
@@ -485,7 +493,7 @@ class _MeshHandler:
             f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if (
-            os.path.isfile(subdomains_xdmf_file)
+            pathlib.Path(subdomains_xdmf_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
             subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
