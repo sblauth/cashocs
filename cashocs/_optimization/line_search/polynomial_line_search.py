@@ -54,9 +54,6 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.epsilon_armijo: float = self.config.getfloat(
             "OptimizationRoutine", "epsilon_armijo"
         )
-        self.beta_armijo: float = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo"
-        )
         self.armijo_stepsize_initial = self.stepsize
         self.search_direction_inf = 1.0
         self.decrease_measure_w_o_step = 1.0
@@ -116,30 +113,7 @@ class PolynomialLineSearch(line_search.LineSearch):
                 (presumably) scaled.
 
         """
-        self.search_direction_inf = np.max(
-            [
-                search_direction[i].vector().norm("linf")
-                for i in range(len(self.gradient))
-            ]
-        )
-
-        if has_curvature_info:
-            self.stepsize = 1.0
-
-        num_decreases = (
-            self.optimization_variable_abstractions.compute_a_priori_decreases(
-                search_direction, self.stepsize
-            )
-        )
-        self.stepsize /= pow(self.beta_armijo, num_decreases)
-
-        if self.safeguard_stepsize and solver.iteration == 0:
-            search_direction_norm = np.sqrt(
-                self.form_handler.scalar_product(search_direction, search_direction)
-            )
-            self.stepsize = float(
-                np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
-            )
+        self.initialize_stepsize(solver, search_direction, has_curvature_info)
 
         self.f_vals.clear()
         self.alpha_vals.clear()

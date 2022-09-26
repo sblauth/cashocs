@@ -268,6 +268,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         if self.bfgs_periodic_restart > 0:
             if self.periodic_its < self.bfgs_periodic_restart:
                 self.periodic_its += 1
+                self.is_restarted = False
             else:
                 for i in range(len(self.gradient)):
                     self.search_direction[i].vector().vec().aypx(
@@ -276,6 +277,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.search_direction[i].vector().apply("")
                 self.periodic_its = 0
                 self.has_curvature_info = False
+                self.is_restarted = True
 
                 self.history_s.clear()
                 self.history_y.clear()
