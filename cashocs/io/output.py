@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 from datetime import datetime as dt
-import os
 import pathlib
 from typing import TYPE_CHECKING
 
@@ -55,6 +54,8 @@ class OutputManager:
             )
             self.result_dir = f"{self.result_dir}_{self.suffix}"
 
+        self.result_path = pathlib.Path(self.result_dir)
+
         save_txt = self.config.getboolean("Output", "save_txt")
         save_results = self.config.getboolean("Output", "save_results")
         save_pvd = self.config.getboolean("Output", "save_pvd")
@@ -68,9 +69,9 @@ class OutputManager:
             or save_pvd_adjoint
         )
 
-        if not os.path.isdir(self.result_dir):
+        if not self.result_path.is_dir():
             if has_output:
-                pathlib.Path(self.result_dir).mkdir(parents=True, exist_ok=True)
+                self.result_path.mkdir(parents=True, exist_ok=True)
 
         self.history_manager = managers.HistoryManager(
             optimization_problem, self.result_dir
