@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -27,7 +27,7 @@ import numpy as np
 import cashocs
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, "CG", 1)

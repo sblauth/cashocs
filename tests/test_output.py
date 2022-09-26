@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -25,7 +25,7 @@ import numpy as np
 import cashocs
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, "CG", 1)
@@ -49,8 +49,8 @@ def test_time_suffix():
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve()
     suffix = ocp.solver.output_manager.suffix
-    assert os.path.isdir(dir_path + f"/results_{suffix}")
-    assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
+    assert pathlib.Path(dir_path + f"/results_{suffix}").is_dir()
+    assert pathlib.Path(dir_path + f"/results_{suffix}/history.txt").is_file()
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
     MPI.barrier(MPI.comm_world)
@@ -69,25 +69,29 @@ def test_save_pvd_files_ocp():
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/pvd").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/pvd/state_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/state_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/state_0000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/control_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/control_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/control_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/control_0000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/adjoint_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/adjoint_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/adjoint_0000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/gradient_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/gradient_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/gradient_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/gradient_0000004.pvtu").is_file()
     )
     MPI.barrier(MPI.comm_world)
 
@@ -138,33 +142,39 @@ def test_save_pvd_files_mixed():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_1.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/pvd").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/pvd/state_0_0.pvd").is_file()
+    assert pathlib.Path(dir_path + "/out/pvd/state_0_1.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/state_0_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/state_0_0000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/state_0_1000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0_1000004.pvtu"
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/state_0_1000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/state_0_1000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/control_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/control_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/control_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/control_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/control_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/control_0000004.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0_1.pvd")
-    assert os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0_0000004.vtu"
-    ) or os.path.isfile(dir_path + "/out/pvd/adjoint_0_0000004.pvtu")
-    assert os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0_1000004.vtu"
-    ) or os.path.isfile(dir_path + "/out/pvd/adjoint_0_1000004.pvtu")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/gradient_0000004.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/gradient_0000004.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/adjoint_0_0.pvd").is_file()
+    assert pathlib.Path(dir_path + "/out/pvd/adjoint_0_1.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/adjoint_0_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/adjoint_0_0000004.pvtu").is_file()
+    )
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/adjoint_0_1000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/adjoint_0_1000004.pvtu").is_file()
+    )
+    assert pathlib.Path(dir_path + "/out/pvd/gradient_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/gradient_0000004.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/gradient_0000004.pvtu").is_file()
     )
 
     MPI.barrier(MPI.comm_world)
