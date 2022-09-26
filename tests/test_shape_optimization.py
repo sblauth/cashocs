@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -85,7 +85,7 @@ def t_div(u, n):
 
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 # config = cashocs.load_config(dir_path + "/config_sop.ini")
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -732,22 +732,25 @@ def test_save_pvd_files():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0000006.pvtu"
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/pvd").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/pvd/state_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/state_0000006.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/state_0000006.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0000006.pvtu"
+    assert pathlib.Path(dir_path + "/out/pvd/adjoint_0.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/adjoint_0000006.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/adjoint_0000006.pvtu").is_file()
     )
-    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/out/pvd/shape_gradient000006.vtu"
-    ) or os.path.isfile(dir_path + "/out/pvd/shape_gradient000006.pvtu")
+    assert pathlib.Path(dir_path + "/out/pvd/shape_gradient.pvd").is_file()
+    assert (
+        pathlib.Path(dir_path + "/out/pvd/shape_gradient000006.vtu").is_file()
+        or pathlib.Path(dir_path + "/out/pvd/shape_gradient000006.pvtu").is_file()
+    )
 
     MPI.barrier(MPI.comm_world)
 

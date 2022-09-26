@@ -17,6 +17,8 @@ in development
 
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 
+* cashocs now uses pathlib over os.path
+
 * cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
 
 
