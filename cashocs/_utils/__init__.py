@@ -37,6 +37,9 @@ from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.helpers import parse_remesh
+from cashocs._utils.interpolations import interpolate_by_angle
+from cashocs._utils.interpolations import interpolate_by_volume
+from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
 from cashocs._utils.linalg import assemble_and_solve_linear
 from cashocs._utils.linalg import assemble_petsc_system
 from cashocs._utils.linalg import Interpolator
@@ -66,4 +69,7 @@ __all__ = [
     "split_linear_forms",
     "create_function_list",
     "bilinear_boundary_form_modification",
+    "interpolate_levelset_function_to_cells",
+    "interpolate_by_angle",
+    "interpolate_by_volume",
 ]
