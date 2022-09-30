@@ -170,15 +170,15 @@ class TopologyOptimizationAlgorithm(abc.ABC):
         #     )
         if self.interpolation_scheme == "angle":
             _utils.interpolate_by_angle(
-                self.topological_derivative_pos,
                 self.topological_derivative_neg,
+                self.topological_derivative_pos,
                 self.levelset_function,
                 self.topological_derivative_vertex,
             )
         else:
             _utils.interpolate_by_volume(
-                self.topological_derivative_pos,
                 self.topological_derivative_neg,
+                self.topological_derivative_pos,
                 self.levelset_function,
                 self.topological_derivative_vertex,
             )

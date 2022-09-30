@@ -16,3 +16,9 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Methods and classes for topology optimization problems."""
+
+from cashocs._optimization.topology_optimization.topology_optimization_problem import (
+    TopologyOptimizationProblem,
+)
+
+__all__ = ["TopologyOptimizationProblem"]

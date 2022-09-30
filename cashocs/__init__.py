@@ -43,8 +43,10 @@ from cashocs._optimization.optimal_control.optimal_control_problem import (
 from cashocs._optimization.shape_optimization.shape_optimization_problem import (
     ShapeOptimizationProblem,
 )
+from cashocs._optimization.topology_optimization import TopologyOptimizationProblem
 from cashocs._utils import create_bcs_list
 from cashocs._utils import create_dirichlet_bcs
+from cashocs._utils import interpolate_levelset_function_to_cells
 from cashocs._utils import Interpolator
 from cashocs.geometry import DeformationHandler
 from cashocs.geometry import import_mesh
@@ -119,4 +121,6 @@ __all__ = [
     "interval_mesh",
     "convert",
     "space_mapping",
+    "TopologyOptimizationProblem",
+    "interpolate_levelset_function_to_cells",
 ]
