@@ -27,10 +27,14 @@ import ufl
 from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
+from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
+from cashocs._optimization.topology_optimization import topology_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs import _forms
+    from cashocs import _pde_problems
     from cashocs import types
 
 
@@ -68,7 +72,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         re_normalize_levelset: bool = True,
         normalize_topological_derivative: bool = False,
         interpolation_scheme: Literal["angle", "volume"] = "angle",
-        output_name: str | None = None,
         initial_guess: list[fenics.Function] | None = None,
         ksp_options: types.KspOptions | list[list[str | int | float]] | None = None,
         adjoint_ksp_options: types.KspOptions
@@ -119,8 +122,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             interpolation_scheme: One of ``angle`` or ``volume``. This determines
                 whether the topological derivative is averaged by the volume of cells
                 surrounding a vertex or by the angle.
-            output_name: A path to a folder, where a .json file with the history of
-                the optimization is saved.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
@@ -152,10 +153,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             desired_weights=desired_weights,
         )
 
-        self.state_forms = state_forms
-        self.bcs_list = bcs_list
-        self.states = states
-        self.adjoints = adjoints
         self.levelset_function = levelset_function
         self.topological_derivative_pos = topological_derivative_pos
         self.topological_derivative_neg = topological_derivative_neg
@@ -169,10 +166,34 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.re_normalize_levelset = re_normalize_levelset
         self.normalize_topological_derivative = normalize_topological_derivative
         self.interpolation_scheme = interpolation_scheme
-        self.output_name = output_name
 
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
+
+        self._base_ocp = optimal_control_problem.OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_list,
+            self.states,
+            self.levelset_function,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+        )
+        self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
+        self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
+        self.adjoint_problem: _pde_problems.AdjointProblem = (
+            self._base_ocp.adjoint_problem
+        )
+        self.gradient_problem: _pde_problems.ControlGradientProblem = (
+            self._base_ocp.gradient_problem
+        )
+        self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
+        self.gradient = self._base_ocp.gradient
 
     def _erase_pde_memory(self) -> None:
         super()._erase_pde_memory()
@@ -211,6 +232,12 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 can carry out before it is terminated. The default is 100.
 
         """
+        self.output_manager = io.OutputManager(self)
+
+        self.optimization_variable_abstractions = (
+            topology_variable_abstractions.TopologyVariableAbstractions(self)
+        )
+
         if algorithm is None:
             self.algorithm = _utils.optimization_algorithm_configuration(
                 self.config, algorithm

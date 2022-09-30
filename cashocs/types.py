@@ -27,6 +27,7 @@ from cashocs import geometry
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 from cashocs._optimization import optimal_control
+from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import shape_optimization
 from cashocs._optimization import topology_optimization
 
@@ -47,6 +48,7 @@ MeshTuple = Tuple[
     fenics.Measure,
     fenics.Measure,
 ]
+SolutionAlgorithm = Union[optimization_algorithms.OptimizationAlgorithm]
 
 KspOptions = List[List[List[Union[str, int, float]]]]
 Constraint = Union[constraints.EqualityConstraint, constraints.InequalityConstraint]

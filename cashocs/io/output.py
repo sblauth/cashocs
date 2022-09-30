@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from cashocs._optimization import optimization_algorithms
+    from cashocs import types
     from cashocs._optimization import optimization_problem as op
 
 
@@ -85,7 +85,7 @@ class OutputManager:
         self.mesh_manager = managers.MeshManager(optimization_problem, self.result_dir)
         self.temp_file_manager = managers.TempFileManager(optimization_problem)
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
+    def output(self, solver: types.SolutionAlgorithm) -> None:
         """Writes the desired output to files and console.
 
         Args:
@@ -99,9 +99,7 @@ class OutputManager:
 
         self.result_manager.save_to_dict(solver)
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def output_summary(self, solver: types.SolutionAlgorithm) -> None:
         """Writes the summary to files and console.
 
         Args:
@@ -111,9 +109,7 @@ class OutputManager:
         self.history_manager.print_console_summary(solver)
         self.history_manager.print_file_summary(solver)
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def post_process(self, solver: types.SolutionAlgorithm) -> None:
         """Performs a post processing of the output.
 
         Args:

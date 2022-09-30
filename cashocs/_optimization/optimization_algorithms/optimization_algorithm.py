@@ -84,6 +84,10 @@ class OptimizationAlgorithm(abc.ABC):
         )
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
+        self.is_shape_problem: bool = optimization_problem.is_shape_problem
+        self.is_topology_problem: bool = optimization_problem.is_topology_problem
+        self.is_control_problem: bool = optimization_problem.is_control_problem
+
         if optimization_problem.is_shape_problem:
             self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
         else:

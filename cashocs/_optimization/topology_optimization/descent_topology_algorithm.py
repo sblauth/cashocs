@@ -74,17 +74,21 @@ class DescentTopologyAlgorithm(
             self._cashocs_problem.gradient[0].vector().apply("")
 
             angle = self.compute_angle()
-            cost_functional_value = (
+
+            self.gradient_norm = angle
+            self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
-            stepsize = self._cashocs_problem.solver.stepsize
-            self.cost_functional_values.append(cost_functional_value)
+            self.stepsize = self._cashocs_problem.solver.stepsize
+            self.cost_functional_values.append(self.objective_value)
             self.angle_list.append(angle)
-            self.stepsize_list.append(stepsize)
-            print(
-                f"k = {self.iteration:4d}  J = {cost_functional_value:.3e}"
-                f"  angle = {angle:>7.3f}°  alpha = {stepsize:.3e}"
-            )
+            self.stepsize_list.append(self.stepsize)
+            self.output()
+
+            if self.convergence_test():
+                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
+                self._cashocs_problem.gradient[0].vector().apply("")
+                print("\nOptimization successful!\n")
 
             self.iteration += 1
 
@@ -92,10 +96,6 @@ class DescentTopologyAlgorithm(
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.gradient[0].vector().apply("")
                 print("Maximum number of iterations reached.")
-            if angle <= self.atol + self.rtol * self.angle_list[0]:
-                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
-                self._cashocs_problem.gradient[0].vector().apply("")
-                print("\nOptimization successful!\n")
 
         self._cashocs_problem.inject_pre_hook(pre_hook)
         self._cashocs_problem.inject_post_hook(post_hook)

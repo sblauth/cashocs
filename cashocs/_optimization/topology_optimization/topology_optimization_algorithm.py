@@ -20,18 +20,20 @@
 from __future__ import annotations
 
 import abc
-import json
-import pathlib
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from cashocs import _utils
-from cashocs._optimization.optimal_control import optimal_control_problem
+from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
+if TYPE_CHECKING:
+    from cashocs._optimization import optimal_control
 
-class TopologyOptimizationAlgorithm(abc.ABC):
+
+class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorithm):
     """Parent class for solution algorithms for topology optimization."""
 
     def __init__(
@@ -45,21 +47,17 @@ class TopologyOptimizationAlgorithm(abc.ABC):
                 solved.
 
         """
-        self.state_forms = optimization_problem.state_forms
-        self.bcs_list = optimization_problem.bcs_list
-        self.cost_functional_list = optimization_problem.cost_functional_list
-        self.states = optimization_problem.states
-        self.adjoints = optimization_problem.adjoints
-        self.levelset_function = optimization_problem.levelset_function
+        super().__init__(optimization_problem)
+
+        self.levelset_function: fenics.Function = optimization_problem.levelset_function
         self.topological_derivative_neg = (
             optimization_problem.topological_derivative_neg
         )
         self.topological_derivative_pos = (
             optimization_problem.topological_derivative_pos
         )
-        self.update_levelset = optimization_problem.update_levelset
+        self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
-        self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.re_normalize_levelset = optimization_problem.re_normalize_levelset
         self.normalize_topological_derivative = (
             optimization_problem.normalize_topological_derivative
@@ -68,30 +66,20 @@ class TopologyOptimizationAlgorithm(abc.ABC):
             optimization_problem.topological_derivative_is_identical
         )
         self.interpolation_scheme = optimization_problem.interpolation_scheme
-        self.output_name = optimization_problem.output_name
-        if self.output_name is None:
-            self.output_name = "history.json"
+        self.output_manager = optimization_problem.output_manager
+
+        self._cashocs_problem: optimal_control.OptimalControlProblem = (
+            optimization_problem._base_ocp
+        )
 
         self.mesh = optimization_problem.mesh
         self.cg1_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg0_space = optimization_problem.dg0_space
-        self.topological_derivative_vertex = fenics.Function(self.cg1_space)
+        self.topological_derivative_vertex: fenics.Function = fenics.Function(
+            self.cg1_space
+        )
         self.levelset_function_prev = fenics.Function(self.cg1_space)
 
-        self._cashocs_problem = optimal_control_problem.OptimalControlProblem(
-            self.state_forms,
-            self.bcs_list,
-            self.cost_functional_list,
-            self.states,
-            self.levelset_function,
-            self.adjoints,
-            config=self.config,
-            riesz_scalar_products=self.riesz_scalar_products,
-            initial_guess=optimization_problem.initial_guess,
-            ksp_options=optimization_problem.ksp_options,
-            adjoint_ksp_options=optimization_problem.adjoint_ksp_options,
-            desired_weights=optimization_problem.desired_weights,
-        )
         self.cost_functional_values: list[float] = []
         self.angle_list: list[float] = []
         self.stepsize_list: list[float] = []
@@ -260,18 +248,30 @@ class TopologyOptimizationAlgorithm(abc.ABC):
         )
         fenics.plot(shape)
 
-    def post_process(self) -> None:
-        """Performs a post-processing after the solver is finished."""
-        history = {
-            "cost_functional": self.cost_functional_values,
-            "angle": self.angle_list,
-            "stepsize": self.stepsize_list,
-        }
-        result_dir = self.config.get("Output", "result_dir")
-        pathlib.Path(f"{result_dir}").mkdir(parents=True, exist_ok=True)
+    # def post_process(self) -> None:
+    #     """Performs a post-processing after the solver is finished."""
+    #     history = {
+    #         "cost_functional": self.cost_functional_values,
+    #         "angle": self.angle_list,
+    #         "stepsize": self.stepsize_list,
+    #     }
+    #     result_dir = self.config.get("Output", "result_dir")
+    #     pathlib.Path(f"{result_dir}").mkdir(parents=True, exist_ok=True)
+    #
+    #     with open(f"{result_dir}/history.json", "w", encoding="utf-8") as file:
+    #         json.dump(history, file)
 
-        with open(f"{result_dir}/{self.output_name}", "w", encoding="utf-8") as file:
-            json.dump(history, file)
+    def output(self) -> None:
+        """Writes the output to console and files."""
+        self.output_manager.output(self)
+
+    def output_summary(self) -> None:
+        """Writes the summary of the optimization (to files and console)."""
+        self.output_manager.output_summary(self)
+
+    def post_process(self) -> None:
+        """Performs the non-console output related post-processing."""
+        self.output_manager.post_process(self)
 
 
 class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
@@ -304,10 +304,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         super().run(rtol, atol, max_iter)
 
         self.normalize(self.levelset_function)
-        stepsize = 1.0
+        self.stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
 
         for k in range(self.config.getint("OptimizationRoutine", "maximum_iterations")):
+            self.iteration = k
             self.levelset_function_prev.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec()
             )
@@ -316,45 +317,44 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             self._cashocs_problem.adjoint_problem.has_solution = False
             self.compute_gradient()
 
-            cost_functional_current = (
+            self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
-            self.cost_functional_values.append(cost_functional_current)
+            self.cost_functional_values.append(self.objective_value)
 
             angle = self.compute_angle()
-            print(
-                f"{k = :4d}  J = {cost_functional_current:.3e}"
-                f"  angle = {angle:>7.3f}°  alpha = {stepsize:.3e}"
-            )
+            self.gradient_norm = angle
+            self.output()
             self.angle_list.append(angle)
-            self.stepsize_list.append(stepsize)
+            self.stepsize_list.append(self.stepsize)
 
-            if angle <= self.atol + self.rtol * self.angle_list[0]:
+            if self.convergence_test():
                 print("\nOptimization successful!\n")
                 break
+
             if k > 0:
-                stepsize = float(np.minimum(2.0 * stepsize, 1.0))
+                self.stepsize = float(np.minimum(2.0 * self.stepsize, 1.0))
             else:
-                stepsize = float(
+                self.stepsize = float(
                     np.minimum(
                         self.config.getfloat("OptimizationRoutine", "initial_stepsize"),
                         1.0,
                     )
                 )
             while True:
-                self.move_levelset(stepsize)
+                self.move_levelset(self.stepsize)
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
-                if cost_functional_new <= cost_functional_current:
+                if cost_functional_new <= self.objective_value:
                     break
                 else:
-                    stepsize *= 0.5
+                    self.stepsize *= 0.5
 
-                if stepsize <= 1e-10:
+                if self.stepsize <= 1e-10:
                     raise Exception("Stepsize computation failed.")
 
 

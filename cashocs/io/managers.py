@@ -26,17 +26,15 @@ from typing import List, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 
-from cashocs import _forms
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
+    from cashocs import types
     from cashocs._optimization import optimization_algorithms
 
 
-def generate_summary_str(
-    solver: optimization_algorithms.OptimizationAlgorithm,
-) -> str:
+def generate_summary_str(solver: types.SolutionAlgorithm) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
@@ -62,9 +60,7 @@ def generate_summary_str(
     return "".join(strs)
 
 
-def generate_output_str(
-    solver: optimization_algorithms.OptimizationAlgorithm,
-) -> str:
+def generate_output_str(solver: types.SolutionAlgorithm) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
@@ -77,12 +73,19 @@ def generate_output_str(
     iteration = solver.iteration
     objective_value = solver.objective_value
 
+    meas_format = ".3e"
+    if solver.is_topology_problem:
+        meas_format = ".2f"
+
     if not np.any(solver.form_handler.require_control_constraints):
         gradient_str = "grad. norm"
     else:
         gradient_str = "stat. meas."
 
-    if solver.form_handler.is_shape_problem:
+    if solver.is_topology_problem:
+        gradient_str = "angle"
+
+    if solver.is_shape_problem:
         mesh_handler = solver.optimization_variable_abstractions.mesh_handler
         mesh_quality = mesh_handler.current_mesh_quality
     else:
@@ -105,7 +108,7 @@ def generate_output_str(
         f"{iteration:4d},  ",
         f"{objective_value:>13.3e},  ",
         f"{solver.relative_norm:>{len(gradient_str) + 5}.3e},  ",
-        f"{solver.gradient_norm:>{len(gradient_str) + 5}.3e},  ",
+        f"{solver.gradient_norm:>{len(gradient_str) + 5}{meas_format}},  ",
     ]
     if mesh_quality is not None:
         strs.append(f"{mesh_quality:>9.2f},  ")
@@ -159,9 +162,7 @@ class ResultManager:
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
 
-    def save_to_dict(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def save_to_dict(self, solver: types.SolutionAlgorithm) -> None:
         """Saves the optimization history to a dictionary.
 
         Args:
@@ -175,9 +176,7 @@ class ResultManager:
             self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
         self.output_dict["stepsize"].append(solver.stepsize)
 
-    def save_to_json(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def save_to_json(self, solver: types.SolutionAlgorithm) -> None:
         """Saves the history of the optimization to a .json file.
 
         Args:
@@ -212,9 +211,7 @@ class HistoryManager:
         self.verbose = optimization_problem.config.getboolean("Output", "verbose")
         self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
 
-    def print_to_console(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def print_to_console(self, solver: types.SolutionAlgorithm) -> None:
         """Prints the output string to the console.
 
         Args:
@@ -225,9 +222,7 @@ class HistoryManager:
             print(generate_output_str(solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_to_file(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def print_to_file(self, solver: types.SolutionAlgorithm) -> None:
         """Saves the output string in a file.
 
         Args:
@@ -246,9 +241,7 @@ class HistoryManager:
                 file.write(f"{generate_output_str(solver)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_console_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def print_console_summary(self, solver: types.SolutionAlgorithm) -> None:
         """Prints the summary in the console.
 
         Args:
@@ -259,9 +252,7 @@ class HistoryManager:
             print(generate_summary_str(solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_file_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def print_file_summary(self, solver: types.SolutionAlgorithm) -> None:
         """Save the summary in a file.
 
         Args:
@@ -287,9 +278,7 @@ class TempFileManager:
         self.config = optimization_problem.config
         self.is_shape_problem = optimization_problem.is_shape_problem
 
-    def clear_temp_files(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def clear_temp_files(self, solver: types.SolutionAlgorithm) -> None:
         """Deletes temporary files.
 
         Args:
@@ -329,9 +318,7 @@ class MeshManager:
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
-    def save_optimized_mesh(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def save_optimized_mesh(self, solver: types.SolutionAlgorithm) -> None:
         """Saves a copy of the optimized mesh in Gmsh format.
 
         Args:
@@ -370,12 +357,9 @@ class PVDFileManager:
         self.save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
         self.save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
 
-        self.is_control_problem = False
-        self.is_shape_problem = False
-        if isinstance(self.form_handler, _forms.ControlFormHandler):
-            self.is_control_problem = True
-        else:
-            self.is_shape_problem = True
+        self.is_control_problem = optimization_problem.is_control_problem
+        self.is_shape_problem = optimization_problem.is_shape_problem
+        self.is_topology_problem = optimization_problem.is_topology_problem
 
         self.pvd_prefix = ""
 
