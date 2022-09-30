@@ -27,7 +27,7 @@ import ufl
 from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
-from cashocs._optimization.topology_optimization import line_search_algorithm
+from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 
 if TYPE_CHECKING:
@@ -227,7 +227,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 self
             )
         else:
-            self.solver = line_search_algorithm.LineSearchTopologyAlgorithm(
+            self.solver = descent_topology_algorithm.DescentTopologyAlgorithm(
                 self, self.algorithm
             )
 

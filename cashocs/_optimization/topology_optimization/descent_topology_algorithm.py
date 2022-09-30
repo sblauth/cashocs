@@ -23,7 +23,7 @@ from cashocs._optimization.topology_optimization import topology_optimization_al
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
 
-class LineSearchTopologyAlgorithm(
+class DescentTopologyAlgorithm(
     topology_optimization_algorithm.TopologyOptimizationAlgorithm
 ):
     """A general solver class for topology optimization.
