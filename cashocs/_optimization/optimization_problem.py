@@ -45,6 +45,9 @@ if TYPE_CHECKING:
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
+    from cashocs._optimization.topology_optimization import (
+        topology_optimization_algorithm,
+    )
 
 
 class OptimizationProblem(abc.ABC):
@@ -71,7 +74,10 @@ class OptimizationProblem(abc.ABC):
     algorithm: str
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
-    solver: optimization_algorithms.OptimizationAlgorithm
+    solver: Union[
+        optimization_algorithms.OptimizationAlgorithm,
+        topology_optimization_algorithm.TopologyOptimizationAlgorithm,
+    ]
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
     cost_functional_list: List[types.CostFunctional]
@@ -183,6 +189,7 @@ class OptimizationProblem(abc.ABC):
         self.has_custom_derivative = False
 
         self._is_shape_problem = False
+        self._is_topology_problem = False
         self._is_control_problem = False
 
     @property
@@ -193,8 +200,14 @@ class OptimizationProblem(abc.ABC):
     @is_shape_problem.setter
     def is_shape_problem(self, value: bool) -> None:
         """Setter method for is_shape_problem."""
-        self._is_shape_problem = value
-        self._is_control_problem = not value
+        if value:
+            self._is_shape_problem = True
+            self._is_control_problem = False
+            self._is_topology_problem = False
+        else:
+            self._is_shape_problem = False
+            self._is_control_problem = False
+            self._is_topology_problem = False
 
     @property
     def is_control_problem(self) -> bool:
@@ -204,8 +217,31 @@ class OptimizationProblem(abc.ABC):
     @is_control_problem.setter
     def is_control_problem(self, value: bool) -> None:
         """Setter method for is_control_problem."""
-        self._is_shape_problem = not value
-        self._is_control_problem = value
+        if value:
+            self._is_control_problem = True
+            self._is_shape_problem = False
+            self._is_topology_problem = False
+        else:
+            self._is_control_problem = False
+            self._is_shape_problem = False
+            self._is_topology_problem = False
+
+    @property
+    def is_topology_problem(self) -> bool:
+        """``True`` if self is a topology optimization problem."""
+        return self._is_topology_problem
+
+    @is_topology_problem.setter
+    def is_topology_problem(self, value: bool) -> None:
+        """Setter method for is_topology_problem."""
+        if value:
+            self._is_topology_problem = True
+            self._is_shape_problem = False
+            self._is_control_problem = False
+        else:
+            self._is_topology_problem = False
+            self._is_shape_problem = False
+            self._is_control_problem = False
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

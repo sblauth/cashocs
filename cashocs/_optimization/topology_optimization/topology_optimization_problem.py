@@ -19,20 +19,22 @@
 
 from __future__ import annotations
 
-import copy
-from typing import Callable, Literal, Union
+from typing import Callable, Literal, TYPE_CHECKING
 
 import fenics
 import ufl
 
+from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
-from cashocs import types
 from cashocs._optimization.topology_optimization import line_search_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 
+if TYPE_CHECKING:
+    from cashocs import types
 
-class TopologyOptimizationProblem:
+
+class TopologyOptimizationProblem(_optimization.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
@@ -45,11 +47,7 @@ class TopologyOptimizationProblem:
     on).
     """
 
-    solver: Union[
-        topology_optimization_algorithm.ConvexCombinationAlgorithm,
-        topology_optimization_algorithm.SphereCombinationAlgorithm,
-        line_search_algorithm.LineSearchTopologyAlgorithm,
-    ]
+    solver: topology_optimization_algorithm.TopologyOptimizationAlgorithm
 
     def __init__(  # pylint: disable=unused-argument
         self,
@@ -57,7 +55,7 @@ class TopologyOptimizationProblem:
         bcs_list: list[list[fenics.DirichletBC]]
         | list[fenics.DirichletBC]
         | fenics.DirichletBC,
-        cost_functional: list[types.CostFunctional],
+        cost_functional_form: list[types.CostFunctional],
         states: list[fenics.Function] | fenics.Function,
         adjoints: list[fenics.Function] | fenics.Function,
         levelset_function: fenics.Function,
@@ -86,7 +84,7 @@ class TopologyOptimizationProblem:
             bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
                 Dirichlet (essential) boundary conditions. If this is ``None``, then no
                 Dirichlet boundary conditions are imposed.
-            cost_functional: UFL form of the cost functional. Can also be a list of
+            cost_functional_form: UFL form of the cost functional. Can also be a list of
                 summands of the cost functional
             states: The state variable(s), can either be a :py:class:`fenics.Function`,
                 or a list of these.
@@ -141,23 +139,33 @@ class TopologyOptimizationProblem:
                 `None`.
 
         """
+        super().__init__(
+            state_forms,
+            bcs_list,
+            cost_functional_form,
+            states,
+            adjoints,
+            config=config,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+        )
+
         self.state_forms = state_forms
         self.bcs_list = bcs_list
-        self.cost_functional = cost_functional
         self.states = states
         self.adjoints = adjoints
         self.levelset_function = levelset_function
         self.topological_derivative_pos = topological_derivative_pos
         self.topological_derivative_neg = topological_derivative_neg
         self.update_levelset = update_levelset
+        self.riesz_scalar_products = riesz_scalar_products
 
-        if config is None:
-            self.config = io.Config()
-        else:
-            self.config = copy.deepcopy(config)
+        self.is_topology_problem = True
+        self.update_levelset()
 
         self.topological_derivative_is_identical = topological_derivative_is_identical
-        self.riesz_scalar_products = riesz_scalar_products
         self.re_normalize_levelset = re_normalize_levelset
         self.normalize_topological_derivative = normalize_topological_derivative
         self.interpolation_scheme = interpolation_scheme
@@ -166,11 +174,22 @@ class TopologyOptimizationProblem:
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
+    def _erase_pde_memory(self) -> None:
+        super()._erase_pde_memory()
+        pass
+
+    def gradient_test(self) -> float:
+        """Gradient test for topology optimization - not implemented."""
+        raise NotImplementedError(
+            "Gradient test is not implemented for topology optimization."
+        )
+
     def solve(
         self,
         algorithm: str | None = None,
-        tol: float = 1.0,
-        max_iter: int = 100,
+        rtol: float | None = 0.0,
+        atol: float | None = 1.0,
+        max_iter: int | None = None,
     ) -> None:
         """Solves the optimization problem.
 
@@ -182,7 +201,10 @@ class TopologyOptimizationProblem:
                 for limited memory BFGS methods, ``'sphere_combination'`` for Euler's
                 method on the spehere, and ``'convex_combination'`` for a convex
                 combination approach.
-            tol: The relative tolerance used for the termination criterion (i.e. the
+            rtol: The relative tolerance used for the termination criterion (i.e. the
+                angle between topological derivative and levelset function). Default is
+                0.
+            atol: The absolute tolerance for the termination criterion (i.e. the
                 angle between topological derivative and levelset function). Default is
                 1 degree.
             max_iter: The maximum number of iterations the optimization algorithm
@@ -195,8 +217,6 @@ class TopologyOptimizationProblem:
             )
         else:
             self.algorithm = algorithm
-
-        self.tol = tol
 
         if self.algorithm.casefold() == "sphere_combination":
             self.solver = topology_optimization_algorithm.SphereCombinationAlgorithm(
@@ -211,7 +231,7 @@ class TopologyOptimizationProblem:
                 self, self.algorithm
             )
 
-        self.solver.run(tol, max_iter)
+        self.solver.run(rtol, atol, max_iter)
         self.solver.post_process()
 
     def plot_shape(self) -> None:

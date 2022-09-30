@@ -47,7 +47,7 @@ class TopologyOptimizationAlgorithm(abc.ABC):
         """
         self.state_forms = optimization_problem.state_forms
         self.bcs_list = optimization_problem.bcs_list
-        self.cost_functional = optimization_problem.cost_functional
+        self.cost_functional_list = optimization_problem.cost_functional_list
         self.states = optimization_problem.states
         self.adjoints = optimization_problem.adjoints
         self.levelset_function = optimization_problem.levelset_function
@@ -81,26 +81,47 @@ class TopologyOptimizationAlgorithm(abc.ABC):
         self._cashocs_problem = optimal_control_problem.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
-            self.cost_functional,
+            self.cost_functional_list,
             self.states,
             self.levelset_function,
             self.adjoints,
             config=self.config,
             riesz_scalar_products=self.riesz_scalar_products,
+            initial_guess=optimization_problem.initial_guess,
+            ksp_options=optimization_problem.ksp_options,
+            adjoint_ksp_options=optimization_problem.adjoint_ksp_options,
+            desired_weights=optimization_problem.desired_weights,
         )
-        self.cost_functional_list: list[float] = []
+        self.cost_functional_values: list[float] = []
         self.angle_list: list[float] = []
         self.stepsize_list: list[float] = []
 
     @abc.abstractmethod
-    def run(self, tol: float = 1.0, max_iter: int = 100) -> None:
+    def run(
+        self,
+        rtol: float | None = 0.0,
+        atol: float | None = 1.0,
+        max_iter: int | None = None,
+    ) -> None:
         """Runs the optimization algorithm to solve the optimization problem.
 
         Args:
-            tol: Tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm
+            rtol: Relative tolerance for the optimization algorithm.
+            atol: Absolute tolerance for the optimization algorithm.
+            max_iter: Maximum number of iterations for the optimization algorithm.
 
         """
+        if rtol is None:
+            self.rtol = 0.0
+        else:
+            self.rtol = rtol
+        if atol is None:
+            self.atol = 1.0
+        else:
+            self.atol = atol
+
+        if max_iter is not None:
+            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
     def scalar_product(self, a: fenics.Function, b: fenics.Function) -> float:
         """Computes the scalar product between two functions.
@@ -242,7 +263,7 @@ class TopologyOptimizationAlgorithm(abc.ABC):
     def post_process(self) -> None:
         """Performs a post-processing after the solver is finished."""
         history = {
-            "cost_functional": self.cost_functional_list,
+            "cost_functional": self.cost_functional_values,
             "angle": self.angle_list,
             "stepsize": self.stepsize_list,
         }
@@ -266,19 +287,27 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         """
         pass
 
-    def run(self, tol: float = 1.0, max_iter: int = 100) -> None:
+    def run(
+        self,
+        rtol: float | None = 0.0,
+        atol: float | None = 1.0,
+        max_iter: int | None = None,
+    ) -> None:
         """Runs the optimization algorithm to solve the optimization problem.
 
         Args:
-            tol: Tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm
+            rtol: Relative tolerance for the optimization algorithm.
+            atol: Absolute tolerance for the optimization algorithm.
+            max_iter: Maximum number of iterations for the optimization algorithm.
 
         """
+        super().run(rtol, atol, max_iter)
+
         self.normalize(self.levelset_function)
         stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
 
-        for k in range(max_iter):
+        for k in range(self.config.getint("OptimizationRoutine", "maximum_iterations")):
             self.levelset_function_prev.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec()
             )
@@ -290,7 +319,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             cost_functional_current = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
-            self.cost_functional_list.append(cost_functional_current)
+            self.cost_functional_values.append(cost_functional_current)
 
             angle = self.compute_angle()
             print(
@@ -300,7 +329,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             self.angle_list.append(angle)
             self.stepsize_list.append(stepsize)
 
-            if angle <= tol:
+            if angle <= self.atol + self.rtol * self.angle_list[0]:
                 print("\nOptimization successful!\n")
                 break
             if k > 0:

@@ -49,7 +49,8 @@ class LineSearchTopologyAlgorithm(
 
         self.iteration = 0
         self.max_iter = 0
-        self.tol = 0.0
+        self.atol = 0.0
+        self.rtol = 0.0
         self._cashocs_problem.config.set("Output", "verbose", "False")
         self._cashocs_problem.config.set("OptimizationRoutine", "soft_exit", "True")
 
@@ -77,7 +78,7 @@ class LineSearchTopologyAlgorithm(
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
             stepsize = self._cashocs_problem.solver.stepsize
-            self.cost_functional_list.append(cost_functional_value)
+            self.cost_functional_values.append(cost_functional_value)
             self.angle_list.append(angle)
             self.stepsize_list.append(stepsize)
             print(
@@ -91,7 +92,7 @@ class LineSearchTopologyAlgorithm(
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.gradient[0].vector().apply("")
                 print("Maximum number of iterations reached.")
-            if angle <= self.tol:
+            if angle <= self.atol + self.rtol * self.angle_list[0]:
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.gradient[0].vector().apply("")
                 print("\nOptimization successful!\n")
@@ -99,25 +100,34 @@ class LineSearchTopologyAlgorithm(
         self._cashocs_problem.inject_pre_hook(pre_hook)
         self._cashocs_problem.inject_post_hook(post_hook)
 
-    def run(self, tol: float = 1.0, max_iter: int = 100) -> None:
+    def run(
+        self,
+        rtol: float | None = 0.0,
+        atol: float | None = 1.0,
+        max_iter: int | None = None,
+    ) -> None:
         """Runs the optimization algorithm to solve the optimization problem.
 
         Args:
-            tol: Tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm
+            rtol: Relative tolerance for the optimization algorithm.
+            atol: Absolute tolerance for the optimization algorithm.
+            max_iter: Maximum number of iterations for the optimization algorithm.
 
         """
+        super().run(rtol, atol, max_iter)
+
         self.iteration = 0
-        self.max_iter = max_iter
-        self.tol = tol
+        self.max_iter = self.config.getint("OptimizationRoutine", "maximum_iterations")
 
         stop_iter = -1
 
         while True:
-            self._cashocs_problem.solve(algorithm=self.algorithm, max_iter=max_iter)
+            self._cashocs_problem.solve(
+                algorithm=self.algorithm, rtol=0.0, atol=0.0, max_iter=max_iter
+            )
 
             if self._cashocs_problem.solver.converged_reason < -1:
-                self.cost_functional_list.pop()
+                self.cost_functional_values.pop()
                 self.angle_list.pop()
                 self.stepsize_list.pop()
                 self.iteration -= 1

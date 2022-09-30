@@ -64,6 +64,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     """
 
     temp_dict: Optional[Dict]
+    solver: optimization_algorithms.OptimizationAlgorithm
 
     def __new__(
         cls,

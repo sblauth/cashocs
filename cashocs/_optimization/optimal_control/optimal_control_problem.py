@@ -56,6 +56,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     controls: List[fenics.Function]
     control_spaces: List[fenics.FunctionSpace]
+    solver: optimization_algorithms.OptimizationAlgorithm
 
     def __new__(
         cls,
