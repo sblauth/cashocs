@@ -17,6 +17,7 @@
 
 
 import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -28,7 +29,7 @@ from cashocs._exceptions import ConfigError
 from cashocs._exceptions import InputError
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, "CG", 1)
@@ -238,7 +239,7 @@ def test_incomplete_requirements_config():
 def test_no_config():
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    cwd = os.getcwd()
+    cwd = pathlib.Path.cwd()
     try:
         if MPI.rank(MPI.comm_world) == 0:
             os.chdir("./tests")
@@ -253,9 +254,9 @@ def test_no_config():
         assert ocp.solver.relative_norm <= ocp.solver.rtol
 
         MPI.barrier(MPI.comm_world)
-        assert os.path.isdir(dir_path + "/results")
-        assert os.path.isfile(dir_path + "/results/history.txt")
-        assert os.path.isfile(dir_path + "/results/history.json")
+        assert pathlib.Path(dir_path + "/results").is_dir()
+        assert pathlib.Path(dir_path + "/results/history.txt").is_file()
+        assert pathlib.Path(dir_path + "/results/history.json").is_file()
 
         MPI.barrier(MPI.comm_world)
         if MPI.rank(MPI.comm_world) == 0:

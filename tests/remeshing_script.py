@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 
 from fenics import *
 
 import cashocs
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
 config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
