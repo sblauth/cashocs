@@ -275,6 +275,27 @@ PYBIND11_MODULE(SIGNATURE, m)
         pass
 
     @classmethod
+    def _skewness(cls, mesh: fenics.Mesh) -> np.ndarray:
+        r"""Computes the skewness of the mesh.
+
+        Args:
+            mesh: The mesh whose quality shall be computed.
+
+        Returns:
+            The element wise skewness of the mesh on process 0.
+
+        """
+        comm = fenics.MPI.comm_world
+        skewness_array = cls._quality_object.skewness(mesh).array()
+        skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
+        if comm.rank == 0:
+            skewness_list = np.concatenate(skewness_list, axis=None)
+        else:
+            skewness_list = np.zeros(1)
+
+        return skewness_list
+
+    @classmethod
     def min_skewness(cls, mesh: fenics.Mesh) -> float:
         r"""Computes the minimal skewness of the mesh.
 
@@ -303,7 +324,16 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimum skewness of the mesh.
 
         """
-        quality: float = np.min(cls._quality_object.skewness(mesh).array())
+        skewness_list = cls._skewness(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.min(skewness_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
 
     @classmethod
@@ -335,8 +365,38 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average skewness of the mesh.
 
         """
-        quality: float = np.average(cls._quality_object.skewness(mesh).array())
+        skewness_list = cls._skewness(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.average(skewness_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
+
+    @classmethod
+    def _maximum_angle(cls, mesh: fenics.Mesh) -> np.ndarray:
+        r"""Computes the largest angle of each element.
+
+        Args:
+            mesh: The mesh, whose quality shall be computed.
+
+        Returns:
+            The maximum angle quality measure for each element on process 0.
+
+        """
+        comm = fenics.MPI.comm_world
+        maximum_angle_array = cls._quality_object.maximum_angle(mesh).array()
+        maximum_angle_list: np.ndarray = comm.gather(maximum_angle_array, root=0)
+        if comm.rank == 0:
+            maximum_angle_list = np.concatenate(maximum_angle_list, axis=None)
+        else:
+            maximum_angle_list = np.zeros(1)
+
+        return maximum_angle_list
 
     @classmethod
     def min_maximum_angle(cls, mesh: fenics.Mesh) -> float:
@@ -361,7 +421,16 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimum value of the maximum angle quality measure.
 
         """
-        quality: float = np.min(cls._quality_object.maximum_angle(mesh).array())
+        maximum_angle_list = cls._maximum_angle(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.min(maximum_angle_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
 
     @classmethod
@@ -387,8 +456,38 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average quality, based on the maximum angle measure.
 
         """
-        quality: float = np.average(cls._quality_object.maximum_angle(mesh).array())
+        maximum_angle_list = cls._maximum_angle(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.average(maximum_angle_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
+
+    @classmethod
+    def _radius_ratios(cls, mesh: fenics.Mesh) -> np.ndarray:
+        r"""Computes the radius ratios of the mesh elements.
+
+        Args:
+            mesh: The mesh, whose quality shall be computed.
+
+        Returns:
+            The radius ratios of the mesh elements on process 0.
+
+        """
+        comm = fenics.MPI.comm_world
+        radius_ratios_array = fenics.MeshQuality.radius_ratios(mesh).array()
+        radius_ratios_list: np.ndarray = comm.gather(radius_ratios_array, root=0)
+        if comm.rank == 0:
+            radius_ratios_list = np.concatenate(radius_ratios_list, axis=None)
+        else:
+            radius_ratios_list = np.zeros(1)
+
+        return radius_ratios_list
 
     @classmethod
     def min_radius_ratios(cls, mesh: fenics.Mesh) -> float:
@@ -410,7 +509,16 @@ PYBIND11_MODULE(SIGNATURE, m)
             The minimal radius ratio of the mesh.
 
         """
-        quality: float = np.min(fenics.MeshQuality.radius_ratios(mesh).array())
+        radius_ratios_list = cls._radius_ratios(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.min(radius_ratios_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
 
     @classmethod
@@ -433,22 +541,31 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average radius ratio of the mesh.
 
         """
-        quality: float = np.average(fenics.MeshQuality.radius_ratios(mesh).array())
+        radius_ratios_list = cls._radius_ratios(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.average(radius_ratios_list))
+        else:
+            qual = None
+
+        quality: float = comm.bcast(qual, root=0)
+
         return quality
 
     @classmethod
-    def min_condition_number(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes quality based on the condition number of the reference mapping.
+    def _cell_condition_number(cls, mesh: fenics.Mesh) -> fenics.Function:
+        r"""Computes the condition number quality for each cell.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
         (linear) mapping from the elements of the mesh to the reference element.
-        Computes the minimum of the condition number over all elements.
 
         Args:
             mesh: The mesh, whose quality shall be computed.
 
         Returns:
-            The minimal condition number quality measure.
+            A fenics.Function of a piecewise constant function space which holds the
+            cell's condition number quality measure.
 
         """
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
@@ -488,7 +605,26 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
         cond.vector().apply("")
 
+        return cond
+
+    @classmethod
+    def min_condition_number(cls, mesh: fenics.Mesh) -> float:
+        r"""Computes quality based on the condition number of the reference mapping.
+
+        This quality criterion uses the condition number (in the Frobenius norm) of the
+        (linear) mapping from the elements of the mesh to the reference element.
+        Computes the minimum of the condition number over all elements.
+
+        Args:
+            mesh: The mesh, whose quality shall be computed.
+
+        Returns:
+            The minimal condition number quality measure.
+
+        """
+        cond = cls._cell_condition_number(mesh)
         quality: float = cond.vector().vec().min()[1]
+
         return quality
 
     @classmethod
@@ -506,43 +642,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             The average mesh quality based on the condition number.
 
         """
-        function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
-        jac = ufl.Jacobian(mesh)
-        inv = ufl.JacobianInverse(mesh)
-
-        options: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        dx = measure.NamedMeasure("dx", mesh)
-        lhs = (
-            fenics.TrialFunction(function_space_dg0)
-            * fenics.TestFunction(function_space_dg0)
-            * dx
-        )
-        rhs = (
-            fenics.sqrt(fenics.inner(jac, jac))
-            * fenics.sqrt(fenics.inner(inv, inv))
-            * fenics.TestFunction(function_space_dg0)
-            * dx
-        )
-
-        cond = fenics.Function(function_space_dg0)
-
-        _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp_options=options
-        )
-        cond.vector().apply("")
-
-        cond.vector().vec().reciprocal()
-        cond.vector().apply("")
-        cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
-        cond.vector().apply("")
-
+        cond = cls._cell_condition_number(mesh)
         quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
+
         return quality
