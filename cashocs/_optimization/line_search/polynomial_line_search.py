@@ -17,13 +17,17 @@
 
 """Module for the Armijo line search."""
 
+
 from __future__ import annotations
 
-from typing import List
+import collections
+from typing import Deque, List
 
 import fenics
+import numpy as np
 from typing_extensions import TYPE_CHECKING
 
+from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
@@ -32,7 +36,7 @@ if TYPE_CHECKING:
     from cashocs._optimization import optimization_algorithms
 
 
-class ArmijoLineSearch(line_search.LineSearch):
+class PolynomialLineSearch(line_search.LineSearch):
     """Implementation of the Armijo line search procedure."""
 
     def __init__(
@@ -53,6 +57,14 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.armijo_stepsize_initial = self.stepsize
         self.search_direction_inf = 1.0
         self.decrease_measure_w_o_step = 1.0
+
+        self.factor_low = self.config.getfloat("LineSearch", "factor_low")
+        self.factor_high = self.config.getfloat("LineSearch", "factor_high")
+        self.polynomial_model = self.config.get(
+            "LineSearch", "polynomial_model"
+        ).casefold()
+        self.f_vals: Deque[float] = collections.deque()
+        self.alpha_vals: Deque[float] = collections.deque()
 
     def _check_for_nonconvergence(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -103,8 +115,9 @@ class ArmijoLineSearch(line_search.LineSearch):
         """
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
 
+        self.f_vals.clear()
+        self.alpha_vals.clear()
         while True:
-
             if self._check_for_nonconvergence(solver):
                 return None
 
@@ -119,11 +132,13 @@ class ArmijoLineSearch(line_search.LineSearch):
                     search_direction, self.stepsize, self.beta_armijo
                 )
             )
+            self.alpha_vals.append(self.stepsize)
 
             current_function_value = solver.objective_value
 
             self.state_problem.has_solution = False
             objective_step = self.cost_functional.evaluate()
+            self.f_vals.append(objective_step)
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
@@ -140,15 +155,132 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
-                self.stepsize /= self.beta_armijo
+                self.stepsize = self._compute_polynomial_stepsize(
+                    current_function_value,
+                    decrease_measure,
+                    self.f_vals,
+                    self.alpha_vals,
+                )
                 self.optimization_variable_abstractions.revert_variable_update()
 
         solver.stepsize = self.stepsize
 
         if not has_curvature_info:
-            self.stepsize *= self.beta_armijo
+            self.stepsize /= self.factor_high
 
         return None
+
+    def _compute_polynomial_stepsize(
+        self,
+        f_current: float,
+        decrease_measure: float,
+        f_vals: Deque[float],
+        alpha_vals: Deque[float],
+    ) -> float:
+        """Computes a stepsize based on polynomial models.
+
+        Args:
+            f_current: Current function value
+            decrease_measure: Current directional derivative in descent direction
+            f_vals: History of trial function values
+            alpha_vals: History of trial stepsizes
+
+        Returns:
+            A new stepsize based on polynomial interpolation.
+
+        """
+        if len(f_vals) == 1:
+            alpha = self._quadratic_stepsize_model(
+                f_current, decrease_measure, f_vals, alpha_vals
+            )
+        elif len(f_vals) == 2:
+            alpha = self._cubic_stepsize_model(
+                f_current, decrease_measure, f_vals, alpha_vals
+            )
+        else:
+            raise _exceptions.CashocsException("This code should not be reached.")
+
+        if alpha < self.factor_low * alpha_vals[-1]:
+            stepsize = self.factor_low * alpha_vals[-1]
+        elif alpha > self.factor_high * alpha_vals[-1]:
+            stepsize = self.factor_high * alpha_vals[-1]
+        else:
+            stepsize = alpha
+
+        if (self.polynomial_model == "quadratic" and len(f_vals) == 1) or (
+            self.polynomial_model == "cubic" and len(f_vals) == 2
+        ):
+            f_vals.popleft()
+            alpha_vals.popleft()
+
+        return float(stepsize)
+
+    def _quadratic_stepsize_model(
+        self,
+        f_current: float,
+        decrease_measure: float,
+        f_vals: Deque[float],
+        alpha_vals: Deque[float],
+    ) -> float:
+        """Computes a trial stepsize based on a quadratic model.
+
+        Args:
+            f_current: Current function value
+            decrease_measure: Current directional derivative in descent direction
+            f_vals: History of trial function values
+            alpha_vals: History of trial stepsizes
+
+        Returns:
+            A new trial stepsize based on quadratic interpolation
+
+        """
+        stepsize = -(decrease_measure * self.stepsize**2) / (
+            2.0 * (f_vals[0] - f_current - decrease_measure * alpha_vals[0])
+        )
+        return stepsize
+
+    def _cubic_stepsize_model(
+        self,
+        f_current: float,
+        decrease_measure: float,
+        f_vals: Deque[float],
+        alpha_vals: Deque[float],
+    ) -> float:
+        """Computes a trial stepsize based on a cubic model.
+
+        Args:
+            f_current: Current function value
+            decrease_measure: Current directional derivative in descent direction
+            f_vals: History of trial function values
+            alpha_vals: History of trial stepsizes
+
+        Returns:
+            A new trial stepsize based on cubic interpolation
+
+        """
+        coeffs = (
+            1
+            / (
+                alpha_vals[0] ** 2
+                * alpha_vals[1] ** 2
+                * (alpha_vals[1] - alpha_vals[0])
+            )
+            * np.array(
+                [
+                    [alpha_vals[0] ** 2, -alpha_vals[1] ** 2],
+                    [-alpha_vals[0] ** 3, alpha_vals[1] ** 3],
+                ]
+            )
+            @ np.array(
+                [
+                    f_vals[1] - f_current - decrease_measure * alpha_vals[1],
+                    f_vals[0] - f_current - decrease_measure * alpha_vals[0],
+                ]
+            )
+        )
+        a, b = coeffs
+        stepsize = (-b + np.sqrt(b**2 - 3 * a * decrease_measure)) / (3 * a)
+        return float(stepsize)
 
     def _compute_decrease_measure(
         self, search_direction: List[fenics.Function]

@@ -423,7 +423,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(self)
         )
-        self.line_search = line_search.ArmijoLineSearch(self)
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            self.line_search = line_search.ArmijoLineSearch(self)
+        elif line_search_type == "polynomial":
+            self.line_search = line_search.PolynomialLineSearch(self)
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.compute_newton_forms()

@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -85,7 +85,7 @@ def t_div(u, n):
 
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 # config = cashocs.load_config(dir_path + "/config_sop.ini")
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -732,18 +732,18 @@ def test_save_xdmf_files():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/xdmf")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0.h5")
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.h5")
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/out/xdmf/shape_gradient.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/shape_gradient.h5")
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 

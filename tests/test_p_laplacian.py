@@ -15,16 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 
 from fenics import *
 import numpy as np
-import pytest
 
 import cashocs
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
     f"{dir_path}/mesh/unit_circle/mesh.xdmf"

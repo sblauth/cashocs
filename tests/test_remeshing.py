@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -48,7 +48,7 @@ if MPI.comm_world.size > 1:
     is_parallel = True
 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
@@ -72,7 +72,7 @@ J = u * dx
 
 def test_verification_remeshing():
     MPI.barrier(MPI.comm_world)
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
 
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
     config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
@@ -99,7 +99,7 @@ def test_first_remeshing_step():
     config.set("Debug", "remeshing", "True")
     config.set("Debug", "restart", "True")
 
-    with patch.object(sys, "argv", [os.path.realpath(__file__)]):
+    with patch.object(sys, "argv", [pathlib.Path(__file__).resolve()]):
         sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
         try:
             sop.solve(max_iter=10)
@@ -109,23 +109,25 @@ def test_first_remeshing_step():
     MPI.barrier(MPI.comm_world)
 
     assert any(
-        s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")
+        folder.name.startswith("cashocs_remesh_")
+        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
     )
     assert any(
-        s.startswith("._cashocs_remesh_temp_") for s in os.listdir(f"{dir_path}")
+        folder.name.startswith("._cashocs_remesh_temp_")
+        for folder in pathlib.Path(f"{dir_path}").iterdir()
     )
 
-    assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/xdmf")
-    assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+    assert pathlib.Path(dir_path + "/temp").is_dir()
+    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -146,7 +148,7 @@ def test_reentry():
         sys,
         "argv",
         [
-            os.path.realpath(__file__),
+            str(pathlib.Path(__file__).resolve()),
             "--cashocs_remesh",
             "--temp_dir",
             f"{dir_path}/temp_test_directory",
@@ -180,19 +182,19 @@ def test_reentry():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/xdmf")
-    assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/history.json")
-    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+    assert pathlib.Path(dir_path + "/temp").is_dir()
+    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
+    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -210,26 +212,26 @@ def test_remeshing():
 
     MPI.barrier(MPI.comm_world)
     assert any(
-        s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")
+        folder.name.startswith("cashocs_remesh_")
+        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
     )
     assert any(
-        s.startswith("._cashocs_remesh_temp_") for s in os.listdir(f"{dir_path}")
+        folder.name.startswith("._cashocs_remesh_temp_")
+        for folder in pathlib.Path(f"{dir_path}").iterdir()
     )
 
-    assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/xdmf")
-    assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/history.json")
-    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
+    assert pathlib.Path(dir_path + "/temp").is_dir()
+    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
+    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
-
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
-
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:
@@ -251,10 +253,10 @@ def test_remeshing_functionality():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     MPI.barrier(MPI.comm_world)
-    assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/mesh_0.msh")
+    assert pathlib.Path(f"{sop.mesh_handler.remesh_directory}/mesh_0.msh").is_file()
 
     sop.mesh_handler._generate_remesh_geo(config.get("Mesh", "gmsh_file"))
-    assert os.path.isfile(f"{sop.mesh_handler.remesh_directory}/remesh.geo")
+    assert pathlib.Path(f"{sop.mesh_handler.remesh_directory}/remesh.geo").is_file()
 
     if MPI.rank(MPI.comm_world) == 0:
         with open(f"{sop.mesh_handler.remesh_directory}/remesh.geo") as file:
@@ -276,7 +278,7 @@ def test_remesh_scaling():
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
-    with patch.object(sys, "argv", [os.path.realpath(__file__)]):
+    with patch.object(sys, "argv", [str(pathlib.Path(__file__).resolve())]):
         w_des = rng.rand(1)[0]
         sop = cashocs.ShapeOptimizationProblem(
             e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]

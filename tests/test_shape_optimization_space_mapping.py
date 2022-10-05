@@ -4,8 +4,7 @@ Created on 04/02/2022, 13.31
 @author: blauths
 """
 
-import os
-import subprocess
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -14,7 +13,7 @@ import cashocs
 import cashocs._cli
 import cashocs.space_mapping.shape_optimization as sosm
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 cashocs.set_log_level(cashocs.LogLevel.ERROR)
 

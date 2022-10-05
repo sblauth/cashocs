@@ -4,8 +4,7 @@ Created on 13/08/2021, 09.06
 @author: blauths
 """
 
-import os
-import subprocess
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -13,7 +12,7 @@ import numpy as np
 import cashocs
 import cashocs.space_mapping.optimal_control as ocsm
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 nonlinearity_factor = 5e2
 

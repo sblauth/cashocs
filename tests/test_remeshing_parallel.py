@@ -16,7 +16,7 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -52,7 +52,7 @@ if query is not None:
     uses_ompi = True
 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
@@ -87,25 +87,27 @@ def test_remeshing():
 
     MPI.barrier(MPI.comm_world)
     assert any(
-        s.startswith("cashocs_remesh_") for s in os.listdir(f"{dir_path}/mesh/remesh")
+        folder.name.startswith("cashocs_remesh_")
+        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
     )
     assert any(
-        s.startswith("._cashocs_remesh_temp_") for s in os.listdir(f"{dir_path}")
+        folder.name.startswith("._cashocs_remesh_temp_")
+        for folder in pathlib.Path(f"{dir_path}").iterdir()
     )
 
-    assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/xdmf")
-    assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/history.json")
-    assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+    assert pathlib.Path(dir_path + "/temp").is_dir()
+    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
+    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
-    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:

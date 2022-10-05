@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -25,7 +25,7 @@ import numpy as np
 import cashocs
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, "CG", 1)
@@ -49,8 +49,8 @@ def test_time_suffix():
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve()
     suffix = ocp.solver.output_manager.suffix
-    assert os.path.isdir(dir_path + f"/results_{suffix}")
-    assert os.path.isfile(dir_path + f"/results_{suffix}/history.txt")
+    assert pathlib.Path(dir_path + f"/results_{suffix}").is_dir()
+    assert pathlib.Path(dir_path + f"/results_{suffix}/history.txt").is_file()
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
     MPI.barrier(MPI.comm_world)
@@ -69,18 +69,19 @@ def test_save_xdmf_files_ocp():
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/xdmf")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/control_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/control_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/gradient_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/gradient_0.h5")
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
+
+    assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
+
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
+
+    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
     MPI.barrier(MPI.comm_world)
 
     if MPI.rank(MPI.comm_world) == 0:
@@ -130,23 +131,25 @@ def test_save_xdmf_files_mixed():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/xdmf")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0_1.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/state_0_1.h5")
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.h5").is_file()
 
-    assert os.path.isfile(dir_path + "/out/xdmf/control_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/control_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0_0.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0_1.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0_1.h5")
-    assert os.path.isfile(dir_path + "/out/xdmf/gradient_0.xdmf")
-    assert os.path.isfile(dir_path + "/out/xdmf/gradient_0.h5")
+    assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
+
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.h5").is_file()
+
+    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
