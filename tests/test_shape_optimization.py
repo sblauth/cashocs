@@ -733,24 +733,15 @@ def test_save_pvd_files():
     MPI.barrier(MPI.comm_world)
 
     assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/pvd").is_dir()
+    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/pvd/state_0.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/out/pvd/state_0000006.vtu").is_file()
-        or pathlib.Path(dir_path + "/out/pvd/state_0000006.pvtu").is_file()
-    )
-    assert pathlib.Path(dir_path + "/out/pvd/adjoint_0.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/out/pvd/adjoint_0000006.vtu").is_file()
-        or pathlib.Path(dir_path + "/out/pvd/adjoint_0000006.pvtu").is_file()
-    )
-    assert pathlib.Path(dir_path + "/out/pvd/shape_gradient.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/out/pvd/shape_gradient000006.vtu").is_file()
-        or pathlib.Path(dir_path + "/out/pvd/shape_gradient000006.pvtu").is_file()
-    )
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 

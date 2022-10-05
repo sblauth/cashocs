@@ -24,6 +24,16 @@ in development
 
 * BFGS methods can now be used in a restarted fashion, if desired
 
+* Changed configuration file parameters
+
+  * Section Output
+  
+    * ``save_state`` replaces ``save_pvd``, functionality remains the same
+
+    * ``save_adjoint`` replaces ``save_pvd_adjoint``, functionality remains the same
+
+    * ``save_gradient`` replaces ``save_pvd_gradient``, functionality remains the same
+
 * New configuration file parameters
 
   * Section AlgoLBFGS

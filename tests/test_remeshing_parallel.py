@@ -52,7 +52,7 @@ if query is not None:
     uses_ompi = True
 
 
-dir_path = str(pathlib.Path(__file__).parent)
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
@@ -96,44 +96,16 @@ def test_remeshing():
     )
 
     assert pathlib.Path(dir_path + "/temp").is_dir()
-    assert pathlib.Path(dir_path + "/temp/pvd").is_dir()
+    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
     assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
     assert pathlib.Path(dir_path + "/temp/history.json").is_file()
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_0_adjoint_0.pvd").is_file()
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.vtu").is_file()
-        or pathlib.Path(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.pvtu").is_file()
-    )
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu").is_file()
-        or pathlib.Path(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu").is_file()
-    )
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_0_state_0.pvd").is_file()
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_1_state_0.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_0_state_0000003.vtu").is_file()
-        or pathlib.Path(dir_path + "/temp/pvd/remesh_0_state_0000003.pvtu").is_file()
-    )
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_1_state_0000003.vtu").is_file()
-        or pathlib.Path(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu").is_file()
-    )
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_0_shape_gradient.pvd").is_file()
-    assert pathlib.Path(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd").is_file()
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu").is_file()
-        or pathlib.Path(
-            dir_path + "/temp/pvd/remesh_0_shape_gradient000003.pvtu"
-        ).is_file()
-    )
-    assert (
-        pathlib.Path(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu").is_file()
-        or pathlib.Path(
-            dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu"
-        ).is_file()
-    )
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:
