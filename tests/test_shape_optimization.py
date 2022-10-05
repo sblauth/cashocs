@@ -719,11 +719,11 @@ def test_inhomogeneous_mu():
 
 def test_save_pvd_files():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_state", "True")
     config.set("Output", "save_results", "True")
     config.set("Output", "save_txt", "True")
-    config.set("Output", "save_pvd_adjoint", "True")
-    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "save_adjoint", "True")
+    config.set("Output", "save_gradient", "True")
     config.set("Output", "result_dir", dir_path + "/out")
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
