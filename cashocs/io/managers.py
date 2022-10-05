@@ -514,7 +514,7 @@ class XDMFFileManager:
             for i in range(self.form_handler.control_dim):
                 control = self.form_handler.controls[i]
                 control.rename(f"control_{i}", f"control_{i}")
-                self.control_xdmf_list[i].write(
+                self.control_xdmf_list[i].write_checkpoint(
                     self.form_handler.controls[i],
                     f"control_{i}",
                     float(iteration),

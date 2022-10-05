@@ -494,13 +494,13 @@ class Config(ConfigParser):
                 "save_txt": {
                     "type": "bool",
                 },
-                "save_pvd": {
+                "save_state": {
                     "type": "bool",
                 },
-                "save_pvd_adjoint": {
+                "save_adjoint": {
                     "type": "bool",
                 },
-                "save_pvd_gradient": {
+                "save_gradient": {
                     "type": "bool",
                 },
                 "save_mesh": {
@@ -639,9 +639,9 @@ angle_change = inf
 save_results = True
 verbose = True
 save_txt = True
-save_pvd = False
-save_pvd_adjoint = False
-save_pvd_gradient = False
+save_state = False
+save_adjoint = False
+save_gradient = False
 save_mesh = False
 result_dir = ./results
 time_suffix = False

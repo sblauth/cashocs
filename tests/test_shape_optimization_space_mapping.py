@@ -5,6 +5,7 @@ Created on 04/02/2022, 13.31
 """
 
 import pathlib
+import subprocess
 
 from fenics import *
 import numpy as np
@@ -94,6 +95,19 @@ class FineModel(sosm.FineModel):
             0.0, interpolate(u_temp, self.V_coarse.sub(0).collapse()).vector().vec()
         )
         self.u.vector().apply("")
+
+        if MPI.rank(MPI.comm_world) == 0:
+            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.msh"], check=True)
+            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.xdmf"], check=True)
+            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.h5"], check=True)
+            subprocess.run(
+                ["rm", f"{dir_path}/sm_mesh/fine_boundaries.xdmf"], check=True
+            )
+            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine_boundaries.h5"], check=True)
+            subprocess.run(
+                ["rm", f"{dir_path}/sm_mesh/fine_subdomains.xdmf"], check=True
+            )
+            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine_subdomains.h5"], check=True)
 
 
 up = Function(V)
