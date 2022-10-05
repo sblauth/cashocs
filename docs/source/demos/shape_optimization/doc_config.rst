@@ -824,23 +824,23 @@ to a .txt file, which is human-readable.
 
 The next line in the config file is ::
 
-    save_pvd = False
+    save_state = False
 
-Here, the parameter ``save_pvd`` is set. This is a boolean flag, which can be set to
+Here, the parameter ``save_state`` is set. This is a boolean flag, which can be set to
 ``True`` to enable that cashocs generates .pvd files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
 steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
 Note, that for visualizing these files, you need `Paraview <https://www.paraview.org/>`_.
 
-The next parameter, ``save_pvd_adjoint`` works analogously, and is given in the line ::
+The next parameter, ``save_adjoint`` works analogously, and is given in the line ::
 
-    save_pvd_adjoint = False
+    save_adjoint = False
 
 If this is set to True, cashocs generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
 Its main purpose is for debugging.
 
-The next parameter is given by ``save_pvd_gradient``, which is given in the line ::
+The next parameter is given by ``save_gradient``, which is given in the line ::
 
-    save_pvd_gradient = False
+    save_gradient = False
 
 This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/pvd``. The main purpose of this is for debugging.
 
@@ -1216,15 +1216,15 @@ in the following.
     * - save_txt
       - ``True``
       - if ``True``, the history of the optimization is saved to a human readable .txt file
-    * - save_pvd
+    * - save_state
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
         saved in .pvd files
-    * - save_pvd_adjoint
+    * - save_adjoint
       - ``False``
       - if ``True``, the history of the adjoint variables over the optimization is
         saved in .pvd files
-    * - save_pvd_gradient
+    * - save_gradient
       - ``False``
       - if ``True``, the history of the shape gradient over the optimization is saved in .pvd files
     * - save_mesh
