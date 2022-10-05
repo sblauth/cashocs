@@ -78,10 +78,11 @@ def test_save_xdmf_files_ocp():
 
     assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
-
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.h5").is_file()
+
     MPI.barrier(MPI.comm_world)
 
     if MPI.rank(MPI.comm_world) == 0:
@@ -139,15 +140,12 @@ def test_save_xdmf_files_mixed():
     assert pathlib.Path(dir_path + "/out/xdmf/state_0_0.h5").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.h5").is_file()
-
     assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.h5").is_file()
-
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_1.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_1.h5").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.h5").is_file()
 

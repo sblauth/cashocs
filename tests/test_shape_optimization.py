@@ -738,10 +738,8 @@ def test_save_xdmf_files():
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.xdmf").is_file()
     assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.h5").is_file()
 

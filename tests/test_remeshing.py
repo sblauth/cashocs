@@ -122,10 +122,8 @@ def test_first_remeshing_step():
     assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
@@ -189,10 +187,8 @@ def test_reentry():
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
 
@@ -227,7 +223,6 @@ def test_remeshing():
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
-
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
     assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
@@ -282,6 +277,10 @@ def test_remesh_scaling():
         w_des = rng.rand(1)[0]
         sop = cashocs.ShapeOptimizationProblem(
             e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]
+tests/test_output.py
+tests/test_remeshing.py
+tests/test_remeshing_parallel.py
+tests/test_shape_optimization.py 
         )
         val = sop.reduced_cost_functional.evaluate()
         assert np.abs(np.abs(val) - w_des) < 1e-14
