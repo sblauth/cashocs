@@ -277,10 +277,6 @@ def test_remesh_scaling():
         w_des = rng.rand(1)[0]
         sop = cashocs.ShapeOptimizationProblem(
             e, bcs, [J], u, p, boundaries, config, desired_weights=[w_des]
-tests/test_output.py
-tests/test_remeshing.py
-tests/test_remeshing_parallel.py
-tests/test_shape_optimization.py 
         )
         val = sop.reduced_cost_functional.evaluate()
         assert np.abs(np.abs(val) - w_des) < 1e-14
