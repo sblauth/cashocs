@@ -15,6 +15,8 @@ in development
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing
+
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
 
 * cashocs now uses pathlib over os.path
@@ -23,6 +25,16 @@ in development
 
 
 * BFGS methods can now be used in a restarted fashion, if desired
+
+* Changed configuration file parameters
+
+  * Section Output
+
+    * ``save_pvd`` is now called ``save_state``, functionality is the same
+
+    * ``save_pvd_adjoint`` is now called ``save_adjoint``, functionality is the same
+
+    * ``save_pvd_gradient`` is now called ``save_gradient``, functionality is the same
 
 * New configuration file parameters
 
