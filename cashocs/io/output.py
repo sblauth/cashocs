@@ -122,12 +122,3 @@ class OutputManager:
         self.result_manager.save_to_json(solver)
         self.mesh_manager.save_optimized_mesh(solver)
         self.temp_file_manager.clear_temp_files(solver)
-
-    def set_remesh(self, remesh_counter: int) -> None:
-        """Sets the remesh prefix for pvd files.
-
-        Args:
-            remesh_counter: Number of times remeshing has been performed.
-
-        """
-        self.pvd_file_manager.set_remesh(remesh_counter)
