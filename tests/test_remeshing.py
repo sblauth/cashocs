@@ -116,20 +116,16 @@ def test_first_remeshing_step():
     )
 
     assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/pvd")
+    assert os.path.isdir(dir_path + "/temp/xdmf")
     assert os.path.isfile(dir_path + "/temp/history.txt")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_adjoint_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_state_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.pvtu")
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
 
     MPI.barrier(MPI.comm_world)
 
@@ -185,22 +181,18 @@ def test_reentry():
     MPI.barrier(MPI.comm_world)
 
     assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/pvd")
+    assert os.path.isdir(dir_path + "/temp/xdmf")
     assert os.path.isfile(dir_path + "/temp/history.txt")
     assert os.path.isfile(dir_path + "/temp/history.json")
     assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
 
     MPI.barrier(MPI.comm_world)
 
@@ -225,34 +217,19 @@ def test_remeshing():
     )
 
     assert os.path.isdir(dir_path + "/temp")
-    assert os.path.isdir(dir_path + "/temp/pvd")
+    assert os.path.isdir(dir_path + "/temp/xdmf")
     assert os.path.isfile(dir_path + "/temp/history.txt")
     assert os.path.isfile(dir_path + "/temp/history.json")
     assert os.path.isfile(dir_path + "/temp/optimized_mesh.msh")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_adjoint_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_adjoint_0000003.pvtu")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_adjoint_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_adjoint_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0.pvd")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_state_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_state_0000003.pvtu")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_state_0000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_state_0000003.pvtu")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient.pvd")
-    assert os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_0_shape_gradient000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_0_shape_gradient000003.pvtu")
-    assert os.path.isfile(
-        dir_path + "/temp/pvd/remesh_1_shape_gradient000003.vtu"
-    ) or os.path.isfile(dir_path + "/temp/pvd/remesh_1_shape_gradient000003.pvtu")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/adjoint_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/state_0.h5")
+
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.xdmf")
+    assert os.path.isfile(dir_path + "/temp/xdmf/shape_gradient.h5")
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:

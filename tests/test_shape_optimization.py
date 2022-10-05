@@ -717,7 +717,7 @@ def test_inhomogeneous_mu():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
-def test_save_pvd_files():
+def test_save_xdmf_files():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config.set("Output", "save_state", "True")
     config.set("Output", "save_results", "True")
@@ -733,21 +733,17 @@ def test_save_pvd_files():
     MPI.barrier(MPI.comm_world)
 
     assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
+    assert os.path.isdir(dir_path + "/out/xdmf")
     assert os.path.isfile(dir_path + "/out/history.txt")
     assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0000006.pvtu"
-    )
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0000006.pvtu"
-    )
-    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/out/pvd/shape_gradient000006.vtu"
-    ) or os.path.isfile(dir_path + "/out/pvd/shape_gradient000006.pvtu")
+    assert os.path.isfile(dir_path + "/out/xdmf/state_0.xdmf")
+    assert os.path.isfile(dir_path + "/out/xdmf/state_0.h5")
+
+    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.xdmf")
+    assert os.path.isfile(dir_path + "/out/xdmf/adjoint_0.h5")
+
+    assert os.path.isfile(dir_path + "/out/xdmf/shape_gradient.xdmf")
+    assert os.path.isfile(dir_path + "/out/xdmf/shape_gradient.h5")
 
     MPI.barrier(MPI.comm_world)
 

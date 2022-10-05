@@ -827,7 +827,7 @@ The next line in the config file is ::
     save_state = False
 
 Here, the parameter ``save_state`` is set. This is a boolean flag, which can be set to
-``True`` to enable that cashocs generates .pvd files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
+``True`` to enable that cashocs generates .xdmf files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
 steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
 Note, that for visualizing these files, you need `Paraview <https://www.paraview.org/>`_.
 
@@ -835,14 +835,14 @@ The next parameter, ``save_adjoint`` works analogously, and is given in the line
 
     save_adjoint = False
 
-If this is set to True, cashocs generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
+If this is set to True, cashocs generates .xdmf files for the adjoint variables in each iteration of the optimization algorithm.
 Its main purpose is for debugging.
 
 The next parameter is given by ``save_gradient``, which is given in the line ::
 
     save_gradient = False
 
-This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/pvd``. The main purpose of this is for debugging.
+This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/xdmf``. The main purpose of this is for debugging.
 
 Moreover, we also have the parameter ``save_mesh`` that is set via ::
 

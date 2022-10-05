@@ -17,6 +17,15 @@ in development
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* Changed configuration file parameters
+
+  * Section Output
+  
+    * ``save_state`` replaces ``save_pvd``, functionality remains the same
+
+    * ``save_adjoint`` replaces ``save_pvd_adjoint``, functionality remains the same
+
+    * ``save_gradient`` replaces ``save_pvd_gradient``, functionality remains the same
 
 1.8.0 (July 6, 2022)
 --------------------
