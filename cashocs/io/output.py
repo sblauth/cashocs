@@ -76,7 +76,7 @@ class OutputManager:
         self.history_manager = managers.HistoryManager(
             optimization_problem, self.result_dir
         )
-        self.pvd_file_manager = managers.PVDFileManager(
+        self.pvd_file_manager = managers.XDMFFileManager(
             optimization_problem, self.result_dir
         )
         self.result_manager = managers.ResultManager(
@@ -123,12 +123,3 @@ class OutputManager:
         self.result_manager.save_to_json(solver)
         self.mesh_manager.save_optimized_mesh(solver)
         self.temp_file_manager.clear_temp_files(solver)
-
-    def set_remesh(self, remesh_counter: int) -> None:
-        """Sets the remesh prefix for pvd files.
-
-        Args:
-            remesh_counter: Number of times remeshing has been performed.
-
-        """
-        self.pvd_file_manager.set_remesh(remesh_counter)

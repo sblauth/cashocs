@@ -348,8 +348,8 @@ class MeshManager:
                 )
 
 
-class PVDFileManager:
-    """Class for managing paraview .pvd files."""
+class XDMFFileManager:
+    """Class for managing visualization .xdmf files."""
 
     def __init__(
         self, optimization_problem: op.OptimizationProblem, result_dir: str
@@ -366,9 +366,9 @@ class PVDFileManager:
 
         self.result_dir = result_dir
 
-        self.save_pvd = self.config.getboolean("Output", "save_pvd")
-        self.save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
-        self.save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
+        self.save_state = self.config.getboolean("Output", "save_state")
+        self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
+        self.save_gradient = self.config.getboolean("Output", "save_gradient")
 
         self.is_control_problem = False
         self.is_shape_problem = False
@@ -377,121 +377,104 @@ class PVDFileManager:
         else:
             self.is_shape_problem = True
 
-        self.pvd_prefix = ""
-
-        self.has_output = (
-            self.save_pvd or self.save_pvd_adjoint or self.save_pvd_gradient
-        )
+        self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
 
-        self.state_pvd_list: List[fenics.File] = []
-        self.control_pvd_list: List[fenics.File] = []
-        self.adjoint_pvd_list: List[fenics.File] = []
-        self.gradient_pvd_list: List[fenics.File] = []
+        self.state_xdmf_list: List[fenics.File] = []
+        self.control_xdmf_list: List[fenics.File] = []
+        self.adjoint_xdmf_list: List[fenics.File] = []
+        self.gradient_xdmf_list: List[fenics.File] = []
 
-    def _initialize_states_pvd(self) -> None:
-        """Initializes the list of pvd files for the state variables."""
-        if self.save_pvd:
+    def _initialize_states_xdmf(self) -> None:
+        """Initializes the list of xdmf files for the state variables."""
+        if self.save_state:
             for i in range(self.form_handler.state_dim):
-                self.state_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.state_spaces[i],
-                        f"state_{i:d}",
-                        self.pvd_prefix,
+                self.state_xdmf_list.append(
+                    self._generate_xdmf_file(
+                        self.form_handler.state_spaces[i], f"state_{i:d}"
                     )
                 )
 
-    def _initialize_controls_pvd(self) -> None:
-        """Initializes the list of pvd files for the control variables."""
-        if self.save_pvd and self.is_control_problem:
+    def _initialize_controls_xdmf(self) -> None:
+        """Initializes the list of xdmf files for the control variables."""
+        if self.save_state and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
-                self.control_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.control_spaces[i],
-                        f"control_{i:d}",
-                        self.pvd_prefix,
+                self.control_xdmf_list.append(
+                    self._generate_xdmf_file(
+                        self.form_handler.control_spaces[i], f"control_{i:d}"
                     )
                 )
 
-    def _initialize_adjoints_pvd(self) -> None:
-        """Initialize the list of pvd files for the adjoint variables."""
-        if self.save_pvd_adjoint:
+    def _initialize_adjoints_xdmf(self) -> None:
+        """Initialize the list of xdmf files for the adjoint variables."""
+        if self.save_adjoint:
             for i in range(self.form_handler.state_dim):
-                self.adjoint_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.adjoint_spaces[i],
-                        f"adjoint_{i:d}",
-                        self.pvd_prefix,
+                self.adjoint_xdmf_list.append(
+                    self._generate_xdmf_file(
+                        self.form_handler.adjoint_spaces[i], f"adjoint_{i:d}"
                     )
                 )
 
-    def _initialize_gradients_pvd(self) -> None:
-        """Initialize the list of pvd files for the gradients."""
-        if self.save_pvd_gradient:
+    def _initialize_gradients_xdmf(self) -> None:
+        """Initialize the list of xdmf files for the gradients."""
+        if self.save_gradient:
             for i in range(self.form_handler.control_dim):
                 if self.is_control_problem:
                     gradient_str = f"gradient_{i:d}"
                 else:
                     gradient_str = "shape_gradient"
-                self.gradient_pvd_list.append(
-                    self._generate_pvd_file(
-                        self.form_handler.control_spaces[i],
-                        gradient_str,
-                        self.pvd_prefix,
+                self.gradient_xdmf_list.append(
+                    self._generate_xdmf_file(
+                        self.form_handler.control_spaces[i], gradient_str
                     )
                 )
 
-    def _initialize_pvd_lists(self) -> None:
-        """Initializes the lists of pvd files."""
+    def _initialize_xdmf_lists(self) -> None:
+        """Initializes the lists of xdmf files."""
         if not self.is_initialized:
-            self._initialize_states_pvd()
-            self._initialize_controls_pvd()
-            self._initialize_adjoints_pvd()
-            self._initialize_gradients_pvd()
+            self._initialize_states_xdmf()
+            self._initialize_controls_xdmf()
+            self._initialize_adjoints_xdmf()
+            self._initialize_gradients_xdmf()
 
             self.is_initialized = True
 
-    def set_remesh(self, remesh_counter: int) -> None:
-        """Sets the prefix of the pvd files with the remeshing iteration.
-
-        Args:
-            remesh_counter: The number of times remeshing has been performed.
-
-        """
-        self.pvd_prefix = f"remesh_{remesh_counter:d}_"
-
-    def _generate_pvd_file(
-        self, space: fenics.FunctionSpace, name: str, prefix: str = ""
+    def _generate_xdmf_file(
+        self, space: fenics.FunctionSpace, name: str
     ) -> Union[fenics.File, List[fenics.File]]:
         """Generate a fenics.File for saving Functions.
 
         Args:
             space: The FEM function space where the function is taken from.
             name: The name of the function / file
-            prefix: A prefix for the file name, used for remeshing
 
         Returns:
-            A .pvd fenics.File object, into which a Function can be written
+            A .xdmf fenics.File object, into which a Function can be written
 
         """
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                lst.append(
-                    fenics.File(f"{self.result_dir}/pvd/{prefix}{name}_{j:d}.pvd")
-                )
+                file = fenics.XDMFFile(f"{self.result_dir}/xdmf/{name}_{j:d}.xdmf")
+                file.parameters["flush_output"] = True
+                file.parameters["functions_share_mesh"] = False
+                lst.append(file)
             return lst
         else:
-            return fenics.File(f"{self.result_dir}/pvd/{prefix}{name}.pvd")
+            file = fenics.XDMFFile(f"{self.result_dir}/xdmf/{name}.xdmf")
+            file.parameters["flush_output"] = True
+            file.parameters["functions_share_mesh"] = False
+            return file
 
-    def _save_states(self, iteration: int) -> None:
-        """Saves the state variables to pvd files.
+    def _save_states(self, iteration: int, append: bool) -> None:
+        """Saves the state variables to xdmf files.
 
         Args:
             iteration: The current iteration count.
+            append: A boolean which indicates, whether to append to the file or not.
 
         """
-        if self.save_pvd:
+        if self.save_state:
             for i in range(self.form_handler.state_dim):
                 if (
                     self.form_handler.state_spaces[i].num_sub_spaces() > 0
@@ -501,35 +484,53 @@ class PVDFileManager:
                     for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
                         state = self.form_handler.states[i].sub(j, True)
                         state.rename(f"state_{i}_sub_{j}", f"state_{i}_sub_{j}")
-                        self.state_pvd_list[i][j].write(state, float(iteration))
+                        self.state_xdmf_list[i][j].write_checkpoint(
+                            state,
+                            f"state_{i}_sub_{j}",
+                            float(iteration),
+                            fenics.XDMFFile.Encoding.HDF5,
+                            append,
+                        )
                 else:
                     state = self.form_handler.states[i]
                     state.rename(f"state_{i}", f"state_{i}")
-                    self.state_pvd_list[i].write(state, float(iteration))
+                    self.state_xdmf_list[i].write_checkpoint(
+                        state,
+                        f"state_{i}",
+                        float(iteration),
+                        fenics.XDMFFile.Encoding.HDF5,
+                        append,
+                    )
 
-    def _save_controls(self, iteration: int) -> None:
-        """Saves the control variables to pvd.
+    def _save_controls(self, iteration: int, append: bool) -> None:
+        """Saves the control variables to xdmf.
 
         Args:
             iteration: The current iteration count.
+            append: A boolean which indicates, whether to append to the file or not.
 
         """
-        if self.save_pvd and self.is_control_problem:
+        if self.save_state and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
                 control = self.form_handler.controls[i]
                 control.rename(f"control_{i}", f"control_{i}")
-                self.control_pvd_list[i].write(
-                    self.form_handler.controls[i], float(iteration)
+                self.control_xdmf_list[i].write(
+                    self.form_handler.controls[i],
+                    f"control_{i}",
+                    float(iteration),
+                    fenics.XDMFFile.Encoding.HDF5,
+                    append,
                 )
 
-    def _save_adjoints(self, iteration: int) -> None:
-        """Saves the adjoint variables to pvd files.
+    def _save_adjoints(self, iteration: int, append: bool) -> None:
+        """Saves the adjoint variables to xdmf files.
 
         Args:
             iteration: The current iteration count.
+            append: A boolean which indicates, whether to append to the file or not.
 
         """
-        if self.save_pvd_adjoint:
+        if self.save_adjoint:
             for i in range(self.form_handler.state_dim):
                 if (
                     self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
@@ -541,39 +542,63 @@ class PVDFileManager:
                     ):
                         adjoint = self.form_handler.adjoints[i].sub(j, True)
                         adjoint.rename(f"adjoint_{i}_sub_{j}", f"adjoint_{i}_sub_{j}")
-                        self.adjoint_pvd_list[i][j].write(adjoint, float(iteration))
+                        self.adjoint_xdmf_list[i][j].write_checkpoint(
+                            adjoint,
+                            f"adjoint_{i}_sub_{j}",
+                            float(iteration),
+                            fenics.XDMFFile.Encoding.HDF5,
+                            append,
+                        )
                 else:
                     adjoint = self.form_handler.adjoints[i]
                     adjoint.rename(f"adjoint_{i}", f"adjoint_{i}")
-                    self.adjoint_pvd_list[i].write(adjoint, float(iteration))
+                    self.adjoint_xdmf_list[i].write_checkpoint(
+                        adjoint,
+                        f"adjoint_{i}",
+                        float(iteration),
+                        fenics.XDMFFile.Encoding.HDF5,
+                        append,
+                    )
 
-    def _save_gradients(self, iteration: int) -> None:
-        """Saves the gradients to pvd files.
+    def _save_gradients(self, iteration: int, append: bool) -> None:
+        """Saves the gradients to xdmf files.
 
         Args:
             iteration: The current iteration count.
+            append: A boolean which indicates, whether to append to the file or not.
 
         """
-        if self.save_pvd_gradient:
+        if self.save_gradient:
             for i in range(self.form_handler.control_dim):
                 gradient = self.form_handler.gradient[i]
                 gradient.rename(f"gradient_{i}", f"gradient_{i}")
-                self.gradient_pvd_list[i].write(gradient, float(iteration))
+                self.gradient_xdmf_list[i].write_checkpoint(
+                    gradient,
+                    f"gradient_{i}",
+                    float(iteration),
+                    fenics.XDMFFile.Encoding.HDF5,
+                    append,
+                )
 
     def save_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
-        """Saves the variables to pvd files.
+        """Saves the variables to xdmf files.
 
         Args:
             solver: The optimization algorithm.
 
         """
-        self._initialize_pvd_lists()
+        self._initialize_xdmf_lists()
 
         iteration = solver.iteration
 
-        self._save_states(iteration)
-        self._save_controls(iteration)
-        self._save_adjoints(iteration)
-        self._save_gradients(iteration)
+        if iteration == 0:
+            append = False
+        else:
+            append = True
+
+        self._save_states(iteration, append)
+        self._save_controls(iteration, append)
+        self._save_adjoints(iteration, append)
+        self._save_gradients(iteration, append)
