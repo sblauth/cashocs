@@ -471,7 +471,7 @@ class XDMFFileManager:
         if self.save_state:
             for i in range(self.form_handler.state_dim):
                 if isinstance(self.state_xdmf_list[i], list):
-                    for j in range(len(self.state_xdmf_list)):
+                    for j in range(len(self.state_xdmf_list[i])):
                         self._write_xdmf_step(
                             self.state_xdmf_list[i][j],
                             self.form_handler.states[i].sub(j, True),
