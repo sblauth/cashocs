@@ -24,8 +24,11 @@ import configparser
 import functools
 import json
 import os
+import subprocess  # nosec B404
+import sys
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from types import TracebackType
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import fenics
 import numpy as np
@@ -35,6 +38,7 @@ from typing_extensions import TYPE_CHECKING
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
+from cashocs import io
 from cashocs.geometry import measure
 from cashocs.geometry import mesh_quality
 
@@ -55,12 +59,62 @@ class Mesh(fenics.Mesh):
         self._config_flag = True
 
 
+def _change_except_hook(config: io.Config) -> None:
+    """Change the excepthook to delete temporary files.
+
+    Args:
+        config: The configuration file for the problem.
+
+    """
+    has_cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
+
+    if has_cashocs_remesh_flag:
+        with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
+            temp_dict: Dict = json.load(file)
+
+        remesh_directory = temp_dict["remesh_directory"]
+
+        def custom_except_hook(
+            exctype: Type[BaseException],
+            value: BaseException,
+            traceback: TracebackType,
+        ) -> Any:  # pragma: no cover
+            """A customized hook which is injected when an exception occurs.
+
+            Args:
+                exctype: The type of the exception.
+                value: The value of the exception.
+                traceback: The traceback of the exception.
+
+            """
+            _loggers.debug(
+                "An exception was raised by cashocs, "
+                "deleting the created temporary files."
+            )
+            if (
+                not config.getboolean("Debug", "remeshing")
+                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            ):
+                assert temp_dir is not None  # nosec B101
+                subprocess.run(["rm", "-r", temp_dir], check=True)  # nosec B603, B607
+                subprocess.run(  # nosec B603, B607
+                    ["rm", "-r", remesh_directory], check=True
+                )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            sys.__excepthook__(exctype, value, traceback)
+
+        sys.excepthook = custom_except_hook  # type: ignore
+
+
 def _check_imported_mesh_quality(
-    input_arg: Union[configparser.ConfigParser, str],
+    input_arg: Union[str, io.Config],
     mesh: Mesh,
     cashocs_remesh_flag: bool,
 ) -> None:
     """Checks the quality of an imported mesh.
+
+    This function raises exceptions when the mesh does not satisfy the desired quality
+    criteria.
 
     Args:
         input_arg: The argument used to import the mesh.
@@ -86,49 +140,51 @@ def _check_imported_mesh_quality(
             mesh, mesh_quality_type, mesh_quality_measure
         )
 
+        failed = False
+        fail_msg = None
         if not cashocs_remesh_flag:
             if current_mesh_quality < mesh_quality_tol_lower:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
+                failed = True
+                fail_msg = (
                     "The quality of the mesh file you have specified is not "
                     "sufficient for evaluating the cost functional.\n"
                     f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                    f"be at least {mesh_quality_tol_lower:.3e}."
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
+                failed = True
+                fail_msg = (
                     "The quality of the mesh file you have specified is not "
                     "sufficient for computing the shape gradient.\n "
                     + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                    f"be at least {mesh_quality_tol_lower:.3e}."
                 )
 
         else:
             if current_mesh_quality < mesh_quality_tol_lower:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
+                failed = True
+                fail_msg = (
                     "Remeshing failed.\n"
                     "The quality of the mesh file generated through remeshing is "
                     "not sufficient for evaluating the cost functional.\n"
                     + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}.",
+                    f"be at least {mesh_quality_tol_lower:.3e}."
                 )
 
             if current_mesh_quality < mesh_quality_tol_upper:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.import_mesh",
-                    "input_arg",
+                failed = True
+                fail_msg = (
                     "Remeshing failed.\n"
                     "The quality of the mesh file generated through remeshing "
                     "is not sufficient for computing the shape gradient.\n "
                     + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_upper:.3e}.",
+                    f"be at least {mesh_quality_tol_upper:.3e}."
                 )
+        if failed:
+            raise _exceptions.InputError(
+                "cashocs.geometry.import_mesh", "input_arg", fail_msg
+            )
 
 
 def _get_mesh_stats(
@@ -198,7 +254,7 @@ def _get_mesh_stats(
 
 
 @_get_mesh_stats(mode="import")
-def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshTuple:
+def import_mesh(input_arg: Union[str, io.Config]) -> types.MeshTuple:
     """Imports a mesh file for use with cashocs / FEniCS.
 
     This function imports a mesh file that was generated by GMSH and converted to
@@ -240,6 +296,9 @@ def import_mesh(input_arg: Union[str, configparser.ConfigParser]) -> types.MeshT
 
     """
     cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
+
+    if not isinstance(input_arg, str):
+        _change_except_hook(input_arg)
 
     # Check for the file format
     mesh_file: str = ""
