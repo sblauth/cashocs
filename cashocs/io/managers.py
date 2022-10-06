@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import json
 import subprocess  # nosec B404
-from typing import List, TYPE_CHECKING, Union
+from typing import cast, List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -380,17 +380,17 @@ class XDMFFileManager:
         self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
 
-        self.state_xdmf_list: List[fenics.XDMFFile] = []
-        self.control_xdmf_list: List[fenics.XDMFFile] = []
-        self.adjoint_xdmf_list: List[fenics.XDMFFile] = []
-        self.gradient_xdmf_list: List[fenics.XDMFFile] = []
+        self.state_xdmf_list: List[Union[str, List[str]]] = []
+        self.control_xdmf_list: List[Union[str, List[str]]] = []
+        self.adjoint_xdmf_list: List[Union[str, List[str]]] = []
+        self.gradient_xdmf_list: List[Union[str, List[str]]] = []
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
         if self.save_state:
             for i in range(self.form_handler.state_dim):
                 self.state_xdmf_list.append(
-                    self._generate_xdmf_file(
+                    self._generate_xdmf_file_strings(
                         self.form_handler.state_spaces[i], f"state_{i:d}"
                     )
                 )
@@ -400,7 +400,7 @@ class XDMFFileManager:
         if self.save_state and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
                 self.control_xdmf_list.append(
-                    self._generate_xdmf_file(
+                    self._generate_xdmf_file_strings(
                         self.form_handler.control_spaces[i], f"control_{i:d}"
                     )
                 )
@@ -410,7 +410,7 @@ class XDMFFileManager:
         if self.save_adjoint:
             for i in range(self.form_handler.state_dim):
                 self.adjoint_xdmf_list.append(
-                    self._generate_xdmf_file(
+                    self._generate_xdmf_file_strings(
                         self.form_handler.adjoint_spaces[i], f"adjoint_{i:d}"
                     )
                 )
@@ -424,7 +424,7 @@ class XDMFFileManager:
                 else:
                     gradient_str = "shape_gradient"
                 self.gradient_xdmf_list.append(
-                    self._generate_xdmf_file(
+                    self._generate_xdmf_file_strings(
                         self.form_handler.control_spaces[i], gradient_str
                     )
                 )
@@ -439,146 +439,143 @@ class XDMFFileManager:
 
             self.is_initialized = True
 
-    def _generate_xdmf_file(
+    def _generate_xdmf_file_strings(
         self, space: fenics.FunctionSpace, name: str
-    ) -> Union[fenics.File, List[fenics.File]]:
-        """Generate a fenics.File for saving Functions.
+    ) -> Union[str, List[str]]:
+        """Generate the strings (paths) to the xdmf files for visualization.
 
         Args:
             space: The FEM function space where the function is taken from.
             name: The name of the function / file
 
         Returns:
-            A .xdmf fenics.File object, into which a Function can be written
+            A string containing the path to the xdmf files for visualization.
 
         """
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                file = fenics.XDMFFile(f"{self.result_dir}/xdmf/{name}_{j:d}.xdmf")
-                file.parameters["flush_output"] = True
-                file.parameters["functions_share_mesh"] = False
-                lst.append(file)
+                lst.append(f"{self.result_dir}/xdmf/{name}_{j:d}.xdmf")
             return lst
         else:
-            file = fenics.XDMFFile(f"{self.result_dir}/xdmf/{name}.xdmf")
-            file.parameters["flush_output"] = True
-            file.parameters["functions_share_mesh"] = False
+            file = f"{self.result_dir}/xdmf/{name}.xdmf"
             return file
 
-    def _save_states(self, iteration: int, append: bool) -> None:
+    def _save_states(self, iteration: int) -> None:
         """Saves the state variables to xdmf files.
 
         Args:
             iteration: The current iteration count.
-            append: A boolean which indicates, whether to append to the file or not.
 
         """
         if self.save_state:
             for i in range(self.form_handler.state_dim):
-                if (
-                    self.form_handler.state_spaces[i].num_sub_spaces() > 0
-                    and self.form_handler.state_spaces[i].ufl_element().family()
-                    == "Mixed"
-                ):
-                    for j in range(self.form_handler.state_spaces[i].num_sub_spaces()):
-                        state = self.form_handler.states[i].sub(j, True)
-                        state.rename(f"state_{i}_sub_{j}", f"state_{i}_sub_{j}")
-                        self.state_xdmf_list[i][j].write_checkpoint(
-                            state,
+                if isinstance(self.state_xdmf_list[i], list):
+                    for j in range(len(self.state_xdmf_list)):
+                        self._write_xdmf_step(
+                            self.state_xdmf_list[i][j],
+                            self.form_handler.states[i].sub(j, True),
                             f"state_{i}_sub_{j}",
-                            float(iteration),
-                            fenics.XDMFFile.Encoding.HDF5,
-                            append,
+                            iteration,
                         )
                 else:
-                    state = self.form_handler.states[i]
-                    state.rename(f"state_{i}", f"state_{i}")
-                    self.state_xdmf_list[i].write_checkpoint(
-                        state,
+                    self._write_xdmf_step(
+                        cast(str, self.state_xdmf_list[i]),
+                        self.form_handler.states[i],
                         f"state_{i}",
-                        float(iteration),
-                        fenics.XDMFFile.Encoding.HDF5,
-                        append,
+                        iteration,
                     )
 
-    def _save_controls(self, iteration: int, append: bool) -> None:
+    def _save_controls(self, iteration: int) -> None:
         """Saves the control variables to xdmf.
 
         Args:
             iteration: The current iteration count.
-            append: A boolean which indicates, whether to append to the file or not.
 
         """
         if self.save_state and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
-                control = self.form_handler.controls[i]
-                control.rename(f"control_{i}", f"control_{i}")
-                self.control_xdmf_list[i].write_checkpoint(
+                self._write_xdmf_step(
+                    cast(str, self.control_xdmf_list[i]),
                     self.form_handler.controls[i],
                     f"control_{i}",
-                    float(iteration),
-                    fenics.XDMFFile.Encoding.HDF5,
-                    append,
+                    iteration,
                 )
 
-    def _save_adjoints(self, iteration: int, append: bool) -> None:
+    def _save_adjoints(self, iteration: int) -> None:
         """Saves the adjoint variables to xdmf files.
 
         Args:
             iteration: The current iteration count.
-            append: A boolean which indicates, whether to append to the file or not.
 
         """
         if self.save_adjoint:
             for i in range(self.form_handler.state_dim):
-                if (
-                    self.form_handler.adjoint_spaces[i].num_sub_spaces() > 0
-                    and self.form_handler.adjoint_spaces[i].ufl_element().family()
-                    == "Mixed"
-                ):
-                    for j in range(
-                        self.form_handler.adjoint_spaces[i].num_sub_spaces()
-                    ):
-                        adjoint = self.form_handler.adjoints[i].sub(j, True)
-                        adjoint.rename(f"adjoint_{i}_sub_{j}", f"adjoint_{i}_sub_{j}")
-                        self.adjoint_xdmf_list[i][j].write_checkpoint(
-                            adjoint,
+                if isinstance(self.adjoint_xdmf_list[i], list):
+                    for j in range(len(self.adjoint_xdmf_list[i])):
+                        self._write_xdmf_step(
+                            self.adjoint_xdmf_list[i][j],
+                            self.form_handler.adjoints[i].sub(j, True),
                             f"adjoint_{i}_sub_{j}",
-                            float(iteration),
-                            fenics.XDMFFile.Encoding.HDF5,
-                            append,
+                            iteration,
                         )
                 else:
-                    adjoint = self.form_handler.adjoints[i]
-                    adjoint.rename(f"adjoint_{i}", f"adjoint_{i}")
-                    self.adjoint_xdmf_list[i].write_checkpoint(
-                        adjoint,
+                    self._write_xdmf_step(
+                        cast(str, self.adjoint_xdmf_list[i]),
+                        self.form_handler.adjoints[i],
                         f"adjoint_{i}",
-                        float(iteration),
-                        fenics.XDMFFile.Encoding.HDF5,
-                        append,
+                        iteration,
                     )
 
-    def _save_gradients(self, iteration: int, append: bool) -> None:
+    def _save_gradients(self, iteration: int) -> None:
         """Saves the gradients to xdmf files.
 
         Args:
             iteration: The current iteration count.
-            append: A boolean which indicates, whether to append to the file or not.
 
         """
         if self.save_gradient:
             for i in range(self.form_handler.control_dim):
-                gradient = self.form_handler.gradient[i]
-                gradient.rename(f"gradient_{i}", f"gradient_{i}")
-                self.gradient_xdmf_list[i].write_checkpoint(
-                    gradient,
+                self._write_xdmf_step(
+                    cast(str, self.gradient_xdmf_list[i]),
+                    self.form_handler.gradient[i],
                     f"gradient_{i}",
-                    float(iteration),
-                    fenics.XDMFFile.Encoding.HDF5,
-                    append,
+                    iteration,
                 )
+
+    def _write_xdmf_step(
+        self,
+        filename: str,
+        function: fenics.Function,
+        function_name: str,
+        iteration: int,
+    ) -> None:
+        """Write the current function to the corresponding xdmf file for visualization.
+
+        Args:
+            filename: The path to the xdmf file.
+            function: The function which is to be stored.
+            function_name: The label of the function in the xdmf file.
+            iteration: The current iteration counter.
+
+        """
+        if iteration == 0:
+            append = False
+        else:
+            append = True
+
+        function.rename(function_name, function_name)
+
+        with fenics.XDMFFile(fenics.MPI.comm_world, filename) as file:
+            file.parameters["flush_output"] = True
+            file.parameters["functions_share_mesh"] = False
+            file.write_checkpoint(
+                function,
+                function_name,
+                float(iteration),
+                fenics.XDMFFile.Encoding.HDF5,
+                append,
+            )
 
     def save_to_file(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -593,12 +590,7 @@ class XDMFFileManager:
 
         iteration = solver.iteration
 
-        if iteration == 0:
-            append = False
-        else:
-            append = True
-
-        self._save_states(iteration, append)
-        self._save_controls(iteration, append)
-        self._save_adjoints(iteration, append)
-        self._save_gradients(iteration, append)
+        self._save_states(iteration)
+        self._save_controls(iteration)
+        self._save_adjoints(iteration)
+        self._save_gradients(iteration)
