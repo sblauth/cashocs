@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -23,7 +23,7 @@ import numpy as np
 import cashocs
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(8)
 V = FunctionSpace(mesh, "CG", 1)

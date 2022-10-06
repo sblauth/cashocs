@@ -278,6 +278,30 @@ raises an exception and terminates. This is set via ::
 and is set to ``False`` by default.
 
 
+.. _config_ocp_linesearch
+
+Section LineSearch
+------------------
+
+In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter ::
+
+    method = armijo
+    
+Possible options are ``armijo``, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and ``polynomial``, which uses polynomial models of the cost functional restricted to the line to generate "better" guesses for the stepsize. The default is ``armijo``. However, this will change in the future and users are encouraged to try the new polynomial line search models.
+
+The next parameter, ``polynomial_model``, specifies, which type of polynomials are used to generate new trial stepsizes. It is set via ::
+
+    polynomial_model = cubic
+    
+The parameter can either be ``quadratic`` or ``cubic``. If this is ``quadratic``, a quadratic interpolation polynomial along the search direction is generated and this is minimized analytically to generate a new trial stepsize. Here, only the current function value, the direction derivative of the cost functional in direction of the search direction, and the most recent trial stepsize are used to generate the polynomial. In case that ``polynomial_model`` is chosen to be ``cubic``, the last two trial stepsizes (when available) are used in addition to the current cost functional value and the directional derivative, to generate a cubic model of the one-dimensional cost functional, which is then minimized to compute a new trial stepsize.
+
+For the polynomial models, we also have a safeguarding procedure, which ensures that trial stepsizes cannot be chosen too large or too small, and which can be configured with the following two parameters. The trial stepsizes generate by the polynomial models are projected to the interval :math:`[\beta_{low} \alpha, \beta_{high} \alpha]`, where :math:`\alpha` is the previous trial stepsize and :math:`\beta_{low}, \beta_{high}` are factors which can be set via the parameters ``factor_low`` and ``factor_high``. In the config file, this can look like this ::
+
+    factor_high = 0.5
+    factor_low = 0.1
+
+and the values specified here are also the default values for these parameters.
+
 .. _config_shape_algolbfgs:
 
 Section AlgoLBFGS
@@ -302,6 +326,12 @@ The other parameter for the BFGS method is ::
 This determines, whether one should use a scaling of the initial Hessian approximation
 (see `Nocedal and Wright, Numerical Optimization <https://doi.org/10.1007/978-0-387-40065-5>`_).
 This is usually very beneficial and should be kept enabled (which is the default).
+
+Third, we have the parameter ``bfgs_periodic_restart``, which is set in the line ::
+
+    bfgs_periodic_restart = 0
+   
+This is a non-negative integer value, which indicates the number of BFGS iterations, before a reinitialization takes place. In case that this is ``0`` (which is the default), no restarts are performed. 
 
 .. _config_shape_algocg:
 
@@ -824,25 +854,25 @@ to a .txt file, which is human-readable.
 
 The next line in the config file is ::
 
-    save_pvd = False
+    save_state = False
 
-Here, the parameter ``save_pvd`` is set. This is a boolean flag, which can be set to
-``True`` to enable that cashocs generates .pvd files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
+Here, the parameter ``save_state`` is set. This is a boolean flag, which can be set to
+``True`` to enable that cashocs generates .xdmf files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
 steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
 Note, that for visualizing these files, you need `Paraview <https://www.paraview.org/>`_.
 
-The next parameter, ``save_pvd_adjoint`` works analogously, and is given in the line ::
+The next parameter, ``save_adjoint`` works analogously, and is given in the line ::
 
-    save_pvd_adjoint = False
+    save_adjoint = False
 
-If this is set to True, cashocs generates .pvd files for the adjoint variables in each iteration of the optimization algorithm.
+If this is set to True, cashocs generates .xdmf files for the adjoint variables in each iteration of the optimization algorithm.
 Its main purpose is for debugging.
 
-The next parameter is given by ``save_pvd_gradient``, which is given in the line ::
+The next parameter is given by ``save_gradient``, which is given in the line ::
 
-    save_pvd_gradient = False
+    save_gradient = False
 
-This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/pvd``. The main purpose of this is for debugging.
+This boolean flag ensures that a paraview with the computed shape gradient is saved in ``result_dir/xdmf``. The main purpose of this is for debugging.
 
 Moreover, we also have the parameter ``save_mesh`` that is set via ::
 
@@ -852,7 +882,7 @@ This is used to save the optimized geometry to a GMSH file. The default behavior
 is given by ``save_mesh = False``. Note, that this is only
 possible if the input mesh was already generated by GMSH, and specified in :ref:`the Mesh
 section of the config file <config_shape_mesh>`. For any other meshes, the underlying mesh is also saved in
-the .pvd files, so that you can at least always visualize the optimized geometry.
+the .xdmf files, so that you can at least always visualize the optimized geometry.
 
 In the end, we also have, like for optimal control problems, a parameter that specifies
 where the output is placed, again named ``result_dir``, which is given in the config file
@@ -995,7 +1025,30 @@ in the following.
     - if ``True``, the optimization algorithm does not raise an exception if
       it did not converge
 
+      
+[LineSearch]
+************
 
+.. list-table::
+    :header-rows: 1
+    
+    * - Parameter
+      - Default value
+      - Remarks
+    * - method
+      - ``armijo``
+      - ``armijo`` is a simple backtracking line search, whereas ``polynomial`` uses polynomial models to compute trial stepsizes.
+    * - polynomial_model
+      - ``cubic``
+      - This specifies, whether a ``cubic`` or ``quadratic`` model is used for computing trial stepsizes
+    * - factor_high
+      - ``0.5``
+      - Safeguard for stepsize, upper bound
+    * - factor_low
+      - ``0.1``
+      - Safeguard for stepsize, lower bound
+
+      
 [AlgoLBFGS]
 ***********
 
@@ -1011,7 +1064,9 @@ in the following.
   * - use_bfgs_scaling
     - ``True``
     - if ``True``, uses a scaled identity mapping as initial guess for the inverse Hessian
-
+  * - bfgs_periodic_restart
+    - ``0``
+    - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
 
 [AlgoCG]
 ********
@@ -1064,6 +1119,9 @@ in the following.
     * - shape_bdry_fix_z
       - ``[]``
       - list of indices for boundaries with fixed z values
+    * - fixed_dimensions
+      - ``[]``
+      - a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)
     * - use_pull_back
       - ``True``
       - if ``False``, shape derivative might be wrong; no pull-back for the material derivative is performed;
@@ -1216,17 +1274,17 @@ in the following.
     * - save_txt
       - ``True``
       - if ``True``, the history of the optimization is saved to a human readable .txt file
-    * - save_pvd
+    * - save_state
       - ``False``
       - if ``True``, the history of the state variables over the optimization is
-        saved in .pvd files
-    * - save_pvd_adjoint
+        saved in .xdmf files
+    * - save_adjoint
       - ``False``
       - if ``True``, the history of the adjoint variables over the optimization is
-        saved in .pvd files
-    * - save_pvd_gradient
+        saved in .xdmf files
+    * - save_gradient
       - ``False``
-      - if ``True``, the history of the shape gradient over the optimization is saved in .pvd files
+      - if ``True``, the history of the shape gradient over the optimization is saved in .xdmf files
     * - save_mesh
       - ``False``
       - if ``True``, saves the mesh for the optimized geometry; only available for GMSH input

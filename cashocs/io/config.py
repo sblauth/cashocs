@@ -230,6 +230,25 @@ class Config(ConfigParser):
                     "type": "bool",
                 },
             },
+            "LineSearch": {
+                "method": {
+                    "type": "str",
+                    "possible_options": ["armijo", "polynomial"],
+                },
+                "polynomial_model": {
+                    "type": "str",
+                    "possible_options": ["cubic", "quadratic"],
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                },
+                "factor_high": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                    "larger_than": ("LineSearch", "factor_low"),
+                },
+            },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
                     "type": "int",
@@ -237,6 +256,10 @@ class Config(ConfigParser):
                 },
                 "use_bfgs_scaling": {
                     "type": "bool",
+                },
+                "bfgs_periodic_restart": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
                 },
             },
             "AlgoCG": {
@@ -471,13 +494,13 @@ class Config(ConfigParser):
                 "save_txt": {
                     "type": "bool",
                 },
-                "save_pvd": {
+                "save_state": {
                     "type": "bool",
                 },
-                "save_pvd_adjoint": {
+                "save_adjoint": {
                     "type": "bool",
                 },
-                "save_pvd_gradient": {
+                "save_gradient": {
                     "type": "bool",
                 },
                 "save_mesh": {
@@ -532,6 +555,12 @@ initial_stepsize = 1.0
 safeguard_stepsize = True
 gradient_tol = 1e-9
 gradient_method = direct
+
+[LineSearch]
+method = armijo
+polynomial_model = cubic
+factor_high = 0.5
+factor_low = 0.1
 
 [ShapeGradient]
 lambda_lame = 0.0
@@ -589,6 +618,7 @@ inner_newton_atol = 0.0
 [AlgoLBFGS]
 bfgs_memory_size = 5
 use_bfgs_scaling = True
+bfgs_periodic_restart = 0
 
 [AlgoCG]
 cg_method = DY
@@ -609,9 +639,9 @@ angle_change = inf
 save_results = True
 verbose = True
 save_txt = True
-save_pvd = False
-save_pvd_adjoint = False
-save_pvd_gradient = False
+save_state = False
+save_adjoint = False
+save_gradient = False
 save_mesh = False
 result_dir = ./results
 time_suffix = False

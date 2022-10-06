@@ -23,9 +23,9 @@ import collections
 import configparser
 import functools
 import json
-import os
 import subprocess  # nosec B404
 import sys
+import pathlib
 import time
 from types import TracebackType
 from typing import Any, Callable, Dict, List, Optional, Type, Union
@@ -326,22 +326,22 @@ def import_mesh(input_arg: Union[str, io.Config]) -> types.MeshTuple:
         "size_t", mesh, mesh.geometric_dimension() - 1
     )
 
-    if os.path.isfile(f"{file_string}_subdomains.xdmf"):
-        xdmf_subdomains = fenics.XDMFFile(
-            mesh.mpi_comm(), f"{file_string}_subdomains.xdmf"
-        )
+    subdomains_path = pathlib.Path(f"{file_string}_subdomains.xdmf")
+    if subdomains_path.is_file():
+        xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path))
         xdmf_subdomains.read(subdomains_mvc, "subdomains")
         xdmf_subdomains.close()
-    if os.path.isfile(f"{file_string}_boundaries.xdmf"):
-        xdmf_boundaries = fenics.XDMFFile(
-            mesh.mpi_comm(), f"{file_string}_boundaries.xdmf"
-        )
+
+    boundaries_path = pathlib.Path(f"{file_string}_boundaries.xdmf")
+    if boundaries_path.is_file():
+        xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path))
         xdmf_boundaries.read(boundaries_mvc, "boundaries")
         xdmf_boundaries.close()
 
     physical_groups: Optional[Dict[str, Dict[str, int]]] = None
-    if os.path.isfile(f"{file_string}_physical_groups.json"):
-        with open(f"{file_string}_physical_groups.json", "r", encoding="utf-8") as file:
+    physical_groups_path = pathlib.Path(f"{file_string}_physical_groups.json")
+    if physical_groups_path.is_file():
+        with physical_groups_path.open("r", encoding="utf-8") as file:
             physical_groups = json.load(file)
 
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)

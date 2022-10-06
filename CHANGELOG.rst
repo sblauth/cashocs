@@ -11,12 +11,46 @@ in development
 
 * Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.
 
-* cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
-
-* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+* Added polynomial based models for computing trial stepsizes in an extended Armijo rule. This method will become the default line search in the future.
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing
+
+* cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
+
+* cashocs now uses pathlib over os.path
+
+* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+
+
+* BFGS methods can now be used in a restarted fashion, if desired
+
+* Changed configuration file parameters
+
+  * Section Output
+
+    * ``save_pvd`` is now called ``save_state``, functionality is the same
+
+    * ``save_pvd_adjoint`` is now called ``save_adjoint``, functionality is the same
+
+    * ``save_pvd_gradient`` is now called ``save_gradient``, functionality is the same
+
+* New configuration file parameters
+
+  * Section AlgoLBFGS
+  
+    * ``bfgs_periodic_restart`` is an integer parameter. If this is 0 (the default), no restarting is done. If this is >0, then the BFGS method is restarted after as many iterations, as given in the parameter
+  
+  * Section LineSearch is a completely new section where the line searches can be configured.
+  
+    * ``method`` is a string parameter, which can take the values ``armijo`` (which is the default previous line search) and ``polynomial`` (which are the new models)
+    
+    * ``polynomial_model`` is a string parameter which can be either ``quadratic`` or ``cubic``. In case this is ``quadratic``, three values (current function value, directional derivative, and trial function value) are used to generate a quadratic model of the one-dimensional cost functional. If this is ``cubic``, a cubic model is generated based on the last two guesses for the stepsize. These models are exactly minimized to get a new trial stepsize and a safeguarding is applied so that the steps remain feasible.
+    
+    * ``factor_high`` is one parameter for the safeguarding, the upper bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
+    
+    * ``factor_low`` is the other parameter for the safeguarding, the lower bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
 
 1.8.0 (July 6, 2022)
 --------------------
