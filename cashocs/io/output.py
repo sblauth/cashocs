@@ -58,15 +58,11 @@ class OutputManager:
 
         save_txt = self.config.getboolean("Output", "save_txt")
         save_results = self.config.getboolean("Output", "save_results")
-        save_pvd = self.config.getboolean("Output", "save_pvd")
-        save_pvd_adjoint = self.config.getboolean("Output", "save_pvd_adjoint")
-        save_pvd_gradient = self.config.getboolean("Output", "save_pvd_gradient")
+        save_state = self.config.getboolean("Output", "save_state")
+        save_adjoint = self.config.getboolean("Output", "save_adjoint")
+        save_gradient = self.config.getboolean("Output", "save_gradient")
         has_output = (
-            save_txt
-            or save_results
-            or save_pvd
-            or save_pvd_gradient
-            or save_pvd_adjoint
+            save_txt or save_results or save_state or save_gradient or save_adjoint
         )
 
         if not self.result_path.is_dir():
@@ -76,7 +72,7 @@ class OutputManager:
         self.history_manager = managers.HistoryManager(
             optimization_problem, self.result_dir
         )
-        self.pvd_file_manager = managers.PVDFileManager(
+        self.xdmf_file_manager = managers.XDMFFileManager(
             optimization_problem, self.result_dir
         )
         self.result_manager = managers.ResultManager(
@@ -95,7 +91,7 @@ class OutputManager:
         self.history_manager.print_to_console(solver)
         self.history_manager.print_to_file(solver)
 
-        self.pvd_file_manager.save_to_file(solver)
+        self.xdmf_file_manager.save_to_file(solver)
 
         self.result_manager.save_to_dict(solver)
 
@@ -119,12 +115,3 @@ class OutputManager:
         self.result_manager.save_to_json(solver)
         self.mesh_manager.save_optimized_mesh(solver)
         self.temp_file_manager.clear_temp_files(solver)
-
-    def set_remesh(self, remesh_counter: int) -> None:
-        """Sets the remesh prefix for pvd files.
-
-        Args:
-            remesh_counter: Number of times remeshing has been performed.
-
-        """
-        self.pvd_file_manager.set_remesh(remesh_counter)

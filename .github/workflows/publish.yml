@@ -21,7 +21,7 @@ jobs:
         rm -R /root/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v2 
+      uses: actions/checkout@v3.1.0 
 
     - name: Update cashocs installation
       shell: bash -l {0}
@@ -44,7 +44,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.1.0
     
 
     - name: Get tag name
@@ -68,10 +68,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.1.0
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
 
