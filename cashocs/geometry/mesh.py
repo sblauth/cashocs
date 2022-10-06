@@ -23,9 +23,9 @@ import collections
 import configparser
 import functools
 import json
+import pathlib
 import subprocess  # nosec B404
 import sys
-import pathlib
 import time
 from types import TracebackType
 from typing import Any, Callable, Dict, List, Optional, Type, Union
