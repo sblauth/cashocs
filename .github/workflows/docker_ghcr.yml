@@ -7,7 +7,7 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
-name: Create and publish a Docker image to ghcr.io
+name: ghcr.io images
 
 on:
   workflow_dispatch:
@@ -54,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          file: ./.github/docker/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
