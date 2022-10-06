@@ -99,6 +99,7 @@ class FormHandler(abc.ABC):
     require_control_constraints: list[bool]
     dg_function_space: fenics.FunctionSpace
     state_dim: int
+    adjoints: List[fenics.Function]
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.

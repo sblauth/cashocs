@@ -52,10 +52,14 @@ class DescentTopologyAlgorithm(
         self.atol = 0.0
         self.rtol = 0.0
         self._cashocs_problem.config.set("Output", "verbose", "False")
+        self._cashocs_problem.config.set("Output", "save_txt", "False")
+        self._cashocs_problem.config.set("Output", "save_results", "False")
         self._cashocs_problem.config.set("Output", "save_state", "False")
         self._cashocs_problem.config.set("Output", "save_adjoint", "False")
         self._cashocs_problem.config.set("Output", "save_gradient", "False")
         self._cashocs_problem.config.set("OptimizationRoutine", "soft_exit", "True")
+
+        self.loop_restart = False
 
         def pre_hook() -> None:
             self.normalize(self.levelset_function)
@@ -86,7 +90,10 @@ class DescentTopologyAlgorithm(
             self.cost_functional_values.append(self.objective_value)
             self.angle_list.append(angle)
             self.stepsize_list.append(self.stepsize)
-            self.output()
+            if not self.loop_restart:
+                self.output()
+            else:
+                self.loop_restart = False
 
             if self.convergence_test():
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
@@ -134,6 +141,7 @@ class DescentTopologyAlgorithm(
                 self.angle_list.pop()
                 self.stepsize_list.pop()
                 self.iteration -= 1
+                self.loop_restart = True
 
                 if self.iteration == stop_iter:
                     print("The line search failed.")
