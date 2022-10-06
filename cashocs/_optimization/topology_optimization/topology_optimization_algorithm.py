@@ -71,6 +71,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self._cashocs_problem: optimal_control.OptimalControlProblem = (
             optimization_problem._base_ocp
         )
+        self._cashocs_problem.is_topology_problem = True
 
         self.mesh = optimization_problem.mesh
         self.cg1_space = fenics.FunctionSpace(self.mesh, "CG", 1)

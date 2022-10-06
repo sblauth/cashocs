@@ -127,9 +127,8 @@ class ArmijoLineSearch(line_search.LineSearch):
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
-            if (
-                objective_step
-                < current_function_value + self.epsilon_armijo * decrease_measure
+            if self._satisfies_armijo_condition(
+                objective_step, current_function_value, decrease_measure, solver
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
                     solver.requires_remeshing = True
@@ -150,6 +149,21 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         return None
 
+    def _satisfies_armijo_condition(
+        self,
+        objective_step: float,
+        current_function_value: float,
+        decrease_measure: float,
+        solver: optimization_algorithms.OptimizationAlgorithm,
+    ) -> bool:
+        if not solver.is_topology_problem:
+            return (
+                objective_step
+                < current_function_value + self.epsilon_armijo * decrease_measure
+            )
+        else:
+            return objective_step <= current_function_value
+
     def _compute_decrease_measure(
         self, search_direction: List[fenics.Function]
     ) -> float:
@@ -162,7 +176,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             The computed decrease measure.
 
         """
-        if self.is_control_problem:
+        if self.is_control_problem or self.is_topology_problem:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )

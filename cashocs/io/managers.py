@@ -403,7 +403,7 @@ class XDMFFileManager:
         """Initialize the list of xdmf files for the gradients."""
         if self.save_gradient:
             for i in range(self.form_handler.control_dim):
-                if self.is_control_problem:
+                if self.is_control_problem or self.is_topology_problem:
                     gradient_str = f"gradient_{i:d}"
                 else:
                     gradient_str = "shape_gradient"

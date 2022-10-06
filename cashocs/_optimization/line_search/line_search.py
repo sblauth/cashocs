@@ -53,6 +53,7 @@ class LineSearch(abc.ABC):
 
         self.is_shape_problem = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
+        self.is_topology_problem = optimization_problem.is_topology_problem
 
         self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(
