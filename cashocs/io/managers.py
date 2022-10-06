@@ -381,7 +381,7 @@ class XDMFFileManager:
 
     def _initialize_controls_xdmf(self) -> None:
         """Initializes the list of xdmf files for the control variables."""
-        if self.save_state and self.is_control_problem:
+        if self.save_state and (self.is_control_problem or self.is_topology_problem):
             for i in range(self.form_handler.control_dim):
                 self.control_xdmf_list.append(
                     self._generate_xdmf_file(
@@ -494,7 +494,7 @@ class XDMFFileManager:
             append: A boolean which indicates, whether to append to the file or not.
 
         """
-        if self.save_state and self.is_control_problem:
+        if self.save_state and (self.is_control_problem or self.is_topology_problem):
             for i in range(self.form_handler.control_dim):
                 control = self.form_handler.controls[i]
                 control.rename(f"control_{i}", f"control_{i}")

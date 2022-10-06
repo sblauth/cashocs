@@ -248,31 +248,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         fenics.plot(shape)
 
-    # def post_process(self) -> None:
-    #     """Performs a post-processing after the solver is finished."""
-    #     history = {
-    #         "cost_functional": self.cost_functional_values,
-    #         "angle": self.angle_list,
-    #         "stepsize": self.stepsize_list,
-    #     }
-    #     result_dir = self.config.get("Output", "result_dir")
-    #     pathlib.Path(f"{result_dir}").mkdir(parents=True, exist_ok=True)
-    #
-    #     with open(f"{result_dir}/history.json", "w", encoding="utf-8") as file:
-    #         json.dump(history, file)
-
-    def output(self) -> None:
-        """Writes the output to console and files."""
-        self.output_manager.output(self)
-
-    def output_summary(self) -> None:
-        """Writes the summary of the optimization (to files and console)."""
-        self.output_manager.output_summary(self)
-
-    def post_process(self) -> None:
-        """Performs the non-console output related post-processing."""
-        self.output_manager.post_process(self)
-
 
 class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
     """Parent class for levelset-based solvers for topology optimization."""

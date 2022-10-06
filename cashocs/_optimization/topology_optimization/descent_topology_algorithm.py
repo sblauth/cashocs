@@ -52,6 +52,9 @@ class DescentTopologyAlgorithm(
         self.atol = 0.0
         self.rtol = 0.0
         self._cashocs_problem.config.set("Output", "verbose", "False")
+        self._cashocs_problem.config.set("Output", "save_state", "False")
+        self._cashocs_problem.config.set("Output", "save_adjoint", "False")
+        self._cashocs_problem.config.set("Output", "save_gradient", "False")
         self._cashocs_problem.config.set("OptimizationRoutine", "soft_exit", "True")
 
         def pre_hook() -> None:
