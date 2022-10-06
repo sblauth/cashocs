@@ -380,10 +380,10 @@ class XDMFFileManager:
         self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
 
-        self.state_xdmf_list: List[fenics.File] = []
-        self.control_xdmf_list: List[fenics.File] = []
-        self.adjoint_xdmf_list: List[fenics.File] = []
-        self.gradient_xdmf_list: List[fenics.File] = []
+        self.state_xdmf_list: List[fenics.XDMFFile] = []
+        self.control_xdmf_list: List[fenics.XDMFFile] = []
+        self.adjoint_xdmf_list: List[fenics.XDMFFile] = []
+        self.gradient_xdmf_list: List[fenics.XDMFFile] = []
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
