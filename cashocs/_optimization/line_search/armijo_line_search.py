@@ -156,6 +156,19 @@ class ArmijoLineSearch(line_search.LineSearch):
         decrease_measure: float,
         solver: optimization_algorithms.OptimizationAlgorithm,
     ) -> bool:
+        """Checks whether the sufficient decrease condition is satisfied.
+
+        Args:
+            objective_step: The new objective value, after taking the step
+            current_function_value: The old objective value
+            decrease_measure: The directional derivative in direction of the search
+                direction
+            solver: The optimization algorithm
+
+        Returns:
+            A boolean flag which is True in case the condition is satisfied.
+
+        """
         if not solver.is_topology_problem:
             return (
                 objective_step

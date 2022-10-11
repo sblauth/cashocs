@@ -26,6 +26,7 @@ import fenics
 import numpy as np
 
 from cashocs import _utils
+from cashocs import nonlinear_solvers
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
@@ -223,6 +224,24 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.topological_derivative_vertex.vector().vec().scale(1.0 / norm)
             self.topological_derivative_vertex.vector().apply("")
 
+        # self._smooth_topological_derivative()
+
+    def _smooth_topological_derivative(self) -> None:
+        cg1_space = self.topological_derivative_vertex.function_space()
+        dx = fenics.Measure("dx", domain=cg1_space.mesh())
+        self.comparison = fenics.Function(cg1_space)
+        self.comparison.vector()[:] = self.topological_derivative_vertex.vector()[:]
+        u = fenics.Function(cg1_space)
+        v = fenics.TestFunction(cg1_space)
+
+        res = (
+            fenics.Constant(1e-3) * fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
+            + u * v * dx
+            - self.topological_derivative_vertex * v * dx
+        )
+        nonlinear_solvers.newton_solve(res, u, bcs=[], is_linear=True)
+        self.topological_derivative_vertex.vector()[:] = u.vector()[:]
+
     def compute_angle(self) -> float:
         """Computes the angle between topological gradient and levelset function.
 
@@ -230,13 +249,16 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             The angle between topological gradient and levelset function in degrees.
 
         """
-        angle = np.arccos(
+        sp = (
             self.scalar_product(
                 self.levelset_function, self.topological_derivative_vertex
             )
             / self.norm(self.levelset_function)
             / self.norm(self.topological_derivative_vertex)
         )
+        sp = float(np.maximum(np.minimum(1.0, sp), -1.0))
+        angle = np.arccos(sp)
+
         angle *= 360 / (2 * np.pi)
 
         return float(angle)
@@ -283,7 +305,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         self.stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
 
+        failed = False
         for k in range(self.config.getint("OptimizationRoutine", "maximum_iterations")):
+            if failed:
+                break
+
             self.iteration = k
             self.levelset_function_prev.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec()
@@ -331,7 +357,10 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self.stepsize *= 0.5
 
                 if self.stepsize <= 1e-10:
-                    raise Exception("Stepsize computation failed.")
+                    if self.config.getboolean("OptimizationRoutine", "soft_exit"):
+                        failed = True
+                    else:
+                        raise Exception("Stepsize computation failed.")
 
 
 class ConvexCombinationAlgorithm(LevelSetTopologyAlgorithm):
