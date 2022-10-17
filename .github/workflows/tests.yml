@@ -15,7 +15,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container:
-      image: sblauth/cashocs:latest
+      image: ghcr.io/sblauth/cashocs:main
 
     steps:
     - name: Delete current installation in docker image
