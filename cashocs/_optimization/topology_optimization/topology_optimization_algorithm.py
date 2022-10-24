@@ -335,14 +335,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 break
 
             if k > 0:
-                self.stepsize = float(np.minimum(2.0 * self.stepsize, 1.0))
-            else:
-                self.stepsize = float(
-                    np.minimum(
-                        self.config.getfloat("OptimizationRoutine", "initial_stepsize"),
-                        1.0,
-                    )
-                )
+                self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))
             while True:
                 self.move_levelset(self.stepsize)
 
