@@ -37,6 +37,7 @@ class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
     stepsize: float = 1.0
+    angle: float
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.

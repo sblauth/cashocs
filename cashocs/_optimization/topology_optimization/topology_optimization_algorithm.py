@@ -80,38 +80,13 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_vertex: fenics.Function = fenics.Function(
             self.cg1_space
         )
+        self.projected_gradient = fenics.Function(self.cg1_space)
         self.levelset_function_prev = fenics.Function(self.cg1_space)
 
-        self.cost_functional_values: list[float] = []
-        self.angle_list: list[float] = []
-        self.stepsize_list: list[float] = []
-
     @abc.abstractmethod
-    def run(
-        self,
-        rtol: float | None = 0.0,
-        atol: float | None = 1.0,
-        max_iter: int | None = None,
-    ) -> None:
-        """Runs the optimization algorithm to solve the optimization problem.
-
-        Args:
-            rtol: Relative tolerance for the optimization algorithm.
-            atol: Absolute tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm.
-
-        """
-        if rtol is None:
-            self.rtol = 0.0
-        else:
-            self.rtol = rtol
-        if atol is None:
-            self.atol = 1.0
-        else:
-            self.atol = atol
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+    def run(self) -> None:
+        """Runs the optimization algorithm to solve the optimization problem."""
+        pass
 
     def scalar_product(self, a: fenics.Function, b: fenics.Function) -> float:
         """Computes the scalar product between two functions.
@@ -224,6 +199,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.topological_derivative_vertex.vector().vec().scale(1.0 / norm)
             self.topological_derivative_vertex.vector().apply("")
 
+        self.compute_projected_gradient()
         # self._smooth_topological_derivative()
 
     def _smooth_topological_derivative(self) -> None:
@@ -271,6 +247,32 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         fenics.plot(shape)
 
+    def compute_projected_gradient(self) -> None:
+        """Computes the projected gradient."""
+        beta = self.scalar_product(
+            self.topological_derivative_vertex, self.levelset_function
+        )
+        gamma = self.scalar_product(self.levelset_function, self.levelset_function)
+        self.projected_gradient.vector().vec().aypx(
+            0.0,
+            self.topological_derivative_vertex.vector().vec()
+            - beta / gamma * self.levelset_function.vector().vec(),
+        )
+        self.projected_gradient.vector().apply("")
+
+    def compute_gradient_norm(self) -> float:
+        """Computes the norm of the projected gradient.
+
+        Returns:
+            The norm of the projected gradient.
+
+        """
+        self.compute_projected_gradient()
+        norm: float = np.sqrt(
+            self.scalar_product(self.projected_gradient, self.projected_gradient)
+        )
+        return norm
+
 
 class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
     """Parent class for levelset-based solvers for topology optimization."""
@@ -285,22 +287,8 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         """
         pass
 
-    def run(
-        self,
-        rtol: float | None = 0.0,
-        atol: float | None = 1.0,
-        max_iter: int | None = None,
-    ) -> None:
-        """Runs the optimization algorithm to solve the optimization problem.
-
-        Args:
-            rtol: Relative tolerance for the optimization algorithm.
-            atol: Absolute tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm.
-
-        """
-        super().run(rtol, atol, max_iter)
-
+    def run(self) -> None:
+        """Runs the optimization algorithm to solve the optimization problem."""
         self.normalize(self.levelset_function)
         self.stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
@@ -322,17 +310,16 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
-            self.cost_functional_values.append(self.objective_value)
 
-            angle = self.compute_angle()
-            self.gradient_norm = angle
-            self.output()
-            self.angle_list.append(angle)
-            self.stepsize_list.append(self.stepsize)
+            self.angle = self.compute_angle()
+            self.gradient_norm = self.compute_gradient_norm()
 
             if self.convergence_test():
+                self.output()
                 print("\nOptimization successful!\n")
                 break
+
+            self.output()
 
             if k > 0:
                 self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))

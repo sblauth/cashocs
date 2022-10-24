@@ -68,7 +68,7 @@ class TopologyVariableAbstractions(
             The decrease measure for the Armijo test.
 
         """
-        return 1.0
+        return 0.0
 
     def store_optimization_variables(self) -> None:
         """Saves a copy of the current iterate of the optimization variables."""

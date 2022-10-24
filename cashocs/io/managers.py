@@ -73,17 +73,10 @@ def generate_output_str(solver: types.SolutionAlgorithm) -> str:
     iteration = solver.iteration
     objective_value = solver.objective_value
 
-    meas_format = ".3e"
-    if solver.is_topology_problem:
-        meas_format = ".2f"
-
     if not np.any(solver.form_handler.require_control_constraints):
         gradient_str = "grad. norm"
     else:
         gradient_str = "stat. meas."
-
-    if solver.is_topology_problem:
-        gradient_str = "angle"
 
     if solver.is_shape_problem:
         mesh_handler = solver.optimization_variable_abstractions.mesh_handler
@@ -100,6 +93,8 @@ def generate_output_str(solver: types.SolutionAlgorithm) -> str:
         )
         if mesh_quality is not None:
             info_str += "mesh qlty,  "
+        if solver.is_topology_problem:
+            info_str += "angle,  "
         info_str += "step size\n\n"
     else:
         info_str = ""
@@ -108,10 +103,12 @@ def generate_output_str(solver: types.SolutionAlgorithm) -> str:
         f"{iteration:4d},  ",
         f"{objective_value:>13.3e},  ",
         f"{solver.relative_norm:>{len(gradient_str) + 5}.3e},  ",
-        f"{solver.gradient_norm:>{len(gradient_str) + 5}{meas_format}},  ",
+        f"{solver.gradient_norm:>{len(gradient_str) + 5}.3e},  ",
     ]
     if mesh_quality is not None:
         strs.append(f"{mesh_quality:>9.2f},  ")
+    if solver.is_topology_problem:
+        strs.append(f"{solver.angle:>5.2f},  ")
 
     if iteration > 0:
         strs.append(f"{solver.stepsize:>9.3e}")

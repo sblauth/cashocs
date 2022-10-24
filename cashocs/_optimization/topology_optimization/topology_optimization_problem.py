@@ -184,6 +184,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             desired_weights=desired_weights,
         )
+        self.config = self._base_ocp.config
         self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
         self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
         self.adjoint_problem: _pde_problems.AdjointProblem = (
@@ -208,8 +209,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
     def solve(
         self,
         algorithm: str | None = None,
-        rtol: float | None = 0.0,
-        atol: float | None = 1.0,
+        rtol: float | None = None,
+        atol: float | None = None,
         max_iter: int | None = None,
     ) -> None:
         """Solves the optimization problem.
@@ -238,6 +239,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             topology_variable_abstractions.TopologyVariableAbstractions(self)
         )
 
+        self._set_tolerances(rtol, atol, max_iter)
+
         if algorithm is None:
             self.algorithm = _utils.optimization_algorithm_configuration(
                 self.config, algorithm
@@ -258,7 +261,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 self, self.algorithm
             )
 
-        self.solver.run(rtol, atol, max_iter)
+        self.solver.run()
         self.solver.post_process()
 
     def plot_shape(self) -> None:

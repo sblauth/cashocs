@@ -102,6 +102,7 @@ class FormHandler(abc.ABC):
     adjoints: List[fenics.Function]
     state_spaces: List[fenics.FunctionSpace]
     adjoint_spaces: List[fenics.FunctionSpace]
+    dx: fenics.Measure
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.

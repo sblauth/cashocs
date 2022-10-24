@@ -48,9 +48,6 @@ class DescentTopologyAlgorithm(
         self.algorithm = algorithm
 
         self.iteration = 0
-        self.max_iter = 0
-        self.atol = 0.0
-        self.rtol = 0.0
         self._cashocs_problem.config.set("Output", "verbose", "False")
         self._cashocs_problem.config.set("Output", "save_txt", "False")
         self._cashocs_problem.config.set("Output", "save_results", "False")
@@ -67,42 +64,32 @@ class DescentTopologyAlgorithm(
 
         def post_hook() -> None:
             self.compute_gradient()
-            beta = self.scalar_product(
-                self.topological_derivative_vertex, self.levelset_function
-            )
-            gamma = self.scalar_product(self.levelset_function, self.levelset_function)
             self._cashocs_problem.gradient[0].vector().vec().aypx(
-                0.0,
-                -(
-                    self.topological_derivative_vertex.vector().vec()
-                    - beta / gamma * self.levelset_function.vector().vec()
-                ),
+                0.0, -self.projected_gradient.vector().vec()
             )
             self._cashocs_problem.gradient[0].vector().apply("")
 
-            angle = self.compute_angle()
+            self.angle = self.compute_angle()
 
-            self.gradient_norm = angle
+            self.gradient_norm = self.compute_gradient_norm()
             self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
             )
-            self.stepsize = self._cashocs_problem.solver.stepsize
-            self.cost_functional_values.append(self.objective_value)
-            self.angle_list.append(angle)
-            self.stepsize_list.append(self.stepsize)
+
+            if self.convergence_test():
+                self.output()
+                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
+                self._cashocs_problem.gradient[0].vector().apply("")
+                print("\nOptimization successful!\n")
+
             if not self.loop_restart:
                 self.output()
             else:
                 self.loop_restart = False
 
-            if self.convergence_test():
-                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
-                self._cashocs_problem.gradient[0].vector().apply("")
-                print("\nOptimization successful!\n")
-
             self.iteration += 1
 
-            if self.iteration >= self.max_iter:
+            if self.iteration >= self.maximum_iterations:
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.gradient[0].vector().apply("")
                 print("Maximum number of iterations reached.")
@@ -110,36 +97,21 @@ class DescentTopologyAlgorithm(
         self._cashocs_problem.inject_pre_hook(pre_hook)
         self._cashocs_problem.inject_post_hook(post_hook)
 
-    def run(
-        self,
-        rtol: float | None = 0.0,
-        atol: float | None = 1.0,
-        max_iter: int | None = None,
-    ) -> None:
-        """Runs the optimization algorithm to solve the optimization problem.
-
-        Args:
-            rtol: Relative tolerance for the optimization algorithm.
-            atol: Absolute tolerance for the optimization algorithm.
-            max_iter: Maximum number of iterations for the optimization algorithm.
-
-        """
-        super().run(rtol, atol, max_iter)
-
+    def run(self) -> None:
+        """Runs the optimization algorithm to solve the optimization problem."""
         self.iteration = 0
-        self.max_iter = self.config.getint("OptimizationRoutine", "maximum_iterations")
 
         stop_iter = -1
 
         while True:
             self._cashocs_problem.solve(
-                algorithm=self.algorithm, rtol=0.0, atol=0.0, max_iter=max_iter
+                algorithm=self.algorithm,
+                rtol=self.rtol,
+                atol=self.atol,
+                max_iter=self.maximum_iterations,
             )
 
             if self._cashocs_problem.solver.converged_reason < -1:
-                self.cost_functional_values.pop()
-                self.angle_list.pop()
-                self.stepsize_list.pop()
                 self.iteration -= 1
                 self.loop_restart = True
 

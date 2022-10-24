@@ -543,6 +543,22 @@ class OptimizationProblem(abc.ABC):
         self.inject_pre_hook(pre_function)
         self.inject_post_hook(post_function)
 
+    def _set_tolerances(
+        self, rtol: float | None, atol: float | None, max_iter: float | None
+    ) -> None:
+        if (rtol is not None) and (atol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(0.0))
+        elif (atol is not None) and (rtol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(0.0))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+        elif (atol is not None) and (rtol is not None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+
+        if max_iter is not None:
+            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+
     @abc.abstractmethod
     def solve(
         self,
@@ -598,18 +614,7 @@ class OptimizationProblem(abc.ABC):
             self.config, algorithm
         )
 
-        if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
-        elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-        elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+        self._set_tolerances(rtol, atol, max_iter)
 
         self._check_for_custom_forms()
         self.output_manager = io.OutputManager(self)
