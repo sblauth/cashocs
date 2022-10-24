@@ -345,3 +345,147 @@ PYBIND11_MODULE(SIGNATURE, m)
     values /= weights
     d2v = fenics.dof_to_vertex_map(cg1_space)
     node_function.vector()[:] = values[d2v]
+
+
+def interpolate_by_averaging(
+    form_neg: ufl.core.expr.Expr,
+    form_pos: ufl.core.expr.Expr,
+    levelset_function: fenics.Function,
+    node_function: fenics.Function,
+) -> None:
+    """Averages a piecewise constant forms and interpolates them into a CG1 space.
+
+    Args:
+        form_neg: The UFL form inside the domain (levelset_function < 0).
+        form_pos: The UFL form outside the domain (levelset_function > 0).
+        levelset_function: The levelset function representin the domain.
+        node_function: The resulting piecewise continuous function.
+
+    """
+    node_function.vector().vec().set(0.0)
+    node_function.vector().apply("")
+    cg1_space = node_function.function_space()
+    mesh = cg1_space.mesh()
+    dg0_space = fenics.FunctionSpace(mesh, "DG", 0)
+
+    fun_neg = fenics.project(form_neg, dg0_space)
+    fun_pos = fenics.project(form_pos, dg0_space)
+    dx = fenics.Measure("dx", mesh)
+
+    volumes = fenics.Function(dg0_space)
+    volumes.vector()[:] = fenics.assemble(fenics.TestFunction(dg0_space) * dx)
+    mesh_cells = mesh.cells()
+    vals = np.sort(levelset_function.compute_vertex_values()[mesh_cells])
+    volume_fraction = fenics.Function(dg0_space)
+    volume_fraction.vector()[:] = get_volume_fraction_triangle(
+        vals[:, 0], vals[:, 1], vals[:, 2]
+    )[:]
+
+    cpp_code = """
+    #include <pybind11/pybind11.h>
+    #include <pybind11/numpy.h>
+    #include <pybind11/stl.h>
+    #include <pybind11/eigen.h>
+    namespace py = pybind11;
+
+    #define _USE_MATH_DEFINES
+    #include <cmath>
+
+    #include <dolfin/mesh/Mesh.h>
+    #include <dolfin/mesh/Vertex.h>
+    #include <dolfin/mesh/MeshFunction.h>
+    #include <dolfin/mesh/Cell.h>
+    #include <dolfin/mesh/Vertex.h>
+    #include <dolfin/function/Function.h>
+    #include <dolfin/function/FunctionSpace.h>
+    #include <dolfin/la/Vector.h>
+
+    using namespace dolfin;
+
+    std::tuple<std::vector<double>, std::vector<double>>
+    interpolate(std::shared_ptr<dolfin::Function> td_neg,
+      std::shared_ptr<dolfin::Function> td_pos,
+      std::shared_ptr<dolfin::Function> volumes,
+      std::shared_ptr<dolfin::Function> td_vertex,
+      std::shared_ptr<dolfin::Function> volume_fraction,
+      std::shared_ptr<dolfin::Function> levelset_function,
+      double eps)
+    {
+      auto mesh = td_vertex->function_space()->mesh();
+      std::vector<double> td_neg_vec;
+      std::vector<double> td_pos_vec;
+      std::vector<double> td_vertex_vec;
+      std::vector<double> weights;
+      std::vector<double> volumes_vec;
+      std::vector<double> volume_fraction_vec;
+      std::vector<double> psi_vec;
+      std::vector<double> ents(3);
+
+      int i = 0;
+      double val;
+      double vol_frac_neg;
+      double vol_frac_pos;
+      double elem_volume;
+
+      td_neg->vector()->get_local(td_neg_vec);
+      td_pos->vector()->get_local(td_pos_vec);
+      td_vertex->vector()->get_local(td_vertex_vec);
+      td_vertex->vector()->get_local(weights);
+      volumes->vector()->get_local(volumes_vec);
+      volume_fraction->vector()->get_local(volume_fraction_vec);
+      levelset_function->compute_vertex_values(psi_vec);
+      //levelset_function->vector()->get_local(psi_vec);
+
+      for (CellIterator cell(*mesh); !cell.end(); ++cell)
+      {
+        ents[0] = cell->entities(0)[0];
+        ents[1] = cell->entities(0)[1];
+        ents[2] = cell->entities(0)[2];
+        vol_frac_neg = volume_fraction_vec[i];
+        vol_frac_pos = 1.0 - vol_frac_neg;
+        elem_volume = volumes_vec[i];
+
+        for (std::size_t k = 0; k < ents.size(); ++k)
+        {
+          val = psi_vec[ents[k]];
+
+          if (val > eps) {
+            td_vertex_vec[ents[k]] += td_pos_vec[i] * vol_frac_pos * elem_volume;
+            weights[ents[k]] += vol_frac_pos * elem_volume;
+          }
+          else if (val < -eps) {
+            td_vertex_vec[ents[k]] += td_neg_vec[i] * vol_frac_neg * elem_volume;
+            weights[ents[k]] += vol_frac_neg * elem_volume;
+          }
+          else {
+            td_vertex_vec[ents[k]] += (td_neg_vec[i] * vol_frac_neg
+              + td_pos_vec[i] * vol_frac_pos) * elem_volume;
+            weights[ents[k]] += elem_volume;
+          }
+        }
+        i += 1;
+      }
+      return std::make_tuple(td_vertex_vec, weights);
+    }
+
+    PYBIND11_MODULE(SIGNATURE, m)
+    {
+      m.def("interpolate", &interpolate);
+    }
+    """
+    module = fenics.compile_cpp_code(cpp_code)
+
+    values, weights = module.interpolate(
+        fun_neg.cpp_object(),
+        fun_pos.cpp_object(),
+        volumes.cpp_object(),
+        node_function.cpp_object(),
+        volume_fraction.cpp_object(),
+        levelset_function.cpp_object(),
+        1e-4,
+    )
+    values = np.array(values)
+    weights = np.array(weights)
+    values /= weights
+    d2v = fenics.dof_to_vertex_map(cg1_space)
+    node_function.vector()[:] = values[d2v]

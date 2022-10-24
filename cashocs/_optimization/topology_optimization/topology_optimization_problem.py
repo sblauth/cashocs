@@ -71,7 +71,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         re_normalize_levelset: bool = True,
         normalize_topological_derivative: bool = False,
-        interpolation_scheme: Literal["angle", "volume"] = "angle",
+        interpolation_scheme: Literal["angle", "volume", "averaging"] = "angle",
         initial_guess: list[fenics.Function] | None = None,
         ksp_options: types.KspOptions | list[list[str | int | float]] | None = None,
         adjoint_ksp_options: types.KspOptions

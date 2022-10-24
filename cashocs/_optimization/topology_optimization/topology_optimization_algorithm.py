@@ -80,7 +80,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_vertex: fenics.Function = fenics.Function(
             self.cg1_space
         )
-        self.projected_gradient = fenics.Function(self.cg1_space)
+        self.projected_gradient: fenics.Function = fenics.Function(self.cg1_space)
         self.levelset_function_prev = fenics.Function(self.cg1_space)
 
     @abc.abstractmethod
@@ -146,14 +146,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         function.
 
         """
-        # if self.interpolation_scheme == "average":
-        #     _utils.interpolate_by_average(
-        #         self.topological_derivative_pos,
-        #         self.topological_derivative_neg,
-        #         self.levelset_function,
-        #         self.topological_derivative_vertex,
-        #         1e-6,
-        #     )
         if self.interpolation_scheme == "angle":
             _utils.interpolate_by_angle(
                 self.topological_derivative_neg,
@@ -161,8 +153,15 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 self.levelset_function,
                 self.topological_derivative_vertex,
             )
-        else:
+        elif self.interpolation_scheme == "volume":
             _utils.interpolate_by_volume(
+                self.topological_derivative_neg,
+                self.topological_derivative_pos,
+                self.levelset_function,
+                self.topological_derivative_vertex,
+            )
+        elif self.interpolation_scheme == "averaging":
+            _utils.interpolate_by_averaging(
                 self.topological_derivative_neg,
                 self.topological_derivative_pos,
                 self.levelset_function,
@@ -199,8 +198,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.topological_derivative_vertex.vector().vec().scale(1.0 / norm)
             self.topological_derivative_vertex.vector().apply("")
 
-        self.compute_projected_gradient()
         # self._smooth_topological_derivative()
+        self.compute_projected_gradient()
 
     def _smooth_topological_derivative(self) -> None:
         cg1_space = self.topological_derivative_vertex.function_space()
@@ -211,7 +210,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         v = fenics.TestFunction(cg1_space)
 
         res = (
-            fenics.Constant(1e-3) * fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
+            fenics.Constant(1e-5) * fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
             + u * v * dx
             - self.topological_derivative_vertex * v * dx
         )
