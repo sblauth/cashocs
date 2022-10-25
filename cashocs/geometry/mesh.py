@@ -96,9 +96,9 @@ def _change_except_hook(config: io.Config) -> None:
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 assert temp_dir is not None  # nosec B101
-                subprocess.run(["rm", "-r", temp_dir], check=True)  # nosec B603, B607
+                subprocess.run(["rm", "-r", temp_dir], check=False)  # nosec B603, B607
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", remesh_directory], check=True
+                    ["rm", "-r", remesh_directory], check=False
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
             sys.__excepthook__(exctype, value, traceback)
