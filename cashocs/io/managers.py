@@ -159,6 +159,9 @@ class ResultManager:
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
 
+        if optimization_problem.is_topology_problem:
+            self.output_dict["angle"] = []
+
     def save_to_dict(self, solver: types.SolutionAlgorithm) -> None:
         """Saves the optimization history to a dictionary.
 
@@ -172,6 +175,8 @@ class ResultManager:
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
         self.output_dict["stepsize"].append(solver.stepsize)
+        if solver.is_topology_problem:
+            self.output_dict["angle"].append(solver.angle)
 
     def save_to_json(self, solver: types.SolutionAlgorithm) -> None:
         """Saves the history of the optimization to a .json file.

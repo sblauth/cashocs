@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Literal, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -67,11 +67,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
         config: io.Config | None = None,
-        topological_derivative_is_identical: bool = False,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
-        re_normalize_levelset: bool = True,
-        normalize_topological_derivative: bool = False,
-        interpolation_scheme: Literal["angle", "volume", "averaging"] = "angle",
         initial_guess: list[fenics.Function] | None = None,
         ksp_options: types.KspOptions | list[list[str | int | float]] | None = None,
         adjoint_ksp_options: types.KspOptions
@@ -107,21 +103,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
                 default is ``None``.
-            topological_derivative_is_identical: A boolean flag, which indicates whether
-                the topological derivatives inside and outside the domain coincide. As
-                this is usually not the case, the default is ``False``.
             riesz_scalar_products: The scalar products of the control space. Can either
                 be ``None`` or a single UFL form. If it is ``None``, the
                 :math:`L^2(\Omega)` product is used (default is ``None``).
-            re_normalize_levelset: A boolean flag, which indicates, whether the
-                levelset function should be re-normalized after each iteration of the
-                solution algorithm. The default is ``True``.
-            normalize_topological_derivative: A boolean flag which is used to normalize
-                the (generalized) topological derivative in each iteration of the
-                solution algorithm. Default is ``False``.
-            interpolation_scheme: One of ``angle`` or ``volume``. This determines
-                whether the topological derivative is averaged by the volume of cells
-                surrounding a vertex or by the angle.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
@@ -162,10 +146,18 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.is_topology_problem = True
         self.update_levelset()
 
-        self.topological_derivative_is_identical = topological_derivative_is_identical
-        self.re_normalize_levelset = re_normalize_levelset
-        self.normalize_topological_derivative = normalize_topological_derivative
-        self.interpolation_scheme = interpolation_scheme
+        self.topological_derivative_is_identical = self.config.getboolean(
+            "TopologyOptimization", "topological_derivative_is_identical"
+        )
+        self.re_normalize_levelset = self.config.getboolean(
+            "TopologyOptimization", "re_normalize_levelset"
+        )
+        self.normalize_topological_derivative = self.config.getboolean(
+            "TopologyOptimization", "normalize_topological_derivative"
+        )
+        self.interpolation_scheme = self.config.get(
+            "TopologyOptimization", "interpolation_scheme"
+        )
 
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
@@ -184,7 +176,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             desired_weights=desired_weights,
         )
-        self.config = self._base_ocp.config
         self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
         self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
         self.adjoint_problem: _pde_problems.AdjointProblem = (
@@ -212,6 +203,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         rtol: float | None = None,
         atol: float | None = None,
         max_iter: int | None = None,
+        angle_tol: float | None = None,
     ) -> None:
         """Solves the optimization problem.
 
@@ -224,13 +216,17 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 method on the spehere, and ``'convex_combination'`` for a convex
                 combination approach.
             rtol: The relative tolerance used for the termination criterion (i.e. the
-                angle between topological derivative and levelset function). Default is
-                0.
+                norm of the projected topological gradient). If this is ``None``, then
+                the value provided in the config file is used. Default is ``None``.
             atol: The absolute tolerance for the termination criterion (i.e. the
-                angle between topological derivative and levelset function). Default is
-                1 degree.
+                norm of the projected topological gradient). If this is ``None``, then
+                the value provided in the config file is used. Default is ``None``.
             max_iter: The maximum number of iterations the optimization algorithm
-                can carry out before it is terminated. The default is 100.
+                can carry out before it is terminated. If this is ``None``, then
+                the value provided in the config file is used. Default is ``None``.
+            angle_tol: The absolute tolerance for the angle between topological
+                derivative and levelset function. If this is ``None``, then
+                the value provided in the config file is used. Default is ``None``.
 
         """
         self.output_manager = io.OutputManager(self)
@@ -240,6 +236,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         )
 
         self._set_tolerances(rtol, atol, max_iter)
+        if angle_tol is not None:
+            self.config.set("TopologyOptimization", "angle_tol", str(angle_tol))
 
         if algorithm is None:
             self.algorithm = _utils.optimization_algorithm_configuration(

@@ -48,7 +48,6 @@ class DescentTopologyAlgorithm(
         self.algorithm = algorithm
 
         self.iteration = 0
-        self.success = False
         self._cashocs_problem.config.set("Output", "verbose", "False")
         self._cashocs_problem.config.set("Output", "save_txt", "False")
         self._cashocs_problem.config.set("Output", "save_results", "False")
@@ -56,7 +55,10 @@ class DescentTopologyAlgorithm(
         self._cashocs_problem.config.set("Output", "save_adjoint", "False")
         self._cashocs_problem.config.set("Output", "save_gradient", "False")
         self._cashocs_problem.config.set("OptimizationRoutine", "soft_exit", "True")
+        self._cashocs_problem.config.set("OptimizationRoutine", "rtol", "0.0")
+        self._cashocs_problem.config.set("OptimizationRoutine", "atol", "0.0")
 
+        self.successful = False
         self.loop_restart = False
 
         def pre_hook() -> None:
@@ -71,6 +73,7 @@ class DescentTopologyAlgorithm(
             self._cashocs_problem.gradient[0].vector().apply("")
 
             self.angle = self.compute_angle()
+            self.stepsize = self._cashocs_problem.solver.stepsize
 
             self.gradient_norm = self.compute_gradient_norm()
             self.objective_value = (
@@ -78,13 +81,13 @@ class DescentTopologyAlgorithm(
             )
 
             if self.convergence_test():
-                self.success = True
+                self.successful = True
                 self.output()
                 self._cashocs_problem.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.gradient[0].vector().apply("")
                 print("\nOptimization successful!\n")
 
-            if not self.loop_restart and not self.success:
+            if not self.loop_restart and not self.successful:
                 self.output()
             else:
                 self.loop_restart = False

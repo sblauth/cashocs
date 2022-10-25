@@ -484,6 +484,25 @@ class Config(ConfigParser):
                     "possible_options": ["min", "avg", "minimum", "average"],
                 },
             },
+            "TopologyOptimization": {
+                "angle_tol": {
+                    "type": "float",
+                    "attributes": ["positive"],
+                },
+                "interpolation_scheme": {
+                    "type": "str",
+                    "possible_options": ["angle", "volume", "averaging"],
+                },
+                "normalize_topological_derivative": {
+                    "type": "bool",
+                },
+                "re_normalize_levelset": {
+                    "type": "bool",
+                },
+                "topological_derivative_is_identical": {
+                    "type": "bool",
+                },
+            },
             "Output": {
                 "verbose": {
                     "type": "bool",
@@ -634,6 +653,13 @@ measure = skewness
 type = min
 volume_change = inf
 angle_change = inf
+
+[TopologyOptimization]
+angle_tol = 1.0
+interpolation_scheme = angle
+normalize_topological_derivative = False
+re_normalize_levelset = False
+topological_derivative_is_identical = False
 
 [Output]
 save_results = True

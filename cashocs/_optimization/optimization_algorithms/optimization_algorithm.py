@@ -37,7 +37,6 @@ class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
     stepsize: float = 1.0
-    angle: float
 
     def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
         """Initializes self.
@@ -51,7 +50,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.form_handler = optimization_problem.form_handler
         self.state_problem = optimization_problem.state_problem
-        self.config = self.state_problem.config
+        self.config = optimization_problem.config
         self.adjoint_problem = optimization_problem.adjoint_problem
 
         self.gradient_problem = optimization_problem.gradient_problem
@@ -70,6 +69,7 @@ class OptimizationAlgorithm(abc.ABC):
         self.objective_value = 1.0
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
+        self.angle = 360.0
 
         self.requires_remeshing = False
         self.remeshing_its = False
@@ -212,6 +212,11 @@ class OptimizationAlgorithm(abc.ABC):
             self.objective_value = self.cost_functional.evaluate()
             self.converged = True
             return True
+
+        if self.is_topology_problem:
+            if self.angle <= self.config.getfloat("TopologyOptimization", "angle_tol"):
+                self.converged = True
+                return True
 
         return False
 
