@@ -15,14 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for handling mesh output."""
+"""Module for handling mesh i/o."""
 
 from __future__ import annotations
 
 import pathlib
 
 import fenics
+import h5py
 import numpy as np
+
+from cashocs import _exceptions
+from cashocs.geometry import mesh as mesh_module
 
 
 def create_point_representation(
@@ -173,3 +177,57 @@ def write_out_mesh(  # noqa: C901
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         parse_file(original_msh_file, out_msh_file, points, dim)
     fenics.MPI.barrier(fenics.MPI.comm_world)
+
+
+def read_mesh_from_xdmf(filename: str, step: int = 0) -> mesh_module.Mesh:
+    """Reads a mesh from a .xdmf file containing a checkpointed function.
+
+    Args:
+        filename: The filename to the .xdmf file.
+        step: The checkpoint number. Default is ``0``.
+
+    Returns:
+        The corresponding mesh for the checkpoint number.
+
+    """
+    h5_filename = f"{filename[:-5]}.h5"
+    with h5py.File(h5_filename) as file:
+        name = list(file.keys())[0]
+        step_name = list(file[name].keys())[step]
+        coordinates = file[name][step_name]["mesh"]["geometry"][()]
+        cells = file[name][step_name]["mesh"]["topology"][()]
+
+    gdim = coordinates.shape[1]
+
+    if cells.shape[1] == 2:
+        tdim = 1
+        cell_type = "line"
+    elif cells.shape[1] == 3:
+        tdim = 2
+        cell_type = "triangle"
+    elif cells.shape[2] == 4:
+        tdim = 3
+        cell_type = "tetrahedron"
+    else:
+        raise _exceptions.CashocsException("The mesh saved in the xdmf file is faulty.")
+
+    if tdim > gdim:
+        raise _exceptions.CashocsException(
+            "The topological dimension of a mesh must not be larger than its "
+            "geometrical dimension"
+        )
+
+    mesh = mesh_module.Mesh()
+    mesh_editor = fenics.MeshEditor()
+    mesh_editor.open(mesh, cell_type, tdim, gdim)
+    mesh_editor.init_vertices(coordinates.shape[0])
+    mesh_editor.init_cells(cells.shape[0])
+
+    for i, vertex in enumerate(coordinates):
+        mesh_editor.add_vertex(i, vertex)
+    for i, cell in enumerate(cells):
+        mesh_editor.add_cell(i, cell)
+
+    mesh_editor.close()
+
+    return mesh
