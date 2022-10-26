@@ -48,6 +48,8 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     scalar_product_matrix: fenics.PETScMatrix
     material_derivative: ufl.Form
+    riesz_scalar_products: List[ufl.Form]
+    control_bcs_list: List[fenics.DirichletBC]
 
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem

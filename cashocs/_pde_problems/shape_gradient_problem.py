@@ -38,12 +38,15 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import types
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
 
 
 class ShapeGradientProblem(pde_problem.PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
+
+    riesz_ksp_options: types.KspOptions
 
     def __init__(
         self,

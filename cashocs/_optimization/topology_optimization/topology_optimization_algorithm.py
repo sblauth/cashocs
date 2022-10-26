@@ -24,9 +24,11 @@ from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
+import ufl
+import ufl.algorithms
 
+from cashocs import _exceptions
 from cashocs import _utils
-from cashocs import nonlinear_solvers
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
@@ -82,6 +84,86 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         self.projected_gradient: fenics.Function = fenics.Function(self.cg1_space)
         self.levelset_function_prev = fenics.Function(self.cg1_space)
+        self.setup_assembler()
+
+    def _generate_measure(self) -> fenics.Measure:
+        """Generates the measure for projecting the topological derivative.
+
+        Returns:
+            The fenics measure which is used for projecting the topological derivative.
+
+        """
+        is_everywhere = False
+        subdomain_id_list = []
+        for integral in self.form_handler.riesz_scalar_products[0].integrals():
+            integral_type = integral.integral_type()
+            if integral_type not in ["cell", "dx"]:
+                raise _exceptions.InputError(
+                    "TopologyOptimizationProblem",
+                    "riesz_scalar_products",
+                    "The supplied scalar products have to be defined "
+                    "over the volume only.",
+                )
+            subdomain_id = integral.subdomain_id()
+            subdomain_id_list.append(subdomain_id)
+            if subdomain_id == "everywhere":
+                is_everywhere = True
+                break
+
+        mesh = (
+            self.form_handler.riesz_scalar_products[0]
+            .integrals()[0]
+            .ufl_domain()
+            .ufl_cargo()
+        )
+        subdomain_data = (
+            self.form_handler.riesz_scalar_products[0].integrals()[0].subdomain_data()
+        )
+        if is_everywhere:
+            measure = fenics.Measure("dx", mesh)
+        else:
+            measure = _utils.summation(
+                [
+                    fenics.Measure(
+                        "dx", mesh, subdomain_data=subdomain_data, subdomain_id=id
+                    )
+                    for id in subdomain_id_list
+                ]
+            )
+
+        return measure
+
+    def setup_assembler(self) -> None:
+        """Sets up the assembler for projecting the topological derivative."""
+        modified_scalar_product = _utils.bilinear_boundary_form_modification(
+            self.form_handler.riesz_scalar_products
+        )
+        test = modified_scalar_product[0].arguments()[0]
+        dx = self._generate_measure()
+        rhs = self.topological_derivative_vertex * test * dx
+        try:
+            self.assembler = fenics.SystemAssembler(
+                modified_scalar_product[0], rhs, self.form_handler.control_bcs_list[0]
+            )
+        except (AssertionError, ValueError):
+            estimated_degree = np.maximum(
+                ufl.algorithms.estimate_total_polynomial_degree(
+                    self.form_handler.riesz_scalar_products[0]
+                ),
+                ufl.algorithms.estimate_total_polynomial_degree(rhs),
+            )
+            self.assembler = fenics.SystemAssembler(
+                modified_scalar_product[0],
+                rhs,
+                self.form_handler.control_bcs_list[0],
+                form_compiler_parameters={"quadrature_degree": estimated_degree},
+            )
+
+        self.fenics_matrix = fenics.PETScMatrix()
+        self.assembler.assemble(self.fenics_matrix)
+        self.fenics_matrix.ident_zeros()
+        self.riesz_matrix = self.fenics_matrix.mat()
+        self.b_tensor = fenics.PETScVector()
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -168,6 +250,17 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 self.topological_derivative_vertex,
             )
 
+    def project_topological_derivative(self) -> None:
+        """Projects the topological derivative to compute a topological gradient."""
+        self.assembler.assemble(self.b_tensor)
+        _utils.solve_linear_problem(
+            A=self.riesz_matrix,
+            b=self.b_tensor.vec(),
+            x=self.topological_derivative_vertex.vector().vec(),
+            ksp_options=self.gradient_problem.riesz_ksp_options[0],
+        )
+        self.topological_derivative_vertex.vector().apply("")
+
     def compute_gradient(self, cached: bool = True) -> None:
         """Computes the "topological gradient".
 
@@ -193,29 +286,21 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 self.topological_derivative_pos, self.cg1_space
             ).vector()[:]
 
+        temp = fenics.Function(self.cg1_space)
+        temp.vector()[:] = self.topological_derivative_vertex.vector()[:]
+        self.project_topological_derivative()
+        # error = np.max(
+        #     np.abs(temp.vector()[:] - self.topological_derivative_vertex.vector()[:])
+        #     / np.max(np.abs(temp.vector()[:]))
+        # )
+        # print(f"DEBUG: {error = :.3e}")
+
         if self.normalize_topological_derivative:
             norm = self.norm(self.topological_derivative_vertex)
             self.topological_derivative_vertex.vector().vec().scale(1.0 / norm)
             self.topological_derivative_vertex.vector().apply("")
 
-        # self._smooth_topological_derivative()
         self.compute_projected_gradient()
-
-    def _smooth_topological_derivative(self) -> None:
-        cg1_space = self.topological_derivative_vertex.function_space()
-        dx = fenics.Measure("dx", domain=cg1_space.mesh())
-        self.comparison = fenics.Function(cg1_space)
-        self.comparison.vector()[:] = self.topological_derivative_vertex.vector()[:]
-        u = fenics.Function(cg1_space)
-        v = fenics.TestFunction(cg1_space)
-
-        res = (
-            fenics.Constant(1e-5) * fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
-            + u * v * dx
-            - self.topological_derivative_vertex * v * dx
-        )
-        nonlinear_solvers.newton_solve(res, u, bcs=[], is_linear=True)
-        self.topological_derivative_vertex.vector()[:] = u.vector()[:]
 
     def compute_angle(self) -> float:
         """Computes the angle between topological gradient and levelset function.
