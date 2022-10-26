@@ -23,6 +23,7 @@ in development
 
 * cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
 
+* Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization
 
 * BFGS methods can now be used in a restarted fashion, if desired
 
