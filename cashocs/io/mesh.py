@@ -193,7 +193,7 @@ def read_mesh_from_xdmf(filename: str, step: int = 0) -> mesh_module.Mesh:
     h5_filename = f"{filename[:-5]}.h5"
     with h5py.File(h5_filename) as file:
         name = list(file.keys())[0]
-        step_name = list(file[name].keys())[step]
+        step_name = f"{name}_{step}"
         coordinates = file[name][step_name]["mesh"]["geometry"][()]
         cells = file[name][step_name]["mesh"]["topology"][()]
 

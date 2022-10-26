@@ -572,7 +572,7 @@ class XDMFFileManager:
             file.write_checkpoint(
                 function,
                 function_name,
-                float(iteration),
+                iteration,
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
