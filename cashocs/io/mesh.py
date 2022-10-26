@@ -218,16 +218,22 @@ def read_mesh_from_xdmf(filename: str, step: int = 0) -> mesh_module.Mesh:
         )
 
     mesh = mesh_module.Mesh()
-    mesh_editor = fenics.MeshEditor()
-    mesh_editor.open(mesh, cell_type, tdim, gdim)
-    mesh_editor.init_vertices(coordinates.shape[0])
-    mesh_editor.init_cells(cells.shape[0])
 
-    for i, vertex in enumerate(coordinates):
-        mesh_editor.add_vertex(i, vertex)
-    for i, cell in enumerate(cells):
-        mesh_editor.add_cell(i, cell)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        mesh_editor = fenics.MeshEditor()
+        mesh_editor.open(mesh, cell_type, tdim, gdim)
+        mesh_editor.init_vertices(coordinates.shape[0])
+        mesh_editor.init_cells(cells.shape[0])
 
-    mesh_editor.close()
+        for i, vertex in enumerate(coordinates):
+            mesh_editor.add_vertex(i, vertex)
+        for i, cell in enumerate(cells):
+            mesh_editor.add_cell(i, cell)
+
+        mesh_editor.close()
+        mesh.init()
+        mesh.order()
+
+    fenics.MeshPartitioning.build_distributed_mesh(mesh)
 
     return mesh
