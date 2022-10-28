@@ -38,6 +38,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinx_copybutton",
     "sphinx.ext.viewcode",
+    "sphinx_design",
 ]
 
 napoleon_google_docstring = True
@@ -74,6 +75,8 @@ autodoc_mock_imports = [
 autodoc_typehints = "description"
 autoclass_content = "both"
 
+highlight_language = "python"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -104,6 +107,10 @@ html_theme_options = {
     ],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
     "show_nav_level": 2,
+    "favicons": [
+        {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
+        {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
+    ],
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
@@ -111,10 +118,14 @@ html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-html_static_path = []
+html_static_path = ["_static"]
+html_css_files = ["cashocs.css"]
 
 pygments_style = "sphinx"
 
 autosummary_generate = True
 autosummary_imported_members = True
+
+import cashocs
+
+version = cashocs.__version__

@@ -5,3 +5,4 @@ sphinx-copybutton==0.4.0
 meshio==5.0.4
 docutils==0.16
 pydata-sphinx-theme==0.11
+sphinx-design==0.3
