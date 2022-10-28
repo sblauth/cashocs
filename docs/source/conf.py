@@ -34,6 +34,7 @@ release = "1.8.11"
 extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinxarg.ext",
     "sphinx_copybutton",
     "sphinx.ext.viewcode",
@@ -54,9 +55,9 @@ napoleon_use_rtype = True
 
 autodoc_default_options = {
     "members": True,
-    "member-order": "alphabetical",
+    "member-order": "groupwise",
     "undoc-members": False,
-    "inherited-members": True,
+    "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
 autodoc_member_order = "alphabetical"
@@ -89,13 +90,23 @@ exclude_patterns = ["_build"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "pydata_sphinx_theme"
 html_logo = "logo.png"
 html_theme_options = {
-    "logo_only": True,
-    "repository_url": "https://github.com/sblauth/cashocs",
-    "use_repository_button": True,
+    "github_url": "https://github.com/sblauth/cashocs",
+    "header_links_before_dropdown": 5,
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/cashocs/",
+            "icon": "fa-solid fa-box",
+        }
+    ],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "show_nav_level": 2,
 }
+
+html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -104,3 +115,6 @@ html_theme_options = {
 html_static_path = []
 
 pygments_style = "sphinx"
+
+autosummary_generate = True
+autosummary_imported_members = True

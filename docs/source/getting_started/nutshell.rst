@@ -1,5 +1,5 @@
-Getting Started
-===============
+cashocs in a nutshell
+=====================
 
 As newcomer to cashocs, we recommend the paper `Blauth, cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_, which

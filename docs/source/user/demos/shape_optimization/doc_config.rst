@@ -47,7 +47,7 @@ As first parameter, we have ::
     mesh_file = ./mesh/mesh.xdmf
 
 This specifies a path to a .xdmf file containing the discretized geometry. For all purposes, cashocs assumes that this .xdmf file was generated via conversion from a
-GMSH file using the command line command :ref:`cashocs-convert <cashocs_convert>`.
+GMSH file using the command line command :py:func:`cashocs.convert`.
 
 Note, that the corresponding files for the boundaries and subdomains are generated
 automatically with ``cashocs-convert``, and they will also be read by :py:func:`import_mesh <cashocs.import_mesh>`

@@ -41,7 +41,7 @@ This section is completely optional and can be used when importing meshes genera
 with GMSH. Note, that this section can become more populated and useful
 for shape optimization problems, as detailed in the
 :ref:`description of their config files <config_shape_mesh>`. To convert a .msh
-file to the .xdmf format, you can use the command line tool :ref:`cashocs-convert <cashocs_convert>`.
+file to the .xdmf format, you can use :py:func:`cashocs.convert`.
 
 
 
