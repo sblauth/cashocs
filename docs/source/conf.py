@@ -67,6 +67,7 @@ autodoc_mock_imports = [
     "meshio",
     "dolfin",
     "configparser",
+    "h5py",
 ]
 autodoc_typehints = "description"
 autoclass_content = "both"
