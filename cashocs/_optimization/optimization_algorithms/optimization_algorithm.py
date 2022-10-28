@@ -72,6 +72,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.requires_remeshing = False
         self.remeshing_its = False
+        self.is_restarted = False
 
         self.converged = False
         self.converged_reason = 0

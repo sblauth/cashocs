@@ -15,7 +15,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container:
-      image: sblauth/cashocs:latest
+      image: ghcr.io/sblauth/cashocs:main
 
     steps:
     - name: Delete current installation in docker image
@@ -26,7 +26,7 @@ jobs:
         rm -R /root/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v2 
+      uses: actions/checkout@v3.1.0 
 
     - name: Install cashocs
       shell: bash -l {0}
@@ -47,7 +47,7 @@ jobs:
         coverage xml
 
     - name: Upload coverage to codecov.io
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         files: coverage.xml
 

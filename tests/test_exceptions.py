@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -32,7 +32,7 @@ from cashocs._exceptions import NotConvergedError
 from cashocs._exceptions import PETScKSPError
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(6)
 V = FunctionSpace(mesh, "CG", 1)

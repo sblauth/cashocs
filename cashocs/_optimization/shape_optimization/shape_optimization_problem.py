@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import json
-import os
+import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
@@ -357,7 +357,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def _check_remesh_input(self) -> None:
         """Checks if the inputs are valid for remeshing."""
-        if not os.path.isfile(os.path.realpath(sys.argv[0])):
+        if not pathlib.Path(sys.argv[0]).is_file():
             raise _exceptions.CashocsException(
                 "Not a valid configuration. "
                 "The script has to be the first command line argument."
@@ -385,7 +385,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self._check_remesh_input()
 
             if not self.has_cashocs_remesh_flag:
-                self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+                self.directory = pathlib.Path(sys.argv[0]).resolve().parent
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     temp_dir: str = tempfile.mkdtemp(
                         prefix="._cashocs_remesh_temp_", dir=self.directory
@@ -548,10 +548,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.temp_dir], check=True
+                    ["rm", "-r", self.temp_dir], check=False
                 )
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
+                    ["rm", "-r", self.mesh_handler.remesh_directory], check=False
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
             sys.__excepthook__(exctype, value, traceback)

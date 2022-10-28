@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from configparser import ConfigParser
 import json
-from pathlib import Path
+import pathlib
 from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
@@ -494,13 +494,13 @@ class Config(ConfigParser):
                 "save_txt": {
                     "type": "bool",
                 },
-                "save_pvd": {
+                "save_state": {
                     "type": "bool",
                 },
-                "save_pvd_adjoint": {
+                "save_adjoint": {
                     "type": "bool",
                 },
-                "save_pvd_gradient": {
+                "save_gradient": {
                     "type": "bool",
                 },
                 "save_mesh": {
@@ -639,9 +639,9 @@ angle_change = inf
 save_results = True
 verbose = True
 save_txt = True
-save_pvd = False
-save_pvd_adjoint = False
-save_pvd_gradient = False
+save_state = False
+save_adjoint = False
+save_gradient = False
 save_mesh = False
 result_dir = ./results
 time_suffix = False
@@ -654,7 +654,14 @@ restart = False
         self.read_string(self.default_config_str)
 
         if config_file is not None:
-            self.read(config_file)
+            file = pathlib.Path(config_file)
+            if file.is_file():
+                self.read(config_file)
+            else:
+                _loggers.warning(
+                    f"Could not find the specified config file {config_file}. "
+                    "Using cashocs default config instead."
+                )
 
     def getlist(self, section: str, option: str, **kwargs: Any) -> List:
         """Extracts a list from a config file.
@@ -847,7 +854,7 @@ restart = False
 
         """
         if "file" in key_attributes:
-            file = Path(self.get(section, key))
+            file = pathlib.Path(self.get(section, key))
             if not file.is_file():
                 self.config_errors.append(
                     f"Key {key} in section {section} should point to a file, "

@@ -60,7 +60,7 @@ pylint:
     max-line-length: 88
 
 pyroma:
-  run: true
+  run: false
 
 mypy:
   run: false

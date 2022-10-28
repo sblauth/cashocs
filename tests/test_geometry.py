@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 import subprocess
 import sys
 
@@ -40,7 +40,7 @@ rng = np.random.RandomState(300696)
 
 
 def test_mesh_import():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -77,12 +77,12 @@ def test_mesh_import():
         assert np.allclose(fe_coords, gmsh_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -96,7 +96,7 @@ def test_mesh_import():
 
 
 def test_mesh_import_from_config():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
@@ -261,7 +261,7 @@ def test_mesh_quality_3D():
 
 
 def test_write_mesh():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -418,7 +418,7 @@ def test_eikonal_distance():
 
 
 def test_named_mesh_import():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
     cashocs.convert(
         f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
     )
@@ -449,13 +449,13 @@ def test_named_mesh_import():
         dx("fantasy")
         assert "subdomain_id" in str(e_info.value)
 
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)

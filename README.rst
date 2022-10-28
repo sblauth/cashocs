@@ -23,8 +23,8 @@
 
 |
 
-.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=tests&style=flat-square
-    :target: https://github.com/sblauth/cashocs/actions/workflows/cached_tests.yml
+.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/tests?label=tests&style=flat-square
+    :target: https://github.com/sblauth/cashocs/actions/workflows/tests.yml
 
 .. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
     :target: https://codecov.io/gh/sblauth/cashocs
