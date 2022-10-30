@@ -61,7 +61,7 @@ autodoc_default_options = {
     "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
-autodoc_member_order = "alphabetical"
+autodoc_member_order = "groupwise"
 autodoc_mock_imports = [
     "fenics",
     "numpy",

@@ -28,7 +28,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class StateProblem(pde_problem.PDEProblem):
@@ -38,7 +38,7 @@ class StateProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: types.FormHandler,
+        form_handler: _typing.FormHandler,
         initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
     ) -> None:

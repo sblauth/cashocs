@@ -34,7 +34,7 @@ from cashocs import nonlinear_solvers
 
 if TYPE_CHECKING:
     from cashocs import _forms
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._pde_problems import control_gradient_problem
 
 
@@ -114,7 +114,7 @@ class HessianProblem:
             ["ksp_atol", 1e-50],
             ["ksp_max_it", 100],
         ]
-        self.riesz_ksp_options: types.KspOptions = []
+        self.riesz_ksp_options: _typing.KspOptions = []
         for _ in range(self.control_dim):
             self.riesz_ksp_options.append(option)
 

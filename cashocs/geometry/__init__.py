@@ -26,7 +26,7 @@ great for testing.
 """
 
 from cashocs.geometry.boundary_distance import compute_boundary_distance
-from cashocs.geometry.deformation_handler import DeformationHandler
+from cashocs.geometry.deformations import DeformationHandler
 from cashocs.geometry.measure import _EmptyMeasure
 from cashocs.geometry.measure import generate_measure
 from cashocs.geometry.mesh import import_mesh
@@ -34,8 +34,8 @@ from cashocs.geometry.mesh import interval_mesh
 from cashocs.geometry.mesh import regular_box_mesh
 from cashocs.geometry.mesh import regular_mesh
 from cashocs.geometry.mesh_handler import _MeshHandler
-from cashocs.geometry.mesh_quality import compute_mesh_quality
-from cashocs.geometry.mesh_quality import MeshQuality
+from cashocs.geometry.quality import compute_mesh_quality
+from cashocs.geometry.quality import MeshQuality
 
 __all__ = [
     "compute_mesh_quality",

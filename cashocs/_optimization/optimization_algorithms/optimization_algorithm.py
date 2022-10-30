@@ -30,7 +30,7 @@ from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class OptimizationAlgorithm(abc.ABC):
@@ -38,7 +38,7 @@ class OptimizationAlgorithm(abc.ABC):
 
     stepsize: float = 1.0
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

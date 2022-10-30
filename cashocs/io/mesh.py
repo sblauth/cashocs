@@ -20,13 +20,34 @@
 from __future__ import annotations
 
 import pathlib
+from typing import Optional
 
 import fenics
 import h5py
 import numpy as np
 
 from cashocs import _exceptions
+from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry import mesh as mesh_module
+
+
+def convert(input_file: str, output_file: Optional[str] = None) -> None:
+    """Converts the input mesh file to a xdmf mesh file for cashocs to work with.
+
+    Args:
+        input_file: A gmsh .msh file.
+        output_file: The name of the output .xdmf file or ``None``. If this is ``None``,
+            then a file name.msh will be converted to name.xdmf, i.e., the name of the
+            input file stays the same
+
+    """
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if output_file is None:
+            input_name = input_file.rsplit(".", 1)[0]
+            output_file = f"{input_name}.xdmf"
+
+        cli_convert([input_file, output_file])
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def create_point_representation(

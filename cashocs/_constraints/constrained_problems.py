@@ -34,8 +34,8 @@ from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 def _hook() -> None:
@@ -55,18 +55,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[List[types.Constraint], types.Constraint],
+        constraint_list: Union[List[_typing.Constraint], _typing.Constraint],
         config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
@@ -131,7 +134,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.scalar_tracking_forms_initial = _utils.enlist(scalar_tracking_forms)
         else:
             self.scalar_tracking_forms_initial = None
-        self.constraint_list: List[types.Constraint] = _utils.enlist(constraint_list)
+        self.constraint_list: List[_typing.Constraint] = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
@@ -275,21 +278,24 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
         config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         control_bcs_list: Optional[
@@ -452,20 +458,23 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             None,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Dict] = None,
     ) -> None:

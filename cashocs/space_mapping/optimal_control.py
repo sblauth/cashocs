@@ -34,8 +34,8 @@ from cashocs import _utils
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 def _hook() -> None:
@@ -86,10 +86,10 @@ class CoarseModel:
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         min_max_terms: Optional[List[Dict]] = None,

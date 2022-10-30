@@ -174,7 +174,7 @@ these additional constaints. As usual, we can the solve the problem with the
     
 .. note::
 
-    To be able to treat (nearly) arbitrary types of constraints, cashocs regularizes 
+    To be able to treat (nearly) arbitrary _typing of constraints, cashocs regularizes
     these using either an augmented Lagrangian method or a quadratic penalty method.
     Which method is used can be specified via the keyword argument ``method``, which
     is chosen to be an augmented Lagrangian method (``'AL'``) in this demo.

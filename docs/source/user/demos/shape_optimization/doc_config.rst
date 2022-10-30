@@ -10,7 +10,7 @@ which is the config file used for :ref:`demo_shape_poisson`.
 
 For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
-However, several important parameters are shared between both types of optimization
+However, several important parameters are shared between both _typing of optimization
 problems.
 
 A general config file for shape optimization has the following sections
@@ -444,9 +444,9 @@ which is then smoothly extended into the interior of the domain. Moreover, they
 propose to use the solution of this Laplace equation directly for 2D problems,
 and to use :math:`\sqrt{\mu}` for 3D problems.
 
-Moreover, let us take a look at the possible types of boundaries that can be used
+Moreover, let us take a look at the possible _typing of boundaries that can be used
 with cashocs. In principle, there exist
-two types: deformable and fixed boundaries. On fixed boundaries, we
+two _typing: deformable and fixed boundaries. On fixed boundaries, we
 impose homogeneous Dirichlet boundary conditions for the shape gradient, so that
 these are not moved under the corresponding deformation. In cashocs, we define what boundaries
 are fixed and deformable via their markers, which are either defined in the
@@ -656,7 +656,7 @@ determines the boolean flag ``use_initial_volume``. If this is set to ``True``,
 then not the value given in ``target_volume`` is used, but instead the
 volume of the initial geometry is used for :math:`\text{vol}_\text{des}`.
 
-For the next two types of regularization, namely the (target) surface and (target)
+For the next two _typing of regularization, namely the (target) surface and (target)
 barycenter regularization, the syntax for specifying the parameters is completely
 analogous. For the (target) surface regularization we have ::
 
