@@ -125,7 +125,3 @@ pygments_style = "sphinx"
 
 autosummary_generate = True
 autosummary_imported_members = True
-
-import cashocs
-
-version = cashocs.__version__

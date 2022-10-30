@@ -18,7 +18,7 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
    Development <development/index>
    release_notes
 
-**Version**: |version|
+**Version**: |release|
 
 **Useful links**:
 :ref:`Installation <installation_instructions>` |
