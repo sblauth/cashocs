@@ -278,7 +278,7 @@ raises an exception and terminates. This is set via ::
 and is set to ``False`` by default.
 
 
-.. _config_ocp_linesearch
+.. _config_sop_linesearch:
 
 Section LineSearch
 ------------------

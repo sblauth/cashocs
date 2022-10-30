@@ -12,7 +12,7 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
    :maxdepth: 1
    :hidden:
    
-   Getting Started <getting_started/index>
+   About <about/index>
    User Guide <user/index>
    API Reference <api/index>
    Development <development/index>
@@ -38,7 +38,7 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
       
       +++ 
 
-      .. button-ref:: getting_started/nutshell
+      .. button-ref:: about/nutshell
          :expand:
          :color: secondary
          :click-parent:

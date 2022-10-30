@@ -261,7 +261,7 @@ The following sections describe parameters that belong to the certain solution
 algorithms.
 
 
-.. _config_ocp_linesearch
+.. _config_ocp_linesearch:
 
 Section LineSearch
 ------------------
