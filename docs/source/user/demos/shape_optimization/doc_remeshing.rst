@@ -76,16 +76,14 @@ with the command ::
     or FEniCS.
 
 The resulting file is :download:`./mesh/mesh.msh </../../demos/documented/shape_optimization/remeshing/mesh/mesh.msh>`.
-This .msh file can be converted to the .xdmf format by using :ref:`cashocs-convert <cashocs_convert>`
-as follows::
+This .msh file can be converted to the .xdmf format by using :py:func:`cashocs.convert` or alternatively, via the command line ::
 
     cashocs-convert ./mesh/mesh.msh ./mesh/mesh.xdmf
 
-from the command line.
 
 .. hint::
 
-    As the :ref:`cashocs-convert <cashocs_convert>` merely **converts** the .msh
+    As :py:func:`cashocs.convert` merely **converts** the .msh
     file to .xdmf, the user may very well use this command.
 
 To ensure that cashocs also finds these files, we have to specify them in the file

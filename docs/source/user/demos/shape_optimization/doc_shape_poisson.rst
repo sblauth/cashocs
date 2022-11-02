@@ -55,7 +55,7 @@ We read the config file with the :py:func:`load_config <cashocs.load_config>` co
 
     config = cashocs.load_config('./config.ini')
 
-Next, we have to define the mesh. We load the mesh (which was previously generated with Gmsh and converted to xdmf with :ref:`cashocs-convert <cashocs_convert>` ::
+Next, we have to define the mesh. We load the mesh (which was previously generated with Gmsh and converted to xdmf with :py:func:`cashocs.convert` ::
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf")
 

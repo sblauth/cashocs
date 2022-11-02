@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Solvers for PDE constrained optimization problems with additional constraints."""
+"""Solvers for optimization problems with constraints."""
 
 from __future__ import annotations
 

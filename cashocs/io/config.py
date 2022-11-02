@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing config files."""
+"""Management of configuration files."""
 
 from __future__ import annotations
 

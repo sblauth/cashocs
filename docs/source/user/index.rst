@@ -1,13 +1,13 @@
 .. _tutorial_index:
 
-Tutorial
+cashocs Tutorial
 ================
 
 Welcome to the cashocs tutorial. In the following, we present several example
 programs that showcase how cashocs can be used to solve optimal control and
 shape optimization problems.
 
-.. include:: ../../README.rst
+.. include:: ../../../README.rst
     :start-after: readme_start_disclaimer
     :end-before: readme_end_disclaimer
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of an adjoint problem."""
+"""Adjoint system."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._pde_problems import state_problem as sp
 
 
@@ -39,7 +39,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: types.FormHandler,
+        form_handler: _typing.FormHandler,
         state_problem: sp.StateProblem,
         temp_dict: Optional[Dict] = None,
     ) -> None:

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""The space_mapping module contains utilities for using the space mapping technique."""
+"""Space mapping algorithms."""
 
 from cashocs.space_mapping import optimal_control  # noqa: F401
 from cashocs.space_mapping import shape_optimization  # noqa: F401

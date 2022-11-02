@@ -35,8 +35,8 @@ from cashocs import geometry
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 def _hook() -> None:
@@ -96,10 +96,10 @@ class CoarseModel:
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Dict] = None,
         min_max_terms: Optional[Dict] = None,

@@ -16,7 +16,7 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""Module for managing a finite element mesh."""
+"""Management of finite element meshes."""
 
 from __future__ import annotations
 
@@ -35,8 +35,8 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
-from cashocs.geometry import deformation_handler
-from cashocs.geometry import mesh_quality
+from cashocs.geometry import deformations
+from cashocs.geometry import quality
 
 if TYPE_CHECKING:
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
@@ -125,7 +125,7 @@ class _MeshHandler:
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
         self.mesh = self.form_handler.mesh
-        self.deformation_handler = deformation_handler.DeformationHandler(self.mesh)
+        self.deformation_handler = deformations.DeformationHandler(self.mesh)
         self.dx = self.form_handler.dx
         self.bbtree = self.mesh.bounding_box_tree()
         self.config = self.form_handler.config
@@ -152,7 +152,7 @@ class _MeshHandler:
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
 
         self.current_mesh_quality = 1.0
-        self.current_mesh_quality = mesh_quality.compute_mesh_quality(
+        self.current_mesh_quality = quality.compute_mesh_quality(
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
@@ -233,7 +233,7 @@ class _MeshHandler:
             success_flag = self.deformation_handler.move_mesh(
                 transformation, validated_a_priori=True
             )
-            self.current_mesh_quality = mesh_quality.compute_mesh_quality(
+            self.current_mesh_quality = quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
             )
             return success_flag

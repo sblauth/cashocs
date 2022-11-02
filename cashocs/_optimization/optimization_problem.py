@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Base classes for the PDE constrained optimization problems.
+"""PDE constrained optimization problems.
 
 This module is used to define the parent class for the optimization problems,
 as many parameters and variables are common for optimal control and shape
@@ -41,7 +41,7 @@ from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
@@ -62,9 +62,9 @@ class OptimizationProblem(abc.ABC):
 
     gradient: List[fenics.Function]
     reduced_cost_functional: cost_functional.ReducedCostFunctional
-    gradient_problem: types.GradientProblem
+    gradient_problem: _typing.GradientProblem
     output_manager: io.OutputManager
-    form_handler: types.FormHandler
+    form_handler: _typing.FormHandler
     optimization_variable_abstractions: ova.OptimizationVariableAbstractions
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
@@ -80,7 +80,7 @@ class OptimizationProblem(abc.ABC):
     ]
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
-    cost_functional_list: List[types.CostFunctional]
+    cost_functional_list: List[_typing.CostFunctional]
 
     def __init__(
         self,
@@ -89,17 +89,20 @@ class OptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
         min_max_terms: Optional[Union[List[Dict], Dict]] = None,
@@ -252,7 +255,10 @@ class OptimizationProblem(abc.ABC):
     def _parse_cost_functional_form(
         self,
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
     ) -> None:
         """Parses the cost functional form for use in cashocs."""
@@ -307,10 +313,10 @@ class OptimizationProblem(abc.ABC):
         config: Optional[io.Config],
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]],
         min_max_terms: Optional[Union[List[Dict], Dict]],
@@ -352,7 +358,7 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            self.ksp_options: types.KspOptions = []
+            self.ksp_options: _typing.KspOptions = []
             option: List[List[Union[str, int, float]]] = copy.deepcopy(
                 _utils.linalg.direct_ksp_options
             )
@@ -362,7 +368,7 @@ class OptimizationProblem(abc.ABC):
         else:
             self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
-        self.adjoint_ksp_options: types.KspOptions = (
+        self.adjoint_ksp_options: _typing.KspOptions = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)

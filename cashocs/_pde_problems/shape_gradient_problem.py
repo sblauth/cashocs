@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a shape gradient problem.
+"""Shape gradient problem.
 
 This class uses the linear elasticity equations to project the shape derivative to the
 shape gradient with a Riesz projection.
@@ -38,7 +38,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
 
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 class ShapeGradientProblem(pde_problem.PDEProblem):
     """Riesz problem for the computation of the shape gradient."""
 
-    riesz_ksp_options: types.KspOptions
+    riesz_ksp_options: _typing.KspOptions
 
     def __init__(
         self,

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Parent class for optimization algorithms for PDE constrained optimization."""
+"""General optimization algorithm for PDE constrained optimization."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class OptimizationAlgorithm(abc.ABC):
@@ -38,7 +38,7 @@ class OptimizationAlgorithm(abc.ABC):
 
     stepsize: float = 1.0
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

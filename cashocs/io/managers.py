@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for handling the output of cashocs."""
+"""Output managers for cashocs."""
 
 from __future__ import annotations
 
@@ -30,11 +30,11 @@ from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_algorithms
 
 
-def generate_summary_str(solver: types.SolutionAlgorithm) -> str:
+def generate_summary_str(solver: _typing.SolutionAlgorithm) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
@@ -60,7 +60,7 @@ def generate_summary_str(solver: types.SolutionAlgorithm) -> str:
     return "".join(strs)
 
 
-def generate_output_str(solver: types.SolutionAlgorithm) -> str:
+def generate_output_str(solver: _typing.SolutionAlgorithm) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
@@ -162,7 +162,7 @@ class ResultManager:
         if optimization_problem.is_topology_problem:
             self.output_dict["angle"] = []
 
-    def save_to_dict(self, solver: types.SolutionAlgorithm) -> None:
+    def save_to_dict(self, solver: _typing.SolutionAlgorithm) -> None:
         """Saves the optimization history to a dictionary.
 
         Args:
@@ -178,7 +178,7 @@ class ResultManager:
         if solver.is_topology_problem:
             self.output_dict["angle"].append(solver.angle)
 
-    def save_to_json(self, solver: types.SolutionAlgorithm) -> None:
+    def save_to_json(self, solver: _typing.SolutionAlgorithm) -> None:
         """Saves the history of the optimization to a .json file.
 
         Args:
@@ -213,7 +213,7 @@ class HistoryManager:
         self.verbose = optimization_problem.config.getboolean("Output", "verbose")
         self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
 
-    def print_to_console(self, solver: types.SolutionAlgorithm) -> None:
+    def print_to_console(self, solver: _typing.SolutionAlgorithm) -> None:
         """Prints the output string to the console.
 
         Args:
@@ -224,7 +224,7 @@ class HistoryManager:
             print(generate_output_str(solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_to_file(self, solver: types.SolutionAlgorithm) -> None:
+    def print_to_file(self, solver: _typing.SolutionAlgorithm) -> None:
         """Saves the output string in a file.
 
         Args:
@@ -243,7 +243,7 @@ class HistoryManager:
                 file.write(f"{generate_output_str(solver)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_console_summary(self, solver: types.SolutionAlgorithm) -> None:
+    def print_console_summary(self, solver: _typing.SolutionAlgorithm) -> None:
         """Prints the summary in the console.
 
         Args:
@@ -254,7 +254,7 @@ class HistoryManager:
             print(generate_summary_str(solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_file_summary(self, solver: types.SolutionAlgorithm) -> None:
+    def print_file_summary(self, solver: _typing.SolutionAlgorithm) -> None:
         """Save the summary in a file.
 
         Args:
@@ -280,7 +280,7 @@ class TempFileManager:
         self.config = optimization_problem.config
         self.is_shape_problem = optimization_problem.is_shape_problem
 
-    def clear_temp_files(self, solver: types.SolutionAlgorithm) -> None:
+    def clear_temp_files(self, solver: _typing.SolutionAlgorithm) -> None:
         """Deletes temporary files.
 
         Args:
@@ -320,7 +320,7 @@ class MeshManager:
         self.config = optimization_problem.config
         self.result_dir = result_dir
 
-    def save_optimized_mesh(self, solver: types.SolutionAlgorithm) -> None:
+    def save_optimized_mesh(self, solver: _typing.SolutionAlgorithm) -> None:
         """Saves a copy of the optimized mesh in Gmsh format.
 
         Args:
@@ -558,7 +558,7 @@ class XDMFFileManager:
             file.write_checkpoint(
                 function,
                 function_name,
-                float(iteration),
+                iteration,
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )

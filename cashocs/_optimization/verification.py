@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""This module includes tests to verify the correctness of computed gradients."""
+"""Taylor tests for verifying correctness."""
 
 from __future__ import annotations
 

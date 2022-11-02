@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a state equation."""
+"""State system."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class StateProblem(pde_problem.PDEProblem):
@@ -38,7 +38,7 @@ class StateProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
-        form_handler: types.FormHandler,
+        form_handler: _typing.FormHandler,
         initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
     ) -> None:

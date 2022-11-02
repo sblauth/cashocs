@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module managing the output of cashocs."""
+"""Management of cashocs output."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_problem as op
 
 
@@ -81,7 +81,7 @@ class OutputManager:
         self.mesh_manager = managers.MeshManager(optimization_problem, self.result_dir)
         self.temp_file_manager = managers.TempFileManager(optimization_problem)
 
-    def output(self, solver: types.SolutionAlgorithm) -> None:
+    def output(self, solver: _typing.SolutionAlgorithm) -> None:
         """Writes the desired output to files and console.
 
         Args:
@@ -95,7 +95,7 @@ class OutputManager:
 
         self.result_manager.save_to_dict(solver)
 
-    def output_summary(self, solver: types.SolutionAlgorithm) -> None:
+    def output_summary(self, solver: _typing.SolutionAlgorithm) -> None:
         """Writes the summary to files and console.
 
         Args:
@@ -105,7 +105,7 @@ class OutputManager:
         self.history_manager.print_console_summary(solver)
         self.history_manager.print_file_summary(solver)
 
-    def post_process(self, solver: types.SolutionAlgorithm) -> None:
+    def post_process(self, solver: _typing.SolutionAlgorithm) -> None:
         """Performs a post processing of the output.
 
         Args:

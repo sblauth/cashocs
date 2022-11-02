@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the Armijo line search."""
+"""Polynomial line search algorithm."""
 
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_algorithms
 
 
@@ -41,7 +41,7 @@ class PolynomialLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: _typing.OptimizationProblem,
     ) -> None:
         """Initializes self.
 

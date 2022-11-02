@@ -30,7 +30,7 @@ from cashocs import _utils
 from cashocs.nonlinear_solvers import newton_solver
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 T = TypeVar("T")
 
@@ -88,7 +88,7 @@ def picard_iteration(
     inner_inexact: bool = True,
     inner_verbose: bool = False,
     inner_max_its: int = 25,
-    ksp_options: Optional[types.KspOptions] = None,
+    ksp_options: Optional[_typing.KspOptions] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
@@ -217,7 +217,7 @@ def _compute_residual(
 
 def _get_linear_solver_options(
     j: int,
-    ksp_options: Optional[types.KspOptions],
+    ksp_options: Optional[_typing.KspOptions],
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]],
     b_tensors: Optional[List[fenics.PETScVector]],

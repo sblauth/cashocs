@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for general reduced cost functionals."""
+"""Reduced cost functionals."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
-    from cashocs import types
+    from cashocs import _typing
 
 
 class ReducedCostFunctional:
@@ -39,7 +39,7 @@ class ReducedCostFunctional:
 
     def __init__(
         self,
-        form_handler: types.FormHandler,
+        form_handler: _typing.FormHandler,
         state_problem: _pde_problems.StateProblem,
     ) -> None:
         """Initializes self.
@@ -436,7 +436,7 @@ class Lagrangian:
 
     def __init__(
         self,
-        cost_functional_list: List[types.CostFunctional],
+        cost_functional_list: List[_typing.CostFunctional],
         state_forms: List[ufl.Form],
     ) -> None:
         """Initializes self.

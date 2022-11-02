@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the parent class of all line searches."""
+"""General line search."""
 
 from __future__ import annotations
 
@@ -28,14 +28,14 @@ import numpy as np
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

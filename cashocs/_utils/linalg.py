@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for performing linear algebra tasks."""
+"""Linear algebra helper functions."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ from cashocs import _exceptions
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 iterative_ksp_options: List[List[Union[str, int, float]]] = [
     ["ksp_type", "cg"],
@@ -143,7 +143,7 @@ def assemble_petsc_system(
     return A, b
 
 
-def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: types.KspOptions) -> None:
+def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc

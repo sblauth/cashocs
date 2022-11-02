@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for various helper functions."""
+"""Helper functions."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ import fenics
 from cashocs import _exceptions
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 T = TypeVar("T")
 
@@ -117,8 +117,8 @@ def check_and_enlist_control_constraints(
 
 
 def check_and_enlist_ksp_options(
-    ksp_options: Union[List[List[Union[str, int, float]]], types.KspOptions]
-) -> types.KspOptions:
+    ksp_options: Union[List[List[Union[str, int, float]]], _typing.KspOptions]
+) -> _typing.KspOptions:
     """Wraps ksp options into a list suitable for cashocs.
 
     Args:
@@ -141,7 +141,7 @@ def check_and_enlist_ksp_options(
         and isinstance(ksp_options[0], list)
         and isinstance(ksp_options[0][0], list)
     ):
-        # ksp_options = cast(types.KspOptions, ksp_options)
+        # ksp_options = cast(_typing.KspOptions, ksp_options)
         return ksp_options[:]  # type: ignore
     else:
         raise _exceptions.InputError(

@@ -35,7 +35,7 @@ from cashocs._optimization.topology_optimization import topology_variable_abstra
 if TYPE_CHECKING:
     from cashocs import _forms
     from cashocs import _pde_problems
-    from cashocs import types
+    from cashocs import _typing
 
 
 class TopologyOptimizationProblem(_optimization.OptimizationProblem):
@@ -59,7 +59,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         bcs_list: list[list[fenics.DirichletBC]]
         | list[fenics.DirichletBC]
         | fenics.DirichletBC,
-        cost_functional_form: list[types.CostFunctional],
+        cost_functional_form: list[_typing.CostFunctional],
         states: list[fenics.Function] | fenics.Function,
         adjoints: list[fenics.Function] | fenics.Function,
         levelset_function: fenics.Function,
@@ -69,8 +69,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
-        ksp_options: types.KspOptions | list[list[str | int | float]] | None = None,
-        adjoint_ksp_options: types.KspOptions
+        ksp_options: _typing.KspOptions | list[list[str | int | float]] | None = None,
+        adjoint_ksp_options: _typing.KspOptions
         | list[list[str | int | float]]
         | None = None,
         desired_weights: list[float] | None = None,

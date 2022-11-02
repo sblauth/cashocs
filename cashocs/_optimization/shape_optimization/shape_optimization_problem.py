@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Implementation of a shape optimization problem."""
+"""Shape optimization problem."""
 
 from __future__ import annotations
 
@@ -46,8 +46,8 @@ from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -75,7 +75,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -84,10 +87,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
         min_max_terms: Optional[Union[List[Dict], Dict]] = None,
@@ -202,7 +205,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -211,10 +217,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
         min_max_terms: Optional[Union[List[Dict], Dict]] = None,
