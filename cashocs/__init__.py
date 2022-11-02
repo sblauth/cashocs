@@ -43,7 +43,6 @@ from cashocs._optimization.optimal_control.optimal_control_problem import (
 from cashocs._optimization.shape_optimization.shape_optimization_problem import (
     ShapeOptimizationProblem,
 )
-from cashocs._utils import create_bcs_list
 from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import Interpolator
 from cashocs.geometry import DeformationHandler
@@ -52,10 +51,8 @@ from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
 from cashocs.io import convert
-from cashocs.io import create_config
 from cashocs.io import import_mesh
 from cashocs.io import load_config
-from cashocs.nonlinear_solvers import damped_newton_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
@@ -98,13 +95,10 @@ __all__ = [
     "DeformationHandler",
     "MeshQuality",
     "newton_solve",
-    "damped_newton_solve",
     "picard_iteration",
     "OptimalControlProblem",
     "ShapeOptimizationProblem",
-    "create_config",
     "load_config",
-    "create_bcs_list",
     "create_dirichlet_bcs",
     "verification",
     "ConstrainedOptimalControlProblem",

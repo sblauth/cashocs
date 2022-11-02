@@ -18,7 +18,6 @@
 """Inputs and outputs."""
 
 from cashocs.io.config import Config
-from cashocs.io.config import create_config
 from cashocs.io.config import load_config
 from cashocs.io.function import read_function_from_xdmf
 from cashocs.io.mesh import convert
@@ -31,7 +30,6 @@ __all__ = [
     "convert",
     "Config",
     "load_config",
-    "create_config",
     "write_out_mesh",
     "read_mesh_from_xdmf",
     "read_function_from_xdmf",
