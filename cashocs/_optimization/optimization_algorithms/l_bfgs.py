@@ -29,7 +29,7 @@ from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import line_search as ls
 
 
@@ -43,7 +43,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: _typing.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
@@ -58,6 +58,10 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
+        self.bfgs_periodic_restart = self.config.getint(
+            "AlgoLBFGS", "bfgs_periodic_restart"
+        )
+        self.periodic_its = 0
 
         self._init_helpers()
 
@@ -78,6 +82,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""
         self.initialize_solver()
+        self.periodic_its = 0
         self.compute_gradient()
         self.form_handler.compute_active_sets()
         self.gradient_norm = (
@@ -88,6 +93,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
         while not self.converged:
             self.compute_search_direction(self.gradient)
+            self.check_restart()
             self.check_for_ascent()
 
             self.objective_value = self.cost_functional.evaluate()
@@ -235,15 +241,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.history_y.appendleft([x.copy(True) for x in self.y_k])
             self.history_s.appendleft([x.copy(True) for x in self.s_k])
             curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
+            denominator = np.sqrt(
+                self.form_handler.scalar_product(self.s_k, self.s_k)
+                * self.form_handler.scalar_product(self.y_k, self.y_k)
+            )
 
-            if (
-                curvature_condition
-                / np.sqrt(
-                    self.form_handler.scalar_product(self.s_k, self.s_k)
-                    * self.form_handler.scalar_product(self.y_k, self.y_k)
-                )
-                <= 1e-14
-            ):
+            if denominator <= 1e-15 or curvature_condition / denominator <= 1e-14:
                 self.has_curvature_info = False
 
                 self.history_s.clear()
@@ -259,3 +262,23 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.history_s.pop()
                 self.history_y.pop()
                 self.history_rho.pop()
+
+    def check_restart(self) -> None:
+        """Checks, whether a restart should be performed and does so, if necessary."""
+        if self.bfgs_periodic_restart > 0:
+            if self.periodic_its < self.bfgs_periodic_restart:
+                self.periodic_its += 1
+                self.is_restarted = False
+            else:
+                for i in range(len(self.gradient)):
+                    self.search_direction[i].vector().vec().aypx(
+                        0.0, -self.gradient[i].vector().vec()
+                    )
+                    self.search_direction[i].vector().apply("")
+                self.periodic_its = 0
+                self.has_curvature_info = False
+                self.is_restarted = True
+
+                self.history_s.clear()
+                self.history_y.clear()
+                self.history_rho.clear()

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing UFL forms for optimal control problems."""
+"""Management of weak forms for optimal control problems."""
 
 from __future__ import annotations
 

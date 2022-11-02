@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -30,7 +30,7 @@ from cashocs._exceptions import InputError
 from cashocs._exceptions import NotConvergedError
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
 V = FunctionSpace(mesh, "CG", 1)
@@ -202,6 +202,19 @@ def test_control_bfgs():
     u.vector().apply("")
     ocp._erase_pde_memory()
     ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_control_bfgs_restarted():
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+
+    config.set("AlgoLBFGS", "bfgs_periodic_restart", "2")
+
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=20)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -738,4 +751,23 @@ def test_safeguard_gd():
     config.set("OptimizationRoutine", "safeguard_stepsize", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=50)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_polynomial_stepsize():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("LineSearch", "method", "polynomial")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=42)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
+    config.set("LineSearch", "method", "polynomial")
+    config.set("LineSearch", "polynomial_model", "quadratic")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=44)
     assert ocp.solver.relative_norm <= ocp.solver.rtol

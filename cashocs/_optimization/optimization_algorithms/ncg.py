@@ -25,7 +25,7 @@ from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import line_search as ls
 
 
@@ -34,7 +34,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: _typing.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.

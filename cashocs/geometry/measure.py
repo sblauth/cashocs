@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for extending the measure functionality."""
+"""Extension of integration measures."""
 
 from __future__ import annotations
 

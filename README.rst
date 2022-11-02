@@ -23,8 +23,8 @@
 
 |
 
-.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/ci?label=tests&style=flat-square
-    :target: https://github.com/sblauth/cashocs/actions/workflows/cached_tests.yml
+.. image:: https://img.shields.io/github/workflow/status/sblauth/cashocs/tests?label=tests&style=flat-square
+    :target: https://github.com/sblauth/cashocs/actions/workflows/tests.yml
 
 .. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
     :target: https://codecov.io/gh/sblauth/cashocs
@@ -259,7 +259,6 @@ I'm `Sebastian Blauth <https://www.itwm.fraunhofer.de/en/departments/tv/staff/se
 <https://www.itwm.fraunhofer.de/en.html>`_. I have developed this project as part of my PhD thesis.
 If you have any questions / suggestions / feedback, etc., you can contact me
 via `sebastian.blauth@itwm.fraunhofer.de
-<mailto:sebastian.blauth@itwm.fraunhofer.de>`_ or `sebastianblauth@web.de
-<mailto:sebastianblauth@web.de>`_.
+<mailto:sebastian.blauth@itwm.fraunhofer.de>`_.
 
 .. readme_end_about

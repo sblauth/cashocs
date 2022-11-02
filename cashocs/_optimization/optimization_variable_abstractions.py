@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing optimization variables.
+"""Management of optimization variables.
 
 This is used to update, restore, and manipulate optimization with abstractions, so that
-the same optimization algorithms can be used for different types of problems.
+the same optimization algorithms can be used for different _typing of problems.
 """
 
 from __future__ import annotations
@@ -29,8 +29,8 @@ from typing import List, TYPE_CHECKING
 import fenics
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import geometry
-    from cashocs import types
 
 
 class OptimizationVariableAbstractions(abc.ABC):
@@ -38,7 +38,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     mesh_handler: geometry._MeshHandler  # pylint: disable=protected-access
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

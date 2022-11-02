@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a gradient problem.
+"""Gradient problem.
 
 This class is used to solve the Riesz projection to obtain the gradient of the reduced
 cost functional.

@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing config files."""
+"""Management of configuration files."""
 
 from __future__ import annotations
 
 from configparser import ConfigParser
 import json
-from pathlib import Path
+import pathlib
 from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
@@ -230,6 +230,25 @@ class Config(ConfigParser):
                     "type": "bool",
                 },
             },
+            "LineSearch": {
+                "method": {
+                    "type": "str",
+                    "possible_options": ["armijo", "polynomial"],
+                },
+                "polynomial_model": {
+                    "type": "str",
+                    "possible_options": ["cubic", "quadratic"],
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                },
+                "factor_high": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                    "larger_than": ("LineSearch", "factor_low"),
+                },
+            },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
                     "type": "int",
@@ -237,6 +256,10 @@ class Config(ConfigParser):
                 },
                 "use_bfgs_scaling": {
                     "type": "bool",
+                },
+                "bfgs_periodic_restart": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
                 },
             },
             "AlgoCG": {
@@ -471,13 +494,13 @@ class Config(ConfigParser):
                 "save_txt": {
                     "type": "bool",
                 },
-                "save_pvd": {
+                "save_state": {
                     "type": "bool",
                 },
-                "save_pvd_adjoint": {
+                "save_adjoint": {
                     "type": "bool",
                 },
-                "save_pvd_gradient": {
+                "save_gradient": {
                     "type": "bool",
                 },
                 "save_mesh": {
@@ -532,6 +555,12 @@ initial_stepsize = 1.0
 safeguard_stepsize = True
 gradient_tol = 1e-9
 gradient_method = direct
+
+[LineSearch]
+method = armijo
+polynomial_model = cubic
+factor_high = 0.5
+factor_low = 0.1
 
 [ShapeGradient]
 lambda_lame = 0.0
@@ -589,6 +618,7 @@ inner_newton_atol = 0.0
 [AlgoLBFGS]
 bfgs_memory_size = 5
 use_bfgs_scaling = True
+bfgs_periodic_restart = 0
 
 [AlgoCG]
 cg_method = DY
@@ -609,9 +639,9 @@ angle_change = inf
 save_results = True
 verbose = True
 save_txt = True
-save_pvd = False
-save_pvd_adjoint = False
-save_pvd_gradient = False
+save_state = False
+save_adjoint = False
+save_gradient = False
 save_mesh = False
 result_dir = ./results
 time_suffix = False
@@ -624,7 +654,14 @@ restart = False
         self.read_string(self.default_config_str)
 
         if config_file is not None:
-            self.read(config_file)
+            file = pathlib.Path(config_file)
+            if file.is_file():
+                self.read(config_file)
+            else:
+                _loggers.warning(
+                    f"Could not find the specified config file {config_file}. "
+                    "Using cashocs default config instead."
+                )
 
     def getlist(self, section: str, option: str, **kwargs: Any) -> List:
         """Extracts a list from a config file.
@@ -817,7 +854,7 @@ restart = False
 
         """
         if "file" in key_attributes:
-            file = Path(self.get(section, key))
+            file = pathlib.Path(self.get(section, key))
             if not file.is_file():
                 self.config_errors.append(
                     f"Key {key} in section {section} should point to a file, "

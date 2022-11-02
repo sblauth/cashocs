@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a shape gradient problem.
+"""Shape gradient problem.
 
 This class uses the linear elasticity equations to project the shape derivative to the
 shape gradient with a Riesz projection.

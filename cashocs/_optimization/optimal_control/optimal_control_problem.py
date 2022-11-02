@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Class representing an optimal control problem."""
+"""Optimal control problem."""
 
 from __future__ import annotations
 
@@ -37,8 +37,8 @@ from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):
@@ -64,7 +64,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
@@ -74,10 +77,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
         min_max_terms: Optional[Union[List[Dict], Dict]] = None,
@@ -183,7 +186,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
@@ -193,10 +199,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
         min_max_terms: Optional[Union[List[Dict], Dict]] = None,
@@ -423,7 +429,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(self)
         )
-        self.line_search = line_search.ArmijoLineSearch(self)
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            self.line_search = line_search.ArmijoLineSearch(self)
+        elif line_search_type == "polynomial":
+            self.line_search = line_search.PolynomialLineSearch(self)
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.compute_newton_forms()

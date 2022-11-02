@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for UFL form manipulations.
+"""Derivation and management of weak forms.
 
-This is used to carry out form manipulations such as generating the UFL
+This module is used to carry out form manipulations such as generating the UFL
 forms for the adjoint system and for the Riesz gradient identificiation
 problems.
 """
