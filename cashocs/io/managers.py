@@ -564,6 +564,11 @@ class XDMFFileManager:
         else:
             append = True
 
+        if function.function_space().ufl_element().family() == "Real":
+            mesh = function.function_space().mesh()
+            space = fenics.FunctionSpace(mesh, "CG", 1)
+            function = fenics.interpolate(function, space)
+
         function.rename(function_name, function_name)
 
         with fenics.XDMFFile(fenics.MPI.comm_world, filename) as file:
