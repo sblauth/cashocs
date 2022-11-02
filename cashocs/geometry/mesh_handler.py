@@ -16,7 +16,7 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""Module for managing a finite element mesh."""
+"""Management of finite element meshes."""
 
 from __future__ import annotations
 

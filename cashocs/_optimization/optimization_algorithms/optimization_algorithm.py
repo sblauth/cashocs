@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Parent class for optimization algorithms for PDE constrained optimization."""
+"""General optimization algorithm for PDE constrained optimization."""
 
 from __future__ import annotations
 

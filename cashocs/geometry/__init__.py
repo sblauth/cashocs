@@ -15,21 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Mesh generation and import tools.
+"""Mesh generation, quality, and management tools.
 
-This module consists of tools for the fast generation or import of meshes into
-fenics. The :py:func:`import_mesh <cashocs.geometry.import_mesh>` function is used to
-import (converted) GMSH mesh files, and the :py:func:`regular_mesh
-<cashocs.geometry.regular_mesh>` and :py:func:`regular_box_mesh
-<cashocs.geometry.regular_box_mesh>` commands create 2D and 3D box meshes which are
-great for testing.
+This module consists of tools for the fast generation of meshes into
+fenics. The :py:func:`regular_mesh <cashocs.geometry.regular_mesh>` and
+:py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands create 2D and
+3D box meshes which are great for testing and development.
 """
 
 from cashocs.geometry.boundary_distance import compute_boundary_distance
 from cashocs.geometry.deformations import DeformationHandler
 from cashocs.geometry.measure import _EmptyMeasure
 from cashocs.geometry.measure import generate_measure
-from cashocs.geometry.mesh import import_mesh
 from cashocs.geometry.mesh import interval_mesh
 from cashocs.geometry.mesh import regular_box_mesh
 from cashocs.geometry.mesh import regular_mesh
@@ -43,7 +40,6 @@ __all__ = [
     "DeformationHandler",
     "generate_measure",
     "_EmptyMeasure",
-    "import_mesh",
     "regular_mesh",
     "interval_mesh",
     "regular_box_mesh",

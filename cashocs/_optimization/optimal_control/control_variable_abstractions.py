@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for abstractions of optimization variables in the case of optimal control."""
+"""Management of control variables."""
 
 from __future__ import annotations
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing optimization variables.
+"""Management of optimization variables.
 
 This is used to update, restore, and manipulate optimization with abstractions, so that
 the same optimization algorithms can be used for different _typing of problems.

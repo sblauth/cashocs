@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Base classes for the PDE constrained optimization problems.
+"""PDE constrained optimization problems.
 
 This module is used to define the parent class for the optimization problems,
 as many parameters and variables are common for optimal control and shape

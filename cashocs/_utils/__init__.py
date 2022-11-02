@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module including utility and helper functions.
+"""Utility and helper functions.
 
 This module includes utility and helper functions used in cashocs. They might also be
 interesting for users, so they are part of the public API. Includes wrappers that allow

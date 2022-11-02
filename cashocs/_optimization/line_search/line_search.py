@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the parent class of all line searches."""
+"""General line search."""
 
 from __future__ import annotations
 

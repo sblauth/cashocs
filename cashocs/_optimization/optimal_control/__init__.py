@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for treatment of optimal control problems."""
+"""Optimal control problems."""
 
 from cashocs._optimization.optimal_control.control_variable_abstractions import (
     ControlVariableAbstractions,

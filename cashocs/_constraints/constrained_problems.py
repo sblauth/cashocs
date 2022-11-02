@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Constrained optimization problems, additional (in-)equality constraints."""
+"""Constrained optimization problems."""
 
 from __future__ import annotations
 

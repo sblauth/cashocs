@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Abstract implementation of a Hessian problem.
+"""Hessian problem.
 
 This uses Krylov subspace methods to iteratively solve the "Hessian problems" occurring
 in the truncated Newton method.
