@@ -15,6 +15,8 @@ in development
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* cashocs-convert now has a default output argument (which is the same name as the input file). This can be invoked with the -o or --outfile flag.
+
 * cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing
 
 * cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
