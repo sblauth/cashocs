@@ -1058,7 +1058,7 @@ def test_check_config_list():
 
 def test_stepsize2():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("OptimizationRoutine", "initial_stepsize", "1e-3")
+    config.set("LineSearch", "initial_stepsize", "1e-3")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

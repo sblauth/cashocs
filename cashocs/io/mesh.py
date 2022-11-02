@@ -302,16 +302,14 @@ def convert(
         quiet: A boolean flag which silences the output.
 
     """
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        args = [input_file]
+    args = [input_file]
 
-        if output_file is not None:
-            args += ["-o", output_file]
-        if quiet:
-            args += ["-q"]
+    if output_file is not None:
+        args += ["-o", output_file]
+    if quiet:
+        args += ["-q"]
 
-        cli_convert(args)
-
+    cli_convert(args)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
