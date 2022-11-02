@@ -577,15 +577,6 @@ in the following.
     * - maximum iterations
       - ``100``
       - maximum iterations for the optimization algorithm
-    * - initial_stepsize
-      - ``1.0``
-      - initial stepsize for the first iteration in the Armijo rule
-    * - epsilon_armijo
-      - ``1e-4``
-      -
-    * - beta_armijo
-      - ``2.0``
-      -
     * - gradient_method
       - ``direct``
       - specifies the solver for computing the gradient, can be either ``direct`` or ``iterative``
@@ -610,6 +601,18 @@ in the following.
     * - method
       - ``armijo``
       - ``armijo`` is a simple backtracking line search, whereas ``polynomial`` uses polynomial models to compute trial stepsizes.
+    * - initial_stepsize
+      - ``1.0``
+      - initial stepsize for the first iteration in the Armijo rule
+    * - epsilon_armijo
+      - ``1e-4``
+      -
+    * - beta_armijo
+      - ``2.0``
+      -
+    * - safeguard_stepsize
+      - ``True``
+      - De(-activates) a safeguard against poor scaling
     * - polynomial_model
       - ``cubic``
       - This specifies, whether a ``cubic`` or ``quadratic`` model is used for computing trial stepsizes

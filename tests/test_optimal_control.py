@@ -399,7 +399,7 @@ def test_scalar_norm_optimization():
     norm_y = y * y * dx
     tracking_goal = rng.uniform(0.25, 0.75)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal)
-    config.set("OptimizationRoutine", "initial_stepsize", "4e3")
+    config.set("LineSearch", "initial_stepsize", "4e3")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.solve(algorithm="bfgs", rtol=1e-3)
@@ -421,7 +421,7 @@ def test_scalar_tracking_weight():
     tracking_goal = rng.uniform(0.25, 0.75)
     weight = rng.uniform(1.0, 1e3)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal, weight=1.0)
-    config.set("OptimizationRoutine", "initial_stepsize", "4e3")
+    config.set("LineSearch", "initial_stepsize", "4e3")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.compute_state_variables()
@@ -452,7 +452,7 @@ def test_scalar_multiple_norms():
     J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
     J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
     J = [J_y, J_u]
-    config.set("OptimizationRoutine", "initial_stepsize", "1e-4")
+    config.set("LineSearch", "initial_stepsize", "1e-4")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     test_ocp.solve(algorithm="bfgs", rtol=1e-6, max_iter=500)
@@ -719,7 +719,7 @@ def test_iterative_gradient():
 
 def test_small_stepsize1():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "initial_stepsize", "1e-8")
+    config.set("LineSearch", "initial_stepsize", "1e-8")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
@@ -748,7 +748,7 @@ def test_safeguard_gd():
     u.vector().vec().set(0.0)
     u.vector().apply("")
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "safeguard_stepsize", "True")
+    config.set("LineSearch", "safeguard_stepsize", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=50)
     assert ocp.solver.relative_norm <= ocp.solver.rtol

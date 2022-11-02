@@ -179,19 +179,6 @@ class Config(ConfigParser):
                     "type": "int",
                     "attributes": ["non_negative"],
                 },
-                "initial_stepsize": {
-                    "type": "float",
-                    "attributes": ["positive"],
-                },
-                "safeguard_stepsize": {"type": "bool"},
-                "epsilon_armijo": {
-                    "type": "float",
-                    "attributes": ["positive", "less_than_one"],
-                },
-                "beta_armijo": {
-                    "type": "float",
-                    "attributes": ["positive", "larger_than_one"],
-                },
                 "gradient_method": {
                     "type": "str",
                     "possible_options": ["direct", "iterative"],
@@ -208,6 +195,19 @@ class Config(ConfigParser):
                 "method": {
                     "type": "str",
                     "possible_options": ["armijo", "polynomial"],
+                },
+                "initial_stepsize": {
+                    "type": "float",
+                    "attributes": ["positive"],
+                },
+                "safeguard_stepsize": {"type": "bool"},
+                "epsilon_armijo": {
+                    "type": "float",
+                    "attributes": ["positive", "less_than_one"],
+                },
+                "beta_armijo": {
+                    "type": "float",
+                    "attributes": ["positive", "larger_than_one"],
                 },
                 "polynomial_model": {
                     "type": "str",
@@ -523,15 +523,15 @@ rtol = 1e-3
 atol = 0.0
 maximum_iterations = 100
 soft_exit = False
-epsilon_armijo = 1e-4
-beta_armijo = 2.0
-initial_stepsize = 1.0
-safeguard_stepsize = True
 gradient_tol = 1e-9
 gradient_method = direct
 
 [LineSearch]
 method = armijo
+epsilon_armijo = 1e-4
+beta_armijo = 2.0
+initial_stepsize = 1.0
+safeguard_stepsize = True
 polynomial_model = cubic
 factor_high = 0.5
 factor_low = 0.1

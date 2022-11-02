@@ -315,7 +315,7 @@ class _MeshHandler:
             )
 
             frobenius_norm = x.max()[1]
-            beta_armijo = self.config.getfloat("OptimizationRoutine", "beta_armijo")
+            beta_armijo = self.config.getfloat("LineSearch", "beta_armijo")
 
             return int(
                 np.maximum(
