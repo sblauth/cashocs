@@ -28,32 +28,6 @@ from cashocs import _exceptions
 from cashocs import _loggers
 
 
-# deprecated
-def create_config(path: str) -> ConfigParser:  # pragma: no cover
-    """Loads a config object from a config file.
-
-    Loads the config from a .ini file via the configparser package.
-
-    Args:
-        path: The path to the .ini file storing the configuration.
-
-    Returns:
-        The output config file, which includes the path to the .ini file.
-
-    .. deprecated:: 1.1.0
-        This is replaced by :py:func:`load_config <cashocs.load_config>`
-        and will be removed in the future.
-
-    """
-    _loggers.warning(
-        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
-        "and will be removed in the future."
-    )
-    config = load_config(path)
-
-    return config
-
-
 def load_config(path: str) -> ConfigParser:
     """Loads a config object from a config file.
 
