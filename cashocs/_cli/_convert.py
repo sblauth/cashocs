@@ -27,6 +27,8 @@ from typing import Dict, List, Optional
 import meshio
 import numpy as np
 
+from cashocs import _loggers
+
 
 def _generate_parser() -> argparse.ArgumentParser:
     """Returns a parser for command line arguments."""
@@ -44,6 +46,7 @@ def _generate_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="outfile",
     )
+    parser.add_argument("-q", "--quiet", action="store_true")
 
     return parser
 
@@ -213,6 +216,8 @@ def convert(argv: Optional[List[str]] = None) -> None:
         outputfile = f"{inputfile[:-4]}.xdmf"
     check_file_extension(outputfile, "xdmf")
 
+    quiet = args.quiet
+
     ostring = outputfile.rsplit(".", 1)[0]
 
     mesh_collection = meshio.read(inputfile)
@@ -239,11 +244,11 @@ def convert(argv: Optional[List[str]] = None) -> None:
     check_for_physical_names(inputfile, topological_dimension, ostring)
 
     end_time = time.time()
-    print(
-        f"cashocs - info: Successfully converted {inputfile} to {outputfile} "
-        f"in {end_time - start_time:.2f} s",
-        flush=True,
-    )
+    if not quiet:
+        _loggers.info(
+            f"Successfully converted {inputfile} to {outputfile} "
+            f"in {end_time - start_time:.2f} s"
+        )
 
 
 if __name__ == "__main__":
