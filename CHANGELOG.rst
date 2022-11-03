@@ -9,13 +9,17 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
+* cashocs has a new docstyle. It now uses the pydata-sphinx-theme.
+
 * Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.
 
 * Added polynomial based models for computing trial stepsizes in an extended Armijo rule. This method will become the default line search in the future.
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
-* cashocs-convert now has a default output argument (which is the same name as the input file). This can be invoked with the -o or --outfile flag.
+* ``cashocs-convert`` now has a default output argument (which is the same name as the input file). This can be invoked with the -o or --outfile flag.
+
+* ``cashocs-convert`` now has an additional quiet flag, which can be invoked with ``-q`` or ``--quiet``. Analogously, :py:func:`<cashocs.convert>` also has a keyword argument ``quiet``. These arguments / flags suppress its output.
 
 * cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing
 
@@ -26,6 +30,10 @@ in development
 * cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
 
 * Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization
+
+* Deprecated functions have been removed. In particular, the functions ``create_bcs_list``, ``create_config``, ``damped_newton_solve`` are removed. They are replaced by :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`, :py:func:`load_config <cashocs.load_config>`, and :py:func:`newton_solve <cashocs.newton_solve>`.
+
+* The usage of the keyword arguments ``scalar_tracking_forms`` and ``min_max_terms`` in :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>` and :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` has been removed. Instead, every cost functional is now passed via the ``cost_functional_list`` parameter. Scalar tracking forms are now realized via :py:class:`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>` and min-max terms via :py:class:`MinMaxFunctional <cashocs.MinMaxFunctional>`.
 
 * BFGS methods can now be used in a restarted fashion, if desired
 
@@ -38,6 +46,10 @@ in development
     * ``save_pvd_adjoint`` is now called ``save_adjoint``, functionality is the same
 
     * ``save_pvd_gradient`` is now called ``save_gradient``, functionality is the same
+
+  * Section LineSearch
+
+    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize```are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
 
 * New configuration file parameters
 
