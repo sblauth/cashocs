@@ -92,8 +92,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> ShapeOptimizationProblem:
         """Initializes self.
@@ -134,13 +132,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -165,8 +156,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 initial_guess=initial_guess,
                 ksp_options=ksp_options,
                 adjoint_ksp_options=adjoint_ksp_options,
-                scalar_tracking_forms=scalar_tracking_forms,
-                min_max_terms=min_max_terms,
                 desired_weights=desired_weights,
             )
             unscaled_problem._scale_cost_functional()  # overwrites the list
@@ -222,8 +211,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         """Initializes self.
@@ -264,13 +251,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -289,8 +269,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            scalar_tracking_forms,
-            min_max_terms,
             desired_weights,
         )
 

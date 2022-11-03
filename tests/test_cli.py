@@ -172,7 +172,7 @@ def test_wrong_formats():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
+                [f"{dir_path}/mesh/mesh.mesh", "-o", f"{dir_path}/mesh/mesh.xdmf"]
             )
         assert "due to wrong format." in str(e_info.value)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -180,7 +180,7 @@ def test_wrong_formats():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
+                [f"{dir_path}/mesh/mesh.msh", "-o", f"{dir_path}/mesh/mesh.test"]
             )
         assert "due to wrong format." in str(e_info.value)
     fenics.MPI.barrier(fenics.MPI.comm_world)

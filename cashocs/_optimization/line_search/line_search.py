@@ -55,14 +55,12 @@ class LineSearch(abc.ABC):
         self.is_control_problem = optimization_problem.is_control_problem
         self.is_topology_problem = optimization_problem.is_topology_problem
 
-        self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
+        self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(
-            "OptimizationRoutine", "safeguard_stepsize"
+            "LineSearch", "safeguard_stepsize"
         )
 
-        self.beta_armijo: float = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo"
-        )
+        self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"
@@ -122,9 +120,7 @@ class LineSearch(abc.ABC):
             self.stepsize = 1.0
 
         if solver.is_restarted:
-            self.stepsize = self.config.getfloat(
-                "OptimizationRoutine", "initial_stepsize"
-            )
+            self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
 
         num_decreases = (
             self.optimization_variable_abstractions.compute_a_priori_decreases(

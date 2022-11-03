@@ -23,7 +23,6 @@ to shorten the coding for often recurring actions.
 """
 
 from cashocs._utils.forms import bilinear_boundary_form_modification
-from cashocs._utils.forms import create_bcs_list
 from cashocs._utils.forms import create_dirichlet_bcs
 from cashocs._utils.forms import max_
 from cashocs._utils.forms import min_
@@ -65,7 +64,6 @@ __all__ = [
     "setup_petsc_options",
     "solve_linear_problem",
     "Interpolator",
-    "create_bcs_list",
     "assemble_and_solve_linear",
     "split_linear_forms",
     "create_function_list",

@@ -289,7 +289,9 @@ def import_mesh(input_arg: Union[str, config_module.Config]) -> _typing.MeshTupl
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-def convert(input_file: str, output_file: Optional[str] = None) -> None:
+def convert(
+    input_file: str, output_file: Optional[str] = None, quiet: bool = False
+) -> None:
     """Converts the input mesh file to a xdmf mesh file for cashocs to work with.
 
     Args:
@@ -297,14 +299,17 @@ def convert(input_file: str, output_file: Optional[str] = None) -> None:
         output_file: The name of the output .xdmf file or ``None``. If this is ``None``,
             then a file name.msh will be converted to name.xdmf, i.e., the name of the
             input file stays the same
+        quiet: A boolean flag which silences the output.
 
     """
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        if output_file is None:
-            input_name = input_file.rsplit(".", 1)[0]
-            output_file = f"{input_name}.xdmf"
+    args = [input_file]
 
-        cli_convert([input_file, output_file])
+    if output_file is not None:
+        args += ["-o", output_file]
+    if quiet:
+        args += ["-q"]
+
+    cli_convert(args)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 

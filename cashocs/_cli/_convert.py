@@ -24,8 +24,11 @@ import json
 import time
 from typing import Dict, List, Optional
 
+import fenics
 import meshio
 import numpy as np
+
+from cashocs import _loggers
 
 
 def _generate_parser() -> argparse.ArgumentParser:
@@ -37,10 +40,14 @@ def _generate_parser() -> argparse.ArgumentParser:
         "infile", type=str, help="GMSH file to be converted, has to end in .msh"
     )
     parser.add_argument(
-        "outfile",
+        "-o",
+        "--outfile",
         type=str,
         help="XDMF file to which the mesh shall be converted, has to end in .xdmf",
+        default=None,
+        metavar="outfile",
     )
+    parser.add_argument("-q", "--quiet", action="store_true")
 
     return parser
 
@@ -203,41 +210,53 @@ def convert(argv: Optional[List[str]] = None) -> None:
     args = parser.parse_args(argv)
 
     inputfile = args.infile
-    outputfile = args.outfile
     check_file_extension(inputfile, "msh")
+
+    outputfile = args.outfile
+    if outputfile is None:
+        outputfile = f"{inputfile[:-4]}.xdmf"
     check_file_extension(outputfile, "xdmf")
+
+    quiet = args.quiet
 
     ostring = outputfile.rsplit(".", 1)[0]
 
-    mesh_collection = meshio.read(inputfile)
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        mesh_collection = meshio.read(inputfile)
 
-    points = mesh_collection.points
-    cells_dict = mesh_collection.cells_dict
-    cell_data_dict = mesh_collection.cell_data_dict
+        points = mesh_collection.points
+        cells_dict = mesh_collection.cells_dict
+        cell_data_dict = mesh_collection.cell_data_dict
 
-    # Check, whether we have a 2D or 3D mesh:
-    keyvals = cells_dict.keys()
-    topological_dimension = 2
-    if "tetra" in keyvals:
-        topological_dimension = 3
-    elif "triangle" in keyvals:
+        # Check, whether we have a 2D or 3D mesh:
+        keyvals = cells_dict.keys()
         topological_dimension = 2
-        # check if geometrical dimension matches topological dimension
-        z_coords = points[:, 2]
-        if np.abs(np.max(z_coords) - np.min(z_coords)) <= 1e-15:
-            points = points[:, :2]
+        if "tetra" in keyvals:
+            topological_dimension = 3
+        elif "triangle" in keyvals:
+            topological_dimension = 2
+            # check if geometrical dimension matches topological dimension
+            z_coords = points[:, 2]
+            if np.abs(np.max(z_coords) - np.min(z_coords)) <= 1e-15:
+                points = points[:, :2]
 
-    write_mesh(topological_dimension, points, cells_dict, ostring)
-    write_subdomains(topological_dimension, cell_data_dict, points, cells_dict, ostring)
-    write_boundaries(topological_dimension, cell_data_dict, points, cells_dict, ostring)
-    check_for_physical_names(inputfile, topological_dimension, ostring)
+        write_mesh(topological_dimension, points, cells_dict, ostring)
+        write_subdomains(
+            topological_dimension, cell_data_dict, points, cells_dict, ostring
+        )
+        write_boundaries(
+            topological_dimension, cell_data_dict, points, cells_dict, ostring
+        )
+        check_for_physical_names(inputfile, topological_dimension, ostring)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
 
     end_time = time.time()
-    print(
-        f"cashocs - info: Successfully converted {inputfile} to {outputfile} "
-        f"in {end_time - start_time:.2f} s",
-        flush=True,
-    )
+
+    if not quiet:
+        _loggers.info(
+            f"Successfully converted {inputfile} to {outputfile} "
+            f"in {end_time - start_time:.2f} s"
+        )
 
 
 if __name__ == "__main__":
