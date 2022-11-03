@@ -164,6 +164,8 @@ class Config(ConfigParser):
                         "nonlinear_conjugate_gradient",
                         "conjugate_gradient",
                         "newton",
+                        "sphere_combination",
+                        "convex_combination",
                         "none",
                     ],
                 },
