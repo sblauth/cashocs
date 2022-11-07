@@ -20,7 +20,7 @@ jobs:
           conda update conda
       
       - name: Install cashocs
-        run: conda create -n test -c conda-forge cashocs python=3.10
+        run: conda create -n test -c conda-forge cashocs python=3.11
       
       - name: Test if package was installed properly
         run: |
