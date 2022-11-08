@@ -332,7 +332,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -373,7 +373,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -429,7 +429,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -464,7 +464,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -517,7 +517,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -549,7 +549,7 @@ PYBIND11_MODULE(SIGNATURE, m)
         else:
             qual = None
 
-        quality: float = comm.bcast(qual, root=0)
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
@@ -623,7 +623,7 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         """
         cond = cls._cell_condition_number(mesh)
-        quality: float = cond.vector().vec().min()[1]
+        quality = float(cond.vector().vec().min()[1])
 
         return quality
 
@@ -643,6 +643,6 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         """
         cond = cls._cell_condition_number(mesh)
-        quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
+        quality = float(cond.vector().vec().sum() / cond.vector().vec().getSize())
 
         return quality

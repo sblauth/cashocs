@@ -53,7 +53,20 @@ class DeformationHandler:
         self.vector_cg_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(mesh, "DG", 0)
         self.bbtree = self.mesh.bounding_box_tree()
+
+        self.options_prior: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.transformation_container = fenics.Function(self.vector_cg_space)
+        self.A_prior = None  # pylint: disable=invalid-name
+        self.l_prior = None
         self._setup_a_priori()
+
         self.v2d = fenics.vertex_to_dof_map(self.vector_cg_space).reshape(
             (-1, self.mesh.geometry().dim())
         )
@@ -69,16 +82,6 @@ class DeformationHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        self.transformation_container = fenics.Function(self.vector_cg_space)
         dim = self.mesh.geometric_dimension()
 
         # pylint: disable=invalid-name

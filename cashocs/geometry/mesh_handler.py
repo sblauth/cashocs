@@ -26,7 +26,7 @@ import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
-from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import cast, Dict, List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -111,10 +111,6 @@ class _MeshHandler:
     transformations and remeshing. Also includes mesh quality control checks.
     """
 
-    current_mesh_quality: float
-    mesh_quality_measure: str
-    temp_dict: Optional[Dict]
-
     def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
         """Initializes self.
 
@@ -151,12 +147,41 @@ class _MeshHandler:
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
 
-        self.current_mesh_quality = 1.0
-        self.current_mesh_quality = quality.compute_mesh_quality(
+        self.current_mesh_quality: float = quality.compute_mesh_quality(
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
+        self.options_frobenius: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
+        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
+        self.search_direction_container = fenics.Function(
+            self.form_handler.deformation_space
+        )
+        self.a_frobenius = None
+        self.l_frobenius = None
+
         self._setup_decrease_computation()
+
+        self.options_prior: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.transformation_container = fenics.Function(
+            self.form_handler.deformation_space
+        )
+        self.A_prior = None  # pylint: disable=invalid-name
+        self.l_prior = None
         self._setup_a_priori()
 
         # Remeshing initializations
@@ -168,9 +193,12 @@ class _MeshHandler:
                 pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
             )
 
+        self.temp_dict: Dict = {}
+        self.gmsh_file: str = ""
+        self.remesh_counter = 0
         if self.do_remesh and shape_optimization_problem.temp_dict is not None:
             self.temp_dict = shape_optimization_problem.temp_dict
-            self.gmsh_file: str = self.temp_dict["gmsh_file"]
+            self.gmsh_file = self.temp_dict["gmsh_file"]
             self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
 
             if not self.form_handler.has_cashocs_remesh_flag:
@@ -249,23 +277,7 @@ class _MeshHandler:
 
     def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
-        self.options_frobenius: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
-        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
-
         if self.angle_change != float("inf"):
-            self.search_direction_container = fenics.Function(
-                self.form_handler.deformation_space
-            )
-
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
             self.l_frobenius = (
                 fenics.sqrt(
@@ -329,18 +341,6 @@ class _MeshHandler:
 
     def _setup_a_priori(self) -> None:
         """Sets up the attributes and petsc solver for the a priori quality check."""
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        self.transformation_container = fenics.Function(
-            self.form_handler.deformation_space
-        )
         dim = self.mesh.geometric_dimension()
 
         # pylint: disable=invalid-name
@@ -380,8 +380,8 @@ class _MeshHandler:
             ksp_options=self.options_prior,
         )
 
-        min_det: float = x.min()[1]
-        max_det: float = x.max()[1]
+        min_det = float(x.min()[1])
+        max_det = float(x.max()[1])
 
         return bool(
             (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
