@@ -36,7 +36,6 @@ class _NewtonSolver:
 
     assembler_shift: fenics.SystemAssembler
     residual_shift: fenics.PETScVector
-    A_matrix: fenics.PETScMatrix  # pylint: disable=invalid-name
     b: fenics.PETScVector
 
     def __init__(
@@ -153,6 +152,8 @@ class _NewtonSolver:
         # pylint: disable=invalid-name
         self.A_fenics = self.A_tensor or fenics.PETScMatrix()
         self.residual = self.b_tensor or fenics.PETScVector()
+        self.b = fenics.as_backend_type(self.residual).vec()
+        self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
 
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
