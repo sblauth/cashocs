@@ -823,7 +823,7 @@ class SpaceMapping:
                 0.0, self.p_current[i].vector().vec() - self.z_star[i].vector().vec()
             )
             self.diff[i].vector().apply("")
-        eps: float = (
+        eps = float(
             np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
         )
 

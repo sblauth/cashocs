@@ -36,7 +36,6 @@ class _NewtonSolver:
 
     assembler_shift: fenics.SystemAssembler
     residual_shift: fenics.PETScVector
-    b: fenics.PETScVector
 
     def __init__(
         self,
