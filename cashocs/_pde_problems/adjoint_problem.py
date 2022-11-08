@@ -35,8 +35,6 @@ if TYPE_CHECKING:
 class AdjointProblem(pde_problem.PDEProblem):
     """This class implements the adjoint problem as well as its solver."""
 
-    number_of_solves: int
-
     def __init__(
         self,
         form_handler: _typing.FormHandler,
@@ -81,7 +79,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         ]
 
         if self.form_handler.is_shape_problem and self.temp_dict is not None:
-            self.number_of_solves = self.temp_dict["output_dict"].get(
+            self.number_of_solves: int = self.temp_dict["output_dict"].get(
                 "adjoint_solves", 0
             )
         else:

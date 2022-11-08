@@ -34,8 +34,6 @@ if TYPE_CHECKING:
 class StateProblem(pde_problem.PDEProblem):
     """The state system."""
 
-    number_of_solves: int
-
     def __init__(
         self,
         form_handler: _typing.FormHandler,
@@ -82,7 +80,9 @@ class StateProblem(pde_problem.PDEProblem):
         ]
 
         if self.temp_dict is not None:
-            self.number_of_solves = self.temp_dict["output_dict"].get("state_solves", 0)
+            self.number_of_solves: int = self.temp_dict["output_dict"].get(
+                "state_solves", 0
+            )
         else:
             self.number_of_solves = 0
 
@@ -124,7 +124,7 @@ class StateProblem(pde_problem.PDEProblem):
 
                 else:
                     for i in range(self.form_handler.state_dim):
-                        self.states[i] = nonlinear_solvers.newton_solve(
+                        nonlinear_solvers.newton_solve(
                             self.form_handler.state_eq_forms[i],
                             self.states[i],
                             self.bcs_list[i],

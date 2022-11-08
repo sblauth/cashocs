@@ -41,29 +41,6 @@ if TYPE_CHECKING:
 class HessianProblem:
     """PDE Problem used to solve the (reduced) Hessian problem."""
 
-    states_prime: List[fenics.Function]
-    adjoints_prime: List[fenics.Function]
-    bcs_list_ad: List[fenics.DirichletBC]
-    delta_control: List[fenics.Function]
-    residual: List[fenics.Function]
-    state_A_tensors: List[fenics.PETScMatrix]  # pylint: disable=invalid-name
-    adjoint_A_tensors: List[fenics.PETScMatrix]  # pylint: disable=invalid-name
-    state_b_tensors: List[fenics.PETScVector]
-    adjoint_b_tensors: List[fenics.PETScVector]
-    temp1: List[fenics.Function]
-    temp2: List[fenics.Function]
-    p: List[fenics.Function]
-    p_prev: List[fenics.Function]
-    p_pprev: List[fenics.Function]
-    s: List[fenics.Function]
-    s_prev: List[fenics.Function]
-    s_pprev: List[fenics.Function]
-    q: List[fenics.Function]
-    q_prev: List[fenics.Function]
-    hessian_actions: List[fenics.Function]
-    inactive_part: List[fenics.Function]
-    active_part: List[fenics.Function]
-
     def __init__(
         self,
         form_handler: _forms.ControlFormHandler,
@@ -90,36 +67,6 @@ class HessianProblem:
 
         self.test_directions = self.form_handler.test_directions
 
-        self._init_helper_functions()
-        self._init_linalg()
-
-        self.state_dim = self.form_handler.state_dim
-        self.control_dim = self.form_handler.control_dim
-
-        self.controls = self.form_handler.controls
-
-        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
-        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
-        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
-
-        self.no_sensitivity_solves = 0
-
-        option: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "cg"],
-            ["pc_type", "hypre"],
-            ["pc_hypre_type", "boomeramg"],
-            ["pc_hypre_boomeramg_strong_threshold", 0.7],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-50],
-            ["ksp_max_it", 100],
-        ]
-        self.riesz_ksp_options: _typing.KspOptions = []
-        for _ in range(self.control_dim):
-            self.riesz_ksp_options.append(option)
-
-    def _init_helper_functions(self) -> None:
-        """Initializes the helper functions."""
         self.residual = _utils.create_function_list(self.form_handler.control_spaces)
         self.delta_control = _utils.create_function_list(
             self.form_handler.control_spaces
@@ -142,8 +89,6 @@ class HessianProblem:
         )
         self.active_part = _utils.create_function_list(self.form_handler.control_spaces)
 
-    def _init_linalg(self) -> None:
-        """Initializes linear algebra matrices and vectors."""
         # pylint: disable=invalid-name
         self.state_A_tensors = [
             fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
@@ -158,6 +103,35 @@ class HessianProblem:
         self.adjoint_b_tensors = [
             fenics.PETScVector() for _ in range(self.form_handler.state_dim)
         ]
+
+        self.state_dim = self.form_handler.state_dim
+        self.control_dim = self.form_handler.control_dim
+
+        self.controls = self.form_handler.controls
+
+        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
+        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+
+        self.no_sensitivity_solves = 0
+
+        self.states_prime = self.form_handler.states_prime
+        self.adjoints_prime = self.form_handler.adjoints_prime
+        self.bcs_list_ad = self.form_handler.bcs_list_ad
+
+        option: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "cg"],
+            ["pc_type", "hypre"],
+            ["pc_hypre_type", "boomeramg"],
+            ["pc_hypre_boomeramg_strong_threshold", 0.7],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-50],
+            ["ksp_max_it", 100],
+        ]
+        self.riesz_ksp_options: _typing.KspOptions = []
+        for _ in range(self.control_dim):
+            self.riesz_ksp_options.append(option)
 
     def hessian_application(
         self, h: List[fenics.Function], out: List[fenics.Function]
