@@ -127,14 +127,24 @@ def assemble_petsc_system(
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
-    fenics.assemble_system(
-        mod_lhs_form,
-        rhs_form,
-        bcs,
-        keep_diagonal=True,
-        A_tensor=A_tensor,
-        b_tensor=b_tensor,
-    )
+    try:
+        fenics.assemble_system(
+            mod_lhs_form,
+            rhs_form,
+            bcs,
+            keep_diagonal=True,
+            A_tensor=A_tensor,
+            b_tensor=b_tensor,
+        )
+    except ValueError as value_exception:
+        raise _exceptions.CashocsException(
+            "The state system could not be transferred to a linear "
+            "system.\n"
+            "Perhaps you specified that the system is linear, "
+            "although it is not.\n"
+            "In your config, in the StateSystem section, "
+            "try using is_linear = False."
+        ) from value_exception
     A_tensor.ident_zeros()
 
     A = A_tensor.mat()  # pylint: disable=invalid-name
