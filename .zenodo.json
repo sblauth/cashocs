@@ -1,8 +1,8 @@
 {
     "description": "<p>cashocs is a computational, adjoint-based shape optimization and optimal control software.</p>", 
     "license": "GPL-3.0+", 
-    "title": "cashocs v1.8.11",
-    "version": "v1.8.11",
+    "title": "cashocs v1.8.12",
+    "version": "v1.8.12",
     "upload_type": "software", 
     "creators": [
         {
