@@ -38,3 +38,24 @@ exclude_lines = [
     "_loggers.warning",
     "abstractmethod",
 ]
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"
+warn_return_any = true
+follow_imports = "normal"
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+disallow_any_unimported = false
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+	"fenics.*",
+	"ufl.*",
+	"dolfin.*",
+	"petsc4py",
+	"meshio",
+	"h5py",
+]
+ignore_missing_imports = true

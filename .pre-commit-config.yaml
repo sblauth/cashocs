@@ -52,7 +52,7 @@ repos:
       - id: mypy
         files: cashocs/
         additional_dependencies: ["numpy"]
-        args: [--config-file, .mypy.ini]
+        args: [--config-file, pyproject.toml]
 
         
   - repo: https://github.com/PyCQA/prospector
