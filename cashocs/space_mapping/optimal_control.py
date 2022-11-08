@@ -231,6 +231,7 @@ class ParameterExtraction:
         self.adjoint_ksp_options = (
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
+        self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
 
     def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
         """Solves the parameter extraction problem.
@@ -254,22 +255,20 @@ class ParameterExtraction:
                 "ParameterExtraction._solve", "initial_guesses", ""
             )
 
-        self.optimal_control_problem: ocp.OptimalControlProblem = (
-            ocp.OptimalControlProblem(
-                self.state_forms,
-                self.bcs_list,
-                self.cost_functional_form,
-                self.states,
-                self.controls,
-                self.adjoints,
-                config=self.config,
-                riesz_scalar_products=self.riesz_scalar_products,
-                control_constraints=self.control_constraints,
-                initial_guess=self.initial_guess,
-                ksp_options=self.ksp_options,
-                adjoint_ksp_options=self.adjoint_ksp_options,
-                desired_weights=self.desired_weights,
-            )
+        self.optimal_control_problem = ocp.OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form,
+            self.states,
+            self.controls,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            control_constraints=self.control_constraints,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
         )
 
         self.optimal_control_problem.inject_pre_post_hook(
@@ -779,22 +778,22 @@ class SpaceMapping:
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "PR":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "HS":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "DY":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "HZ":
                 dy = -self._scalar_product(out, self.difference)
@@ -807,13 +806,14 @@ class SpaceMapping:
                         - 2 * y2 / dy * out[i].vector().vec(),
                     )
                     self.difference[i].vector().apply("")
-                self.beta = -self._scalar_product(self.difference, q) / dy
-
+                beta = -self._scalar_product(self.difference, q) / dy
+            else:
+                beta = 0.0
         else:
-            self.beta = 0.0
+            beta = 0.0
 
         for i in range(self.control_dim):
-            out[i].vector().vec().aypx(self.beta, q[i].vector().vec())
+            out[i].vector().vec().aypx(beta, q[i].vector().vec())
             out[i].vector().apply("")
 
     def _compute_eps(self) -> float:

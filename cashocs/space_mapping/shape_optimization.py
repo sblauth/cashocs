@@ -77,8 +77,6 @@ class FineModel(abc.ABC):
 class CoarseModel:
     """Coarse Model for space mapping shape optimization."""
 
-    coordinates_optimal: np.ndarray
-
     def __init__(
         self,
         state_forms: Union[ufl.Form, List[ufl.Form]],
@@ -153,6 +151,8 @@ class CoarseModel:
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
         )
+
+        self.coordinates_optimal = self.mesh.coordinates().copy()
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
@@ -236,6 +236,8 @@ class ParameterExtraction:
         self.coordinates_initial = coarse_model.coordinates_initial
         self.deformation_handler = geometry.DeformationHandler(self.mesh)
 
+        self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
+
     def _solve(self) -> None:
         """Solves the parameter extraction problem.
 
@@ -250,21 +252,19 @@ class ParameterExtraction:
                 self.coarse_model.coordinates_optimal
             )
 
-        self.shape_optimization_problem: sop.ShapeOptimizationProblem = (
-            sop.ShapeOptimizationProblem(
-                self.state_forms,
-                self.bcs_list,
-                self.cost_functional_form,
-                self.states,
-                self.adjoints,
-                self.boundaries,
-                config=self.config,
-                shape_scalar_product=self.shape_scalar_product,
-                initial_guess=self.initial_guess,
-                ksp_options=self.ksp_options,
-                adjoint_ksp_options=self.adjoint_ksp_options,
-                desired_weights=self.desired_weights,
-            )
+        self.shape_optimization_problem = sop.ShapeOptimizationProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form,
+            self.states,
+            self.adjoints,
+            self.boundaries,
+            config=self.config,
+            shape_scalar_product=self.shape_scalar_product,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
         )
         self.shape_optimization_problem.inject_pre_post_hook(
             self._pre_hook, self._post_hook
@@ -808,19 +808,19 @@ class SpaceMapping:
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "PR":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "HS":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "DY":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "HZ":
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
@@ -831,11 +831,13 @@ class SpaceMapping:
                     - 2 * y2 / dy * out[0].vector().vec(),
                 )
                 self.difference[0].vector().apply("")
-                self.beta = -self._scalar_product(self.difference, q) / dy
+                beta = -self._scalar_product(self.difference, q) / dy
+            else:
+                beta = 0.0
         else:
-            self.beta = 0.0
+            beta = 0.0
 
-        out[0].vector().vec().aypx(self.beta, q[0].vector().vec())
+        out[0].vector().vec().aypx(beta, q[0].vector().vec())
         out[0].vector().apply("")
 
     def _compute_eps(self) -> float:
