@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -30,7 +30,7 @@ import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
@@ -179,7 +179,7 @@ def test_interpolator():
 
 
 def test_create_named_bcs():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = str(pathlib.Path(__file__).parent)
     cashocs.convert(
         f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
     )
@@ -225,13 +225,13 @@ def test_create_named_bcs():
         )
 
     MPI.barrier(MPI.comm_world)
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_boundaries.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/named_mesh_physical_groups.json")
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
     MPI.barrier(MPI.comm_world)
 
     if MPI.rank(MPI.comm_world) == 0:

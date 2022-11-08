@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Constrained optimization problems, additional (in-)equality constraints."""
+"""Constrained optimization problems."""
 
 from __future__ import annotations
 
 import abc
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -34,8 +34,8 @@ from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 def _hook() -> None:
@@ -46,7 +46,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
     solver: Union[solvers.AugmentedLagrangianMethod, solvers.QuadraticPenaltyMethod]
-    scalar_tracking_forms_initial: Optional[List[Dict]]
 
     def __init__(
         self,
@@ -55,20 +54,22 @@ class ConstrainedOptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[List[types.Constraint], types.Constraint],
+        constraint_list: Union[List[_typing.Constraint], _typing.Constraint],
         config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -102,11 +103,6 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
 
         """
         self.state_forms = state_forms
@@ -127,11 +123,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self._post_hook = _hook
 
         self.cost_functional_form_initial = _utils.enlist(cost_functional_form)
-        if scalar_tracking_forms is not None:
-            self.scalar_tracking_forms_initial = _utils.enlist(scalar_tracking_forms)
-        else:
-            self.scalar_tracking_forms_initial = None
-        self.constraint_list: List[types.Constraint] = _utils.enlist(constraint_list)
+        self.constraint_list: List[_typing.Constraint] = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
@@ -275,23 +267,25 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
         config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         control_bcs_list: Optional[
             Union[
                 fenics.DirichletBC,
@@ -341,11 +335,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
             control_bcs_list: A list of boundary conditions for the control variables.
                 This is passed analogously to ``bcs_list``. Default is ``None``.
 
@@ -361,7 +350,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
-            scalar_tracking_forms=scalar_tracking_forms,
         )
 
         self.controls = controls
@@ -402,7 +390,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.scalar_tracking_forms_initial,
             control_bcs_list=self.control_bcs_list,
         )
 
@@ -433,7 +420,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.scalar_tracking_forms_initial,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
@@ -452,22 +438,24 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             None,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
-        constraint_list: Union[types.Constraint, List[types.Constraint]],
+        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
@@ -509,11 +497,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
 
         """
         super().__init__(
@@ -527,7 +510,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
-            scalar_tracking_forms=scalar_tracking_forms,
         )
 
         if self.config.getboolean("Mesh", "remesh"):
@@ -570,7 +552,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.scalar_tracking_forms_initial,
         )
         shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
         shape_optimization_problem.shift_cost_functional(
@@ -598,7 +579,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.scalar_tracking_forms_initial,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()

@@ -4,11 +4,14 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov
+*.orig
 
 ### paraview
 *.pvd
 *.vtu
 *.pvtu
+
+**/xdmf/
 
 ### pip
 /build
@@ -17,6 +20,7 @@ cashocs.egg-info/
 
 ### sphinx
 /docs/build
+/docs/source/api/generated
 
 ### cashocs
 *._cashocs_remesh_*

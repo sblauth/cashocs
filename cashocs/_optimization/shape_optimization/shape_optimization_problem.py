@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Implementation of a shape optimization problem."""
+"""Shape optimization problem."""
 
 from __future__ import annotations
 
 import json
-import os
+import pathlib
 import subprocess  # nosec B404
 import sys
 import tempfile
@@ -46,8 +46,8 @@ from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -74,7 +74,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -83,13 +86,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> ShapeOptimizationProblem:
         """Initializes self.
@@ -130,13 +131,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -161,8 +155,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 initial_guess=initial_guess,
                 ksp_options=ksp_options,
                 adjoint_ksp_options=adjoint_ksp_options,
-                scalar_tracking_forms=scalar_tracking_forms,
-                min_max_terms=min_max_terms,
                 desired_weights=desired_weights,
             )
             unscaled_problem._scale_cost_functional()  # overwrites the list
@@ -201,7 +193,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -210,13 +205,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         """Initializes self.
@@ -257,13 +250,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -282,8 +268,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            scalar_tracking_forms,
-            min_max_terms,
             desired_weights,
         )
 
@@ -357,7 +341,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def _check_remesh_input(self) -> None:
         """Checks if the inputs are valid for remeshing."""
-        if not os.path.isfile(os.path.realpath(sys.argv[0])):
+        if not pathlib.Path(sys.argv[0]).is_file():
             raise _exceptions.CashocsException(
                 "Not a valid configuration. "
                 "The script has to be the first command line argument."
@@ -385,7 +369,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self._check_remesh_input()
 
             if not self.has_cashocs_remesh_flag:
-                self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+                self.directory = pathlib.Path(sys.argv[0]).resolve().parent
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     temp_dir: str = tempfile.mkdtemp(
                         prefix="._cashocs_remesh_temp_", dir=self.directory
@@ -488,7 +472,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             shape_variable_abstractions.ShapeVariableAbstractions(self)
         )
-        self.line_search = line_search.ArmijoLineSearch(self)
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            self.line_search = line_search.ArmijoLineSearch(self)
+        elif line_search_type == "polynomial":
+            self.line_search = line_search.PolynomialLineSearch(self)
 
         # TODO: Do not pass the line search (unnecessary)
         if self.algorithm.casefold() == "gradient_descent":
@@ -543,10 +532,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.temp_dir], check=True
+                    ["rm", "-r", self.temp_dir], check=False
                 )
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.mesh_handler.remesh_directory], check=True
+                    ["rm", "-r", self.mesh_handler.remesh_directory], check=False
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
             sys.__excepthook__(exctype, value, traceback)

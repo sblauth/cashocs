@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for general reduced cost functionals."""
+"""Reduced cost functionals."""
 
 from __future__ import annotations
 
 import abc
+import ctypes
 from typing import List, Optional, Set, Tuple, TYPE_CHECKING, Union
 
 import fenics
@@ -31,7 +32,7 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
-    from cashocs import types
+    from cashocs import _typing
 
 
 class ReducedCostFunctional:
@@ -39,7 +40,7 @@ class ReducedCostFunctional:
 
     def __init__(
         self,
-        form_handler: types.FormHandler,
+        form_handler: _typing.FormHandler,
         state_problem: _pde_problems.StateProblem,
     ) -> None:
         """Initializes self.
@@ -206,7 +207,7 @@ class ScalarTrackingFunctional(Functional):
     def __init__(
         self,
         integrand: ufl.Form,
-        tracking_goal: Union[float, int],
+        tracking_goal: Union[float, int, ctypes.c_float, ctypes.c_double],
         weight: Union[float, int] = 1.0,
     ) -> None:
         """Initializes self.
@@ -214,13 +215,18 @@ class ScalarTrackingFunctional(Functional):
         Args:
             integrand: The integrand of the functional
             tracking_goal: A real number, which the integral of the integrand should
-                track
+                track. Note, that when a ctypes object is passed, the float is assumed
+                to be mutable and the tracking_goal is updated every iteration.
             weight: A real number which gives the scaling factor for this functional
 
         """
         super().__init__()
         self.integrand = integrand
         self.tracking_goal = tracking_goal
+        if not isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+            self.tracking_goal_value = self.tracking_goal
+        else:
+            self.tracking_goal_value = self.tracking_goal.value
         mesh = self.integrand.integrals()[0].ufl_domain().ufl_cargo()
         self.integrand_value = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
         self.weight = fenics.Function(fenics.FunctionSpace(mesh, "R", 0))
@@ -234,13 +240,16 @@ class ScalarTrackingFunctional(Functional):
             The current value of the functional.
 
         """
+        if isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+            self.tracking_goal_value = self.tracking_goal.value
+
         scalar_integral_value = fenics.assemble(self.integrand)
         self.integrand_value.vector().vec().set(scalar_integral_value)
         self.integrand_value.vector().apply("")
         val: float = (
             self.weight.vector().vec().sum()
             / 2.0
-            * pow(scalar_integral_value - self.tracking_goal, 2)
+            * pow(scalar_integral_value - self.tracking_goal_value, 2)
         )
         return val
 
@@ -257,9 +266,12 @@ class ScalarTrackingFunctional(Functional):
             A form of the resulting derivative
 
         """
+        if isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+            self.tracking_goal_value = self.tracking_goal.value
+
         derivative = fenics.derivative(
             self.weight
-            * (self.integrand_value - fenics.Constant(self.tracking_goal))
+            * (self.integrand_value - fenics.Constant(self.tracking_goal_value))
             * self.integrand,
             argument,
             direction,
@@ -436,7 +448,7 @@ class Lagrangian:
 
     def __init__(
         self,
-        cost_functional_list: List[types.CostFunctional],
+        cost_functional_list: List[_typing.CostFunctional],
         state_forms: List[ufl.Form],
     ) -> None:
         """Initializes self.

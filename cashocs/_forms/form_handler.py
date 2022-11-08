@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing UFL forms for PDE constrained optimization."""
+"""Management for weak forms."""
 
 from __future__ import annotations
 
@@ -30,8 +30,8 @@ from cashocs import _utils
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
     from cashocs._forms import shape_regularization as sr
 
 
@@ -95,9 +95,9 @@ class FormHandler(abc.ABC):
     scalar_cost_functional_integrands: List[ufl.Form]
     scalar_cost_functional_integrand_values: List[fenics.Function]
     states: List[fenics.Function]
-    cost_functional_list: List[types.CostFunctional]
+    cost_functional_list: List[_typing.CostFunctional]
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:

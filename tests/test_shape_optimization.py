@@ -19,7 +19,7 @@
 
 """
 
-import os
+import pathlib
 import subprocess
 
 from fenics import *
@@ -85,7 +85,7 @@ def t_div(u, n):
 
 
 rng = np.random.RandomState(300696)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 # config = cashocs.load_config(dir_path + "/config_sop.ini")
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -717,13 +717,13 @@ def test_inhomogeneous_mu():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
-def test_save_pvd_files():
+def test_save_xdmf_files():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("Output", "save_pvd", "True")
+    config.set("Output", "save_state", "True")
     config.set("Output", "save_results", "True")
     config.set("Output", "save_txt", "True")
-    config.set("Output", "save_pvd_adjoint", "True")
-    config.set("Output", "save_pvd_gradient", "True")
+    config.set("Output", "save_adjoint", "True")
+    config.set("Output", "save_gradient", "True")
     config.set("Output", "result_dir", dir_path + "/out")
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -732,22 +732,16 @@ def test_save_pvd_files():
 
     MPI.barrier(MPI.comm_world)
 
-    assert os.path.isdir(dir_path + "/out")
-    assert os.path.isdir(dir_path + "/out/pvd")
-    assert os.path.isfile(dir_path + "/out/history.txt")
-    assert os.path.isfile(dir_path + "/out/history.json")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/state_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/state_0000006.pvtu"
-    )
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0.pvd")
-    assert os.path.isfile(dir_path + "/out/pvd/adjoint_0000006.vtu") or os.path.isfile(
-        dir_path + "/out/pvd/adjoint_0000006.pvtu"
-    )
-    assert os.path.isfile(dir_path + "/out/pvd/shape_gradient.pvd")
-    assert os.path.isfile(
-        dir_path + "/out/pvd/shape_gradient000006.vtu"
-    ) or os.path.isfile(dir_path + "/out/pvd/shape_gradient000006.pvtu")
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -1064,7 +1058,7 @@ def test_check_config_list():
 
 def test_stepsize2():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("OptimizationRoutine", "initial_stepsize", "1e-3")
+    config.set("LineSearch", "initial_stepsize", "1e-3")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

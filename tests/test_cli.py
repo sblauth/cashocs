@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 import subprocess
 
 import fenics
@@ -26,7 +26,7 @@ import cashocs
 import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = str(pathlib.Path(__file__).parent)
 
 
 def test_cli():
@@ -65,12 +65,12 @@ def test_cli():
         assert np.allclose(mesh_coords, gmsh_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
@@ -118,12 +118,12 @@ def test_convert_wrapper():
         assert np.allclose(mesh_coords, gmsh_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh_boundaries.h5")
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
@@ -151,12 +151,12 @@ def test_convert3D():
     assert abs(fenics.assemble(1 * ds(5)) - 1) < 1e-14
     assert abs(fenics.assemble(1 * ds(6)) - 1) < 1e-14
 
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3_subdomains.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3_subdomains.h5")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3_boundaries.xdmf")
-    assert os.path.isfile(f"{dir_path}/mesh/mesh3_boundaries.h5")
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3.xdmf"], check=True)
@@ -172,7 +172,7 @@ def test_wrong_formats():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.mesh", f"{dir_path}/mesh/mesh.xdmf"]
+                [f"{dir_path}/mesh/mesh.mesh", "-o", f"{dir_path}/mesh/mesh.xdmf"]
             )
         assert "due to wrong format." in str(e_info.value)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -180,7 +180,7 @@ def test_wrong_formats():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.test"]
+                [f"{dir_path}/mesh/mesh.msh", "-o", f"{dir_path}/mesh/mesh.test"]
             )
         assert "due to wrong format." in str(e_info.value)
     fenics.MPI.barrier(fenics.MPI.comm_world)

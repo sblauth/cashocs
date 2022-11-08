@@ -28,7 +28,6 @@ from typing_extensions import Literal
 import ufl
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
 
 
@@ -492,96 +491,3 @@ def newton_solve(
 
     solution = solver.solve()
     return solution
-
-
-def damped_newton_solve(
-    nonlinear_form: ufl.Form,
-    u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    derivative: Optional[ufl.Form] = None,
-    rtol: float = 1e-10,
-    atol: float = 1e-10,
-    max_iter: int = 50,
-    convergence_type: Literal["combined", "rel", "abs"] = "combined",
-    norm_type: Literal["l2", "linf"] = "l2",
-    damped: bool = True,
-    verbose: bool = True,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
-) -> fenics.Function:  # pragma: no cover
-    r"""Damped Newton solve interface, only here for compatibility reasons.
-
-    Args:
-        nonlinear_form: The variational form of the nonlinear problem to be solved by
-            Newton's method.
-        u: The sought solution / initial guess. It is not assumed that the initial guess
-            satisfies the Dirichlet boundary conditions, they are applied automatically.
-            The method overwrites / updates this Function.
-        bcs: A list of DirichletBCs for the nonlinear variational problem.
-        derivative: The Jacobian of nonlinear_form, used for the Newton method. Default
-            is None, and in this case the Jacobian is computed automatically with AD.
-        rtol: Relative tolerance of the solver if convergence_type is either
-            ``'combined'`` or ``'rel'`` (default is ``rtol = 1e-10``).
-        atol: Absolute tolerance of the solver if convergence_type is either
-            ``'combined'`` or ``'abs'`` (default is ``atol = 1e-10``).
-        max_iter: Maximum number of iterations carried out by the method (default is
-            ``max_iter = 50``).
-        convergence_type: Determines the type of stopping criterion that is used.
-        norm_type: Determines which norm is used in the stopping criterion.
-        damped: If ``True``, then a damping strategy is used. If ``False``, the
-            classical Newton-Raphson iteration (without damping) is used (default is
-            ``True``).
-        verbose: If ``True``, prints status of the iteration to the console (default is
-            ``True``).
-        ksp_options: The list of options for the linear solver.
-
-    Returns:
-        The solution of the nonlinear variational problem, if converged. This overwrites
-        the input function u.
-
-    Examples:
-        Consider the problem
-
-        .. math::
-            \begin{alignedat}{2}
-            - \Delta u + u^3 &= 1 \quad &&\text{ in } \Omega=(0,1)^2 \\
-            u &= 0 \quad &&\text{ on } \Gamma.
-            \end{alignedat}
-
-        This is solved with the code ::
-
-            from fenics import *
-            import cashocs
-
-            mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(25)
-            V = FunctionSpace(mesh, 'CG', 1)
-
-            u = Function(function_space)
-            v = TestFunction(function_space)
-            F = inner(grad(u), grad(v))*dx + pow(u,3)*v*dx - Constant(1)*v*dx
-            bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1,2,3,4])
-            cashocs.newton_solve(F, u, bcs)
-
-    .. deprecated:: 1.5.0
-        This is replaced by cashocs.newton_solve and will be removed in the future.
-
-    """
-    _loggers.warning(
-        "DEPREACTION WARNING: cashocs.damped_newton_solve is replaced "
-        "by cashocs.newton_solve and will be removed in the future."
-    )
-
-    return newton_solve(
-        nonlinear_form,
-        u,
-        bcs,
-        derivative=derivative,
-        shift=None,
-        rtol=rtol,
-        atol=atol,
-        max_iter=max_iter,
-        convergence_type=convergence_type,
-        norm_type=norm_type,
-        damped=damped,
-        verbose=verbose,
-        ksp_options=ksp_options,
-    )

@@ -34,8 +34,11 @@ release = "1.8.12"
 extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinxarg.ext",
     "sphinx_copybutton",
+    "sphinx.ext.viewcode",
+    "sphinx_design",
 ]
 
 napoleon_google_docstring = True
@@ -53,12 +56,12 @@ napoleon_use_rtype = True
 
 autodoc_default_options = {
     "members": True,
-    "member-order": "alphabetical",
+    "member-order": "groupwise",
     "undoc-members": False,
-    "inherited-members": True,
+    "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
-autodoc_member_order = "alphabetical"
+autodoc_member_order = "groupwise"
 autodoc_mock_imports = [
     "fenics",
     "numpy",
@@ -67,9 +70,12 @@ autodoc_mock_imports = [
     "meshio",
     "dolfin",
     "configparser",
+    "h5py",
 ]
 autodoc_typehints = "description"
 autoclass_content = "both"
+
+highlight_language = "python"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -87,16 +93,36 @@ exclude_patterns = ["_build"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 html_logo = "logo.png"
 html_theme_options = {
-    "logo_only": True,
+    "github_url": "https://github.com/sblauth/cashocs",
+    "header_links_before_dropdown": 5,
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/cashocs/",
+            "icon": "fa-solid fa-box",
+        }
+    ],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    # "navbar_persistent": [],
+    "show_nav_level": 2,
+    "favicons": [
+        {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
+        {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
+    ],
 }
+
+html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-html_static_path = []
+html_static_path = ["_static"]
+html_css_files = ["cashocs.css"]
 
 pygments_style = "sphinx"
+
+autosummary_generate = True
+autosummary_imported_members = True

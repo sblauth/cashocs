@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Base class for all PDE problems."""
+"""General PDE problem."""
 
 from __future__ import annotations
 
@@ -25,13 +25,13 @@ from typing import List, TYPE_CHECKING, Union
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class PDEProblem(abc.ABC):
     """Base class for a PDE problem."""
 
-    def __init__(self, form_handler: types.FormHandler) -> None:
+    def __init__(self, form_handler: _typing.FormHandler) -> None:
         """Initializes self.
 
         Args:

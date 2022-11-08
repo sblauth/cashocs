@@ -1,7 +1,7 @@
-Change Log
-==========
+Release Notes
+=============
 
-This is cashocs' change log. Note, that only major and minor releases are covered
+This are cashocs' release notes. Note, that only major and minor releases are covered
 here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
@@ -9,14 +9,63 @@ of the maintenance releases, please take a look at
 in development
 --------------
 
+* cashocs has a new docstyle. It now uses the pydata-sphinx-theme.
+
 * Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.
 
-* cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
-
-* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+* Added polynomial based models for computing trial stepsizes in an extended Armijo rule. This method will become the default line search in the future.
 
 * implemented a wrapper for cashocs-convert, so that this can be used from inside python too. Simply call cashocs.convert(inputfile).
 
+* ``cashocs-convert`` now has a default output argument (which is the same name as the input file). This can be invoked with the -o or --outfile flag.
+
+* ``cashocs-convert`` now has an additional quiet flag, which can be invoked with ``-q`` or ``--quiet``. Analogously, :py:func:`<cashocs.convert>` also has a keyword argument ``quiet``. These arguments / flags suppress its output.
+
+* cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing
+
+* cashocs print calls now flush the output buffer, which helps when sys.stdout is a file
+
+* cashocs now uses pathlib over os.path
+
+* cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
+
+* Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization
+
+* Deprecated functions have been removed. In particular, the functions ``create_bcs_list``, ``create_config``, ``damped_newton_solve`` are removed. They are replaced by :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`, :py:func:`load_config <cashocs.load_config>`, and :py:func:`newton_solve <cashocs.newton_solve>`.
+
+* The usage of the keyword arguments ``scalar_tracking_forms`` and ``min_max_terms`` in :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>` and :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` has been removed. Instead, every cost functional is now passed via the ``cost_functional_list`` parameter. Scalar tracking forms are now realized via :py:class:`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>` and min-max terms via :py:class:`MinMaxFunctional <cashocs.MinMaxFunctional>`.
+
+* BFGS methods can now be used in a restarted fashion, if desired
+
+* Changed configuration file parameters
+
+  * Section Output
+
+    * ``save_pvd`` is now called ``save_state``, functionality is the same
+
+    * ``save_pvd_adjoint`` is now called ``save_adjoint``, functionality is the same
+
+    * ``save_pvd_gradient`` is now called ``save_gradient``, functionality is the same
+
+  * Section LineSearch
+
+    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize```are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
+
+* New configuration file parameters
+
+  * Section AlgoLBFGS
+  
+    * ``bfgs_periodic_restart`` is an integer parameter. If this is 0 (the default), no restarting is done. If this is >0, then the BFGS method is restarted after as many iterations, as given in the parameter
+  
+  * Section LineSearch is a completely new section where the line searches can be configured.
+  
+    * ``method`` is a string parameter, which can take the values ``armijo`` (which is the default previous line search) and ``polynomial`` (which are the new models)
+    
+    * ``polynomial_model`` is a string parameter which can be either ``quadratic`` or ``cubic``. In case this is ``quadratic``, three values (current function value, directional derivative, and trial function value) are used to generate a quadratic model of the one-dimensional cost functional. If this is ``cubic``, a cubic model is generated based on the last two guesses for the stepsize. These models are exactly minimized to get a new trial stepsize and a safeguarding is applied so that the steps remain feasible.
+    
+    * ``factor_high`` is one parameter for the safeguarding, the upper bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
+    
+    * ``factor_low`` is the other parameter for the safeguarding, the lower bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
 
 1.8.0 (July 6, 2022)
 --------------------

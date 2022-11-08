@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Base classes for the PDE constrained optimization problems.
+"""PDE constrained optimization problems.
 
 This module is used to define the parent class for the optimization problems,
 as many parameters and variables are common for optimal control and shape
@@ -41,7 +41,7 @@ from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
@@ -59,14 +59,13 @@ class OptimizationProblem(abc.ABC):
 
     gradient: List[fenics.Function]
     reduced_cost_functional: cost_functional.ReducedCostFunctional
-    gradient_problem: types.GradientProblem
+    gradient_problem: _typing.GradientProblem
     output_manager: io.OutputManager
-    form_handler: types.FormHandler
+    form_handler: _typing.FormHandler
     optimization_variable_abstractions: ova.OptimizationVariableAbstractions
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
-    use_scalar_tracking: bool = False
     temp_dict: Optional[Dict]
     algorithm: str
     line_search: ls.LineSearch
@@ -74,7 +73,7 @@ class OptimizationProblem(abc.ABC):
     solver: optimization_algorithms.OptimizationAlgorithm
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
-    cost_functional_list: List[types.CostFunctional]
+    cost_functional_list: List[_typing.CostFunctional]
 
     def __init__(
         self,
@@ -83,20 +82,21 @@ class OptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         r"""Initializes self.
@@ -129,13 +129,6 @@ class OptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -164,7 +157,6 @@ class OptimizationProblem(abc.ABC):
         self.states: List[fenics.Function] = _utils.enlist(states)
         self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
 
-        self.use_min_max_terms = False
         self.use_scaling = False
 
         self._parse_optional_inputs(
@@ -172,8 +164,6 @@ class OptimizationProblem(abc.ABC):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            scalar_tracking_forms,
-            min_max_terms,
             desired_weights,
         )
 
@@ -216,7 +206,10 @@ class OptimizationProblem(abc.ABC):
     def _parse_cost_functional_form(
         self,
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
     ) -> None:
         """Parses the cost functional form for use in cashocs."""
@@ -237,47 +230,16 @@ class OptimizationProblem(abc.ABC):
             ):
                 self.cost_functional_list.append(functional)
 
-    def _parse_scalar_tracking_forms(
-        self, scalar_tracking_forms: Optional[Union[List[Dict], Dict]]
-    ) -> None:
-        self.scalar_tracking_legacy_mode = False
-        if scalar_tracking_forms is None:
-            self.scalar_tracking_forms = scalar_tracking_forms
-        else:
-            _loggers.warning(
-                "DEPRECATION WARNING: Using the keyword argument scalar_tracking_forms"
-                " is replaced by using cashocs.ScalarTrackingFunctional and appending"
-                "this to the list of cost functionals."
-                "The former usage will be removed in the future."
-            )
-            self.scalar_tracking_forms = None
-
-            for functional in _utils.enlist(scalar_tracking_forms):
-                integrand = functional["integrand"]
-                tracking_goal = functional["tracking_goal"]
-                try:
-                    weight = functional["weight"]
-                except KeyError:
-                    weight = 1.0
-                scalar_tracking_functional = cost_functional.ScalarTrackingFunctional(
-                    integrand, tracking_goal, weight
-                )
-                self.cost_functional_list.append(scalar_tracking_functional)
-            self.use_scalar_tracking = False
-            self.scalar_tracking_legacy_mode = True
-
     def _parse_optional_inputs(
         self,
         config: Optional[io.Config],
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]],
-        min_max_terms: Optional[Union[List[Dict], Dict]],
         desired_weights: Optional[Union[List[float], float]],
     ) -> None:
         """Initializes the optional input parameters.
@@ -291,12 +253,6 @@ class OptimizationProblem(abc.ABC):
                 PETSc, used to solve the state systems.
             adjoint_ksp_options: A list of strings corresponding to command line options
                 for PETSc, used to solve the adjoint systems.
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``.
-            min_max_terms: Additional terms for the cost functional, not be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -316,7 +272,7 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            self.ksp_options: types.KspOptions = []
+            self.ksp_options: _typing.KspOptions = []
             option: List[List[Union[str, int, float]]] = copy.deepcopy(
                 _utils.linalg.direct_ksp_options
             )
@@ -326,49 +282,17 @@ class OptimizationProblem(abc.ABC):
         else:
             self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
-        self.adjoint_ksp_options: types.KspOptions = (
+        self.adjoint_ksp_options: _typing.KspOptions = (
             self.ksp_options[:]
             if adjoint_ksp_options is None
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
-
-        self._parse_scalar_tracking_forms(scalar_tracking_forms)
-
-        if min_max_terms is None:
-            self.min_max_terms = min_max_terms
-        else:
-            _loggers.warning(
-                "DEPRECATION WARNING: Using the keyword argument min_max_terms"
-                " is replaced by using cashocs.MinMaxFunctional and appending"
-                "this to the list of cost functionals."
-                "The former usage will be removed in the future."
-            )
-            self.min_max_terms = None
-            self.use_min_max_terms = False
-            for functional in _utils.enlist(min_max_terms):
-                integrand = functional["integrand"]
-                lower_bound = functional["lower_bound"]
-                upper_bound = functional["upper_bound"]
-                mu = functional["mu"]
-                lambd = functional["lambda"]
-                min_max_functional = cost_functional.MinMaxFunctional(
-                    integrand, lower_bound, upper_bound, mu, lambd
-                )
-                self.cost_functional_list.append(min_max_functional)
 
         if desired_weights is None:
             self.desired_weights = desired_weights
         else:
             self.desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
-
-            if self.scalar_tracking_legacy_mode:
-                raise _exceptions.InputError(
-                    "OptimizationProblem",
-                    "scalar_tracking_forms",
-                    "Scaling of scalar_tracking_forms is now only possible when using "
-                    "cashocs.ScalarTrackingFunctional",
-                )
 
     def compute_state_variables(self) -> None:
         """Solves the state system.
@@ -616,7 +540,7 @@ class OptimizationProblem(abc.ABC):
             self.initial_function_values.append(val)
 
     def _scale_cost_functional(self) -> None:
-        """Scales the terms of the cost functional and scalar_tracking forms."""
+        """Scales the terms of the cost functional."""
         _loggers.info(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "

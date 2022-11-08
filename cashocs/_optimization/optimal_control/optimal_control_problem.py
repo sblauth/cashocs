@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Class representing an optimal control problem."""
+"""Optimal control problem."""
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -37,8 +37,8 @@ from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):
@@ -64,7 +64,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
@@ -74,13 +77,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
         control_bcs_list: Optional[
             Union[
@@ -129,13 +130,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -167,8 +161,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 initial_guess=initial_guess,
                 ksp_options=ksp_options,
                 adjoint_ksp_options=adjoint_ksp_options,
-                scalar_tracking_forms=scalar_tracking_forms,
-                min_max_terms=min_max_terms,
                 desired_weights=desired_weights,
                 control_bcs_list=control_bcs_list,
             )
@@ -183,7 +175,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[types.CostFunctional], types.CostFunctional, List[ufl.Form], ufl.Form
+            List[_typing.CostFunctional],
+            _typing.CostFunctional,
+            List[ufl.Form],
+            ufl.Form,
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
@@ -193,13 +188,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[List[Dict], Dict]] = None,
-        min_max_terms: Optional[Union[List[Dict], Dict]] = None,
         desired_weights: Optional[List[float]] = None,
         control_bcs_list: Optional[
             Union[
@@ -248,13 +241,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
-            scalar_tracking_forms: A list of dictionaries that define scalar tracking
-                type cost functionals, where an integral value should be brought to a
-                desired value. Each dict needs to have the keys ``'integrand'`` and
-                ``'tracking_goal'``. Default is ``None``, i.e., no scalar tracking terms
-                are considered.
-            min_max_terms: Additional terms for the cost functional, not to be used
-                directly.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -279,8 +265,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
-            scalar_tracking_forms,
-            min_max_terms,
             desired_weights,
         )
 
@@ -423,7 +407,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(self)
         )
-        self.line_search = line_search.ArmijoLineSearch(self)
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            self.line_search = line_search.ArmijoLineSearch(self)
+        elif line_search_type == "polynomial":
+            self.line_search = line_search.PolynomialLineSearch(self)
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.compute_newton_forms()

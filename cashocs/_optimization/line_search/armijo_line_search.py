@@ -15,21 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the Armijo line search."""
+"""Armijo line search algorithm."""
 
 from __future__ import annotations
 
 from typing import List
 
 import fenics
-import numpy as np
 from typing_extensions import TYPE_CHECKING
 
 from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_algorithms
 
 
@@ -38,7 +37,7 @@ class ArmijoLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
-        optimization_problem: types.OptimizationProblem,
+        optimization_problem: _typing.OptimizationProblem,
     ) -> None:
         """Initializes self.
 
@@ -49,10 +48,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         super().__init__(optimization_problem)
 
         self.epsilon_armijo: float = self.config.getfloat(
-            "OptimizationRoutine", "epsilon_armijo"
-        )
-        self.beta_armijo: float = self.config.getfloat(
-            "OptimizationRoutine", "beta_armijo"
+            "LineSearch", "epsilon_armijo"
         )
         self.armijo_stepsize_initial = self.stepsize
         self.search_direction_inf = 1.0
@@ -105,30 +101,7 @@ class ArmijoLineSearch(line_search.LineSearch):
                 (presumably) scaled.
 
         """
-        self.search_direction_inf = np.max(
-            [
-                search_direction[i].vector().norm("linf")
-                for i in range(len(self.gradient))
-            ]
-        )
-
-        if has_curvature_info:
-            self.stepsize = 1.0
-
-        num_decreases = (
-            self.optimization_variable_abstractions.compute_a_priori_decreases(
-                search_direction, self.stepsize
-            )
-        )
-        self.stepsize /= pow(self.beta_armijo, num_decreases)
-
-        if self.safeguard_stepsize and solver.iteration == 0:
-            search_direction_norm = np.sqrt(
-                self.form_handler.scalar_product(search_direction, search_direction)
-            )
-            self.stepsize = float(
-                np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
-            )
+        self.initialize_stepsize(solver, search_direction, has_curvature_info)
 
         while True:
 

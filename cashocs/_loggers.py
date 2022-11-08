@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Logging module for cashocs."""
+"""Logging for cashocs."""
 
 from __future__ import annotations
 

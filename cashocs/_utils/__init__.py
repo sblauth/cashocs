@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module including utility and helper functions.
+"""Utility and helper functions.
 
 This module includes utility and helper functions used in cashocs. They might also be
 interesting for users, so they are part of the public API. Includes wrappers that allow
@@ -23,7 +23,6 @@ to shorten the coding for often recurring actions.
 """
 
 from cashocs._utils.forms import bilinear_boundary_form_modification
-from cashocs._utils.forms import create_bcs_list
 from cashocs._utils.forms import create_dirichlet_bcs
 from cashocs._utils.forms import max_
 from cashocs._utils.forms import min_
@@ -61,7 +60,6 @@ __all__ = [
     "setup_petsc_options",
     "solve_linear_problem",
     "Interpolator",
-    "create_bcs_list",
     "assemble_and_solve_linear",
     "split_linear_forms",
     "create_function_list",

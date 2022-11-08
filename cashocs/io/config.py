@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for managing config files."""
+"""Management of configuration files."""
 
 from __future__ import annotations
 
@@ -26,32 +26,6 @@ from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
 from cashocs import _loggers
-
-
-# deprecated
-def create_config(path: str) -> ConfigParser:  # pragma: no cover
-    """Loads a config object from a config file.
-
-    Loads the config from a .ini file via the configparser package.
-
-    Args:
-        path: The path to the .ini file storing the configuration.
-
-    Returns:
-        The output config file, which includes the path to the .ini file.
-
-    .. deprecated:: 1.1.0
-        This is replaced by :py:func:`load_config <cashocs.load_config>`
-        and will be removed in the future.
-
-    """
-    _loggers.warning(
-        "DEPRECATION WARNING: cashocs.create_config is replaced by cashocs.load_config "
-        "and will be removed in the future."
-    )
-    config = load_config(path)
-
-    return config
 
 
 def load_config(path: str) -> ConfigParser:
@@ -205,6 +179,23 @@ class Config(ConfigParser):
                     "type": "int",
                     "attributes": ["non_negative"],
                 },
+                "gradient_method": {
+                    "type": "str",
+                    "possible_options": ["direct", "iterative"],
+                },
+                "gradient_tol": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                },
+                "soft_exit": {
+                    "type": "bool",
+                },
+            },
+            "LineSearch": {
+                "method": {
+                    "type": "str",
+                    "possible_options": ["armijo", "polynomial"],
+                },
                 "initial_stepsize": {
                     "type": "float",
                     "attributes": ["positive"],
@@ -218,16 +209,18 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive", "larger_than_one"],
                 },
-                "gradient_method": {
+                "polynomial_model": {
                     "type": "str",
-                    "possible_options": ["direct", "iterative"],
+                    "possible_options": ["cubic", "quadratic"],
                 },
-                "gradient_tol": {
+                "factor_low": {
                     "type": "float",
                     "attributes": ["less_than_one", "positive"],
                 },
-                "soft_exit": {
-                    "type": "bool",
+                "factor_high": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
+                    "larger_than": ("LineSearch", "factor_low"),
                 },
             },
             "AlgoLBFGS": {
@@ -237,6 +230,10 @@ class Config(ConfigParser):
                 },
                 "use_bfgs_scaling": {
                     "type": "bool",
+                },
+                "bfgs_periodic_restart": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
                 },
             },
             "AlgoCG": {
@@ -471,13 +468,13 @@ class Config(ConfigParser):
                 "save_txt": {
                     "type": "bool",
                 },
-                "save_pvd": {
+                "save_state": {
                     "type": "bool",
                 },
-                "save_pvd_adjoint": {
+                "save_adjoint": {
                     "type": "bool",
                 },
-                "save_pvd_gradient": {
+                "save_gradient": {
                     "type": "bool",
                 },
                 "save_mesh": {
@@ -526,12 +523,18 @@ rtol = 1e-3
 atol = 0.0
 maximum_iterations = 100
 soft_exit = False
+gradient_tol = 1e-9
+gradient_method = direct
+
+[LineSearch]
+method = armijo
 epsilon_armijo = 1e-4
 beta_armijo = 2.0
 initial_stepsize = 1.0
 safeguard_stepsize = True
-gradient_tol = 1e-9
-gradient_method = direct
+polynomial_model = cubic
+factor_high = 0.5
+factor_low = 0.1
 
 [ShapeGradient]
 lambda_lame = 0.0
@@ -589,6 +592,7 @@ inner_newton_atol = 0.0
 [AlgoLBFGS]
 bfgs_memory_size = 5
 use_bfgs_scaling = True
+bfgs_periodic_restart = 0
 
 [AlgoCG]
 cg_method = DY
@@ -609,9 +613,9 @@ angle_change = inf
 save_results = True
 verbose = True
 save_txt = True
-save_pvd = False
-save_pvd_adjoint = False
-save_pvd_gradient = False
+save_state = False
+save_adjoint = False
+save_gradient = False
 save_mesh = False
 result_dir = ./results
 time_suffix = False

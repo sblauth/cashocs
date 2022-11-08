@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: '37 22 * * *'
 
+permissions:
+  security-events: write
+
 jobs:
   OSSAR-Scan:
     # OSSAR runs on windows-latest.
@@ -18,7 +21,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.1.0
 
     # Ensure a compatible version of dotnet is installed.
     # The [Microsoft Security Code Analysis CLI](https://aka.ms/mscadocs) is built with dotnet v3.1.201.

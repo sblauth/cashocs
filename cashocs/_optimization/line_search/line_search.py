@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for the parent class of all line searches."""
+"""General line search."""
 
 from __future__ import annotations
 
@@ -23,18 +23,19 @@ import abc
 from typing import List, TYPE_CHECKING
 
 import fenics
+import numpy as np
 
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: types.OptimizationProblem) -> None:
+    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
         Args:
@@ -53,10 +54,12 @@ class LineSearch(abc.ABC):
         self.is_shape_problem = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
-        self.stepsize = self.config.getfloat("OptimizationRoutine", "initial_stepsize")
+        self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(
-            "OptimizationRoutine", "safeguard_stepsize"
+            "LineSearch", "safeguard_stepsize"
         )
+
+        self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"
@@ -87,6 +90,51 @@ class LineSearch(abc.ABC):
         """
         self.search(solver, search_direction, has_curvature_info)
         self.post_line_search()
+
+    def initialize_stepsize(
+        self,
+        solver: optimization_algorithms.OptimizationAlgorithm,
+        search_direction: List[fenics.Function],
+        has_curvature_info: bool,
+    ) -> None:
+        """Initializes the stepsize.
+
+        Performs various ways for safeguarding (can be deactivated).
+
+        Args:
+            solver: The optimization algorithm.
+            search_direction: The current search direction.
+            has_curvature_info: A flag, which indicates whether the direction is
+                (presumably) scaled.
+
+        """
+        self.search_direction_inf = np.max(
+            [
+                search_direction[i].vector().norm("linf")
+                for i in range(len(self.gradient))
+            ]
+        )
+
+        if has_curvature_info:
+            self.stepsize = 1.0
+
+        if solver.is_restarted:
+            self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
+
+        num_decreases = (
+            self.optimization_variable_abstractions.compute_a_priori_decreases(
+                search_direction, self.stepsize
+            )
+        )
+        self.stepsize /= pow(self.beta_armijo, num_decreases)
+
+        if self.safeguard_stepsize and solver.iteration == 0:
+            search_direction_norm = np.sqrt(
+                self.form_handler.scalar_product(search_direction, search_direction)
+            )
+            self.stepsize = float(
+                np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
+            )
 
     @abc.abstractmethod
     def search(

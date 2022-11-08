@@ -34,8 +34,8 @@ from cashocs import _utils
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs import io
-    from cashocs import types
 
 
 def _hook() -> None:
@@ -86,13 +86,11 @@ class CoarseModel:
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         adjoint_ksp_options: Optional[
-            Union[types.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
-        min_max_terms: Optional[List[Dict]] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:
         """Initializes self.
@@ -110,8 +108,6 @@ class CoarseModel:
             initial_guess: The initial guess for solving a nonlinear state equation
             ksp_options: The list of PETSc options for the state equations
             adjoint_ksp_options: The list of PETSc options for the adjoint equations
-            scalar_tracking_forms: The list of scalar tracking forms
-            min_max_terms: The list of min and max terms (squared)
             desired_weights: The desired weights for the cost functional
 
         """
@@ -127,8 +123,6 @@ class CoarseModel:
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
-        self.scalar_tracking_forms = scalar_tracking_forms
-        self.min_max_terms = min_max_terms
         self.desired_weights = desired_weights
 
         self._pre_hook = _hook
@@ -147,8 +141,6 @@ class CoarseModel:
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
-            scalar_tracking_forms=self.scalar_tracking_forms,
-            min_max_terms=self.min_max_terms,
             desired_weights=self.desired_weights,
         )
 
@@ -172,7 +164,6 @@ class ParameterExtraction:
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
-        scalar_tracking_forms: Optional[Union[Dict, List[Dict]]] = None,
         desired_weights: Optional[List[float]] = None,
         mode: str = "initial",
     ) -> None:
@@ -184,8 +175,6 @@ class ParameterExtraction:
             states: The state variables for the parameter extraction
             controls: The control variables for the parameter extraction
             config: The configuration for the parameter extraction
-            scalar_tracking_forms: The scalar tracking forms for the parameter
-                extraction
             desired_weights: The list of desired weights for the parameter extraction
             mode: The mode used for the initial guess of the parameter extraction. If
                 this is coarse_optimum, the default, then the coarse model optimum is
@@ -201,7 +190,6 @@ class ParameterExtraction:
 
         self.config = config
         self.mode = mode
-        self.scalar_tracking_forms = scalar_tracking_forms
         self.desired_weights = desired_weights
 
         self._pre_hook = _hook
@@ -281,7 +269,6 @@ class ParameterExtraction:
                 ksp_options=self.ksp_options,
                 adjoint_ksp_options=self.adjoint_ksp_options,
                 desired_weights=self.desired_weights,
-                scalar_tracking_forms=self.scalar_tracking_forms,
             )
         )
 

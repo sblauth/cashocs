@@ -15,20 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for mesh importing and generation."""
+"""Basic mesh generation."""
 
 from __future__ import annotations
 
 import collections
-import configparser
 import functools
-import json
-import os
-import subprocess  # nosec B404
-import sys
 import time
-from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional
 
 import fenics
 import numpy as np
@@ -37,13 +31,10 @@ from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import _utils
-from cashocs import io
 from cashocs.geometry import measure
-from cashocs.geometry import mesh_quality
 
 if TYPE_CHECKING:
-    from cashocs import types
+    from cashocs import _typing
 
 
 class Mesh(fenics.Mesh):
@@ -59,137 +50,9 @@ class Mesh(fenics.Mesh):
         self._config_flag = True
 
 
-def _change_except_hook(config: io.Config) -> None:
-    """Change the excepthook to delete temporary files.
-
-    Args:
-        config: The configuration file for the problem.
-
-    """
-    has_cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
-
-    if has_cashocs_remesh_flag:
-        with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-            temp_dict: Dict = json.load(file)
-
-        remesh_directory = temp_dict["remesh_directory"]
-
-        def custom_except_hook(
-            exctype: Type[BaseException],
-            value: BaseException,
-            traceback: TracebackType,
-        ) -> Any:  # pragma: no cover
-            """A customized hook which is injected when an exception occurs.
-
-            Args:
-                exctype: The type of the exception.
-                value: The value of the exception.
-                traceback: The traceback of the exception.
-
-            """
-            _loggers.debug(
-                "An exception was raised by cashocs, "
-                "deleting the created temporary files."
-            )
-            if (
-                not config.getboolean("Debug", "remeshing")
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                assert temp_dir is not None  # nosec B101
-                subprocess.run(["rm", "-r", temp_dir], check=True)  # nosec B603, B607
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", remesh_directory], check=True
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            sys.__excepthook__(exctype, value, traceback)
-
-        sys.excepthook = custom_except_hook  # type: ignore
-
-
-def _check_imported_mesh_quality(
-    input_arg: Union[str, io.Config],
-    mesh: Mesh,
-    cashocs_remesh_flag: bool,
-) -> None:
-    """Checks the quality of an imported mesh.
-
-    This function raises exceptions when the mesh does not satisfy the desired quality
-    criteria.
-
-    Args:
-        input_arg: The argument used to import the mesh.
-        mesh: The finite element mesh whose quality shall be checked.
-        cashocs_remesh_flag: A flag, indicating whether remeshing is active.
-
-    """
-    if isinstance(input_arg, configparser.ConfigParser):
-        mesh_quality_tol_lower = input_arg.getfloat("MeshQuality", "tol_lower")
-        mesh_quality_tol_upper = input_arg.getfloat("MeshQuality", "tol_upper")
-
-        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
-            _loggers.warning(
-                "You are using a lower remesh tolerance (tol_lower) close to "
-                "the upper one (tol_upper). This may slow down the "
-                "optimization considerably."
-            )
-
-        mesh_quality_measure = input_arg.get("MeshQuality", "measure")
-        mesh_quality_type = input_arg.get("MeshQuality", "type")
-
-        current_mesh_quality = mesh_quality.compute_mesh_quality(
-            mesh, mesh_quality_type, mesh_quality_measure
-        )
-
-        failed = False
-        fail_msg = None
-        if not cashocs_remesh_flag:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                failed = True
-                fail_msg = (
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for evaluating the cost functional.\n"
-                    f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                failed = True
-                fail_msg = (
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-        else:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                failed = True
-                fail_msg = (
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing is "
-                    "not sufficient for evaluating the cost functional.\n"
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                failed = True
-                fail_msg = (
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing "
-                    "is not sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_upper:.3e}."
-                )
-        if failed:
-            raise _exceptions.InputError(
-                "cashocs.geometry.import_mesh", "input_arg", fail_msg
-            )
-
-
 def _get_mesh_stats(
     mode: Literal["import", "generate"] = "import"
-) -> Callable[..., Callable[..., types.MeshTuple]]:
+) -> Callable[..., Callable[..., _typing.MeshTuple]]:
     """A decorator for mesh importing / generating function which prints stats.
 
     Args:
@@ -201,8 +64,8 @@ def _get_mesh_stats(
     """
 
     def decorator_stats(
-        func: Callable[..., types.MeshTuple]
-    ) -> Callable[..., types.MeshTuple]:
+        func: Callable[..., _typing.MeshTuple]
+    ) -> Callable[..., _typing.MeshTuple]:
         """A decorator for a mesh generating function.
 
         Args:
@@ -214,7 +77,7 @@ def _get_mesh_stats(
         """
 
         @functools.wraps(func)
-        def wrapper_stats(*args: Any, **kwargs: Any) -> types.MeshTuple:
+        def wrapper_stats(*args: Any, **kwargs: Any) -> _typing.MeshTuple:
             """Wrapper function for mesh generating functions.
 
             Args:
@@ -253,130 +116,13 @@ def _get_mesh_stats(
     return decorator_stats
 
 
-@_get_mesh_stats(mode="import")
-def import_mesh(input_arg: Union[str, io.Config]) -> types.MeshTuple:
-    """Imports a mesh file for use with cashocs / FEniCS.
-
-    This function imports a mesh file that was generated by GMSH and converted to
-    .xdmf with the command line function :ref:`cashocs-convert <cashocs_convert>`.
-    If there are Physical quantities specified in the GMSH file, these are imported
-    to the subdomains and boundaries output of this function and can also be directly
-    accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.
-
-    Args:
-        input_arg: This is either a string, in which case it corresponds to the location
-            of the mesh file in .xdmf file format, or a config file that
-            has this path stored in its settings, under the section Mesh, as
-            parameter ``mesh_file``.
-
-    Returns:
-        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
-        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
-        function for the boundaries, dx is a volume measure, ds is a surface measure,
-        and dS is a measure for the interior facets.
-
-    Notes:
-        In case the boundaries in the Gmsh .msh file are not only marked with numbers
-        (as physical groups), but also with names (i.e. strings), these strings can be
-        used with the integration measures ``dx`` and ``ds`` returned by this method.
-        E.g., if one specified the following in a 2D Gmsh .geo file ::
-
-            Physical Surface("domain", 1) = {i,j,k};
-
-        where i,j,k are representative for some integers, then this can be used in the
-        measure ``dx`` (as we are 2D) as follows. The command ::
-
-            dx(1)
-
-        is completely equivalent to ::
-
-           dx("domain")
-
-        and both can be used interchangeably.
-
-    """
-    cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
-
-    if not isinstance(input_arg, str):
-        _change_except_hook(input_arg)
-
-    # Check for the file format
-    mesh_file: str = ""
-    if isinstance(input_arg, str):
-        mesh_file = input_arg
-    elif isinstance(input_arg, configparser.ConfigParser):
-        if not cashocs_remesh_flag:
-            mesh_file = input_arg.get("Mesh", "mesh_file")
-        else:
-            with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-                temp_dict: Dict = json.load(file)
-            mesh_file = temp_dict["mesh_file"]
-
-    file_string = mesh_file[:-5]
-
-    mesh = Mesh()
-    xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
-    xdmf_file.read(mesh)
-    xdmf_file.close()
-
-    subdomains_mvc = fenics.MeshValueCollection(
-        "size_t", mesh, mesh.geometric_dimension()
-    )
-    boundaries_mvc = fenics.MeshValueCollection(
-        "size_t", mesh, mesh.geometric_dimension() - 1
-    )
-
-    if os.path.isfile(f"{file_string}_subdomains.xdmf"):
-        xdmf_subdomains = fenics.XDMFFile(
-            mesh.mpi_comm(), f"{file_string}_subdomains.xdmf"
-        )
-        xdmf_subdomains.read(subdomains_mvc, "subdomains")
-        xdmf_subdomains.close()
-    if os.path.isfile(f"{file_string}_boundaries.xdmf"):
-        xdmf_boundaries = fenics.XDMFFile(
-            mesh.mpi_comm(), f"{file_string}_boundaries.xdmf"
-        )
-        xdmf_boundaries.read(boundaries_mvc, "boundaries")
-        xdmf_boundaries.close()
-
-    physical_groups: Optional[Dict[str, Dict[str, int]]] = None
-    if os.path.isfile(f"{file_string}_physical_groups.json"):
-        with open(f"{file_string}_physical_groups.json", "r", encoding="utf-8") as file:
-            physical_groups = json.load(file)
-
-    subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
-    boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
-
-    dx = measure.NamedMeasure(
-        "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
-    )
-    ds = measure.NamedMeasure(
-        "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
-    )
-    d_interior_facet = measure.NamedMeasure(
-        "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
-    )
-
-    # Add an attribute to the mesh to show with what procedure it was generated
-    # pylint: disable=protected-access
-    mesh._set_config_flag()
-    # Add the physical groups to the mesh in case they are present
-    if physical_groups is not None:
-        mesh.physical_groups = physical_groups
-
-    # Check the mesh quality of the imported mesh in case a config file is passed
-    _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
-
-    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
-
-
 @_get_mesh_stats(mode="generate")
 def interval_mesh(
     n: int = 10,
     start: float = 0.0,
     end: float = 1.0,
     partitions: Optional[List[float]] = None,
-) -> types.MeshTuple:
+) -> _typing.MeshTuple:
     r"""Creates an 1D interval mesh starting at x=0 to x=length.
 
     This function creates a uniform mesh of a 1D interval, starting at the ``start`` and
@@ -462,7 +208,7 @@ def regular_mesh(
     length_y: float = 1.0,
     length_z: Optional[float] = None,
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
-) -> types.MeshTuple:
+) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
     This function creates a uniform mesh of either a rectangle or a cube, starting at
@@ -601,7 +347,7 @@ def regular_box_mesh(
     end_y: float = 1.0,
     end_z: Optional[float] = None,
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
-) -> types.MeshTuple:
+) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
     This function creates a uniform mesh of either a rectangle

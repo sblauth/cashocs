@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module for utilities for UFL forms."""
+"""Utilities for UFL forms."""
 
 from __future__ import annotations
 
@@ -283,51 +283,6 @@ def create_dirichlet_bcs(
                 )
 
     return bcs_list
-
-
-# deprecated
-def create_bcs_list(
-    function_space: fenics.FunctionSpace,
-    value: Union[
-        fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
-    ],
-    boundaries: fenics.MeshFunction,
-    idcs: Union[List[Union[int, str]], int, str],
-    **kwargs: Any,
-) -> List[fenics.DirichletBC]:  # pragma: no cover
-    """Create several Dirichlet boundary conditions at once.
-
-    Wraps multiple Dirichlet boundary conditions into a list, in case
-    they have the same value but are to be defined for multiple boundaries
-    with different markers. Particularly useful for defining homogeneous
-    boundary conditions.
-
-    Args:
-        function_space: The function space onto which the BCs should be imposed on.
-        value: The value of the boundary condition. Has to be compatible with the
-            function_space, so that it could also be used as
-            ``fenics.DirichletBC(function_space, value, ...)``.
-        boundaries: The :py:class:`fenics.MeshFunction` object representing the
-            boundaries.
-        idcs: A list of indices / boundary markers that determine the boundaries
-            onto which the Dirichlet boundary conditions should be applied to.
-            Can also be a single integer for a single boundary.
-        **kwargs: Keyword arguments for fenics.DirichletBC
-
-    Returns:
-        A list of DirichletBC objects that represent the boundary conditions.
-
-    .. deprecated:: 1.5.0
-        This is replaced by cashocs.create_dirichlet_bcs and will be removed in the
-        future.
-
-    """
-    _loggers.warning(
-        "DEPRECATION WARNING: cashocs.create_bcs_list is replaced by "
-        "cashocs.create_dirichlet_bcs and will be removed in the future."
-    )
-
-    return create_dirichlet_bcs(function_space, value, boundaries, idcs, **kwargs)
 
 
 def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]:
