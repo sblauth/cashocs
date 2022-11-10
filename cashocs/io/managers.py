@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import json
 import subprocess  # nosec B404
-from typing import cast, List, TYPE_CHECKING, Union
+from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -31,6 +31,7 @@ from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
+    from cashocs import io
     from cashocs._optimization import optimization_algorithms
 
 
@@ -122,37 +123,40 @@ class ResultManager:
     """Class for managing the output of the optimization history."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, result_dir: str
+        self,
+        config: io.Config,
+        result_dir: str,
+        is_shape_problem: bool,
+        has_cashocs_remesh_flag: bool = False,
+        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
+            config: The configuration.
             result_dir: Path to the directory, where the results are saved.
+            is_shape_problem: Boolean which indicates, whether the problem is a shape
+                optimization problem.
+            has_cashocs_remesh_flag: Boolean which indicates, whether remeshing has been
+                performed
+            temp_dict: Dictionary with history of the optimization process
 
         """
-        self.config = optimization_problem.config
+        self.config = config
         self.result_dir = result_dir
 
         self.save_results = self.config.getboolean("Output", "save_results")
 
         self.output_dict = {}
-        if (
-            optimization_problem.is_shape_problem
-            and optimization_problem.temp_dict is not None
-            and optimization_problem.has_cashocs_remesh_flag
-        ):
-            self.temp_dict = optimization_problem.temp_dict
-            self.output_dict["cost_function_value"] = self.temp_dict["output_dict"][
+        if is_shape_problem and temp_dict is not None and has_cashocs_remesh_flag:
+            self.output_dict["cost_function_value"] = temp_dict["output_dict"][
                 "cost_function_value"
             ]
-            self.output_dict["gradient_norm"] = self.temp_dict["output_dict"][
+            self.output_dict["gradient_norm"] = temp_dict["output_dict"][
                 "gradient_norm"
             ]
-            self.output_dict["stepsize"] = self.temp_dict["output_dict"]["stepsize"]
-            self.output_dict["MeshQuality"] = self.temp_dict["output_dict"][
-                "MeshQuality"
-            ]
+            self.output_dict["stepsize"] = temp_dict["output_dict"]["stepsize"]
+            self.output_dict["MeshQuality"] = temp_dict["output_dict"]["MeshQuality"]
         else:
             self.output_dict["cost_function_value"] = []
             self.output_dict["gradient_norm"] = []
@@ -197,20 +201,18 @@ class ResultManager:
 class HistoryManager:
     """Class for managing the human-readable output of cashocs."""
 
-    def __init__(
-        self, optimization_problem: op.OptimizationProblem, result_dir: str
-    ) -> None:
+    def __init__(self, config: io.Config, result_dir: str) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
+            config: The configuration.
             result_dir: Path to the directory, where the results are saved.
 
         """
         self.result_dir = result_dir
 
-        self.verbose = optimization_problem.config.getboolean("Output", "verbose")
-        self.save_txt = optimization_problem.config.getboolean("Output", "save_txt")
+        self.verbose = config.getboolean("Output", "verbose")
+        self.save_txt = config.getboolean("Output", "save_txt")
 
     def print_to_console(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -277,15 +279,16 @@ class HistoryManager:
 class TempFileManager:
     """Class for managing temporary files."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
+    def __init__(self, config: io.Config, is_shape_problem: bool) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
+            config: The configuration.
+            is_shape_problem: Boolean for indication of shape optimization.
 
         """
-        self.config = optimization_problem.config
-        self.is_shape_problem = optimization_problem.is_shape_problem
+        self.config = config
+        self.is_shape_problem = is_shape_problem
 
     def clear_temp_files(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -316,17 +319,13 @@ class TempFileManager:
 class MeshManager:
     """Manages the output of meshes."""
 
-    def __init__(
-        self, optimization_problem: op.OptimizationProblem, result_dir: str
-    ) -> None:
+    def __init__(self, result_dir: str) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
             result_dir: Path to the directory, where the output is saved to.
 
         """
-        self.config = optimization_problem.config
         self.result_dir = result_dir
 
     def save_optimized_mesh(

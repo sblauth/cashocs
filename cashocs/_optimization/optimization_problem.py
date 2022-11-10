@@ -27,7 +27,7 @@ from __future__ import annotations
 import abc
 import copy
 import json
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -67,7 +67,6 @@ class OptimizationProblem(abc.ABC):
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
     temp_dict: Optional[Dict]
-    algorithm: str
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
     solver: optimization_algorithms.OptimizationAlgorithm
@@ -152,14 +151,23 @@ class OptimizationProblem(abc.ABC):
         self.state_dim = len(self.state_forms)
         self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-        self._parse_cost_functional_form(cost_functional_form)
+        self.cost_functional_list = self._parse_cost_functional_form(
+            cost_functional_form
+        )
+        self.algorithm = "none"
 
         self.states: List[fenics.Function] = _utils.enlist(states)
         self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
 
         self.use_scaling = False
 
-        self._parse_optional_inputs(
+        (
+            self.config,
+            self.initial_guess,
+            self.ksp_options,
+            self.adjoint_ksp_options,
+            self.desired_weights,
+        ) = self._parse_optional_inputs(
             config,
             initial_guess,
             ksp_options,
@@ -211,16 +219,17 @@ class OptimizationProblem(abc.ABC):
             List[ufl.Form],
             ufl.Form,
         ],
-    ) -> None:
-        """Parses the cost functional form for use in cashocs."""
-        self.input_cost_functional_list = _utils.enlist(cost_functional_form)
-        self.cost_functional_list = []
-        for functional in self.input_cost_functional_list:
-            if isinstance(functional, ufl.Form):
-                self.cost_functional_list.append(
-                    cost_functional.IntegralFunctional(functional)
-                )
-            elif isinstance(
+    ) -> List[_typing.CostFunctional]:
+        """Parses the cost functional form for use in cashocs.
+
+        Returns:
+            The list of cost functionals.
+
+        """
+        input_cost_functional_list = _utils.enlist(cost_functional_form)
+        cost_functional_list: List[_typing.CostFunctional] = []
+        for functional in input_cost_functional_list:
+            if isinstance(
                 functional,
                 (
                     cost_functional.IntegralFunctional,
@@ -228,7 +237,9 @@ class OptimizationProblem(abc.ABC):
                     cost_functional.MinMaxFunctional,
                 ),
             ):
-                self.cost_functional_list.append(functional)
+                cost_functional_list.append(functional)
+
+        return cost_functional_list
 
     def _parse_optional_inputs(
         self,
@@ -241,7 +252,13 @@ class OptimizationProblem(abc.ABC):
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
         desired_weights: Optional[Union[List[float], float]],
-    ) -> None:
+    ) -> Tuple[
+        io.Config,
+        Optional[List[fenics.Function]],
+        _typing.KspOptions,
+        _typing.KspOptions,
+        Optional[List[float]],
+    ]:
         """Initializes the optional input parameters.
 
         Args:
@@ -260,39 +277,47 @@ class OptimizationProblem(abc.ABC):
 
         """
         if config is None:
-            self.config = io.Config()
+            parsed_config = io.Config()
         else:
-            self.config = copy.deepcopy(config)
+            parsed_config = copy.deepcopy(config)
 
-        self.config.validate_config()
+        parsed_config.validate_config()
 
         if initial_guess is None:
-            self.initial_guess = initial_guess
+            parsed_initial_guess = initial_guess
         else:
-            self.initial_guess = _utils.enlist(initial_guess)
+            parsed_initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            self.ksp_options: _typing.KspOptions = []
+            parsed_ksp_options: _typing.KspOptions = []
             option: List[List[Union[str, int, float]]] = copy.deepcopy(
                 _utils.linalg.direct_ksp_options
             )
 
             for _ in range(self.state_dim):
-                self.ksp_options.append(option)
+                parsed_ksp_options.append(option)
         else:
-            self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
+            parsed_ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
-        self.adjoint_ksp_options: _typing.KspOptions = (
-            self.ksp_options[:]
+        parsed_adjoint_ksp_options: _typing.KspOptions = (
+            parsed_ksp_options[:]
             if adjoint_ksp_options is None
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
         if desired_weights is None:
-            self.desired_weights = desired_weights
+            parsed_desired_weights = desired_weights
         else:
-            self.desired_weights = _utils.enlist(desired_weights)
+            parsed_desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
+
+        return (
+            parsed_config,
+            parsed_initial_guess,
+            parsed_ksp_options,
+            parsed_adjoint_ksp_options,
+            parsed_desired_weights,
+        )
 
     def compute_state_variables(self) -> None:
         """Solves the state system.
@@ -563,5 +588,3 @@ class OptimizationProblem(abc.ABC):
                     self.desired_weights[i] / self.initial_function_values[i]
                 )
                 functional.scale(scaling_factor)
-                if isinstance(functional, cost_functional.IntegralFunctional):
-                    self.input_cost_functional_list[i] = functional.form
