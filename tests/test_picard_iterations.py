@@ -65,7 +65,7 @@ y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
 alpha = 1e-4
 beta = 1e-4
-J = (
+J = cashocs.IntegralFunctional(
     Constant(0.5) * (y - y_d) * (y - y_d) * dx
     + Constant(0.5) * (z - z_d) * (z - z_d) * dx
     + Constant(0.5 * alpha) * u * u * dx
@@ -99,7 +99,7 @@ bcs_m2 = cashocs.create_dirichlet_bcs(
 )
 bcs_m = bcs_m1 + bcs_m2
 
-J_m = (
+J_m = cashocs.IntegralFunctional(
     Constant(0.5) * (y_m - y_d) * (y_m - y_d) * dx
     + Constant(0.5) * (z_m - z_d) * (z_m - z_d) * dx
     + Constant(0.5 * alpha) * u * u * dx

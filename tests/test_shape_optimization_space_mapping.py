@@ -86,8 +86,10 @@ class FineModel(sosm.FineModel):
 
         cashocs.newton_solve(F, up, bcs, verbose=False)
 
-        J = Constant(0.5) * dot(u - u_des, u - u_des) * ds(5)
-        self.cost_functional_value = assemble(J)
+        J = cashocs.IntegralFunctional(
+            Constant(0.5) * dot(u - u_des, u - u_des) * ds(5)
+        )
+        self.cost_functional_value = J.evaluate()
 
         u_temp, _ = up.split(True)
         u_temp.set_allow_extrapolation(True)
@@ -131,7 +133,7 @@ bc_out = DirichletBC(V.sub(0).sub(0), Constant(0.0), boundaries, 5)
 bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
 bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
 
-J = Constant(0.5) * dot(u - u_des, u - u_des) * ds(5)
+J = cashocs.IntegralFunctional(Constant(0.5) * dot(u - u_des, u - u_des) * ds(5))
 
 
 def test_sosm_broyden_good():
@@ -143,7 +145,9 @@ def test_sosm_broyden_good():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -174,7 +178,9 @@ def test_sosm_broyden_bad():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -205,7 +211,9 @@ def test_sosm_bfgs():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -235,7 +243,9 @@ def test_sosm_steepest_descent():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -263,7 +273,9 @@ def test_sosm_ncg_FR():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -292,7 +304,9 @@ def test_sosm_ncg_PR():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -321,7 +335,9 @@ def test_sosm_ncg_HS():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -350,7 +366,9 @@ def test_sosm_ncg_DY():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )
@@ -379,7 +397,9 @@ def test_sosm_ncg_HZ():
     up_param = Function(V)
     u_param, p_param = split(up_param)
     u_des_param = fine_model.u
-    J_param = Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    J_param = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(u_param - u_des_param, u_param - u_des_param) * ds(5)
+    )
     parameter_extraction = sosm.ParameterExtraction(
         coarse_model, J_param, up_param, config=cfg
     )

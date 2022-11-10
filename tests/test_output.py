@@ -39,7 +39,9 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
 alpha = 1e-6
-J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+J = cashocs.IntegralFunctional(
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+)
 
 
 def test_time_suffix():
@@ -121,7 +123,7 @@ def test_save_xdmf_files_mixed():
         degree=1,
         domain=mesh,
     )
-    J = Constant(0.5) * inner(u - u_d, u - u_d) * dx
+    J = cashocs.IntegralFunctional(Constant(0.5) * inner(u - u_d, u - u_d) * dx)
 
     ocp = cashocs.OptimalControlProblem(F, bcs, J, up, c, vq, config)
     assert ocp.gradient_test(rng=rng) > 1.9

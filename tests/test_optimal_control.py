@@ -44,7 +44,9 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
 alpha = 1e-6
-J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+J = cashocs.IntegralFunctional(
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+)
 
 ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
 
@@ -499,7 +501,9 @@ def test_different_spaces():
     lambd = 1e-6
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * lambd) * u * u * dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * lambd) * u * u * dx
+    )
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
     ocp.solve(algorithm="bfgs")
@@ -577,8 +581,8 @@ def test_scaling_control():
     u.vector().vec().set(1e-2)
     u.vector().apply("")
 
-    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
-    J2 = Constant(0.5) * u * u * dx
+    J1 = cashocs.IntegralFunctional(Constant(0.5) * (y - y_d) * (y - y_d) * dx)
+    J2 = cashocs.IntegralFunctional(Constant(0.5) * u * u * dx)
     J_list = [J1, J2]
 
     desired_weights = rng.rand(2).tolist()
@@ -590,8 +594,8 @@ def test_scaling_control():
     val = test_ocp.reduced_cost_functional.evaluate()
 
     assert abs(val - summ) < 1e-14
-    assert abs(assemble(J_list[0]) - desired_weights[0]) < 1e-14
-    assert abs(assemble(J_list[1]) - desired_weights[1]) < 1e-14
+    assert abs(J_list[0].evaluate() - desired_weights[0]) < 1e-14
+    assert abs(J_list[1].evaluate() - desired_weights[1]) < 1e-14
 
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
@@ -642,6 +646,9 @@ def test_scaling_scalar_and_single_cost():
     norm_y = y * y * dx
     norm_u = u * u * dx
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
     J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
     J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
     J_test = [J, J_y, J_u]
@@ -679,8 +686,8 @@ def test_scaling_all():
     tracking_goals = [0.24154615814336944, 1554.0246268346273]
     J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
     J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
-    J1 = Constant(0.5) * (y - y_d) * (y - y_d) * dx
-    J2 = Constant(0.5) * u * u * dx
+    J1 = cashocs.IntegralFunctional(Constant(0.5) * (y - y_d) * (y - y_d) * dx)
+    J2 = cashocs.IntegralFunctional(Constant(0.5) * u * u * dx)
     J_list = [J1, J2, J_y, J_u]
 
     desired_weights = rng.rand(4).tolist()
@@ -759,6 +766,9 @@ def test_polynomial_stepsize():
     config.set("LineSearch", "method", "polynomial")
     u.vector().vec().set(0.0)
     u.vector().apply("")
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     ocp.solve("gd", rtol=1e-2, atol=0.0, max_iter=42)
     assert ocp.solver.relative_norm <= ocp.solver.rtol

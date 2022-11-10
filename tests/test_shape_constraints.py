@@ -42,7 +42,7 @@ p = Function(V)
 
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-J = u * dx
+J = cashocs.IntegralFunctional(u * dx)
 
 
 def test_int_eq_constraints():
