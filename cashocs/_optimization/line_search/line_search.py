@@ -60,6 +60,7 @@ class LineSearch(abc.ABC):
         )
 
         self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
+        self.search_direction_inf = 1.0
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"

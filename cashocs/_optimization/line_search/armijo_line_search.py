@@ -51,7 +51,6 @@ class ArmijoLineSearch(line_search.LineSearch):
             "LineSearch", "epsilon_armijo"
         )
         self.armijo_stepsize_initial = self.stepsize
-        self.search_direction_inf = 1.0
         self.decrease_measure_w_o_step = 1.0
 
     def _check_for_nonconvergence(
