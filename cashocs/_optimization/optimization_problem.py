@@ -81,10 +81,7 @@ class OptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -238,6 +235,15 @@ class OptimizationProblem(abc.ABC):
                 ),
             ):
                 cost_functional_list.append(functional)
+            else:
+                raise _exceptions.InputError(
+                    "cashocs.OptimizationProblem",
+                    "cost_functional_list",
+                    "You have supplied a wrong cost functional.\n"
+                    "Starting with cashocs v2.0 only a list of "
+                    "cashocs.IntegralFunctional, cashocs.ScalarTrackingFunctional, "
+                    "or cashocs.MinMaxFunctional is allowed.",
+                )
 
         return cost_functional_list
 

@@ -86,7 +86,9 @@ class CoarseModel:
             List[List[fenics.DirichletBC]],
             None,
         ],
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[_typing.CostFunctional], _typing.CostFunctional
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
@@ -169,7 +171,9 @@ class ParameterExtraction:
     def __init__(
         self,
         coarse_model: CoarseModel,
-        cost_functional_form: Union[ufl.Form, List[ufl.Form]],
+        cost_functional_form: Union[
+            List[_typing.CostFunctional], _typing.CostFunctional
+        ],
         states: Union[fenics.Function, List[fenics.Function]],
         config: Optional[io.Config] = None,
         desired_weights: Optional[List[float]] = None,

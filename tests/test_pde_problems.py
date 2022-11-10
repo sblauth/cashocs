@@ -42,7 +42,9 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2])
 
 y_d = Function(V)
 alpha = 1e-6
-J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+J = cashocs.IntegralFunctional(
+    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+)
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
 
