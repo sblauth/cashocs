@@ -66,7 +66,6 @@ class OptimizationProblem(abc.ABC):
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
-    temp_dict: Optional[Dict]
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
     solver: optimization_algorithms.OptimizationAlgorithm
@@ -143,6 +142,8 @@ class OptimizationProblem(abc.ABC):
 
         """
         self.has_cashocs_remesh_flag, self.temp_dir = _utils.parse_remesh()
+
+        self.temp_dict: Optional[Dict] = None
 
         self.state_forms = _utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)

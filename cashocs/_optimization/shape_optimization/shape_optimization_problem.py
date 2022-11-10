@@ -25,7 +25,7 @@ import subprocess  # nosec B404
 import sys
 import tempfile
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Any, List, Optional, Type, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -62,8 +62,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1`` and so
     on).
     """
-
-    temp_dict: Optional[Dict]
 
     def __new__(
         cls,
@@ -267,7 +265,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh")
-        self.temp_dict = None
 
         self._remesh_init()
 
