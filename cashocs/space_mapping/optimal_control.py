@@ -155,8 +155,6 @@ class CoarseModel:
 class ParameterExtraction:
     """Parameter extraction for optimal control problems."""
 
-    controls: List[fenics.Function]
-
     def __init__(
         self,
         coarse_model: CoarseModel,
@@ -186,7 +184,7 @@ class ParameterExtraction:
         self.cost_functional_form = cost_functional_form
 
         self.states = _utils.enlist(states)
-        self.controls = _utils.enlist(controls)
+        self.controls: List[fenics.Function] = _utils.enlist(controls)
 
         self.config = config
         self.mode = mode

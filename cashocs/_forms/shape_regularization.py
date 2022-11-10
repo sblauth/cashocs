@@ -25,7 +25,7 @@ and barycenter, and desired ones.
 from __future__ import annotations
 
 import json
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, List, Tuple, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -110,6 +110,22 @@ class ShapeRegularization:
             if self.geometric_dimension == 2:
                 self.delta_z = 1.0
 
+        self.mu_volume = 0.0
+        self.target_volume = 0.0
+
+        self.mu_surface = 0.0
+        self.target_surface = 0.0
+
+        (
+            self.mu_curvature,
+            self.kappa_curvature,
+            self.a_curvature,
+            self.l_curvature,
+        ) = self._init_curvature_regularization(form_handler)
+
+        self.mu_barycenter = 0.0
+        self.target_barycenter_list: List[float] = []
+
         self._init_volume_regularization()
         self._init_surface_regularization()
         self._init_curvature_regularization(form_handler)
@@ -135,56 +151,54 @@ class ShapeRegularization:
 
     def _init_volume_regularization(self) -> None:
         """Initializes the terms corresponding to the volume regularization."""
-        self.mu_volume: float = self.config.getfloat("Regularization", "factor_volume")
+        self.mu_volume = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
         if self.config.getboolean("Regularization", "use_initial_volume"):
             self.target_volume = self._compute_volume()
 
     def _init_surface_regularization(self) -> None:
         """Initializes the terms corresponding to the surface regularization."""
-        self.mu_surface: float = self.config.getfloat(
-            "Regularization", "factor_surface"
-        )
+        self.mu_surface = self.config.getfloat("Regularization", "factor_surface")
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
         if self.config.getboolean("Regularization", "use_initial_surface"):
             self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
     def _init_curvature_regularization(
         self, form_handler: shape_form_handler.ShapeFormHandler
-    ) -> None:
+    ) -> Tuple[float, fenics.Function, ufl.Form, ufl.Form]:
         """Initializes the terms corresponding to the surface regularization.
 
         Args:
             form_handler: The form handler of the problem.
 
+        Returns:
+            A tuple (mu_curvature, kappa_curvature, a_curvature, l_curvature)
+
         """
-        self.mu_curvature: float = self.config.getfloat(
-            "Regularization", "factor_curvature"
+        mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
+        kappa_curvature = fenics.Function(form_handler.deformation_space)
+        n = fenics.FacetNormal(self.mesh)
+        x = fenics.SpatialCoordinate(self.mesh)
+        a_curvature = (
+            fenics.inner(
+                fenics.TrialFunction(form_handler.deformation_space),
+                fenics.TestFunction(form_handler.deformation_space),
+            )
+            * self.ds
         )
-        self.kappa_curvature = fenics.Function(form_handler.deformation_space)
-        if self.mu_curvature > 0.0:
-            n = fenics.FacetNormal(self.mesh)
-            x = fenics.SpatialCoordinate(self.mesh)
-            self.a_curvature = (
-                fenics.inner(
-                    fenics.TrialFunction(form_handler.deformation_space),
-                    fenics.TestFunction(form_handler.deformation_space),
-                )
-                * self.ds
+        l_curvature = (
+            fenics.inner(
+                t_grad(x, n),
+                t_grad(fenics.TestFunction(form_handler.deformation_space), n),
             )
-            self.l_curvature = (
-                fenics.inner(
-                    t_grad(x, n),
-                    t_grad(fenics.TestFunction(form_handler.deformation_space), n),
-                )
-                * self.ds
-            )
+            * self.ds
+        )
+
+        return mu_curvature, kappa_curvature, a_curvature, l_curvature
 
     def _init_barycenter_regularization(self) -> None:
         """Initializes the terms corresponding to the barycenter regularization."""
-        self.mu_barycenter: float = self.config.getfloat(
-            "Regularization", "factor_barycenter"
-        )
+        self.mu_barycenter = self.config.getfloat("Regularization", "factor_barycenter")
 
         self.target_barycenter_list = self.config.getlist(
             "Regularization", "target_barycenter"

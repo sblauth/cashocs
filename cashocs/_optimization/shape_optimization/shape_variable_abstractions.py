@@ -19,11 +19,12 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
+from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
@@ -45,6 +46,7 @@ class ShapeVariableAbstractions(
 
         """
         super().__init__(optimization_problem)
+        self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)
 

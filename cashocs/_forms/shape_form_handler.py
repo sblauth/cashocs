@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -35,7 +35,190 @@ from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
 
 if TYPE_CHECKING:
+    import ufl.core.expr
+
+    from cashocs import geometry
+    from cashocs import io
     from cashocs._optimization import shape_optimization
+
+
+class Stiffness:
+    """Stiffness in linear elasticity equations for projecting the shape derivative."""
+
+    def __init__(
+        self,
+        mu_lame: fenics.Function,
+        config: io.Config,
+        mesh: geometry.mesh.Mesh,
+        boundaries: fenics.MeshFunction,
+        shape_bdry_def: List[int | str],
+        shape_bdry_fix: List[int | str],
+    ):
+        """Class for managing the stiffness parameter for shape optimization.
+
+        Args:
+            mu_lame: Function representing the stiffness
+            config: The config file for the problem
+            mesh: The underlying mesh
+            boundaries: The boundaries of the mesh
+            shape_bdry_def: List of indices of the deformable boundary
+            shape_bdry_fix: List of indices of the fixed boundary
+
+        """
+        self.mu_lame = mu_lame
+        self.config = config
+        self.mesh = mesh
+        self.boundaries = boundaries
+        self.shape_bdry_def = shape_bdry_def
+        self.shape_bdry_fix = shape_bdry_fix
+
+        self.inhomogeneous_mu = False
+
+        self.dx = fenics.Measure("dx", self.mesh)
+
+        self.use_distance_mu = self.config.getboolean(
+            "ShapeGradient", "use_distance_mu"
+        )
+        self.cg_function_space = self.mu_lame.function_space()
+        self.distance = fenics.Function(self.cg_function_space)
+
+        self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
+        self.b_mu = fenics.PETScVector()
+        self.options_mu: List[List[Union[str, int, float]]] = []
+
+        self._setup_mu_computation()
+
+    def _setup_mu_computation(self) -> None:
+        """Sets up the computation of the elasticity parameter mu."""
+        if not self.use_distance_mu:
+            mu_def = self.config.getfloat("ShapeGradient", "mu_def")
+            mu_fix = self.config.getfloat("ShapeGradient", "mu_fix")
+
+            if np.abs(mu_def - mu_fix) / mu_fix > 1e-2:
+
+                self.inhomogeneous_mu = True
+
+                self.options_mu = [
+                    ["ksp_type", "cg"],
+                    ["pc_type", "hypre"],
+                    ["pc_hypre_type", "boomeramg"],
+                    ["ksp_rtol", 1e-16],
+                    ["ksp_atol", 1e-50],
+                    ["ksp_max_it", 100],
+                ]
+
+                phi = fenics.TrialFunction(self.cg_function_space)
+                psi = fenics.TestFunction(self.cg_function_space)
+
+                # pylint: disable=invalid-name
+                self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
+                self.l_mu = fenics.Constant(0.0) * psi * self.dx
+
+                self.bcs_mu = _utils.create_dirichlet_bcs(
+                    self.cg_function_space,
+                    fenics.Constant(mu_fix),
+                    self.boundaries,
+                    self.shape_bdry_fix,
+                )
+                self.bcs_mu += _utils.create_dirichlet_bcs(
+                    self.cg_function_space,
+                    fenics.Constant(mu_def),
+                    self.boundaries,
+                    self.shape_bdry_def,
+                )
+
+        else:
+            mu_min = self.config.getfloat("ShapeGradient", "mu_min")
+            mu_max = self.config.getfloat("ShapeGradient", "mu_max")
+
+            if np.abs(mu_min - mu_max) / mu_min > 1e-2:
+                dist_min = self.config.getfloat("ShapeGradient", "dist_min")
+                dist_max = self.config.getfloat("ShapeGradient", "dist_max")
+
+                self.bdry_idcs = self.config.getlist("ShapeGradient", "boundaries_dist")
+
+                smooth_mu = self.config.getboolean("ShapeGradient", "smooth_mu")
+
+                if not smooth_mu:
+                    self.mu_expression = fenics.Expression(
+                        (
+                            "(dist <= dist_min) ? mu_min : "
+                            "(dist <= dist_max) ? mu_min + (dist - dist_min)/"
+                            "(dist_max - dist_min)*(mu_max - mu_min) : mu_max"
+                        ),
+                        degree=1,
+                        dist=self.distance,
+                        dist_min=dist_min,
+                        dist_max=dist_max,
+                        mu_min=mu_min,
+                        mu_max=mu_max,
+                    )
+                else:
+                    self.mu_expression = fenics.Expression(
+                        (
+                            "(dist <= dist_min) ? mu_min :"
+                            "(dist <= dist_max) ? mu_min + "
+                            "(mu_max - mu_min)/(dist_max - dist_min)*(dist - dist_min) "
+                            "- (mu_max - mu_min)/pow(dist_max - dist_min, 2)"
+                            "*(dist - dist_min)*(dist - dist_max) "
+                            "- 2*(mu_max - mu_min)/pow(dist_max - dist_min, 3)"
+                            "*(dist - dist_min)*pow(dist - dist_max, 2)"
+                            " : mu_max"
+                        ),
+                        degree=3,
+                        dist=self.distance,
+                        dist_min=dist_min,
+                        dist_max=dist_max,
+                        mu_min=mu_min,
+                        mu_max=mu_max,
+                    )
+
+    def compute(self) -> None:
+        """Computes the elasticity parameter mu.
+
+        Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
+        PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
+        """
+        if not self.use_distance_mu:
+            if self.inhomogeneous_mu:
+                x = _utils.assemble_and_solve_linear(
+                    self.A_mu,
+                    self.l_mu,
+                    self.bcs_mu,
+                    A=self.A_mu_matrix,
+                    b=self.b_mu,
+                    ksp_options=self.options_mu,
+                )
+
+                if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
+                    x.sqrtabs()
+
+                self.mu_lame.vector().vec().aypx(0.0, x)
+                self.mu_lame.vector().apply("")
+
+            else:
+                self.mu_lame.vector().vec().set(
+                    self.config.getfloat("ShapeGradient", "mu_fix")
+                )
+                self.mu_lame.vector().apply("")
+
+        else:
+            self.distance.vector().vec().aypx(
+                0.0,
+                boundary_distance.compute_boundary_distance(
+                    self.mesh, self.boundaries, self.bdry_idcs
+                )
+                .vector()
+                .vec(),
+            )
+            self.distance.vector().apply("")
+            self.mu_lame.vector().vec().aypx(
+                0.0,
+                fenics.interpolate(self.mu_expression, self.cg_function_space)
+                .vector()
+                .vec(),
+            )
+            self.mu_lame.vector().apply("")
 
 
 class ShapeFormHandler(form_handler.FormHandler):
@@ -45,9 +228,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     shape optimization problems, where it is used to derive the adjoint equations
     and the shape derivatives.
     """
-
-    scalar_product_matrix: fenics.PETScMatrix
-    material_derivative: ufl.Form
 
     def __init__(
         self, optimization_problem: shape_optimization.ShapeOptimizationProblem
@@ -75,23 +255,43 @@ class ShapeFormHandler(form_handler.FormHandler):
             "ShapeGradient", "degree_estimation"
         )
         self.use_pull_back = self.config.getboolean("ShapeGradient", "use_pull_back")
-        self.use_distance_mu = self.config.getboolean(
-            "ShapeGradient", "use_distance_mu"
-        )
         self.update_inhomogeneous = self.config.getboolean(
             "ShapeGradient", "update_inhomogeneous"
         )
 
-        self.deformation_space = deformation_space or fenics.VectorFunctionSpace(
-            self.mesh, "CG", 1
+        self.shape_bdry_def = self.config.getlist("ShapeGradient", "shape_bdry_def")
+        self.shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
+
+        self.shape_bdry_fix_x = self.config.getlist("ShapeGradient", "shape_bdry_fix_x")
+        self.shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
+        self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
+
+        self.deformation_space: fenics.FunctionSpace = (
+            deformation_space or fenics.VectorFunctionSpace(self.mesh, "CG", 1)
         )
 
-        self.control_spaces = [self.deformation_space]
+        self.control_spaces: List[fenics.FunctionSpace] = [self.deformation_space]
         self.control_dim = 1
         self.require_control_constraints = False
 
+        self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
+        self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
+        self.mu_lame = fenics.Function(self.cg_function_space)
+        self.volumes = fenics.Function(self.dg_function_space)
+
+        self.stiffness = Stiffness(
+            self.mu_lame,
+            self.config,
+            self.mesh,
+            self.boundaries,
+            self.shape_bdry_def,
+            self.shape_bdry_fix,
+        )
+
         self.gradient = [fenics.Function(self.deformation_space)]
-        self.test_vector_field = fenics.TestFunction(self.deformation_space)
+        self.test_vector_field: fenics.TestFunction = fenics.TestFunction(
+            self.deformation_space
+        )
 
         self.shape_regularization: shape_regularization.ShapeRegularization = (
             shape_regularization.ShapeRegularization(self)
@@ -106,23 +306,24 @@ class ShapeFormHandler(form_handler.FormHandler):
             ]
             self.fixed_indices = list(itertools.chain(*unpack_list))
 
-        # Calculate the necessary UFL forms
-        self.inhomogeneous_mu = False
-        self._compute_shape_derivative()
-        self._compute_shape_gradient_forms()
-        self._setup_mu_computation()
+        self.state_adjoint_ids: List[int] = []
+        self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
 
-        self.setup_assembler(
+        # Calculate the necessary UFL forms
+        self.shape_derivative = self._compute_shape_derivative()
+
+        self.bcs_shape = self._setup_bcs_shape()
+        self.riesz_scalar_product = self._compute_shape_gradient_forms()
+
+        self.modified_scalar_product, self.assembler = self.setup_assembler(
             self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
         )
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
-        self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
-        self.b_mu = fenics.PETScVector()
-
+        self.scalar_product_matrix = fenics.PETScMatrix()
         self.update_scalar_product()
-        self._compute_p_laplacian_forms()
+        self.p_laplace_form = self._compute_p_laplacian_forms()
 
         # test for symmetry
         if not self.scalar_product_matrix.isSymmetric():
@@ -148,10 +349,10 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def setup_assembler(
         self,
-        scalar_product: ufl.form,
-        shape_derivative: ufl.form,
+        scalar_product: ufl.Form,
+        shape_derivative: ufl.Form,
         bcs: Optional[List[fenics.DirichletBC]],
-    ) -> None:
+    ) -> Tuple[ufl.Form, fenics.SystemAssembler]:
         """Sets up the assembler for assembling the shape gradient projection.
 
         Args:
@@ -163,32 +364,53 @@ class ShapeFormHandler(form_handler.FormHandler):
         modified_scalar_product = _utils.bilinear_boundary_form_modification(
             [scalar_product]
         )[0]
-        self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
-            [scalar_product]
-        )[0]
-        retry_assembler_setup = False
         if not self.degree_estimation:
             try:
-                self.assembler = fenics.SystemAssembler(
+                assembler = fenics.SystemAssembler(
                     modified_scalar_product, shape_derivative, bcs
                 )
             except (AssertionError, ValueError):
-                retry_assembler_setup = True
+                assembler = self._setup_assembler_failsafe(
+                    modified_scalar_product, shape_derivative, bcs
+                )
+        else:
+            assembler = self._setup_assembler_failsafe(
+                modified_scalar_product, shape_derivative, bcs
+            )
 
-        if retry_assembler_setup or self.degree_estimation:
-            estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
-                    modified_scalar_product
-                ),
-                ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
-            )
-            self.assembler = fenics.SystemAssembler(
-                modified_scalar_product,
-                shape_derivative,
-                bcs,
-                form_compiler_parameters={"quadrature_degree": estimated_degree},
-            )
-        self.assembler.keep_diagonal = True
+        return modified_scalar_product, assembler
+
+    def _setup_assembler_failsafe(
+        self,
+        modified_scalar_product: ufl.Form,
+        shape_derivative: ufl.Form,
+        bcs: Optional[List[fenics.DirichletBC]],
+    ) -> fenics.SystemAssembler:
+        """Set up the assembler in a fail-safe manner.
+
+        Args:
+            modified_scalar_product: The weak form of the scalar product
+            shape_derivative: The weak form of the shape derivative
+            bcs: The boundary conditions for the projection
+
+        Returns:
+            The assembler for the system.
+
+        """
+        estimated_degree = np.maximum(
+            ufl.algorithms.estimate_total_polynomial_degree(modified_scalar_product),
+            ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
+        )
+        assembler = fenics.SystemAssembler(
+            modified_scalar_product,
+            shape_derivative,
+            bcs,
+            form_compiler_parameters={"quadrature_degree": estimated_degree},
+        )
+
+        assembler.keep_diagonal = True
+
+        return assembler
 
     def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
@@ -205,11 +427,11 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _parse_pull_back_coefficients(self) -> None:
         """Parses the coefficients which are available for adding pullbacks."""
-        self.state_adjoint_ids: List[int] = [coeff.id() for coeff in self.states] + [
+        self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
             coeff.id() for coeff in self.adjoints
         ]
 
-        self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
+        self.material_derivative_coeffs.clear()
 
         for coeff in self.lagrangian.coefficients():
             self._check_coefficient_id(coeff)
@@ -220,24 +442,34 @@ class ShapeFormHandler(form_handler.FormHandler):
                 "act on variables other than states and adjoints."
             )
 
-    def _add_pull_backs(self) -> None:
-        """Add pullbacks to the shape derivative."""
+    def _add_pull_backs(self, shape_derivative: ufl.Form) -> ufl.Form:
+        """Add pullbacks to the shape derivative.
+
+        Args:
+            shape_derivative: Form of the shape derivative (without pullbacks)
+
+        Returns:
+            Form of the shape derivative (with pullbacks)
+
+        """
         if self.use_pull_back:
             self._parse_pull_back_coefficients()
 
             for coeff in self.material_derivative_coeffs:
 
-                self.material_derivative = self.lagrangian.derivative(
+                material_derivative = self.lagrangian.derivative(
                     coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
 
-                self.material_derivative = ufl.algorithms.expand_derivatives(
-                    self.material_derivative
+                material_derivative = ufl.algorithms.expand_derivatives(
+                    material_derivative
                 )
 
-                self.shape_derivative += self.material_derivative
+                shape_derivative += material_derivative
 
-    def _compute_shape_derivative(self) -> None:
+        return shape_derivative
+
+    def _compute_shape_derivative(self) -> ufl.Form:
         """Calculates the shape derivative.
 
         This only works properly if differential operators only
@@ -245,65 +477,68 @@ class ShapeFormHandler(form_handler.FormHandler):
         A corresponding warning whenever this could be the case is issued.
         """
         # Shape derivative of Lagrangian w/o regularization and pullbacks
-        self.shape_derivative = self.lagrangian.derivative(
+        shape_derivative = self.lagrangian.derivative(
             fenics.SpatialCoordinate(self.mesh), self.test_vector_field
         )
 
-        self._add_pull_backs()
-
+        shape_derivative = self._add_pull_backs(shape_derivative)
         # Add regularization
-        self.shape_derivative += self.shape_regularization.compute_shape_derivative()
+        shape_derivative += self.shape_regularization.compute_shape_derivative()
 
-    def _compute_shape_gradient_forms(self) -> None:
-        """Calculates the necessary left-hand-sides for the shape gradient problem."""
-        self.shape_bdry_def = self.config.getlist("ShapeGradient", "shape_bdry_def")
-        self.shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
+        return shape_derivative
 
-        self.shape_bdry_fix_x = self.config.getlist("ShapeGradient", "shape_bdry_fix_x")
-        self.shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
-        self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
+    def _setup_bcs_shape(
+        self,
+    ) -> List[fenics.DirichletBC]:
+        """Defines the boundary conditions for the shape deformation.
 
-        self.bcs_shape = _utils.create_dirichlet_bcs(
+        Returns:
+            The list of boundary conditions
+
+        """
+        bcs_shape = _utils.create_dirichlet_bcs(
             self.deformation_space,
             fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
             self.boundaries,
             self.shape_bdry_fix,
         )
-        self.bcs_shape += _utils.create_dirichlet_bcs(
+        bcs_shape += _utils.create_dirichlet_bcs(
             self.deformation_space.sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
-        self.bcs_shape += _utils.create_dirichlet_bcs(
+        bcs_shape += _utils.create_dirichlet_bcs(
             self.deformation_space.sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
         if self.deformation_space.num_sub_spaces() == 3:
-            self.bcs_shape += _utils.create_dirichlet_bcs(
+            bcs_shape += _utils.create_dirichlet_bcs(
                 self.deformation_space.sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
                 self.shape_bdry_fix_z,
             )
 
-        self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
-        self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
-        self.volumes = fenics.Function(self.dg_function_space)
+        return bcs_shape
 
-        self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
+    def _compute_shape_gradient_forms(self) -> ufl.Form:
+        """Calculates the necessary left-hand-sides for the shape gradient problem.
+
+        Returns
+            The left-hand side for the shape gradient problem
+
+        """
         self.mu_lame.vector().vec().set(1.0)
         self.mu_lame.vector().apply("")
 
         if self.shape_scalar_product is None:
             # Use the default linear elasticity approach
 
-            self.lambda_lame = self.config.getfloat("ShapeGradient", "lambda_lame")
-            self.damping_factor = self.config.getfloat(
-                "ShapeGradient", "damping_factor"
-            )
+            lambda_lame = self.config.getfloat("ShapeGradient", "lambda_lame")
+            damping_factor = self.config.getfloat("ShapeGradient", "damping_factor")
 
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
                 self.volumes.vector().vec().aypx(
@@ -319,7 +554,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.volumes.vector().apply("")
 
             else:
-                self.volumes = fenics.Constant(1.0)
+                self.volumes.vector().vec().set(1.0)
+                self.volumes.vector().apply("")
 
             def eps(u: fenics.Function) -> ufl.core.expr.Expr:
                 """Computes the symmetric gradient of a vector field ``u``.
@@ -336,18 +572,18 @@ class ShapeFormHandler(form_handler.FormHandler):
             trial = fenics.TrialFunction(self.deformation_space)
             test = fenics.TestFunction(self.deformation_space)
 
-            self.riesz_scalar_product: ufl.Form = (
+            riesz_scalar_product = (
                 fenics.Constant(2)
                 * self.mu_lame
                 / self.volumes
                 * fenics.inner(eps(trial), eps(test))
                 * self.dx
-                + fenics.Constant(self.lambda_lame)
+                + fenics.Constant(lambda_lame)
                 / self.volumes
                 * fenics.div(trial)
                 * fenics.div(test)
                 * self.dx
-                + fenics.Constant(self.damping_factor)
+                + fenics.Constant(damping_factor)
                 / self.volumes
                 * fenics.inner(trial, test)
                 * self.dx
@@ -355,138 +591,9 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         else:
             # Use the scalar product supplied by the user
-            self.riesz_scalar_product = self.shape_scalar_product
+            riesz_scalar_product = self.shape_scalar_product
 
-    def _setup_mu_computation(self) -> None:
-        """Sets up the computation of the elasticity parameter mu."""
-        if not self.use_distance_mu:
-            self.mu_def = self.config.getfloat("ShapeGradient", "mu_def")
-            self.mu_fix = self.config.getfloat("ShapeGradient", "mu_fix")
-
-            if np.abs(self.mu_def - self.mu_fix) / self.mu_fix > 1e-2:
-
-                self.inhomogeneous_mu = True
-
-                self.options_mu: List[List[Union[str, int, float]]] = [
-                    ["ksp_type", "cg"],
-                    ["pc_type", "hypre"],
-                    ["pc_hypre_type", "boomeramg"],
-                    ["ksp_rtol", 1e-16],
-                    ["ksp_atol", 1e-50],
-                    ["ksp_max_it", 100],
-                ]
-
-                phi = fenics.TrialFunction(self.cg_function_space)
-                psi = fenics.TestFunction(self.cg_function_space)
-
-                # pylint: disable=invalid-name
-                self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
-                self.l_mu = fenics.Constant(0.0) * psi * self.dx
-
-                self.bcs_mu = _utils.create_dirichlet_bcs(
-                    self.cg_function_space,
-                    fenics.Constant(self.mu_fix),
-                    self.boundaries,
-                    self.shape_bdry_fix,
-                )
-                self.bcs_mu += _utils.create_dirichlet_bcs(
-                    self.cg_function_space,
-                    fenics.Constant(self.mu_def),
-                    self.boundaries,
-                    self.shape_bdry_def,
-                )
-
-        else:
-            self.mu_min = self.config.getfloat("ShapeGradient", "mu_min")
-            self.mu_max = self.config.getfloat("ShapeGradient", "mu_max")
-
-            if np.abs(self.mu_min - self.mu_max) / self.mu_min > 1e-2:
-                self.dist_min = self.config.getfloat("ShapeGradient", "dist_min")
-                self.dist_max = self.config.getfloat("ShapeGradient", "dist_max")
-
-                self.bdry_idcs = self.config.getlist("ShapeGradient", "boundaries_dist")
-
-                self.smooth_mu = self.config.getboolean("ShapeGradient", "smooth_mu")
-                self.distance = fenics.Function(self.cg_function_space)
-                if not self.smooth_mu:
-                    self.mu_expression = fenics.Expression(
-                        (
-                            "(dist <= dist_min) ? mu_min : "
-                            "(dist <= dist_max) ? mu_min + (dist - dist_min)/"
-                            "(dist_max - dist_min)*(mu_max - mu_min) : mu_max"
-                        ),
-                        degree=1,
-                        dist=self.distance,
-                        dist_min=self.dist_min,
-                        dist_max=self.dist_max,
-                        mu_min=self.mu_min,
-                        mu_max=self.mu_max,
-                    )
-                else:
-                    self.mu_expression = fenics.Expression(
-                        (
-                            "(dist <= dist_min) ? mu_min :"
-                            "(dist <= dist_max) ? mu_min + "
-                            "(mu_max - mu_min)/(dist_max - dist_min)*(dist - dist_min) "
-                            "- (mu_max - mu_min)/pow(dist_max - dist_min, 2)"
-                            "*(dist - dist_min)*(dist - dist_max) "
-                            "- 2*(mu_max - mu_min)/pow(dist_max - dist_min, 3)"
-                            "*(dist - dist_min)*pow(dist - dist_max, 2)"
-                            " : mu_max"
-                        ),
-                        degree=3,
-                        dist=self.distance,
-                        dist_min=self.dist_min,
-                        dist_max=self.dist_max,
-                        mu_min=self.mu_min,
-                        mu_max=self.mu_max,
-                    )
-
-    def _compute_mu_elas(self) -> None:
-        """Computes the elasticity parameter mu.
-
-        Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
-        PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
-        """
-        if self.shape_scalar_product is None:
-            if not self.use_distance_mu:
-                if self.inhomogeneous_mu:
-                    x = _utils.assemble_and_solve_linear(
-                        self.A_mu,
-                        self.l_mu,
-                        self.bcs_mu,
-                        A=self.A_mu_matrix,
-                        b=self.b_mu,
-                        ksp_options=self.options_mu,
-                    )
-
-                    if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
-                        x.sqrtabs()
-
-                    self.mu_lame.vector().vec().aypx(0.0, x)
-                    self.mu_lame.vector().apply("")
-
-                else:
-                    self.mu_lame.vector().vec().set(self.mu_fix)
-                    self.mu_lame.vector().apply("")
-
-            else:
-                self.distance.vector().vec().aypx(
-                    0.0,
-                    boundary_distance.compute_boundary_distance(
-                        self.mesh, self.boundaries, self.bdry_idcs
-                    )
-                    .vector()
-                    .vec(),
-                )
-                self.distance.vector().apply("")
-                self.mu_lame.vector().vec().aypx(
-                    0.0,
-                    fenics.interpolate(self.mu_expression, self.cg_function_space)
-                    .vector()
-                    .vec(),
-                )
-                self.mu_lame.vector().apply("")
+        return riesz_scalar_product
 
     def _project_scalar_product(self) -> None:
         """Ensures, that only free dimensions can be deformed."""
@@ -560,8 +667,13 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         return result
 
-    def _compute_p_laplacian_forms(self) -> None:
-        """Computes the weak forms for the p-Laplace equations."""
+    def _compute_p_laplacian_forms(self) -> ufl.Form:
+        """Computes the weak forms for the p-Laplace equations.
+
+        Returns:
+            The weak form of the p-Laplace equations
+
+        """
         if self.config.getboolean("ShapeGradient", "use_p_laplacian"):
             p = self.config.getint("ShapeGradient", "p_laplacian_power")
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
@@ -572,7 +684,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 ),
                 (p - 2) / 2.0,
             )
-            self.p_laplace_form: ufl.Form = (
+            p_laplace_form = (
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
@@ -584,3 +696,15 @@ class ShapeFormHandler(form_handler.FormHandler):
                 * fenics.dot(self.gradient[0], self.test_vector_field)
                 * self.dx
             )
+        else:
+            p_laplace_form = fenics.Constant(0) * self.dx
+
+        return p_laplace_form
+
+    def _compute_mu_elas(self) -> None:
+        """Computes the elasticity parameter mu.
+
+        Based on `Schulz and Siebenborn, Computational Comparison of Surface Metrics for
+        PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
+        """
+        self.stiffness.compute()

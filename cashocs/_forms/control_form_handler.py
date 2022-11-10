@@ -19,10 +19,11 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 import ufl
 import ufl.algorithms
 
@@ -43,22 +44,6 @@ class ControlFormHandler(form_handler.FormHandler):
     solvers for the equations later on. These are needed as subroutines for
      the optimization (solution) algorithms.
     """
-
-    idx_active: List
-    idx_active_lower: List
-    idx_active_upper: List
-    idx_inactive: List
-    adjoint_sensitivity_eqs_picard: List[ufl.Form]
-    adjoint_sensitivity_eqs_rhs: List[ufl.Form]
-    w_1: List[ufl.Form]
-    w_2: List[ufl.Form]
-    w_3: List[ufl.Form]
-    hessian_rhs: List[ufl.Form]
-    states_prime: List[fenics.Function]
-    adjoints_prime: List[fenics.Function]
-    test_directions: List[fenics.Function]
-    test_functions_control: List[fenics.Function]
-    temp: List[fenics.Function]
 
     def __init__(
         self, optimization_problem: optimal_control.OptimalControlProblem
@@ -83,20 +68,13 @@ class ControlFormHandler(form_handler.FormHandler):
         self.control_dim = len(self.controls)
         self.control_spaces = [x.function_space() for x in self.controls]
 
+        self.idx_active_lower: List = []
+        self.idx_active_upper: List = []
+        self.idx_active: List = []
+        self.idx_inactive: List = []
+
         self.gradient = _utils.create_function_list(self.control_spaces)
 
-        self._init_helpers()
-        self._compute_gradient_equations()
-
-        if self.opt_algo.casefold() == "newton":
-            self.compute_newton_forms()
-
-        self.setup_assemblers(
-            self.riesz_scalar_products, self.gradient_forms_rhs, self.control_bcs_list
-        )
-
-    def _init_helpers(self) -> None:
-        """Initializes the helper functions needed for the form handler."""
         self.states_prime = _utils.create_function_list(self.state_spaces)
         self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
         self.test_directions = _utils.create_function_list(self.control_spaces)
@@ -105,6 +83,35 @@ class ControlFormHandler(form_handler.FormHandler):
             fenics.TestFunction(function_space)
             for function_space in self.control_spaces
         ]
+        self.gradient_forms_rhs: List[ufl.Form] = []
+        self._compute_gradient_equations()
+
+        self.sensitivity_eqs_temp: List[ufl.Form] = []
+        self.sensitivity_eqs_lhs: List[ufl.Form] = []
+        self.sensitivity_eqs_picard: List[ufl.Form] = []
+        self.sensitivity_eqs_rhs: List[ufl.Form] = []
+        self.lagrangian_y: List[ufl.Form] = []
+        self.lagrangian_u: List[ufl.Form] = []
+        self.lagrangian_yy: List[ufl.Form] = []
+        self.lagrangian_yu: List[ufl.Form] = []
+        self.lagrangian_uy: List[ufl.Form] = []
+        self.lagrangian_uu: List[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_lhs: List[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_picard: List[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_rhs: List[ufl.Form] = []
+        self.w_1: List[ufl.Form] = []
+        self.w_2: List[ufl.Form] = []
+        self.w_3: List[ufl.Form] = []
+        self.hessian_rhs: List[ufl.Form] = []
+        if self.opt_algo.casefold() == "newton":
+            self.compute_newton_forms()
+
+        self.modified_scalar_product: Optional[List[ufl.Form]] = None
+        self.assemblers: List[fenics.SystemAssembler] = []
+        self.riesz_projection_matrices: List[PETSc.Mat] = []
+        self.setup_assemblers(
+            self.riesz_scalar_products, self.gradient_forms_rhs, self.control_bcs_list
+        )
 
     def setup_assemblers(
         self,
@@ -127,7 +134,7 @@ class ControlFormHandler(form_handler.FormHandler):
             scalar_product_forms
         )
         try:
-            self.assemblers = []
+            self.assemblers.clear()
             for i in range(self.control_dim):
                 assembler = fenics.SystemAssembler(
                     modified_scalar_product_forms[i],
@@ -137,7 +144,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 assembler.keep_diagonal = True
                 self.assemblers.append(assembler)
         except (AssertionError, ValueError):
-            self.assemblers = []
+            self.assemblers.clear()
             for i in range(self.control_dim):
                 estimated_degree = np.maximum(
                     ufl.algorithms.estimate_total_polynomial_degree(
@@ -157,7 +164,6 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.assemblers.append(assembler)
 
         fenics_scalar_product_matrices = []
-        self.riesz_projection_matrices = []
 
         for i in range(self.control_dim):
             fenics_matrix = fenics.PETScMatrix()
@@ -213,10 +219,10 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def compute_active_sets(self) -> None:
         """Computes the indices corresponding to active and inactive sets."""
-        self.idx_active_lower = []
-        self.idx_active_upper = []
-        self.idx_active = []
-        self.idx_inactive = []
+        self.idx_active_lower.clear()
+        self.idx_active_upper.clear()
+        self.idx_active.clear()
+        self.idx_inactive.clear()
 
         for j in range(self.control_dim):
 
@@ -373,7 +379,7 @@ class ControlFormHandler(form_handler.FormHandler):
             for i in range(self.state_dim)
         ]
 
-        self.sensitivity_eqs_lhs: List[ufl.Form] = [
+        self.sensitivity_eqs_lhs = [
             fenics.derivative(
                 self.sensitivity_eqs_temp[i],
                 self.states[i],
@@ -392,7 +398,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Need to distinguish cases due to empty sum in case state_dim = 1
         if self.state_dim > 1:
             # pylint: disable=invalid-unary-operand-type
-            self.sensitivity_eqs_rhs: List[ufl.Form] = [
+            self.sensitivity_eqs_rhs = [
                 -_utils.summation(
                     [
                         fenics.derivative(
@@ -490,7 +496,7 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_adjoint_sensitivity_equations(self) -> None:
         """Computes the adjoint sensitivity equations for the Newton method."""
         # Use replace -> derivative for faster computations
-        self.adjoint_sensitivity_eqs_diag_temp = [
+        adjoint_sensitivity_eqs_diag_temp = [
             ufl.replace(
                 self.state_forms[i], {self.adjoints[i]: self.trial_functions_adjoint[i]}
             )
@@ -500,14 +506,14 @@ class ControlFormHandler(form_handler.FormHandler):
         mapping_dict = {
             self.adjoints[j]: self.adjoints_prime[j] for j in range(self.state_dim)
         }
-        self.adjoint_sensitivity_eqs_all_temp = [
+        adjoint_sensitivity_eqs_all_temp = [
             ufl.replace(self.state_forms[i], mapping_dict)
             for i in range(self.state_dim)
         ]
 
         self.adjoint_sensitivity_eqs_lhs = [
             fenics.derivative(
-                self.adjoint_sensitivity_eqs_diag_temp[i],
+                adjoint_sensitivity_eqs_diag_temp[i],
                 self.states[i],
                 self.test_functions_adjoint[i],
             )
@@ -516,7 +522,7 @@ class ControlFormHandler(form_handler.FormHandler):
         if self.state_is_picard:
             self.adjoint_sensitivity_eqs_picard = [
                 fenics.derivative(
-                    self.adjoint_sensitivity_eqs_all_temp[i],
+                    adjoint_sensitivity_eqs_all_temp[i],
                     self.states[i],
                     self.test_functions_adjoint[i],
                 )
@@ -529,7 +535,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.w_1[i] -= _utils.summation(
                     [
                         fenics.derivative(
-                            self.adjoint_sensitivity_eqs_all_temp[j],
+                            adjoint_sensitivity_eqs_all_temp[j],
                             self.states[i],
                             self.test_functions_adjoint[i],
                         )
@@ -549,7 +555,7 @@ class ControlFormHandler(form_handler.FormHandler):
             _utils.summation(
                 [
                     fenics.derivative(
-                        self.adjoint_sensitivity_eqs_all_temp[j],
+                        adjoint_sensitivity_eqs_all_temp[j],
                         self.controls[i],
                         self.test_functions_control[i],
                     )
@@ -601,8 +607,6 @@ class ControlFormHandler(form_handler.FormHandler):
 
         self._compute_adjoint_sensitivity_equations()
 
-        self.w_3 = []
-        self.hessian_rhs = []
         for i in range(self.control_dim):
             w3_i = -self.adjoint_sensitivity_eqs_rhs[i]
             self.w_3.append(w3_i)

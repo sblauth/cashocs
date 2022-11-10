@@ -19,11 +19,12 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import cast, List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
 
+from cashocs import _forms
 from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
 
@@ -46,6 +47,8 @@ class ControlVariableAbstractions(
 
         """
         super().__init__(optimization_problem)
+
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
 
         self.controls = optimization_problem.controls
         self.control_temp = _utils.create_function_list(

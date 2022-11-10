@@ -65,14 +65,14 @@ class OptimizationAlgorithm(abc.ABC):
         )
 
         self.gradient_norm = 1.0
-        self.iteration = 0
+        self.iteration: int = 0
         self.objective_value = 1.0
         self.gradient_norm_initial = 1.0
         self.relative_norm = 1.0
 
         self.requires_remeshing = False
         self.remeshing_its = False
-        self.is_restarted = False
+        self.is_restarted: bool = False
 
         self.converged = False
         self.converged_reason = 0

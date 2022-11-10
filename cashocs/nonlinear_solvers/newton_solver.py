@@ -34,9 +34,6 @@ from cashocs import _utils
 class _NewtonSolver:
     """A Newton solver."""
 
-    assembler_shift: fenics.SystemAssembler
-    residual_shift: fenics.PETScVector
-
     def __init__(
         self,
         nonlinear_form: ufl.Form,
@@ -154,6 +151,8 @@ class _NewtonSolver:
         self.b = fenics.as_backend_type(self.residual).vec()
         self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
 
+        self.assembler_shift: Optional[fenics.SystemAssembler] = None
+        self.residual_shift: Optional[fenics.PETScVector] = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs_hom
@@ -331,7 +330,11 @@ class _NewtonSolver:
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
         self.assembler.assemble(self.residual)
-        if self.shift is not None:
+        if (
+            self.shift is not None
+            and self.assembler_shift is not None
+            and self.residual_shift is not None
+        ):
             self.assembler_shift.assemble(self.residual_shift)
             self.residual[:] += self.residual_shift[:]
 

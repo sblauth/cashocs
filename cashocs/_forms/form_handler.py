@@ -23,7 +23,6 @@ import abc
 from typing import Callable, List, TYPE_CHECKING, Union
 
 import fenics
-from petsc4py import PETSc
 import ufl
 
 from cashocs import _utils
@@ -32,7 +31,6 @@ from cashocs._optimization import cost_functional
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import io
-    from cashocs._forms import shape_regularization as sr
 
 
 def _get_subdx(
@@ -73,30 +71,6 @@ class FormHandler(abc.ABC):
     for the state and adjoint systems.
     """
 
-    fe_shape_derivative_vector: fenics.PETScVector
-    assembler: fenics.SystemAssembler
-    fixed_indices: List[int]
-    use_fixed_dimensions: bool = False
-    test_vector_field: fenics.TestFunction
-    gradient: List[fenics.Function]
-    control_spaces: List[fenics.FunctionSpace]
-    deformation_space: fenics.FunctionSpace
-    controls: List[fenics.Function]
-    control_dim: int
-    riesz_projection_matrices: List[PETSc.Mat]
-    uses_custom_scalar_product: bool = False
-    gradient_forms_rhs: List[ufl.Form]
-    bcs_shape: List[fenics.DirichletBC]
-    shape_regularization: sr.ShapeRegularization
-    shape_derivative: ufl.Form
-    scalar_product_matrix: fenics.PETScMatrix
-    mu_lame: fenics.Function
-    config: io.Config
-    scalar_cost_functional_integrands: List[ufl.Form]
-    scalar_cost_functional_integrand_values: List[fenics.Function]
-    states: List[fenics.Function]
-    cost_functional_list: List[_typing.CostFunctional]
-
     def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
         """Initializes self.
 
@@ -106,19 +80,22 @@ class FormHandler(abc.ABC):
         """
         self.optimization_problem = optimization_problem
         self.bcs_list: List[List[fenics.DirichletBC]] = optimization_problem.bcs_list
-        self.states = optimization_problem.states
-        self.adjoints = optimization_problem.adjoints
-        self.config = optimization_problem.config
+        self.states: List[fenics.Function] = optimization_problem.states
+        self.adjoints: List[fenics.Function] = optimization_problem.adjoints
+        self.config: io.Config = optimization_problem.config
         self.state_ksp_options = optimization_problem.ksp_options
         self.adjoint_ksp_options = optimization_problem.adjoint_ksp_options
 
         self.is_shape_problem: bool = optimization_problem.is_shape_problem
         self.is_control_problem = optimization_problem.is_control_problem
 
-        self.cost_functional_list = optimization_problem.cost_functional_list
+        self.control_dim: int = 1
+        self.cost_functional_list: List[
+            _typing.CostFunctional
+        ] = optimization_problem.cost_functional_list
         self.state_forms = optimization_problem.state_forms
 
-        self.lagrangian = cost_functional.Lagrangian(
+        self.lagrangian: cost_functional.Lagrangian = cost_functional.Lagrangian(
             self.cost_functional_list, self.state_forms
         )
         self.cost_functional_shift: float = 0.0
@@ -134,7 +111,7 @@ class FormHandler(abc.ABC):
             self.state_adjoint_equal_spaces = False
 
         self.mesh: fenics.Mesh = self.state_spaces[0].mesh()
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx: fenics.Measure = fenics.Measure("dx", self.mesh)
 
         self.trial_functions_state = [
             fenics.TrialFunction(function_space) for function_space in self.state_spaces
@@ -154,13 +131,27 @@ class FormHandler(abc.ABC):
 
         self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
         self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
-        self.opt_algo = _utils.optimization_algorithm_configuration(self.config)
+        self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
+
+        self.gradient: List[fenics.Function] = []
+        self.control_spaces: List[fenics.FunctionSpace] = []
 
         self.pre_hook: Callable[..., None] = _hook
         self.post_hook: Callable[..., None] = _hook
 
+        self.state_eq_forms: List[ufl.Form] = []
+        self.linear_state_eq_forms: List[ufl.Form] = []
+        self.state_eq_forms_lhs: List[ufl.Form] = []
+        self.state_eq_forms_rhs: List[ufl.Form] = []
+
+        self.adjoint_eq_forms: List[ufl.Form] = []
+        self.linear_adjoint_eq_forms: List[ufl.Form] = []
+        self.adjoint_eq_lhs: List[ufl.Form] = []
+        self.adjoint_eq_rhs: List[ufl.Form] = []
+
         self._compute_state_equations()
         self._compute_adjoint_equations()
+        self.bcs_list_ad = self._compute_adjoint_boundary_conditions()
 
     def _compute_state_equations(self) -> None:
         """Calculates the weak form of the state equation for the use with fenics."""
@@ -185,21 +176,19 @@ class FormHandler(abc.ABC):
                 self.state_eq_forms_rhs,
             ) = _utils.split_linear_forms(self.linear_state_eq_forms)
 
-    def _compute_adjoint_boundary_conditions(self) -> None:
+    def _compute_adjoint_boundary_conditions(self) -> List[List[fenics.DirichletBC]]:
         """Computes the boundary conditions for the adjoint systems."""
         if self.state_adjoint_equal_spaces:
-            self.bcs_list_ad = [
+            bcs_list_ad = [
                 [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
                 for i in range(self.state_dim)
             ]
             for i in range(self.state_dim):
-                for bc in self.bcs_list_ad[i]:
+                for bc in bcs_list_ad[i]:
                     bc.homogenize()
         else:
 
-            self.bcs_list_ad = [
-                [1] * len(self.bcs_list[i]) for i in range(self.state_dim)
-            ]
+            bcs_list_ad = [[1] * len(self.bcs_list[i]) for i in range(self.state_dim)]
 
             for i in range(self.state_dim):
                 for j, bc in enumerate(self.bcs_list[i]):
@@ -218,25 +207,27 @@ class FormHandler(abc.ABC):
                         )
 
                     try:
-                        self.bcs_list_ad[i][j] = fenics.DirichletBC(
+                        bcs_list_ad[i][j] = fenics.DirichletBC(
                             adjoint_space,
                             bdry_value,
                             bc.domain_args[0],
                             bc.domain_args[1],
                         )
                     except AttributeError:
-                        self.bcs_list_ad[i][j] = fenics.DirichletBC(
+                        bcs_list_ad[i][j] = fenics.DirichletBC(
                             adjoint_space, bdry_value, bc.sub_domain
                         )
 
+        return bcs_list_ad
+
     def _compute_adjoint_equations(self) -> None:
         """Calculates the weak form of the adjoint equation for use with fenics."""
-        self.adjoint_eq_forms: List[ufl.Form] = [
+        self.adjoint_eq_forms = [
             self.lagrangian.derivative(self.states[i], self.test_functions_adjoint[i])
             for i in range(self.state_dim)
         ]
 
-        self.linear_adjoint_eq_forms: List[ufl.Form] = [
+        self.linear_adjoint_eq_forms = [
             ufl.replace(
                 self.adjoint_eq_forms[i],
                 {self.adjoints[i]: self.trial_functions_adjoint[i]},
@@ -247,8 +238,6 @@ class FormHandler(abc.ABC):
         self.adjoint_eq_lhs, self.adjoint_eq_rhs = _utils.split_linear_forms(
             self.linear_adjoint_eq_forms
         )
-
-        self._compute_adjoint_boundary_conditions()
 
     @abc.abstractmethod
     def scalar_product(

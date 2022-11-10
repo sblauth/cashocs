@@ -35,7 +35,8 @@ OptimizationProblem = Union[
 GradientProblem = Union[
     _pde_problems.ShapeGradientProblem, _pde_problems.ControlGradientProblem
 ]
-FormHandler = Union[_forms.ControlFormHandler, _forms.ShapeFormHandler]
+FormHandler = _forms.FormHandler
+# FormHandler = Union[_forms.ControlFormHandler, _forms.ShapeFormHandler]
 MeshTuple = Tuple[
     geometry.mesh.Mesh,
     fenics.MeshFunction,

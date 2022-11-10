@@ -576,7 +576,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 {shape_derivative.arguments()[0]: self.form_handler.test_vector_field},
             )
 
-        self.form_handler.setup_assembler(
+        (
+            self.form_handler.modified_scalar_product,
+            self.form_handler.assembler,
+        ) = self.form_handler.setup_assembler(
             self.form_handler.riesz_scalar_product,
             shape_derivative,
             self.form_handler.bcs_shape,

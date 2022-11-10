@@ -21,13 +21,14 @@ from __future__ import annotations
 
 import abc
 import ctypes
-from typing import List, Optional, Set, Tuple, TYPE_CHECKING, Union
+from typing import cast, List, Optional, Set, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl
 
 from cashocs import _exceptions
+from cashocs import _forms
 from cashocs import _utils
 
 if TYPE_CHECKING:
@@ -74,6 +75,7 @@ class ReducedCostFunctional:
         val += self.form_handler.cost_functional_shift
 
         if self.form_handler.is_shape_problem:
+            self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
             val += self.form_handler.shape_regularization.compute_objective()
 
         return val

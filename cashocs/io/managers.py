@@ -493,6 +493,7 @@ class XDMFFileManager:
             iteration: The current iteration count.
 
         """
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         if self.save_state and self.is_control_problem:
             for i in range(self.form_handler.control_dim):
                 self._write_xdmf_step(
