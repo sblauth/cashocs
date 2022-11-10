@@ -54,10 +54,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
@@ -122,7 +119,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self._pre_hook = _hook
         self._post_hook = _hook
 
-        self.cost_functional_form_initial = _utils.enlist(cost_functional_form)
+        self.cost_functional_form_initial: List[_typing.CostFunctional] = _utils.enlist(
+            cost_functional_form
+        )
         self.constraint_list: List[_typing.Constraint] = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
@@ -267,10 +266,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         controls: Union[fenics.Function, List[fenics.Function]],
@@ -438,10 +434,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             None,
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
