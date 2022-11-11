@@ -29,7 +29,6 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
-    from cashocs import _typing
     from cashocs._database import database
 
 
@@ -39,7 +38,6 @@ class StateProblem(pde_problem.PDEProblem):
     def __init__(
         self,
         db: database.Database,
-        form_handler: _typing.FormHandler,
         state_form_handler: _forms.StateFormHandler,
         initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
@@ -48,7 +46,6 @@ class StateProblem(pde_problem.PDEProblem):
 
         Args:
             db: The database of the problem.
-            form_handler: The FormHandler of the optimization problem.
             state_form_handler: The form handler for the state problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
@@ -57,7 +54,6 @@ class StateProblem(pde_problem.PDEProblem):
         """
         super().__init__(db)
 
-        self.form_handler = form_handler
         self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
         self.temp_dict = temp_dict

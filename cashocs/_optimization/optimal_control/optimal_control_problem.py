@@ -310,7 +310,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.state_problem = _pde_problems.StateProblem(
             self.db,
-            self.form_handler,
             self.general_form_handler.state_form_handler,
             self.initial_guess,
         )
