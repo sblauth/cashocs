@@ -34,6 +34,7 @@ from cashocs import _utils
 if TYPE_CHECKING:
     from cashocs import _pde_problems
     from cashocs import _typing
+    from cashocs._database import database
 
 
 class ReducedCostFunctional:
@@ -41,16 +42,19 @@ class ReducedCostFunctional:
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _typing.FormHandler,
         state_problem: _pde_problems.StateProblem,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object corresponding to the state system.
 
         """
+        self.db = db
         self.form_handler = form_handler
         self.state_problem = state_problem
 
@@ -74,7 +78,7 @@ class ReducedCostFunctional:
         val = sum(vals)
         val += self.form_handler.cost_functional_shift
 
-        if self.form_handler.is_shape_problem:
+        if self.db.parameter_db.problem_type == "shape":
             self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
             val += self.form_handler.shape_regularization.compute_objective()
 

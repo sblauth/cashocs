@@ -262,6 +262,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
+        self.db.parameter_db.problem_type = "control"
+
         self.controls = _utils.enlist(controls)
         self.control_dim = len(self.controls)
 
@@ -321,7 +323,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.algorithm = _utils.optimization_algorithm_configuration(self.config)
 
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
-            self.form_handler, self.state_problem
+            self.db, self.form_handler, self.state_problem
         )
 
         self.gradient = self.gradient_problem.gradient
@@ -406,9 +408,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
-            self.line_search = line_search.ArmijoLineSearch(self)
+            self.line_search = line_search.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
-            self.line_search = line_search.PolynomialLineSearch(self)
+            self.line_search = line_search.PolynomialLineSearch(self.db, self)
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.compute_newton_forms()
@@ -420,16 +422,20 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
-                self, self.line_search
+                self.db, self, self.line_search
             )
         elif self.algorithm.casefold() == "lbfgs":
-            self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
+            self.solver = optimization_algorithms.LBFGSMethod(
+                self.db, self, self.line_search
+            )
         elif self.algorithm.casefold() == "conjugate_gradient":
             self.solver = optimization_algorithms.NonlinearCGMethod(
-                self, self.line_search
+                self.db, self, self.line_search
             )
         elif self.algorithm.casefold() == "newton":
-            self.solver = optimization_algorithms.NewtonMethod(self, self.line_search)
+            self.solver = optimization_algorithms.NewtonMethod(
+                self.db, self, self.line_search
+            )
         elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",

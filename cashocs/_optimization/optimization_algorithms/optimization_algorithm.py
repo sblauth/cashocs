@@ -31,6 +31,7 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
 
 
 class OptimizationAlgorithm(abc.ABC):
@@ -38,13 +39,17 @@ class OptimizationAlgorithm(abc.ABC):
 
     stepsize: float = 1.0
 
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self, db: database.Database, optimization_problem: _typing.OptimizationProblem
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
 
         """
+        self.db = db
         self.line_search_broken = False
         self.has_curvature_info = False
 
@@ -84,7 +89,7 @@ class OptimizationAlgorithm(abc.ABC):
         )
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
-        if optimization_problem.is_shape_problem:
+        if self.db.parameter_db.problem_type == "shape":
             self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
         else:
             self.temp_dict = None

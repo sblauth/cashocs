@@ -74,22 +74,19 @@ class OutputManager:
             if has_output:
                 self.result_path.mkdir(parents=True, exist_ok=True)
 
-        self.history_manager = managers.HistoryManager(self.config, self.result_dir)
+        self.history_manager = managers.HistoryManager(self.db, self.result_dir)
         self.xdmf_file_manager = managers.XDMFFileManager(
             optimization_problem, self.db, self.result_dir
         )
 
         self.result_manager = managers.ResultManager(
-            self.config,
+            self.db,
             self.result_dir,
-            optimization_problem.is_shape_problem,
             optimization_problem.has_cashocs_remesh_flag,
             optimization_problem.temp_dict,
         )
-        self.mesh_manager = managers.MeshManager(self.result_dir)
-        self.temp_file_manager = managers.TempFileManager(
-            self.config, optimization_problem.is_shape_problem
-        )
+        self.mesh_manager = managers.MeshManager(self.db, self.result_dir)
+        self.temp_file_manager = managers.TempFileManager(self.db)
 
     def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Writes the desired output to files and console.

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from cashocs import _exceptions
 from cashocs import _utils
 
 if TYPE_CHECKING:
@@ -52,6 +53,7 @@ class ParameterDatabase:
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
+        self._problem_type = ""
         self.state_dim = len(function_db.states)
 
         self.state_adjoint_equal_spaces = False
@@ -61,3 +63,19 @@ class ParameterDatabase:
         self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
         self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
+
+    @property
+    def problem_type(self) -> str:
+        """Returns the problem type."""
+        return self._problem_type
+
+    @problem_type.setter
+    def problem_type(self, value: str) -> None:
+        if value in ["control", "shape"]:
+            self._problem_type = value
+        else:
+            raise _exceptions.InputError(
+                "ParameterDatabase",
+                "problem_type",
+                "problem_type has to be either 'control' or 'shape'.",
+            )

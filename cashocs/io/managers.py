@@ -31,7 +31,6 @@ from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs import _optimization as op
-    from cashocs import io
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
@@ -65,11 +64,13 @@ def generate_summary_str(
 
 
 def generate_output_str(
+    db: database.Database,
     solver: optimization_algorithms.OptimizationAlgorithm,
 ) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
+        db: The database of the problem.
         solver: The optimization algorithm.
 
     Returns:
@@ -84,7 +85,7 @@ def generate_output_str(
     else:
         gradient_str = "stat. meas."
 
-    if solver.form_handler.is_shape_problem:
+    if db.parameter_db.problem_type == "shape":
         mesh_handler = solver.optimization_variable_abstractions.mesh_handler
         mesh_quality = mesh_handler.current_mesh_quality
     else:
@@ -125,31 +126,33 @@ class ResultManager:
 
     def __init__(
         self,
-        config: io.Config,
+        db: database.Database,
         result_dir: str,
-        is_shape_problem: bool,
         has_cashocs_remesh_flag: bool = False,
         temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
         Args:
-            config: The configuration.
+            db: The database of the problem.
             result_dir: Path to the directory, where the results are saved.
-            is_shape_problem: Boolean which indicates, whether the problem is a shape
-                optimization problem.
             has_cashocs_remesh_flag: Boolean which indicates, whether remeshing has been
                 performed
             temp_dict: Dictionary with history of the optimization process
 
         """
-        self.config = config
+        self.db = db
+        self.config = self.db.config
         self.result_dir = result_dir
 
         self.save_results = self.config.getboolean("Output", "save_results")
 
         self.output_dict = {}
-        if is_shape_problem and temp_dict is not None and has_cashocs_remesh_flag:
+        if (
+            self.db.parameter_db.problem_type == "shape"
+            and temp_dict is not None
+            and has_cashocs_remesh_flag
+        ):
             self.output_dict["cost_function_value"] = temp_dict["output_dict"][
                 "cost_function_value"
             ]
@@ -175,7 +178,7 @@ class ResultManager:
         """
         self.output_dict["cost_function_value"].append(solver.objective_value)
         self.output_dict["gradient_norm"].append(solver.relative_norm)
-        if solver.form_handler.is_shape_problem:
+        if self.db.parameter_db.problem_type == "shape":
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
         self.output_dict["stepsize"].append(solver.stepsize)
@@ -202,18 +205,21 @@ class ResultManager:
 class HistoryManager:
     """Class for managing the human-readable output of cashocs."""
 
-    def __init__(self, config: io.Config, result_dir: str) -> None:
+    def __init__(self, db: database.Database, result_dir: str) -> None:
         """Initializes self.
 
         Args:
-            config: The configuration.
+            db: The database of the problem.
             result_dir: Path to the directory, where the results are saved.
 
         """
+        self.db = db
         self.result_dir = result_dir
 
-        self.verbose = config.getboolean("Output", "verbose")
-        self.save_txt = config.getboolean("Output", "save_txt")
+        self.config = self.db.config
+
+        self.verbose = self.config.getboolean("Output", "verbose")
+        self.save_txt = self.config.getboolean("Output", "save_txt")
 
     def print_to_console(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -225,7 +231,7 @@ class HistoryManager:
 
         """
         if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(solver), flush=True)
+            print(generate_output_str(self.db, solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def print_to_file(
@@ -246,7 +252,7 @@ class HistoryManager:
             with open(
                 f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
             ) as file:
-                file.write(f"{generate_output_str(solver)}\n")
+                file.write(f"{generate_output_str(self.db, solver)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def print_console_summary(
@@ -280,16 +286,16 @@ class HistoryManager:
 class TempFileManager:
     """Class for managing temporary files."""
 
-    def __init__(self, config: io.Config, is_shape_problem: bool) -> None:
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
-            config: The configuration.
-            is_shape_problem: Boolean for indication of shape optimization.
+            db: The database of the problem.
 
         """
-        self.config = config
-        self.is_shape_problem = is_shape_problem
+        self.db = db
+
+        self.config = self.db.config
 
     def clear_temp_files(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -300,7 +306,7 @@ class TempFileManager:
             solver: The optimization algorithm.
 
         """
-        if self.is_shape_problem:
+        if self.db.parameter_db.problem_type == "shape":
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if (
                 mesh_handler.do_remesh
@@ -320,13 +326,15 @@ class TempFileManager:
 class MeshManager:
     """Manages the output of meshes."""
 
-    def __init__(self, result_dir: str) -> None:
+    def __init__(self, db: database.Database, result_dir: str) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             result_dir: Path to the directory, where the output is saved to.
 
         """
+        self.db = db
         self.result_dir = result_dir
 
     def save_optimized_mesh(
@@ -338,7 +346,7 @@ class MeshManager:
             solver: The optimization algorithm.
 
         """
-        if solver.form_handler.is_shape_problem:
+        if self.db.parameter_db.problem_type == "shape":
             mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if mesh_handler.save_optimized_mesh:
                 iomesh.write_out_mesh(
@@ -367,20 +375,13 @@ class XDMFFileManager:
         """
         self.db = db
         self.form_handler = optimization_problem.form_handler
-        self.config = optimization_problem.config
+        self.config = self.db.config
 
         self.result_dir = result_dir
 
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
-
-        self.is_control_problem = False
-        self.is_shape_problem = False
-        if isinstance(self.form_handler, _forms.ControlFormHandler):
-            self.is_control_problem = True
-        else:
-            self.is_shape_problem = True
 
         self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
@@ -402,7 +403,7 @@ class XDMFFileManager:
 
     def _initialize_controls_xdmf(self) -> None:
         """Initializes the list of xdmf files for the control variables."""
-        if self.save_state and self.is_control_problem:
+        if self.save_state and self.db.parameter_db.problem_type == "control":
             for i in range(self.form_handler.control_dim):
                 self.control_xdmf_list.append(
                     self._generate_xdmf_file_strings(
@@ -424,7 +425,7 @@ class XDMFFileManager:
         """Initialize the list of xdmf files for the gradients."""
         if self.save_gradient:
             for i in range(self.form_handler.control_dim):
-                if self.is_control_problem:
+                if self.db.parameter_db.problem_type == "control":
                     gradient_str = f"gradient_{i:d}"
                 else:
                     gradient_str = "shape_gradient"
@@ -499,7 +500,7 @@ class XDMFFileManager:
 
         """
         self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
-        if self.save_state and self.is_control_problem:
+        if self.save_state and self.db.parameter_db.problem_type == "control":
             for i in range(self.form_handler.control_dim):
                 self._write_xdmf_step(
                     cast(str, self.control_xdmf_list[i]),

@@ -29,6 +29,7 @@ from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
@@ -37,15 +38,17 @@ class ArmijoLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: _typing.OptimizationProblem,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(db, optimization_problem)
 
         self.epsilon_armijo: float = self.config.getfloat(
             "LineSearch", "epsilon_armijo"
@@ -107,7 +110,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             if self._check_for_nonconvergence(solver):
                 return None
 
-            if self.is_shape_problem:
+            if self.db.parameter_db.problem_type == "shape":
                 self.decrease_measure_w_o_step = (
                     self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
@@ -161,11 +164,11 @@ class ArmijoLineSearch(line_search.LineSearch):
             The computed decrease measure.
 
         """
-        if self.is_control_problem:
+        if self.db.parameter_db.problem_type == "control":
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )
-        elif self.is_shape_problem:
+        elif self.db.parameter_db.problem_type == "shape":
             return self.decrease_measure_w_o_step * self.stepsize
         else:
             return float("inf")

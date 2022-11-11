@@ -77,7 +77,9 @@ class ControlFormHandler(form_handler.FormHandler):
         self.idx_active: List = []
         self.idx_inactive: List = []
 
-        self.gradient = _utils.create_function_list(self.control_spaces)
+        self.gradient: List[fenics.Function] = _utils.create_function_list(
+            self.control_spaces
+        )
 
         self.states_prime = _utils.create_function_list(
             self.db.function_db.state_spaces

@@ -29,20 +29,26 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self, db: database.Database, optimization_problem: _typing.OptimizationProblem
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
 
         """
-        self.config = optimization_problem.config
+        self.db = db
+
+        self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
         self.gradient = optimization_problem.gradient
         self.state_problem = optimization_problem.state_problem
@@ -50,9 +56,6 @@ class LineSearch(abc.ABC):
             optimization_problem.optimization_variable_abstractions
         )
         self.cost_functional = optimization_problem.reduced_cost_functional
-
-        self.is_shape_problem = optimization_problem.is_shape_problem
-        self.is_control_problem = optimization_problem.is_control_problem
 
         self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(

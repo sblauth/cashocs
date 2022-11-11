@@ -24,7 +24,7 @@ cost functional.
 from __future__ import annotations
 
 import copy
-from typing import List, TYPE_CHECKING, Union
+from typing import cast, List, TYPE_CHECKING, Union
 
 import fenics
 
@@ -59,7 +59,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         """
         super().__init__(db, form_handler)
 
-        self.form_handler: _forms.ControlFormHandler
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
@@ -101,6 +101,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             The list containing the (components of the) gradient of the cost functional.
 
         """
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         self.state_problem.solve()
         self.adjoint_problem.solve()
 

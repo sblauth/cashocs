@@ -263,6 +263,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
+        self.db.parameter_db.problem_type = "shape"
+
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh")
 
@@ -293,7 +295,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 )
             )
 
-        self.is_shape_problem = True
         self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(
             self, self.db
         )
@@ -326,7 +327,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         )
 
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
-            self.form_handler, self.state_problem
+            self.db, self.form_handler, self.state_problem
         )
 
         self.gradient = self.gradient_problem.gradient
@@ -468,20 +469,22 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
-            self.line_search = line_search.ArmijoLineSearch(self)
+            self.line_search = line_search.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
-            self.line_search = line_search.PolynomialLineSearch(self)
+            self.line_search = line_search.PolynomialLineSearch(self.db, self)
 
         # TODO: Do not pass the line search (unnecessary)
         if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
-                self, self.line_search
+                self.db, self, self.line_search
             )
         elif self.algorithm.casefold() == "lbfgs":
-            self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
+            self.solver = optimization_algorithms.LBFGSMethod(
+                self.db, self, self.line_search
+            )
         elif self.algorithm.casefold() == "conjugate_gradient":
             self.solver = optimization_algorithms.NonlinearCGMethod(
-                self, self.line_search
+                self.db, self, self.line_search
             )
         elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(

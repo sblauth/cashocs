@@ -179,9 +179,6 @@ class OptimizationProblem(abc.ABC):
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
 
-        self._is_shape_problem = False
-        self._is_control_problem = False
-
         self.db = database.Database(
             self.config,
             self.states,
@@ -189,28 +186,6 @@ class OptimizationProblem(abc.ABC):
             self.ksp_options,
             self.adjoint_ksp_options,
         )
-
-    @property
-    def is_shape_problem(self) -> bool:
-        """Returns a boolean flag, ``True`` if self is a shape optimization problem."""
-        return self._is_shape_problem
-
-    @is_shape_problem.setter
-    def is_shape_problem(self, value: bool) -> None:
-        """Setter method for is_shape_problem."""
-        self._is_shape_problem = value
-        self._is_control_problem = not value
-
-    @property
-    def is_control_problem(self) -> bool:
-        """Returns a boolean flag, ``True`` if self is an optimal control problem."""
-        return self._is_control_problem
-
-    @is_control_problem.setter
-    def is_control_problem(self, value: bool) -> None:
-        """Setter method for is_control_problem."""
-        self._is_shape_problem = not value
-        self._is_control_problem = value
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

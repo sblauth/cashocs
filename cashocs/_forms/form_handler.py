@@ -87,9 +87,6 @@ class FormHandler(abc.ABC):
         self.config = self.db.config
         self.bcs_list: List[List[fenics.DirichletBC]] = optimization_problem.bcs_list
 
-        self.is_shape_problem: bool = optimization_problem.is_shape_problem
-        self.is_control_problem = optimization_problem.is_control_problem
-
         self.control_dim: int = 1
         self.cost_functional_list: List[
             _typing.CostFunctional
