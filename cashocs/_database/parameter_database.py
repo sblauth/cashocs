@@ -60,8 +60,6 @@ class ParameterDatabase:
         if function_db.state_spaces == function_db.adjoint_spaces:
             self.state_adjoint_equal_spaces = True
 
-        self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
-        self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
 
     @property

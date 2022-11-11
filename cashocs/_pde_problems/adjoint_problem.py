@@ -28,7 +28,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _typing
+    from cashocs import _forms
     from cashocs._database import database
     from cashocs._pde_problems import state_problem as sp
 
@@ -39,7 +39,7 @@ class AdjointProblem(pde_problem.PDEProblem):
     def __init__(
         self,
         db: database.Database,
-        form_handler: _typing.FormHandler,
+        adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
         temp_dict: Optional[Dict] = None,
     ) -> None:
@@ -47,20 +47,21 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         Args:
             db: The database of the problem.
-            form_handler: The FormHandler object for the optimization problem.
+            adjoint_form_handler: The form handler for the adjoint system.
             state_problem: The StateProblem object used to get the point where we
                 linearize the problem.
             temp_dict: A dictionary used for reinitializations when remeshing is
                 performed.
 
         """
-        super().__init__(db, form_handler)
+        super().__init__(db)
 
+        self.adjoint_form_handler = adjoint_form_handler
         self.state_problem = state_problem
         self.temp_dict = temp_dict
 
         self.adjoints = self.db.function_db.adjoints
-        self.bcs_list_ad = self.form_handler.bcs_list_ad
+        self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
         self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol: float = self.config.getfloat("StateSystem", "picard_atol")
@@ -99,13 +100,13 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         if not self.has_solution:
             if (
-                not self.form_handler.state_is_picard
+                not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
                     _utils.assemble_and_solve_linear(
-                        self.form_handler.adjoint_eq_lhs[-1 - i],
-                        self.form_handler.adjoint_eq_rhs[-1 - i],
+                        self.adjoint_form_handler.adjoint_eq_lhs[-1 - i],
+                        self.adjoint_form_handler.adjoint_eq_rhs[-1 - i],
                         self.bcs_list_ad[-1 - i],
                         A=self.A_tensors[-1 - i],
                         b=self.b_tensors[-1 - i],
@@ -116,7 +117,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
             else:
                 nonlinear_solvers.picard_iteration(
-                    self.form_handler.adjoint_eq_forms[::-1],
+                    self.adjoint_form_handler.adjoint_eq_forms[::-1],
                     self.adjoints[::-1],
                     self.bcs_list_ad[::-1],
                     max_iter=self.picard_max_iter,

@@ -24,15 +24,15 @@ cost functional.
 from __future__ import annotations
 
 import copy
-from typing import cast, List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 
+from cashocs import _forms
 from cashocs import _utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
-    from cashocs import _forms
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
@@ -57,9 +57,9 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             adjoint_problem: The AdjointProblem used to solve the adjoint equations.
 
         """
-        super().__init__(db, form_handler)
+        super().__init__(db)
 
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
+        self.form_handler = form_handler
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
@@ -101,7 +101,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             The list containing the (components of the) gradient of the cost functional.
 
         """
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         self.state_problem.solve()
         self.adjoint_problem.solve()
 

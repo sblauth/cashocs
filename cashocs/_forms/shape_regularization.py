@@ -80,7 +80,7 @@ class ShapeRegularization:
 
         """
         self.test_vector_field = form_handler.test_vector_field
-        self.config = form_handler.config
+        self.config = db.config
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
         self.mesh = db.geometry_db.mesh
         self.has_cashocs_remesh_flag = form_handler.has_cashocs_remesh_flag

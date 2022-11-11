@@ -34,6 +34,7 @@ import numpy as np
 import ufl
 
 from cashocs import _exceptions
+from cashocs import _forms
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
@@ -185,7 +186,11 @@ class OptimizationProblem(abc.ABC):
             self.adjoints,
             self.ksp_options,
             self.adjoint_ksp_options,
+            self.cost_functional_list,
+            self.state_forms,
+            self.bcs_list,
         )
+        self.general_form_handler = _forms.GeneralFormHandler(self.db)
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:
@@ -356,9 +361,9 @@ class OptimizationProblem(abc.ABC):
         else:
             mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)
 
-        self.form_handler.bcs_list_ad = mod_bcs_list
+        self.general_form_handler.adjoint_form_handler.bcs_list_ad = mod_bcs_list
 
-        self.form_handler.adjoint_eq_forms = mod_forms
+        self.general_form_handler.adjoint_form_handler.adjoint_eq_forms = mod_forms
         # replace the adjoint function by a TrialFunction for internal use
         repl_forms = [
             ufl.replace(
@@ -367,12 +372,16 @@ class OptimizationProblem(abc.ABC):
             )
             for i in range(self.state_dim)
         ]
-        self.form_handler.linear_adjoint_eq_forms = repl_forms
+        self.general_form_handler.adjoint_form_handler.linear_adjoint_eq_forms = (
+            repl_forms
+        )
 
         (
-            self.form_handler.adjoint_eq_lhs,
-            self.form_handler.adjoint_eq_rhs,
-        ) = _utils.split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
+            self.general_form_handler.adjoint_form_handler.adjoint_eq_lhs,
+            self.general_form_handler.adjoint_form_handler.adjoint_eq_rhs,
+        ) = _utils.split_linear_forms(
+            self.general_form_handler.adjoint_form_handler.linear_adjoint_eq_forms
+        )
 
         self.has_custom_adjoint = True
 

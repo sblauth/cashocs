@@ -46,6 +46,7 @@ class HessianProblem:
         self,
         db: database.Database,
         form_handler: _forms.ControlFormHandler,
+        adjoint_form_handler: _forms.AdjointFormHandler,
         gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
         """Initializes self.
@@ -53,12 +54,14 @@ class HessianProblem:
         Args:
             db: The database of the problem.
             form_handler: The FormHandler object for the optimization problem.
+            adjoint_form_handler: The form handler for the adjoint system.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
 
         """
         self.db = db
         self.form_handler = form_handler
+        self.adjoint_form_handler = adjoint_form_handler
         self.gradient_problem = gradient_problem
 
         self.config = self.db.config
@@ -122,7 +125,7 @@ class HessianProblem:
 
         self.states_prime = self.form_handler.states_prime
         self.adjoints_prime = self.form_handler.adjoints_prime
-        self.bcs_list_ad = self.form_handler.bcs_list_ad
+        self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
         option: List[List[Union[str, int, float]]] = [
             ["ksp_type", "cg"],
@@ -159,9 +162,12 @@ class HessianProblem:
 
         self.states_prime = self.form_handler.states_prime
         self.adjoints_prime = self.form_handler.adjoints_prime
-        self.bcs_list_ad = self.form_handler.bcs_list_ad
+        self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
-        if not self.form_handler.state_is_picard or self.state_dim == 1:
+        if (
+            not self.config.getboolean("StateSystem", "picard_iteration")
+            or self.state_dim == 1
+        ):
 
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
@@ -187,7 +193,7 @@ class HessianProblem:
             nonlinear_solvers.picard_iteration(
                 self.form_handler.sensitivity_eqs_picard,
                 self.states_prime,
-                self.form_handler.bcs_list_ad,
+                self.adjoint_form_handler.bcs_list_ad,
                 max_iter=self.picard_max_iter,
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,
@@ -205,7 +211,7 @@ class HessianProblem:
             nonlinear_solvers.picard_iteration(
                 self.form_handler.adjoint_sensitivity_eqs_picard,
                 self.adjoints_prime,
-                self.form_handler.bcs_list_ad,
+                self.adjoint_form_handler.bcs_list_ad,
                 max_iter=self.picard_max_iter,
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,

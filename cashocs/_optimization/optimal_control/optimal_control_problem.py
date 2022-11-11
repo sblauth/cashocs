@@ -309,10 +309,13 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.projected_difference = _utils.create_function_list(self.control_spaces)
 
         self.state_problem = _pde_problems.StateProblem(
-            self.db, self.form_handler, self.initial_guess
+            self.db,
+            self.form_handler,
+            self.general_form_handler.state_form_handler,
+            self.initial_guess,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.db, self.form_handler, self.state_problem
+            self.db, self.general_form_handler.adjoint_form_handler, self.state_problem
         )
         self.gradient_problem: _pde_problems.ControlGradientProblem = (
             _pde_problems.ControlGradientProblem(
@@ -417,7 +420,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(
-                self.db, self.form_handler, self.gradient_problem
+                self.db,
+                self.form_handler,
+                self.general_form_handler.adjoint_form_handler,
+                self.gradient_problem,
             )
 
         if self.algorithm.casefold() == "gradient_descent":

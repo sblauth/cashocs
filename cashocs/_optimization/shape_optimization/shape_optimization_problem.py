@@ -317,10 +317,17 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
         self.state_problem = _pde_problems.StateProblem(
-            self.db, self.form_handler, self.initial_guess, self.temp_dict
+            self.db,
+            self.form_handler,
+            self.general_form_handler.state_form_handler,
+            self.initial_guess,
+            self.temp_dict,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.db, self.form_handler, self.state_problem, self.temp_dict
+            self.db,
+            self.general_form_handler.adjoint_form_handler,
+            self.state_problem,
+            self.temp_dict,
         )
         self.gradient_problem = _pde_problems.ShapeGradientProblem(
             self.db, self.form_handler, self.state_problem, self.adjoint_problem

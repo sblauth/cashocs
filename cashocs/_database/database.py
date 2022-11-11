@@ -23,11 +23,14 @@ from typing import List, TYPE_CHECKING
 
 import fenics
 
+from cashocs._database import form_database
 from cashocs._database import function_database
 from cashocs._database import geometry_database
 from cashocs._database import parameter_database
 
 if TYPE_CHECKING:
+    import ufl
+
     from cashocs import _typing
     from cashocs import io
 
@@ -42,6 +45,9 @@ class Database:
         adjoints: List[fenics.Function],
         state_ksp_options: _typing.KspOptions,
         adjoint_ksp_options: _typing.KspOptions,
+        cost_functional_list: List[_typing.CostFunctional],
+        state_forms: List[ufl.Form],
+        bcs_list: List[List[fenics.DirichletBC]],
     ) -> None:
         """Initialize the database.
 
@@ -51,6 +57,9 @@ class Database:
             adjoints: The list of adjoint variables.
             state_ksp_options: The list of ksp options for the state system.
             adjoint_ksp_options: The list of ksp options for the adjoint system.
+            cost_functional_list: The list of cost functionals.
+            state_forms: The list of state forms.
+            bcs_list: The list of Dirichlet boundary conditions for the state system.
 
         """
         self.config = config
@@ -63,3 +72,6 @@ class Database:
             adjoint_ksp_options,
         )
         self.geometry_db = geometry_database.GeometryDatabase(self.function_db)
+        self.form_db = form_database.FormDatabase(
+            cost_functional_list, state_forms, bcs_list
+        )

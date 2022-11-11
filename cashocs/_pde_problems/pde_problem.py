@@ -25,27 +25,22 @@ from typing import List, TYPE_CHECKING, Union
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs import _typing
     from cashocs._database import database
 
 
 class PDEProblem(abc.ABC):
     """Base class for a PDE problem."""
 
-    def __init__(
-        self, db: database.Database, form_handler: _typing.FormHandler
-    ) -> None:
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem
-            form_handler: The form handler for the problem.
 
         """
         self.db = db
-        self.form_handler = form_handler
-        self.config = db.config
 
+        self.config = db.config
         self.has_solution = False
 
     @abc.abstractmethod

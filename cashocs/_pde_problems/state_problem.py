@@ -28,6 +28,7 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
+    from cashocs import _forms
     from cashocs import _typing
     from cashocs._database import database
 
@@ -39,6 +40,7 @@ class StateProblem(pde_problem.PDEProblem):
         self,
         db: database.Database,
         form_handler: _typing.FormHandler,
+        state_form_handler: _forms.StateFormHandler,
         initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
     ) -> None:
@@ -47,17 +49,20 @@ class StateProblem(pde_problem.PDEProblem):
         Args:
             db: The database of the problem.
             form_handler: The FormHandler of the optimization problem.
+            state_form_handler: The form handler for the state problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
             temp_dict: A dict used for reinitialization when remeshing is performed.
 
         """
-        super().__init__(db, form_handler)
+        super().__init__(db)
 
+        self.form_handler = form_handler
+        self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
         self.temp_dict = temp_dict
 
-        self.bcs_list = self.form_handler.bcs_list
+        self.bcs_list = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
@@ -90,7 +95,7 @@ class StateProblem(pde_problem.PDEProblem):
             self.number_of_solves = 0
 
     def _update_cost_functionals(self) -> None:
-        for functional in self.form_handler.cost_functional_list:
+        for functional in self.db.form_db.cost_functional_list:
             functional.update()
 
     def solve(self) -> List[fenics.Function]:
@@ -109,14 +114,14 @@ class StateProblem(pde_problem.PDEProblem):
                     fenics.assign(self.states[j], self.initial_guess[j])
 
             if (
-                not self.form_handler.state_is_picard
+                not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
             ):
-                if self.form_handler.state_is_linear:
+                if self.config.getboolean("StateSystem", "is_linear"):
                     for i in range(self.db.parameter_db.state_dim):
                         _utils.assemble_and_solve_linear(
-                            self.form_handler.state_eq_forms_lhs[i],
-                            self.form_handler.state_eq_forms_rhs[i],
+                            self.state_form_handler.state_eq_forms_lhs[i],
+                            self.state_form_handler.state_eq_forms_rhs[i],
                             self.bcs_list[i],
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
@@ -128,7 +133,7 @@ class StateProblem(pde_problem.PDEProblem):
                 else:
                     for i in range(self.db.parameter_db.state_dim):
                         nonlinear_solvers.newton_solve(
-                            self.form_handler.state_eq_forms[i],
+                            self.state_form_handler.state_eq_forms[i],
                             self.states[i],
                             self.bcs_list[i],
                             rtol=self.newton_rtol,
@@ -144,7 +149,7 @@ class StateProblem(pde_problem.PDEProblem):
 
             else:
                 nonlinear_solvers.picard_iteration(
-                    self.form_handler.state_eq_forms,
+                    self.state_form_handler.state_eq_forms,
                     self.states,
                     self.bcs_list,
                     max_iter=self.picard_max_iter,
@@ -158,7 +163,7 @@ class StateProblem(pde_problem.PDEProblem):
                     ksp_options=self.db.parameter_db.state_ksp_options,
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
-                    inner_is_linear=self.form_handler.state_is_linear,
+                    inner_is_linear=self.config.getboolean("StateSystem", "is_linear"),
                 )
 
             self.has_solution = True

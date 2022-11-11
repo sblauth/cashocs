@@ -384,7 +384,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Use replace -> derivative to speed up the computations
         self.sensitivity_eqs_temp = [
             ufl.replace(
-                self.state_forms[i],
+                self.db.form_db.state_forms[i],
                 {
                     self.db.function_db.adjoints[
                         i
@@ -402,7 +402,7 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(self.db.parameter_db.state_dim)
         ]
-        if self.state_is_picard:
+        if self.config.getboolean("StateSystem", "picard_iteration"):
             self.sensitivity_eqs_picard = [
                 fenics.derivative(
                     self.sensitivity_eqs_temp[i],
@@ -456,7 +456,7 @@ class ControlFormHandler(form_handler.FormHandler):
             ]
 
         # Add the right-hand-side for the picard iteration
-        if self.state_is_picard:
+        if self.config.getboolean("StateSystem", "picard_iteration"):
             for i in range(self.db.parameter_db.state_dim):
                 self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
@@ -522,7 +522,7 @@ class ControlFormHandler(form_handler.FormHandler):
         # Use replace -> derivative for faster computations
         adjoint_sensitivity_eqs_diag_temp = [
             ufl.replace(
-                self.state_forms[i],
+                self.db.form_db.state_forms[i],
                 {
                     self.db.function_db.adjoints[
                         i
@@ -537,7 +537,7 @@ class ControlFormHandler(form_handler.FormHandler):
             for j in range(self.db.parameter_db.state_dim)
         }
         adjoint_sensitivity_eqs_all_temp = [
-            ufl.replace(self.state_forms[i], mapping_dict)
+            ufl.replace(self.db.form_db.state_forms[i], mapping_dict)
             for i in range(self.db.parameter_db.state_dim)
         ]
 
@@ -549,7 +549,7 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(self.db.parameter_db.state_dim)
         ]
-        if self.state_is_picard:
+        if self.config.getboolean("StateSystem", "picard_iteration"):
             self.adjoint_sensitivity_eqs_picard = [
                 fenics.derivative(
                     adjoint_sensitivity_eqs_all_temp[i],
@@ -577,7 +577,7 @@ class ControlFormHandler(form_handler.FormHandler):
             pass
 
         # Add right-hand-side for picard iteration
-        if self.state_is_picard:
+        if self.config.getboolean("StateSystem", "picard_iteration"):
             for i in range(self.db.parameter_db.state_dim):
                 self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 
@@ -605,7 +605,7 @@ class ControlFormHandler(form_handler.FormHandler):
                     cost_functional.MinMaxFunctional,
                 ),
             )
-            for functional in self.cost_functional_list
+            for functional in self.db.form_db.cost_functional_list
         ):
             raise _exceptions.InputError(
                 "cashocs._forms.ShapeFormHandler",

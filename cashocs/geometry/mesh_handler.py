@@ -129,9 +129,9 @@ class _MeshHandler:
         # Namespacing
         self.mesh = self.db.geometry_db.mesh
         self.deformation_handler = deformations.DeformationHandler(self.mesh)
-        self.dx = self.form_handler.dx
+        self.dx = self.db.geometry_db.dx
         self.bbtree = self.mesh.bounding_box_tree()
-        self.config = self.form_handler.config
+        self.config = self.db.config
 
         # setup from config
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
@@ -166,8 +166,8 @@ class _MeshHandler:
             ["ksp_atol", 1e-20],
             ["ksp_max_it", 1000],
         ]
-        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
-        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
+        self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
+        self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
             self.form_handler.deformation_space
         )

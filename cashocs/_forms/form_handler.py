@@ -23,14 +23,14 @@ import abc
 from typing import Callable, List, TYPE_CHECKING, Union
 
 import fenics
-import ufl
 
 from cashocs import _utils
 from cashocs._database import database
-from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs import io
+    from cashocs._optimization import cost_functional as cf
 
 
 def _get_subdx(
@@ -84,24 +84,13 @@ class FormHandler(abc.ABC):
         self.optimization_problem = optimization_problem
         self.db = db
 
-        self.config = self.db.config
-        self.bcs_list: List[List[fenics.DirichletBC]] = optimization_problem.bcs_list
-
+        self.config: io.Config = self.db.config
         self.control_dim: int = 1
-        self.cost_functional_list: List[
-            _typing.CostFunctional
-        ] = optimization_problem.cost_functional_list
-        self.state_forms = optimization_problem.state_forms
-
-        self.lagrangian: cost_functional.Lagrangian = cost_functional.Lagrangian(
-            self.cost_functional_list, self.state_forms
-        )
         self.cost_functional_shift: float = 0.0
+        self.lagrangian: cf.Lagrangian = self.db.form_db.lagrangian
 
         self.dx: fenics.Measure = self.db.geometry_db.dx
 
-        self.state_is_linear = self.config.getboolean("StateSystem", "is_linear")
-        self.state_is_picard = self.config.getboolean("StateSystem", "picard_iteration")
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
 
         self.gradient: List[fenics.Function] = []
@@ -109,122 +98,6 @@ class FormHandler(abc.ABC):
 
         self.pre_hook: Callable[..., None] = _hook
         self.post_hook: Callable[..., None] = _hook
-
-        self.state_eq_forms: List[ufl.Form] = []
-        self.linear_state_eq_forms: List[ufl.Form] = []
-        self.state_eq_forms_lhs: List[ufl.Form] = []
-        self.state_eq_forms_rhs: List[ufl.Form] = []
-
-        self.adjoint_eq_forms: List[ufl.Form] = []
-        self.linear_adjoint_eq_forms: List[ufl.Form] = []
-        self.adjoint_eq_lhs: List[ufl.Form] = []
-        self.adjoint_eq_rhs: List[ufl.Form] = []
-
-        self._compute_state_equations()
-        self._compute_adjoint_equations()
-        self.bcs_list_ad = self._compute_adjoint_boundary_conditions()
-
-    def _compute_state_equations(self) -> None:
-        """Calculates the weak form of the state equation for the use with fenics."""
-        self.state_eq_forms = [
-            fenics.derivative(
-                self.state_forms[i],
-                self.db.function_db.adjoints[i],
-                self.db.function_db.test_functions_state[i],
-            )
-            for i in range(self.db.parameter_db.state_dim)
-        ]
-
-        if self.state_is_linear:
-            self.linear_state_eq_forms = [
-                ufl.replace(
-                    self.state_eq_forms[i],
-                    {
-                        self.db.function_db.states[
-                            i
-                        ]: self.db.function_db.trial_functions_state[i]
-                    },
-                )
-                for i in range(self.db.parameter_db.state_dim)
-            ]
-
-            (
-                self.state_eq_forms_lhs,
-                self.state_eq_forms_rhs,
-            ) = _utils.split_linear_forms(self.linear_state_eq_forms)
-
-    def _compute_adjoint_boundary_conditions(self) -> List[List[fenics.DirichletBC]]:
-        """Computes the boundary conditions for the adjoint systems."""
-        if self.db.parameter_db.state_adjoint_equal_spaces:
-            bcs_list_ad = [
-                [fenics.DirichletBC(bc) for bc in self.bcs_list[i]]
-                for i in range(self.db.parameter_db.state_dim)
-            ]
-            for i in range(self.db.parameter_db.state_dim):
-                for bc in bcs_list_ad[i]:
-                    bc.homogenize()
-        else:
-
-            bcs_list_ad = [
-                [1] * len(self.bcs_list[i])
-                for i in range(self.db.parameter_db.state_dim)
-            ]
-
-            for i in range(self.db.parameter_db.state_dim):
-                for j, bc in enumerate(self.bcs_list[i]):
-                    idx = bc.function_space().id()
-                    subdx: List[int] = []
-                    _get_subdx(self.db.function_db.state_spaces[i], idx, ls=subdx)
-                    adjoint_space = self.db.function_db.adjoint_spaces[i]
-                    for num in subdx:
-                        adjoint_space = adjoint_space.sub(num)
-                    shape = adjoint_space.ufl_element().value_shape()
-                    if shape == ():
-                        bdry_value = fenics.Constant(0)
-                    else:
-                        bdry_value = fenics.Constant(
-                            [0] * adjoint_space.ufl_element().value_size()
-                        )
-
-                    try:
-                        bcs_list_ad[i][j] = fenics.DirichletBC(
-                            adjoint_space,
-                            bdry_value,
-                            bc.domain_args[0],
-                            bc.domain_args[1],
-                        )
-                    except AttributeError:
-                        bcs_list_ad[i][j] = fenics.DirichletBC(
-                            adjoint_space, bdry_value, bc.sub_domain
-                        )
-
-        return bcs_list_ad
-
-    def _compute_adjoint_equations(self) -> None:
-        """Calculates the weak form of the adjoint equation for use with fenics."""
-        self.adjoint_eq_forms = [
-            self.lagrangian.derivative(
-                self.db.function_db.states[i],
-                self.db.function_db.test_functions_adjoint[i],
-            )
-            for i in range(self.db.parameter_db.state_dim)
-        ]
-
-        self.linear_adjoint_eq_forms = [
-            ufl.replace(
-                self.adjoint_eq_forms[i],
-                {
-                    self.db.function_db.adjoints[
-                        i
-                    ]: self.db.function_db.trial_functions_adjoint[i]
-                },
-            )
-            for i in range(self.db.parameter_db.state_dim)
-        ]
-
-        self.adjoint_eq_lhs, self.adjoint_eq_rhs = _utils.split_linear_forms(
-            self.linear_adjoint_eq_forms
-        )
 
     @abc.abstractmethod
     def scalar_product(

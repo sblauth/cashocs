@@ -72,8 +72,7 @@ class ReducedCostFunctional:
         self.state_problem.solve()
 
         vals = [
-            functional.evaluate()
-            for functional in self.form_handler.cost_functional_list
+            functional.evaluate() for functional in self.db.form_db.cost_functional_list
         ]
         val = sum(vals)
         val += self.form_handler.cost_functional_shift
