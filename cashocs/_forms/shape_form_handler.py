@@ -39,6 +39,7 @@ if TYPE_CHECKING:
 
     from cashocs import geometry
     from cashocs import io
+    from cashocs._database import database
     from cashocs._optimization import shape_optimization
 
 
@@ -230,15 +231,18 @@ class ShapeFormHandler(form_handler.FormHandler):
     """
 
     def __init__(
-        self, optimization_problem: shape_optimization.ShapeOptimizationProblem
+        self,
+        optimization_problem: shape_optimization.ShapeOptimizationProblem,
+        db: database.Database,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding shape optimization problem.
+            db: The database of the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(optimization_problem, db)
 
         self.has_cashocs_remesh_flag: bool = (
             optimization_problem.has_cashocs_remesh_flag
@@ -267,22 +271,23 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
 
         self.deformation_space: fenics.FunctionSpace = (
-            deformation_space or fenics.VectorFunctionSpace(self.mesh, "CG", 1)
+            deformation_space
+            or fenics.VectorFunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         )
 
         self.control_spaces: List[fenics.FunctionSpace] = [self.deformation_space]
         self.control_dim = 1
         self.require_control_constraints = False
 
-        self.cg_function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
-        self.dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
+        self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
+        self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)
         self.mu_lame = fenics.Function(self.cg_function_space)
         self.volumes = fenics.Function(self.dg_function_space)
 
         self.stiffness = Stiffness(
             self.mu_lame,
             self.config,
-            self.mesh,
+            self.db.geometry_db.mesh,
             self.boundaries,
             self.shape_bdry_def,
             self.shape_bdry_fix,
@@ -294,7 +299,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         )
 
         self.shape_regularization: shape_regularization.ShapeRegularization = (
-            shape_regularization.ShapeRegularization(self)
+            shape_regularization.ShapeRegularization(self.db, self)
         )
 
         fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
@@ -427,9 +432,9 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _parse_pull_back_coefficients(self) -> None:
         """Parses the coefficients which are available for adding pullbacks."""
-        self.state_adjoint_ids = [coeff.id() for coeff in self.states] + [
-            coeff.id() for coeff in self.adjoints
-        ]
+        self.state_adjoint_ids = [
+            coeff.id() for coeff in self.db.function_db.states
+        ] + [coeff.id() for coeff in self.db.function_db.adjoints]
 
         self.material_derivative_coeffs.clear()
 
@@ -478,7 +483,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         # Shape derivative of Lagrangian w/o regularization and pullbacks
         shape_derivative = self.lagrangian.derivative(
-            fenics.SpatialCoordinate(self.mesh), self.test_vector_field
+            fenics.SpatialCoordinate(self.db.geometry_db.mesh), self.test_vector_field
         )
 
         shape_derivative = self._add_pull_backs(shape_derivative)
@@ -543,7 +548,10 @@ class ShapeFormHandler(form_handler.FormHandler):
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
                 self.volumes.vector().vec().aypx(
                     0.0,
-                    fenics.project(fenics.CellVolume(self.mesh), self.dg_function_space)
+                    fenics.project(
+                        fenics.CellVolume(self.db.geometry_db.mesh),
+                        self.dg_function_space,
+                    )
                     .vector()
                     .vec(),
                 )
@@ -618,7 +626,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         if self.update_inhomogeneous:
             self.volumes.vector().vec().aypx(
                 0.0,
-                fenics.project(fenics.CellVolume(self.mesh), self.dg_function_space)
+                fenics.project(
+                    fenics.CellVolume(self.db.geometry_db.mesh), self.dg_function_space
+                )
                 .vector()
                 .vec(),
             )

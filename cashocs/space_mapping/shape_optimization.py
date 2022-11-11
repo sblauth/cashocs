@@ -106,7 +106,7 @@ class CoarseModel:
         """Initializes self.
 
         Args:
-            state_forms: The list of weak forms for the coare state problem
+            state_forms: The list of weak forms for the coarse state problem
             bcs_list: The list of boundary conditions for the coarse problem
             cost_functional_form: The cost functional for the coarse problem
             states: The state variables for the coarse problem
@@ -207,7 +207,7 @@ class ParameterExtraction:
         self._post_hook = _hook
 
         self.adjoints = _utils.create_function_list(
-            coarse_model.shape_optimization_problem.form_handler.adjoint_spaces
+            coarse_model.shape_optimization_problem.db.function_db.adjoint_spaces
         )
 
         dict_states = {

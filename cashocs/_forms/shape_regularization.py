@@ -34,6 +34,7 @@ from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._forms import shape_form_handler
 
 
@@ -68,17 +69,20 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
 class ShapeRegularization:
     """Regularization terms for shape optimization problems."""
 
-    def __init__(self, form_handler: shape_form_handler.ShapeFormHandler) -> None:
+    def __init__(
+        self, db: database.Database, form_handler: shape_form_handler.ShapeFormHandler
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The corresponding shape form handler object.
 
         """
         self.test_vector_field = form_handler.test_vector_field
         self.config = form_handler.config
-        self.geometric_dimension = form_handler.mesh.geometric_dimension()
-        self.mesh = form_handler.mesh
+        self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
+        self.mesh = db.geometry_db.mesh
         self.has_cashocs_remesh_flag = form_handler.has_cashocs_remesh_flag
         self.temp_dir = form_handler.temp_dir
 

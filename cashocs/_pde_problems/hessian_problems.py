@@ -35,6 +35,7 @@ from cashocs import nonlinear_solvers
 if TYPE_CHECKING:
     from cashocs import _forms
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._pde_problems import control_gradient_problem
 
 
@@ -43,21 +44,24 @@ class HessianProblem:
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _forms.ControlFormHandler,
         gradient_problem: control_gradient_problem.ControlGradientProblem,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The FormHandler object for the optimization problem.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
 
         """
+        self.db = db
         self.form_handler = form_handler
         self.gradient_problem = gradient_problem
 
-        self.config = self.form_handler.config
+        self.config = self.db.config
         self.gradient = self.gradient_problem.gradient
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
@@ -91,20 +95,20 @@ class HessianProblem:
 
         # pylint: disable=invalid-name
         self.state_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
         ]
         self.state_b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
         # pylint: disable=invalid-name
         self.adjoint_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
         ]
         self.adjoint_b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
-        self.state_dim = self.form_handler.state_dim
+        self.state_dim = self.db.parameter_db.state_dim
         self.control_dim = self.form_handler.control_dim
 
         self.controls = self.form_handler.controls
@@ -157,7 +161,7 @@ class HessianProblem:
         self.adjoints_prime = self.form_handler.adjoints_prime
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
-        if not self.form_handler.state_is_picard or self.form_handler.state_dim == 1:
+        if not self.form_handler.state_is_picard or self.state_dim == 1:
 
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
@@ -165,7 +169,7 @@ class HessianProblem:
                     self.form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
                     x=self.states_prime[i].vector().vec(),
-                    ksp_options=self.form_handler.state_ksp_options[i],
+                    ksp_options=self.db.parameter_db.state_ksp_options[i],
                 )
                 self.states_prime[i].vector().apply("")
 
@@ -175,7 +179,7 @@ class HessianProblem:
                     self.form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
                     x=self.adjoints_prime[-1 - i].vector().vec(),
-                    ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
+                    ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                 )
                 self.adjoints_prime[-1 - i].vector().apply("")
 
@@ -192,7 +196,7 @@ class HessianProblem:
                 inner_inexact=False,
                 inner_verbose=False,
                 inner_max_its=2,
-                ksp_options=self.form_handler.state_ksp_options,
+                ksp_options=self.db.parameter_db.state_ksp_options,
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
@@ -210,7 +214,7 @@ class HessianProblem:
                 inner_inexact=False,
                 inner_verbose=False,
                 inner_max_its=2,
-                ksp_options=self.form_handler.adjoint_ksp_options,
+                ksp_options=self.db.parameter_db.adjoint_ksp_options,
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,

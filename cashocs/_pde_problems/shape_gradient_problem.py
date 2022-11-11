@@ -38,6 +38,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
 
@@ -47,6 +48,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _forms.ShapeFormHandler,
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
@@ -54,13 +56,14 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The ShapeFormHandler object corresponding to the shape
                 optimization problem.
             state_problem: The corresponding state problem.
             adjoint_problem: The corresponding adjoint problem.
 
         """
-        super().__init__(form_handler)
+        super().__init__(db, form_handler)
         self.form_handler: _forms.ShapeFormHandler
 
         self.state_problem = state_problem
@@ -102,6 +105,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             and not self.form_handler.use_fixed_dimensions
         ):
             self.p_laplace_projector = _PLaplaceProjector(
+                self.db,
                 self,
                 self.gradient,
                 self.form_handler.shape_derivative,
@@ -170,6 +174,7 @@ class _PLaplaceProjector:
 
     def __init__(
         self,
+        db: database.Database,
         gradient_problem: ShapeGradientProblem,
         gradient: List[fenics.Function],
         shape_derivative: ufl.Form,
@@ -179,6 +184,7 @@ class _PLaplaceProjector:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             gradient_problem: The shape gradient problem
             gradient: The fenics Function representing the gradient deformation
             shape_derivative: The ufl Form of the shape derivative
@@ -186,6 +192,7 @@ class _PLaplaceProjector:
             config: The config for the optimization problem
 
         """
+        self.db = db
         self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
         delta = config.getfloat("ShapeGradient", "damping_factor")
         eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
@@ -194,7 +201,7 @@ class _PLaplaceProjector:
         self.shape_derivative = shape_derivative
         self.test_vector_field = gradient_problem.form_handler.test_vector_field
         self.bcs_shape = bcs_shape
-        dx = gradient_problem.form_handler.dx
+        dx = self.db.geometry_db.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
         self.A_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name

@@ -296,23 +296,25 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         # end overloading
 
         self.is_control_problem = True
-        self.form_handler: _forms.ControlFormHandler = _forms.ControlFormHandler(self)
+        self.form_handler: _forms.ControlFormHandler = _forms.ControlFormHandler(
+            self, self.db
+        )
 
-        self.state_spaces = self.form_handler.state_spaces
+        self.state_spaces = self.db.function_db.state_spaces
         self.control_spaces = self.form_handler.control_spaces
-        self.adjoint_spaces = self.form_handler.adjoint_spaces
+        self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
         self.projected_difference = _utils.create_function_list(self.control_spaces)
 
         self.state_problem = _pde_problems.StateProblem(
-            self.form_handler, self.initial_guess
+            self.db, self.form_handler, self.initial_guess
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.form_handler, self.state_problem
+            self.db, self.form_handler, self.state_problem
         )
         self.gradient_problem: _pde_problems.ControlGradientProblem = (
             _pde_problems.ControlGradientProblem(
-                self.form_handler, self.state_problem, self.adjoint_problem
+                self.db, self.form_handler, self.state_problem, self.adjoint_problem
             )
         )
 
@@ -413,7 +415,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(
-                self.form_handler, self.gradient_problem
+                self.db, self.form_handler, self.gradient_problem
             )
 
         if self.algorithm.casefold() == "gradient_descent":

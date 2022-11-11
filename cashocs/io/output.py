@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 from cashocs.io import managers
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_problem as op
 
@@ -33,13 +34,17 @@ if TYPE_CHECKING:
 class OutputManager:
     """Class handling all the output."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
+    def __init__(
+        self, optimization_problem: op.OptimizationProblem, db: database.Database
+    ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
+        self.db = db
         self.config = optimization_problem.config
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
@@ -71,7 +76,7 @@ class OutputManager:
 
         self.history_manager = managers.HistoryManager(self.config, self.result_dir)
         self.xdmf_file_manager = managers.XDMFFileManager(
-            optimization_problem, self.result_dir
+            optimization_problem, self.db, self.result_dir
         )
 
         self.result_manager = managers.ResultManager(

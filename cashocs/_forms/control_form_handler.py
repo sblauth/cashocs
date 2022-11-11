@@ -33,6 +33,7 @@ from cashocs._forms import form_handler
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization import optimal_control
 
 
@@ -46,15 +47,18 @@ class ControlFormHandler(form_handler.FormHandler):
     """
 
     def __init__(
-        self, optimization_problem: optimal_control.OptimalControlProblem
+        self,
+        optimization_problem: optimal_control.OptimalControlProblem,
+        db: database.Database,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimal control problem
+            db: The database of the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(optimization_problem, db)
 
         # Initialize the attributes from the arguments
         self.controls = optimization_problem.controls
@@ -75,8 +79,12 @@ class ControlFormHandler(form_handler.FormHandler):
 
         self.gradient = _utils.create_function_list(self.control_spaces)
 
-        self.states_prime = _utils.create_function_list(self.state_spaces)
-        self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
+        self.states_prime = _utils.create_function_list(
+            self.db.function_db.state_spaces
+        )
+        self.adjoints_prime = _utils.create_function_list(
+            self.db.function_db.adjoint_spaces
+        )
         self.test_directions = _utils.create_function_list(self.control_spaces)
         self.temp = _utils.create_function_list(self.control_spaces)
         self.test_functions_control = [
@@ -92,10 +100,10 @@ class ControlFormHandler(form_handler.FormHandler):
         self.sensitivity_eqs_rhs: List[ufl.Form] = []
         self.lagrangian_y: List[ufl.Form] = []
         self.lagrangian_u: List[ufl.Form] = []
-        self.lagrangian_yy: List[ufl.Form] = []
-        self.lagrangian_yu: List[ufl.Form] = []
-        self.lagrangian_uy: List[ufl.Form] = []
-        self.lagrangian_uu: List[ufl.Form] = []
+        self.lagrangian_yy: List[List[ufl.Form]] = []
+        self.lagrangian_yu: List[List[ufl.Form]] = []
+        self.lagrangian_uy: List[List[ufl.Form]] = []
+        self.lagrangian_uu: List[List[ufl.Form]] = []
         self.adjoint_sensitivity_eqs_lhs: List[ufl.Form] = []
         self.adjoint_sensitivity_eqs_picard: List[ufl.Form] = []
         self.adjoint_sensitivity_eqs_rhs: List[ufl.Form] = []
@@ -374,39 +382,46 @@ class ControlFormHandler(form_handler.FormHandler):
         # Use replace -> derivative to speed up the computations
         self.sensitivity_eqs_temp = [
             ufl.replace(
-                self.state_forms[i], {self.adjoints[i]: self.test_functions_state[i]}
+                self.state_forms[i],
+                {
+                    self.db.function_db.adjoints[
+                        i
+                    ]: self.db.function_db.test_functions_state[i]
+                },
             )
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
 
         self.sensitivity_eqs_lhs = [
             fenics.derivative(
                 self.sensitivity_eqs_temp[i],
-                self.states[i],
-                self.trial_functions_state[i],
+                self.db.function_db.states[i],
+                self.db.function_db.trial_functions_state[i],
             )
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
         if self.state_is_picard:
             self.sensitivity_eqs_picard = [
                 fenics.derivative(
-                    self.sensitivity_eqs_temp[i], self.states[i], self.states_prime[i]
+                    self.sensitivity_eqs_temp[i],
+                    self.db.function_db.states[i],
+                    self.states_prime[i],
                 )
-                for i in range(self.state_dim)
+                for i in range(self.db.parameter_db.state_dim)
             ]
 
         # Need to distinguish cases due to empty sum in case state_dim = 1
-        if self.state_dim > 1:
+        if self.db.parameter_db.state_dim > 1:
             # pylint: disable=invalid-unary-operand-type
             self.sensitivity_eqs_rhs = [
                 -_utils.summation(
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
-                            self.states[j],
+                            self.db.function_db.states[j],
                             self.states_prime[j],
                         )
-                        for j in range(self.state_dim)
+                        for j in range(self.db.parameter_db.state_dim)
                         if j != i
                     ]
                 )
@@ -420,7 +435,7 @@ class ControlFormHandler(form_handler.FormHandler):
                         for j in range(self.control_dim)
                     ]
                 )
-                for i in range(self.state_dim)
+                for i in range(self.db.parameter_db.state_dim)
             ]
         else:
             self.sensitivity_eqs_rhs = [
@@ -435,19 +450,22 @@ class ControlFormHandler(form_handler.FormHandler):
                         for j in range(self.control_dim)
                     ]
                 )
-                for i in range(self.state_dim)
+                for i in range(self.db.parameter_db.state_dim)
             ]
 
         # Add the right-hand-side for the picard iteration
         if self.state_is_picard:
-            for i in range(self.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
         self.lagrangian_y = [
-            self.lagrangian.derivative(self.states[i], self.test_functions_state[i])
-            for i in range(self.state_dim)
+            self.lagrangian.derivative(
+                self.db.function_db.states[i],
+                self.db.function_db.test_functions_state[i],
+            )
+            for i in range(self.db.parameter_db.state_dim)
         ]
         self.lagrangian_u = [
             self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
@@ -459,18 +477,22 @@ class ControlFormHandler(form_handler.FormHandler):
         self.lagrangian_yy = [
             [
                 fenics.derivative(
-                    self.lagrangian_y[i], self.states[j], self.states_prime[j]
+                    self.lagrangian_y[i],
+                    self.db.function_db.states[j],
+                    self.states_prime[j],
                 )
-                for j in range(self.state_dim)
+                for j in range(self.db.parameter_db.state_dim)
             ]
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
         self.lagrangian_yu = [
             [
                 fenics.derivative(
-                    self.lagrangian_u[i], self.states[j], self.states_prime[j]
+                    self.lagrangian_u[i],
+                    self.db.function_db.states[j],
+                    self.states_prime[j],
                 )
-                for j in range(self.state_dim)
+                for j in range(self.db.parameter_db.state_dim)
             ]
             for i in range(self.control_dim)
         ]
@@ -481,7 +503,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 )
                 for j in range(self.control_dim)
             ]
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
         self.lagrangian_uu = [
             [
@@ -498,48 +520,54 @@ class ControlFormHandler(form_handler.FormHandler):
         # Use replace -> derivative for faster computations
         adjoint_sensitivity_eqs_diag_temp = [
             ufl.replace(
-                self.state_forms[i], {self.adjoints[i]: self.trial_functions_adjoint[i]}
+                self.state_forms[i],
+                {
+                    self.db.function_db.adjoints[
+                        i
+                    ]: self.db.function_db.trial_functions_adjoint[i]
+                },
             )
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
 
         mapping_dict = {
-            self.adjoints[j]: self.adjoints_prime[j] for j in range(self.state_dim)
+            self.db.function_db.adjoints[j]: self.adjoints_prime[j]
+            for j in range(self.db.parameter_db.state_dim)
         }
         adjoint_sensitivity_eqs_all_temp = [
             ufl.replace(self.state_forms[i], mapping_dict)
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
 
         self.adjoint_sensitivity_eqs_lhs = [
             fenics.derivative(
                 adjoint_sensitivity_eqs_diag_temp[i],
-                self.states[i],
-                self.test_functions_adjoint[i],
+                self.db.function_db.states[i],
+                self.db.function_db.test_functions_adjoint[i],
             )
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
         if self.state_is_picard:
             self.adjoint_sensitivity_eqs_picard = [
                 fenics.derivative(
                     adjoint_sensitivity_eqs_all_temp[i],
-                    self.states[i],
-                    self.test_functions_adjoint[i],
+                    self.db.function_db.states[i],
+                    self.db.function_db.test_functions_adjoint[i],
                 )
-                for i in range(self.state_dim)
+                for i in range(self.db.parameter_db.state_dim)
             ]
 
         # Need cases distinction due to empty sum for state_dim == 1
-        if self.state_dim > 1:
-            for i in range(self.state_dim):
+        if self.db.parameter_db.state_dim > 1:
+            for i in range(self.db.parameter_db.state_dim):
                 self.w_1[i] -= _utils.summation(
                     [
                         fenics.derivative(
                             adjoint_sensitivity_eqs_all_temp[j],
-                            self.states[i],
-                            self.test_functions_adjoint[i],
+                            self.db.function_db.states[i],
+                            self.db.function_db.test_functions_adjoint[i],
                         )
-                        for j in range(self.state_dim)
+                        for j in range(self.db.parameter_db.state_dim)
                         if j != i
                     ]
                 )
@@ -548,7 +576,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         # Add right-hand-side for picard iteration
         if self.state_is_picard:
-            for i in range(self.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 
         self.adjoint_sensitivity_eqs_rhs = [
@@ -559,7 +587,7 @@ class ControlFormHandler(form_handler.FormHandler):
                         self.controls[i],
                         self.test_functions_control[i],
                     )
-                    for j in range(self.state_dim)
+                    for j in range(self.db.parameter_db.state_dim)
                 ]
             )
             for i in range(self.control_dim)
@@ -591,14 +619,24 @@ class ControlFormHandler(form_handler.FormHandler):
         self._compute_second_order_lagrangian_derivatives()
 
         self.w_1 = [
-            _utils.summation([self.lagrangian_yy[i][j] for j in range(self.state_dim)])
+            _utils.summation(
+                [
+                    self.lagrangian_yy[i][j]
+                    for j in range(self.db.parameter_db.state_dim)
+                ]
+            )
             + _utils.summation(
                 [self.lagrangian_uy[i][j] for j in range(self.control_dim)]
             )
-            for i in range(self.state_dim)
+            for i in range(self.db.parameter_db.state_dim)
         ]
         self.w_2 = [
-            _utils.summation([self.lagrangian_yu[i][j] for j in range(self.state_dim)])
+            _utils.summation(
+                [
+                    self.lagrangian_yu[i][j]
+                    for j in range(self.db.parameter_db.state_dim)
+                ]
+            )
             + _utils.summation(
                 [self.lagrangian_uu[i][j] for j in range(self.control_dim)]
             )

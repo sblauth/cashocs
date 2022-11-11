@@ -37,6 +37,7 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
+from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
@@ -180,6 +181,14 @@ class OptimizationProblem(abc.ABC):
 
         self._is_shape_problem = False
         self._is_control_problem = False
+
+        self.db = database.Database(
+            self.config,
+            self.states,
+            self.adjoints,
+            self.ksp_options,
+            self.adjoint_ksp_options,
+        )
 
     @property
     def is_shape_problem(self) -> bool:
@@ -379,7 +388,7 @@ class OptimizationProblem(abc.ABC):
         repl_forms = [
             ufl.replace(
                 mod_forms[i],
-                {self.adjoints[i]: self.form_handler.trial_functions_adjoint[i]},
+                {self.adjoints[i]: self.db.function_db.trial_functions_adjoint[i]},
             )
             for i in range(self.state_dim)
         ]
@@ -532,7 +541,7 @@ class OptimizationProblem(abc.ABC):
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
         self._check_for_custom_forms()
-        self.output_manager = io.OutputManager(self)
+        self.output_manager = io.OutputManager(self, self.db)
 
     def shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.

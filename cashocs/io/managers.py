@@ -32,6 +32,7 @@ from cashocs.io import mesh as iomesh
 if TYPE_CHECKING:
     from cashocs import _optimization as op
     from cashocs import io
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
@@ -351,15 +352,20 @@ class XDMFFileManager:
     """Class for managing visualization .xdmf files."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, result_dir: str
+        self,
+        optimization_problem: op.OptimizationProblem,
+        db: database.Database,
+        result_dir: str,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
             result_dir: Path to the directory, where the output files are saved in.
 
         """
+        self.db = db
         self.form_handler = optimization_problem.form_handler
         self.config = optimization_problem.config
 
@@ -387,10 +393,10 @@ class XDMFFileManager:
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
         if self.save_state:
-            for i in range(self.form_handler.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 self.state_xdmf_list.append(
                     self._generate_xdmf_file_strings(
-                        self.form_handler.state_spaces[i], f"state_{i:d}"
+                        self.db.function_db.state_spaces[i], f"state_{i:d}"
                     )
                 )
 
@@ -407,10 +413,10 @@ class XDMFFileManager:
     def _initialize_adjoints_xdmf(self) -> None:
         """Initialize the list of xdmf files for the adjoint variables."""
         if self.save_adjoint:
-            for i in range(self.form_handler.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 self.adjoint_xdmf_list.append(
                     self._generate_xdmf_file_strings(
-                        self.form_handler.adjoint_spaces[i], f"adjoint_{i:d}"
+                        self.db.function_db.adjoint_spaces[i], f"adjoint_{i:d}"
                     )
                 )
 
@@ -468,19 +474,19 @@ class XDMFFileManager:
 
         """
         if self.save_state:
-            for i in range(self.form_handler.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 if isinstance(self.state_xdmf_list[i], list):
                     for j in range(len(self.state_xdmf_list[i])):
                         self._write_xdmf_step(
                             self.state_xdmf_list[i][j],
-                            self.form_handler.states[i].sub(j, True),
+                            self.db.function_db.states[i].sub(j, True),
                             f"state_{i}_sub_{j}",
                             iteration,
                         )
                 else:
                     self._write_xdmf_step(
                         cast(str, self.state_xdmf_list[i]),
-                        self.form_handler.states[i],
+                        self.db.function_db.states[i],
                         f"state_{i}",
                         iteration,
                     )
@@ -510,19 +516,19 @@ class XDMFFileManager:
 
         """
         if self.save_adjoint:
-            for i in range(self.form_handler.state_dim):
+            for i in range(self.db.parameter_db.state_dim):
                 if isinstance(self.adjoint_xdmf_list[i], list):
                     for j in range(len(self.adjoint_xdmf_list[i])):
                         self._write_xdmf_step(
                             self.adjoint_xdmf_list[i][j],
-                            self.form_handler.adjoints[i].sub(j, True),
+                            self.db.function_db.adjoints[i].sub(j, True),
                             f"adjoint_{i}_sub_{j}",
                             iteration,
                         )
                 else:
                     self._write_xdmf_step(
                         cast(str, self.adjoint_xdmf_list[i]),
-                        self.form_handler.adjoints[i],
+                        self.db.function_db.adjoints[i],
                         f"adjoint_{i}",
                         iteration,
                     )

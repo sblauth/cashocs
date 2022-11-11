@@ -33,6 +33,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
 
@@ -42,6 +43,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _forms.ControlFormHandler,
         state_problem: sp.StateProblem,
         adjoint_problem: ap.AdjointProblem,
@@ -49,12 +51,13 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The FormHandler object of the optimization problem.
             state_problem: The StateProblem object used to solve the state equations.
             adjoint_problem: The AdjointProblem used to solve the adjoint equations.
 
         """
-        super().__init__(form_handler)
+        super().__init__(db, form_handler)
 
         self.form_handler: _forms.ControlFormHandler
         self.state_problem = state_problem

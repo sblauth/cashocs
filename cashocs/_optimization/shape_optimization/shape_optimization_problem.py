@@ -294,7 +294,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
         self.is_shape_problem = True
-        self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(self)
+        self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(
+            self, self.db
+        )
 
         if (
             self.do_remesh
@@ -308,19 +310,19 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "mu_barycenter": self.form_handler.shape_regularization.mu_barycenter,
             }
 
-        self.mesh_handler = geometry._MeshHandler(self)
+        self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(self.db, self)
 
-        self.state_spaces = self.form_handler.state_spaces
-        self.adjoint_spaces = self.form_handler.adjoint_spaces
+        self.state_spaces = self.db.function_db.state_spaces
+        self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
         self.state_problem = _pde_problems.StateProblem(
-            self.form_handler, self.initial_guess, self.temp_dict
+            self.db, self.form_handler, self.initial_guess, self.temp_dict
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.form_handler, self.state_problem, self.temp_dict
+            self.db, self.form_handler, self.state_problem, self.temp_dict
         )
         self.gradient_problem = _pde_problems.ShapeGradientProblem(
-            self.form_handler, self.state_problem, self.adjoint_problem
+            self.db, self.form_handler, self.state_problem, self.adjoint_problem
         )
 
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(

@@ -198,7 +198,7 @@ class ParameterExtraction:
         self._post_hook = _hook
 
         self.adjoints = _utils.create_function_list(
-            coarse_model.optimal_control_problem.form_handler.adjoint_spaces
+            coarse_model.optimal_control_problem.db.function_db.adjoint_spaces
         )
 
         dict_states = {

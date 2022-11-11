@@ -29,6 +29,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
 
 
 class StateProblem(pde_problem.PDEProblem):
@@ -36,6 +37,7 @@ class StateProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _typing.FormHandler,
         initial_guess: Optional[List[fenics.Function]],
         temp_dict: Optional[Dict] = None,
@@ -43,19 +45,20 @@ class StateProblem(pde_problem.PDEProblem):
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The FormHandler of the optimization problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
             temp_dict: A dict used for reinitialization when remeshing is performed.
 
         """
-        super().__init__(form_handler)
+        super().__init__(db, form_handler)
 
         self.initial_guess = initial_guess
         self.temp_dict = temp_dict
 
         self.bcs_list = self.form_handler.bcs_list
-        self.states = self.form_handler.states
+        self.states = self.db.function_db.states
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
@@ -70,13 +73,13 @@ class StateProblem(pde_problem.PDEProblem):
 
         # pylint: disable=invalid-name
         self.A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
         ]
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
         self.res_j_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
         if self.temp_dict is not None:
@@ -102,15 +105,15 @@ class StateProblem(pde_problem.PDEProblem):
             self.form_handler.pre_hook()
 
             if self.initial_guess is not None:
-                for j in range(self.form_handler.state_dim):
+                for j in range(self.db.parameter_db.state_dim):
                     fenics.assign(self.states[j], self.initial_guess[j])
 
             if (
                 not self.form_handler.state_is_picard
-                or self.form_handler.state_dim == 1
+                or self.db.parameter_db.state_dim == 1
             ):
                 if self.form_handler.state_is_linear:
-                    for i in range(self.form_handler.state_dim):
+                    for i in range(self.db.parameter_db.state_dim):
                         _utils.assemble_and_solve_linear(
                             self.form_handler.state_eq_forms_lhs[i],
                             self.form_handler.state_eq_forms_rhs[i],
@@ -118,12 +121,12 @@ class StateProblem(pde_problem.PDEProblem):
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
                             x=self.states[i].vector().vec(),
-                            ksp_options=self.form_handler.state_ksp_options[i],
+                            ksp_options=self.db.parameter_db.state_ksp_options[i],
                         )
                         self.states[i].vector().apply("")
 
                 else:
-                    for i in range(self.form_handler.state_dim):
+                    for i in range(self.db.parameter_db.state_dim):
                         nonlinear_solvers.newton_solve(
                             self.form_handler.state_eq_forms[i],
                             self.states[i],
@@ -134,7 +137,7 @@ class StateProblem(pde_problem.PDEProblem):
                             damped=self.newton_damped,
                             inexact=self.newton_inexact,
                             verbose=self.newton_verbose,
-                            ksp_options=self.form_handler.state_ksp_options[i],
+                            ksp_options=self.db.parameter_db.state_ksp_options[i],
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
                         )
@@ -152,7 +155,7 @@ class StateProblem(pde_problem.PDEProblem):
                     inner_inexact=self.newton_inexact,
                     inner_verbose=self.newton_verbose,
                     inner_max_its=self.newton_iter,
-                    ksp_options=self.form_handler.state_ksp_options,
+                    ksp_options=self.db.parameter_db.state_ksp_options,
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
                     inner_is_linear=self.form_handler.state_is_linear,

@@ -39,6 +39,7 @@ from cashocs.geometry import deformations
 from cashocs.geometry import quality
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs._optimization.shape_optimization.shape_optimization_problem import (
         ShapeOptimizationProblem,
@@ -111,16 +112,22 @@ class _MeshHandler:
     transformations and remeshing. Also includes mesh quality control checks.
     """
 
-    def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
+    def __init__(
+        self,
+        db: database.Database,
+        shape_optimization_problem: ShapeOptimizationProblem,
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             shape_optimization_problem: The corresponding shape optimization problem.
 
         """
+        self.db = db
         self.form_handler = shape_optimization_problem.form_handler
         # Namespacing
-        self.mesh = self.form_handler.mesh
+        self.mesh = self.db.geometry_db.mesh
         self.deformation_handler = deformations.DeformationHandler(self.mesh)
         self.dx = self.form_handler.dx
         self.bbtree = self.mesh.bounding_box_tree()

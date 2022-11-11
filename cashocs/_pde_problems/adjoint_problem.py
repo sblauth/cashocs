@@ -29,6 +29,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._pde_problems import state_problem as sp
 
 
@@ -37,6 +38,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
     def __init__(
         self,
+        db: database.Database,
         form_handler: _typing.FormHandler,
         state_problem: sp.StateProblem,
         temp_dict: Optional[Dict] = None,
@@ -44,6 +46,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             form_handler: The FormHandler object for the optimization problem.
             state_problem: The StateProblem object used to get the point where we
                 linearize the problem.
@@ -51,12 +54,12 @@ class AdjointProblem(pde_problem.PDEProblem):
                 performed.
 
         """
-        super().__init__(form_handler)
+        super().__init__(db, form_handler)
 
         self.state_problem = state_problem
         self.temp_dict = temp_dict
 
-        self.adjoints = self.form_handler.adjoints
+        self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.form_handler.bcs_list_ad
 
         self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
@@ -68,14 +71,14 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         # pylint: disable=invalid-name
         self.A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.form_handler.state_dim)
+            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
         ]
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self.res_j_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.state_dim)
+            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
         if self.form_handler.is_shape_problem and self.temp_dict is not None:
@@ -97,9 +100,9 @@ class AdjointProblem(pde_problem.PDEProblem):
         if not self.has_solution:
             if (
                 not self.form_handler.state_is_picard
-                or self.form_handler.state_dim == 1
+                or self.db.parameter_db.state_dim == 1
             ):
-                for i in range(self.form_handler.state_dim):
+                for i in range(self.db.parameter_db.state_dim):
                     _utils.assemble_and_solve_linear(
                         self.form_handler.adjoint_eq_lhs[-1 - i],
                         self.form_handler.adjoint_eq_rhs[-1 - i],
@@ -107,7 +110,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                         A=self.A_tensors[-1 - i],
                         b=self.b_tensors[-1 - i],
                         x=self.adjoints[-1 - i].vector().vec(),
-                        ksp_options=self.form_handler.adjoint_ksp_options[-1 - i],
+                        ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                     )
                     self.adjoints[-1 - i].vector().apply("")
 
@@ -124,7 +127,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                     inner_inexact=False,
                     inner_verbose=False,
                     inner_max_its=2,
-                    ksp_options=self.form_handler.adjoint_ksp_options[::-1],
+                    ksp_options=self.db.parameter_db.adjoint_ksp_options[::-1],
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],
                     inner_is_linear=True,

@@ -15,45 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""General PDE problem."""
+"""Database for geometry."""
 
 from __future__ import annotations
 
-import abc
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 
 if TYPE_CHECKING:
-    from cashocs import _typing
-    from cashocs._database import database
+    from cashocs._database import function_database
 
 
-class PDEProblem(abc.ABC):
-    """Base class for a PDE problem."""
+class GeometryDatabase:
+    """Database for geometry parameters."""
 
-    def __init__(
-        self, db: database.Database, form_handler: _typing.FormHandler
-    ) -> None:
-        """Initializes self.
+    def __init__(self, function_db: function_database.FunctionDatabase) -> None:
+        """Initializes the geometry database.
 
         Args:
-            db: The database of the problem
-            form_handler: The form handler for the problem.
+            function_db: The database for function parameters.
 
         """
-        self.db = db
-        self.form_handler = form_handler
-        self.config = db.config
-
-        self.has_solution = False
-
-    @abc.abstractmethod
-    def solve(self) -> Union[fenics.Function, List[fenics.Function]]:
-        """Solves the PDE.
-
-        Returns:
-            The solution of the PDE.
-
-        """
-        pass
+        self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
+        self.dx: fenics.Measure = fenics.Measure("dx", self.mesh)
