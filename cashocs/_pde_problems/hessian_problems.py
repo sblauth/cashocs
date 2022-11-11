@@ -76,7 +76,7 @@ class HessianProblem:
         self.inner_newton_rtol = self.config.getfloat("AlgoTNM", "inner_newton_rtol")
         self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
 
-        self.test_directions = self.form_handler.test_directions
+        self.test_directions = self.form_handler.hessian_form_handler.test_directions
 
         self.residual = _utils.create_function_list(self.form_handler.control_spaces)
         self.delta_control = _utils.create_function_list(
@@ -127,8 +127,6 @@ class HessianProblem:
 
         self.no_sensitivity_solves = 0
 
-        self.states_prime = self.form_handler.states_prime
-        self.adjoints_prime = self.form_handler.adjoints_prime
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
         option: List[List[Union[str, int, float]]] = [
@@ -164,8 +162,6 @@ class HessianProblem:
             self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
             self.test_directions[i].vector().apply("")
 
-        self.states_prime = self.form_handler.states_prime
-        self.adjoints_prime = self.form_handler.adjoints_prime
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
         if (
@@ -175,28 +171,30 @@ class HessianProblem:
 
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
-                    self.form_handler.sensitivity_eqs_lhs[i],
-                    self.form_handler.sensitivity_eqs_rhs[i],
+                    self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
+                    self.form_handler.hessian_form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
-                    x=self.states_prime[i].vector().vec(),
+                    x=self.db.function_db.states_prime[i].vector().vec(),
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
                 )
-                self.states_prime[i].vector().apply("")
+                self.db.function_db.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
-                    self.form_handler.adjoint_sensitivity_eqs_lhs[-1 - i],
-                    self.form_handler.w_1[-1 - i],
+                    self.form_handler.hessian_form_handler.adjoint_sensitivity_eqs_lhs[
+                        -1 - i
+                    ],
+                    self.form_handler.hessian_form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
-                    x=self.adjoints_prime[-1 - i].vector().vec(),
+                    x=self.db.function_db.adjoints_prime[-1 - i].vector().vec(),
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                 )
-                self.adjoints_prime[-1 - i].vector().apply("")
+                self.db.function_db.adjoints_prime[-1 - i].vector().apply("")
 
         else:
             nonlinear_solvers.picard_iteration(
-                self.form_handler.sensitivity_eqs_picard,
-                self.states_prime,
+                self.form_handler.hessian_form_handler.sensitivity_eqs_picard,
+                self.db.function_db.states_prime,
                 self.adjoint_form_handler.bcs_list_ad,
                 max_iter=self.picard_max_iter,
                 rtol=self.picard_rtol,
@@ -213,8 +211,8 @@ class HessianProblem:
             )
 
             nonlinear_solvers.picard_iteration(
-                self.form_handler.adjoint_sensitivity_eqs_picard,
-                self.adjoints_prime,
+                self.form_handler.hessian_form_handler.adjoint_sensitivity_eqs_picard,
+                self.db.function_db.adjoints_prime,
                 self.adjoint_form_handler.bcs_list_ad,
                 max_iter=self.picard_max_iter,
                 rtol=self.picard_rtol,
@@ -232,7 +230,7 @@ class HessianProblem:
 
         for i in range(self.control_dim):
             b = fenics.as_backend_type(
-                fenics.assemble(self.form_handler.hessian_rhs[i])
+                fenics.assemble(self.form_handler.hessian_form_handler.hessian_rhs[i])
             ).vec()
 
             _utils.solve_linear_problem(

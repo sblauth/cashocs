@@ -62,6 +62,8 @@ class ControlFormHandler(form_handler.FormHandler):
 
         # Initialize the attributes from the arguments
         self.controls = optimization_problem.controls
+
+        self.hessian_form_handler = HessianFormHandler(self.db, self.controls)
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 
@@ -69,50 +71,12 @@ class ControlFormHandler(form_handler.FormHandler):
         self.control_spaces: List[fenics.FunctionSpace] = [
             x.function_space() for x in self.controls
         ]
-
-        self.idx_active_lower: List = []
-        self.idx_active_upper: List = []
-        self.idx_active: List = []
-        self.idx_inactive: List = []
-
         self.gradient: List[fenics.Function] = _utils.create_function_list(
             self.control_spaces
         )
 
-        self.states_prime = _utils.create_function_list(
-            self.db.function_db.state_spaces
-        )
-        self.adjoints_prime = _utils.create_function_list(
-            self.db.function_db.adjoint_spaces
-        )
-        self.test_directions = _utils.create_function_list(self.control_spaces)
-        self.temp = _utils.create_function_list(self.control_spaces)
-        self.test_functions_control = [
-            fenics.TestFunction(function_space)
-            for function_space in self.control_spaces
-        ]
         self.gradient_forms_rhs: List[ufl.Form] = []
         self._compute_gradient_equations()
-
-        self.sensitivity_eqs_temp: List[ufl.Form] = []
-        self.sensitivity_eqs_lhs: List[ufl.Form] = []
-        self.sensitivity_eqs_picard: List[ufl.Form] = []
-        self.sensitivity_eqs_rhs: List[ufl.Form] = []
-        self.lagrangian_y: List[ufl.Form] = []
-        self.lagrangian_u: List[ufl.Form] = []
-        self.lagrangian_yy: List[List[ufl.Form]] = []
-        self.lagrangian_yu: List[List[ufl.Form]] = []
-        self.lagrangian_uy: List[List[ufl.Form]] = []
-        self.lagrangian_uu: List[List[ufl.Form]] = []
-        self.adjoint_sensitivity_eqs_lhs: List[ufl.Form] = []
-        self.adjoint_sensitivity_eqs_picard: List[ufl.Form] = []
-        self.adjoint_sensitivity_eqs_rhs: List[ufl.Form] = []
-        self.w_1: List[ufl.Form] = []
-        self.w_2: List[ufl.Form] = []
-        self.w_3: List[ufl.Form] = []
-        self.hessian_rhs: List[ufl.Form] = []
-        if self.opt_algo.casefold() == "newton":
-            self.compute_newton_forms()
 
         self.modified_scalar_product: Optional[List[ufl.Form]] = None
         self.assemblers: List[fenics.SystemAssembler] = []
@@ -227,10 +191,60 @@ class ControlFormHandler(form_handler.FormHandler):
 
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
+        test_functions_control = [
+            fenics.TestFunction(c.function_space()) for c in self.controls
+        ]
         self.gradient_forms_rhs = [
-            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
+            self.lagrangian.derivative(self.controls[i], test_functions_control[i])
             for i in range(self.control_dim)
         ]
+
+
+class HessianFormHandler:
+    """Form handler for second order forms and hessians."""
+
+    def __init__(self, db: database.Database, controls: List[fenics.Function]):
+        """Initializes the form handler for the second derivatives.
+
+        Args:
+            db: The database of the problem.
+            controls: The list of control variables.
+
+        """
+        self.db = db
+        self.controls = controls
+
+        self.config = self.db.config
+        self.control_dim = len(self.controls)
+
+        self.w_1: List[ufl.Form] = []
+        self.w_2: List[ufl.Form] = []
+        self.w_3: List[ufl.Form] = []
+        self.hessian_rhs: List[ufl.Form] = []
+        self.test_directions = _utils.create_function_list(
+            [c.function_space() for c in self.controls]
+        )
+        self.test_functions_control = [
+            fenics.TestFunction(c.function_space()) for c in self.controls
+        ]
+
+        self.sensitivity_eqs_temp: List[ufl.Form] = []
+        self.sensitivity_eqs_lhs: List[ufl.Form] = []
+        self.sensitivity_eqs_picard: List[ufl.Form] = []
+        self.sensitivity_eqs_rhs: List[ufl.Form] = []
+        self.lagrangian_y: List[ufl.Form] = []
+        self.lagrangian_u: List[ufl.Form] = []
+        self.lagrangian_yy: List[List[ufl.Form]] = []
+        self.lagrangian_yu: List[List[ufl.Form]] = []
+        self.lagrangian_uy: List[List[ufl.Form]] = []
+        self.lagrangian_uu: List[List[ufl.Form]] = []
+        self.adjoint_sensitivity_eqs_lhs: List[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_picard: List[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_rhs: List[ufl.Form] = []
+
+        opt_algo = _utils.optimization_algorithm_configuration(self.config)
+        if opt_algo.casefold() == "newton":
+            self.compute_newton_forms()
 
     def _compute_sensitivity_equations(self) -> None:
         """Calculates the forms for the (forward) sensitivity equations."""
@@ -260,7 +274,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 fenics.derivative(
                     self.sensitivity_eqs_temp[i],
                     self.db.function_db.states[i],
-                    self.states_prime[i],
+                    self.db.function_db.states_prime[i],
                 )
                 for i in range(self.db.parameter_db.state_dim)
             ]
@@ -274,7 +288,7 @@ class ControlFormHandler(form_handler.FormHandler):
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
                             self.db.function_db.states[j],
-                            self.states_prime[j],
+                            self.db.function_db.states_prime[j],
                         )
                         for j in range(self.db.parameter_db.state_dim)
                         if j != i
@@ -316,14 +330,16 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_first_order_lagrangian_derivatives(self) -> None:
         """Computes the derivative of the Lagrangian w.r.t. the state and control."""
         self.lagrangian_y = [
-            self.lagrangian.derivative(
+            self.db.form_db.lagrangian.derivative(
                 self.db.function_db.states[i],
                 self.db.function_db.test_functions_state[i],
             )
             for i in range(self.db.parameter_db.state_dim)
         ]
         self.lagrangian_u = [
-            self.lagrangian.derivative(self.controls[i], self.test_functions_control[i])
+            self.db.form_db.lagrangian.derivative(
+                self.controls[i], self.test_functions_control[i]
+            )
             for i in range(self.control_dim)
         ]
 
@@ -334,7 +350,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 fenics.derivative(
                     self.lagrangian_y[i],
                     self.db.function_db.states[j],
-                    self.states_prime[j],
+                    self.db.function_db.states_prime[j],
                 )
                 for j in range(self.db.parameter_db.state_dim)
             ]
@@ -345,7 +361,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 fenics.derivative(
                     self.lagrangian_u[i],
                     self.db.function_db.states[j],
-                    self.states_prime[j],
+                    self.db.function_db.states_prime[j],
                 )
                 for j in range(self.db.parameter_db.state_dim)
             ]
@@ -386,7 +402,7 @@ class ControlFormHandler(form_handler.FormHandler):
         ]
 
         mapping_dict = {
-            self.db.function_db.adjoints[j]: self.adjoints_prime[j]
+            self.db.function_db.adjoints[j]: self.db.function_db.adjoints_prime[j]
             for j in range(self.db.parameter_db.state_dim)
         }
         adjoint_sensitivity_eqs_all_temp = [

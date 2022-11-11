@@ -419,7 +419,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.line_search = line_search.PolynomialLineSearch(self.db, self)
 
         if self.algorithm.casefold() == "newton":
-            self.form_handler.compute_newton_forms()
+            self.form_handler.hessian_form_handler.compute_newton_forms()
 
         if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(

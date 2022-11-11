@@ -23,6 +23,8 @@ from typing import List
 
 import fenics
 
+from cashocs import _utils
+
 
 class FunctionDatabase:
     """The database for functions and function spaces."""
@@ -61,5 +63,7 @@ class FunctionDatabase:
         self.cg_function_space = fenics.FunctionSpace(mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(mesh, "DG", 0)
 
+        self.states_prime = _utils.create_function_list(self.state_spaces)
+        self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
         # self.gradient: List[fenics.Function] = []
         # self.control_spaces: List[fenics.Function] = []
