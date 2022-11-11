@@ -222,7 +222,7 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.riesz_scalar_products
         )
         self.control_constraints = (
-            coarse_model.optimal_control_problem.control_constraints
+            coarse_model.optimal_control_problem.box_constraints.control_constraints
         )
         self.initial_guess = coarse_model.optimal_control_problem.initial_guess
         self.ksp_options = coarse_model.optimal_control_problem.ksp_options

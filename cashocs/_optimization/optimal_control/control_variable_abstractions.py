@@ -30,6 +30,7 @@ from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control
+    from cashocs._optimization.optimal_control import box_constraints
 
 
 class ControlVariableAbstractions(
@@ -38,16 +39,20 @@ class ControlVariableAbstractions(
     """Abstractions for optimization variables in the case of optimal control."""
 
     def __init__(
-        self, optimization_problem: optimal_control.OptimalControlProblem
+        self,
+        optimization_problem: optimal_control.OptimalControlProblem,
+        box_constraints: box_constraints.BoxConstraints,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            box_constraints: The box constraints.
 
         """
         super().__init__(optimization_problem)
 
+        self.box_constraints = box_constraints
         self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
 
         self.controls = optimization_problem.controls
@@ -59,8 +64,6 @@ class ControlVariableAbstractions(
                 0.0, self.controls[i].vector().vec()
             )
             self.control_temp[i].vector().apply("")
-
-        self.control_constraints = optimization_problem.control_constraints
 
         self.projected_difference = [
             fenics.Function(function_space)
@@ -129,7 +132,7 @@ class ControlVariableAbstractions(
             )
             self.controls[j].vector().apply("")
 
-        self.form_handler.project_to_admissible_set(self.controls)
+        self.box_constraints.restrictor.project_to_admissible_set(self.controls)
 
         return stepsize
 
@@ -159,7 +162,9 @@ class ControlVariableAbstractions(
             )
             self.projected_difference[j].vector().apply("")
 
-        self.form_handler.project_to_admissible_set(self.projected_difference)
+        self.box_constraints.restrictor.project_to_admissible_set(
+            self.projected_difference
+        )
 
         for j in range(self.form_handler.control_dim):
             self.projected_difference[j].vector().vec().aypx(
@@ -211,12 +216,12 @@ class ControlVariableAbstractions(
                 np.logical_or(
                     np.logical_and(
                         self.controls[j].vector()[:]
-                        <= self.control_constraints[j][0].vector()[:],
+                        <= self.box_constraints.control_constraints[j][0].vector()[:],
                         search_direction[j].vector()[:] < 0.0,
                     ),
                     np.logical_and(
                         self.controls[j].vector()[:]
-                        >= self.control_constraints[j][1].vector()[:],
+                        >= self.box_constraints.control_constraints[j][1].vector()[:],
                         search_direction[j].vector()[:] > 0.0,
                     ),
                 )
@@ -224,3 +229,45 @@ class ControlVariableAbstractions(
 
             search_direction[j].vector()[idx] = 0.0
             search_direction[j].vector().apply("")
+
+    def compute_active_sets(self) -> None:
+        """Computes the active sets of the problem."""
+        self.box_constraints.restrictor.compute_active_sets()
+
+    def restrict_to_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the active set.
+
+        Restricts a control type function ``a`` onto the active set,
+        which is returned via the function ``b``,  i.e., ``b`` is zero on the inactive
+        set.
+
+        Args:
+            a: The first argument, to be projected onto the active set.
+            b: The second argument, which stores the result (is overwritten).
+
+        Returns:
+            The result of the projection (overwrites input b).
+
+        """
+        return self.box_constraints.restrictor.restrict_to_active_set(a, b)
+
+    def restrict_to_inactive_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the inactive set.
+
+        Restricts a control type function ``a`` onto the inactive set,
+        which is returned via the function ``b``, i.e., ``b`` is zero on the active set.
+
+        Args:
+            a: The control-type function that is to be projected onto the inactive set.
+            b: The storage for the result of the projection (is overwritten).
+
+        Returns:
+            The result of the projection of ``a`` onto the inactive set (overwrites
+            input ``b``).
+
+        """
+        return self.box_constraints.restrictor.restrict_to_inactive_set(a, b)

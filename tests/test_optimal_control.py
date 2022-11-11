@@ -327,14 +327,14 @@ def test_control_cg_hz_cc():
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
-def test_control_lbfgs_cc():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    ocp_cc._erase_pde_memory()
-    ocp_cc.solve("lbfgs", rtol=1e-2, atol=0.0, max_iter=11)
-    assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+# def test_control_lbfgs_cc():
+u.vector().vec().set(0.0)
+u.vector().apply("")
+ocp_cc._erase_pde_memory()
+ocp_cc.solve("bfgs", rtol=1e-2, atol=0.0, max_iter=11)
+assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
+assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
+assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_newton_cg_cc():

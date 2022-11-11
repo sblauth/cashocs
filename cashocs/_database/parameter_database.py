@@ -56,6 +56,8 @@ class ParameterDatabase:
         self._problem_type = ""
         self.state_dim = len(function_db.states)
 
+        self.display_box_constraints = False
+
         self.state_adjoint_equal_spaces = False
         if function_db.state_spaces == function_db.adjoint_spaces:
             self.state_adjoint_equal_spaces = True

@@ -87,7 +87,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         self.initialize_solver()
         self.periodic_its = 0
         self.compute_gradient()
-        self.form_handler.compute_active_sets()
+        self.optimization_variable_abstractions.compute_active_sets()
         self.gradient_norm = (
             self.optimization_variable_abstractions.compute_gradient_norm()
         )
@@ -112,7 +112,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
             self.store_previous_gradient()
             self.compute_gradient()
-            self.form_handler.compute_active_sets()
+            self.optimization_variable_abstractions.compute_active_sets()
             self.gradient_norm = (
                 self.optimization_variable_abstractions.compute_gradient_norm()
             )
@@ -181,23 +181,25 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.search_direction[j].vector().apply("")
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
 
             self._first_loop()
             self._bfgs_scaling()
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
 
             self._second_loop()
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
-            self.form_handler.restrict_to_active_set(self.gradient, self.temp)
+            self.optimization_variable_abstractions.restrict_to_active_set(
+                self.gradient, self.temp
+            )
             for j in range(len(self.gradient)):
                 self.search_direction[j].vector().vec().axpy(
                     1.0, self.temp[j].vector().vec()
@@ -238,8 +240,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.s_k[i].vector().apply("")
 
-            self.form_handler.restrict_to_inactive_set(self.y_k, self.y_k)
-            self.form_handler.restrict_to_inactive_set(self.s_k, self.s_k)
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
+                self.y_k, self.y_k
+            )
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
+                self.s_k, self.s_k
+            )
 
             self.history_y.appendleft([x.copy(True) for x in self.y_k])
             self.history_s.appendleft([x.copy(True) for x in self.s_k])

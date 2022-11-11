@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from cashocs import _forms
     from cashocs import _typing
     from cashocs._database import database
+    from cashocs._optimization.optimal_control import box_constraints as boxc
     from cashocs._pde_problems import control_gradient_problem
 
 
@@ -48,6 +49,7 @@ class HessianProblem:
         form_handler: _forms.ControlFormHandler,
         adjoint_form_handler: _forms.AdjointFormHandler,
         gradient_problem: control_gradient_problem.ControlGradientProblem,
+        box_constraints: boxc.BoxConstraints,
     ) -> None:
         """Initializes self.
 
@@ -57,12 +59,14 @@ class HessianProblem:
             adjoint_form_handler: The form handler for the adjoint system.
             gradient_problem: The ControlGradientProblem object (this is needed for the
                 computation of the Hessian).
+            box_constraints: The box constraints for the problem.
 
         """
         self.db = db
         self.form_handler = form_handler
         self.adjoint_form_handler = adjoint_form_handler
         self.gradient_problem = gradient_problem
+        self.box_constraints = box_constraints
 
         self.config = self.db.config
         self.gradient = self.gradient_problem.gradient
@@ -257,12 +261,12 @@ class HessianProblem:
             out[j].vector().vec().set(0.0)
             out[j].vector().apply("")
 
-        self.form_handler.restrict_to_inactive_set(h, self.inactive_part)
+        self.box_constraints.restrictor.restrict_to_inactive_set(h, self.inactive_part)
         self.hessian_application(self.inactive_part, self.hessian_actions)
-        self.form_handler.restrict_to_inactive_set(
+        self.box_constraints.restrictor.restrict_to_inactive_set(
             self.hessian_actions, self.inactive_part
         )
-        self.form_handler.restrict_to_active_set(h, self.active_part)
+        self.box_constraints.restrictor.restrict_to_active_set(h, self.active_part)
 
         for j in range(self.control_dim):
             out[j].vector().vec().aypx(
@@ -280,7 +284,7 @@ class HessianProblem:
 
         """
         self.gradient_problem.solve()
-        self.form_handler.compute_active_sets()
+        self.box_constraints.restrictor.compute_active_sets()
 
         for j in range(self.control_dim):
             self.delta_control[j].vector().vec().set(0.0)
@@ -308,11 +312,11 @@ class HessianProblem:
 
             self.reduced_hessian_application(self.p, self.q)
 
-            self.form_handler.restrict_to_active_set(self.p, self.temp1)
+            self.box_constraints.restrictor.restrict_to_active_set(self.p, self.temp1)
             sp_val1 = self.form_handler.scalar_product(self.temp1, self.temp1)
 
-            self.form_handler.restrict_to_inactive_set(self.p, self.temp1)
-            self.form_handler.restrict_to_inactive_set(self.q, self.temp2)
+            self.box_constraints.restrictor.restrict_to_inactive_set(self.p, self.temp1)
+            self.box_constraints.restrictor.restrict_to_inactive_set(self.q, self.temp2)
             sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
             sp_val = sp_val1 + sp_val2
             alpha = rsold / sp_val
@@ -355,19 +359,23 @@ class HessianProblem:
             self.q[j].vector().vec().aypx(0.0, self.s[j].vector().vec())
             self.q[j].vector().apply("")
 
-        self.form_handler.restrict_to_active_set(self.residual, self.temp1)
-        self.form_handler.restrict_to_active_set(self.s, self.temp2)
+        self.box_constraints.restrictor.restrict_to_active_set(
+            self.residual, self.temp1
+        )
+        self.box_constraints.restrictor.restrict_to_active_set(self.s, self.temp2)
         sp_val1 = self.form_handler.scalar_product(self.temp1, self.temp2)
-        self.form_handler.restrict_to_inactive_set(self.residual, self.temp1)
-        self.form_handler.restrict_to_inactive_set(self.s, self.temp2)
+        self.box_constraints.restrictor.restrict_to_inactive_set(
+            self.residual, self.temp1
+        )
+        self.box_constraints.restrictor.restrict_to_inactive_set(self.s, self.temp2)
         sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
 
         rar = sp_val1 + sp_val2
 
         for i in range(self.max_it_inner_newton):
 
-            self.form_handler.restrict_to_active_set(self.q, self.temp1)
-            self.form_handler.restrict_to_inactive_set(self.q, self.temp2)
+            self.box_constraints.restrictor.restrict_to_active_set(self.q, self.temp1)
+            self.box_constraints.restrictor.restrict_to_inactive_set(self.q, self.temp2)
             denom1 = self.form_handler.scalar_product(self.temp1, self.temp1)
             denom2 = self.form_handler.scalar_product(self.temp2, self.temp2)
             denominator = denom1 + denom2
@@ -394,11 +402,15 @@ class HessianProblem:
 
             self.reduced_hessian_application(self.residual, self.s)
 
-            self.form_handler.restrict_to_active_set(self.residual, self.temp1)
-            self.form_handler.restrict_to_active_set(self.s, self.temp2)
+            self.box_constraints.restrictor.restrict_to_active_set(
+                self.residual, self.temp1
+            )
+            self.box_constraints.restrictor.restrict_to_active_set(self.s, self.temp2)
             sp_val1 = self.form_handler.scalar_product(self.temp1, self.temp2)
-            self.form_handler.restrict_to_inactive_set(self.residual, self.temp1)
-            self.form_handler.restrict_to_inactive_set(self.s, self.temp2)
+            self.box_constraints.restrictor.restrict_to_inactive_set(
+                self.residual, self.temp1
+            )
+            self.box_constraints.restrictor.restrict_to_inactive_set(self.s, self.temp2)
             sp_val2 = self.form_handler.scalar_product(self.temp1, self.temp2)
 
             rar_new = sp_val1 + sp_val2

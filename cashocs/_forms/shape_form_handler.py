@@ -277,7 +277,6 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.control_spaces: List[fenics.FunctionSpace] = [self.deformation_space]
         self.control_dim = 1
-        self.require_control_constraints = False
 
         self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)

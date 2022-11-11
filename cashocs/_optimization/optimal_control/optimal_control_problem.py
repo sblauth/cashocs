@@ -35,6 +35,7 @@ from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
+from cashocs._optimization.optimal_control import box_constraints
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -292,9 +293,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.control_bcs_list = [None] * self.control_dim
 
         # control_constraints
-        self.control_constraints = self._parse_control_constraints(control_constraints)
-        self._validate_control_constraints()
-
+        self.box_constraints = box_constraints.BoxConstraints(
+            self.controls, control_constraints
+        )
+        self.db.parameter_db.display_box_constraints = (
+            self.box_constraints.display_box_constraints
+        )
         # end overloading
 
         self.is_control_problem = True
@@ -405,7 +409,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self._setup_control_bcs()
 
         self.optimization_variable_abstractions = (
-            optimal_control.ControlVariableAbstractions(self)
+            optimal_control.ControlVariableAbstractions(self, self.box_constraints)
         )
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
@@ -423,6 +427,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 self.form_handler,
                 self.general_form_handler.adjoint_form_handler,
                 self.gradient_problem,
+                self.box_constraints,
             )
 
         if self.algorithm.casefold() == "gradient_descent":
@@ -567,131 +572,3 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         else:
             self.uses_custom_scalar_product = True
             return _utils.enlist(riesz_scalar_products)
-
-    def _parse_control_constraints(
-        self,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]],
-    ) -> List[List[fenics.Function]]:
-        """Checks, whether the given control constraints are feasible.
-
-        Args:
-            control_constraints: The control constraints.
-
-        Returns:
-            The (wrapped) list of control constraints.
-
-        """
-        temp_control_constraints: List[List[Union[fenics.Function, float]]]
-        if control_constraints is None:
-            temp_control_constraints = []
-            for control in self.controls:
-                u_a = fenics.Function(control.function_space())
-                u_a.vector().vec().set(float("-inf"))
-                u_a.vector().apply("")
-                u_b = fenics.Function(control.function_space())
-                u_b.vector().vec().set(float("inf"))
-                u_b.vector().apply("")
-                temp_control_constraints.append([u_a, u_b])
-        else:
-            temp_control_constraints = _utils.check_and_enlist_control_constraints(
-                control_constraints
-            )
-
-        # recast floats into functions for compatibility
-        formatted_control_constraints: List[List[fenics.Function]] = []
-        for idx, pair in enumerate(temp_control_constraints):
-            if isinstance(pair[0], fenics.Function):
-                lower_bound = pair[0]
-            else:
-                lower_bound = fenics.Function(self.controls[idx].function_space())
-                lower_bound.vector().vec().set(pair[0])
-                lower_bound.vector().apply("")
-
-            if isinstance(pair[1], fenics.Function):
-                upper_bound = pair[1]
-            else:
-                upper_bound = fenics.Function(self.controls[idx].function_space())
-                upper_bound.vector().vec().set(pair[1])
-                upper_bound.vector().apply("")
-
-            formatted_control_constraints.append([lower_bound, upper_bound])
-
-        return formatted_control_constraints
-
-    def _validate_control_constraints(self) -> None:
-        """Checks, whether given control constraints are valid."""
-        self.require_control_constraints = [False] * self.control_dim
-        for idx, pair in enumerate(self.control_constraints):
-            if not np.all(pair[0].vector()[:] < pair[1].vector()[:]):
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    (
-                        "The lower bound must always be smaller than the upper bound "
-                        "for the control_constraints."
-                    ),
-                )
-
-            if pair[0].vector().vec().max()[1] == float("-inf") and pair[
-                1
-            ].vector().vec().min()[1] == float("inf"):
-                # no control constraint for this component
-                pass
-            else:
-                self.require_control_constraints[idx] = True
-
-                control_element = self.controls[idx].ufl_element()
-                if control_element.family() == "Mixed":
-                    for j in range(control_element.value_size()):
-                        sub_elem = control_element.extract_component(j)[1]
-                        if not (
-                            sub_elem.family() == "Real"
-                            or (
-                                sub_elem.family() == "Lagrange"
-                                and sub_elem.degree() == 1
-                            )
-                            or (
-                                sub_elem.family() == "Discontinuous Lagrange"
-                                and sub_elem.degree() == 0
-                            )
-                        ):
-                            raise _exceptions.InputError(
-                                (
-                                    "cashocs._optimization.optimal_control."
-                                    "optimal_control_problem.OptimalControlProblem"
-                                ),
-                                "controls",
-                                (
-                                    "Control constraints are only implemented for "
-                                    "linear Lagrange, constant Discontinuous Lagrange, "
-                                    "and Real elements."
-                                ),
-                            )
-
-                else:
-                    if not (
-                        control_element.family() == "Real"
-                        or (
-                            control_element.family() == "Lagrange"
-                            and control_element.degree() == 1
-                        )
-                        or (
-                            control_element.family() == "Discontinuous Lagrange"
-                            and control_element.degree() == 0
-                        )
-                    ):
-                        raise _exceptions.InputError(
-                            (
-                                "cashocs._optimization.optimal_control."
-                                "optimal_control_problem.OptimalControlProblem"
-                            ),
-                            "controls",
-                            (
-                                "Control constraints are only implemented for "
-                                "linear Lagrange, constant Discontinuous Lagrange, "
-                                "and Real elements."
-                            ),
-                        )

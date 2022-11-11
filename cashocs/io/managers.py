@@ -24,7 +24,6 @@ import subprocess  # nosec B404
 from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
-import numpy as np
 
 from cashocs import _forms
 from cashocs.io import mesh as iomesh
@@ -80,7 +79,7 @@ def generate_output_str(
     iteration = solver.iteration
     objective_value = solver.objective_value
 
-    if not np.any(solver.form_handler.require_control_constraints):
+    if not db.parameter_db.display_box_constraints:
         gradient_str = "grad. norm"
     else:
         gradient_str = "stat. meas."
