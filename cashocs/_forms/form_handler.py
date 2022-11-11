@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 
@@ -58,10 +58,6 @@ def _get_subdx(
     return None
 
 
-def _hook() -> None:
-    return None
-
-
 class FormHandler(abc.ABC):
     """Parent class for UFL form manipulation.
 
@@ -95,9 +91,6 @@ class FormHandler(abc.ABC):
 
         self.gradient: List[fenics.Function] = []
         self.control_spaces: List[fenics.FunctionSpace] = []
-
-        self.pre_hook: Callable[..., None] = _hook
-        self.post_hook: Callable[..., None] = _hook
 
     @abc.abstractmethod
     def scalar_product(

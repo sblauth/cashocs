@@ -74,7 +74,7 @@ J = cashocs.IntegralFunctional(
 )
 
 
-def pre_hook():
+def pre_callback():
     print("Solving low Re Navier-Stokes equations for homotopy.")
     v, q = TestFunctions(V)
     e = (
@@ -87,13 +87,13 @@ def pre_hook():
     cashocs.newton_solve(e, up, bcs, verbose=False)
 
 
-def post_hook():
+def post_callback():
     print("Performing an action after computing the gradient.")
 
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
-ocp.inject_pre_hook(pre_hook)
-ocp.inject_post_hook(post_hook)
+ocp.inject_pre_callback(pre_callback)
+ocp.inject_post_callback(post_callback)
 ocp.solve()
 
 

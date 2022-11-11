@@ -107,7 +107,7 @@ class StateProblem(pde_problem.PDEProblem):
         """
         if not self.has_solution:
 
-            self.form_handler.pre_hook()
+            self.db.callback.call_pre()
 
             if self.initial_guess is not None:
                 for j in range(self.db.parameter_db.state_dim):

@@ -121,6 +121,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                 self.gradient, self.gradient
             )
 
-            self.form_handler.post_hook()
+            self.db.callback.call_post()
 
         return self.gradient

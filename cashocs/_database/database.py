@@ -27,6 +27,7 @@ from cashocs._database import form_database
 from cashocs._database import function_database
 from cashocs._database import geometry_database
 from cashocs._database import parameter_database
+from cashocs._optimization.optimization_algorithms import callback as cb
 
 if TYPE_CHECKING:
     import ufl
@@ -63,6 +64,7 @@ class Database:
 
         """
         self.config = config
+        self.callback = cb.Callback()
 
         self.function_db = function_database.FunctionDatabase(states, adjoints)
         self.parameter_db = parameter_database.ParameterDatabase(

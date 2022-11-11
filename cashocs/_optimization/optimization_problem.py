@@ -415,36 +415,36 @@ class OptimizationProblem(abc.ABC):
                 "the Newton solver.",
             )
 
-    def inject_pre_hook(self, function: Callable) -> None:
-        """Changes the a-priori hook of the OptimizationProblem to function.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem to function.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self.form_handler.pre_hook = function
+        self.db.callback.pre_callback = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
 
-    def inject_post_hook(self, function: Callable) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem to function.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem to function.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self.form_handler.post_hook = function
+        self.db.callback.post_callback = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable, post_function: Callable
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -453,8 +453,8 @@ class OptimizationProblem(abc.ABC):
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)
 
     @abc.abstractmethod
     def solve(

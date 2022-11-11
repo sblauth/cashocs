@@ -70,7 +70,9 @@ class ControlFormHandler(form_handler.FormHandler):
         )
 
         self.control_dim = len(self.controls)
-        self.control_spaces = [x.function_space() for x in self.controls]
+        self.control_spaces: List[fenics.FunctionSpace] = [
+            x.function_space() for x in self.controls
+        ]
 
         self.idx_active_lower: List = []
         self.idx_active_upper: List = []

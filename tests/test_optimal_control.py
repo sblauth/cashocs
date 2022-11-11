@@ -545,7 +545,7 @@ def test_riesz_scalar_products():
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
-def test_hooks():
+def test_callbackss():
     def pre_function():
         u.vector().vec().set(1.0)
         u.vector().apply("")
@@ -562,9 +562,9 @@ def test_hooks():
     grad.vector().vec().aypx(0.0, ocp.compute_gradient()[0].vector().vec())
     grad.vector().apply("")
 
-    ocp.inject_pre_post_hook(pre_function, post_function)
-    assert ocp.form_handler.pre_hook == pre_function
-    assert ocp.form_handler.post_hook == post_function
+    ocp.inject_pre_post_callback(pre_function, post_function)
+    assert ocp.db.callback.pre_callback == pre_function
+    assert ocp.db.callback.post_callback == post_function
 
     ocp.compute_state_variables()
     assert np.max(np.abs(u.vector()[:] - 1.0)) < 1e-15

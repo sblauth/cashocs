@@ -53,10 +53,6 @@ def _get_subdx(
     return None
 
 
-def _hook() -> None:
-    return None
-
-
 class GeneralFormHandler:
     """Manages weak state and adjoint forms."""
 

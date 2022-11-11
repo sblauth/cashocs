@@ -38,10 +38,6 @@ if TYPE_CHECKING:
     from cashocs import io
 
 
-def _hook() -> None:
-    return None
-
-
 class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
@@ -116,8 +112,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.current_function_value = 0.0
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.cost_functional_form_initial: List[_typing.CostFunctional] = _utils.enlist(
             cost_functional_form
@@ -220,30 +216,30 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         self.rtol = inner_rtol or tol
 
-    def inject_pre_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-priori hook of the OptimizationProblem.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self._pre_hook = function
+        self._pre_callback = function
 
-    def inject_post_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self._post_hook = function
+        self._post_callback = function
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -252,8 +248,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)
 
 
 class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
@@ -389,7 +385,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             control_bcs_list=self.control_bcs_list,
         )
 
-        optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        optimal_control_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
+        )
         optimal_control_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
@@ -546,7 +544,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
         )
-        shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        shape_optimization_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
+        )
         shape_optimization_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )

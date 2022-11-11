@@ -39,10 +39,6 @@ if TYPE_CHECKING:
     from cashocs import io
 
 
-def _hook() -> None:
-    return None
-
-
 class FineModel(abc.ABC):
     """Base class for the fine model in space mapping shape optimization.
 
@@ -133,8 +129,8 @@ class CoarseModel:
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
@@ -158,8 +154,8 @@ class CoarseModel:
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
-        self.shape_optimization_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
+        self.shape_optimization_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
         )
         self.shape_optimization_problem.solve()
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -203,8 +199,8 @@ class ParameterExtraction:
         self.config = config
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.adjoints = _utils.create_function_list(
             coarse_model.shape_optimization_problem.db.function_db.adjoint_spaces
@@ -270,8 +266,8 @@ class ParameterExtraction:
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
         )
-        self.shape_optimization_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
+        self.shape_optimization_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
         )
 
         self.shape_optimization_problem.solve()
@@ -856,34 +852,34 @@ class SpaceMapping:
 
         return eps
 
-    def inject_pre_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-priori hook of the OptimizationProblem.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self.coarse_model._pre_hook = function  # pylint: disable=protected-access
+        self.coarse_model._pre_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._pre_hook = function
+        self.parameter_extraction._pre_callback = function
 
-    def inject_post_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self.coarse_model._post_hook = function  # pylint: disable=protected-access
+        self.coarse_model._post_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._post_hook = function
+        self.parameter_extraction._post_callback = function
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -892,5 +888,5 @@ class SpaceMapping:
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)
