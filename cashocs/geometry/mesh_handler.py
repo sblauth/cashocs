@@ -557,7 +557,7 @@ class _MeshHandler:
             ] = solver.adjoint_problem.number_of_solves
             self.temp_dict["output_dict"]["iterations"] = solver.iteration + 1
 
-            output_dict = solver.output_manager.result_manager.output_dict
+            output_dict = solver.output_manager.output_dict
             self.temp_dict["output_dict"]["cost_function_value"] = output_dict[
                 "cost_function_value"
             ][:]

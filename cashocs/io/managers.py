@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import abc
 import json
 import subprocess  # nosec B404
 from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
@@ -120,7 +121,58 @@ def generate_output_str(
     return info_str + "".join(strs)
 
 
-class ResultManager:
+class IOManager(abc.ABC):
+    """Abstract base class for input / output management."""
+
+    def __init__(self, db: database.Database, result_dir: str):
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+            result_dir: Path to the directory, where the results are saved.
+
+        """
+        self.db = db
+        self.result_dir = result_dir
+
+        self.config = self.db.config
+
+    @abc.abstractmethod
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
+        """The output operation, which is performed after every iteration.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def post_process(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+
+class ResultManager(IOManager):
     """Class for managing the output of the optimization history."""
 
     def __init__(
@@ -140,9 +192,7 @@ class ResultManager:
             temp_dict: Dictionary with history of the optimization process
 
         """
-        self.db = db
-        self.config = self.db.config
-        self.result_dir = result_dir
+        super().__init__(db, result_dir)
 
         self.save_results = self.config.getboolean("Output", "save_results")
 
@@ -166,9 +216,7 @@ class ResultManager:
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
 
-    def save_to_dict(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Saves the optimization history to a dictionary.
 
         Args:
@@ -182,7 +230,18 @@ class ResultManager:
             self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
         self.output_dict["stepsize"].append(solver.stepsize)
 
-    def save_to_json(
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def post_process(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
         """Saves the history of the optimization to a .json file.
@@ -201,48 +260,56 @@ class ResultManager:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-class HistoryManager:
-    """Class for managing the human-readable output of cashocs."""
+class ConsoleManager(IOManager):
+    """Management of the console output."""
 
-    def __init__(self, db: database.Database, result_dir: str) -> None:
-        """Initializes self.
-
-        Args:
-            db: The database of the problem.
-            result_dir: Path to the directory, where the results are saved.
-
-        """
-        self.db = db
-        self.result_dir = result_dir
-
-        self.config = self.db.config
-
-        self.verbose = self.config.getboolean("Output", "verbose")
-        self.save_txt = self.config.getboolean("Output", "save_txt")
-
-    def print_to_console(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Prints the output string to the console.
 
         Args:
             solver: The optimization algorithm.
 
         """
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             print(generate_output_str(self.db, solver), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_to_file(
+    def output_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
+        """Prints the summary in the console.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            print(generate_summary_str(solver), flush=True)
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+
+    def post_process(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+
+class FileManager(IOManager):
+    """Class for managing the human-readable output of cashocs."""
+
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Saves the output string in a file.
 
         Args:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             if solver.iteration == 0:
                 file_attr = "w"
             else:
@@ -254,20 +321,7 @@ class HistoryManager:
                 file.write(f"{generate_output_str(self.db, solver)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def print_console_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Prints the summary in the console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(solver), flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
-
-    def print_file_summary(
+    def output_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
         """Save the summary in a file.
@@ -276,27 +330,47 @@ class HistoryManager:
             solver: The optimization algorithm.
 
         """
-        if self.save_txt and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(solver))
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-
-class TempFileManager:
-    """Class for managing temporary files."""
-
-    def __init__(self, db: database.Database) -> None:
-        """Initializes self.
+    def post_process(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation which is performed as part of the postprocessing.
 
         Args:
-            db: The database of the problem.
+            solver: The optimization algorithm.
 
         """
-        self.db = db
+        pass
 
-        self.config = self.db.config
 
-    def clear_temp_files(
+class TempFileManager(IOManager):
+    """Class for managing temporary files."""
+
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
+        """The output operation, which is performed after every iteration.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def post_process(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
         """Deletes temporary files.
@@ -322,21 +396,30 @@ class TempFileManager:
             fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-class MeshManager:
+class MeshManager(IOManager):
     """Manages the output of meshes."""
 
-    def __init__(self, db: database.Database, result_dir: str) -> None:
-        """Initializes self.
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
+        """The output operation, which is performed after every iteration.
 
         Args:
-            db: The database of the problem.
-            result_dir: Path to the directory, where the output is saved to.
+            solver: The optimization algorithm.
 
         """
-        self.db = db
-        self.result_dir = result_dir
+        pass
 
-    def save_optimized_mesh(
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def post_process(
         self, solver: optimization_algorithms.OptimizationAlgorithm
     ) -> None:
         """Saves a copy of the optimized mesh in Gmsh format.
@@ -355,7 +438,7 @@ class MeshManager:
                 )
 
 
-class XDMFFileManager:
+class XDMFFileManager(IOManager):
     """Class for managing visualization .xdmf files."""
 
     def __init__(
@@ -372,12 +455,9 @@ class XDMFFileManager:
             result_dir: Path to the directory, where the output files are saved in.
 
         """
-        self.db = db
+        super().__init__(db, result_dir)
+
         self.form_handler = optimization_problem.form_handler
-        self.config = self.db.config
-
-        self.result_dir = result_dir
-
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
@@ -588,9 +668,7 @@ class XDMFFileManager:
                 append,
             )
 
-    def save_to_file(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Saves the variables to xdmf files.
 
         Args:
@@ -605,3 +683,25 @@ class XDMFFileManager:
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
+
+    def output_summary(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def post_process(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass

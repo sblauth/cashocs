@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from cashocs.io import managers
 
@@ -61,6 +61,7 @@ class OutputManager:
 
         self.result_path = pathlib.Path(self.result_dir)
 
+        verbose = self.config.getboolean("Output", "verbose")
         save_txt = self.config.getboolean("Output", "save_txt")
         save_results = self.config.getboolean("Output", "save_results")
         save_state = self.config.getboolean("Output", "save_state")
@@ -74,19 +75,28 @@ class OutputManager:
             if has_output:
                 self.result_path.mkdir(parents=True, exist_ok=True)
 
-        self.history_manager = managers.HistoryManager(self.db, self.result_dir)
-        self.xdmf_file_manager = managers.XDMFFileManager(
-            optimization_problem, self.db, self.result_dir
-        )
+        self.managers: List[managers.IOManager] = []
+        if verbose:
+            self.managers.append(managers.ConsoleManager(self.db, self.result_dir))
+        if save_txt:
+            self.managers.append(managers.FileManager(self.db, self.result_dir))
+        if save_state or save_adjoint or save_gradient:
+            self.managers.append(
+                managers.XDMFFileManager(optimization_problem, self.db, self.result_dir)
+            )
+        self.output_dict = {}
+        if save_results:
+            result_manager = managers.ResultManager(
+                self.db,
+                self.result_dir,
+                optimization_problem.has_cashocs_remesh_flag,
+                optimization_problem.temp_dict,
+            )
+            self.output_dict = result_manager.output_dict
+            self.managers.append(result_manager)
 
-        self.result_manager = managers.ResultManager(
-            self.db,
-            self.result_dir,
-            optimization_problem.has_cashocs_remesh_flag,
-            optimization_problem.temp_dict,
-        )
-        self.mesh_manager = managers.MeshManager(self.db, self.result_dir)
-        self.temp_file_manager = managers.TempFileManager(self.db)
+        self.managers.append(managers.MeshManager(self.db, self.result_dir))
+        self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
     def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
         """Writes the desired output to files and console.
@@ -95,12 +105,8 @@ class OutputManager:
             solver: The optimization algorithm.
 
         """
-        self.history_manager.print_to_console(solver)
-        self.history_manager.print_to_file(solver)
-
-        self.xdmf_file_manager.save_to_file(solver)
-
-        self.result_manager.save_to_dict(solver)
+        for manager in self.managers:
+            manager.output(solver)
 
     def output_summary(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -111,8 +117,8 @@ class OutputManager:
             solver: The optimization algorithm.
 
         """
-        self.history_manager.print_console_summary(solver)
-        self.history_manager.print_file_summary(solver)
+        for manager in self.managers:
+            manager.output_summary(solver)
 
     def post_process(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -123,6 +129,5 @@ class OutputManager:
             solver: The optimization algorithm.
 
         """
-        self.result_manager.save_to_json(solver)
-        self.mesh_manager.save_optimized_mesh(solver)
-        self.temp_file_manager.clear_temp_files(solver)
+        for manager in self.managers:
+            manager.post_process(solver)
