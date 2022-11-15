@@ -56,7 +56,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     """
 
     controls: List[fenics.Function]
-    control_spaces: List[fenics.FunctionSpace]
 
     def __init__(
         self,
@@ -225,7 +224,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.objective_value = 1.0
         self.output_manager = io.OutputManager(self, self.db)
         self.optimization_variable_abstractions = (
-            optimal_control.ControlVariableAbstractions(self, self.box_constraints)
+            optimal_control.ControlVariableAbstractions(
+                self, self.box_constraints, self.db
+            )
         )
 
         if bool(desired_weights is not None):

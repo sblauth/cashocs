@@ -156,7 +156,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             "Not a valid input for cashocs.ShapeOptimizationProblem.__init__"
         )
 
-    @__init__.register(list[ufl.form])
+    @__init__.register(list)
     @__init__.register(ufl.Form)
     def _(
         self,
@@ -298,7 +298,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.initial_function_values = initial_function_values
 
         # pylint: disable=protected-access
-        self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(self.db, self)
+        self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
+            self.db, self.form_handler, self.temp_dict
+        )
 
         self.state_spaces = self.db.function_db.state_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
@@ -325,7 +327,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.gradient = self.gradient_problem.gradient
         self.optimization_variable_abstractions = (
-            shape_variable_abstractions.ShapeVariableAbstractions(self)
+            shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
         )
         self.output_manager = io.OutputManager(self, self.db)
 

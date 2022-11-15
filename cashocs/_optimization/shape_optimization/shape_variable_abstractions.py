@@ -28,6 +28,7 @@ from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization import shape_optimization
 
 
@@ -37,15 +38,18 @@ class ShapeVariableAbstractions(
     """Abstractions for optimization variables in the case of shape optimization."""
 
     def __init__(
-        self, optimization_problem: shape_optimization.ShapeOptimizationProblem
+        self,
+        optimization_problem: shape_optimization.ShapeOptimizationProblem,
+        db: database.Database,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(optimization_problem, db)
         self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
         self.deformation = fenics.Function(self.form_handler.deformation_space)

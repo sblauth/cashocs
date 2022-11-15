@@ -31,6 +31,7 @@ import fenics
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import geometry
+    from cashocs._database import database
 
 
 class OptimizationVariableAbstractions(abc.ABC):
@@ -38,13 +39,18 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     mesh_handler: geometry._MeshHandler  # pylint: disable=protected-access
 
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self, optimization_problem: _typing.OptimizationProblem, db: database.Database
+    ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
+        self.db = db
+
         self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
 

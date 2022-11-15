@@ -23,7 +23,7 @@ from __future__ import annotations
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-from typing import cast, Dict, List, TYPE_CHECKING, Union
+from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -37,11 +37,9 @@ from cashocs.geometry import deformations
 from cashocs.geometry import quality
 
 if TYPE_CHECKING:
+    from cashocs import _forms
     from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
-    from cashocs._optimization.shape_optimization.shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
 
 
 def _remove_gmsh_parametrizations(mesh_file: str) -> None:
@@ -88,17 +86,19 @@ class _MeshHandler:
     def __init__(
         self,
         db: database.Database,
-        shape_optimization_problem: ShapeOptimizationProblem,
+        form_handler: _forms.ShapeFormHandler,
+        temp_dict: Optional[Dict],
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
-            shape_optimization_problem: The corresponding shape optimization problem.
+            form_handler: The corresponding shape optimization problem.
+            temp_dict: The temporary dict of the problem.
 
         """
         self.db = db
-        self.form_handler = shape_optimization_problem.form_handler
+        self.form_handler = form_handler
         # Namespacing
         self.mesh = self.db.geometry_db.mesh
         self.deformation_handler = deformations.DeformationHandler(self.mesh)
@@ -176,8 +176,8 @@ class _MeshHandler:
         self.temp_dict: Dict = {}
         self.gmsh_file: str = ""
         self.remesh_counter = 0
-        if self.do_remesh and shape_optimization_problem.temp_dict is not None:
-            self.temp_dict = shape_optimization_problem.temp_dict
+        if self.do_remesh and temp_dict is not None:
+            self.temp_dict = temp_dict
             self.gmsh_file = self.temp_dict["gmsh_file"]
             self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
 

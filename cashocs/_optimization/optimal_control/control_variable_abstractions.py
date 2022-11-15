@@ -29,6 +29,7 @@ from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization import optimal_control
     from cashocs._optimization.optimal_control import box_constraints
 
@@ -42,15 +43,17 @@ class ControlVariableAbstractions(
         self,
         optimization_problem: optimal_control.OptimalControlProblem,
         box_constraints: box_constraints.BoxConstraints,
+        db: database.Database,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
             box_constraints: The box constraints.
+            db: The database of the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(optimization_problem, db)
 
         self.box_constraints = box_constraints
         self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
