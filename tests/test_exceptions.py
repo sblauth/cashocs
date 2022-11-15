@@ -67,16 +67,27 @@ ocp_ksp = cashocs.OptimalControlProblem(
 
 
 def test_not_converged_error():
+    config = cashocs.load_config(dir_path + "/config_ocp.ini")
     with pytest.raises(NotConvergedError) as e_info:
         u.vector().vec().set(0.0)
         u.vector().apply("")
-        ocp._erase_pde_memory()
-        ocp.solve("gd", 1e-10, 0.0, 1)
+        config.set("OptimizationRoutine", "algorithm", "gd")
+        config.set("OptimizationRoutine", "rtol", "1e-10")
+        config.set("OptimizationRoutine", "atol", "0.0")
+        config.set("OptimizationRoutine", "maximum_iterations", "1")
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+        ocp.solve()
     MPI.barrier(MPI.comm_world)
     assert "failed to converge" in str(e_info.value)
 
     with pytest.raises(CashocsException):
-        ocp.solve("gd", 1e-10, 0.0, 0)
+        config = cashocs.load_config(dir_path + "/config_ocp.ini")
+        config.set("OptimizationRoutine", "algorithm", "gd")
+        config.set("OptimizationRoutine", "rtol", "1e-10")
+        config.set("OptimizationRoutine", "atol", "0.0")
+        config.set("OptimizationRoutine", "maximum_iterations", "0")
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+        ocp.solve()
     MPI.barrier(MPI.comm_world)
 
 

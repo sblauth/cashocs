@@ -19,9 +19,8 @@
 
 from __future__ import annotations
 
-import argparse
 import configparser
-from typing import cast, List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
+from typing import cast, List, Optional, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 
@@ -149,32 +148,6 @@ def check_and_enlist_ksp_options(
             "ksp_options",
             "Type of ksp_options is wrong.",
         )
-
-
-def parse_remesh() -> Tuple[bool, Optional[str]]:
-    """Parses command line arguments for the remeshing flag.
-
-    Returns:
-        A tuple (cashocs_remesh_flag, temp_dir), where cashocs_remesh_flag is a boolean,
-        which indicates whether remeshing is used, and temp_dir is the path to the
-        directory containing the temporary files for reinitialization.
-
-    """
-    parser = argparse.ArgumentParser(description="test argument parser")
-    parser.add_argument(
-        "--temp_dir", type=str, help="Location of the temp directory for remeshing"
-    )
-    parser.add_argument(
-        "--cashocs_remesh",
-        action="store_true",
-        help="Flag which indicates whether remeshing has been performed",
-    )
-    args, _ = parser.parse_known_args()
-
-    temp_dir: Optional[str] = args.temp_dir or None
-    cashocs_remesh_flag = bool(args.cashocs_remesh)
-
-    return cashocs_remesh_flag, temp_dir
 
 
 def optimization_algorithm_configuration(

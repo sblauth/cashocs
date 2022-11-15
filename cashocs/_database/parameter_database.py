@@ -63,6 +63,7 @@ class ParameterDatabase:
             self.state_adjoint_equal_spaces = True
 
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
+        self.is_remeshed = False
 
     @property
     def problem_type(self) -> str:

@@ -56,8 +56,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             line_search: The corresponding line search.
 
         """
-        super().__init__(db, optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
 
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
@@ -84,7 +83,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""
-        self.initialize_solver()
         self.periodic_its = 0
         self.compute_gradient()
         self.optimization_variable_abstractions.compute_active_sets()
@@ -99,8 +97,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.check_restart()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info

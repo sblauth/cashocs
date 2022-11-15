@@ -79,7 +79,7 @@ class CoarseModel:
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
+        config: io.Config,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
@@ -161,7 +161,7 @@ class ParameterExtraction:
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
+        config: io.Config,
         desired_weights: Optional[List[float]] = None,
         mode: str = "initial",
     ) -> None:

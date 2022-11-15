@@ -47,4 +47,3 @@ jobs:
         OMP_NUM_THREADS: 1
       run: |
         mpirun -n 2 python3 -m pytest -p no:cacheprovider tests/
-        python3 -m pytest -p no:cacheprovider tests/test_remeshing_parallel.py

@@ -29,6 +29,7 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import _utils
+from cashocs import io
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search
 from cashocs._optimization import optimal_control
@@ -39,7 +40,6 @@ from cashocs._optimization.optimal_control import box_constraints
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):
@@ -58,114 +58,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     controls: List[fenics.Function]
     control_spaces: List[fenics.FunctionSpace]
 
-    def __new__(
-        cls,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        control_bcs_list: Optional[
-            Union[
-                List[List[fenics.DirichletBC]],
-                List[fenics.DirichletBC],
-                fenics.DirichletBC,
-            ]
-        ] = None,
-    ) -> OptimalControlProblem:
-        r"""Initializes self.
-
-        Args:
-            state_forms: The weak form of the state equation (user implemented). Can be
-                either a single UFL form, or a (ordered) list of UFL forms.
-            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
-                Dirichlet (essential) boundary conditions. If this is ``None``, then no
-                Dirichlet boundary conditions are imposed.
-            cost_functional_form: UFL form of the cost functional. Can also be a list of
-                summands of the cost functional
-            states: The state variable(s), can either be a :py:class:`fenics.Function`,
-                or a list of these.
-            controls: The control variable(s), can either be a
-                :py:class:`fenics.Function`, or a list of these.
-            adjoints: The adjoint variable(s), can either be a
-                :py:class:`fenics.Function`, or a (ordered) list of these.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-            riesz_scalar_products: The scalar products of the control space. Can either
-                be None, a single UFL form, or a (ordered) list of UFL forms. If
-                ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
-            control_constraints: Box constraints posed on the control, ``None`` means
-                that there are none (default is ``None``). The (inner) lists should
-                contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the
-                lower, and ``u_b`` the upper bound.
-            initial_guess: List of functions that act as initial guess for the state
-                variables, should be valid input for :py:func:`fenics.assign`. Defaults
-                to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
-                PETSc, used to solve the state systems. If this is ``None``, then the
-                direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
-                for PETSc, used to solve the adjoint systems. If this is ``None``, then
-                the same options as for the state systems are used (default is
-                ``None``).
-            desired_weights: A list of values for scaling the cost functional terms. If
-                this is supplied, the cost functional has to be given as list of
-                summands. The individual terms are then scaled, so that term `i` has the
-                magnitude of `desired_weights[i]` for the initial iteration. In case
-                that `desired_weights` is `None`, no scaling is performed. Default is
-                `None`.
-            control_bcs_list: A list of boundary conditions for the control variables.
-                This is passed analogously to ``bcs_list``. Default is ``None``.
-
-        Examples:
-            Examples how to use this class can be found in the :ref:`tutorial
-            <tutorial_index>`.
-
-        """
-        use_scaling = bool(desired_weights is not None)
-
-        if use_scaling:
-            unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(  # type: ignore
-                state_forms,
-                bcs_list,
-                cost_functional_form,
-                states,
-                controls,
-                adjoints,
-                config=config,
-                riesz_scalar_products=riesz_scalar_products,
-                control_constraints=control_constraints,
-                initial_guess=initial_guess,
-                ksp_options=ksp_options,
-                adjoint_ksp_options=adjoint_ksp_options,
-                desired_weights=desired_weights,
-                control_bcs_list=control_bcs_list,
-            )
-            unscaled_problem._scale_cost_functional()  # overwrites cost functional list
-
-        return super().__new__(cls)
-
     def __init__(
         self,
         state_forms: Union[List[ufl.Form], ufl.Form],
@@ -178,7 +70,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
+        config: io.Config,
         riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
@@ -214,11 +106,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
+                :py:func:`cashocs.create_config`.
             riesz_scalar_products: The scalar products of the control space. Can either
                 be None, a single UFL form, or a (ordered) list of UFL forms. If
                 ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
@@ -267,6 +155,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.controls = _utils.enlist(controls)
         self.control_dim = len(self.controls)
+        self.factory = None
 
         # riesz_scalar_products
         self.riesz_scalar_products = self._parse_riesz_scalar_products(
@@ -334,6 +223,29 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
+        self.output_manager = io.OutputManager(self, self.db)
+        self.optimization_variable_abstractions = (
+            optimal_control.ControlVariableAbstractions(self, self.box_constraints)
+        )
+
+        if bool(desired_weights is not None):
+            self._scale_cost_functional()
+            self.__init__(  # type: ignore
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                controls,
+                adjoints,
+                config,
+                riesz_scalar_products,
+                control_constraints,
+                initial_guess,
+                ksp_options,
+                adjoint_ksp_options,
+                None,
+                control_bcs_list,
+            )
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -351,66 +263,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 for bc in self.control_bcs_list_inhomogeneous[i]:
                     bc.apply(self.controls[i].vector())
 
-    def solve(
-        self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
-    ) -> None:
-        r"""Solves the optimization problem by the method specified in the config file.
-
-        Updates / overwrites states, controls, and adjoints according
-        to the optimization method, i.e., the user-input :py:func:`fenics.Function`
-        objects.
-
-        Args:
-            algorithm: Selects the optimization algorithm. Valid choices are
-                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-                for nonlinear conjugate gradient methods, ``'lbfgs'`` or ``'bfgs'`` for
-                limited memory BFGS methods, and ``'newton'`` for a truncated Newton
-                method. This overwrites the value specified in the config file. If this
-                is ``None``, then the value in the config file is used. Default is
-                ``None``.
-            rtol: The relative tolerance used for the termination criterion. Overwrites
-                the value specified in the config file. If this is ``None``, the value
-                from the config file is taken. Default is ``None``.
-            atol: The absolute tolerance used for the termination criterion. Overwrites
-                the value specified in the config file. If this is ``None``, the value
-                from the config file is taken. Default is ``None``.
-            max_iter: The maximum number of iterations the optimization algorithm can
-                carry out before it is terminated. Overwrites the value specified in the
-                config file. If this is ``None``, the value from the config file is
-                taken. Default is ``None``.
-
-        Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
-            call, the termination criterion changes to:
-
-            - a purely relative one (if only ``rtol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-
-            - a purely absolute one (if only ``atol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-
-            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
-
-            .. math::
-
-                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
-                || \nabla J(u_0) ||
-
-        """
-        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
+    def solve(self) -> None:
+        r"""Solves the problem by the method specified in the configuration."""
+        super().solve()
 
         self._setup_control_bcs()
-
-        self.optimization_variable_abstractions = (
-            optimal_control.ControlVariableAbstractions(self, self.box_constraints)
-        )
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":

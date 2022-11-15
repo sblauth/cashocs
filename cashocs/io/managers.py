@@ -30,7 +30,6 @@ from cashocs import _forms
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
-    from cashocs import _optimization as op
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
@@ -179,7 +178,6 @@ class ResultManager(IOManager):
         self,
         db: database.Database,
         result_dir: str,
-        has_cashocs_remesh_flag: bool = False,
         temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
@@ -187,8 +185,6 @@ class ResultManager(IOManager):
         Args:
             db: The database of the problem.
             result_dir: Path to the directory, where the results are saved.
-            has_cashocs_remesh_flag: Boolean which indicates, whether remeshing has been
-                performed
             temp_dict: Dictionary with history of the optimization process
 
         """
@@ -200,7 +196,7 @@ class ResultManager(IOManager):
         if (
             self.db.parameter_db.problem_type == "shape"
             and temp_dict is not None
-            and has_cashocs_remesh_flag
+            and self.db.parameter_db.is_remeshed
         ):
             self.output_dict["cost_function_value"] = temp_dict["output_dict"][
                 "cost_function_value"
@@ -388,9 +384,6 @@ class TempFileManager(IOManager):
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.temp_dict["temp_dir"]], check=True
-                )
-                subprocess.run(  # nosec B603, B607
                     ["rm", "-r", mesh_handler.remesh_directory], check=True
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -443,21 +436,21 @@ class XDMFFileManager(IOManager):
 
     def __init__(
         self,
-        optimization_problem: op.OptimizationProblem,
+        form_handler: _forms.FormHandler,
         db: database.Database,
         result_dir: str,
     ) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
+            form_handler: The form handler of the problem.
             db: The database of the problem.
             result_dir: Path to the directory, where the output files are saved in.
 
         """
         super().__init__(db, result_dir)
 
-        self.form_handler = optimization_problem.form_handler
+        self.form_handler = form_handler
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")

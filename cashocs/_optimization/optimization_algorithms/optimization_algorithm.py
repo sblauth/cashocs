@@ -26,33 +26,38 @@ import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs._database import database
+    from cashocs._optimization import line_search as ls
 
 
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
-    stepsize: float = 1.0
-
     def __init__(
-        self, db: database.Database, optimization_problem: _typing.OptimizationProblem
+        self,
+        db: database.Database,
+        optimization_problem: _typing.OptimizationProblem,
+        line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
 
         """
         self.db = db
+        self.line_search = line_search
+
         self.line_search_broken = False
         self.has_curvature_info = False
 
+        self.optimization_problem = optimization_problem
         self.form_handler = optimization_problem.form_handler
         self.state_problem = optimization_problem.state_problem
         self.config = self.state_problem.config
@@ -76,9 +81,9 @@ class OptimizationAlgorithm(abc.ABC):
         self.relative_norm = 1.0
 
         self.requires_remeshing = False
-        self.remeshing_its = False
         self.is_restarted: bool = False
 
+        self.stepsize = 1.0
         self.converged = False
         self.converged_reason = 0
 
@@ -95,6 +100,7 @@ class OptimizationAlgorithm(abc.ABC):
             self.temp_dict = None
 
         self.output_manager = optimization_problem.output_manager
+        self.initialize_solver()
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -135,8 +141,6 @@ class OptimizationAlgorithm(abc.ABC):
             self.converged_reason = -2
         if self.requires_remeshing:
             self.converged_reason = -3
-        if self.remeshing_its:
-            self.converged_reason = -4
 
         return bool(self.converged_reason < 0)
 
@@ -180,20 +184,9 @@ class OptimizationAlgorithm(abc.ABC):
             # Mesh Quality is too low
             elif self.converged_reason == -3:
                 self.iteration -= 1
-                if self.optimization_variable_abstractions.mesh_handler.do_remesh:
-                    _loggers.info(
-                        "Mesh quality too low. Performing a remeshing operation.\n"
-                    )
-                    self.optimization_variable_abstractions.mesh_handler.remesh(self)
-                else:
+                if not self.optimization_variable_abstractions.mesh_handler.do_remesh:
                     self.post_process()
                     self._exit("Mesh quality is too low.")
-
-            # Iteration for remeshing is the one exceeding the maximum number
-            # of iterations
-            elif self.converged_reason == -4:
-                self.post_process()
-                self._exit("Maximum number of iterations exceeded.")
 
     def convergence_test(self) -> bool:
         """Checks, whether the algorithm converged successfully.
@@ -259,3 +252,10 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.relative_norm = 1.0
         self.state_problem.has_solution = False
+        self.adjoint_problem.has_solution = False
+        self.gradient_problem.has_solution = False
+
+    def evaluate_cost_functional(self) -> None:
+        """Evaluates the cost functional and performs the output operation."""
+        self.objective_value = self.cost_functional.evaluate()
+        self.output()

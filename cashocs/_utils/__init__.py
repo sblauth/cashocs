@@ -35,7 +35,6 @@ from cashocs._utils.helpers import check_and_enlist_ksp_options
 from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import optimization_algorithm_configuration
-from cashocs._utils.helpers import parse_remesh
 from cashocs._utils.linalg import assemble_and_solve_linear
 from cashocs._utils.linalg import assemble_petsc_system
 from cashocs._utils.linalg import Interpolator
@@ -54,7 +53,6 @@ __all__ = [
     "check_and_enlist_control_constraints",
     "check_and_enlist_bcs",
     "enlist",
-    "parse_remesh",
     "optimization_algorithm_configuration",
     "assemble_petsc_system",
     "setup_petsc_options",

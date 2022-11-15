@@ -19,13 +19,11 @@
 
 from __future__ import annotations
 
-import json
-import pathlib
+import functools
 import subprocess  # nosec B404
 import sys
-import tempfile
 from types import TracebackType
-from typing import Any, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -38,6 +36,7 @@ from cashocs import _forms
 from cashocs import _loggers
 from cashocs import _pde_problems
 from cashocs import geometry
+from cashocs import io
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search
 from cashocs._optimization import optimization_algorithms
@@ -47,7 +46,9 @@ from cashocs._optimization.shape_optimization import shape_variable_abstractions
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
+
+
+CallableFunction = type(lambda: ())
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -63,123 +64,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     on).
     """
 
-    def __new__(
-        cls,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]],
-            List[fenics.DirichletBC],
-            fenics.DirichletBC,
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        boundaries: fenics.MeshFunction,
-        config: Optional[io.Config] = None,
-        shape_scalar_product: Optional[ufl.Form] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-    ) -> ShapeOptimizationProblem:
-        """Initializes self.
-
-        Args:
-            state_forms: The weak form of the state equation (user implemented). Can be
-                either a single UFL form, or a (ordered) list of UFL forms.
-            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
-                Dirichlet (essential) boundary conditions. If this is ``None``, then no
-                Dirichlet boundary conditions are imposed.
-            cost_functional_form: UFL form of the cost functional. Can also be a list of
-                summands of the cost functional
-            states: The state variable(s), can either be a :py:class:`fenics.Function`,
-                or a list of these.
-            adjoints: The adjoint variable(s), can either be a
-                :py:class:`fenics.Function`, or a (ordered) list of these.
-            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
-                markers.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-            shape_scalar_product: The bilinear form for computing the shape gradient
-                (or gradient deformation). This has to use
-                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
-                objects to define the weak form, which have to be in a
-                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
-                finite elements. Moreover, this form is required to be symmetric.
-            initial_guess: List of functions that act as initial guess for the state
-                variables, should be valid input for :py:func:`fenics.assign`. Defaults
-                to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
-                PETSc, used to solve the state systems. If this is ``None``, then the
-                direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
-                for PETSc, used to solve the adjoint systems. If this is ``None``, then
-                the same options as for the state systems are used (default is
-                ``None``).
-            desired_weights: A list of values for scaling the cost functional terms. If
-                this is supplied, the cost functional has to be given as list of
-                summands. The individual terms are then scaled, so that term `i` has the
-                magnitude of `desired_weights[i]` for the initial iteration. In case
-                that `desired_weights` is `None`, no scaling is performed. Default is
-                `None`.
-
-        """
-        use_scaling = bool(desired_weights is not None)
-
-        if use_scaling:
-            unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(  # type: ignore
-                state_forms,
-                bcs_list,
-                cost_functional_form,
-                states,
-                adjoints,
-                boundaries,
-                config=config,
-                shape_scalar_product=shape_scalar_product,
-                initial_guess=initial_guess,
-                ksp_options=ksp_options,
-                adjoint_ksp_options=adjoint_ksp_options,
-                desired_weights=desired_weights,
-            )
-            unscaled_problem._scale_cost_functional()  # overwrites the list
-
-            problem = super().__new__(cls)
-            if not unscaled_problem.has_cashocs_remesh_flag:
-                problem.initial_function_values = (
-                    unscaled_problem.initial_function_values
-                )
-
-            if (
-                not unscaled_problem.has_cashocs_remesh_flag
-                and unscaled_problem.do_remesh
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", unscaled_problem.temp_dir], check=True
-                )
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", unscaled_problem.mesh_handler.remesh_directory],
-                    check=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-
-            return problem
-
-        else:
-            return super().__new__(cls)
-
-    def __init__(
+    @functools.singledispatchmethod  # type: ignore
+    def __init__(  # pylint: disable=unused-argument
         self,
         state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
@@ -193,7 +79,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: Optional[io.Config] = None,
+        config: io.Config,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -203,6 +89,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
+        temp_dict: Optional[Dict] = None,
+        initial_function_values: Optional[List[float]] = None,
     ) -> None:
         """Initializes self.
 
@@ -221,11 +109,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
                 markers.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
+                :py:func:`cashocs.create_config`.
             shape_scalar_product: The bilinear form for computing the shape gradient
                 (or gradient deformation). This has to use
                 :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
@@ -248,6 +132,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            temp_dict: This is a private parameter of the class, required for remeshing.
+                This parameter must not be set by the user and should be ignored.
+                Using this parameter may result in unintended side effects.
+            initial_function_values: This is a privatve parameter of the class, required
+                for remeshing. This parameter must not be set by the user and should be
+                ignored. Using this parameter may result in unintended side effects.
 
         """
         super().__init__(
@@ -262,6 +152,103 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             adjoint_ksp_options,
             desired_weights,
         )
+        raise _exceptions.CashocsException(
+            "Not a valid input for cashocs.ShapeOptimizationProblem.__init__"
+        )
+
+    @__init__.register(list[ufl.form])
+    @__init__.register(ufl.Form)
+    def _(
+        self,
+        state_forms: Union[List[ufl.Form], ufl.Form],
+        bcs_list: Union[
+            List[List[fenics.DirichletBC]],
+            List[fenics.DirichletBC],
+            fenics.DirichletBC,
+        ],
+        cost_functional_form: Union[
+            List[_typing.CostFunctional], _typing.CostFunctional
+        ],
+        states: Union[List[fenics.Function], fenics.Function],
+        adjoints: Union[List[fenics.Function], fenics.Function],
+        boundaries: fenics.MeshFunction,
+        config: io.Config,
+        shape_scalar_product: Optional[ufl.Form] = None,
+        initial_guess: Optional[List[fenics.Function]] = None,
+        ksp_options: Optional[
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        adjoint_ksp_options: Optional[
+            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+        ] = None,
+        desired_weights: Optional[List[float]] = None,
+        temp_dict: Optional[Dict] = None,
+        initial_function_values: Optional[List[float]] = None,
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            state_forms: The weak form of the state equation (user implemented). Can be
+                either a single UFL form, or a (ordered) list of UFL forms.
+            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
+                Dirichlet (essential) boundary conditions. If this is ``None``, then no
+                Dirichlet boundary conditions are imposed.
+            cost_functional_form: UFL form of the cost functional. Can also be a list of
+                summands of the cost functional
+            states: The state variable(s), can either be a :py:class:`fenics.Function`,
+                or a list of these.
+            adjoints: The adjoint variable(s), can either be a
+                :py:class:`fenics.Function`, or a (ordered) list of these.
+            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
+                markers.
+            config: The config file for the problem, generated via
+                :py:func:`cashocs.create_config`.
+            shape_scalar_product: The bilinear form for computing the shape gradient
+                (or gradient deformation). This has to use
+                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
+                objects to define the weak form, which have to be in a
+                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
+                finite elements. Moreover, this form is required to be symmetric.
+            initial_guess: List of functions that act as initial guess for the state
+                variables, should be valid input for :py:func:`fenics.assign`. Defaults
+                to ``None``, which means a zero initial guess.
+            ksp_options: A list of strings corresponding to command line options for
+                PETSc, used to solve the state systems. If this is ``None``, then the
+                direct solver mumps is used (default is ``None``).
+            adjoint_ksp_options: A list of strings corresponding to command line options
+                for PETSc, used to solve the adjoint systems. If this is ``None``, then
+                the same options as for the state systems are used (default is
+                ``None``).
+            desired_weights: A list of values for scaling the cost functional terms. If
+                this is supplied, the cost functional has to be given as list of
+                summands. The individual terms are then scaled, so that term `i` has the
+                magnitude of `desired_weights[i]` for the initial iteration. In case
+                that `desired_weights` is `None`, no scaling is performed. Default is
+                `None`.
+            temp_dict: This is a private parameter of the class, required for remeshing.
+                This parameter must not be set by the user and should be ignored.
+                Using this parameter may result in unintended side effects.
+            initial_function_values: This is a privatve parameter of the class, required
+                for remeshing. This parameter must not be set by the user and should be
+                ignored. Using this parameter may result in unintended side effects.
+
+        """
+        super().__init__(
+            state_forms,
+            bcs_list,
+            cost_functional_form,
+            states,
+            adjoints,
+            config,
+            initial_guess,
+            ksp_options,
+            adjoint_ksp_options,
+            desired_weights,
+        )
+
+        if temp_dict is not None:
+            self.temp_dict = temp_dict
+            self.db.parameter_db.is_remeshed = True
 
         self.db.parameter_db.problem_type = "shape"
 
@@ -299,11 +286,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self, self.db
         )
 
-        if (
-            self.do_remesh
-            and not self.has_cashocs_remesh_flag
-            and self.temp_dict is not None
-        ):
+        if self.temp_dict is not None:
             self.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
                 "mu_surface": self.form_handler.shape_regularization.mu_surface,
@@ -311,6 +294,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "mu_barycenter": self.form_handler.shape_regularization.mu_barycenter,
             }
 
+        if initial_function_values is not None:
+            self.initial_function_values = initial_function_values
+
+        # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(self.db, self)
 
         self.state_spaces = self.db.function_db.state_spaces
@@ -337,51 +324,68 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         )
 
         self.gradient = self.gradient_problem.gradient
-        self.objective_value = 1.0
+        self.optimization_variable_abstractions = (
+            shape_variable_abstractions.ShapeVariableAbstractions(self)
+        )
+        self.output_manager = io.OutputManager(self, self.db)
 
-    def _check_remesh_input(self) -> None:
-        """Checks if the inputs are valid for remeshing."""
-        if not pathlib.Path(sys.argv[0]).is_file():
-            raise _exceptions.CashocsException(
-                "Not a valid configuration. "
-                "The script has to be the first command line argument."
+        if bool(desired_weights is not None):
+            self._scale_cost_functional()
+            self.__init__(  # type: ignore # pylint: disable=unnecessary-dunder-call
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                adjoints,
+                boundaries,
+                config,
+                shape_scalar_product,
+                initial_guess,
+                ksp_options,
+                adjoint_ksp_options,
+                None,
+                temp_dict,
+                self.initial_function_values,
             )
 
-        try:
-            # pylint: disable=protected-access
-            if not self.states[0].function_space().mesh()._config_flag:
-                raise _exceptions.InputError(
-                    "cashocs.import_mesh",
-                    "arg",
-                    "You must specify a config file as input for remeshing.",
-                )
-        except AttributeError as attribute_error:  # pragma: no cover
-            raise _exceptions.InputError(
-                "cashocs.import_mesh",
-                "arg",
-                "You must specify a config file as input for remeshing.",
-            ) from attribute_error
+    @__init__.register(CallableFunction)
+    def _(self, factory: Callable, mesh_name: str) -> None:
+        """Initializes self. Version for remeshing.
+
+        Args:
+            factory: A custom function, which takes the path to the mesh file as
+                argument and returns either just the positional arguments or the
+                positional and keyword arguments for the alternative __init__
+                implementation.
+            mesh_name: The path to the initial mesh file.
+
+        """
+        self.factory = factory
+        self.mesh_name = mesh_name
+
+        arguments = self.factory(self.mesh_name)
+        if len(arguments) == 2:
+            args, kwargs = arguments
+        elif len(arguments) == 1:
+            args = arguments
+            kwargs = {}
+        else:
+            raise _exceptions.CashocsException(
+                "For remeshing, the factory function"
+                " must either return one or two objects."
+            )
+        if hasattr(self, "temp_dict"):
+            kwargs["temp_dict"] = self.temp_dict
+        self.__init__(  # type: ignore # pylint: disable=unnecessary-dunder-call
+            *args, **kwargs
+        )
 
     def _remesh_init(self) -> None:
         """Initializes self for remeshing."""
         if self.do_remesh:
-
-            self._check_remesh_input()
-
-            if not self.has_cashocs_remesh_flag:
-                self.directory = pathlib.Path(sys.argv[0]).resolve().parent
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    temp_dir: str = tempfile.mkdtemp(
-                        prefix="._cashocs_remesh_temp_", dir=self.directory
-                    )
-                else:
-                    temp_dir = ""
-                fenics.MPI.barrier(fenics.MPI.comm_world)
-                self.temp_dir: str = fenics.MPI.comm_world.bcast(temp_dir, root=0)
-
+            if not self.db.parameter_db.is_remeshed:
                 self._change_except_hook()
                 self.temp_dict = {
-                    "temp_dir": self.temp_dir,
                     "gmsh_file": self.config.get("Mesh", "gmsh_file"),
                     "geo_file": self.config.get("Mesh", "geo_file"),
                     "OptimizationRoutine": {
@@ -391,20 +395,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                     "output_dict": {},
                 }
 
-                try:
-                    if self.use_scaling:
-                        self.temp_dict[
-                            "initial_function_values"
-                        ] = self.initial_function_values
-                except AttributeError:  # this happens for the unscaled problem
-                    pass
-
             else:
                 self._change_except_hook()
-                with open(
-                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
-                ) as file:
-                    self.temp_dict = json.load(file)
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -417,61 +409,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.form_handler.update_scalar_product()
         self.gradient_problem.has_solution = False
 
-    def solve(
-        self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
-    ) -> None:
-        r"""Solves the optimization problem by the method specified in the config file.
-
-        Args:
-            algorithm: Selects the optimization algorithm. Valid choices are
-                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
-                for limited memory BFGS methods. This overwrites the value specified
-                in the config file. If this is ``None``, then the value in the
-                config file is used. Default is ``None``.
-            rtol: The relative tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
-            atol: The absolute tolerance used for the termination criterion.
-                Overwrites the value specified in the config file. If this
-                is ``None``, the value from the config file is taken. Default
-                is ``None``.
-            max_iter: The maximum number of iterations the optimization algorithm
-                can carry out before it is terminated. Overwrites the value
-                specified in the config file. If this is ``None``, the value from
-                the config file is taken. Default is ``None``.
-
-        Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
-            call, the termination criterion changes to:
-
-            - a purely relative one (if only ``rtol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-
-            - a purely absolute one (if only ``atol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-
-            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
-
-            .. math::
-
-                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
-                || \nabla J(u_0) ||
-
-        """
-        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
-
-        self.optimization_variable_abstractions = (
-            shape_variable_abstractions.ShapeVariableAbstractions(self)
-        )
+    def solve(self) -> None:
+        r"""Solves the problem by the method specified in the configuration."""
+        super().solve()
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
@@ -479,7 +419,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         elif line_search_type == "polynomial":
             self.line_search = line_search.PolynomialLineSearch(self.db, self)
 
-        # TODO: Do not pass the line search (unnecessary)
         if self.algorithm.casefold() == "gradient_descent":
             self.solver = optimization_algorithms.GradientDescentMethod(
                 self.db, self, self.line_search
@@ -533,9 +472,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 not self.config.getboolean("Debug", "remeshing")
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.temp_dir], check=False
-                )
                 subprocess.run(  # nosec B603, B607
                     ["rm", "-r", self.mesh_handler.remesh_directory], check=False
                 )

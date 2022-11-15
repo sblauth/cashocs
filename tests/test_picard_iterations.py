@@ -173,6 +173,12 @@ def test_picard_state_solver():
 
 
 def test_picard_solver_for_optimization():
+    config = cashocs.load_config(dir_path + "/config_picard.ini")
+    config.set("OptimizationRoutine", "algorithm", "newton")
+    config.set("OptimizationRoutine", "rtol", "1e-6")
+    config.set("OptimizationRoutine", "atol", "0.0")
+    config.set("OptimizationRoutine", "maximum_iterations", "2")
+
     u_picard = Function(V)
     v_picard = Function(V)
 
@@ -180,8 +186,8 @@ def test_picard_solver_for_optimization():
     u.vector().apply("")
     v.vector().vec().set(0.0)
     v.vector().apply("")
-    ocp._erase_pde_memory()
-    ocp.solve("newton", 1e-6, 0.0, 2)
+    ocp = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
+    ocp.solve()
     assert ocp.solver.relative_norm <= 1e-6
 
     u_picard.vector()[:] = u.vector()[:]
@@ -191,8 +197,10 @@ def test_picard_solver_for_optimization():
     u.vector().apply("")
     v.vector().vec().set(0.0)
     v.vector().apply("")
-    ocp_mixed._erase_pde_memory()
-    ocp_mixed.solve("newton", 1e-6, 0.0, 2)
+    ocp_mixed = cashocs.OptimalControlProblem(
+        F, bcs_m, J_m, state_m, controls, adjoint_m, config
+    )
+    ocp_mixed.solve()
     assert ocp_mixed.solver.relative_norm < 1e-6
 
     assert np.allclose(u.vector()[:], u_picard.vector()[:])
@@ -204,11 +212,17 @@ def test_picard_solver_for_optimization():
 
 
 def test_picard_nonlinear():
+    config = cashocs.load_config(dir_path + "/config_picard.ini")
+
     u.vector().vec().set(0.0)
     u.vector().apply("")
     v.vector().vec().set(0.0)
     v.vector().apply("")
     config.set("StateSystem", "is_linear", "False")
+    config.set("OptimizationRoutine", "algorithm", "newton")
+    config.set("OptimizationRoutine", "rtol", "1e-6")
+    config.set("OptimizationRoutine", "atol", "0.0")
+    config.set("OptimizationRoutine", "maximum_iterations", "10")
 
     ocp_nonlinear = cashocs.OptimalControlProblem(
         e_nonlinear, bcs, J, states, controls, adjoints, config
@@ -218,5 +232,5 @@ def test_picard_nonlinear():
     assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
     assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
 
-    ocp_nonlinear.solve("newton", 1e-6, 0.0, 10)
+    ocp_nonlinear.solve()
     assert ocp_nonlinear.solver.relative_norm < 1e-6

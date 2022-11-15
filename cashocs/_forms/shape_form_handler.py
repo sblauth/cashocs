@@ -244,10 +244,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         super().__init__(optimization_problem, db)
 
-        self.has_cashocs_remesh_flag: bool = (
-            optimization_problem.has_cashocs_remesh_flag
-        )
-        self.temp_dir: Optional[str] = optimization_problem.temp_dir
         self.boundaries = optimization_problem.boundaries
         self.shape_scalar_product = optimization_problem.shape_scalar_product
         self.uses_custom_scalar_product = (
@@ -298,7 +294,9 @@ class ShapeFormHandler(form_handler.FormHandler):
         )
 
         self.shape_regularization: shape_regularization.ShapeRegularization = (
-            shape_regularization.ShapeRegularization(self.db, self)
+            shape_regularization.ShapeRegularization(
+                self.db, self, optimization_problem.temp_dict
+            )
         )
 
         fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")

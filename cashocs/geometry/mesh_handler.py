@@ -20,11 +20,8 @@
 
 from __future__ import annotations
 
-import json
-import os
 import pathlib
 import subprocess  # nosec B404
-import sys
 import tempfile
 from typing import cast, Dict, List, TYPE_CHECKING, Union
 
@@ -35,6 +32,7 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
+from cashocs._optimization import line_search as ls
 from cashocs.geometry import deformations
 from cashocs.geometry import quality
 
@@ -78,31 +76,6 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
 
         subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
     fenics.MPI.barrier(fenics.MPI.comm_world)
-
-
-def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover
-    """Filters the command line arguments for the cashocs remesh flag.
-
-    Args:
-        temp_dir: Path to directory for the temp files
-
-    """
-    arg_list = sys.argv.copy()
-    idx_cashocs_remesh_flag = [
-        i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
-    ]
-    if len(idx_cashocs_remesh_flag) == 1:
-        arg_list.pop(idx_cashocs_remesh_flag[0])
-
-    idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-    if len(idx_temp_dir) == 1:
-        arg_list.pop(idx_temp_dir[0])
-
-    idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
-    if len(idx_temp_dir_flag) == 1:
-        arg_list.pop(idx_temp_dir_flag[0])
-
-    return arg_list
 
 
 class _MeshHandler:
@@ -208,7 +181,7 @@ class _MeshHandler:
             self.gmsh_file = self.temp_dict["gmsh_file"]
             self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
 
-            if not self.form_handler.has_cashocs_remesh_flag:
+            if not self.db.parameter_db.is_remeshed:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     remesh_directory: str = tempfile.mkdtemp(
                         prefix="cashocs_remesh_", dir=self.mesh_directory
@@ -506,28 +479,25 @@ class _MeshHandler:
             subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def _restart_script(self, temp_dir: str) -> None:
-        """Restarts the python script with itself and replaces the process.
+    def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
+        solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
+            solver.optimization_problem.factory,
+            self.temp_dict["mesh_file"],
+        )
 
-        Args:
-              temp_dir: Path to the directory for temporary files.
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(
+                self.db, solver.optimization_problem
+            )
+        elif line_search_type == "polynomial":
+            line_search = ls.PolynomialLineSearch(self.db, solver.optimization_problem)
 
-        """
-        if not self.config.getboolean("Debug", "restart"):
-            sys.stdout.flush()
-            os.execv(  # nosec 606
-                sys.executable,
-                [sys.executable]
-                + filter_sys_argv(temp_dir)
-                + ["--cashocs_remesh"]
-                + ["--temp_dir"]
-                + [temp_dir],
-            )
-        else:
-            raise _exceptions.CashocsDebugException(
-                "Debug flag detected. "
-                "Restart of script with remeshed geometry is cancelled."
-            )
+        solver.__init__(  # type: ignore # pylint: disable=C2801
+            solver.optimization_problem.db,
+            solver.optimization_problem,
+            line_search,
+        )
 
     def remesh(self, solver: OptimizationAlgorithm) -> None:
         """Remeshes the current geometry with Gmsh.
@@ -604,18 +574,68 @@ class _MeshHandler:
             self.temp_dict["mesh_file"] = new_xdmf_file
             self.temp_dict["gmsh_file"] = new_gmsh_file
 
-            self.temp_dict["OptimizationRoutine"]["iteration_counter"] = (
-                solver.iteration + 1
-            )
+            self.temp_dict["OptimizationRoutine"][
+                "iteration_counter"
+            ] = solver.iteration
             self.temp_dict["OptimizationRoutine"][
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 
-            temp_dir = self.temp_dict["temp_dir"]
+            self._reinitialize(solver)
+            self._check_imported_mesh_quality(solver)
 
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                with open(f"{temp_dir}/temp_dict.json", "w", encoding="utf-8") as file:
-                    json.dump(self.temp_dict, file)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+    def _check_imported_mesh_quality(self, solver: OptimizationAlgorithm) -> None:
+        """Checks the quality of an imported mesh.
 
-            self._restart_script(temp_dir)
+        This function raises exceptions when the mesh does not satisfy the desired
+        quality criteria.
+
+        Args:
+            solver: The solver instance carrying the new mesh
+
+        """
+        mesh_quality_tol_lower = self.db.config.getfloat("MeshQuality", "tol_lower")
+        mesh_quality_tol_upper = self.db.config.getfloat("MeshQuality", "tol_upper")
+
+        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
+            _loggers.warning(
+                "You are using a lower remesh tolerance (tol_lower) close to "
+                "the upper one (tol_upper). This may slow down the "
+                "optimization considerably."
+            )
+
+        mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
+        mesh_quality_type = self.db.config.get("MeshQuality", "type")
+
+        mesh = solver.optimization_problem.states[0].function_space().mesh()
+
+        current_mesh_quality = quality.compute_mesh_quality(
+            mesh,
+            mesh_quality_type,
+            mesh_quality_measure,
+        )
+
+        failed = False
+        fail_msg = None
+        if current_mesh_quality < mesh_quality_tol_lower:
+            failed = True
+            fail_msg = (
+                "The quality of the mesh file you have specified is not "
+                "sufficient for evaluating the cost functional.\n"
+                f"It currently is {current_mesh_quality:.3e} but has to "
+                f"be at least {mesh_quality_tol_lower:.3e}."
+            )
+
+        if current_mesh_quality < mesh_quality_tol_upper:
+            failed = True
+            fail_msg = (
+                "The quality of the mesh file you have specified is not "
+                "sufficient for computing the shape gradient.\n "
+                + f"It currently is {current_mesh_quality:.3e} but has to "
+                f"be at least {mesh_quality_tol_lower:.3e}."
+            )
+
+        if failed:
+            raise _exceptions.InputError(
+                "cashocs.geometry.import_mesh", "input_arg", fail_msg
+            )

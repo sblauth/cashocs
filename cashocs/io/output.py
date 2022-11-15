@@ -45,7 +45,7 @@ class OutputManager:
 
         """
         self.db = db
-        self.config = optimization_problem.config
+        self.config = self.db.config
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
 
@@ -82,14 +82,15 @@ class OutputManager:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
             self.managers.append(
-                managers.XDMFFileManager(optimization_problem, self.db, self.result_dir)
+                managers.XDMFFileManager(
+                    optimization_problem.form_handler, self.db, self.result_dir
+                )
             )
         self.output_dict = {}
         if save_results:
             result_manager = managers.ResultManager(
                 self.db,
                 self.result_dir,
-                optimization_problem.has_cashocs_remesh_flag,
                 optimization_problem.temp_dict,
             )
             self.output_dict = result_manager.output_dict

@@ -22,4 +22,4 @@ RUN conda activate cashocs \
 
 RUN conda activate cashocs \
   && cd /root/cashocs \
-  && pytest tests/ --ignore=tests/test_remeshing_parallel.py
+  && pytest tests/

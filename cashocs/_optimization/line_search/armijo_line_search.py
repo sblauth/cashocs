@@ -70,7 +70,6 @@ class ArmijoLineSearch(line_search.LineSearch):
 
         """
         if solver.iteration >= solver.maximum_iterations:
-            solver.remeshing_its = True
             return True
 
         if self.stepsize * self.search_direction_inf <= 1e-8:
@@ -134,8 +133,8 @@ class ArmijoLineSearch(line_search.LineSearch):
                 < current_function_value + self.epsilon_armijo * decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
-                    solver.requires_remeshing = True
-                    return None
+                    self.optimization_variable_abstractions.mesh_handler.remesh(solver)
+                    break
 
                 if solver.iteration == 0:
                     self.armijo_stepsize_initial = self.stepsize

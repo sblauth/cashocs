@@ -266,11 +266,12 @@ class ParameterExtraction:
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
         )
-        self.shape_optimization_problem.inject_pre_post_callback(
-            self._pre_callback, self._post_callback
-        )
+        if self.shape_optimization_problem is not None:
+            self.shape_optimization_problem.inject_pre_post_callback(
+                self._pre_callback, self._post_callback
+            )
 
-        self.shape_optimization_problem.solve()
+            self.shape_optimization_problem.solve()
 
 
 class SpaceMapping:
@@ -676,8 +677,10 @@ class SpaceMapping:
             The scalar product between ``a`` and ``b``
 
         """
-        return self.coarse_model.shape_optimization_problem.form_handler.scalar_product(
-            a, b
+        return float(
+            self.coarse_model.shape_optimization_problem.form_handler.scalar_product(
+                a, b
+            )
         )
 
     def _compute_search_direction(

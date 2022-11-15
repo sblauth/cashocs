@@ -19,161 +19,25 @@
 
 from __future__ import annotations
 
-import configparser
 import json
 import pathlib
-import subprocess  # nosec B404
-import sys
-from types import TracebackType
-from typing import Any, Dict, Optional, Type, TYPE_CHECKING, Union
+from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
 import h5py
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
-from cashocs import _utils
 from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry import measure as measure_module
 from cashocs.geometry import mesh as mesh_module
-from cashocs.geometry import quality
-from cashocs.io import config as config_module
 
 if TYPE_CHECKING:
     from cashocs import _typing
 
 
-def _change_except_hook(config: config_module.Config) -> None:
-    """Change the excepthook to delete temporary files.
-
-    Args:
-        config: The configuration file for the problem.
-
-    """
-    has_cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
-
-    if has_cashocs_remesh_flag:
-        with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-            temp_dict: Dict = json.load(file)
-
-        remesh_directory = temp_dict["remesh_directory"]
-
-        def custom_except_hook(
-            exctype: Type[BaseException],
-            value: BaseException,
-            traceback: TracebackType,
-        ) -> Any:  # pragma: no cover
-            """A customized hook which is injected when an exception occurs.
-
-            Args:
-                exctype: The type of the exception.
-                value: The value of the exception.
-                traceback: The traceback of the exception.
-
-            """
-            _loggers.debug(
-                "An exception was raised by cashocs, "
-                "deleting the created temporary files."
-            )
-            if (
-                not config.getboolean("Debug", "remeshing")
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                assert temp_dir is not None  # nosec B101
-                subprocess.run(["rm", "-r", temp_dir], check=False)  # nosec B603, B607
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", remesh_directory], check=False
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            sys.__excepthook__(exctype, value, traceback)
-
-        sys.excepthook = custom_except_hook  # type: ignore
-
-
-def _check_imported_mesh_quality(
-    input_arg: Union[str, config_module.Config],
-    mesh: mesh_module.Mesh,
-    cashocs_remesh_flag: bool,
-) -> None:
-    """Checks the quality of an imported mesh.
-
-    This function raises exceptions when the mesh does not satisfy the desired quality
-    criteria.
-
-    Args:
-        input_arg: The argument used to import the mesh.
-        mesh: The finite element mesh whose quality shall be checked.
-        cashocs_remesh_flag: A flag, indicating whether remeshing is active.
-
-    """
-    if isinstance(input_arg, configparser.ConfigParser):
-        mesh_quality_tol_lower = input_arg.getfloat("MeshQuality", "tol_lower")
-        mesh_quality_tol_upper = input_arg.getfloat("MeshQuality", "tol_upper")
-
-        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
-            _loggers.warning(
-                "You are using a lower remesh tolerance (tol_lower) close to "
-                "the upper one (tol_upper). This may slow down the "
-                "optimization considerably."
-            )
-
-        mesh_quality_measure = input_arg.get("MeshQuality", "measure")
-        mesh_quality_type = input_arg.get("MeshQuality", "type")
-
-        current_mesh_quality = quality.compute_mesh_quality(
-            mesh, mesh_quality_type, mesh_quality_measure
-        )
-
-        failed = False
-        fail_msg = None
-        if not cashocs_remesh_flag:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                failed = True
-                fail_msg = (
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for evaluating the cost functional.\n"
-                    f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                failed = True
-                fail_msg = (
-                    "The quality of the mesh file you have specified is not "
-                    "sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-        else:
-            if current_mesh_quality < mesh_quality_tol_lower:
-                failed = True
-                fail_msg = (
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing is "
-                    "not sufficient for evaluating the cost functional.\n"
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_lower:.3e}."
-                )
-
-            if current_mesh_quality < mesh_quality_tol_upper:
-                failed = True
-                fail_msg = (
-                    "Remeshing failed.\n"
-                    "The quality of the mesh file generated through remeshing "
-                    "is not sufficient for computing the shape gradient.\n "
-                    + f"It currently is {current_mesh_quality:.3e} but has to "
-                    f"be at least {mesh_quality_tol_upper:.3e}."
-                )
-        if failed:
-            raise _exceptions.InputError(
-                "cashocs.geometry.import_mesh", "input_arg", fail_msg
-            )
-
-
 @mesh_module._get_mesh_stats(mode="import")  # pylint:disable=protected-access
-def import_mesh(input_arg: Union[str, config_module.Config]) -> _typing.MeshTuple:
+def import_mesh(mesh_file: str) -> _typing.MeshTuple:
     """Imports a mesh file for use with cashocs / FEniCS.
 
     This function imports a mesh file that was generated by GMSH and converted to
@@ -183,10 +47,7 @@ def import_mesh(input_arg: Union[str, config_module.Config]) -> _typing.MeshTupl
     accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.
 
     Args:
-        input_arg: This is either a string, in which case it corresponds to the location
-            of the mesh file in .xdmf file format, or a config file that
-            has this path stored in its settings, under the section Mesh, as
-            parameter ``mesh_file``.
+        mesh_file: The location of the mesh file in .xdmf file format.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -214,23 +75,7 @@ def import_mesh(input_arg: Union[str, config_module.Config]) -> _typing.MeshTupl
         and both can be used interchangeably.
 
     """
-    cashocs_remesh_flag, temp_dir = _utils.parse_remesh()
-
-    if not isinstance(input_arg, str):
-        _change_except_hook(input_arg)
-
     # Check for the file format
-    mesh_file: str = ""
-    if isinstance(input_arg, str):
-        mesh_file = input_arg
-    elif isinstance(input_arg, configparser.ConfigParser):
-        if not cashocs_remesh_flag:
-            mesh_file = input_arg.get("Mesh", "mesh_file")
-        else:
-            with open(f"{temp_dir}/temp_dict.json", "r", encoding="utf-8") as file:
-                temp_dict: Dict = json.load(file)
-            mesh_file = temp_dict["mesh_file"]
-
     file_string = mesh_file[:-5]
 
     mesh = mesh_module.Mesh()
@@ -282,9 +127,6 @@ def import_mesh(input_arg: Union[str, config_module.Config]) -> _typing.MeshTupl
     # Add the physical groups to the mesh in case they are present
     if physical_groups is not None:
         mesh.physical_groups = physical_groups
-
-    # Check the mesh quality of the imported mesh in case a config file is passed
-    _check_imported_mesh_quality(input_arg, mesh, cashocs_remesh_flag)
 
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 

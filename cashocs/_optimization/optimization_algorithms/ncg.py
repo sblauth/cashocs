@@ -47,8 +47,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             line_search: The corresponding line search.
 
         """
-        super().__init__(db, optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
 
         self.gradient_prev = _utils.create_function_list(
             self.form_handler.control_spaces
@@ -70,7 +69,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the NCG method."""
-        self.initialize_solver()
         self.memory = 0
 
         while True:
@@ -88,8 +86,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.project_ncg_search_direction()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info

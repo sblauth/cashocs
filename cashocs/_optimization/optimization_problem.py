@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import abc
 import copy
-import json
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
@@ -86,7 +85,7 @@ class OptimizationProblem(abc.ABC):
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
+        config: io.Config,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
         ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
@@ -111,11 +110,7 @@ class OptimizationProblem(abc.ABC):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
+                :py:func:`cashocs.load_config`.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
@@ -143,8 +138,6 @@ class OptimizationProblem(abc.ABC):
             ``adjoints[i]``.
 
         """
-        self.has_cashocs_remesh_flag, self.temp_dir = _utils.parse_remesh()
-
         self.temp_dict: Optional[Dict] = None
 
         self.state_forms = _utils.enlist(state_forms)
@@ -161,19 +154,22 @@ class OptimizationProblem(abc.ABC):
 
         self.use_scaling = False
 
+        self.config = copy.deepcopy(config)
+        self.config.validate_config()
+
         (
-            self.config,
             self.initial_guess,
             self.ksp_options,
             self.adjoint_ksp_options,
             self.desired_weights,
         ) = self._parse_optional_inputs(
-            config,
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
             desired_weights,
         )
+
+        self.algorithm = _utils.optimization_algorithm_configuration(self.config)
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
@@ -239,7 +235,6 @@ class OptimizationProblem(abc.ABC):
 
     def _parse_optional_inputs(
         self,
-        config: Optional[io.Config],
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
         ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
@@ -249,7 +244,6 @@ class OptimizationProblem(abc.ABC):
         ],
         desired_weights: Optional[Union[List[float], float]],
     ) -> Tuple[
-        io.Config,
         Optional[List[fenics.Function]],
         _typing.KspOptions,
         _typing.KspOptions,
@@ -258,8 +252,6 @@ class OptimizationProblem(abc.ABC):
         """Initializes the optional input parameters.
 
         Args:
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`.
             ksp_options: A list of strings corresponding to command line options for
@@ -272,13 +264,6 @@ class OptimizationProblem(abc.ABC):
                 magnitude of `desired_weights[i]` for the initial iteration.
 
         """
-        if config is None:
-            parsed_config = io.Config()
-        else:
-            parsed_config = copy.deepcopy(config)
-
-        parsed_config.validate_config()
-
         if initial_guess is None:
             parsed_initial_guess = initial_guess
         else:
@@ -308,7 +293,6 @@ class OptimizationProblem(abc.ABC):
             self.use_scaling = True
 
         return (
-            parsed_config,
             parsed_initial_guess,
             parsed_ksp_options,
             parsed_adjoint_ksp_options,
@@ -457,75 +441,10 @@ class OptimizationProblem(abc.ABC):
         self.inject_post_callback(post_function)
 
     @abc.abstractmethod
-    def solve(
-        self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
-    ) -> None:
-        r"""Solves the optimization problem by the method specified in the config file.
-
-        Args:
-            algorithm: Selects the optimization algorithm. Valid choices are
-                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
-                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
-                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
-                for limited memory BFGS methods. This overwrites the value specified
-                in the config file. If this is ``None``, then the value in the
-                config file is used. Default is ``None``. In addition, for optimal
-                control problems, one can use ``'newton'`` for a truncated Newton
-                method.
-            rtol: The relative tolerance used for the termination criterion. Overwrites
-                the value specified in the config file. If this is ``None``, the value
-                from the config file is taken. Default is ``None``.
-            atol: The absolute tolerance used for the termination criterion. Overwrites
-                the value specified in the config file. If this is ``None``, the value
-                from the config file is taken. Default is ``None``.
-            max_iter: The maximum number of iterations the optimization algorithm can
-                carry out before it is terminated. Overwrites the value specified in the
-                config file. If this is ``None``, the value from the config file is
-                taken. Default is ``None``.
-
-        Notes:
-            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
-            call, the termination criterion changes to:
-
-            - a purely relative one (if only ``rtol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-
-            - a purely absolute one (if only ``atol`` is specified), i.e.,
-
-            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-
-            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
-
-            .. math::
-
-                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
-                || \nabla J(u_0) ||
-
-        """
-        self.algorithm = _utils.optimization_algorithm_configuration(
-            self.config, algorithm
-        )
-
-        if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
-        elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-        elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
-
-        if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
-
+    def solve(self) -> None:
+        r"""Solves the problem by the method specified in the configuration."""
+        self.config.validate_config()
         self._check_for_custom_forms()
-        self.output_manager = io.OutputManager(self, self.db)
 
     def shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.
@@ -573,15 +492,8 @@ class OptimizationProblem(abc.ABC):
         )
 
         if self.use_scaling and self.desired_weights is not None:
-            if not self.has_cashocs_remesh_flag:
+            if not self.db.parameter_db.is_remeshed:
                 self._compute_initial_function_values()
-
-            else:
-                with open(
-                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
-                ) as file:
-                    temp_dict: Dict = json.load(file)
-                self.initial_function_values = temp_dict["initial_function_values"]
 
             for i, functional in enumerate(self.cost_functional_list):
                 scaling_factor = np.abs(

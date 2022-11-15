@@ -19,40 +19,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
-
-if TYPE_CHECKING:
-    from cashocs import _typing
-    from cashocs._database import database
-    from cashocs._optimization import line_search as ls
 
 
 class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
     """A gradient descent method."""
 
-    def __init__(
-        self,
-        db: database.Database,
-        optimization_problem: _typing.OptimizationProblem,
-        line_search: ls.LineSearch,
-    ) -> None:
-        """Initializes self.
-
-        Args:
-            db: The database of the problem.
-            optimization_problem: The corresponding optimization problem.
-            line_search: The corresponding line search.
-
-        """
-        super().__init__(db, optimization_problem)
-        self.line_search = line_search
-
     def run(self) -> None:
         """Performs the optimization with the gradient descent method."""
-        self.initialize_solver()
-
         while True:
 
             self.compute_gradient()
@@ -61,8 +35,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
             if self.convergence_test():
                 break
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.compute_search_direction()
             self.line_search.perform(

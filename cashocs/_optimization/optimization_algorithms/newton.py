@@ -46,8 +46,8 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
             line_search: The corresponding line search.
 
         """
-        super().__init__(db, optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
+
         self.hessian_problem = optimization_problem.hessian_problem
 
         self.stepsize = 1.0
@@ -57,8 +57,6 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the truncated Newton method."""
-        self.initialize_solver()
-
         while True:
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
@@ -69,8 +67,7 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
             self.compute_search_direction()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info

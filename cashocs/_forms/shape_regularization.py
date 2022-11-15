@@ -24,8 +24,7 @@ and barycenter, and desired ones.
 
 from __future__ import annotations
 
-import json
-from typing import Dict, List, Tuple, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -70,21 +69,26 @@ class ShapeRegularization:
     """Regularization terms for shape optimization problems."""
 
     def __init__(
-        self, db: database.Database, form_handler: shape_form_handler.ShapeFormHandler
+        self,
+        db: database.Database,
+        form_handler: shape_form_handler.ShapeFormHandler,
+        temp_dict: Optional[Dict],
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             form_handler: The corresponding shape form handler object.
+            temp_dict: The temporary dict for remeshing.
 
         """
+        self.db = db
+        self.temp_dict = temp_dict
+
         self.test_vector_field = form_handler.test_vector_field
         self.config = db.config
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
         self.mesh = db.geometry_db.mesh
-        self.has_cashocs_remesh_flag = form_handler.has_cashocs_remesh_flag
-        self.temp_dir = form_handler.temp_dir
 
         self.dx = fenics.Measure("dx", self.mesh)
         self.ds = fenics.Measure("ds", self.mesh)
@@ -537,23 +541,16 @@ class ShapeRegularization:
     def _scale_weights(self) -> None:
         """Scales the terms of the regularization by the weights given in the config."""
         if self.use_relative_scaling and self.has_regularization:
-            if not self.has_cashocs_remesh_flag:
+            if self.temp_dict is None:
                 self._scale_volume_term()
                 self._scale_surface_term()
                 self._scale_curvature_term()
                 self._scale_barycenter_term()
-
             else:
-
-                with open(
-                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
-                ) as file:
-                    temp_dict: Dict = json.load(file)
-
-                self.mu_volume = temp_dict["Regularization"]["mu_volume"]
-                self.mu_surface = temp_dict["Regularization"]["mu_surface"]
-                self.mu_curvature = temp_dict["Regularization"]["mu_curvature"]
-                self.mu_barycenter = temp_dict["Regularization"]["mu_barycenter"]
+                self.mu_volume = self.temp_dict["Regularization"]["mu_volume"]
+                self.mu_surface = self.temp_dict["Regularization"]["mu_surface"]
+                self.mu_curvature = self.temp_dict["Regularization"]["mu_curvature"]
+                self.mu_barycenter = self.temp_dict["Regularization"]["mu_barycenter"]
 
     def _compute_barycenter_list(self) -> List[float]:
         """Computes the list of barycenters for the geometry.
