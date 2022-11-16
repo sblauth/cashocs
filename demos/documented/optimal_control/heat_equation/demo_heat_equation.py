@@ -82,7 +82,7 @@ for k in range(len(t_array)):
 
 
 ocp = cashocs.OptimalControlProblem(
-    e, bcs_list, J_list, states, controls, adjoints, config
+    e, bcs_list, J_list, states, controls, adjoints, config=config
 )
 ocp.solve()
 

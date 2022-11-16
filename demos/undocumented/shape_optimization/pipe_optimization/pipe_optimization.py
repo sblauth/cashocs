@@ -58,6 +58,6 @@ J = cashocs.IntegralFunctional(Constant(1 / Re) * inner(grad(u), grad(u)) * dx)
 
 # define the optimization problem and solve it
 optimization_problem = cashocs.ShapeOptimizationProblem(
-    e, bcs, J, up, vq, boundaries, config
+    e, bcs, J, up, vq, boundaries, config=config
 )
 optimization_problem.solve()

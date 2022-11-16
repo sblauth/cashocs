@@ -38,7 +38,7 @@ from cashocs import _pde_problems
 from cashocs import geometry
 from cashocs import io
 from cashocs._optimization import cost_functional
-from cashocs._optimization import line_search
+from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
@@ -79,7 +79,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: io.Config,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -109,7 +109,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
                 markers.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             shape_scalar_product: The bilinear form for computing the shape gradient
                 (or gradient deformation). This has to use
                 :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
@@ -172,7 +176,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
         boundaries: fenics.MeshFunction,
-        config: io.Config,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -202,7 +206,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
                 markers.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             shape_scalar_product: The bilinear form for computing the shape gradient
                 (or gradient deformation). This has to use
                 :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
@@ -257,9 +265,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self._remesh_init()
 
-        self.boundaries = boundaries
+        self.boundaries: fenics.MeshFunction = boundaries
 
-        self.shape_scalar_product = shape_scalar_product
+        self.shape_scalar_product: ufl.Form = shape_scalar_product
         if shape_scalar_product is None:
             self.deformation_space: Optional[fenics.FunctionSpace] = None
         else:
@@ -411,27 +419,26 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.form_handler.update_scalar_product()
         self.gradient_problem.has_solution = False
 
-    def solve(self) -> None:
-        r"""Solves the problem by the method specified in the configuration."""
-        super().solve()
-
+    def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
-            self.line_search = line_search.ArmijoLineSearch(self.db, self)
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
-            self.line_search = line_search.PolynomialLineSearch(self.db, self)
+            line_search = ls.PolynomialLineSearch(self.db, self)
+        else:
+            raise Exception("This code cannot be reached.")
 
         if self.algorithm.casefold() == "gradient_descent":
-            self.solver = optimization_algorithms.GradientDescentMethod(
-                self.db, self, self.line_search
+            solver: optimization_algorithms.OptimizationAlgorithm = (
+                optimization_algorithms.GradientDescentMethod(
+                    self.db, self, line_search
+                )
             )
         elif self.algorithm.casefold() == "lbfgs":
-            self.solver = optimization_algorithms.LBFGSMethod(
-                self.db, self, self.line_search
-            )
+            solver = optimization_algorithms.LBFGSMethod(self.db, self, line_search)
         elif self.algorithm.casefold() == "conjugate_gradient":
-            self.solver = optimization_algorithms.NonlinearCGMethod(
-                self.db, self, self.line_search
+            solver = optimization_algorithms.NonlinearCGMethod(
+                self.db, self, line_search
             )
         elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
@@ -442,6 +449,57 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "method. Needs to be one of 'gradient_descent' ('gd'), "
                 "'lbfgs' ('bfgs'), or 'conjugate_gradient' ('cg').",
             )
+        else:
+            raise Exception("This code cannot be reached.")
+
+        return solver
+
+    def solve(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
+                for limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``.
+            rtol: The relative tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+            atol: The absolute tolerance used for the termination criterion.
+                Overwrites the value specified in the config file. If this
+                is ``None``, the value from the config file is taken. Default
+                is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm
+                can carry out before it is terminated. Overwrites the value
+                specified in the config file. If this is ``None``, the value from
+                the config file is taken. Default is ``None``.
+
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
+            call, the termination criterion changes to:
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+            .. math::
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
+        """
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
+
+        self.solver = self._setup_solver()
 
         self.solver.run()
         self.solver.post_processing()

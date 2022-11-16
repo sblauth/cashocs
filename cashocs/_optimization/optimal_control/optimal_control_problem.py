@@ -31,7 +31,7 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import cost_functional
-from cashocs._optimization import line_search
+from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
@@ -69,7 +69,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
-        config: io.Config,
+        config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
@@ -105,7 +105,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             riesz_scalar_products: The scalar products of the control space. Can either
                 be None, a single UFL form, or a (ordered) list of UFL forms. If
                 ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
@@ -195,7 +199,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         )
 
         self.state_spaces = self.db.function_db.state_spaces
-        self.control_spaces = self.form_handler.control_spaces
+        self.control_spaces: List[
+            fenics.FunctionSpace
+        ] = self.form_handler.control_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
         self.projected_difference = _utils.create_function_list(self.control_spaces)
@@ -264,22 +270,17 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 for bc in self.control_bcs_list_inhomogeneous[i]:
                     bc.apply(self.controls[i].vector())
 
-    def solve(self) -> None:
-        r"""Solves the problem by the method specified in the configuration."""
-        super().solve()
-
-        self._setup_control_bcs()
-
+    def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
-            self.line_search = line_search.ArmijoLineSearch(self.db, self)
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
-            self.line_search = line_search.PolynomialLineSearch(self.db, self)
+            line_search = ls.PolynomialLineSearch(self.db, self)
+        else:
+            raise Exception("This code cannot be reached.")
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.hessian_form_handler.compute_newton_forms()
-
-        if self.algorithm.casefold() == "newton":
             self.hessian_problem = _pde_problems.HessianProblem(
                 self.db,
                 self.form_handler,
@@ -289,21 +290,19 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             )
 
         if self.algorithm.casefold() == "gradient_descent":
-            self.solver = optimization_algorithms.GradientDescentMethod(
-                self.db, self, self.line_search
+            solver: optimization_algorithms.OptimizationAlgorithm = (
+                optimization_algorithms.GradientDescentMethod(
+                    self.db, self, line_search
+                )
             )
         elif self.algorithm.casefold() == "lbfgs":
-            self.solver = optimization_algorithms.LBFGSMethod(
-                self.db, self, self.line_search
-            )
+            solver = optimization_algorithms.LBFGSMethod(self.db, self, line_search)
         elif self.algorithm.casefold() == "conjugate_gradient":
-            self.solver = optimization_algorithms.NonlinearCGMethod(
-                self.db, self, self.line_search
+            solver = optimization_algorithms.NonlinearCGMethod(
+                self.db, self, line_search
             )
         elif self.algorithm.casefold() == "newton":
-            self.solver = optimization_algorithms.NewtonMethod(
-                self.db, self, self.line_search
-            )
+            solver = optimization_algorithms.NewtonMethod(self.db, self, line_search)
         elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
                 "cashocs.OptimalControlProblem.solve",
@@ -313,7 +312,62 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 "'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' "
                 "('cg'), or 'newton'.",
             )
+        else:
+            raise Exception("This code cannot be reached.")
 
+        return solver
+
+    def solve(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Updates / overwrites states, controls, and adjoints according
+        to the optimization method, i.e., the user-input :py:func:`fenics.Function`
+        objects.
+
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, ``'lbfgs'`` or ``'bfgs'`` for
+                limited memory BFGS methods, and ``'newton'`` for a truncated Newton
+                method. This overwrites the value specified in the config file. If this
+                is ``None``, then the value in the config file is used. Default is
+                ``None``.
+            rtol: The relative tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            atol: The absolute tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm can
+                carry out before it is terminated. Overwrites the value specified in the
+                config file. If this is ``None``, the value from the config file is
+                taken. Default is ``None``.
+
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
+            call, the termination criterion changes to:
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+            .. math::
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
+        """
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
+
+        self._setup_control_bcs()
+
+        self.solver = self._setup_solver()
         self.solver.run()
         self.solver.post_processing()
 

@@ -41,7 +41,7 @@ J_init_form = (
     Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 )
 J_init = cashocs.IntegralFunctional(J_init_form)
-ocp_init = cashocs.OptimalControlProblem(e, bcs, J_init, y, u, p, config)
+ocp_init = cashocs.OptimalControlProblem(e, bcs, J_init, y, u, p, config=config)
 ocp_init.solve()
 
 
@@ -55,7 +55,7 @@ for gamma in gammas:
     )
     J = cashocs.IntegralFunctional(J_form)
 
-    ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+    ocp_gamma = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config=config)
     ocp_gamma.solve()
 
 y_max = np.max(y.vector()[:])

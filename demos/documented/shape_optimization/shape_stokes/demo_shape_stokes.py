@@ -46,7 +46,7 @@ bcs = [bc_in] + bc_no_slip
 
 J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx)
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config)
+sop = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config=config)
 sop.solve()
 
 

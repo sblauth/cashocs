@@ -46,7 +46,14 @@ shape_scalar_product = (
 )
 
 sop = cashocs.ShapeOptimizationProblem(
-    e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
+    e,
+    bcs,
+    J,
+    u,
+    p,
+    boundaries,
+    config=config,
+    shape_scalar_product=shape_scalar_product,
 )
 sop.solve()
 

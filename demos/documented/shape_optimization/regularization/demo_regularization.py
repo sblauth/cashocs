@@ -44,7 +44,7 @@ J = cashocs.IntegralFunctional(
     u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
 )
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=config)
 sop.solve()
 
 

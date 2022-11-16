@@ -112,14 +112,10 @@ def test_control_gradient():
 
 def test_control_gd():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "46")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=46)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -127,14 +123,10 @@ def test_control_cg_fr():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "FR")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "21")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=21)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -142,14 +134,10 @@ def test_control_cg_pr():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "PR")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "26")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=26)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -157,14 +145,10 @@ def test_control_cg_hs():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "HS")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "28")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=28)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -172,14 +156,10 @@ def test_control_cg_dy():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "DY")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "10")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=10)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -187,14 +167,10 @@ def test_control_cg_hz():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
 
     config.set("AlgoCG", "cg_method", "HZ")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "28")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=28)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -204,14 +180,10 @@ def test_control_cg_restart_periodic():
     config.set("AlgoCG", "cg_method", "DY")
     config.set("AlgoCG", "cg_periodic_restart", "True")
     config.set("AlgoCG", "cg_periodic_its", "5")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "10")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=10)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -221,75 +193,52 @@ def test_control_cg_restart_relative():
     config.set("AlgoCG", "cg_method", "DY")
     config.set("AlgoCG", "cg_relative_restart", "True")
     config.set("AlgoCG", "cg_restart_tol", "1.0")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "24")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=24)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_bfgs():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "7")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_bfgs_restarted():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "20")
     config.set("AlgoLBFGS", "bfgs_periodic_restart", "2")
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
 
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=20)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_newton_cg():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-
-    config.set("OptimizationRoutine", "algorithm", "newton")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "2")
     config.set("AlgoTNM", "inner_newton", "cg")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-6
 
 
 def test_control_newton_cr():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "newton")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "2")
     config.set("AlgoTNM", "inner_newton", "cr")
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-6
 
 
@@ -305,7 +254,7 @@ def test_control_gd_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=22)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -313,10 +262,6 @@ def test_control_gd_cc():
 
 def test_control_cg_fr_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "48")
     config.set("AlgoCG", "cg_method", "FR")
 
     u.vector().vec().set(0.0)
@@ -325,7 +270,7 @@ def test_control_cg_fr_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=48)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -333,10 +278,6 @@ def test_control_cg_fr_cc():
 
 def test_control_cg_pr_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "25")
     config.set("AlgoCG", "cg_method", "PR")
 
     u.vector().vec().set(0.0)
@@ -344,7 +285,7 @@ def test_control_cg_pr_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=25)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -352,10 +293,6 @@ def test_control_cg_pr_cc():
 
 def test_control_cg_hs_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "30")
     config.set("AlgoCG", "cg_method", "HS")
 
     u.vector().vec().set(0.0)
@@ -363,7 +300,7 @@ def test_control_cg_hs_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=30)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -371,10 +308,6 @@ def test_control_cg_hs_cc():
 
 def test_control_cg_dy_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "9")
     config.set("AlgoCG", "cg_method", "DY")
 
     u.vector().vec().set(0.0)
@@ -382,7 +315,7 @@ def test_control_cg_dy_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=9)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -390,10 +323,6 @@ def test_control_cg_dy_cc():
 
 def test_control_cg_hz_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "ncg")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "37")
     config.set("AlgoCG", "cg_method", "HZ")
 
     u.vector().vec().set(0.0)
@@ -401,7 +330,7 @@ def test_control_cg_hz_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=37)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -409,17 +338,12 @@ def test_control_cg_hz_cc():
 
 def test_control_lbfgs_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "11")
-
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=11)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -427,10 +351,6 @@ def test_control_lbfgs_cc():
 
 def test_control_newton_cg_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "newton")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "8")
     config.set("AlgoTNM", "inner_newton", "cg")
 
     u.vector().vec().set(0.0)
@@ -438,7 +358,7 @@ def test_control_newton_cg_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=8)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -446,10 +366,6 @@ def test_control_newton_cg_cc():
 
 def test_control_newton_cr_cc():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "newton")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "9")
     config.set("AlgoTNM", "inner_newton", "cr")
 
     u.vector().vec().set(0.0)
@@ -457,7 +373,7 @@ def test_control_newton_cr_cc():
     ocp_cc = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_constraints=cc
     )
-    ocp_cc.solve()
+    ocp_cc.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=9)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
     assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
     assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
@@ -502,7 +418,7 @@ def test_scalar_norm_optimization():
     config.set("LineSearch", "initial_stepsize", "4e3")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    test_ocp.solve()
+    test_ocp.solve(algorithm="bfgs", rtol=1e-3)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
 
@@ -558,7 +474,7 @@ def test_scalar_multiple_norms():
     config.set("LineSearch", "initial_stepsize", "1e-4")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    test_ocp.solve()
+    test_ocp.solve(algorithm="bfgs", rtol=1e-6, max_iter=500)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goals[0], 2) < 1e-2
     assert 0.5 * pow(assemble(norm_u) - tracking_goals[1], 2) < 1e-4
@@ -608,7 +524,7 @@ def test_different_spaces():
     )
 
     ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="bfgs")
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
     parameters["ghost_mode"] = "none"
@@ -828,17 +744,13 @@ def test_iterative_gradient():
 
 def test_small_stepsize1():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "2")
     config.set("LineSearch", "initial_stepsize", "1e-8")
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
     with pytest.raises(NotConvergedError) as e_info:
-        ocp.solve()
+        ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=2)
     assert "Armijo rule failed." in str(e_info.value)
 
 
@@ -846,10 +758,6 @@ def test_control_bcs():
     u.vector().vec().set(0.0)
     u.vector().apply("")
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "9")
 
     value = rng.rand()
     control_bcs_list = cashocs.create_dirichlet_bcs(
@@ -858,7 +766,7 @@ def test_control_bcs():
     ocp = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config, control_bcs_list=control_bcs_list
     )
-    ocp.solve()
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=9)
     assert np.sqrt(assemble(pow(u - value, 2) * ds)) < 1e-15
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -867,22 +775,14 @@ def test_safeguard_gd():
     u.vector().vec().set(0.0)
     u.vector().apply("")
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "50")
     config.set("LineSearch", "safeguard_stepsize", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=50)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_polynomial_stepsize():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "42")
     config.set("LineSearch", "method", "polynomial")
     u.vector().vec().set(0.0)
     u.vector().apply("")
@@ -890,18 +790,14 @@ def test_polynomial_stepsize():
         Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
     )
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=42)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
     config.set("LineSearch", "method", "polynomial")
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "44")
     config.set("LineSearch", "polynomial_model", "quadratic")
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=44)
     assert ocp.solver.relative_norm <= ocp.solver.rtol

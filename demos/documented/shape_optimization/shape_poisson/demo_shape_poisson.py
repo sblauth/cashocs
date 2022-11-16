@@ -41,7 +41,7 @@ bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
 J = cashocs.IntegralFunctional(u * dx)
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=config)
 sop.solve()
 
 

@@ -44,7 +44,7 @@ J_list = [J_1, J_2]
 desired_weights = [1, 2]
 
 sop = cashocs.ShapeOptimizationProblem(
-    e, bcs, J_list, u, p, boundaries, config, desired_weights=desired_weights
+    e, bcs, J_list, u, p, boundaries, config=config, desired_weights=desired_weights
 )
 sop.solve()
 

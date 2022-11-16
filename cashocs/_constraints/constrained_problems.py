@@ -54,7 +54,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         states: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraint_list: Union[List[_typing.Constraint], _typing.Constraint],
-        config: io.Config,
+        config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
@@ -79,8 +79,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.load_config`.
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
@@ -97,8 +101,13 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.bcs_list = bcs_list
         self.states = states
         self.adjoints = adjoints
-        self.config = config
+
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
         self.config.validate_config()
+
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
@@ -261,7 +270,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         controls: Union[fenics.Function, List[fenics.Function]],
         adjoints: Union[fenics.Function, List[fenics.Function]],
         constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
-        config: io.Config,
+        config: Optional[io.Config] = None,
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
@@ -297,8 +306,12 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             riesz_scalar_products: The scalar products of the control space. Can either
                 be None, a single UFL form, or a (ordered) list of UFL forms. If
                 ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
@@ -358,14 +371,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
-        if inner_atol is not None:
-            atol = inner_atol
-        else:
-            atol = self.initial_norm * tol / 10.0
-
-        self.config.set("OptimizationRoutine", "rtol", f"{self.rtol}")
-        self.config.set("OptimizationRoutine", "atol", f"{atol}")
-
         optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -389,7 +394,12 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        optimal_control_problem.solve()
+        if inner_atol is not None:
+            atol = inner_atol
+        else:
+            atol = self.initial_norm * tol / 10.0
+
+        optimal_control_problem.solve(rtol=self.rtol, atol=atol)
         if self.solver.iterations == 1:
             self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
@@ -430,7 +440,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         adjoints: Union[fenics.Function, List[fenics.Function]],
         boundaries: fenics.MeshFunction,
         constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
-        config: io.Config,
+        config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
         ksp_options: Optional[
@@ -458,8 +468,12 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 markers.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             shape_scalar_product: The bilinear form for computing the shape gradient
                 (or gradient deformation). This has to use
                 :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
@@ -514,14 +528,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
-        if inner_atol is not None:
-            atol = inner_atol
-        else:
-            atol = self.initial_norm * tol / 10.0
-
-        self.config.set("OptimizationRoutine", "rtol", f"{self.rtol}")
-        self.config.set("OptimizationRoutine", "atol", f"{atol}")
-
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -542,7 +548,12 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.solver.inner_cost_functional_shift
         )
 
-        shape_optimization_problem.solve()
+        if inner_atol is not None:
+            atol = inner_atol
+        else:
+            atol = self.initial_norm * tol / 10.0
+
+        shape_optimization_problem.solve(rtol=self.rtol, atol=atol)
         if self.solver.iterations == 1:
             self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 

@@ -133,7 +133,7 @@ J3 = cashocs.IntegralFunctional(Constant(0.5) * pow(u3 - measurements[2], 2) * d
 
 J = [J1, J2, J3]
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=config)
 sop.inject_pre_callback(pre_callback)
 sop.solve()
 

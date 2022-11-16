@@ -71,23 +71,15 @@ def test_not_converged_error():
     with pytest.raises(NotConvergedError) as e_info:
         u.vector().vec().set(0.0)
         u.vector().apply("")
-        config.set("OptimizationRoutine", "algorithm", "gd")
-        config.set("OptimizationRoutine", "rtol", "1e-10")
-        config.set("OptimizationRoutine", "atol", "0.0")
-        config.set("OptimizationRoutine", "maximum_iterations", "1")
-        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-        ocp.solve()
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+        ocp.solve(algorithm="gd", rtol=1e-10, atol=0.0, max_iter=1)
     MPI.barrier(MPI.comm_world)
     assert "failed to converge" in str(e_info.value)
 
     with pytest.raises(CashocsException):
         config = cashocs.load_config(dir_path + "/config_ocp.ini")
-        config.set("OptimizationRoutine", "algorithm", "gd")
-        config.set("OptimizationRoutine", "rtol", "1e-10")
-        config.set("OptimizationRoutine", "atol", "0.0")
-        config.set("OptimizationRoutine", "maximum_iterations", "0")
-        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-        ocp.solve()
+        ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+        ocp.solve(algorithm="gd", rtol=1e-10, atol=0.0, max_iter=0)
     MPI.barrier(MPI.comm_world)
 
 

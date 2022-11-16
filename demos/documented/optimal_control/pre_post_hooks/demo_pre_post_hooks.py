@@ -91,7 +91,7 @@ def post_callback():
     print("Performing an action after computing the gradient.")
 
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
+ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config=config)
 ocp.inject_pre_callback(pre_callback)
 ocp.inject_post_callback(post_callback)
 ocp.solve()

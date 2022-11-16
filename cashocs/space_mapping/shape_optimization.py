@@ -108,7 +108,12 @@ class CoarseModel:
             states: The state variables for the coarse problem
             adjoints: The adjoint variables for the coarse problem
             boundaries: A fenics MeshFunction which marks the boundaries.
-            config: The configuration for the problem
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             shape_scalar_product: The scalar product for the shape optimization problem
             initial_guess: The initial guess for solving a nonlinear state equation
             ksp_options: The list of PETSc options for the state equations
@@ -181,7 +186,12 @@ class ParameterExtraction:
             coarse_model: The coarse model optimization problem
             cost_functional_form: The cost functional for the parameter extraction
             states: The state variables for the parameter extraction
-            config: The configuration for the parameter extraction
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             desired_weights: The list of desired weights for the parameter extraction
             mode: The mode used for the initial guess of the parameter extraction. If
                 this is coarse_optimum, the default, then the coarse model optimum is

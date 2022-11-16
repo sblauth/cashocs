@@ -60,8 +60,6 @@ def test_time_suffix():
 
 def test_save_xdmf_files_ocp():
     config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "bfgs")
-    config.set("OptimizationRoutine", "rtol", "1e-1")
     config.set("Output", "save_state", "True")
     config.set("Output", "save_results", "True")
     config.set("Output", "save_txt", "True")
@@ -71,7 +69,7 @@ def test_save_xdmf_files_ocp():
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
-    ocp.solve()
+    ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(dir_path + "/out").is_dir()
     assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
@@ -127,12 +125,11 @@ def test_save_xdmf_files_mixed():
     )
     J = cashocs.IntegralFunctional(Constant(0.5) * inner(u - u_d, u - u_d) * dx)
 
-    config.set("OptimizationRoutine", "rtol", "1e-1")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, up, c, vq, config)
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
-    ocp.solve()
+    ocp.solve(rtol=1e-1)
 
     MPI.barrier(MPI.comm_world)
 

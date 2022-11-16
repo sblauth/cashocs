@@ -65,7 +65,7 @@ J = cashocs.IntegralFunctional(
     + Constant(0.5 * alpha) * inner(c, c) * dx
 )
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config)
+ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config=config)
 ocp.solve()
 
 

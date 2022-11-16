@@ -41,7 +41,7 @@ J = cashocs.IntegralFunctional(
     Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 )
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config=config)
 
 dJ = Constant(alpha) * u * TestFunction(V) * dx + p * TestFunction(V) * dx
 

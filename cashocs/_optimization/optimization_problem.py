@@ -85,7 +85,7 @@ class OptimizationProblem(abc.ABC):
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
-        config: io.Config,
+        config: Optional[io.Config] = None,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
         ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
@@ -110,7 +110,11 @@ class OptimizationProblem(abc.ABC):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.load_config`.
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
@@ -154,7 +158,10 @@ class OptimizationProblem(abc.ABC):
 
         self.use_scaling = False
 
-        self.config = copy.deepcopy(config)
+        if config is None:
+            self.config = io.Config()
+        else:
+            self.config = copy.deepcopy(config)
         self.config.validate_config()
 
         (
@@ -441,8 +448,66 @@ class OptimizationProblem(abc.ABC):
         self.inject_post_callback(post_function)
 
     @abc.abstractmethod
-    def solve(self) -> None:
-        r"""Solves the problem by the method specified in the configuration."""
+    def solve(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
+                for limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``. In addition, for optimal
+                control problems, one can use ``'newton'`` for a truncated Newton
+                method.
+            rtol: The relative tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            atol: The absolute tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm can
+                carry out before it is terminated. Overwrites the value specified in the
+                config file. If this is ``None``, the value from the config file is
+                taken. Default is ``None``.
+
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
+            call, the termination criterion changes to:
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+            .. math::
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
+        """
+        self.algorithm = _utils.optimization_algorithm_configuration(
+            self.config, algorithm
+        )
+
+        if (rtol is not None) and (atol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(0.0))
+        elif (atol is not None) and (rtol is None):
+            self.config.set("OptimizationRoutine", "rtol", str(0.0))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+        elif (atol is not None) and (rtol is not None):
+            self.config.set("OptimizationRoutine", "rtol", str(rtol))
+            self.config.set("OptimizationRoutine", "atol", str(atol))
+
+        if max_iter is not None:
+            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+
         self.config.validate_config()
         self._check_for_custom_forms()
 

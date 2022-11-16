@@ -59,9 +59,6 @@ def test_2_laplacian():
         + dot(TrialFunction(space), TestFunction(space)) * dx
     )
 
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "maximum_iterations", "22")
     config.set("ShapeGradient", "mu_def", "1.0")
     config.set("ShapeGradient", "mu_fix", "1.0")
     config.set("ShapeGradient", "damping_factor", "1.0")
@@ -70,7 +67,7 @@ def test_2_laplacian():
     config.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
 
     sop1 = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop1.solve()
+    sop1.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
     config.set("ShapeGradient", "use_p_laplacian", "True")
     mesh.coordinates()[:, :] = initial_coordinates
@@ -78,7 +75,7 @@ def test_2_laplacian():
     sop2 = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, boundaries, config, shape_scalar_product=shape_scalar_product
     )
-    sop2.solve()
+    sop2.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
     assert (
         np.abs(sop1.solver.objective_value - sop2.solver.objective_value)
@@ -97,9 +94,6 @@ def test_p_laplacian():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-1")
-    config.set("OptimizationRoutine", "maximum_iterations", "6")
     config.set("ShapeGradient", "mu_def", "1.0")
     config.set("ShapeGradient", "mu_fix", "1.0")
     config.set("ShapeGradient", "damping_factor", "1.0")
@@ -108,7 +102,7 @@ def test_p_laplacian():
     config.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve()
+    sop.solve(algorithm="gd", rtol=1e-1, max_iter=6)
 
     assert sop.solver.relative_norm <= 1e-1
 

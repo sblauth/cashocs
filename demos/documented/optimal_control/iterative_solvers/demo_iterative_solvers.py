@@ -64,7 +64,7 @@ ocp = cashocs.OptimalControlProblem(
     y,
     u,
     p,
-    config,
+    config=config,
     ksp_options=ksp_options,
     adjoint_ksp_options=adjoint_ksp_options,
 )

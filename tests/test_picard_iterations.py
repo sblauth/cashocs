@@ -174,10 +174,6 @@ def test_picard_state_solver():
 
 def test_picard_solver_for_optimization():
     config = cashocs.load_config(dir_path + "/config_picard.ini")
-    config.set("OptimizationRoutine", "algorithm", "newton")
-    config.set("OptimizationRoutine", "rtol", "1e-6")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "2")
 
     u_picard = Function(V)
     v_picard = Function(V)
@@ -187,7 +183,7 @@ def test_picard_solver_for_optimization():
     v.vector().vec().set(0.0)
     v.vector().apply("")
     ocp = cashocs.OptimalControlProblem(e, bcs, J, states, controls, adjoints, config)
-    ocp.solve()
+    ocp.solve(algorithm="newton", rtol=1e-6, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-6
 
     u_picard.vector()[:] = u.vector()[:]
@@ -200,7 +196,7 @@ def test_picard_solver_for_optimization():
     ocp_mixed = cashocs.OptimalControlProblem(
         F, bcs_m, J_m, state_m, controls, adjoint_m, config
     )
-    ocp_mixed.solve()
+    ocp_mixed.solve(algorithm="newton", rtol=1e-6, atol=0.0, max_iter=2)
     assert ocp_mixed.solver.relative_norm < 1e-6
 
     assert np.allclose(u.vector()[:], u_picard.vector()[:])
@@ -232,5 +228,5 @@ def test_picard_nonlinear():
     assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
     assert ocp_nonlinear.gradient_test(rng=rng) > 1.9
 
-    ocp_nonlinear.solve()
+    ocp_nonlinear.solve(algorithm="newton", rtol=1e-6, atol=0.0, max_iter=10)
     assert ocp_nonlinear.solver.relative_norm < 1e-6
