@@ -476,7 +476,7 @@ class XDMFFileManager(IOManager):
     def _initialize_controls_xdmf(self) -> None:
         """Initializes the list of xdmf files for the control variables."""
         if self.save_state and self.db.parameter_db.problem_type == "control":
-            for i in range(self.form_handler.control_dim):
+            for i in range(self.db.parameter_db.control_dim):
                 self.control_xdmf_list.append(
                     self._generate_xdmf_file_strings(
                         self.form_handler.control_spaces[i], f"control_{i:d}"
@@ -496,7 +496,7 @@ class XDMFFileManager(IOManager):
     def _initialize_gradients_xdmf(self) -> None:
         """Initialize the list of xdmf files for the gradients."""
         if self.save_gradient:
-            for i in range(self.form_handler.control_dim):
+            for i in range(self.db.parameter_db.control_dim):
                 if self.db.parameter_db.problem_type == "control":
                     gradient_str = f"gradient_{i:d}"
                 else:
@@ -573,7 +573,7 @@ class XDMFFileManager(IOManager):
         """
         self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         if self.save_state and self.db.parameter_db.problem_type == "control":
-            for i in range(self.form_handler.control_dim):
+            for i in range(self.db.parameter_db.control_dim):
                 self._write_xdmf_step(
                     cast(str, self.control_xdmf_list[i]),
                     self.form_handler.controls[i],
@@ -614,7 +614,7 @@ class XDMFFileManager(IOManager):
 
         """
         if self.save_gradient:
-            for i in range(self.form_handler.control_dim):
+            for i in range(self.db.parameter_db.control_dim):
                 self._write_xdmf_step(
                     cast(str, self.gradient_xdmf_list[i]),
                     self.form_handler.gradient[i],

@@ -116,7 +116,6 @@ class HessianProblem:
         ]
 
         self.state_dim = self.db.parameter_db.state_dim
-        self.control_dim = self.form_handler.control_dim
 
         self.controls = self.form_handler.controls
 
@@ -139,7 +138,7 @@ class HessianProblem:
             ["ksp_max_it", 100],
         ]
         self.riesz_ksp_options: _typing.KspOptions = []
-        for _ in range(self.control_dim):
+        for _ in range(len(self.controls)):
             self.riesz_ksp_options.append(option)
 
     def hessian_application(
@@ -158,7 +157,7 @@ class HessianProblem:
             out: A list of functions into which the result is saved.
 
         """
-        for i in range(self.control_dim):
+        for i in range(len(self.test_directions)):
             self.test_directions[i].vector().vec().aypx(0.0, h[i].vector().vec())
             self.test_directions[i].vector().apply("")
 
@@ -228,7 +227,7 @@ class HessianProblem:
                 inner_is_linear=True,
             )
 
-        for i in range(self.control_dim):
+        for i in range(len(out)):
             b = fenics.as_backend_type(
                 fenics.assemble(self.form_handler.hessian_form_handler.hessian_rhs[i])
             ).vec()
@@ -255,7 +254,7 @@ class HessianProblem:
             out: The output of the application of the (linear) operator.
 
         """
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().set(0.0)
             out[j].vector().apply("")
 
@@ -266,7 +265,7 @@ class HessianProblem:
         )
         self.box_constraints.restrictor.restrict_to_active_set(h, self.active_part)
 
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().aypx(
                 0.0,
                 self.active_part[j].vector().vec()
@@ -284,9 +283,9 @@ class HessianProblem:
         self.gradient_problem.solve()
         self.box_constraints.restrictor.compute_active_sets()
 
-        for j in range(self.control_dim):
-            self.delta_control[j].vector().vec().set(0.0)
-            self.delta_control[j].vector().apply("")
+        for fun in self.delta_control:
+            fun.vector().vec().set(0.0)
+            fun.vector().apply("")
 
         if self.inner_newton.casefold() == "cg":
             self.cg()
@@ -297,7 +296,7 @@ class HessianProblem:
 
     def cg(self) -> None:
         """Solves the (truncated) Newton step with a CG method."""
-        for j in range(self.control_dim):
+        for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
@@ -319,7 +318,7 @@ class HessianProblem:
             sp_val = sp_val1 + sp_val2
             alpha = rsold / sp_val
 
-            for j in range(self.control_dim):
+            for j in range(len(self.delta_control)):
                 self.delta_control[j].vector().vec().axpy(
                     alpha, self.p[j].vector().vec()
                 )
@@ -335,7 +334,7 @@ class HessianProblem:
 
             beta = rsnew / rsold
 
-            for j in range(self.control_dim):
+            for j in range(len(self.p)):
                 self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
                 self.p[j].vector().apply("")
 
@@ -343,7 +342,7 @@ class HessianProblem:
 
     def cr(self) -> None:
         """Solves the (truncated) Newton step with a CR method."""
-        for j in range(self.control_dim):
+        for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
             self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
@@ -353,7 +352,7 @@ class HessianProblem:
 
         self.reduced_hessian_application(self.residual, self.s)
 
-        for j in range(self.control_dim):
+        for j in range(len(self.q)):
             self.q[j].vector().vec().aypx(0.0, self.s[j].vector().vec())
             self.q[j].vector().apply("")
 
@@ -380,7 +379,7 @@ class HessianProblem:
 
             alpha = rar / denominator
 
-            for j in range(self.control_dim):
+            for j in range(len(self.delta_control)):
                 self.delta_control[j].vector().vec().axpy(
                     alpha, self.p[j].vector().vec()
                 )
@@ -414,7 +413,7 @@ class HessianProblem:
             rar_new = sp_val1 + sp_val2
             beta = rar_new / rar
 
-            for j in range(self.control_dim):
+            for j in range(len(self.p)):
                 self.p[j].vector().vec().aypx(beta, self.residual[j].vector().vec())
                 self.p[j].vector().apply("")
                 self.q[j].vector().vec().aypx(beta, self.s[j].vector().vec())

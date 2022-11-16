@@ -81,7 +81,6 @@ class FormHandler(abc.ABC):
         self.db = db
 
         self.config: io.Config = self.db.config
-        self.control_dim: int = 1
         self.cost_functional_shift: float = 0.0
         self.lagrangian: cf.Lagrangian = self.db.form_db.lagrangian
 

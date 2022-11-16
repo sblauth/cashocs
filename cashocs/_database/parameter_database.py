@@ -65,6 +65,8 @@ class ParameterDatabase:
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
         self.is_remeshed = False
 
+        self.control_dim: int = 1
+
     @property
     def problem_type(self) -> str:
         """Returns the problem type."""

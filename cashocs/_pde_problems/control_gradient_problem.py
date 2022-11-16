@@ -87,12 +87,10 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             ]
 
         self.riesz_ksp_options = []
-        for _ in range(self.form_handler.control_dim):
+        for _ in range(len(self.gradient)):
             self.riesz_ksp_options.append(option)
 
-        self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.form_handler.control_dim)
-        ]
+        self.b_tensors = [fenics.PETScVector() for _ in range(len(self.gradient))]
 
     def solve(self) -> List[fenics.Function]:
         """Solves the Riesz projection problem to obtain the gradient.
@@ -105,7 +103,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
-            for i in range(self.form_handler.control_dim):
+            for i in range(len(self.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 _utils.solve_linear_problem(
                     A=self.form_handler.riesz_projection_matrices[i],

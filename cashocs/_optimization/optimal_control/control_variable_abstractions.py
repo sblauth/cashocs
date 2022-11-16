@@ -85,7 +85,7 @@ class ControlVariableAbstractions(
             The decrease measure for the Armijo test.
 
         """
-        for j in range(self.form_handler.control_dim):
+        for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
                 self.controls[j].vector().vec() - self.control_temp[j].vector().vec(),
@@ -159,7 +159,7 @@ class ControlVariableAbstractions(
             The square of the stationary measure
 
         """
-        for j in range(self.form_handler.control_dim):
+        for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0, self.controls[j].vector().vec() - self.gradient[j].vector().vec()
             )
@@ -169,7 +169,7 @@ class ControlVariableAbstractions(
             self.projected_difference
         )
 
-        for j in range(self.form_handler.control_dim):
+        for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
                 self.controls[j].vector().vec()
@@ -214,7 +214,7 @@ class ControlVariableAbstractions(
             search_direction: The current search direction (will be overwritten).
 
         """
-        for j in range(self.form_handler.control_dim):
+        for j in range(len(self.controls)):
             idx = np.asarray(
                 np.logical_or(
                     np.logical_and(

@@ -358,9 +358,6 @@ class SpaceMapping:
 
         self.z_star = self.coarse_model.optimal_control_problem.controls
         self.norm_z_star = 1.0
-        self.control_dim = (
-            self.coarse_model.optimal_control_problem.form_handler.control_dim
-        )
 
         self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)
 
@@ -412,7 +409,7 @@ class SpaceMapping:
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
-        for i in range(self.control_dim):
+        for i in range(len(self.x)):
             self.x[i].vector().vec().aypx(
                 0.0,
                 self.scaling_factor
@@ -449,7 +446,7 @@ class SpaceMapping:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         while not self.converged:
-            for i in range(self.control_dim):
+            for i in range(len(self.dir_prev)):
                 self.dir_prev[i].vector().vec().aypx(
                     0.0,
                     -(self.p_prev[i].vector().vec() - self.z_star[i].vector().vec()),
@@ -463,7 +460,7 @@ class SpaceMapping:
 
             self._compute_search_direction(self.temp, self.h)
 
-            for i in range(self.control_dim):
+            for i in range(len(self.p_prev)):
                 self.p_prev[i].vector().vec().aypx(
                     0.0, self.p_current[i].vector().vec()
                 )
@@ -510,7 +507,7 @@ class SpaceMapping:
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
         if self.method == "broyden":
-            for i in range(self.control_dim):
+            for i in range(len(self.temp)):
                 self.temp[i].vector().vec().aypx(
                     0.0,
                     self.p_current[i].vector().vec() - self.p_prev[i].vector().vec(),
@@ -521,7 +518,7 @@ class SpaceMapping:
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
-                    for i in range(self.control_dim):
+                    for i in range(len(self.u)):
                         self.u[i].vector().vec().aypx(
                             0.0,
                             (self.h[i].vector().vec() - self.v[i].vector().vec())
@@ -534,7 +531,7 @@ class SpaceMapping:
 
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
-                    for i in range(self.control_dim):
+                    for i in range(len(self.u)):
                         self.u[i].vector().vec().aypx(
                             0.0,
                             (self.h[i].vector().vec() - self.v[i].vector().vec())
@@ -553,7 +550,7 @@ class SpaceMapping:
         """Updates the approximation of the mapping function with the BFGS method."""
         if self.method == "bfgs":
             if self.memory_size > 0:
-                for i in range(self.control_dim):
+                for i in range(len(self.temp)):
                     self.temp[i].vector().vec().aypx(
                         0.0,
                         self.p_current[i].vector().vec()
@@ -583,7 +580,7 @@ class SpaceMapping:
         """Updates the iterates either directly or via a line search."""
         self.stepsize = 1.0
         if not self.use_backtracking_line_search:
-            for i in range(self.control_dim):
+            for i in range(len(self.x)):
                 self.x[i].vector().vec().axpy(
                     self.scaling_factor,
                     self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
@@ -593,19 +590,19 @@ class SpaceMapping:
             self.fine_model.solve_and_evaluate()
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 initial_guesses=[
-                    self.ips_to_coarse[i].interpolate(self.x[i])
-                    for i in range(self.control_dim)
+                    ips.interpolate(self.x[i])
+                    for i, ips in enumerate(self.ips_to_coarse)
                 ]
             )
             self.eps = self._compute_eps()
 
         else:
-            for i in range(self.control_dim):
+            for i in range(len(self.x_save)):
                 self.x_save[i].vector().vec().aypx(0.0, self.x[i].vector().vec())
                 self.x_save[i].vector().apply("")
 
             while True:
-                for i in range(self.control_dim):
+                for i in range(len(self.x)):
                     self.x[i].vector().vec().aypx(0.0, self.x_save[i].vector().vec())
                     self.x[i].vector().apply("")
                     self.x[i].vector().vec().axpy(
@@ -616,8 +613,8 @@ class SpaceMapping:
                 self.fine_model.solve_and_evaluate()
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     initial_guesses=[
-                        self.ips_to_coarse[i].interpolate(self.x[i])
-                        for i in range(self.control_dim)
+                        ips.interpolate(self.x[i])
+                        for i, ips in enumerate(self.ips_to_coarse)
                     ]
                 )
                 eps_new = self._compute_eps()
@@ -686,7 +683,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for i in range(self.control_dim):
+        for i in range(len(out)):
             out[i].vector().vec().aypx(0.0, q[i].vector().vec())
             out[i].vector().apply("")
 
@@ -700,7 +697,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().aypx(0.0, q[j].vector().vec())
             out[j].vector().apply("")
 
@@ -716,7 +713,7 @@ class SpaceMapping:
                     "broyden_type has to be either 'good' or 'bad'.",
                 )
 
-            for j in range(self.control_dim):
+            for j in range(len(out)):
                 out[j].vector().vec().axpy(alpha, self.history_s[i][j].vector().vec())
                 out[j].vector().apply("")
 
@@ -730,7 +727,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().aypx(0.0, q[j].vector().vec())
             out[j].vector().apply("")
 
@@ -742,7 +739,7 @@ class SpaceMapping:
                     self.history_s[i], out
                 )
                 self.history_alpha.append(alpha)
-                for j in range(self.control_dim):
+                for j in range(len(out)):
                     out[j].vector().vec().axpy(
                         -alpha, self.history_y[i][j].vector().vec()
                     )
@@ -751,7 +748,7 @@ class SpaceMapping:
             bfgs_factor = self._scalar_product(
                 self.history_y[0], self.history_s[0]
             ) / self._scalar_product(self.history_y[0], self.history_y[0])
-            for j in range(self.control_dim):
+            for j in range(len(out)):
                 out[j].vector().vec().scale(bfgs_factor)
                 out[j].vector().apply("")
 
@@ -759,7 +756,7 @@ class SpaceMapping:
                 beta = self.history_rho[-1 - i] * self._scalar_product(
                     self.history_y[-1 - i], out
                 )
-                for j in range(self.control_dim):
+                for j in range(len(out)):
                     out[j].vector().vec().axpy(
                         self.history_alpha[-1 - i] - beta,
                         self.history_s[-1 - i][j].vector().vec(),
@@ -777,7 +774,7 @@ class SpaceMapping:
 
         """
         if self.iteration > 0:
-            for i in range(self.control_dim):
+            for i in range(len(self.difference)):
                 self.difference[i].vector().vec().aypx(
                     0.0, q[i].vector().vec() - self.dir_prev[i].vector().vec()
                 )
@@ -807,7 +804,7 @@ class SpaceMapping:
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                for i in range(self.control_dim):
+                for i in range(len(self.difference)):
                     self.difference[i].vector().vec().aypx(
                         0.0,
                         -self.difference[i].vector().vec()
@@ -820,13 +817,13 @@ class SpaceMapping:
         else:
             beta = 0.0
 
-        for i in range(self.control_dim):
+        for i in range(len(out)):
             out[i].vector().vec().aypx(beta, q[i].vector().vec())
             out[i].vector().apply("")
 
     def _compute_eps(self) -> float:
         """Computes and returns the termination parameter epsilon."""
-        for i in range(self.control_dim):
+        for i in range(len(self.diff)):
             self.diff[i].vector().vec().aypx(
                 0.0, self.p_current[i].vector().vec() - self.z_star[i].vector().vec()
             )

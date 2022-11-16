@@ -67,7 +67,6 @@ class ControlFormHandler(form_handler.FormHandler):
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 
-        self.control_dim = len(self.controls)
         self.control_spaces: List[fenics.FunctionSpace] = [
             x.function_space() for x in self.controls
         ]
@@ -107,7 +106,7 @@ class ControlFormHandler(form_handler.FormHandler):
         )
         try:
             self.assemblers.clear()
-            for i in range(self.control_dim):
+            for i in range(len(bcs)):
                 assembler = fenics.SystemAssembler(
                     modified_scalar_product_forms[i],
                     derivatives[i],
@@ -117,7 +116,7 @@ class ControlFormHandler(form_handler.FormHandler):
                 self.assemblers.append(assembler)
         except (AssertionError, ValueError):
             self.assemblers.clear()
-            for i in range(self.control_dim):
+            for i in range(len(self.riesz_scalar_products)):
                 estimated_degree = np.maximum(
                     ufl.algorithms.estimate_total_polynomial_degree(
                         self.riesz_scalar_products[i]
@@ -137,7 +136,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         fenics_scalar_product_matrices = []
 
-        for i in range(self.control_dim):
+        for i in range(len(self.assemblers)):
             fenics_matrix = fenics.PETScMatrix()
             fenics_scalar_product_matrices.append(fenics_matrix)
 
@@ -147,15 +146,11 @@ class ControlFormHandler(form_handler.FormHandler):
             self.riesz_projection_matrices.append(fenics_matrix.mat())
 
         # Test for symmetry of the scalar products
-        for i in range(self.control_dim):
-            if not self.riesz_projection_matrices[i].isSymmetric():
-                if not self.riesz_projection_matrices[i].isSymmetric(1e-15):
+        for matrix in self.riesz_projection_matrices:
+            if not matrix.isSymmetric():
+                if not matrix.isSymmetric(1e-15):
                     if (
-                        not (
-                            self.riesz_projection_matrices[i]
-                            - self.riesz_projection_matrices[i].copy().transpose()
-                        ).norm()
-                        / self.riesz_projection_matrices[i].norm()
+                        not (matrix - matrix.copy().transpose()).norm() / matrix.norm()
                         < 1e-15
                     ):
                         raise _exceptions.InputError(
@@ -179,7 +174,7 @@ class ControlFormHandler(form_handler.FormHandler):
         """
         result = 0.0
 
-        for i in range(self.control_dim):
+        for i in range(len(a)):
             x = fenics.as_backend_type(a[i].vector()).vec()
             y = fenics.as_backend_type(b[i].vector()).vec()
 
@@ -196,7 +191,7 @@ class ControlFormHandler(form_handler.FormHandler):
         ]
         self.gradient_forms_rhs = [
             self.lagrangian.derivative(self.controls[i], test_functions_control[i])
-            for i in range(self.control_dim)
+            for i in range(len(self.controls))
         ]
 
 
@@ -215,7 +210,6 @@ class HessianFormHandler:
         self.controls = controls
 
         self.config = self.db.config
-        self.control_dim = len(self.controls)
 
         self.w_1: List[ufl.Form] = []
         self.w_2: List[ufl.Form] = []
@@ -301,7 +295,7 @@ class HessianFormHandler:
                             self.controls[j],
                             self.test_directions[j],
                         )
-                        for j in range(self.control_dim)
+                        for j in range(len(self.controls))
                     ]
                 )
                 for i in range(self.db.parameter_db.state_dim)
@@ -316,7 +310,7 @@ class HessianFormHandler:
                             self.controls[j],
                             self.test_directions[j],
                         )
-                        for j in range(self.control_dim)
+                        for j in range(len(self.controls))
                     ]
                 )
                 for i in range(self.db.parameter_db.state_dim)
@@ -340,7 +334,7 @@ class HessianFormHandler:
             self.db.form_db.lagrangian.derivative(
                 self.controls[i], self.test_functions_control[i]
             )
-            for i in range(self.control_dim)
+            for i in range(len(self.controls))
         ]
 
     def _compute_second_order_lagrangian_derivatives(self) -> None:
@@ -365,14 +359,14 @@ class HessianFormHandler:
                 )
                 for j in range(self.db.parameter_db.state_dim)
             ]
-            for i in range(self.control_dim)
+            for i in range(len(self.lagrangian_u))
         ]
         self.lagrangian_uy = [
             [
                 fenics.derivative(
                     self.lagrangian_y[i], self.controls[j], self.test_directions[j]
                 )
-                for j in range(self.control_dim)
+                for j in range(len(self.controls))
             ]
             for i in range(self.db.parameter_db.state_dim)
         ]
@@ -381,9 +375,9 @@ class HessianFormHandler:
                 fenics.derivative(
                     self.lagrangian_u[i], self.controls[j], self.test_directions[j]
                 )
-                for j in range(self.control_dim)
+                for j in range(len(self.controls))
             ]
-            for i in range(self.control_dim)
+            for i in range(len(self.lagrangian_u))
         ]
 
     def _compute_adjoint_sensitivity_equations(self) -> None:
@@ -461,7 +455,7 @@ class HessianFormHandler:
                     for j in range(self.db.parameter_db.state_dim)
                 ]
             )
-            for i in range(self.control_dim)
+            for i in range(len(self.controls))
         ]
 
     def compute_newton_forms(self) -> None:
@@ -490,33 +484,19 @@ class HessianFormHandler:
         self._compute_second_order_lagrangian_derivatives()
 
         self.w_1 = [
-            _utils.summation(
-                [
-                    self.lagrangian_yy[i][j]
-                    for j in range(self.db.parameter_db.state_dim)
-                ]
-            )
-            + _utils.summation(
-                [self.lagrangian_uy[i][j] for j in range(self.control_dim)]
-            )
+            _utils.summation(self.lagrangian_yy[i])
+            + _utils.summation(self.lagrangian_uy[i])
             for i in range(self.db.parameter_db.state_dim)
         ]
         self.w_2 = [
-            _utils.summation(
-                [
-                    self.lagrangian_yu[i][j]
-                    for j in range(self.db.parameter_db.state_dim)
-                ]
-            )
-            + _utils.summation(
-                [self.lagrangian_uu[i][j] for j in range(self.control_dim)]
-            )
-            for i in range(self.control_dim)
+            _utils.summation(self.lagrangian_yu[i])
+            + _utils.summation(self.lagrangian_uu[i])
+            for i in range(len(self.lagrangian_uu))
         ]
 
         self._compute_adjoint_sensitivity_equations()
 
-        for i in range(self.control_dim):
+        for i in range(len(self.w_2)):
             w3_i = -self.adjoint_sensitivity_eqs_rhs[i]
             self.w_3.append(w3_i)
             self.hessian_rhs.append(self.w_2[i] + self.w_3[i])

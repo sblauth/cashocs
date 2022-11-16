@@ -157,7 +157,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.db.parameter_db.problem_type = "control"
 
         self.controls = _utils.enlist(controls)
-        self.control_dim = len(self.controls)
+        self.db.parameter_db.control_dim = len(self.controls)
         self.factory = None
 
         # riesz_scalar_products
@@ -182,7 +182,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
             self.use_control_bcs = True
         else:
-            self.control_bcs_list = [None] * self.control_dim
+            self.control_bcs_list = [None] * len(self.controls)
 
         # control_constraints
         self.box_constraints = box_constraints.BoxConstraints(
@@ -268,7 +268,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     def _setup_control_bcs(self) -> None:
         """Sets up the boundary conditions for the control variables."""
         if self.use_control_bcs:
-            for i in range(self.control_dim):
+            for i in range(len(self.controls)):
                 for bc in self.control_bcs_list_inhomogeneous[i]:
                     bc.apply(self.controls[i].vector())
 

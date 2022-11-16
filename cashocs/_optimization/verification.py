@@ -47,7 +47,7 @@ def _initialize_control_variable(
     """
     if u is None:
         u = []
-        for j in range(ocp.control_dim):
+        for j in range(len(ocp.controls)):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             temp.vector().apply("")
@@ -58,7 +58,7 @@ def _initialize_control_variable(
     ids_controls = [fun.id() for fun in ocp.controls]
     if ids_u == ids_controls:
         u = []
-        for j in range(ocp.control_dim):
+        for j in range(len(ocp.controls)):
             temp = fenics.Function(ocp.form_handler.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             temp.vector().apply("")
@@ -93,7 +93,7 @@ def control_gradient_test(
     custom_rng = rng or np.random
 
     initial_state = []
-    for j in range(ocp.control_dim):
+    for j in range(len(ocp.controls)):
         temp = fenics.Function(ocp.form_handler.control_spaces[j])
         temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
         temp.vector().apply("")
@@ -111,7 +111,7 @@ def control_gradient_test(
             temp.vector().apply("")
             h.append(temp)
 
-    for j in range(ocp.control_dim):
+    for j in range(len(ocp.controls)):
         ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
         ocp.controls[j].vector().apply("")
 
@@ -130,7 +130,7 @@ def control_gradient_test(
     residuals = []
 
     for eps in epsilons:
-        for j in range(ocp.control_dim):
+        for j in range(len(ocp.controls)):
             ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
             ocp.controls[j].vector().apply("")
             ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
@@ -151,7 +151,7 @@ def control_gradient_test(
 
     rates = compute_convergence_rates(epsilons, residuals)
 
-    for j in range(ocp.control_dim):
+    for j in range(len(ocp.controls)):
         ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
         ocp.controls[j].vector().apply("")
 
