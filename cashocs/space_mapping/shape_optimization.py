@@ -428,21 +428,21 @@ class SpaceMapping:
             * shape_optimization_problem.form_handler.dx
         )
         bc_helper = fenics.Function(
-            shape_optimization_problem.form_handler.deformation_space
+            shape_optimization_problem.db.function_db.control_spaces[0]
         )
         bc_helper.vector().vec().aypx(0, a[0].vector().vec())
         bc_helper.vector().apply("")
         boundary = fenics.CompiledSubDomain("on_boundary")
         bcs = [
             fenics.DirichletBC(
-                shape_optimization_problem.form_handler.deformation_space,
+                shape_optimization_problem.db.function_db.control_spaces[0],
                 bc_helper,
                 boundary,
             )
         ]
 
         result = [
-            fenics.Function(shape_optimization_problem.form_handler.deformation_space)
+            fenics.Function(shape_optimization_problem.db.function_db.control_spaces[0])
         ]
         fenics.solve(lhs == rhs, result[0], bcs)
 

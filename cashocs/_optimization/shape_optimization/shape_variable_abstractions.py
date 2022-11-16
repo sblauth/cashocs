@@ -52,7 +52,7 @@ class ShapeVariableAbstractions(
         super().__init__(optimization_problem, db)
         self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
-        self.deformation = fenics.Function(self.form_handler.deformation_space)
+        self.deformation = fenics.Function(self.db.function_db.control_spaces[0])
 
     def compute_decrease_measure(
         self, search_direction: List[fenics.Function]
@@ -66,7 +66,9 @@ class ShapeVariableAbstractions(
             The decrease measure for the Armijo test.
 
         """
-        return self.form_handler.scalar_product(self.gradient, search_direction)
+        return self.form_handler.scalar_product(
+            self.db.function_db.gradient, search_direction
+        )
 
     def compute_gradient_norm(self) -> float:
         """Computes the norm of the gradient.
@@ -76,7 +78,9 @@ class ShapeVariableAbstractions(
 
         """
         res: float = np.sqrt(
-            self.form_handler.scalar_product(self.gradient, self.gradient)
+            self.form_handler.scalar_product(
+                self.db.function_db.gradient, self.db.function_db.gradient
+            )
         )
         return res
 

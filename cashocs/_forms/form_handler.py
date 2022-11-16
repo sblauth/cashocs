@@ -88,9 +88,6 @@ class FormHandler(abc.ABC):
 
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
 
-        self.gradient: List[fenics.Function] = []
-        self.control_spaces: List[fenics.FunctionSpace] = []
-
     @abc.abstractmethod
     def scalar_product(
         self, a: List[fenics.Function], b: List[fenics.Function]

@@ -363,7 +363,7 @@ class SpaceMapping:
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
-            self.coarse_model.optimal_control_problem.form_handler.control_spaces
+            self.coarse_model.optimal_control_problem.db.function_db.control_spaces
         )
         self.ips_to_coarse = [
             _utils.Interpolator(control_spaces_fine[i], control_spaces_coarse[i])

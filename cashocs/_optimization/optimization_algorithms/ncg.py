@@ -50,9 +50,11 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
         super().__init__(db, optimization_problem, line_search)
 
         self.gradient_prev = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
-        self.difference = _utils.create_function_list(self.form_handler.control_spaces)
+        self.difference = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
 
         self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(

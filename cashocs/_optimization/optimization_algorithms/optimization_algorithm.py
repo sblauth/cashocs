@@ -65,9 +65,9 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
-        self.gradient = optimization_problem.gradient
+        self.gradient = self.db.function_db.gradient
         self.search_direction = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
 
         self.optimization_variable_abstractions = (

@@ -129,14 +129,14 @@ class ShapeRegularization:
             self.kappa_curvature,
             self.a_curvature,
             self.l_curvature,
-        ) = self._init_curvature_regularization(form_handler)
+        ) = self._init_curvature_regularization()
 
         self.mu_barycenter = 0.0
         self.target_barycenter_list: List[float] = []
 
         self._init_volume_regularization()
         self._init_surface_regularization()
-        self._init_curvature_regularization(form_handler)
+        self._init_curvature_regularization()
         self._init_barycenter_regularization()
 
         if (
@@ -172,32 +172,29 @@ class ShapeRegularization:
             self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
 
     def _init_curvature_regularization(
-        self, form_handler: shape_form_handler.ShapeFormHandler
+        self,
     ) -> Tuple[float, fenics.Function, ufl.Form, ufl.Form]:
         """Initializes the terms corresponding to the surface regularization.
-
-        Args:
-            form_handler: The form handler of the problem.
 
         Returns:
             A tuple (mu_curvature, kappa_curvature, a_curvature, l_curvature)
 
         """
         mu_curvature = self.config.getfloat("Regularization", "factor_curvature")
-        kappa_curvature = fenics.Function(form_handler.deformation_space)
+        kappa_curvature = fenics.Function(self.db.function_db.control_spaces[0])
         n = fenics.FacetNormal(self.mesh)
         x = fenics.SpatialCoordinate(self.mesh)
         a_curvature = (
             fenics.inner(
-                fenics.TrialFunction(form_handler.deformation_space),
-                fenics.TestFunction(form_handler.deformation_space),
+                fenics.TrialFunction(self.db.function_db.control_spaces[0]),
+                fenics.TestFunction(self.db.function_db.control_spaces[0]),
             )
             * self.ds
         )
         l_curvature = (
             fenics.inner(
                 t_grad(x, n),
-                t_grad(fenics.TestFunction(form_handler.deformation_space), n),
+                t_grad(fenics.TestFunction(self.db.function_db.control_spaces[0]), n),
             )
             * self.ds
         )

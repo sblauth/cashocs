@@ -48,7 +48,7 @@ def _initialize_control_variable(
     if u is None:
         u = []
         for j in range(len(ocp.controls)):
-            temp = fenics.Function(ocp.form_handler.control_spaces[j])
+            temp = fenics.Function(ocp.db.function_db.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             temp.vector().apply("")
             u.append(temp)
@@ -59,7 +59,7 @@ def _initialize_control_variable(
     if ids_u == ids_controls:
         u = []
         for j in range(len(ocp.controls)):
-            temp = fenics.Function(ocp.form_handler.control_spaces[j])
+            temp = fenics.Function(ocp.db.function_db.control_spaces[j])
             temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
             temp.vector().apply("")
             u.append(temp)
@@ -94,7 +94,7 @@ def control_gradient_test(
 
     initial_state = []
     for j in range(len(ocp.controls)):
-        temp = fenics.Function(ocp.form_handler.control_spaces[j])
+        temp = fenics.Function(ocp.db.function_db.control_spaces[j])
         temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
         temp.vector().apply("")
         initial_state.append(temp)
@@ -103,7 +103,7 @@ def control_gradient_test(
 
     if h is None:
         h = []
-        for function_space in ocp.form_handler.control_spaces:
+        for function_space in ocp.db.function_db.control_spaces:
             temp = fenics.Function(function_space)
             temp.vector().vec().setValues(
                 range(function_space.dim()), custom_rng.rand(function_space.dim())
@@ -179,7 +179,7 @@ def shape_gradient_test(
     """
     custom_rng = rng or np.random
     if h is None:
-        h = [fenics.Function(sop.form_handler.deformation_space)]
+        h = [fenics.Function(sop.db.function_db.control_spaces[0])]
         h[0].vector().set_local(custom_rng.rand(h[0].vector().local_size()))
         h[0].vector().apply("")
 
@@ -194,7 +194,7 @@ def shape_gradient_test(
         )
         h[0].vector().apply("")
 
-    transformation = fenics.Function(sop.form_handler.deformation_space)
+    transformation = fenics.Function(sop.db.function_db.control_spaces[0])
 
     # pylint: disable=protected-access
     sop._erase_pde_memory()

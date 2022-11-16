@@ -69,7 +69,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
-        self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
         gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
@@ -107,7 +106,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.p_laplace_projector = _PLaplaceProjector(
                 self.db,
                 self,
-                self.gradient,
+                self.db.function_db.gradient,
                 self.form_handler.shape_derivative,
                 self.form_handler.bcs_shape,
                 self.config,
@@ -137,7 +136,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.has_solution = True
 
                 self.gradient_norm_squared = self.form_handler.scalar_product(
-                    self.gradient, self.gradient
+                    self.db.function_db.gradient, self.db.function_db.gradient
                 )
 
             else:
@@ -153,20 +152,20 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 _utils.solve_linear_problem(
                     A=self.form_handler.scalar_product_matrix,
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
-                    x=self.gradient[0].vector().vec(),
+                    x=self.db.function_db.gradient[0].vector().vec(),
                     ksp_options=self.ksp_options,
                 )
-                self.gradient[0].vector().apply("")
+                self.db.function_db.gradient[0].vector().apply("")
 
                 self.has_solution = True
 
                 self.gradient_norm_squared = self.form_handler.scalar_product(
-                    self.gradient, self.gradient
+                    self.db.function_db.gradient, self.db.function_db.gradient
                 )
 
             self.db.callback.call_post()
 
-        return self.gradient
+        return self.db.function_db.gradient
 
 
 class _PLaplaceProjector:

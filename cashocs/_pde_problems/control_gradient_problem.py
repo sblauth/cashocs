@@ -63,7 +63,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.state_problem = state_problem
         self.adjoint_problem = adjoint_problem
 
-        self.gradient = self.form_handler.gradient
         self.gradient_norm_squared = 1.0
 
         gradient_tol: float = self.config.getfloat(
@@ -87,10 +86,12 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             ]
 
         self.riesz_ksp_options = []
-        for _ in range(len(self.gradient)):
+        for _ in range(len(self.db.function_db.gradient)):
             self.riesz_ksp_options.append(option)
 
-        self.b_tensors = [fenics.PETScVector() for _ in range(len(self.gradient))]
+        self.b_tensors = [
+            fenics.PETScVector() for _ in range(len(self.db.function_db.gradient))
+        ]
 
     def solve(self) -> List[fenics.Function]:
         """Solves the Riesz projection problem to obtain the gradient.
@@ -103,22 +104,22 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
-            for i in range(len(self.gradient)):
+            for i in range(len(self.db.function_db.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 _utils.solve_linear_problem(
                     A=self.form_handler.riesz_projection_matrices[i],
                     b=self.b_tensors[i].vec(),
-                    x=self.gradient[i].vector().vec(),
+                    x=self.db.function_db.gradient[i].vector().vec(),
                     ksp_options=self.riesz_ksp_options[i],
                 )
-                self.gradient[i].vector().apply("")
+                self.db.function_db.gradient[i].vector().apply("")
 
             self.has_solution = True
 
             self.gradient_norm_squared = self.form_handler.scalar_product(
-                self.gradient, self.gradient
+                self.db.function_db.gradient, self.db.function_db.gradient
             )
 
             self.db.callback.call_post()
 
-        return self.gradient
+        return self.db.function_db.gradient

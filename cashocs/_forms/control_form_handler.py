@@ -67,13 +67,6 @@ class ControlFormHandler(form_handler.FormHandler):
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 
-        self.control_spaces: List[fenics.FunctionSpace] = [
-            x.function_space() for x in self.controls
-        ]
-        self.gradient: List[fenics.Function] = _utils.create_function_list(
-            self.control_spaces
-        )
-
         self.gradient_forms_rhs: List[ufl.Form] = []
         self._compute_gradient_equations()
 

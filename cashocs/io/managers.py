@@ -479,7 +479,7 @@ class XDMFFileManager(IOManager):
             for i in range(self.db.parameter_db.control_dim):
                 self.control_xdmf_list.append(
                     self._generate_xdmf_file_strings(
-                        self.form_handler.control_spaces[i], f"control_{i:d}"
+                        self.db.function_db.control_spaces[i], f"control_{i:d}"
                     )
                 )
 
@@ -503,7 +503,7 @@ class XDMFFileManager(IOManager):
                     gradient_str = "shape_gradient"
                 self.gradient_xdmf_list.append(
                     self._generate_xdmf_file_strings(
-                        self.form_handler.control_spaces[i], gradient_str
+                        self.db.function_db.control_spaces[i], gradient_str
                     )
                 )
 
@@ -617,7 +617,7 @@ class XDMFFileManager(IOManager):
             for i in range(self.db.parameter_db.control_dim):
                 self._write_xdmf_step(
                     cast(str, self.gradient_xdmf_list[i]),
-                    self.form_handler.gradient[i],
+                    self.db.function_db.gradient[i],
                     f"gradient_{i}",
                     iteration,
                 )

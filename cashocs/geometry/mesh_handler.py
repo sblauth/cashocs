@@ -142,7 +142,7 @@ class _MeshHandler:
         self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
-            self.form_handler.deformation_space
+            self.db.function_db.control_spaces[0]
         )
         self.a_frobenius = None
         self.l_frobenius = None
@@ -158,7 +158,7 @@ class _MeshHandler:
             ["ksp_max_it", 1000],
         ]
         self.transformation_container = fenics.Function(
-            self.form_handler.deformation_space
+            self.db.function_db.control_spaces[0]
         )
         self.A_prior = None  # pylint: disable=invalid-name
         self.l_prior = None

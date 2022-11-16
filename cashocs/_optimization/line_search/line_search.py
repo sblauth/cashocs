@@ -50,7 +50,6 @@ class LineSearch(abc.ABC):
 
         self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
-        self.gradient = optimization_problem.gradient
         self.state_problem = optimization_problem.state_problem
         self.optimization_variable_abstractions = (
             optimization_problem.optimization_variable_abstractions
@@ -115,7 +114,7 @@ class LineSearch(abc.ABC):
         self.search_direction_inf = np.max(
             [
                 search_direction[i].vector().norm("linf")
-                for i in range(len(self.gradient))
+                for i in range(len(search_direction))
             ]
         )
 

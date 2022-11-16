@@ -60,7 +60,7 @@ class ControlVariableAbstractions(
 
         self.controls = optimization_problem.controls
         self.control_temp = _utils.create_function_list(
-            optimization_problem.control_spaces
+            self.db.function_db.control_spaces
         )
         for i in range(len(self.controls)):
             self.control_temp[i].vector().vec().aypx(
@@ -70,7 +70,7 @@ class ControlVariableAbstractions(
 
         self.projected_difference = [
             fenics.Function(function_space)
-            for function_space in self.form_handler.control_spaces
+            for function_space in self.db.function_db.control_spaces
         ]
 
     def compute_decrease_measure(
@@ -93,7 +93,7 @@ class ControlVariableAbstractions(
             self.projected_difference[j].vector().apply("")
 
         return self.form_handler.scalar_product(
-            self.gradient, self.projected_difference
+            self.db.function_db.gradient, self.projected_difference
         )
 
     def store_optimization_variables(self) -> None:
@@ -161,7 +161,9 @@ class ControlVariableAbstractions(
         """
         for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
-                0.0, self.controls[j].vector().vec() - self.gradient[j].vector().vec()
+                0.0,
+                self.controls[j].vector().vec()
+                - self.db.function_db.gradient[j].vector().vec(),
             )
             self.projected_difference[j].vector().apply("")
 

@@ -69,17 +69,17 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _init_helpers(self) -> None:
         """Initializes the helper functions."""
-        self.temp = _utils.create_function_list(self.form_handler.control_spaces)
+        self.temp = _utils.create_function_list(self.db.function_db.control_spaces)
         if self.bfgs_memory_size > 0:
             self.history_s = collections.deque()
             self.history_y = collections.deque()
             self.history_rho = collections.deque()
             self.history_alpha = collections.deque()
             self.gradient_prev = _utils.create_function_list(
-                self.form_handler.control_spaces
+                self.db.function_db.control_spaces
             )
-            self.y_k = _utils.create_function_list(self.form_handler.control_spaces)
-            self.s_k = _utils.create_function_list(self.form_handler.control_spaces)
+            self.y_k = _utils.create_function_list(self.db.function_db.control_spaces)
+            self.s_k = _utils.create_function_list(self.db.function_db.control_spaces)
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""

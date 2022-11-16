@@ -51,7 +51,6 @@ class OptimizationVariableAbstractions(abc.ABC):
         """
         self.db = db
 
-        self.gradient = optimization_problem.gradient
         self.form_handler = optimization_problem.form_handler
 
     @abc.abstractmethod
@@ -160,7 +159,7 @@ class OptimizationVariableAbstractions(abc.ABC):
             The result of the restriction (overrides input b)
 
         """
-        for j in range(len(self.gradient)):
+        for j in range(len(b)):
             if not b[j].vector().vec().equal(a[j].vector().vec()):
                 b[j].vector().vec().aypx(0.0, a[j].vector().vec())
                 b[j].vector().apply("")
@@ -184,7 +183,7 @@ class OptimizationVariableAbstractions(abc.ABC):
             The result of the restriction (overrides input b)
 
         """
-        for j in range(len(self.gradient)):
+        for j in range(len(b)):
             b[j].vector().vec().set(0.0)
             b[j].vector().apply("")
 

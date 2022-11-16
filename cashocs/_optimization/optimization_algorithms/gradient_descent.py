@@ -48,8 +48,8 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the gradient descent method."""
-        for i in range(len(self.gradient)):
+        for i in range(len(self.db.function_db.gradient)):
             self.search_direction[i].vector().vec().aypx(
-                0.0, -self.gradient[i].vector().vec()
+                0.0, -self.db.function_db.gradient[i].vector().vec()
             )
             self.search_direction[i].vector().apply("")

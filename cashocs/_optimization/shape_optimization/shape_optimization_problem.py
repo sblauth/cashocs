@@ -258,6 +258,16 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.temp_dict = temp_dict
             self.db.parameter_db.is_remeshed = True
 
+        if shape_scalar_product is None:
+            deformation_space: fenics.FunctionSpace = fenics.VectorFunctionSpace(
+                self.db.geometry_db.mesh, "CG", 1
+            )
+        else:
+            deformation_space = shape_scalar_product.arguments()[0].ufl_function_space()
+        self.db.function_db.control_spaces = [deformation_space]
+        self.db.function_db.gradient = [
+            fenics.Function(self.db.function_db.control_spaces[0])
+        ]
         self.db.parameter_db.problem_type = "shape"
 
         # Initialize the remeshing behavior, and a temp file
@@ -268,12 +278,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.boundaries: fenics.MeshFunction = boundaries
 
         self.shape_scalar_product: ufl.Form = shape_scalar_product
-        if shape_scalar_product is None:
-            self.deformation_space: Optional[fenics.FunctionSpace] = None
-        else:
-            self.deformation_space = shape_scalar_product.arguments()[
-                0
-            ].ufl_function_space()
 
         if self.shape_scalar_product is not None:
             self.uses_custom_scalar_product = True
@@ -333,7 +337,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.gradient = self.gradient_problem.gradient
         self.optimization_variable_abstractions = (
             shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
         )
@@ -555,7 +558,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """
         self.gradient_problem.solve()
 
-        return self.gradient
+        return self.db.function_db.gradient
 
     def supply_shape_derivative(self, shape_derivative: ufl.Form) -> None:
         """Overrides the shape derivative of the reduced cost functional.
@@ -569,7 +572,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """
         if (
             not shape_derivative.arguments()[0].ufl_function_space()
-            == self.form_handler.deformation_space
+            == self.db.function_db.control_spaces[0]
         ):
             shape_derivative = ufl.replace(
                 shape_derivative,

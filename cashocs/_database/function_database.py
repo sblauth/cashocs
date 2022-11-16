@@ -65,4 +65,6 @@ class FunctionDatabase:
 
         self.states_prime = _utils.create_function_list(self.state_spaces)
         self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
-        # self.gradient: List[fenics.Function] = []
+
+        self.control_spaces: List[fenics.FunctionSpace] = []
+        self.gradient: List[fenics.Function] = []

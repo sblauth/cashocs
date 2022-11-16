@@ -69,7 +69,6 @@ class HessianProblem:
         self.box_constraints = box_constraints
 
         self.config = self.db.config
-        self.gradient = self.gradient_problem.gradient
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
         self.max_it_inner_newton = self.config.getint("AlgoTNM", "max_it_inner_newton")
@@ -78,27 +77,29 @@ class HessianProblem:
 
         self.test_directions = self.form_handler.hessian_form_handler.test_directions
 
-        self.residual = _utils.create_function_list(self.form_handler.control_spaces)
+        self.residual = _utils.create_function_list(self.db.function_db.control_spaces)
         self.delta_control = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
-        self.temp1 = _utils.create_function_list(self.form_handler.control_spaces)
-        self.temp2 = _utils.create_function_list(self.form_handler.control_spaces)
-        self.p = _utils.create_function_list(self.form_handler.control_spaces)
-        self.p_prev = _utils.create_function_list(self.form_handler.control_spaces)
-        self.p_pprev = _utils.create_function_list(self.form_handler.control_spaces)
-        self.s = _utils.create_function_list(self.form_handler.control_spaces)
-        self.s_prev = _utils.create_function_list(self.form_handler.control_spaces)
-        self.s_pprev = _utils.create_function_list(self.form_handler.control_spaces)
-        self.q = _utils.create_function_list(self.form_handler.control_spaces)
-        self.q_prev = _utils.create_function_list(self.form_handler.control_spaces)
+        self.temp1 = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.temp2 = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.p = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.p_prev = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.p_pprev = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.s = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.s_prev = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.s_pprev = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.q = _utils.create_function_list(self.db.function_db.control_spaces)
+        self.q_prev = _utils.create_function_list(self.db.function_db.control_spaces)
         self.hessian_actions = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
         self.inactive_part = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
-        self.active_part = _utils.create_function_list(self.form_handler.control_spaces)
+        self.active_part = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
 
         # pylint: disable=invalid-name
         self.state_A_tensors = [
@@ -297,7 +298,9 @@ class HessianProblem:
     def cg(self) -> None:
         """Solves the (truncated) Newton step with a CG method."""
         for j in range(len(self.residual)):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
+            self.residual[j].vector().vec().aypx(
+                0.0, -self.db.function_db.gradient[j].vector().vec()
+            )
             self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
             self.p[j].vector().apply("")
@@ -343,7 +346,9 @@ class HessianProblem:
     def cr(self) -> None:
         """Solves the (truncated) Newton step with a CR method."""
         for j in range(len(self.residual)):
-            self.residual[j].vector().vec().aypx(0.0, -self.gradient[j].vector().vec())
+            self.residual[j].vector().vec().aypx(
+                0.0, -self.db.function_db.gradient[j].vector().vec()
+            )
             self.residual[j].vector().apply("")
             self.p[j].vector().vec().aypx(0.0, self.residual[j].vector().vec())
             self.p[j].vector().apply("")

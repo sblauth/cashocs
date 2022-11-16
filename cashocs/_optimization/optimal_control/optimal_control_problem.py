@@ -154,10 +154,15 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
+        self.controls = _utils.enlist(controls)
+
+        self.db.parameter_db.control_dim = len(self.controls)
+        self.db.function_db.control_spaces = [x.function_space() for x in self.controls]
+        self.db.function_db.gradient = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
         self.db.parameter_db.problem_type = "control"
 
-        self.controls = _utils.enlist(controls)
-        self.db.parameter_db.control_dim = len(self.controls)
         self.factory = None
 
         # riesz_scalar_products
@@ -199,12 +204,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         )
 
         self.state_spaces = self.db.function_db.state_spaces
-        self.control_spaces: List[
-            fenics.FunctionSpace
-        ] = self.form_handler.control_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
-        self.projected_difference = _utils.create_function_list(self.control_spaces)
+        self.projected_difference = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
 
         self.state_problem = _pde_problems.StateProblem(
             self.db,
@@ -226,7 +230,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
         self.output_manager = io.OutputManager(
             self.db, self.form_handler, self.temp_dict
@@ -385,7 +388,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """
         self.gradient_problem.solve()
 
-        return self.gradient
+        return self.db.function_db.gradient
 
     def supply_derivatives(self, derivatives: Union[ufl.Form, List[ufl.Form]]) -> None:
         """Overwrites the derivatives of the reduced cost functional w.r.t. controls.

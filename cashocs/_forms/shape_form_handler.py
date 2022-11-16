@@ -249,7 +249,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.uses_custom_scalar_product = (
             optimization_problem.uses_custom_scalar_product
         )
-        deformation_space = optimization_problem.deformation_space
 
         self.degree_estimation = self.config.getboolean(
             "ShapeGradient", "degree_estimation"
@@ -266,13 +265,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
         self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
 
-        self.deformation_space: fenics.FunctionSpace = (
-            deformation_space
-            or fenics.VectorFunctionSpace(self.db.geometry_db.mesh, "CG", 1)
-        )
-
-        self.control_spaces: List[fenics.FunctionSpace] = [self.deformation_space]
-
         self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)
         self.mu_lame = fenics.Function(self.cg_function_space)
@@ -287,9 +279,8 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.shape_bdry_fix,
         )
 
-        self.gradient = [fenics.Function(self.deformation_space)]
         self.test_vector_field: fenics.TestFunction = fenics.TestFunction(
-            self.deformation_space
+            self.db.function_db.control_spaces[0]
         )
 
         self.shape_regularization: shape_regularization.ShapeRegularization = (
@@ -303,7 +294,8 @@ class ShapeFormHandler(form_handler.FormHandler):
         if len(fixed_dimensions) > 0:
             self.use_fixed_dimensions = True
             unpack_list = [
-                self.deformation_space.sub(i).dofmap().dofs() for i in fixed_dimensions
+                self.db.function_db.control_spaces[0].sub(i).dofmap().dofs()
+                for i in fixed_dimensions
             ]
             self.fixed_indices = list(itertools.chain(*unpack_list))
 
@@ -498,26 +490,28 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         """
         bcs_shape = _utils.create_dirichlet_bcs(
-            self.deformation_space,
-            fenics.Constant([0] * self.deformation_space.ufl_element().value_size()),
+            self.db.function_db.control_spaces[0],
+            fenics.Constant(
+                [0] * self.db.function_db.control_spaces[0].ufl_element().value_size()
+            ),
             self.boundaries,
             self.shape_bdry_fix,
         )
         bcs_shape += _utils.create_dirichlet_bcs(
-            self.deformation_space.sub(0),
+            self.db.function_db.control_spaces[0].sub(0),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_x,
         )
         bcs_shape += _utils.create_dirichlet_bcs(
-            self.deformation_space.sub(1),
+            self.db.function_db.control_spaces[0].sub(1),
             fenics.Constant(0.0),
             self.boundaries,
             self.shape_bdry_fix_y,
         )
-        if self.deformation_space.num_sub_spaces() == 3:
+        if self.db.function_db.control_spaces[0].num_sub_spaces() == 3:
             bcs_shape += _utils.create_dirichlet_bcs(
-                self.deformation_space.sub(2),
+                self.db.function_db.control_spaces[0].sub(2),
                 fenics.Constant(0.0),
                 self.boundaries,
                 self.shape_bdry_fix_z,
@@ -573,8 +567,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                 """
                 return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
 
-            trial = fenics.TrialFunction(self.deformation_space)
-            test = fenics.TestFunction(self.deformation_space)
+            trial = fenics.TrialFunction(self.db.function_db.control_spaces[0])
+            test = fenics.TestFunction(self.db.function_db.control_spaces[0])
 
             riesz_scalar_product = (
                 fenics.Constant(2)
@@ -658,7 +652,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         ):
             form = ufl.replace(
                 self.p_laplace_form,
-                {self.gradient[0]: a[0], self.test_vector_field: b[0]},
+                {self.db.function_db.gradient[0]: a[0], self.test_vector_field: b[0]},
             )
             result = fenics.assemble(form)
 
@@ -686,7 +680,8 @@ class ShapeFormHandler(form_handler.FormHandler):
             eps = self.config.getfloat("ShapeGradient", "p_laplacian_stabilization")
             kappa = pow(
                 fenics.inner(
-                    fenics.grad(self.gradient[0]), fenics.grad(self.gradient[0])
+                    fenics.grad(self.db.function_db.gradient[0]),
+                    fenics.grad(self.db.function_db.gradient[0]),
                 ),
                 (p - 2) / 2.0,
             )
@@ -694,12 +689,12 @@ class ShapeFormHandler(form_handler.FormHandler):
                 fenics.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
-                    * fenics.grad(self.gradient[0]),
+                    * fenics.grad(self.db.function_db.gradient[0]),
                     fenics.grad(self.test_vector_field),
                 )
                 * self.dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.gradient[0], self.test_vector_field)
+                * fenics.dot(self.db.function_db.gradient[0], self.test_vector_field)
                 * self.dx
             )
         else:
