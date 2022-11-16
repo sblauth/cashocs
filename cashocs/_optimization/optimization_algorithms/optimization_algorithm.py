@@ -80,16 +80,16 @@ class OptimizationAlgorithm(abc.ABC):
             optimization_problem.optimization_variable_abstractions
         )
 
-        self.gradient_norm: float = 1.0
-        self.iteration: int = 0
-        self.objective_value: float = 1.0
-        self.gradient_norm_initial: float = 1.0
-        self.relative_norm: float = 1.0
+        self._gradient_norm: float = 1.0
+        self._iteration: int = 0
+        self._objective_value: float = 1.0
+        self._gradient_norm_initial: float = 1.0
+        self._relative_norm: float = 1.0
 
         self.requires_remeshing = False
         self.is_restarted: bool = False
 
-        self.stepsize: float = 1.0
+        self._stepsize: float = 1.0
         self.converged = False
         self.converged_reason = 0
 
@@ -102,6 +102,66 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.output_manager = optimization_problem.output_manager
         self.initialize_solver()
+
+    @property
+    def iteration(self) -> int:
+        """The number of iterations performed by the solver."""
+        return self._iteration
+
+    @iteration.setter
+    def iteration(self, value: int) -> None:
+        self.db.parameter_db.optimization_state["iteration"] = value
+        self._iteration = value
+
+    @property
+    def objective_value(self) -> float:
+        """The current objective value."""
+        return self._objective_value
+
+    @objective_value.setter
+    def objective_value(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["objective_value"] = value
+        self._objective_value = value
+
+    @property
+    def relative_norm(self) -> float:
+        """The relative norm of the gradient."""
+        return self._relative_norm
+
+    @relative_norm.setter
+    def relative_norm(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["relative_norm"] = value
+        self._relative_norm = value
+
+    @property
+    def stepsize(self) -> float:
+        """The accepted stepsize of the line search."""
+        return self._stepsize
+
+    @stepsize.setter
+    def stepsize(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["stepsize"] = value
+        self._stepsize = value
+
+    @property
+    def gradient_norm(self) -> float:
+        """The current (absolute) gradient norm."""
+        return self._gradient_norm
+
+    @gradient_norm.setter
+    def gradient_norm(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["gradient_norm"] = value
+        self._gradient_norm = value
+
+    @property
+    def gradient_norm_initial(self) -> float:
+        """The initial (absolute) norm of the gradient."""
+        return self._gradient_norm_initial
+
+    @gradient_norm_initial.setter
+    def gradient_norm_initial(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["gradient_norm_initial"] = value
+        self._gradient_norm_initial = value
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -119,15 +179,15 @@ class OptimizationAlgorithm(abc.ABC):
 
     def output(self) -> None:
         """Writes the output to console and files."""
-        self.output_manager.output(self)
+        self.output_manager.output()
 
     def output_summary(self) -> None:
         """Writes the summary of the optimization (to files and console)."""
-        self.output_manager.output_summary(self)
+        self.output_manager.output_summary()
 
     def post_process(self) -> None:
         """Performs the non-console output related post-processing."""
-        self.output_manager.post_process(self)
+        self.output_manager.post_process()
 
     def nonconvergence(self) -> bool:
         """Checks for nonconvergence of the solution algorithm.

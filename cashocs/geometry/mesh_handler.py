@@ -104,6 +104,8 @@ class _MeshHandler:
         self.bbtree = self.mesh.bounding_box_tree()
         self.config = self.db.config
 
+        self._current_mesh_quality = 1.0
+        self._gmsh_file = ""
         # setup from config
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
         self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
@@ -186,18 +188,18 @@ class _MeshHandler:
                     )
                 else:
                     remesh_directory = ""
-                self.remesh_directory: str = fenics.MPI.comm_world.bcast(
+                self.db.parameter_db.remesh_directory = fenics.MPI.comm_world.bcast(
                     remesh_directory, root=0
                 )
                 fenics.MPI.barrier(fenics.MPI.comm_world)
             else:
-                self.remesh_directory = self.db.parameter_db.temp_dict[
+                self.db.parameter_db.remesh_directory = self.db.parameter_db.temp_dict[
                     "remesh_directory"
                 ]
-            remesh_path = pathlib.Path(self.remesh_directory)
+            remesh_path = pathlib.Path(self.db.parameter_db.remesh_directory)
             if not remesh_path.is_dir():
                 remesh_path.mkdir()
-            self.remesh_geo_file = f"{self.remesh_directory}/remesh.geo"
+            self.remesh_geo_file = f"{self.db.parameter_db.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
             self.gmsh_file = self.config.get("Mesh", "gmsh_file")
@@ -205,7 +207,8 @@ class _MeshHandler:
         # create a copy of the initial mesh file
         if self.do_remesh and self.remesh_counter == 0:
             self.gmsh_file_init = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.msh"
             )
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 subprocess.run(  # nosec 603
@@ -213,6 +216,25 @@ class _MeshHandler:
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
             self.gmsh_file = self.gmsh_file_init
+
+    @property
+    def current_mesh_quality(self) -> float:
+        """The current mesh quality."""
+        return self._current_mesh_quality
+
+    @current_mesh_quality.setter
+    def current_mesh_quality(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["mesh_quality"] = value
+        self._current_mesh_quality = value
+
+    @property
+    def gmsh_file(self) -> str:
+        return self._gmsh_file
+
+    @gmsh_file.setter
+    def gmsh_file(self, value: str) -> None:
+        self.db.parameter_db.gmsh_file_path = value
+        self._gmsh_file = value
 
     def move_mesh(self, transformation: fenics.Function) -> bool:
         r"""Transforms the mesh by perturbation of identity.
@@ -404,7 +426,10 @@ class _MeshHandler:
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-        gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
+        gmsh_file = (
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter - 1:d}.msh"
+        )
         if (
             pathlib.Path(gmsh_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -413,7 +438,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         gmsh_pre_remesh_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if (
             pathlib.Path(gmsh_pre_remesh_file).is_file()
@@ -422,7 +448,9 @@ class _MeshHandler:
             subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
+        mesh_h5_file = (
+            f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
+        )
         if (
             pathlib.Path(mesh_h5_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -430,7 +458,10 @@ class _MeshHandler:
             subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
+        mesh_xdmf_file = (
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}.xdmf"
+        )
         if (
             pathlib.Path(mesh_xdmf_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -439,7 +470,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_h5_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if (
             pathlib.Path(boundaries_h5_file).is_file()
@@ -449,7 +481,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_xdmf_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if (
             pathlib.Path(boundaries_xdmf_file).is_file()
@@ -459,7 +492,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_h5_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if (
             pathlib.Path(subdomains_h5_file).is_file()
@@ -469,7 +503,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_xdmf_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if (
             pathlib.Path(subdomains_xdmf_file).is_file()
@@ -511,7 +546,8 @@ class _MeshHandler:
         if self.do_remesh and self.db.parameter_db.temp_dict:
             self.remesh_counter += 1
             temp_file = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
             io.write_out_mesh(self.mesh, self.gmsh_file, temp_file)
             self._generate_remesh_geo(temp_file)
@@ -544,7 +580,10 @@ class _MeshHandler:
 
             dim = self.mesh.geometric_dimension()
 
-            new_gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
+            new_gmsh_file = (
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.msh"
+            )
 
             gmsh_cmd_list = [
                 "gmsh",
@@ -567,12 +606,17 @@ class _MeshHandler:
             _remove_gmsh_parametrizations(new_gmsh_file)
 
             self.db.parameter_db.temp_dict["remesh_counter"] = self.remesh_counter
-            self.db.parameter_db.temp_dict["remesh_directory"] = self.remesh_directory
+            self.db.parameter_db.temp_dict[
+                "remesh_directory"
+            ] = self.db.parameter_db.remesh_directory
             self.db.parameter_db.temp_dict[
                 "result_dir"
             ] = solver.output_manager.result_dir
 
-            new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
+            new_xdmf_file = (
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.xdmf"
+            )
 
             io.convert(new_gmsh_file, new_xdmf_file)
 

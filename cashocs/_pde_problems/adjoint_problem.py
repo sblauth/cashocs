@@ -78,12 +78,23 @@ class AdjointProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
+        self._number_of_solves = 0
         if self.db.parameter_db.temp_dict:
             self.number_of_solves: int = self.db.parameter_db.temp_dict[
                 "output_dict"
             ].get("adjoint_solves", 0)
         else:
             self.number_of_solves = 0
+
+    @property
+    def number_of_solves(self) -> int:
+        """Counts the number of solves of the adjoint problem."""
+        return self._number_of_solves
+
+    @number_of_solves.setter
+    def number_of_solves(self, value: int) -> None:
+        self.db.parameter_db.optimization_state["no_adjoint_solves"] = value
+        self._number_of_solves = value
 
     def solve(self) -> List[fenics.Function]:
         """Solves the adjoint system.

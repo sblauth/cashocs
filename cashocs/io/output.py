@@ -27,16 +27,12 @@ from cashocs.io import managers
 
 if TYPE_CHECKING:
     from cashocs._database import database
-    from cashocs._optimization import optimization_algorithms
 
 
 class OutputManager:
     """Class handling all the output."""
 
-    def __init__(
-        self,
-        db: database.Database,
-    ) -> None:
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
@@ -90,36 +86,17 @@ class OutputManager:
         self.managers.append(managers.MeshManager(self.db, self.result_dir))
         self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """Writes the desired output to files and console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """Writes the desired output to files and console."""
         for manager in self.managers:
-            manager.output(solver)
+            manager.output()
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Writes the summary to files and console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """Writes the summary to files and console."""
         for manager in self.managers:
-            manager.output_summary(solver)
+            manager.output_summary()
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Performs a post processing of the output.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """Performs a postprocessing of the output."""
         for manager in self.managers:
-            manager.post_process(solver)
+            manager.post_process()

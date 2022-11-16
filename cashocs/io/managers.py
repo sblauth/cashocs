@@ -30,32 +30,30 @@ from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs._database import database
-    from cashocs._optimization import optimization_algorithms
 
 
-def generate_summary_str(
-    solver: optimization_algorithms.OptimizationAlgorithm,
-) -> str:
+def generate_summary_str(db: database.Database) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
-        solver: The optimization algorithm.
+        db: The database of the problem.
 
     Returns:
         The summary string.
 
     """
+    optimization_state = db.parameter_db.optimization_state
     strs = [
         "\n",
         "Optimization was successful.\n",
         "Statistics:\n",
-        f"    total iterations: {solver.iteration:4d}\n",
-        f"    final objective value: {solver.objective_value:>10.3e}\n",
-        f"    final gradient norm:   {solver.relative_norm:>10.3e}\n",
+        f"    total iterations: {optimization_state['iteration']:4d}\n",
+        f"    final objective value: {optimization_state['objective_value']:>10.3e}\n",
+        f"    final gradient norm:   {optimization_state['relative_norm']:>10.3e}\n",
         f"    total number of state systems solved:   "
-        f"{solver.state_problem.number_of_solves:4d}\n",
+        f"{optimization_state['no_state_solves']:4d}\n",
         f"    total number of adjoint systems solved: "
-        f"{solver.adjoint_problem.number_of_solves:4d}\n",
+        f"{optimization_state['no_adjoint_solves']:4d}\n",
     ]
 
     return "".join(strs)
@@ -63,20 +61,20 @@ def generate_summary_str(
 
 def generate_output_str(
     db: database.Database,
-    solver: optimization_algorithms.OptimizationAlgorithm,
 ) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
         db: The database of the problem.
-        solver: The optimization algorithm.
 
     Returns:
         The output string, which is used later.
 
     """
-    iteration = solver.iteration
-    objective_value = solver.objective_value
+    optimization_state = db.parameter_db.optimization_state
+
+    iteration = optimization_state["iteration"]
+    objective_value = optimization_state["objective_value"]
 
     if not db.parameter_db.display_box_constraints:
         gradient_str = "grad. norm"
@@ -84,8 +82,7 @@ def generate_output_str(
         gradient_str = "stat. meas."
 
     if db.parameter_db.problem_type == "shape":
-        mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-        mesh_quality = mesh_handler.current_mesh_quality
+        mesh_quality = db.parameter_db.optimization_state["mesh_quality"]
     else:
         mesh_quality = None
 
@@ -105,14 +102,14 @@ def generate_output_str(
     strs = [
         f"{iteration:4d},  ",
         f"{objective_value:>13.3e},  ",
-        f"{solver.relative_norm:>{len(gradient_str) + 5}.3e},  ",
-        f"{solver.gradient_norm:>{len(gradient_str) + 5}.3e},  ",
+        f"{optimization_state['relative_norm']:>{len(gradient_str) + 5}.3e},  ",
+        f"{optimization_state['gradient_norm']:>{len(gradient_str) + 5}.3e},  ",
     ]
     if mesh_quality is not None:
         strs.append(f"{mesh_quality:>9.2f},  ")
 
     if iteration > 0:
-        strs.append(f"{solver.stepsize:>9.3e}")
+        strs.append(f"{optimization_state['stepsize']:>9.3e}")
     if iteration == 0:
         strs.append("\n")
 
@@ -134,9 +131,10 @@ class IOManager(abc.ABC):
         self.result_dir = result_dir
 
         self.config = self.db.config
+        self.optimization_state = self.db.parameter_db.optimization_state
 
     @abc.abstractmethod
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
+    def output(self) -> None:
         """The output operation, which is performed after every iteration.
 
         Args:
@@ -146,9 +144,7 @@ class IOManager(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def output_summary(self) -> None:
         """The output operation, which is performed after convergence.
 
         Args:
@@ -158,9 +154,7 @@ class IOManager(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
+    def post_process(self) -> None:
         """The output operation which is performed as part of the postprocessing.
 
         Args:
@@ -173,11 +167,7 @@ class IOManager(abc.ABC):
 class ResultManager(IOManager):
     """Class for managing the output of the optimization history."""
 
-    def __init__(
-        self,
-        db: database.Database,
-        result_dir: str,
-    ) -> None:
+    def __init__(self, db: database.Database, result_dir: str) -> None:
         """Initializes self.
 
         Args:
@@ -212,44 +202,36 @@ class ResultManager(IOManager):
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """Saves the optimization history to a dictionary.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
-        self.output_dict["cost_function_value"].append(solver.objective_value)
-        self.output_dict["gradient_norm"].append(solver.relative_norm)
+    def output(self) -> None:
+        """Saves the optimization history to a dictionary."""
+        self.output_dict["cost_function_value"].append(
+            self.optimization_state["objective_value"]
+        )
+        self.output_dict["gradient_norm"].append(
+            self.optimization_state["relative_norm"]
+        )
         if self.db.parameter_db.problem_type == "shape":
-            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-            self.output_dict["MeshQuality"].append(mesh_handler.current_mesh_quality)
-        self.output_dict["stepsize"].append(solver.stepsize)
+            self.output_dict["MeshQuality"].append(
+                self.db.parameter_db.optimization_state["mesh_quality"]
+            )
+        self.output_dict["stepsize"].append(self.optimization_state["stepsize"])
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation, which is performed after convergence.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence."""
         pass
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Saves the history of the optimization to a .json file.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
-        self.output_dict["initial_gradient_norm"] = solver.gradient_norm_initial
-        self.output_dict["state_solves"] = solver.state_problem.number_of_solves
-        self.output_dict["adjoint_solves"] = solver.adjoint_problem.number_of_solves
-        self.output_dict["iterations"] = solver.iteration
+    def post_process(self) -> None:
+        """Saves the history of the optimization to a .json file."""
+        self.output_dict["initial_gradient_norm"] = self.optimization_state[
+            "gradient_norm_initial"
+        ]
+        self.output_dict["state_solves"] = self.db.parameter_db.optimization_state[
+            "no_state_solves"
+        ]
+        self.output_dict["adjoint_solves"] = self.db.parameter_db.optimization_state[
+            "no_adjoint_solves"
+        ]
+        self.output_dict["iterations"] = self.optimization_state["iteration"]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
@@ -259,54 +241,30 @@ class ResultManager(IOManager):
 class ConsoleManager(IOManager):
     """Management of the console output."""
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """Prints the output string to the console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """Prints the output string to the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(self.db, solver), flush=True)
+            print(generate_output_str(self.db), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Prints the summary in the console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """Prints the summary in the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(solver), flush=True)
+            print(generate_summary_str(self.db), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation which is performed as part of the postprocessing.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing."""
         pass
 
 
 class FileManager(IOManager):
     """Class for managing the human-readable output of cashocs."""
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """Saves the output string in a file.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """Saves the output string in a file."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            if solver.iteration == 0:
+            if self.optimization_state["iteration"] == 0:
                 file_attr = "w"
             else:
                 file_attr = "a"
@@ -314,77 +272,43 @@ class FileManager(IOManager):
             with open(
                 f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
             ) as file:
-                file.write(f"{generate_output_str(self.db, solver)}\n")
+                file.write(f"{generate_output_str(self.db)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Save the summary in a file.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """Save the summary in a file."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
-                file.write(generate_summary_str(solver))
+                file.write(generate_summary_str(self.db))
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation which is performed as part of the postprocessing.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing."""
         pass
 
 
 class TempFileManager(IOManager):
     """Class for managing temporary files."""
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """The output operation, which is performed after every iteration.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """The output operation, which is performed after every iteration."""
         pass
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation, which is performed after convergence.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence."""
         pass
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Deletes temporary files.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """Deletes temporary files."""
         if self.db.parameter_db.problem_type == "shape":
-            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
             if (
-                mesh_handler.do_remesh
+                self.config.getboolean("Mesh", "remesh")
                 and not self.config.getboolean("Debug", "remeshing")
                 and self.db.parameter_db.temp_dict
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", mesh_handler.remesh_directory], check=True
+                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=True
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
 
@@ -392,41 +316,21 @@ class TempFileManager(IOManager):
 class MeshManager(IOManager):
     """Manages the output of meshes."""
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """The output operation, which is performed after every iteration.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """The output operation, which is performed after every iteration."""
         pass
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation, which is performed after convergence.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence."""
         pass
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """Saves a copy of the optimized mesh in Gmsh format.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """Saves a copy of the optimized mesh in Gmsh format."""
         if self.db.parameter_db.problem_type == "shape":
-            mesh_handler = solver.optimization_variable_abstractions.mesh_handler
-            if mesh_handler.save_optimized_mesh:
+            if self.config.getboolean("Output", "save_mesh"):
                 iomesh.write_out_mesh(
-                    mesh_handler.mesh,
-                    mesh_handler.gmsh_file,
+                    self.db.function_db.states[0].function_space().mesh(),
+                    self.db.parameter_db.gmsh_file_path,
                     f"{self.result_dir}/optimized_mesh.msh",
                 )
 
@@ -657,40 +561,21 @@ class XDMFFileManager(IOManager):
                 append,
             )
 
-    def output(self, solver: optimization_algorithms.OptimizationAlgorithm) -> None:
-        """Saves the variables to xdmf files.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output(self) -> None:
+        """Saves the variables to xdmf files."""
         self._initialize_xdmf_lists()
 
-        iteration = solver.iteration
+        iteration = int(self.optimization_state["iteration"])
 
         self._save_states(iteration)
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
 
-    def output_summary(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation, which is performed after convergence.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence."""
         pass
 
-    def post_process(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> None:
-        """The output operation which is performed as part of the postprocessing.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing."""
         pass
