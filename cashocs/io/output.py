@@ -21,12 +21,11 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from cashocs import _forms
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
@@ -37,15 +36,11 @@ class OutputManager:
     def __init__(
         self,
         db: database.Database,
-        form_handler: _forms.FormHandler,
-        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
-            form_handler: The form handler of the problem.
-            temp_dict: The dict which contains the remeshing initialization.
 
         """
         self.db = db
@@ -85,16 +80,10 @@ class OutputManager:
         if save_txt:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
-            self.managers.append(
-                managers.XDMFFileManager(form_handler, self.db, self.result_dir)
-            )
+            self.managers.append(managers.XDMFFileManager(self.db, self.result_dir))
         self.output_dict = {}
         if save_results:
-            result_manager = managers.ResultManager(
-                self.db,
-                self.result_dir,
-                temp_dict,
-            )
+            result_manager = managers.ResultManager(self.db, self.result_dir)
             self.output_dict = result_manager.output_dict
             self.managers.append(result_manager)
 

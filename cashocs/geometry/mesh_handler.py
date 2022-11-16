@@ -23,7 +23,7 @@ from __future__ import annotations
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -87,14 +87,12 @@ class _MeshHandler:
         self,
         db: database.Database,
         form_handler: _forms.ShapeFormHandler,
-        temp_dict: Optional[Dict],
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             form_handler: The corresponding shape optimization problem.
-            temp_dict: The temporary dict of the problem.
 
         """
         self.db = db
@@ -173,13 +171,13 @@ class _MeshHandler:
                 pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
             )
 
-        self.temp_dict: Dict = {}
         self.gmsh_file: str = ""
         self.remesh_counter = 0
-        if self.do_remesh and temp_dict is not None:
-            self.temp_dict = temp_dict
-            self.gmsh_file = self.temp_dict["gmsh_file"]
-            self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
+        if self.do_remesh and self.db.parameter_db.temp_dict:
+            self.gmsh_file = self.db.parameter_db.temp_dict["gmsh_file"]
+            self.remesh_counter = self.db.parameter_db.temp_dict.get(
+                "remesh_counter", 0
+            )
 
             if not self.db.parameter_db.is_remeshed:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -193,7 +191,9 @@ class _MeshHandler:
                 )
                 fenics.MPI.barrier(fenics.MPI.comm_world)
             else:
-                self.remesh_directory = self.temp_dict["remesh_directory"]
+                self.remesh_directory = self.db.parameter_db.temp_dict[
+                    "remesh_directory"
+                ]
             remesh_path = pathlib.Path(self.remesh_directory)
             if not remesh_path.is_dir():
                 remesh_path.mkdir()
@@ -386,8 +386,7 @@ class _MeshHandler:
                 file.write("CreateGeometry;\n")
                 file.write("\n")
 
-                self.temp_dict = cast(Dict, self.temp_dict)
-                geo_file = self.temp_dict["geo_file"]
+                geo_file = self.db.parameter_db.temp_dict["geo_file"]
                 with open(geo_file, "r", encoding="utf-8") as f:
                     for line in f:
                         if line[0].islower():
@@ -482,7 +481,7 @@ class _MeshHandler:
     def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
         solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
             solver.optimization_problem.factory,
-            self.temp_dict["mesh_file"],
+            self.db.parameter_db.temp_dict["mesh_file"],
         )
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
@@ -509,7 +508,7 @@ class _MeshHandler:
             solver: The optimization algorithm used to solve the problem.
 
         """
-        if self.do_remesh and self.temp_dict is not None:
+        if self.do_remesh and self.db.parameter_db.temp_dict:
             self.remesh_counter += 1
             temp_file = (
                 f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
@@ -518,24 +517,30 @@ class _MeshHandler:
             self._generate_remesh_geo(temp_file)
 
             # save the output dict (without the last entries since they are "remeshed")
-            self.temp_dict["output_dict"] = {}
-            self.temp_dict["output_dict"][
+            self.db.parameter_db.temp_dict["output_dict"] = {}
+            self.db.parameter_db.temp_dict["output_dict"][
                 "state_solves"
             ] = solver.state_problem.number_of_solves
-            self.temp_dict["output_dict"][
+            self.db.parameter_db.temp_dict["output_dict"][
                 "adjoint_solves"
             ] = solver.adjoint_problem.number_of_solves
-            self.temp_dict["output_dict"]["iterations"] = solver.iteration + 1
+            self.db.parameter_db.temp_dict["output_dict"]["iterations"] = (
+                solver.iteration + 1
+            )
 
             output_dict = solver.output_manager.output_dict
-            self.temp_dict["output_dict"]["cost_function_value"] = output_dict[
+            self.db.parameter_db.temp_dict["output_dict"][
                 "cost_function_value"
-            ][:]
-            self.temp_dict["output_dict"]["gradient_norm"] = output_dict[
+            ] = output_dict["cost_function_value"][:]
+            self.db.parameter_db.temp_dict["output_dict"][
                 "gradient_norm"
+            ] = output_dict["gradient_norm"][:]
+            self.db.parameter_db.temp_dict["output_dict"]["stepsize"] = output_dict[
+                "stepsize"
             ][:]
-            self.temp_dict["output_dict"]["stepsize"] = output_dict["stepsize"][:]
-            self.temp_dict["output_dict"]["MeshQuality"] = output_dict["MeshQuality"][:]
+            self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
+                "MeshQuality"
+            ][:]
 
             dim = self.mesh.geometric_dimension()
 
@@ -561,9 +566,11 @@ class _MeshHandler:
 
             _remove_gmsh_parametrizations(new_gmsh_file)
 
-            self.temp_dict["remesh_counter"] = self.remesh_counter
-            self.temp_dict["remesh_directory"] = self.remesh_directory
-            self.temp_dict["result_dir"] = solver.output_manager.result_dir
+            self.db.parameter_db.temp_dict["remesh_counter"] = self.remesh_counter
+            self.db.parameter_db.temp_dict["remesh_directory"] = self.remesh_directory
+            self.db.parameter_db.temp_dict[
+                "result_dir"
+            ] = solver.output_manager.result_dir
 
             new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
 
@@ -571,13 +578,13 @@ class _MeshHandler:
 
             self.clean_previous_gmsh_files()
 
-            self.temp_dict["mesh_file"] = new_xdmf_file
-            self.temp_dict["gmsh_file"] = new_gmsh_file
+            self.db.parameter_db.temp_dict["mesh_file"] = new_xdmf_file
+            self.db.parameter_db.temp_dict["gmsh_file"] = new_gmsh_file
 
-            self.temp_dict["OptimizationRoutine"][
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
                 "iteration_counter"
             ] = solver.iteration
-            self.temp_dict["OptimizationRoutine"][
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 

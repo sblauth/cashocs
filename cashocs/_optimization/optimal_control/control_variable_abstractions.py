@@ -58,13 +58,12 @@ class ControlVariableAbstractions(
         self.box_constraints = box_constraints
         self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
 
-        self.controls = optimization_problem.controls
         self.control_temp = _utils.create_function_list(
             self.db.function_db.control_spaces
         )
-        for i in range(len(self.controls)):
+        for i in range(len(self.db.function_db.controls)):
             self.control_temp[i].vector().vec().aypx(
-                0.0, self.controls[i].vector().vec()
+                0.0, self.db.function_db.controls[i].vector().vec()
             )
             self.control_temp[i].vector().apply("")
 
@@ -88,7 +87,8 @@ class ControlVariableAbstractions(
         for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
-                self.controls[j].vector().vec() - self.control_temp[j].vector().vec(),
+                self.db.function_db.controls[j].vector().vec()
+                - self.control_temp[j].vector().vec(),
             )
             self.projected_difference[j].vector().apply("")
 
@@ -98,19 +98,19 @@ class ControlVariableAbstractions(
 
     def store_optimization_variables(self) -> None:
         """Saves a copy of the current iterate of the optimization variables."""
-        for i in range(len(self.controls)):
+        for i in range(len(self.db.function_db.controls)):
             self.control_temp[i].vector().vec().aypx(
-                0.0, self.controls[i].vector().vec()
+                0.0, self.db.function_db.controls[i].vector().vec()
             )
             self.control_temp[i].vector().apply("")
 
     def revert_variable_update(self) -> None:
         """Reverts the optimization variables to the current iterate."""
-        for i in range(len(self.controls)):
-            self.controls[i].vector().vec().aypx(
+        for i in range(len(self.db.function_db.controls)):
+            self.db.function_db.controls[i].vector().vec().aypx(
                 0.0, self.control_temp[i].vector().vec()
             )
-            self.controls[i].vector().apply("")
+            self.db.function_db.controls[i].vector().apply("")
 
     def update_optimization_variables(
         self, search_direction: List[fenics.Function], stepsize: float, beta: float
@@ -129,13 +129,15 @@ class ControlVariableAbstractions(
         """
         self.store_optimization_variables()
 
-        for j in range(len(self.controls)):
-            self.controls[j].vector().vec().axpy(
+        for j in range(len(self.db.function_db.controls)):
+            self.db.function_db.controls[j].vector().vec().axpy(
                 stepsize, search_direction[j].vector().vec()
             )
-            self.controls[j].vector().apply("")
+            self.db.function_db.controls[j].vector().apply("")
 
-        self.box_constraints.restrictor.project_to_admissible_set(self.controls)
+        self.box_constraints.restrictor.project_to_admissible_set(
+            self.db.function_db.controls
+        )
 
         return stepsize
 
@@ -162,7 +164,7 @@ class ControlVariableAbstractions(
         for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
-                self.controls[j].vector().vec()
+                self.db.function_db.controls[j].vector().vec()
                 - self.db.function_db.gradient[j].vector().vec(),
             )
             self.projected_difference[j].vector().apply("")
@@ -174,7 +176,7 @@ class ControlVariableAbstractions(
         for j in range(len(self.projected_difference)):
             self.projected_difference[j].vector().vec().aypx(
                 0.0,
-                self.controls[j].vector().vec()
+                self.db.function_db.controls[j].vector().vec()
                 - self.projected_difference[j].vector().vec(),
             )
             self.projected_difference[j].vector().apply("")
@@ -216,16 +218,16 @@ class ControlVariableAbstractions(
             search_direction: The current search direction (will be overwritten).
 
         """
-        for j in range(len(self.controls)):
+        for j in range(len(self.db.function_db.controls)):
             idx = np.asarray(
                 np.logical_or(
                     np.logical_and(
-                        self.controls[j].vector()[:]
+                        self.db.function_db.controls[j].vector()[:]
                         <= self.box_constraints.control_constraints[j][0].vector()[:],
                         search_direction[j].vector()[:] < 0.0,
                     ),
                     np.logical_and(
-                        self.controls[j].vector()[:]
+                        self.db.function_db.controls[j].vector()[:]
                         >= self.box_constraints.control_constraints[j][1].vector()[:],
                         search_direction[j].vector()[:] > 0.0,
                     ),

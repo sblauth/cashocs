@@ -22,11 +22,10 @@ from __future__ import annotations
 import abc
 import json
 import subprocess  # nosec B404
-from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import cast, List, TYPE_CHECKING, Union
 
 import fenics
 
-from cashocs import _forms
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
@@ -178,14 +177,12 @@ class ResultManager(IOManager):
         self,
         db: database.Database,
         result_dir: str,
-        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             result_dir: Path to the directory, where the results are saved.
-            temp_dict: Dictionary with history of the optimization process
 
         """
         super().__init__(db, result_dir)
@@ -195,17 +192,20 @@ class ResultManager(IOManager):
         self.output_dict = {}
         if (
             self.db.parameter_db.problem_type == "shape"
-            and temp_dict is not None
             and self.db.parameter_db.is_remeshed
         ):
-            self.output_dict["cost_function_value"] = temp_dict["output_dict"][
-                "cost_function_value"
-            ]
-            self.output_dict["gradient_norm"] = temp_dict["output_dict"][
-                "gradient_norm"
-            ]
-            self.output_dict["stepsize"] = temp_dict["output_dict"]["stepsize"]
-            self.output_dict["MeshQuality"] = temp_dict["output_dict"]["MeshQuality"]
+            self.output_dict["cost_function_value"] = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ]["cost_function_value"]
+            self.output_dict["gradient_norm"] = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ]["gradient_norm"]
+            self.output_dict["stepsize"] = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ]["stepsize"]
+            self.output_dict["MeshQuality"] = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ]["MeshQuality"]
         else:
             self.output_dict["cost_function_value"] = []
             self.output_dict["gradient_norm"] = []
@@ -380,7 +380,7 @@ class TempFileManager(IOManager):
             if (
                 mesh_handler.do_remesh
                 and not self.config.getboolean("Debug", "remeshing")
-                and mesh_handler.temp_dict is not None
+                and self.db.parameter_db.temp_dict
                 and fenics.MPI.rank(fenics.MPI.comm_world) == 0
             ):
                 subprocess.run(  # nosec B603, B607
@@ -436,21 +436,18 @@ class XDMFFileManager(IOManager):
 
     def __init__(
         self,
-        form_handler: _forms.FormHandler,
         db: database.Database,
         result_dir: str,
     ) -> None:
         """Initializes self.
 
         Args:
-            form_handler: The form handler of the problem.
             db: The database of the problem.
             result_dir: Path to the directory, where the output files are saved in.
 
         """
         super().__init__(db, result_dir)
 
-        self.form_handler = form_handler
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
@@ -571,12 +568,11 @@ class XDMFFileManager(IOManager):
             iteration: The current iteration count.
 
         """
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         if self.save_state and self.db.parameter_db.problem_type == "control":
-            for i in range(self.db.parameter_db.control_dim):
+            for i in range(len(self.db.function_db.controls)):
                 self._write_xdmf_step(
                     cast(str, self.control_xdmf_list[i]),
-                    self.form_handler.controls[i],
+                    self.db.function_db.controls[i],
                     f"control_{i}",
                     iteration,
                 )

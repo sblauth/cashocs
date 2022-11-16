@@ -30,7 +30,9 @@ class FunctionDatabase:
     """The database for functions and function spaces."""
 
     def __init__(
-        self, states: List[fenics.Function], adjoints: List[fenics.Function]
+        self,
+        states: List[fenics.Function],
+        adjoints: List[fenics.Function],
     ) -> None:
         """Initializes the database.
 
@@ -68,3 +70,5 @@ class FunctionDatabase:
 
         self.control_spaces: List[fenics.FunctionSpace] = []
         self.gradient: List[fenics.Function] = []
+
+        self.controls: List[fenics.Function] = []

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 
@@ -40,7 +40,6 @@ class StateProblem(pde_problem.PDEProblem):
         db: database.Database,
         state_form_handler: _forms.StateFormHandler,
         initial_guess: Optional[List[fenics.Function]],
-        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
@@ -49,14 +48,12 @@ class StateProblem(pde_problem.PDEProblem):
             state_form_handler: The form handler for the state problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
-            temp_dict: A dict used for reinitialization when remeshing is performed.
 
         """
         super().__init__(db)
 
         self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
-        self.temp_dict = temp_dict
 
         self.bcs_list = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
@@ -83,10 +80,10 @@ class StateProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
-        if self.temp_dict is not None:
-            self.number_of_solves: int = self.temp_dict["output_dict"].get(
-                "state_solves", 0
-            )
+        if self.db.parameter_db.temp_dict:
+            self.number_of_solves: int = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ].get("state_solves", 0)
         else:
             self.number_of_solves = 0
 

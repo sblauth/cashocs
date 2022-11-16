@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -29,9 +29,11 @@ from cashocs import _exceptions
 from cashocs import _utils
 
 if TYPE_CHECKING:
+    from cashocs import _pde_problems
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import line_search as ls
+    from cashocs._optimization import optimization_variable_abstractions as ov
 
 
 class OptimizationAlgorithm(abc.ABC):
@@ -59,9 +61,13 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.optimization_problem = optimization_problem
         self.form_handler = optimization_problem.form_handler
-        self.state_problem = optimization_problem.state_problem
+        self.state_problem: _pde_problems.StateProblem = (
+            optimization_problem.state_problem
+        )
         self.config = self.state_problem.config
-        self.adjoint_problem = optimization_problem.adjoint_problem
+        self.adjoint_problem: _pde_problems.AdjointProblem = (
+            optimization_problem.adjoint_problem
+        )
 
         self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
@@ -70,20 +76,20 @@ class OptimizationAlgorithm(abc.ABC):
             self.db.function_db.control_spaces
         )
 
-        self.optimization_variable_abstractions = (
+        self.optimization_variable_abstractions: ov.OptimizationVariableAbstractions = (
             optimization_problem.optimization_variable_abstractions
         )
 
-        self.gradient_norm = 1.0
+        self.gradient_norm: float = 1.0
         self.iteration: int = 0
-        self.objective_value = 1.0
-        self.gradient_norm_initial = 1.0
-        self.relative_norm = 1.0
+        self.objective_value: float = 1.0
+        self.gradient_norm_initial: float = 1.0
+        self.relative_norm: float = 1.0
 
         self.requires_remeshing = False
         self.is_restarted: bool = False
 
-        self.stepsize = 1.0
+        self.stepsize: float = 1.0
         self.converged = False
         self.converged_reason = 0
 
@@ -93,11 +99,6 @@ class OptimizationAlgorithm(abc.ABC):
             "OptimizationRoutine", "maximum_iterations"
         )
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
-
-        if self.db.parameter_db.problem_type == "shape":
-            self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
-        else:
-            self.temp_dict = None
 
         self.output_manager = optimization_problem.output_manager
         self.initialize_solver()
@@ -235,14 +236,14 @@ class OptimizationAlgorithm(abc.ABC):
         """Initializes the solver."""
         self.converged = False
 
-        if self.temp_dict is not None:
+        if self.db.parameter_db.temp_dict:
             try:
-                self.iteration = self.temp_dict["OptimizationRoutine"].get(
-                    "iteration_counter", 0
-                )
-                self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
-                    "gradient_norm_initial", 0.0
-                )
+                self.iteration = self.db.parameter_db.temp_dict[
+                    "OptimizationRoutine"
+                ].get("iteration_counter", 0)
+                self.gradient_norm_initial = self.db.parameter_db.temp_dict[
+                    "OptimizationRoutine"
+                ].get("gradient_norm_initial", 0.0)
             except TypeError:
                 self.iteration = 0
                 self.gradient_norm_initial = 0.0

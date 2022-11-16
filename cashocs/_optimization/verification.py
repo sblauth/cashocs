@@ -47,20 +47,20 @@ def _initialize_control_variable(
     """
     if u is None:
         u = []
-        for j in range(len(ocp.controls)):
+        for j in range(len(ocp.db.function_db.controls)):
             temp = fenics.Function(ocp.db.function_db.control_spaces[j])
-            temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+            temp.vector().vec().aypx(0.0, ocp.db.function_db.controls[j].vector().vec())
             temp.vector().apply("")
             u.append(temp)
 
     # check if u and ocp.controls coincide, if yes, make a deepcopy
     ids_u = [fun.id() for fun in u]
-    ids_controls = [fun.id() for fun in ocp.controls]
+    ids_controls = [fun.id() for fun in ocp.db.function_db.controls]
     if ids_u == ids_controls:
         u = []
-        for j in range(len(ocp.controls)):
+        for j in range(len(ocp.db.function_db.controls)):
             temp = fenics.Function(ocp.db.function_db.control_spaces[j])
-            temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+            temp.vector().vec().aypx(0.0, ocp.db.function_db.controls[j].vector().vec())
             temp.vector().apply("")
             u.append(temp)
 
@@ -93,9 +93,9 @@ def control_gradient_test(
     custom_rng = rng or np.random
 
     initial_state = []
-    for j in range(len(ocp.controls)):
+    for j in range(len(ocp.db.function_db.controls)):
         temp = fenics.Function(ocp.db.function_db.control_spaces[j])
-        temp.vector().vec().aypx(0.0, ocp.controls[j].vector().vec())
+        temp.vector().vec().aypx(0.0, ocp.db.function_db.controls[j].vector().vec())
         temp.vector().apply("")
         initial_state.append(temp)
 
@@ -111,12 +111,16 @@ def control_gradient_test(
             temp.vector().apply("")
             h.append(temp)
 
-    for j in range(len(ocp.controls)):
-        ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
-        ocp.controls[j].vector().apply("")
+    for j in range(len(ocp.db.function_db.controls)):
+        ocp.db.function_db.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+        ocp.db.function_db.controls[j].vector().apply("")
 
     # Compute the norm of u for scaling purposes.
-    scaling = np.sqrt(ocp.form_handler.scalar_product(ocp.controls, ocp.controls))
+    scaling = np.sqrt(
+        ocp.form_handler.scalar_product(
+            ocp.db.function_db.controls, ocp.db.function_db.controls
+        )
+    )
     if scaling < 1e-3:
         scaling = 1.0
 
@@ -130,11 +134,11 @@ def control_gradient_test(
     residuals = []
 
     for eps in epsilons:
-        for j in range(len(ocp.controls)):
-            ocp.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
-            ocp.controls[j].vector().apply("")
-            ocp.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
-            ocp.controls[j].vector().apply("")
+        for j in range(len(ocp.db.function_db.controls)):
+            ocp.db.function_db.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
+            ocp.db.function_db.controls[j].vector().apply("")
+            ocp.db.function_db.controls[j].vector().vec().axpy(eps, h[j].vector().vec())
+            ocp.db.function_db.controls[j].vector().apply("")
         # pylint: disable=protected-access
         ocp._erase_pde_memory()
         cost_functional_at_v = ocp.reduced_cost_functional.evaluate()
@@ -151,9 +155,11 @@ def control_gradient_test(
 
     rates = compute_convergence_rates(epsilons, residuals)
 
-    for j in range(len(ocp.controls)):
-        ocp.controls[j].vector().vec().aypx(0.0, initial_state[j].vector().vec())
-        ocp.controls[j].vector().apply("")
+    for j in range(len(ocp.db.function_db.controls)):
+        ocp.db.function_db.controls[j].vector().vec().aypx(
+            0.0, initial_state[j].vector().vec()
+        )
+        ocp.db.function_db.controls[j].vector().apply("")
 
     min_rate: float = np.min(rates)
     return min_rate

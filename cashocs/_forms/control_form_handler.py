@@ -60,10 +60,7 @@ class ControlFormHandler(form_handler.FormHandler):
         """
         super().__init__(optimization_problem, db)
 
-        # Initialize the attributes from the arguments
-        self.controls = optimization_problem.controls
-
-        self.hessian_form_handler = HessianFormHandler(self.db, self.controls)
+        self.hessian_form_handler = HessianFormHandler(self.db)
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 
@@ -180,27 +177,28 @@ class ControlFormHandler(form_handler.FormHandler):
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
         test_functions_control = [
-            fenics.TestFunction(c.function_space()) for c in self.controls
+            fenics.TestFunction(c.function_space())
+            for c in self.db.function_db.controls
         ]
         self.gradient_forms_rhs = [
-            self.lagrangian.derivative(self.controls[i], test_functions_control[i])
-            for i in range(len(self.controls))
+            self.lagrangian.derivative(
+                self.db.function_db.controls[i], test_functions_control[i]
+            )
+            for i in range(len(self.db.function_db.controls))
         ]
 
 
 class HessianFormHandler:
     """Form handler for second order forms and hessians."""
 
-    def __init__(self, db: database.Database, controls: List[fenics.Function]):
+    def __init__(self, db: database.Database):
         """Initializes the form handler for the second derivatives.
 
         Args:
             db: The database of the problem.
-            controls: The list of control variables.
 
         """
         self.db = db
-        self.controls = controls
 
         self.config = self.db.config
 
@@ -209,10 +207,11 @@ class HessianFormHandler:
         self.w_3: List[ufl.Form] = []
         self.hessian_rhs: List[ufl.Form] = []
         self.test_directions = _utils.create_function_list(
-            [c.function_space() for c in self.controls]
+            [c.function_space() for c in self.db.function_db.controls]
         )
         self.test_functions_control = [
-            fenics.TestFunction(c.function_space()) for c in self.controls
+            fenics.TestFunction(c.function_space())
+            for c in self.db.function_db.controls
         ]
 
         self.sensitivity_eqs_temp: List[ufl.Form] = []
@@ -285,10 +284,10 @@ class HessianFormHandler:
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
-                            self.controls[j],
+                            self.db.function_db.controls[j],
                             self.test_directions[j],
                         )
-                        for j in range(len(self.controls))
+                        for j in range(len(self.db.function_db.controls))
                     ]
                 )
                 for i in range(self.db.parameter_db.state_dim)
@@ -300,10 +299,10 @@ class HessianFormHandler:
                     [
                         fenics.derivative(
                             self.sensitivity_eqs_temp[i],
-                            self.controls[j],
+                            self.db.function_db.controls[j],
                             self.test_directions[j],
                         )
-                        for j in range(len(self.controls))
+                        for j in range(len(self.db.function_db.controls))
                     ]
                 )
                 for i in range(self.db.parameter_db.state_dim)
@@ -325,9 +324,9 @@ class HessianFormHandler:
         ]
         self.lagrangian_u = [
             self.db.form_db.lagrangian.derivative(
-                self.controls[i], self.test_functions_control[i]
+                self.db.function_db.controls[i], self.test_functions_control[i]
             )
-            for i in range(len(self.controls))
+            for i in range(len(self.db.function_db.controls))
         ]
 
     def _compute_second_order_lagrangian_derivatives(self) -> None:
@@ -357,18 +356,22 @@ class HessianFormHandler:
         self.lagrangian_uy = [
             [
                 fenics.derivative(
-                    self.lagrangian_y[i], self.controls[j], self.test_directions[j]
+                    self.lagrangian_y[i],
+                    self.db.function_db.controls[j],
+                    self.test_directions[j],
                 )
-                for j in range(len(self.controls))
+                for j in range(len(self.db.function_db.controls))
             ]
             for i in range(self.db.parameter_db.state_dim)
         ]
         self.lagrangian_uu = [
             [
                 fenics.derivative(
-                    self.lagrangian_u[i], self.controls[j], self.test_directions[j]
+                    self.lagrangian_u[i],
+                    self.db.function_db.controls[j],
+                    self.test_directions[j],
                 )
-                for j in range(len(self.controls))
+                for j in range(len(self.db.function_db.controls))
             ]
             for i in range(len(self.lagrangian_u))
         ]
@@ -442,13 +445,13 @@ class HessianFormHandler:
                 [
                     fenics.derivative(
                         adjoint_sensitivity_eqs_all_temp[j],
-                        self.controls[i],
+                        self.db.function_db.controls[i],
                         self.test_functions_control[i],
                     )
                     for j in range(self.db.parameter_db.state_dim)
                 ]
             )
-            for i in range(len(self.controls))
+            for i in range(len(self.db.function_db.controls))
         ]
 
     def compute_newton_forms(self) -> None:

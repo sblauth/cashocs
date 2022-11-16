@@ -256,8 +256,8 @@ def test_control_gd_cc():
     )
     ocp_cc.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=22)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_cg_fr_cc():
@@ -272,8 +272,8 @@ def test_control_cg_fr_cc():
     )
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=48)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_cg_pr_cc():
@@ -287,8 +287,8 @@ def test_control_cg_pr_cc():
     )
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=25)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_cg_hs_cc():
@@ -302,8 +302,8 @@ def test_control_cg_hs_cc():
     )
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=30)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_cg_dy_cc():
@@ -317,8 +317,8 @@ def test_control_cg_dy_cc():
     )
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=9)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_cg_hz_cc():
@@ -332,8 +332,8 @@ def test_control_cg_hz_cc():
     )
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=37)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_lbfgs_cc():
@@ -345,8 +345,8 @@ def test_control_lbfgs_cc():
     )
     ocp_cc.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=11)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_newton_cg_cc():
@@ -360,8 +360,8 @@ def test_control_newton_cg_cc():
     )
     ocp_cc.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=8)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_newton_cr_cc():
@@ -375,8 +375,8 @@ def test_control_newton_cr_cc():
     )
     ocp_cc.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=9)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.controls[0].vector()[:] <= cc[1])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_custom_supply_control():

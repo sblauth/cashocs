@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import abc
 import copy
-from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Callable, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -35,13 +35,13 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _loggers
+from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
 from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
-    from cashocs import _pde_problems
     from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
@@ -142,8 +142,6 @@ class OptimizationProblem(abc.ABC):
             ``adjoints[i]``.
 
         """
-        self.temp_dict: Optional[Dict] = None
-
         self.state_forms = _utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)
         self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
@@ -194,6 +192,17 @@ class OptimizationProblem(abc.ABC):
             self.bcs_list,
         )
         self.general_form_handler = _forms.GeneralFormHandler(self.db)
+        self.state_problem = _pde_problems.StateProblem(
+            self.db,
+            self.general_form_handler.state_form_handler,
+            self.initial_guess,
+        )
+        self.adjoint_problem = _pde_problems.AdjointProblem(
+            self.db,
+            self.general_form_handler.adjoint_form_handler,
+            self.state_problem,
+        )
+        self.output_manager = io.OutputManager(self.db)
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

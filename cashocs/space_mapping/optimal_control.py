@@ -216,7 +216,9 @@ class ParameterExtraction:
             for i in range(len(self.adjoints))
         }
         dict_controls = {
-            coarse_model.optimal_control_problem.controls[i]: self.controls[i]
+            coarse_model.optimal_control_problem.db.function_db.controls[
+                i
+            ]: self.controls[i]
             for i in range(len(self.controls))
         }
         mapping_dict = {}
@@ -356,7 +358,7 @@ class SpaceMapping:
         self.iteration = 0
         self.stepsize = 1.0
 
-        self.z_star = self.coarse_model.optimal_control_problem.controls
+        self.z_star = self.coarse_model.optimal_control_problem.db.function_db.controls
         self.norm_z_star = 1.0
 
         self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)

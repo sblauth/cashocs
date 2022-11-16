@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -52,18 +52,19 @@ class ParameterDatabase:
         self.config = config
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.temp_dict: Dict = {}
 
         self._problem_type = ""
-        self.state_dim = len(function_db.states)
+        self.state_dim: int = len(function_db.states)
 
-        self.display_box_constraints = False
+        self.display_box_constraints: bool = False
 
         self.state_adjoint_equal_spaces = False
         if function_db.state_spaces == function_db.adjoint_spaces:
             self.state_adjoint_equal_spaces = True
 
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
-        self.is_remeshed = False
+        self.is_remeshed: bool = False
 
         self.control_dim: int = 1
 

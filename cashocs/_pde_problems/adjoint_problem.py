@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import fenics
 
@@ -41,7 +41,6 @@ class AdjointProblem(pde_problem.PDEProblem):
         db: database.Database,
         adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
-        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
@@ -50,15 +49,12 @@ class AdjointProblem(pde_problem.PDEProblem):
             adjoint_form_handler: The form handler for the adjoint system.
             state_problem: The StateProblem object used to get the point where we
                 linearize the problem.
-            temp_dict: A dictionary used for reinitializations when remeshing is
-                performed.
 
         """
         super().__init__(db)
 
         self.adjoint_form_handler = adjoint_form_handler
         self.state_problem = state_problem
-        self.temp_dict = temp_dict
 
         self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
@@ -82,10 +78,10 @@ class AdjointProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
         ]
 
-        if self.temp_dict is not None:
-            self.number_of_solves: int = self.temp_dict["output_dict"].get(
-                "adjoint_solves", 0
-            )
+        if self.db.parameter_db.temp_dict:
+            self.number_of_solves: int = self.db.parameter_db.temp_dict[
+                "output_dict"
+            ].get("adjoint_solves", 0)
         else:
             self.number_of_solves = 0
 

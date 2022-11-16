@@ -255,7 +255,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         )
 
         if temp_dict is not None:
-            self.temp_dict = temp_dict
+            self.db.parameter_db.temp_dict.update(temp_dict)
             self.db.parameter_db.is_remeshed = True
 
         if shape_scalar_product is None:
@@ -298,8 +298,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self, self.db
         )
 
-        if self.temp_dict is not None:
-            self.temp_dict["Regularization"] = {
+        if self.db.parameter_db.temp_dict:
+            self.db.parameter_db.temp_dict["Regularization"] = {
                 "mu_volume": self.form_handler.shape_regularization.mu_volume,
                 "mu_surface": self.form_handler.shape_regularization.mu_surface,
                 "mu_curvature": self.form_handler.shape_regularization.mu_curvature,
@@ -311,24 +311,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
-            self.db, self.form_handler, self.temp_dict
+            self.db, self.form_handler
         )
 
         self.state_spaces = self.db.function_db.state_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
 
-        self.state_problem = _pde_problems.StateProblem(
-            self.db,
-            self.general_form_handler.state_form_handler,
-            self.initial_guess,
-            self.temp_dict,
-        )
-        self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.db,
-            self.general_form_handler.adjoint_form_handler,
-            self.state_problem,
-            self.temp_dict,
-        )
         self.gradient_problem = _pde_problems.ShapeGradientProblem(
             self.db, self.form_handler, self.state_problem, self.adjoint_problem
         )
@@ -339,9 +327,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.optimization_variable_abstractions = (
             shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
-        )
-        self.output_manager = io.OutputManager(
-            self.db, self.form_handler, self.temp_dict
         )
 
         if bool(desired_weights is not None):
@@ -389,8 +374,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "For remeshing, the factory function"
                 " must either return one or two objects."
             )
-        if hasattr(self, "temp_dict"):
-            kwargs["temp_dict"] = self.temp_dict
+        if hasattr(self, "db") and self.db.parameter_db.temp_dict:
+            kwargs["temp_dict"] = self.db.parameter_db.temp_dict
         self.__init__(  # type: ignore # pylint: disable=unnecessary-dunder-call
             *args, **kwargs
         )
@@ -400,15 +385,17 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if self.do_remesh:
             if not self.db.parameter_db.is_remeshed:
                 self._change_except_hook()
-                self.temp_dict = {
-                    "gmsh_file": self.config.get("Mesh", "gmsh_file"),
-                    "geo_file": self.config.get("Mesh", "geo_file"),
-                    "OptimizationRoutine": {
-                        "iteration_counter": 0,
-                        "gradient_norm_initial": 0.0,
-                    },
-                    "output_dict": {},
-                }
+                self.db.parameter_db.temp_dict.update(
+                    {
+                        "gmsh_file": self.config.get("Mesh", "gmsh_file"),
+                        "geo_file": self.config.get("Mesh", "geo_file"),
+                        "OptimizationRoutine": {
+                            "iteration_counter": 0,
+                            "gradient_norm_initial": 0.0,
+                        },
+                        "output_dict": {},
+                    }
+                )
 
             else:
                 self._change_except_hook()

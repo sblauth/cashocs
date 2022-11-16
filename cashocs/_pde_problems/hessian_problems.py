@@ -118,8 +118,6 @@ class HessianProblem:
 
         self.state_dim = self.db.parameter_db.state_dim
 
-        self.controls = self.form_handler.controls
-
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
         self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
@@ -139,7 +137,7 @@ class HessianProblem:
             ["ksp_max_it", 100],
         ]
         self.riesz_ksp_options: _typing.KspOptions = []
-        for _ in range(len(self.controls)):
+        for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
     def hessian_application(

@@ -284,9 +284,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         )
 
         self.shape_regularization: shape_regularization.ShapeRegularization = (
-            shape_regularization.ShapeRegularization(
-                self.db, self, optimization_problem.temp_dict
-            )
+            shape_regularization.ShapeRegularization(self.db, self)
         )
 
         fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")

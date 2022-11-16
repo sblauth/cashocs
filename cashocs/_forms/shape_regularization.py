@@ -24,7 +24,7 @@ and barycenter, and desired ones.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -72,18 +72,15 @@ class ShapeRegularization:
         self,
         db: database.Database,
         form_handler: shape_form_handler.ShapeFormHandler,
-        temp_dict: Optional[Dict],
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             form_handler: The corresponding shape form handler object.
-            temp_dict: The temporary dict for remeshing.
 
         """
         self.db = db
-        self.temp_dict = temp_dict
 
         self.test_vector_field = form_handler.test_vector_field
         self.config = db.config
@@ -538,16 +535,24 @@ class ShapeRegularization:
     def _scale_weights(self) -> None:
         """Scales the terms of the regularization by the weights given in the config."""
         if self.use_relative_scaling and self.has_regularization:
-            if self.temp_dict is None:
+            if not self.db.parameter_db.temp_dict:
                 self._scale_volume_term()
                 self._scale_surface_term()
                 self._scale_curvature_term()
                 self._scale_barycenter_term()
             else:
-                self.mu_volume = self.temp_dict["Regularization"]["mu_volume"]
-                self.mu_surface = self.temp_dict["Regularization"]["mu_surface"]
-                self.mu_curvature = self.temp_dict["Regularization"]["mu_curvature"]
-                self.mu_barycenter = self.temp_dict["Regularization"]["mu_barycenter"]
+                self.mu_volume = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_volume"
+                ]
+                self.mu_surface = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_surface"
+                ]
+                self.mu_curvature = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_curvature"
+                ]
+                self.mu_barycenter = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_barycenter"
+                ]
 
     def _compute_barycenter_list(self) -> List[float]:
         """Computes the list of barycenters for the geometry.

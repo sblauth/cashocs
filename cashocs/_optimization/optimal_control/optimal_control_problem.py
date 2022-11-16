@@ -55,8 +55,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     ``y1`` and so on).
     """
 
-    controls: List[fenics.Function]
-
     def __init__(
         self,
         state_forms: Union[List[ufl.Form], ufl.Form],
@@ -154,10 +152,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
-        self.controls = _utils.enlist(controls)
+        self.db.function_db.controls = _utils.enlist(controls)
 
-        self.db.parameter_db.control_dim = len(self.controls)
-        self.db.function_db.control_spaces = [x.function_space() for x in self.controls]
+        self.db.parameter_db.control_dim = len(self.db.function_db.controls)
+        self.db.function_db.control_spaces = [
+            x.function_space() for x in self.db.function_db.controls
+        ]
         self.db.function_db.gradient = _utils.create_function_list(
             self.db.function_db.control_spaces
         )
@@ -187,11 +187,11 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
             self.use_control_bcs = True
         else:
-            self.control_bcs_list = [None] * len(self.controls)
+            self.control_bcs_list = [None] * len(self.db.function_db.controls)
 
         # control_constraints
         self.box_constraints = box_constraints.BoxConstraints(
-            self.controls, control_constraints
+            self.db.function_db.controls, control_constraints
         )
         self.db.parameter_db.display_box_constraints = (
             self.box_constraints.display_box_constraints
@@ -210,14 +210,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.db.function_db.control_spaces
         )
 
-        self.state_problem = _pde_problems.StateProblem(
-            self.db,
-            self.general_form_handler.state_form_handler,
-            self.initial_guess,
-        )
-        self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.db, self.general_form_handler.adjoint_form_handler, self.state_problem
-        )
         self.gradient_problem: _pde_problems.ControlGradientProblem = (
             _pde_problems.ControlGradientProblem(
                 self.db, self.form_handler, self.state_problem, self.adjoint_problem
@@ -231,9 +223,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         )
 
         self.objective_value = 1.0
-        self.output_manager = io.OutputManager(
-            self.db, self.form_handler, self.temp_dict
-        )
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(
                 self, self.box_constraints, self.db
@@ -271,9 +260,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     def _setup_control_bcs(self) -> None:
         """Sets up the boundary conditions for the control variables."""
         if self.use_control_bcs:
-            for i in range(len(self.controls)):
+            for i in range(len(self.db.function_db.controls)):
                 for bc in self.control_bcs_list_inhomogeneous[i]:
-                    bc.apply(self.controls[i].vector())
+                    bc.apply(self.db.function_db.controls[i].vector())
 
     def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
         line_search_type = self.config.get("LineSearch", "method").casefold()
@@ -477,14 +466,16 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         """
         if riesz_scalar_products is None:
-            dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
+            dx = fenics.Measure(
+                "dx", self.db.function_db.controls[0].function_space().mesh()
+            )
             return [
                 fenics.inner(
-                    fenics.TrialFunction(self.controls[i].function_space()),
-                    fenics.TestFunction(self.controls[i].function_space()),
+                    fenics.TrialFunction(self.db.function_db.control_spaces[i]),
+                    fenics.TestFunction(self.db.function_db.control_spaces[i]),
                 )
                 * dx
-                for i in range(len(self.controls))
+                for i in range(len(self.db.function_db.controls))
             ]
         else:
             self.uses_custom_scalar_product = True
