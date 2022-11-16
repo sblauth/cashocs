@@ -337,7 +337,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.optimization_variable_abstractions = (
             shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
         )
-        self.output_manager = io.OutputManager(self, self.db)
+        self.output_manager = io.OutputManager(
+            self.db, self.form_handler, self.temp_dict
+        )
 
         if bool(desired_weights is not None):
             self._scale_cost_functional()

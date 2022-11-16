@@ -228,7 +228,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.gradient = self.gradient_problem.gradient
         self.objective_value = 1.0
-        self.output_manager = io.OutputManager(self, self.db)
+        self.output_manager = io.OutputManager(
+            self.db, self.form_handler, self.temp_dict
+        )
         self.optimization_variable_abstractions = (
             optimal_control.ControlVariableAbstractions(
                 self, self.box_constraints, self.db

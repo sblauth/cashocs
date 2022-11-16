@@ -21,27 +21,31 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 from cashocs.io import managers
 
 if TYPE_CHECKING:
+    from cashocs import _forms
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
-    from cashocs._optimization import optimization_problem as op
 
 
 class OutputManager:
     """Class handling all the output."""
 
     def __init__(
-        self, optimization_problem: op.OptimizationProblem, db: database.Database
+        self,
+        db: database.Database,
+        form_handler: _forms.FormHandler,
+        temp_dict: Optional[Dict] = None,
     ) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
             db: The database of the problem.
+            form_handler: The form handler of the problem.
+            temp_dict: The dict which contains the remeshing initialization.
 
         """
         self.db = db
@@ -82,16 +86,14 @@ class OutputManager:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
             self.managers.append(
-                managers.XDMFFileManager(
-                    optimization_problem.form_handler, self.db, self.result_dir
-                )
+                managers.XDMFFileManager(form_handler, self.db, self.result_dir)
             )
         self.output_dict = {}
         if save_results:
             result_manager = managers.ResultManager(
                 self.db,
                 self.result_dir,
-                optimization_problem.temp_dict,
+                temp_dict,
             )
             self.output_dict = result_manager.output_dict
             self.managers.append(result_manager)
