@@ -56,6 +56,8 @@ class OptimizationAlgorithm(abc.ABC):
         self.db = db
         self.line_search = line_search
 
+        self.config = self.db.config
+
         self.line_search_broken = False
         self.has_curvature_info = False
 
@@ -64,7 +66,6 @@ class OptimizationAlgorithm(abc.ABC):
         self.state_problem: _pde_problems.StateProblem = (
             optimization_problem.state_problem
         )
-        self.config = self.state_problem.config
         self.adjoint_problem: _pde_problems.AdjointProblem = (
             optimization_problem.adjoint_problem
         )

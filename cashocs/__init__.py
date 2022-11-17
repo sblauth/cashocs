@@ -45,9 +45,9 @@ from cashocs._optimization.shape_optimization.shape_optimization_problem import 
 )
 from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import Interpolator
+from cashocs.geometry import compute_mesh_quality
 from cashocs.geometry import DeformationHandler
 from cashocs.geometry import interval_mesh
-from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
 from cashocs.io import convert
@@ -93,7 +93,7 @@ __all__ = [
     "regular_mesh",
     "regular_box_mesh",
     "DeformationHandler",
-    "MeshQuality",
+    "compute_mesh_quality",
     "newton_solve",
     "picard_iteration",
     "OptimalControlProblem",
