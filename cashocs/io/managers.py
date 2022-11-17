@@ -133,7 +133,6 @@ class IOManager(abc.ABC):
         self.config = self.db.config
         self.optimization_state = self.db.parameter_db.optimization_state
 
-    @abc.abstractmethod
     def output(self) -> None:
         """The output operation, which is performed after every iteration.
 
@@ -143,7 +142,6 @@ class IOManager(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     def output_summary(self) -> None:
         """The output operation, which is performed after convergence.
 
@@ -153,7 +151,6 @@ class IOManager(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     def post_process(self) -> None:
         """The output operation which is performed as part of the postprocessing.
 
@@ -216,10 +213,6 @@ class ResultManager(IOManager):
             )
         self.output_dict["stepsize"].append(self.optimization_state["stepsize"])
 
-    def output_summary(self) -> None:
-        """The output operation, which is performed after convergence."""
-        pass
-
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
         self.output_dict["initial_gradient_norm"] = self.optimization_state[
@@ -253,10 +246,6 @@ class ConsoleManager(IOManager):
             print(generate_summary_str(self.db), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def post_process(self) -> None:
-        """The output operation which is performed as part of the postprocessing."""
-        pass
-
 
 class FileManager(IOManager):
     """Class for managing the human-readable output of cashocs."""
@@ -282,21 +271,9 @@ class FileManager(IOManager):
                 file.write(generate_summary_str(self.db))
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def post_process(self) -> None:
-        """The output operation which is performed as part of the postprocessing."""
-        pass
-
 
 class TempFileManager(IOManager):
     """Class for managing temporary files."""
-
-    def output(self) -> None:
-        """The output operation, which is performed after every iteration."""
-        pass
-
-    def output_summary(self) -> None:
-        """The output operation, which is performed after convergence."""
-        pass
 
     def post_process(self) -> None:
         """Deletes temporary files."""
@@ -315,14 +292,6 @@ class TempFileManager(IOManager):
 
 class MeshManager(IOManager):
     """Manages the output of meshes."""
-
-    def output(self) -> None:
-        """The output operation, which is performed after every iteration."""
-        pass
-
-    def output_summary(self) -> None:
-        """The output operation, which is performed after convergence."""
-        pass
 
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
@@ -571,11 +540,3 @@ class XDMFFileManager(IOManager):
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
-
-    def output_summary(self) -> None:
-        """The output operation, which is performed after convergence."""
-        pass
-
-    def post_process(self) -> None:
-        """The output operation which is performed as part of the postprocessing."""
-        pass

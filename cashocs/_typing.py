@@ -23,7 +23,6 @@ import fenics
 
 from cashocs import _forms
 from cashocs import _pde_problems
-from cashocs import geometry
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 from cashocs._optimization import optimal_control
@@ -36,9 +35,8 @@ GradientProblem = Union[
     _pde_problems.ShapeGradientProblem, _pde_problems.ControlGradientProblem
 ]
 FormHandler = _forms.FormHandler
-# FormHandler = Union[_forms.ControlFormHandler, _forms.ShapeFormHandler]
 MeshTuple = Tuple[
-    geometry.mesh.Mesh,
+    fenics.Mesh,
     fenics.MeshFunction,
     fenics.MeshFunction,
     fenics.Measure,

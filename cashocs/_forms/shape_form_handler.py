@@ -37,7 +37,6 @@ from cashocs.geometry import boundary_distance
 if TYPE_CHECKING:
     import ufl.core.expr
 
-    from cashocs import geometry
     from cashocs import io
     from cashocs._database import database
     from cashocs._optimization import shape_optimization
@@ -50,7 +49,7 @@ class Stiffness:
         self,
         mu_lame: fenics.Function,
         config: io.Config,
-        mesh: geometry.mesh.Mesh,
+        mesh: fenics.Mesh,
         boundaries: fenics.MeshFunction,
         shape_bdry_def: List[int | str],
         shape_bdry_fix: List[int | str],

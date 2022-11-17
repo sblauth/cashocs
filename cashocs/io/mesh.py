@@ -78,7 +78,7 @@ def import_mesh(mesh_file: str) -> _typing.MeshTuple:
     # Check for the file format
     file_string = mesh_file[:-5]
 
-    mesh = mesh_module.Mesh()
+    mesh = fenics.Mesh()
     xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
     xdmf_file.read(mesh)
     xdmf_file.close()
@@ -121,9 +121,6 @@ def import_mesh(mesh_file: str) -> _typing.MeshTuple:
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
-    # Add an attribute to the mesh to show with what procedure it was generated
-    # pylint: disable=protected-access
-    mesh._set_config_flag()
     # Add the physical groups to the mesh in case they are present
     if physical_groups is not None:
         mesh.physical_groups = physical_groups
@@ -305,7 +302,7 @@ def write_out_mesh(  # noqa: C901
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def read_mesh_from_xdmf(filename: str, step: int = 0) -> mesh_module.Mesh:
+def read_mesh_from_xdmf(filename: str, step: int = 0) -> fenics.Mesh:
     """Reads a mesh from a .xdmf file containing a checkpointed function.
 
     Args:
@@ -343,7 +340,7 @@ def read_mesh_from_xdmf(filename: str, step: int = 0) -> mesh_module.Mesh:
             "geometrical dimension"
         )
 
-    mesh = mesh_module.Mesh()
+    mesh = fenics.Mesh()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         mesh_editor = fenics.MeshEditor()
