@@ -43,6 +43,7 @@ from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
+from cashocs.geometry import mesh_testing
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -309,9 +310,13 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if initial_function_values is not None:
             self.initial_function_values = initial_function_values
 
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.db.geometry_db.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(
+            self.db.geometry_db.mesh
+        )
         # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
-            self.db, self.form_handler
+            self.db, self.form_handler, a_priori_tester, a_posteriori_tester
         )
 
         self.state_spaces = self.db.function_db.state_spaces

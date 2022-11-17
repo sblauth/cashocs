@@ -19,16 +19,17 @@
 
 from __future__ import annotations
 
-import collections
-from typing import List, Union
+from typing import TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs import _utils
 from cashocs.geometry import measure
+
+if TYPE_CHECKING:
+    from cashocs.geometry import mesh_testing
 
 
 class DeformationHandler:
@@ -38,14 +39,24 @@ class DeformationHandler:
     the mesh coordinates.
     """
 
-    def __init__(self, mesh: fenics.Mesh) -> None:
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        a_priori_tester: mesh_testing.APrioriMeshTester,
+        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
+    ) -> None:
         """Initializes self.
 
         Args:
             mesh: The fenics mesh which is to be deformed.
+            a_priori_tester: The tester before mesh modification.
+            a_posteriori_tester: The tester after mesh modification.
 
         """
         self.mesh = mesh
+        self.a_priori_tester = a_priori_tester
+        self.a_posteriori_tester = a_posteriori_tester
+
         self.dim = self.mesh.geometric_dimension()
         self.dx = measure.NamedMeasure("dx", self.mesh)
         self.old_coordinates = self.mesh.coordinates().copy()
@@ -54,107 +65,12 @@ class DeformationHandler:
         self.dg_function_space = fenics.FunctionSpace(mesh, "DG", 0)
         self.bbtree = self.mesh.bounding_box_tree()
 
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-        self.transformation_container = fenics.Function(self.vector_cg_space)
-        self.A_prior = None  # pylint: disable=invalid-name
-        self.l_prior = None
-        self._setup_a_priori()
-
         self.v2d = fenics.vertex_to_dof_map(self.vector_cg_space).reshape(
             (-1, self.mesh.geometry().dim())
         )
         self.d2v = fenics.dof_to_vertex_map(self.vector_cg_space)
 
-        cells = self.mesh.cells()
-        flat_cells = cells.flatten().tolist()
-        self.cell_counter: collections.Counter = collections.Counter(flat_cells)
-        self.occurrences = np.array(
-            [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
-        )
         self.coordinates = self.mesh.coordinates()
-
-    def _setup_a_priori(self) -> None:
-        """Sets up the attributes and petsc solver for the a priori quality check."""
-        dim = self.mesh.geometric_dimension()
-
-        # pylint: disable=invalid-name
-        self.A_prior = (
-            fenics.TrialFunction(self.dg_function_space)
-            * fenics.TestFunction(self.dg_function_space)
-            * self.dx
-        )
-        self.l_prior = (
-            fenics.det(
-                fenics.Identity(dim) + fenics.grad(self.transformation_container)
-            )
-            * fenics.TestFunction(self.dg_function_space)
-            * self.dx
-        )
-
-    def _test_a_priori(self, transformation: fenics.Function) -> bool:
-        r"""Check the quality of the transformation before the actual mesh is moved.
-
-        Checks the quality of the transformation. The criterion is that
-
-        .. math:: \det(I + D \texttt{transformation})
-
-        should neither be too large nor too small in order to achieve the best
-        transformations.
-
-        Args:
-            transformation: The transformation for the mesh.
-
-        Returns:
-            A boolean that indicates whether the desired transformation is feasible.
-
-        """
-        self.transformation_container.vector().vec().aypx(
-            0.0, transformation.vector().vec()
-        )
-        self.transformation_container.vector().apply("")
-        x = _utils.assemble_and_solve_linear(
-            self.A_prior,
-            self.l_prior,
-            ksp_options=self.options_prior,
-        )
-        min_det: float = x.min()[1]
-
-        return bool(min_det > 0)
-
-    def _test_a_posteriori(self) -> bool:
-        """Checks the quality of the transformation after the actual mesh is moved.
-
-        Checks whether the mesh is a valid finite element mesh
-        after it has been moved, i.e., if there are no overlapping
-        or self intersecting elements.
-
-        Returns:
-            True if the test is successful, False otherwise.
-
-        Notes:
-            fenics itself does not check whether the used mesh is a valid finite
-            element mesh, so this check has to be done manually.
-
-        """
-        self_intersections = False
-        collisions = CollisionCounter.compute_collisions(self.mesh)
-        if not (collisions == self.occurrences).all():
-            self_intersections = True
-        list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
-
-        if any(list_self_intersections):
-            self.revert_transformation()
-            _loggers.debug("Mesh transformation rejected due to a posteriori check.")
-            return False
-        else:
-            return True
 
     def revert_transformation(self) -> None:
         """Reverts the previous mesh transformation.
@@ -206,7 +122,7 @@ class DeformationHandler:
                 dof_transformation = self.coordinate_to_dof(transformation)
             else:
                 dof_transformation = transformation
-            if not self._test_a_priori(dof_transformation):
+            if not self.a_priori_tester.test(dof_transformation, float("inf")):
                 _loggers.debug(
                     "Mesh transformation rejected due to a priori check.\n"
                     "Reason: Transformation would result in inverted mesh elements."
@@ -217,13 +133,21 @@ class DeformationHandler:
                 self.coordinates += coordinate_transformation
                 self.bbtree.build(self.mesh)
 
-                return self._test_a_posteriori()
+                check = self.a_posteriori_tester.test()
+                if not check:
+                    self.revert_transformation()
+
+                return check
         else:
             self.old_coordinates = self.mesh.coordinates().copy()
             self.coordinates += coordinate_transformation
             self.bbtree.build(self.mesh)
 
-            return self._test_a_posteriori()
+            check = self.a_posteriori_tester.test()
+            if not check:
+                self.revert_transformation()
+
+            return check
 
     def coordinate_to_dof(self, coordinate_deformation: np.ndarray) -> fenics.Function:
         """Converts a coordinate deformation to a deformation vector field (dof based).
@@ -280,69 +204,8 @@ class DeformationHandler:
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
 
-        return self._test_a_posteriori()
+        check = self.a_posteriori_tester.test()
+        if not check:
+            self.revert_transformation()
 
-
-class CollisionCounter:
-    """Class for testing, whether a given mesh is a valid FEM mesh."""
-
-    _cpp_code = """
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/stl.h>
-namespace py = pybind11;
-
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/Vertex.h>
-#include <dolfin/geometry/BoundingBoxTree.h>
-#include <dolfin/geometry/Point.h>
-
-using namespace dolfin;
-
-Eigen::VectorXi
-compute_collisions(std::shared_ptr<const Mesh> mesh)
-{
-  int num_vertices;
-  std::vector<unsigned int> colliding_cells;
-
-  num_vertices = mesh->num_vertices();
-  Eigen::VectorXi collisions(num_vertices);
-
-  int i = 0;
-  for (VertexIterator v(*mesh); !v.end(); ++v)
-  {
-    colliding_cells = mesh->bounding_box_tree()->compute_entity_collisions(
-      v->point()
-    );
-    collisions[i] = colliding_cells.size();
-
-    ++i;
-  }
-  return collisions;
-}
-
-PYBIND11_MODULE(SIGNATURE, m)
-{
-  m.def("compute_collisions", &compute_collisions);
-}
-"""
-    _cpp_object = fenics.compile_cpp_code(_cpp_code)
-
-    def __init__(self) -> None:
-        """Initializes self."""
-        pass
-
-    @classmethod
-    def compute_collisions(cls, mesh: fenics.Mesh) -> np.ndarray:
-        """Computes the cells which (potentially) contain self intersections.
-
-        Args:
-            mesh: A FEM mesh.
-
-        Returns:
-            An array of cell indices, where ``array[i]`` contains the indices of all
-            cells that vertex ``i`` collides with.
-
-        """
-        collisions: np.ndarray = cls._cpp_object.compute_collisions(mesh)
-        return collisions
+        return check

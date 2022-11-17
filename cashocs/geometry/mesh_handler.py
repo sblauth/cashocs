@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from cashocs import _forms
     from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
+    from cashocs.geometry import mesh_testing
 
 
 def _remove_gmsh_parametrizations(mesh_file: str) -> None:
@@ -87,19 +88,28 @@ class _MeshHandler:
         self,
         db: database.Database,
         form_handler: _forms.ShapeFormHandler,
+        a_priori_tester: mesh_testing.APrioriMeshTester,
+        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
     ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             form_handler: The corresponding shape optimization problem.
+            a_priori_tester: The tester before mesh modification.
+            a_posteriori_tester: The tester after mesh modification.
 
         """
         self.db = db
         self.form_handler = form_handler
+        self.a_priori_tester = a_priori_tester
+        self.a_posteriori_tester = a_posteriori_tester
+
         # Namespacing
         self.mesh = self.db.geometry_db.mesh
-        self.deformation_handler = deformations.DeformationHandler(self.mesh)
+        self.deformation_handler = deformations.DeformationHandler(
+            self.mesh, self.a_priori_tester, self.a_posteriori_tester
+        )
         self.dx = self.db.geometry_db.dx
         self.bbtree = self.mesh.bounding_box_tree()
         self.config = self.db.config
@@ -162,7 +172,6 @@ class _MeshHandler:
         )
         self.A_prior = None  # pylint: disable=invalid-name
         self.l_prior = None
-        self._setup_a_priori()
 
         # Remeshing initializations
         self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
@@ -256,7 +265,7 @@ class _MeshHandler:
         ):
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
-        if not self._test_a_priori(transformation):
+        if not self.a_priori_tester.test(transformation, self.volume_change):
             _loggers.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
@@ -340,54 +349,6 @@ class _MeshHandler:
                     0.0,
                 )
             )
-
-    def _setup_a_priori(self) -> None:
-        """Sets up the attributes and petsc solver for the a priori quality check."""
-        dim = self.mesh.geometric_dimension()
-
-        # pylint: disable=invalid-name
-        self.A_prior = self.trial_dg0 * self.test_dg0 * self.dx
-        self.l_prior = (
-            fenics.det(
-                fenics.Identity(dim) + fenics.grad(self.transformation_container)
-            )
-            * self.test_dg0
-            * self.dx
-        )
-
-    def _test_a_priori(self, transformation: fenics.Function) -> bool:
-        r"""Check the quality of the transformation before the actual mesh is moved.
-
-        Checks the quality of the transformation. The criterion is that
-
-        .. math:: \det(I + D \texttt{transformation})
-
-        should neither be too large nor too small in order to achieve the best
-        transformations.
-
-        Args:
-            transformation: The transformation for the mesh.
-
-        Returns:
-            A boolean that indicates whether the desired transformation is feasible.
-
-        """
-        self.transformation_container.vector().vec().aypx(
-            0.0, transformation.vector().vec()
-        )
-        self.transformation_container.vector().apply("")
-        x = _utils.assemble_and_solve_linear(
-            self.A_prior,
-            self.l_prior,
-            ksp_options=self.options_prior,
-        )
-
-        min_det = float(x.min()[1])
-        max_det = float(x.max()[1])
-
-        return bool(
-            (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
-        )
 
     def _generate_remesh_geo(self, input_mesh_file: str) -> None:
         """Generates a .geo file used for remeshing.

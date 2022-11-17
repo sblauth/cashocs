@@ -33,6 +33,7 @@ from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
+from cashocs.geometry import mesh_testing
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -244,7 +245,12 @@ class ParameterExtraction:
         )
 
         self.coordinates_initial = coarse_model.coordinates_initial
-        self.deformation_handler = geometry.DeformationHandler(self.mesh)
+
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.mesh)
+        self.deformation_handler = geometry.DeformationHandler(
+            self.mesh, a_priori_tester, a_posteriori_tester
+        )
 
         self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
 
@@ -355,11 +361,16 @@ class SpaceMapping:
         self.x = self.fine_model.mesh
 
         self.deformation_space = fenics.VectorFunctionSpace(self.x, "CG", 1)
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.fine_model.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.fine_model.mesh)
         self.deformation_handler_fine = geometry.DeformationHandler(
-            self.fine_model.mesh
+            self.fine_model.mesh, a_priori_tester, a_posteriori_tester
         )
+
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.coarse_model.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.coarse_model.mesh)
         self.deformation_handler_coarse = geometry.DeformationHandler(
-            self.coarse_model.mesh
+            self.coarse_model.mesh, a_priori_tester, a_posteriori_tester
         )
 
         self.z_star = [fenics.Function(self.deformation_space)]
