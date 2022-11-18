@@ -29,7 +29,7 @@ jobs:
           pytest">=7.0.0"
           gmsh">=4.8"
           matplotlib
-          python=3.10
+          python=3.11
 
     - name: Install package
       run: |
@@ -67,7 +67,7 @@ jobs:
           gmsh">=4.8"
           mpich
           matplotlib
-          python=3.10
+          python=3.11
 
     - name: Install package
       run: |
