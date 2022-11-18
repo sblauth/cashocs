@@ -320,8 +320,6 @@ class FormHandler(abc.ABC):
         """Updates the scalar product."""
         pass
 
-    def project_to_admissible_set(
-        self, a: List[fenics.Function]
-    ) -> List[fenics.Function]:
+    def project_to_admissible_set(self, a: List[fenics.Function]) -> None:
         """Projects a function ``a`` onto the admissible set."""
         pass
