@@ -88,10 +88,7 @@ class OptimizationProblem(abc.ABC):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -252,11 +249,7 @@ class OptimizationProblem(abc.ABC):
         self.input_cost_functional_list = _utils.enlist(cost_functional_form)
         self.cost_functional_list = []
         for functional in self.input_cost_functional_list:
-            if isinstance(functional, ufl.Form):
-                self.cost_functional_list.append(
-                    cost_functional.IntegralFunctional(functional)
-                )
-            elif isinstance(
+            if isinstance(
                 functional,
                 (
                     cost_functional.IntegralFunctional,
@@ -265,6 +258,15 @@ class OptimizationProblem(abc.ABC):
                 ),
             ):
                 self.cost_functional_list.append(functional)
+            else:
+                raise _exceptions.InputError(
+                    "cashocs.OptimizationProblem",
+                    "cost_functional_list",
+                    "You have supplied a wrong cost functional.\n"
+                    "Starting with cashocs v2.0 only a list of "
+                    "cashocs.IntegralFunctional, cashocs.ScalarTrackingFunctional, "
+                    "or cashocs.MinMaxFunctional is allowed.",
+                )
 
     def _parse_optional_inputs(
         self,
@@ -604,5 +606,3 @@ class OptimizationProblem(abc.ABC):
                     self.desired_weights[i] / self.initial_function_values[i]
                 )
                 functional.scale(scaling_factor)
-                if isinstance(functional, cost_functional.IntegralFunctional):
-                    self.input_cost_functional_list[i] = functional.form

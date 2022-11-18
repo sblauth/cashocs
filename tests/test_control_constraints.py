@@ -35,7 +35,7 @@ u = Function(V)
 F = dot(grad(y), grad(p)) * dx - u * p * dx
 bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
 
-J = pow(u - 0.5, 2) * dx
+J = cashocs.IntegralFunctional(pow(u - 0.5, 2) * dx)
 
 
 def test_int_eq_constraint():
@@ -207,7 +207,7 @@ def test_pw_eq_constraints_only():
 def test_int_ineq_constraints_only():
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    J = pow(y - Constant(1.0), 2) * dx
+    J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     constraint = cashocs.InequalityConstraint(y * y * dx, upper_bound=0.5)
     problem = cashocs.ConstrainedOptimalControlProblem(
@@ -226,7 +226,7 @@ def test_int_ineq_constraints_only():
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    J = pow(y - Constant(0.1), 2) * dx
+    J = cashocs.IntegralFunctional(pow(y - Constant(0.1), 2) * dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     constraint = cashocs.InequalityConstraint(y * y * dx, lower_bound=0.5)
     problem = cashocs.ConstrainedOptimalControlProblem(
@@ -244,7 +244,7 @@ def test_int_ineq_constraints_only():
 def test_pw_ineq_constraints_only():
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    J = pow(y - Constant(1.0), 2) * dx
+    J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "500")
     constraint = cashocs.InequalityConstraint(y, upper_bound=0.5, measure=dx)
@@ -264,7 +264,7 @@ def test_pw_ineq_constraints_only():
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    J = pow(y - Constant(-1), 2) * dx
+    J = cashocs.IntegralFunctional(pow(y - Constant(-1), 2) * dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "500")
     constraint = cashocs.InequalityConstraint(y, lower_bound=-0.5, measure=dx)
@@ -285,7 +285,7 @@ def test_pw_ineq_constraints_only():
     lin_expr = Expression("2*(x[0] - 0.5)", degree=1)
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    J = pow(y - lin_expr, 2) * dx
+    J = cashocs.IntegralFunctional(pow(y - lin_expr, 2) * dx)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
     cfg.set("OptimizationRoutine", "maximum_iterations", "500")
     constraint = cashocs.InequalityConstraint(

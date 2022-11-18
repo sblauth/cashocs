@@ -41,12 +41,12 @@ class FineModel(ocsm.FineModel):
             + Constant(nonlinearity_factor) * pow(self.y, 3) * phi * dx
             - self.controls * phi * dx
         )
-        self.J = Constant(0.5) * pow(self.y - y_des, 2) * dx
+        self.J = cashocs.IntegralFunctional(Constant(0.5) * pow(self.y - y_des, 2) * dx)
 
     def solve_and_evaluate(self):
         self.y.vector().vec().set(0.0)
         cashocs.newton_solve(self.F, self.y, bcs, verbose=False)
-        self.cost_functional_value = assemble(self.J)
+        self.cost_functional_value = self.J.evaluate()
 
 
 fine_model = FineModel()
@@ -56,13 +56,15 @@ u = Function(V)
 p = Function(V)
 
 F = dot(grad(y), grad(p)) * dx - u * p * dx
-J = Constant(0.5) * pow(y - y_des, 2) * dx
+J = cashocs.IntegralFunctional(Constant(0.5) * pow(y - y_des, 2) * dx)
 
 coarse_model = ocsm.CoarseModel(F, bcs, J, y, u, p, config=cfg)
 
 y_sm = Function(V)
 u_sm = Function(V)
-J_parameter = Constant(0.5) * pow(y_sm - fine_model.y, 2) * dx
+J_parameter = cashocs.IntegralFunctional(
+    Constant(0.5) * pow(y_sm - fine_model.y, 2) * dx
+)
 
 parameter_extraction = ocsm.ParameterExtraction(
     coarse_model, J_parameter, y_sm, u_sm, config=cfg
@@ -83,7 +85,9 @@ def test_ocsm_parameter_extraction_single():
 
     y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
     alpha = 1e-6
-    J = Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
+    )
 
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
     ocp.solve()
@@ -99,7 +103,7 @@ def test_ocsm_parameter_extraction_single():
 
     u_pe = Function(V)
     y_pe = Function(V)
-    J_pe = (
+    J_pe = cashocs.IntegralFunctional(
         Constant(0.5) * (y_pe - y_d) * (y_pe - y_d) * dx
         + Constant(0.5 * alpha) * u_pe * u_pe * dx
     )
@@ -142,7 +146,7 @@ def test_ocsm_parameter_extraction_multiple():
     z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
     alpha = 1e-6
     beta = 1e-4
-    J = (
+    J = cashocs.IntegralFunctional(
         Constant(0.5) * (y - y_d) * (y - y_d) * dx
         + Constant(0.5) * (z - z_d) * (z - z_d) * dx
         + Constant(0.5 * alpha) * u * u * dx
@@ -174,7 +178,7 @@ def test_ocsm_parameter_extraction_multiple():
     y_pe = Function(V)
     z_pe = Function(V)
     states_pe = [y_pe, z_pe]
-    J = (
+    J = cashocs.IntegralFunctional(
         Constant(0.5) * (y_pe - y_d) * (y_pe - y_d) * dx
         + Constant(0.5) * (z_pe - z_d) * (z_pe - z_d) * dx
         + Constant(0.5 * alpha) * u_pe * u_pe * dx

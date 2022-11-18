@@ -58,7 +58,7 @@ from cashocs.io import load_config
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "1.8.11"
+__version__ = "1.8.12"
 
 __citation__ = """
 @Article{Blauth2021cashocs,

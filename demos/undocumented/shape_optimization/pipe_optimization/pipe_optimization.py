@@ -54,7 +54,7 @@ e = (
 )
 
 # set up the cost functional
-J = Constant(1 / Re) * inner(grad(u), grad(u)) * dx
+J = cashocs.IntegralFunctional(Constant(1 / Re) * inner(grad(u), grad(u)) * dx)
 
 # define the optimization problem and solve it
 optimization_problem = cashocs.ShapeOptimizationProblem(
