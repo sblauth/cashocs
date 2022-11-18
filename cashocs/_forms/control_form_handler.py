@@ -327,9 +327,7 @@ class ControlFormHandler(form_handler.FormHandler):
 
         return b
 
-    def project_to_admissible_set(
-        self, a: List[fenics.Function]
-    ) -> List[fenics.Function]:
+    def project_to_admissible_set(self, a: List[fenics.Function]) -> None:
         """Project a function to the set of admissible controls.
 
         Projects a control type function ``a`` onto the set of admissible controls
@@ -338,9 +336,6 @@ class ControlFormHandler(form_handler.FormHandler):
         Args:
             a: The function which is to be projected onto the set of admissible
                 controls (is overwritten)
-
-        Returns:
-            The result of the projection (overwrites input ``a``)
 
         """
         for j in range(self.control_dim):
@@ -353,8 +348,6 @@ class ControlFormHandler(form_handler.FormHandler):
                     a[j].vector().vec(), self.control_constraints[j][0].vector().vec()
                 )
                 a[j].vector().apply("")
-
-        return a
 
     def _compute_gradient_equations(self) -> None:
         """Calculates the variational form of the gradient equation."""
