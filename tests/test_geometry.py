@@ -301,7 +301,11 @@ def test_empty_measure():
 def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     coordinate_deformation = (
         fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
@@ -320,7 +324,11 @@ def test_convert_coordinate_defo_to_dof_defo():
 def test_convert_dof_defo_to_coordinate_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     defo = fenics.Function(VCG)
     dof_vector = rng.randn(defo.vector().local_size())
@@ -339,7 +347,11 @@ def test_convert_dof_defo_to_coordinate_defo():
 def test_move_mesh():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
 
     coordinate_deformation = coordinates_initial.copy()
     h = mesh.hmin()

@@ -23,6 +23,7 @@ fenics. The :py:func:`regular_mesh <cashocs.geometry.regular_mesh>` and
 3D box meshes which are great for testing and development.
 """
 
+from cashocs.geometry import mesh_testing
 from cashocs.geometry.boundary_distance import compute_boundary_distance
 from cashocs.geometry.deformations import DeformationHandler
 from cashocs.geometry.measure import _EmptyMeasure
@@ -45,4 +46,5 @@ __all__ = [
     "regular_box_mesh",
     "_MeshHandler",
     "MeshQuality",
+    "mesh_testing",
 ]
