@@ -106,7 +106,7 @@ p = Function(V)
 
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-J = u * dx
+J = cashocs.IntegralFunctional(u * dx)
 
 
 def test_move_mesh():
@@ -144,8 +144,8 @@ def test_shape_derivative_unconstrained():
     CG1 = VectorFunctionSpace(mesh, "CG", 1)
     defo = TestFunction(CG1)
 
-    J1 = Constant(1) * dx
-    J2 = Constant(1) * ds
+    J1 = cashocs.IntegralFunctional(Constant(1) * dx)
+    J2 = cashocs.IntegralFunctional(Constant(1) * ds)
 
     sop1 = cashocs.ShapeOptimizationProblem(e, bcs, J1, u, p, boundaries, config)
     sop1.state_problem.has_solution = True
@@ -183,9 +183,9 @@ def test_shape_derivative_constrained():
     u_d_expr = Expression("pow(x[0], 2) + pow(x[1], 4) - pi", degree=4, domain=mesh)
     u_d_func = interpolate(u_d_expr, V)
 
-    J_coord = (u - u_d_coord) * (u - u_d_coord) * dx
-    J_expr = (u - u_d_expr) * (u - u_d_expr) * dx
-    J_func = (u - u_d_func) * (u - u_d_func) * dx
+    J_coord = cashocs.IntegralFunctional((u - u_d_coord) * (u - u_d_coord) * dx)
+    J_expr = cashocs.IntegralFunctional((u - u_d_expr) * (u - u_d_expr) * dx)
+    J_func = cashocs.IntegralFunctional((u - u_d_func) * (u - u_d_func) * dx)
 
     exact_shape_derivative = (
         (u - u_d_coord) * (u - u_d_coord) * div(defo) * dx
@@ -347,7 +347,7 @@ def test_shape_volume_regularization():
     radius = rng.uniform(0.33, 0.66)
     config.set("Regularization", "target_volume", str(np.pi * radius**2))
     config.set("MeshQuality", "volume_change", "10")
-    J_vol = Constant(0) * dx
+    J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -374,7 +374,7 @@ def test_shape_surface_regularization():
     radius = rng.uniform(0.33, 0.66)
     config.set("Regularization", "target_surface", str(2 * np.pi * radius))
     config.set("MeshQuality", "volume_change", "10")
-    J_vol = Constant(0) * dx
+    J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -405,7 +405,7 @@ def test_shape_barycenter_regularization():
     config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
     config.set("MeshQuality", "volume_change", "10")
     initial_volume = assemble(1 * dx)
-    J_vol = Constant(0) * dx
+    J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
@@ -451,7 +451,7 @@ def test_shape_barycenter_regularization_hole():
 
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-    J_vol = Constant(0) * dx
+    J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
     rng = np.random.RandomState(300696)
@@ -708,7 +708,7 @@ def test_inhomogeneous_mu():
 
     e = inner(grad(u), grad(p)) * dx - f * p * dx
 
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     rng = np.random.RandomState(300696)
@@ -769,7 +769,7 @@ def test_distance_mu():
     u = Function(V)
     p = Function(V)
     e = inner(grad(u), grad(p)) * dx - f * p * dx
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     mu = sop.form_handler.mu_lame
@@ -826,8 +826,8 @@ def test_scaling_shape():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    J1 = u * dx
-    J2 = u * u * dx
+    J1 = cashocs.IntegralFunctional(u * dx)
+    J2 = cashocs.IntegralFunctional(u * u * dx)
     J_list = [J1, J2]
 
     desired_weights = rng.rand(2).tolist()
@@ -859,7 +859,7 @@ def test_scaling_shape_regularization():
         mesh.coordinates()[:, :] = initial_coordinates
         mesh.bounding_box_tree().build(mesh)
 
-        J = Constant(0) * dx
+        J = cashocs.IntegralFunctional(Constant(0) * dx)
 
         config.set("Regularization", "factor_volume", str(test_weights[iteration, 0]))
         config.set("Regularization", "factor_surface", str(test_weights[iteration, 1]))
@@ -921,7 +921,7 @@ def test_scaling_scalar_and_single_cost():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    J = u * dx
+    J = cashocs.IntegralFunctional(u * dx)
     tracking_goals = rng.uniform(0.25, 0.75, 2)
     J_scalar1 = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goals[0])
     J_scalar2 = cashocs.ScalarTrackingFunctional(Constant(1) * ds, tracking_goals[1])
@@ -956,8 +956,8 @@ def test_scaling_all():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
 
-    J1 = u * dx
-    J2 = u * u * dx
+    J1 = cashocs.IntegralFunctional(u * dx)
+    J2 = cashocs.IntegralFunctional(u * u * dx)
 
     tracking_goals = rng.uniform(0.25, 0.75, 2)
     J_scalar1 = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goals[0])

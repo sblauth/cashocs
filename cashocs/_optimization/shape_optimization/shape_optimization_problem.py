@@ -74,10 +74,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],
@@ -193,10 +190,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.DirichletBC,
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         adjoints: Union[List[fenics.Function], fenics.Function],

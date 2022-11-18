@@ -32,6 +32,7 @@ from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs._constraints import constrained_problems
 
 
@@ -175,6 +176,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
+        self.inner_cost_functional_form: List[_typing.CostFunctional] = []
 
     def _project_pointwise_multiplier(
         self,

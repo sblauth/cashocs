@@ -64,10 +64,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],
@@ -175,10 +172,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
         ],
         cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
+            List[_typing.CostFunctional], _typing.CostFunctional
         ],
         states: Union[List[fenics.Function], fenics.Function],
         controls: Union[List[fenics.Function], fenics.Function],

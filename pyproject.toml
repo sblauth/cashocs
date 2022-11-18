@@ -1,9 +1,64 @@
 [build-system]
 requires = [
-    "setuptools>=51",
+    "setuptools>=61",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cashocs"
+version = "1.8.12"
+description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
+readme = "README.rst"
+requires-python = ">=3.7"
+license = {text = "GNU General Public License v3 or later (GPLv3+)"}
+authors = [
+	{name = "Sebastian Blauth"},
+	{email = "sebastian.blauth@itwm.fraunhofer.de"}
+]
+keywords = [
+	"Shape Optimization",
+	"Optimal Control",
+	"FEniCS",
+	"Optimization",
+	"PDE",
+	"Adjoint",
+	"Finite Element Method"
+]
+classifiers = [
+	"Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+	"meshio >= 4.1.0",
+	"numpy",
+	"typing_extensions"
+]
+
+[project.urls]
+Documentation = "https://cashocs.readthedocs.io/en/latest/index.html"
+Source = "https://github.com/sblauth/cashocs"
+Tutorial = "https://cashocs.readthedocs.io/en/latest/user/index.html"
+Tracker = "https://github.com/sblauth/cashocs/issues"
+
+[project.scripts]
+cashocs-convert = "cashocs._cli:convert"
+
+[tool.setuptools.packages]
+find = {}
 
 [tool.black]
 line_length = 88
@@ -38,3 +93,24 @@ exclude_lines = [
     "_loggers.warning",
     "abstractmethod",
 ]
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"
+warn_return_any = true
+follow_imports = "normal"
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+disallow_any_unimported = false
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+	"fenics.*",
+	"ufl.*",
+	"dolfin.*",
+	"petsc4py",
+	"meshio",
+	"h5py",
+]
+ignore_missing_imports = true
