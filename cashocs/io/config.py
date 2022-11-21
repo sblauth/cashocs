@@ -398,9 +398,6 @@ class Config(ConfigParser):
                 "use_initial_barycenter": {
                     "type": "bool",
                 },
-                "measure_hole": {
-                    "type": "bool",
-                },
                 "x_start": {
                     "type": "float",
                 },
@@ -575,7 +572,6 @@ factor_barycenter = 0.0
 target_barycenter = [0.0, 0.0, 0.0]
 use_initial_barycenter = False
 use_relative_scaling = False
-measure_hole = False
 x_start = 0.0
 x_end = 1.0
 y_start = 0.0
