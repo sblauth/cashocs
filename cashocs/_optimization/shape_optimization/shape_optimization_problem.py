@@ -295,16 +295,19 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 )
             )
 
+        self.shape_regularization = _forms.shape_regularization.ShapeRegularization(
+            self.db
+        )
         self.form_handler: _forms.ShapeFormHandler = _forms.ShapeFormHandler(
-            self, self.db
+            self, self.db, self.shape_regularization
         )
 
         if self.db.parameter_db.temp_dict:
             self.db.parameter_db.temp_dict["Regularization"] = {
-                "mu_volume": self.form_handler.shape_regularization.mu_volume,
-                "mu_surface": self.form_handler.shape_regularization.mu_surface,
-                "mu_curvature": self.form_handler.shape_regularization.mu_curvature,
-                "mu_barycenter": self.form_handler.shape_regularization.mu_barycenter,
+                "mu_volume": self.shape_regularization.volume_regularization.mu,
+                "mu_surface": self.shape_regularization.surface_regularization.mu,
+                "mu_curvature": self.shape_regularization.curvature_regularization.mu,
+                "mu_barycenter": self.shape_regularization.barycenter_regularization.mu,
             }
 
         if initial_function_values is not None:

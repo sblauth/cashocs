@@ -424,42 +424,6 @@ def test_shape_barycenter_regularization():
     assert abs(bc_y - pos_y) < 1e-4
 
 
-def test_shape_barycenter_regularization_hole():
-    rng = np.random.RandomState(300696)
-
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("Regularization", "factor_volume", "1e2")
-    config.set("Regularization", "use_initial_volume", "True")
-    config.set("Regularization", "factor_barycenter", "1.0")
-    config.set("Regularization", "measure_hole", "True")
-    pos_x = rng.uniform(0.2, 0.4)
-    pos_y = rng.uniform(-0.4, -0.2)
-    config.set("Regularization", "target_barycenter", str([pos_x, pos_y]))
-    config.set("MeshQuality", "volume_change", "10")
-
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/barycenter_hole/mesh.xdmf"
-    )
-
-    V = FunctionSpace(mesh, "CG", 1)
-    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-    x = SpatialCoordinate(mesh)
-    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-
-    u = Function(V)
-    p = Function(V)
-
-    e = inner(grad(u), grad(p)) * dx - f * p * dx
-
-    J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
-
-    rng = np.random.RandomState(300696)
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-
-
 def test_custom_supply_shape():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
@@ -576,10 +540,13 @@ def test_curvature_computation():
     config.set("Regularization", "factor_curvature", "1.0")
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    from cashocs import _forms
 
-    sop.form_handler.shape_regularization.compute_curvature()
-
-    kappa = sop.form_handler.shape_regularization.kappa_curvature
+    curvature_regularization_term = _forms.shape_regularization.CurvatureRegularization(
+        sop.db
+    )
+    curvature_regularization_term._compute_curvature()
+    kappa = curvature_regularization_term.kappa_curvature
     mean_curvature = assemble(sqrt(inner(kappa, kappa)) * ds) / assemble(1 * ds)
 
     assert abs(mean_curvature - 1) < 1e-3

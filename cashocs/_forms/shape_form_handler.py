@@ -233,12 +233,14 @@ class ShapeFormHandler(form_handler.FormHandler):
         self,
         optimization_problem: shape_optimization.ShapeOptimizationProblem,
         db: database.Database,
+        regularization: shape_regularization.ShapeRegularization,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding shape optimization problem.
             db: The database of the problem.
+            regularization: The geometric regularization of the problem.
 
         """
         super().__init__(optimization_problem, db)
@@ -282,9 +284,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.db.function_db.control_spaces[0]
         )
 
-        self.shape_regularization: shape_regularization.ShapeRegularization = (
-            shape_regularization.ShapeRegularization(self.db, self)
-        )
+        self.shape_regularization = regularization
 
         fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
         self.use_fixed_dimensions = False
