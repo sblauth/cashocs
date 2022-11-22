@@ -49,7 +49,7 @@ in development
 
   * Section LineSearch
 
-    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize```are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
+    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize`` are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
 
 * New configuration file parameters
 
