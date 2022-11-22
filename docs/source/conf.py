@@ -106,7 +106,7 @@ html_theme_options = {
         }
     ],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    # "navbar_persistent": [],
+    "navbar_persistent": [],
     "show_nav_level": 2,
     "favicons": [
         {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
