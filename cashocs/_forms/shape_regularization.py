@@ -159,12 +159,10 @@ class VolumeRegularization(ShapeRegularizationTerm):
             )
             return shape_form
         else:
-            return (
-                fenics.inner(
-                    fenics.Constant([0] * self.mesh.geometric_dimension()),
-                    self.test_vector_field,
-                )
-                * self.dx
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
     def update(self) -> None:
@@ -256,12 +254,10 @@ class SurfaceRegularization(ShapeRegularizationTerm):
             )
             return shape_form
         else:
-            return (
-                fenics.inner(
-                    fenics.Constant([0] * self.mesh.geometric_dimension()),
-                    self.test_vector_field,
-                )
-                * self.dx
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
     def update(self) -> None:
@@ -417,12 +413,10 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 )
             return shape_form
         else:
-            return (
-                fenics.inner(
-                    fenics.Constant([0] * self.mesh.geometric_dimension()),
-                    self.test_vector_field,
-                )
-                * self.dx
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
     def update(self) -> None:
@@ -579,12 +573,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
             )
             return shape_form
         else:
-            return (
-                fenics.inner(
-                    fenics.Constant([0] * self.mesh.geometric_dimension()),
-                    self.test_vector_field,
-                )
-                * self.dx
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
     def compute_objective(self) -> float:
