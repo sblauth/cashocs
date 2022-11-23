@@ -1231,6 +1231,9 @@ in the following.
     * - use_initial_barycenter
       - ``False``
       - if ``True`` uses the barycenter of the initial geometry as prescribed barycenter
+    * - use_relative_scaling
+      - ``False``
+      - if ``True``, the regularization terms are scaling so that they have the magnitude specified in the respective factor for the initial iteration.
 
 
 
