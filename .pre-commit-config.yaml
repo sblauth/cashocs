@@ -1,7 +1,7 @@
 repos:
 
   - repo: https://github.com/regebro/pyroma
-    rev: "4.0"
+    rev: "4.1"
     hooks:
       - id: pyroma
 
@@ -26,7 +26,7 @@ repos:
 
         
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
       - id: flake8
         files: cashocs/
@@ -56,7 +56,7 @@ repos:
 
         
   - repo: https://github.com/PyCQA/prospector
-    rev: 1.7.7
+    rev: v1.8.0rc2
     hooks:
       - id: prospector
         additional_dependencies:
