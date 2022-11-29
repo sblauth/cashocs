@@ -482,6 +482,12 @@ parameter ``result_dir``, which is given in this config file by ::
 The path given there can be either relative or absolute. In this example, the
 working directory of the python script is chosen.
 
+The parameter ``precision``, which is set via ::
+
+    precision = 3
+
+is an integer parameter which determines how many significant digits are printed in the output to the console and / or the result file.
+
 Moreover, we have the parameter ``time_suffix``, which adds a suffix to the result directory based on the current time. It is controlled by the line ::
 
 	time_suffix = False
@@ -722,6 +728,9 @@ in the following.
     * - result_dir
       - ``./``
       - path to the directory, where the output should be placed
+    * - precision
+      - 3
+      - number of significant digits to be printed
     * - time_suffix
       - ``False``
       - Boolean flag, which adds a suffix to ``result_dir`` based on the current time
