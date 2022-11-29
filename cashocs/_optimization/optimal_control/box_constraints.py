@@ -53,7 +53,7 @@ class BoxConstraints:
             self.controls, self.control_constraints, self.require_control_constraints
         )
         self.display_box_constraints = False
-        if not np.any(self.require_control_constraints):
+        if np.any(self.require_control_constraints):
             self.display_box_constraints = True
 
     def _parse_control_constraints(
