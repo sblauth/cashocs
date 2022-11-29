@@ -487,6 +487,8 @@ class _MeshHandler:
             )
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, solver.optimization_problem)
+        else:
+            raise Exception("This code cannot be reached.")
 
         solver.__init__(  # type: ignore # pylint: disable=C2801
             solver.optimization_problem.db,

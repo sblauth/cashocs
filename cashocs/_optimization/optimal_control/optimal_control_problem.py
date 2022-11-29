@@ -216,8 +216,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             )
         )
 
-        self.algorithm = _utils.optimization_algorithm_configuration(self.config)
-
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
             self.db, self.form_handler, self.state_problem
         )

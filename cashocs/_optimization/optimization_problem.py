@@ -157,7 +157,6 @@ class OptimizationProblem(abc.ABC):
         self.cost_functional_list = self._parse_cost_functional_form(
             cost_functional_form
         )
-        self.algorithm = "none"
 
         self.states: List[fenics.Function] = _utils.enlist(states)
         self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)

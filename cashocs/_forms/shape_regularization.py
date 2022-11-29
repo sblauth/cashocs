@@ -320,7 +320,6 @@ class BarycenterRegularization(ShapeRegularizationTerm):
         super().__init__(db)
 
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
-        self.dx = fenics.Measure("dx", self.mesh)
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.mu = self.config.getfloat("Regularization", "factor_barycenter")
