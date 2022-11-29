@@ -481,6 +481,10 @@ class Config(ConfigParser):
                 "result_dir": {
                     "type": "str",
                 },
+                "precision": {
+                    "type": "int",
+                    "attributes": ["positive"],
+                },
                 "time_suffix": {
                     "type": "bool",
                 },
@@ -614,6 +618,7 @@ save_adjoint = False
 save_gradient = False
 save_mesh = False
 result_dir = ./results
+precision = 3
 time_suffix = False
 
 [Debug]
