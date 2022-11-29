@@ -32,11 +32,12 @@ if TYPE_CHECKING:
     from cashocs._database import database
 
 
-def generate_summary_str(db: database.Database) -> str:
+def generate_summary_str(db: database.Database, precision: int) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
         db: The database of the problem.
+        precision: The precision used for displaying the numbers.
 
     Returns:
         The summary string.
@@ -48,24 +49,25 @@ def generate_summary_str(db: database.Database) -> str:
         "Optimization was successful.\n",
         "Statistics:\n",
         f"    total iterations: {optimization_state['iteration']:4d}\n",
-        f"    final objective value: {optimization_state['objective_value']:>10.3e}\n",
-        f"    final gradient norm:   {optimization_state['relative_norm']:>10.3e}\n",
-        f"    total number of state systems solved:   "
+        "    final objective value: "
+        f"{optimization_state['objective_value']:>10.{precision}e}\n",
+        "    final gradient norm:   "
+        f"{optimization_state['relative_norm']:>10.{precision}e}\n",
+        "    total number of state systems solved:   "
         f"{optimization_state['no_state_solves']:4d}\n",
-        f"    total number of adjoint systems solved: "
+        "    total number of adjoint systems solved: "
         f"{optimization_state['no_adjoint_solves']:4d}\n",
     ]
 
     return "".join(strs)
 
 
-def generate_output_str(
-    db: database.Database,
-) -> str:
+def generate_output_str(db: database.Database, precision: int) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
         db: The database of the problem.
+        precision: The precision used for displaying the numbers.
 
     Returns:
         The output string, which is used later.
@@ -87,29 +89,31 @@ def generate_output_str(
         mesh_quality = None
 
     if iteration % 10 == 0:
-        info_str = (
-            "\niter,  "
-            "cost function,  "
-            f"rel. {gradient_str},  "
-            f"abs. {gradient_str},  "
-        )
+        info_list = [
+            "\niter,  ",
+            "cost function,  ".rjust(max(16, precision + 10)),
+            f"rel. {gradient_str},  ".rjust(max(len(gradient_str) + 7, precision + 9)),
+            f"abs. {gradient_str},  ".rjust(max(len(gradient_str) + 7, precision + 9)),
+        ]
         if mesh_quality is not None:
-            info_str += "mesh qlty,  "
-        info_str += "step size\n\n"
+            info_list.append("mesh qlty,  ".rjust(max(12, precision + 9)))
+        info_list.append("step size".rjust(max(9, precision + 6)))
+        info_list.append("\n\n")
+        info_str = "".join(info_list)
     else:
         info_str = ""
 
     strs = [
         f"{iteration:4d},  ",
-        f"{objective_value:>13.3e},  ",
-        f"{optimization_state['relative_norm']:>{len(gradient_str) + 5}.3e},  ",
-        f"{optimization_state['gradient_norm']:>{len(gradient_str) + 5}.3e},  ",
+        f"{objective_value:> 13.{precision}e},  ",
+        f"{optimization_state['relative_norm']:>{len(gradient_str)+5}.{precision}e},  ",
+        f"{optimization_state['gradient_norm']:>{len(gradient_str)+5}.{precision}e},  ",
     ]
     if mesh_quality is not None:
-        strs.append(f"{mesh_quality:>9.2f},  ")
+        strs.append(f"{mesh_quality:>9.{precision}e},  ")
 
     if iteration > 0:
-        strs.append(f"{optimization_state['stepsize']:>9.3e}")
+        strs.append(f"{optimization_state['stepsize']:>9.{precision}e}")
     if iteration == 0:
         strs.append("\n")
 
@@ -231,21 +235,43 @@ class ResultManager(IOManager):
 class ConsoleManager(IOManager):
     """Management of the console output."""
 
+    def __init__(self, db: database.Database, result_dir: str) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+            result_dir: The directory, where the results are written to.
+
+        """
+        super().__init__(db, result_dir)
+        self.precision = self.config.getint("Output", "precision")
+
     def output(self) -> None:
         """Prints the output string to the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(self.db), flush=True)
+            print(generate_output_str(self.db, self.precision), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def output_summary(self) -> None:
         """Prints the summary in the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(self.db), flush=True)
+            print(generate_summary_str(self.db, self.precision), flush=True)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 class FileManager(IOManager):
     """Class for managing the human-readable output of cashocs."""
+
+    def __init__(self, db: database.Database, result_dir: str) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+            result_dir: The directory, where the results are written to.
+
+        """
+        super().__init__(db, result_dir)
+        self.precision = self.config.getint("Output", "precision")
 
     def output(self) -> None:
         """Saves the output string in a file."""
@@ -258,14 +284,14 @@ class FileManager(IOManager):
             with open(
                 f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
             ) as file:
-                file.write(f"{generate_output_str(self.db)}\n")
+                file.write(f"{generate_output_str(self.db, self.precision)}\n")
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def output_summary(self) -> None:
         """Save the summary in a file."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
-                file.write(generate_summary_str(self.db))
+                file.write(generate_summary_str(self.db, self.precision))
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
