@@ -7,3 +7,4 @@ docutils==0.16
 pydata-sphinx-theme==0.12
 sphinx-design==0.3
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
