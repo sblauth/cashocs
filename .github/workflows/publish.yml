@@ -52,12 +52,22 @@ jobs:
       run: |
         echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
 
+
+    - name: Check if release is a pre-release
+      id: check_version
+      uses: nowsprinting/check-version-format-action@v3
+      with:
+        prefix: 'v'
+
+
     - name: Create Github release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         body: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
+        generate_release_notes: true
+        prerelease: ${{ steps.version.outputs.is_stable == 'false' }}
 
 
   build_and_publish:
