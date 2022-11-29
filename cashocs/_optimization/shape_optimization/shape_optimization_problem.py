@@ -253,11 +253,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             ksp_options,
             adjoint_ksp_options,
             desired_weights,
+            temp_dict,
+            initial_function_values,
         )
-
-        if temp_dict is not None:
-            self.db.parameter_db.temp_dict.update(temp_dict)
-            self.db.parameter_db.is_remeshed = True
 
         if shape_scalar_product is None:
             deformation_space: fenics.FunctionSpace = fenics.VectorFunctionSpace(
@@ -309,9 +307,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "mu_curvature": self.shape_regularization.curvature_regularization.mu,
                 "mu_barycenter": self.shape_regularization.barycenter_regularization.mu,
             }
-
-        if initial_function_values is not None:
-            self.initial_function_values = initial_function_values
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.db.geometry_db.mesh)
         a_posteriori_tester = mesh_testing.APosterioriMeshTester(

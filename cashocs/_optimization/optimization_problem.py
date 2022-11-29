@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import abc
 import copy
-from typing import Callable, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -94,6 +94,8 @@ class OptimizationProblem(abc.ABC):
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
+        temp_dict: Optional[Dict] = None,
+        initial_function_values: Optional[List[float]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -131,6 +133,12 @@ class OptimizationProblem(abc.ABC):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            temp_dict: This is a private parameter of the class, required for remeshing.
+                This parameter must not be set by the user and should be ignored.
+                Using this parameter may result in unintended side effects.
+            initial_function_values: This is a privatve parameter of the class, required
+                for remeshing. This parameter must not be set by the user and should be
+                ignored. Using this parameter may result in unintended side effects.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -174,6 +182,9 @@ class OptimizationProblem(abc.ABC):
             desired_weights,
         )
 
+        if initial_function_values is not None:
+            self.initial_function_values = initial_function_values
+
         self.algorithm = _utils.optimization_algorithm_configuration(self.config)
 
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
@@ -191,6 +202,10 @@ class OptimizationProblem(abc.ABC):
             self.state_forms,
             self.bcs_list,
         )
+        if temp_dict is not None:
+            self.db.parameter_db.temp_dict.update(temp_dict)
+            self.db.parameter_db.is_remeshed = True
+
         self.general_form_handler = _forms.GeneralFormHandler(self.db)
         self.state_problem = _pde_problems.StateProblem(
             self.db,
@@ -543,7 +558,7 @@ class OptimizationProblem(abc.ABC):
     def _compute_initial_function_values(self) -> None:
         """Computes the cost functional values for the initial iteration."""
         self.state_problem.solve()
-        self.initial_function_values: List[float] = []
+        self.initial_function_values = []
         for i, functional in enumerate(self.cost_functional_list):
             val = functional.evaluate()
 

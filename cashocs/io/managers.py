@@ -177,10 +177,7 @@ class ResultManager(IOManager):
         self.save_results = self.config.getboolean("Output", "save_results")
 
         self.output_dict = {}
-        if (
-            self.db.parameter_db.problem_type == "shape"
-            and self.db.parameter_db.is_remeshed
-        ):
+        if self.db.parameter_db.temp_dict:
             self.output_dict["cost_function_value"] = self.db.parameter_db.temp_dict[
                 "output_dict"
             ]["cost_function_value"]
