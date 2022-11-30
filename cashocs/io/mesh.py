@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import configparser
 import json
 import pathlib
 from typing import Dict, Optional, TYPE_CHECKING
@@ -75,6 +76,13 @@ def import_mesh(mesh_file: str) -> _typing.MeshTuple:
         and both can be used interchangeably.
 
     """
+    if isinstance(mesh_file, configparser.ConfigParser):
+        raise _exceptions.InputError(
+            "cashocs.import_mesh",
+            "mesh_file",
+            "Calling cashocs.import_mesh with a ConfigParser instance"
+            " is not allowed anymore starting with cashocs v2.",
+        )
     # Check for the file format
     file_string = mesh_file[:-5]
 
