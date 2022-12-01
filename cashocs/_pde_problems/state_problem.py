@@ -112,17 +112,14 @@ class StateProblem(pde_problem.PDEProblem):
         if not self.has_solution:
 
             self.db.callback.call_pre()
-
-            if self.initial_guess is not None:
-                for j in range(self.db.parameter_db.state_dim):
-                    fenics.assign(self.states[j], self.initial_guess[j])
-
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
             ):
                 if self.config.getboolean("StateSystem", "is_linear"):
                     for i in range(self.db.parameter_db.state_dim):
+                        if self.initial_guess is not None:
+                            fenics.assign(self.states[i], self.initial_guess[i])
                         _utils.assemble_and_solve_linear(
                             self.state_form_handler.state_eq_forms_lhs[i],
                             self.state_form_handler.state_eq_forms_rhs[i],
@@ -136,6 +133,8 @@ class StateProblem(pde_problem.PDEProblem):
 
                 else:
                     for i in range(self.db.parameter_db.state_dim):
+                        if self.initial_guess is not None:
+                            fenics.assign(self.states[i], self.initial_guess[i])
                         nonlinear_solvers.newton_solve(
                             self.state_form_handler.state_eq_forms[i],
                             self.states[i],
