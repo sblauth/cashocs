@@ -26,10 +26,8 @@ import cashocs
 import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
-dir_path = str(pathlib.Path(__file__).parent)
 
-
-def test_cli():
+def test_cli(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -82,7 +80,7 @@ def test_cli():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_convert_wrapper():
+def test_convert_wrapper(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh.msh")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh.xdmf"
@@ -135,7 +133,7 @@ def test_convert_wrapper():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_convert3D():
+def test_convert3D(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
         dir_path + "/mesh/mesh3.xdmf"
@@ -168,7 +166,7 @@ def test_convert3D():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_wrong_formats():
+def test_wrong_formats(dir_path):
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
