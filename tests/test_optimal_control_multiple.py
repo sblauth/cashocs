@@ -19,191 +19,225 @@
 
 """
 
+from collections import namedtuple
 import pathlib
 
 from fenics import *
-import numpy as np
+import pytest
 
 import cashocs
 
-rng = np.random.RandomState(300696)
-dir_path = str(pathlib.Path(__file__).parent)
-config = cashocs.load_config(dir_path + "/config_ocp.ini")
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
-V = FunctionSpace(mesh, "CG", 1)
 
-y = Function(V)
-z = Function(V)
-p = Function(V)
-q = Function(V)
-u = Function(V)
-v = Function(V)
+@pytest.fixture
+def geometry():
+    Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
+    geom = Geometry(mesh, boundaries, dx, ds)
 
-states = [y, z]
-adjoints = [p, q]
-controls = [u, v]
-
-e_y = inner(grad(y), grad(p)) * dx - u * p * dx
-e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
-
-e = [e_y, e_z]
-
-bcs1 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-bcs2 = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-
-bcs_list = [bcs1, bcs2]
-
-y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
-z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
-alpha = 1e-6
-beta = 1e-4
-J = cashocs.IntegralFunctional(
-    Constant(0.5) * (y - y_d) * (y - y_d) * dx
-    + Constant(0.5) * (z - z_d) * (z - z_d) * dx
-    + Constant(0.5 * alpha) * u * u * dx
-    + Constant(0.5 * beta) * v * v * dx
-)
-
-ocp = cashocs.OptimalControlProblem(e, bcs_list, J, states, controls, adjoints, config)
+    return geom
 
 
-def test_control_gradient_multiple():
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+@pytest.fixture
+def CG1(geometry):
+    return FunctionSpace(geometry.mesh, "CG", 1)
 
 
-def test_control_gd_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("OptimizationRoutine", "algorithm", "gd")
-    config.set("OptimizationRoutine", "rtol", "1e-2")
-    config.set("OptimizationRoutine", "atol", "0.0")
-    config.set("OptimizationRoutine", "maximum_iterations", "47")
+@pytest.fixture
+def y(CG1):
+    return Function(CG1)
 
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
-    ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+
+@pytest.fixture
+def z(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def p(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def q(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def u(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def v(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def states(y, z):
+    return [y, z]
+
+
+@pytest.fixture
+def adjoints(p, q):
+    return [p, q]
+
+
+@pytest.fixture
+def controls(u, v):
+    return [u, v]
+
+
+@pytest.fixture
+def state_form_y(y, p, u, geometry):
+    return dot(grad(y), grad(p)) * geometry.dx - u * p * geometry.dx
+
+
+@pytest.fixture
+def state_form_z(z, q, y, v, geometry):
+    return dot(grad(z), grad(q)) * geometry.dx - (y + v) * q * geometry.dx
+
+
+@pytest.fixture
+def state_forms(state_form_y, state_form_z):
+    return [state_form_y, state_form_z]
+
+
+@pytest.fixture
+def bcs1(CG1, geometry):
+    return cashocs.create_dirichlet_bcs(
+        CG1, Constant(0), geometry.boundaries, [1, 2, 3, 4]
     )
+
+
+@pytest.fixture
+def bcs2(CG1, geometry):
+    return cashocs.create_dirichlet_bcs(
+        CG1, Constant(0), geometry.boundaries, [1, 2, 3, 4]
+    )
+
+
+@pytest.fixture
+def bcs_list(bcs1, bcs2):
+    return [bcs1, bcs2]
+
+
+@pytest.fixture
+def y_d():
+    return Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+
+
+@pytest.fixture
+def z_d():
+    return Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
+
+
+@pytest.fixture
+def J(y, y_d, z, z_d, u, v, geometry):
+    alpha = 1e-6
+    beta = 1e-4
+    return cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * geometry.dx
+        + Constant(0.5) * (z - z_d) * (z - z_d) * geometry.dx
+        + Constant(0.5 * alpha) * u * u * geometry.dx
+        + Constant(0.5 * beta) * v * v * geometry.dx
+    )
+
+
+@pytest.fixture
+def ocp(state_forms, bcs_list, J, states, controls, adjoints, config_ocp):
+    return cashocs.OptimalControlProblem(
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
+    )
+
+
+def test_control_gradient_multiple(ocp, rng):
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
+
+
+def test_control_gd_multiple(ocp):
     ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=47)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_fr_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoCG", "cg_method", "FR")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_cg_fr_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoCG", "cg_method", "FR")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=21)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_pr_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoCG", "cg_method", "PR")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_cg_pr_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoCG", "cg_method", "PR")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=36)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_hs_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoCG", "cg_method", "HS")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_cg_hs_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoCG", "cg_method", "HS")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=30)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_dy_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoCG", "cg_method", "DY")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_cg_dy_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoCG", "cg_method", "DY")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=13)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_hz_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoCG", "cg_method", "HZ")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_cg_hz_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoCG", "cg_method", "HZ")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=26)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_bfgs_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
-    ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
-    )
+def test_control_bfgs_multiple(ocp):
     ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=11)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_newton_cg_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoTNM", "inner_newton", "cg")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_newton_cg_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoTNM", "inner_newton", "cg")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-4
 
 
-def test_control_newton_cr_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("AlgoTNM", "inner_newton", "cr")
-
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
-    v.vector().vec().set(0.0)
-    v.vector().apply("")
+def test_control_newton_cr_multiple(
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+):
+    config_ocp.set("AlgoTNM", "inner_newton", "cr")
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
     ocp.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=2)
     assert ocp.solver.relative_norm <= 1e-4
