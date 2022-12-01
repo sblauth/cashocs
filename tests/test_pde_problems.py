@@ -19,45 +19,82 @@
 
 """
 
-import pathlib
+from collections import namedtuple
 
 from fenics import *
 import numpy as np
+import pytest
 
 import cashocs
 
-rng = np.random.RandomState(300696)
-dir_path = str(pathlib.Path(__file__).parent)
-config = cashocs.load_config(dir_path + "/config_ocp.ini")
-mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
-V = FunctionSpace(mesh, "CG", 1)
 
-y = Function(V)
-p = Function(V)
-u = Function(V)
+@pytest.fixture
+def geometry():
+    Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
+    geom = Geometry(mesh, boundaries, dx, ds)
 
-e = inner(grad(y), grad(p)) * dx - u * p * dx
-
-bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2])
-
-y_d = Function(V)
-alpha = 1e-6
-J = cashocs.IntegralFunctional(
-    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
-)
-
-ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config)
+    return geom
 
 
-def test_state_adjoint_problems():
-    trial = TrialFunction(V)
-    test = TestFunction(V)
-    state = Function(V)
-    adjoint = Function(V)
+@pytest.fixture
+def CG1(geometry):
+    return FunctionSpace(geometry.mesh, "CG", 1)
 
-    a = inner(grad(trial), grad(test)) * dx
-    L_state = u * test * dx
-    L_adjoint = -(state - y_d) * test * dx
+
+@pytest.fixture
+def y(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def p(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def u(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def e(y, u, p, geometry):
+    return dot(grad(y), grad(p)) * geometry.dx - u * p * geometry.dx
+
+
+@pytest.fixture
+def bcs(CG1, geometry):
+    return cashocs.create_dirichlet_bcs(CG1, Constant(0), geometry.boundaries, [1, 2])
+
+
+@pytest.fixture
+def y_d(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def J(y, y_d, u, geometry):
+    alpha = 1e-6
+    return cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * geometry.dx
+        + Constant(0.5 * alpha) * u * u * geometry.dx
+    )
+
+
+@pytest.fixture
+def ocp(e, bcs, J, y, u, p, config_ocp):
+    return cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config=config_ocp)
+
+
+def test_state_adjoint_problems(CG1, geometry, rng, u, y_d, ocp, bcs, y, p):
+    trial = TrialFunction(CG1)
+    test = TestFunction(CG1)
+    state = Function(CG1)
+    adjoint = Function(CG1)
+
+    a = inner(grad(trial), grad(test)) * geometry.dx
+    L_state = u * test * geometry.dx
+    L_adjoint = -(state - y_d) * test * geometry.dx
 
     y_d.vector().set_local(rng.rand(y_d.vector().local_size()))
     y_d.vector().apply("")
@@ -74,15 +111,14 @@ def test_state_adjoint_problems():
     assert np.allclose(adjoint.vector()[:], p.vector()[:])
 
 
-def test_control_gradient():
-    trial = TrialFunction(V)
-    test = TestFunction(V)
-    gradient = Function(V)
+def test_control_gradient(CG1, geometry, rng, ocp, u, p, y_d):
+    trial = TrialFunction(CG1)
+    test = TestFunction(CG1)
+    gradient = Function(CG1)
 
-    a = trial * test * dx
-    L = Constant(alpha) * u * test * dx - p * test * dx
+    a = trial * test * geometry.dx
+    L = Constant(1e-6) * u * test * geometry.dx - p * test * geometry.dx
 
-    ocp._erase_pde_memory()
     y_d.vector().set_local(rng.rand(y_d.vector().local_size()))
     y_d.vector().apply("")
     u.vector().set_local(rng.rand(u.vector().local_size()))
