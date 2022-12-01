@@ -66,11 +66,6 @@ def bcs(CG1, geometry):
 
 
 @pytest.fixture
-def y_d(geometry):
-    return Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=geometry.mesh)
-
-
-@pytest.fixture
 def J(y, y_d, u, geometry):
     alpha = 1e-6
     return cashocs.IntegralFunctional(

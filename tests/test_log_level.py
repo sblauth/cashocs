@@ -25,13 +25,17 @@ from cashocs._loggers import info
 from cashocs._loggers import warning
 
 
-def test_set_log_level(caplog):
-    cashocs.set_log_level(cashocs.LogLevel.DEBUG)
+def issue_messages():
     debug("abc")
     info("def")
     warning("ghi")
     error("jkl")
     critical("mno")
+
+
+def test_set_log_level(caplog):
+    cashocs.set_log_level(cashocs.LogLevel.DEBUG)
+    issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert "abc" in caplog.text
         assert "def" in caplog.text
@@ -43,11 +47,7 @@ def test_set_log_level(caplog):
 
     cashocs.set_log_level(cashocs.LogLevel.INFO)
 
-    debug("abc")
-    info("def")
-    warning("ghi")
-    error("jkl")
-    critical("mno")
+    issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
         assert "def" in caplog.text
@@ -58,11 +58,7 @@ def test_set_log_level(caplog):
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.WARNING)
-    debug("abc")
-    info("def")
-    warning("ghi")
-    error("jkl")
-    critical("mno")
+    issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
         assert not "def" in caplog.text
@@ -73,11 +69,7 @@ def test_set_log_level(caplog):
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.ERROR)
-    debug("abc")
-    info("def")
-    warning("ghi")
-    error("jkl")
-    critical("mno")
+    issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
         assert not "def" in caplog.text
@@ -88,11 +80,7 @@ def test_set_log_level(caplog):
     caplog.clear()
 
     cashocs.set_log_level(cashocs.LogLevel.CRITICAL)
-    debug("abc")
-    info("def")
-    warning("ghi")
-    error("jkl")
-    critical("mno")
+    issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
         assert not "def" in caplog.text

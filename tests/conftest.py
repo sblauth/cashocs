@@ -42,3 +42,10 @@ def config_sop(dir_path):
 @pytest.fixture
 def rng():
     return np.random.RandomState(300696)
+
+
+@pytest.fixture
+def y_d(geometry):
+    return fenics.Expression(
+        "sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=geometry.mesh
+    )

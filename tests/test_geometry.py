@@ -33,14 +33,23 @@ from cashocs._exceptions import InputError
 from cashocs.geometry import MeshQuality
 from cashocs.io.mesh import gather_coordinates
 
-c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
-u_mesh = fenics.UnitSquareMesh(5, 5)
-i_mesh = fenics.UnitIntervalMesh(10)
-rng = np.random.RandomState(300696)
+
+@pytest.fixture
+def regular_mesh():
+    return cashocs.regular_mesh(5)[0]
 
 
-def test_mesh_import():
-    dir_path = str(pathlib.Path(__file__).parent)
+@pytest.fixture
+def unit_square_mesh():
+    return fenics.UnitSquareMesh(5, 5)
+
+
+@pytest.fixture
+def interval_mesh():
+    return fenics.UnitIntervalMesh(10)
+
+
+def test_mesh_import(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -95,8 +104,7 @@ def test_mesh_import():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_regular_mesh():
-    rng = np.random.RandomState(300696)
+def test_regular_mesh(rng, unit_square_mesh, regular_mesh):
     lens = rng.uniform(0.5, 2, 2)
     r_mesh, _, _, _, _, _ = cashocs.regular_mesh(2, lens[0], lens[1])
 
@@ -107,8 +115,8 @@ def test_regular_mesh():
         2, min_vals[0], min_vals[1], min_vals[2], max_vals[0], max_vals[1], max_vals[2]
     )
 
-    u_coords = gather_coordinates(u_mesh)
-    c_coords = gather_coordinates(c_mesh)
+    u_coords = gather_coordinates(unit_square_mesh)
+    c_coords = gather_coordinates(regular_mesh)
     r_coords = gather_coordinates(r_mesh)
     s_coords = gather_coordinates(s_mesh)
 
@@ -263,7 +271,7 @@ def test_write_mesh():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_empty_measure():
+def test_empty_measure(rng):
     mesh, _, _, dx, ds, dS = cashocs.regular_mesh(5)
     V = fenics.FunctionSpace(mesh, "CG", 1)
     dm = cashocs.geometry._EmptyMeasure(dx)
@@ -321,7 +329,7 @@ def test_convert_coordinate_defo_to_dof_defo():
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
-def test_convert_dof_defo_to_coordinate_defo():
+def test_convert_dof_defo_to_coordinate_defo(rng):
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
@@ -475,12 +483,10 @@ def test_list_measure():
         assert m_sum._measures[i] == ref._measures[i]
 
 
-def test_interval_mesh():
-    rng = np.random.RandomState(300696)
-
+def test_interval_mesh(interval_mesh, rng):
     mesh, _, _, _, _, _ = cashocs.interval_mesh(10)
     coords = gather_coordinates(mesh)
-    i_coords = gather_coordinates(i_mesh)
+    i_coords = gather_coordinates(interval_mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(coords, i_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)
