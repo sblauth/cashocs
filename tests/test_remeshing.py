@@ -53,7 +53,7 @@ def test_verification_remeshing():
     dir_path = str(pathlib.Path(__file__).parent)
     mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
 
-    def factory(mesh_file):
+    def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
         config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
@@ -85,7 +85,7 @@ def test_verification_remeshing():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(factory, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
     MPI.barrier(MPI.comm_world)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     MPI.barrier(MPI.comm_world)
@@ -103,7 +103,7 @@ def test_remeshing():
     dir_path = str(pathlib.Path(__file__).parent)
     mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
 
-    def factory(mesh_file):
+    def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
         config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
@@ -129,7 +129,7 @@ def test_remeshing():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(factory, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
     sop.solve()
 
     MPI.barrier(MPI.comm_world)
@@ -165,7 +165,7 @@ def test_remesh_scaling():
     w_des = rng.rand(1)[0]
     mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
 
-    def factory(mesh_file):
+    def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
         config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
@@ -190,7 +190,7 @@ def test_remesh_scaling():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(factory, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
     val = sop.reduced_cost_functional.evaluate()
     assert np.abs(np.abs(val) - w_des) < 1e-14
 

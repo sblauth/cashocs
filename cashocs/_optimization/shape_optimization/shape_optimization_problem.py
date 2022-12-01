@@ -66,104 +66,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     """
 
     @functools.singledispatchmethod  # type: ignore
-    def __init__(  # pylint: disable=unused-argument
-        self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]],
-            List[fenics.DirichletBC],
-            fenics.DirichletBC,
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        boundaries: fenics.MeshFunction,
-        config: Optional[io.Config] = None,
-        shape_scalar_product: Optional[ufl.Form] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        temp_dict: Optional[Dict] = None,
-        initial_function_values: Optional[List[float]] = None,
-    ) -> None:
-        """Initializes self.
-
-        Args:
-            state_forms: The weak form of the state equation (user implemented). Can be
-                either a single UFL form, or a (ordered) list of UFL forms.
-            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
-                Dirichlet (essential) boundary conditions. If this is ``None``, then no
-                Dirichlet boundary conditions are imposed.
-            cost_functional_form: UFL form of the cost functional. Can also be a list of
-                summands of the cost functional
-            states: The state variable(s), can either be a :py:class:`fenics.Function`,
-                or a list of these.
-            adjoints: The adjoint variable(s), can either be a
-                :py:class:`fenics.Function`, or a (ordered) list of these.
-            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary
-                markers.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.load_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-            shape_scalar_product: The bilinear form for computing the shape gradient
-                (or gradient deformation). This has to use
-                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`
-                objects to define the weak form, which have to be in a
-                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
-                finite elements. Moreover, this form is required to be symmetric.
-            initial_guess: List of functions that act as initial guess for the state
-                variables, should be valid input for :py:func:`fenics.assign`. Defaults
-                to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
-                PETSc, used to solve the state systems. If this is ``None``, then the
-                direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
-                for PETSc, used to solve the adjoint systems. If this is ``None``, then
-                the same options as for the state systems are used (default is
-                ``None``).
-            desired_weights: A list of values for scaling the cost functional terms. If
-                this is supplied, the cost functional has to be given as list of
-                summands. The individual terms are then scaled, so that term `i` has the
-                magnitude of `desired_weights[i]` for the initial iteration. In case
-                that `desired_weights` is `None`, no scaling is performed. Default is
-                `None`.
-            temp_dict: This is a private parameter of the class, required for remeshing.
-                This parameter must not be set by the user and should be ignored.
-                Using this parameter may result in unintended side effects.
-            initial_function_values: This is a privatve parameter of the class, required
-                for remeshing. This parameter must not be set by the user and should be
-                ignored. Using this parameter may result in unintended side effects.
-
-        """
-        super().__init__(
-            state_forms,
-            bcs_list,
-            cost_functional_form,
-            states,
-            adjoints,
-            config,
-            initial_guess,
-            ksp_options,
-            adjoint_ksp_options,
-            desired_weights,
-        )
-        raise _exceptions.CashocsException(
-            "Not a valid input for cashocs.ShapeOptimizationProblem.__init__"
-        )
-
-    @__init__.register(list)
-    @__init__.register(ufl.Form)
-    def _(
+    def __init__(
         self,
         state_forms: Union[List[ufl.Form], ufl.Form],
         bcs_list: Union[
@@ -352,21 +255,21 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
 
     @__init__.register(CallableFunction)
-    def _(self, factory: Callable, mesh_name: str) -> None:
+    def _(self, mesh_parametrization: Callable, mesh_name: str) -> None:
         """Initializes self. Version for remeshing.
 
         Args:
-            factory: A custom function, which takes the path to the mesh file as
-                argument and returns either just the positional arguments or the
-                positional and keyword arguments for the alternative __init__
+            mesh_parametrization: A custom function, which takes the path to the mesh
+                file as argument and returns either just the positional arguments or the
+                positional and keyword arguments for the standard __init__
                 implementation.
             mesh_name: The path to the initial mesh file.
 
         """
-        self.factory = factory
+        self.mesh_parametrization = mesh_parametrization
         self.mesh_name = mesh_name
 
-        arguments = self.factory(self.mesh_name)
+        arguments = self.mesh_parametrization(self.mesh_name)
         if len(arguments) == 2:
             args, kwargs = arguments
         elif len(arguments) == 1:
@@ -374,7 +277,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             kwargs = {}
         else:
             raise _exceptions.CashocsException(
-                "For remeshing, the factory function"
+                "For remeshing, the mesh_parametrization function"
                 " must either return one or two objects."
             )
         if hasattr(self, "db") and self.db.parameter_db.temp_dict:
