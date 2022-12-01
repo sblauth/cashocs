@@ -59,6 +59,13 @@ def test_verification_remeshing():
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
+        config.set("Output", "save_results", "False")
+        config.set("Output", "save_txt", "False")
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+        config.set("Output", "save_mesh", "False")
+
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
         V = FunctionSpace(mesh, "CG", 1)
