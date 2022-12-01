@@ -1,2 +1,12 @@
+version: 2
+
 python:
-    version: 3
+  install:
+  - requirements: docs/requirements.txt
+
+build:
+  tools:
+    python: "3.11"
+
+sphinx:
+  configuration: docs/source/conf.py
