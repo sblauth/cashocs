@@ -20,12 +20,10 @@
 """
 
 from collections import namedtuple
-import pathlib
 
 from fenics import *
 import numpy as np
 import pytest
-import sympy
 
 import cashocs
 from cashocs._exceptions import InputError
@@ -255,9 +253,9 @@ def test_custom_supply_control(CG1, geometry, y, u, p, y_d, rng, bcs, ocp):
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
-def test_scalar_norm_optimization(rng, y, geometry, u, ocp):
-    ocp.config.set("OptimizationRoutine", "algorithm", "bfgs")
-    ocp.config.set("OptimizationRoutine", "rtol", "1e-3")
+def test_scalar_norm_optimization(rng, config_ocp, y, geometry, F, bcs, u, p):
+    config_ocp.set("OptimizationRoutine", "algorithm", "bfgs")
+    config_ocp.set("OptimizationRoutine", "rtol", "1e-3")
 
     u.vector().vec().set(1e-3)
     u.vector().apply("")
@@ -265,8 +263,8 @@ def test_scalar_norm_optimization(rng, y, geometry, u, ocp):
     norm_y = y * y * geometry.dx
     tracking_goal = rng.uniform(0.25, 0.75)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal)
-    ocp.config.set("LineSearch", "initial_stepsize", "4e3")
-
+    config_ocp.set("LineSearch", "initial_stepsize", "4e3")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-3)
 
     assert 0.5 * pow(assemble(norm_y) - tracking_goal, 2) < 1e-15
