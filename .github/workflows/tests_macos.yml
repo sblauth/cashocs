@@ -35,7 +35,7 @@ jobs:
 
     - name: Install package
       run: |
-        pip install .
+        pip install .[all]
 
     - name: Run tests
       env: 

@@ -33,7 +33,7 @@ jobs:
 
     - name: Install package
       run: |
-        pip install .
+        pip install .[all]
     
     - name: Run demos
       env: 
@@ -71,7 +71,7 @@ jobs:
 
     - name: Install package
       run: |
-        pip install .
+        pip install .[all]
         
     - name: Run demos in parallel
       env:

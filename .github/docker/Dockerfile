@@ -18,7 +18,7 @@ COPY . /root/cashocs
 
 RUN conda activate cashocs \
   && cd /root/cashocs \
-  && pip install .
+  && pip install .[all]
 
 RUN conda activate cashocs \
   && cd /root/cashocs \

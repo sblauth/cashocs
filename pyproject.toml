@@ -57,6 +57,17 @@ Tracker = "https://github.com/sblauth/cashocs/issues"
 [project.scripts]
 cashocs-convert = "cashocs._cli:convert"
 
+[project.optional-dependencies]
+tests = ["pytest", "pytest-randomly", "coverage"]
+docs = [
+	"sphinx",
+	"pydata-sphinx-theme",
+	"sphinx-argparse",
+	"sphinx-copybutton",
+	"sphinx-design"
+]
+demos = ["matplotlib"]
+
 [tool.setuptools.packages]
 find = {}
 

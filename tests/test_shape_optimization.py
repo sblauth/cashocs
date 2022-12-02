@@ -19,6 +19,7 @@
 
 """
 
+from collections import namedtuple
 import pathlib
 import subprocess
 
@@ -84,9 +85,18 @@ def t_div(u, n):
     return div(u) - inner(grad(u) * n, n)
 
 
-rng = np.random.RandomState(300696)
+@pytest.fixture
+def geometry():
+    Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
+    mesh, _, boundaries, dx, ds, _ = cashocs.import_mesh(
+        f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+    )
+    geom = Geometry(mesh, boundaries, dx, ds)
+
+    return geom
+
+
 dir_path = str(pathlib.Path(__file__).parent)
-# config = cashocs.load_config(dir_path + "/config_sop.ini")
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
     f"{dir_path}/mesh/unit_circle/mesh.xdmf"
@@ -96,20 +106,57 @@ initial_coordinates = mesh.coordinates().copy()
 
 V = FunctionSpace(mesh, "CG", 1)
 
+
+@pytest.fixture
+def bcs_list(CG1, geometry):
+    return DirichletBC(CG1, Constant(0.0), geometry.boundaries, 1)
+
+
 bcs = DirichletBC(V, Constant(0), boundaries, 1)
 
 x = SpatialCoordinate(mesh)
 f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
+
+@pytest.fixture
+def rhs(geometry):
+    x = SpatialCoordinate(geometry.mesh)
+    return 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+
+@pytest.fixture
+def CG1(geometry):
+    return FunctionSpace(geometry.mesh, "CG", 1)
+
+
+@pytest.fixture
+def state_function(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def adjoint_function(CG1):
+    return Function(CG1)
+
+
 u = Function(V)
 p = Function(V)
+
+
+@pytest.fixture
+def state_form(state_function, adjoint_function, rhs, geometry):
+    return (
+        dot(grad(state_function), grad(adjoint_function)) * geometry.dx
+        - rhs * adjoint_function * geometry.dx
+    )
+
 
 e = inner(grad(u), grad(p)) * dx - f * p * dx
 
 J = cashocs.IntegralFunctional(u * dx)
 
 
-def test_move_mesh():
+def test_move_mesh(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -134,11 +181,12 @@ def test_move_mesh():
     assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
 
-def test_shape_derivative_unconstrained():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
+def test_shape_derivative_unconstrained(
+    config_sop, geometry, state_function, adjoint_function, state_form, bcs_list
+):
+    mesh = geometry.mesh
+    dx = geometry.dx
+    ds = geometry.ds
     n = FacetNormal(mesh)
 
     CG1 = VectorFunctionSpace(mesh, "CG", 1)
@@ -147,13 +195,29 @@ def test_shape_derivative_unconstrained():
     J1 = cashocs.IntegralFunctional(Constant(1) * dx)
     J2 = cashocs.IntegralFunctional(Constant(1) * ds)
 
-    sop1 = cashocs.ShapeOptimizationProblem(e, bcs, J1, u, p, boundaries, config)
+    sop1 = cashocs.ShapeOptimizationProblem(
+        state_form,
+        bcs_list,
+        J1,
+        state_function,
+        adjoint_function,
+        geometry.boundaries,
+        config=config_sop,
+    )
     sop1.state_problem.has_solution = True
     sop1.adjoint_problem.has_solution = True
     cashocs_sd_1 = assemble(sop1.form_handler.shape_derivative)[:]
     exact_sd_1 = assemble(div(defo) * dx)[:]
 
-    sop2 = cashocs.ShapeOptimizationProblem(e, bcs, J2, u, p, boundaries, config)
+    sop2 = cashocs.ShapeOptimizationProblem(
+        state_form,
+        bcs_list,
+        J2,
+        state_function,
+        adjoint_function,
+        geometry.boundaries,
+        config=config_sop,
+    )
     sop2.state_problem.has_solution = True
     sop2.adjoint_problem.has_solution = True
     cashocs_sd_2 = assemble(sop2.form_handler.shape_derivative)[:]
@@ -237,19 +301,18 @@ def test_shape_derivative_constrained():
     assert np.allclose(exact_sd_func, cashocs_sd_func)
 
 
-def test_shape_gradient():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-
+def test_shape_gradient(config_sop, geometry, rng):
+    mesh = geometry.mesh
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config_sop)
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
-def test_shape_gradient_iterative():
+def test_shape_gradient_iterative(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config.set("OptimizationRoutine", "gradient_method", "iterative")
 
@@ -424,7 +487,7 @@ def test_shape_barycenter_regularization():
     assert abs(bc_y - pos_y) < 1e-4
 
 
-def test_custom_supply_shape():
+def test_custom_supply_shape(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -453,7 +516,7 @@ def test_custom_supply_shape():
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
-def test_supply_from_custom_fspace():
+def test_supply_from_custom_fspace(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -477,7 +540,7 @@ def test_supply_from_custom_fspace():
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
-def test_custom_shape_scalar_product():
+def test_custom_shape_scalar_product(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -968,7 +1031,7 @@ def test_angle_change():
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
-def test_fixed_dimensions():
+def test_fixed_dimensions(rng):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
     config.set("ShapeGradient", "fixed_dimensions", "[0]")

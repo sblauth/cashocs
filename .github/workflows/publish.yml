@@ -27,7 +27,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pip install .
+        pip install .[all]
 
     - name: Run tests
       shell: bash -l {0}
