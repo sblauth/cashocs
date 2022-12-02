@@ -109,6 +109,7 @@ def test_remeshing():
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
         config.set("Output", "result_dir", dir_path + "/temp/")
+        config.set("Debug", "remeshing", "True")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
