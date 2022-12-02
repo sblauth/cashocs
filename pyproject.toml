@@ -58,7 +58,11 @@ Tracker = "https://github.com/sblauth/cashocs/issues"
 cashocs-convert = "cashocs._cli:convert"
 
 [project.optional-dependencies]
-tests = ["pytest", "pytest-randomly", "coverage"]
+tests = [
+	"pytest",
+	"pytest-randomly",
+	"coverage"
+]
 docs = [
 	"sphinx",
 	"pydata-sphinx-theme",
@@ -67,6 +71,11 @@ docs = [
 	"sphinx-design"
 ]
 demos = ["matplotlib"]
+all = [
+	"cashocs[tests]",
+	"cashocs[docs]",
+	"cashocs[demos]"
+]
 
 [tool.setuptools.packages]
 find = {}
