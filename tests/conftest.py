@@ -49,3 +49,13 @@ def y_d(geometry):
     return fenics.Expression(
         "sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=geometry.mesh
     )
+
+
+@pytest.fixture(params=["FR", "PR", "HS", "DY", "HZ"])
+def setup_cg_method(config_ocp, request):
+    config_ocp.set("AlgoCG", "cg_method", request.param)
+
+
+@pytest.fixture(params=["cr", "cg"])
+def setup_newton_method(config_ocp, request):
+    config_ocp.set("AlgoTNM", "inner_newton", request.param)
