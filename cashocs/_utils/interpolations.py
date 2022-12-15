@@ -18,77 +18,173 @@
 """Interpolations and averaging for levelset functions for topology optimization."""
 
 import fenics
-import numba
 import numpy as np
 import ufl.core.expr
 
+cpp_code = """
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+namespace py = pybind11;
 
-@numba.vectorize
-def get_volume_fraction_triangle(psi0: float, psi1: float, psi2: float) -> float:
-    """Computes the volume fraction based on a levelset function in a triangle.
+#include <dolfin/function/Function.h>
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/MeshGeometry.h>
+#include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/la/Vector.h>
+#include <dolfin/la/GenericVector.h>
+#include <dolfin/function/FunctionSpace.h>
 
-    The input consists of the three nodal values representing the levelset function
-    in the given triangle, sorted by magnitude. The volume fraction is 1.0 if the
-    triangle is inside the domain (psi <= 0) and 0 if it is not inside (psi >= 0)
-
-    Args:
-        psi0: Lowest value of the levelset function in the triangle.
-        psi1: Middle value of the levelset function in the triangle.
-        psi2: Highest value of the levelset function in the triangle.
-
-    Returns:
-        The volume fraction of the domain in the triangle, as represented by the
-        levelset function.
-
-    """
-    if psi2 <= 0.0:
-        return 1.0
-    elif psi0 > 0.0:
-        return 0.0
-    elif psi1 <= 0.0 < psi2:
-        return 1 - psi2**2 / ((psi2 - psi0) * (psi2 - psi1))
-    elif psi0 <= 0.0 < psi1:
-        return psi0**2 / ((psi1 - psi0) * (psi2 - psi0))
-    else:
-        return -1.0
+using namespace dolfin;
 
 
-@numba.vectorize
-def get_volume_fraction_tetrahedron(
-    psi0: float, psi1: float, psi2: float, psi3: float
-) -> float:
-    """Computes the volume fraction based on a levelset function in a tetrahedron.
+double get_volume_fraction_triangle(double psi0, double psi1, double psi2){
+    std::array<double, 3> psi = {psi0, psi1, psi2};
+    std::sort(psi.begin(), psi.end());
+    double s;
 
-    The input consists of the four nodal values representing the levelset function
-    in the given tetrahedron, sorted by magnitude. The volume fraction is 1.0 if the
-    tetrahedron is inside the domain (psi <= 0) and 0 if it is not inside (psi >= 0)
+    if (psi[2] <= 0.0){
+        s = 1.0;
+    }
+    else if (psi[0] > 0.0){
+        s = 0.0;
+    }
+    else if (psi[1] <= 0.0 && psi[2] > 0.0){
+        s = 1 - pow(psi[2], 2) / ((psi[2] - psi[0]) * (psi[2] - psi[1]));
+    }
+    else if (psi[0] <= 0.0 && psi[1] > 0.0){
+        s = pow(psi[0], 2) / ((psi[1] - psi[0]) * (psi[2] - psi[0]));
+    }
+    else{
+        s = -1.0;
+    }
+    return s;
+}
 
-    Args:
-        psi0: Lowest value of the levelset function in the tetrahedron.
-        psi1: Second-lowest value of the levelset function in the tetrahedron.
-        psi2: Second-highest value of the levelset function in the tetrahedron.
-        psi2: Highest value of the levelset function in the tetrahedron.
 
-    Returns:
-        The volume fraction of the domain in the tetrahedron, as represented by the
-        levelset function.
+double get_volume_fraction_tetrahedron(
+    double psi0,
+    double psi1,
+    double psi2,
+    double psi3
+){
+    std::array<double, 4> psi = {psi0, psi1, psi2, psi3};
+    std::sort(psi.begin(), psi.end());
+    double s;
 
-    """
-    if psi3 <= 0.0:
-        return 1.0
-    elif psi0 > 0.0:
-        return 0.0
-    elif psi2 <= 0.0 < psi3:
-        return 1.0 - psi3**3 / ((psi3 - psi0) * (psi3 - psi1) * (psi3 - psi2))
-    elif psi1 <= 0.0 < psi2:
-        return (
-            psi0 * psi1 * (psi2**2 + psi2 * psi3 + psi3**2)
-            + psi2 * psi3 * (psi2 * psi3 - (psi0 + psi1) * (psi2 + psi3))
-        ) / ((psi0 - psi2) * (psi1 - psi2) * (psi0 - psi3) * (psi1 - psi3))
-    elif psi0 <= 0.0 < psi1:
-        return -(psi0**3) / ((psi1 - psi0) * (psi2 - psi0) * (psi3 - psi0))
-    else:
-        return -1.0
+    if (psi[3] <= 0.0){
+        s = 1.0;
+    }
+    else if (psi[0] > 0.0){
+        s = 0.0;
+    }
+    else if (psi[2] <= 0.0 && psi[3] > 0.0){
+        s = 1.0 - pow(psi[3], 3) / (
+            (psi[3] - psi[0]) * (psi[3] - psi[1]) * (psi[3] - psi[2])
+        );
+    }
+    else if (psi[1] <= 0.0 && psi[2] > 0.0){
+        s = (
+            psi[0] * psi[1] * (pow(psi[2], 2) + psi[2] * psi[3] + pow(psi[3], 2))
+            + psi[2] * psi[3] * (
+                psi[2] * psi[3] - (psi[0] + psi[1]) * (psi[2] + psi[3])
+                )
+        ) / (
+        (psi[0] - psi[2]) * (psi[1] - psi[2]) * (psi[0] - psi[3]) * (psi[1] - psi[3])
+        );
+    }
+    else if (psi[0] <= 0.0 && psi[1] > 0.0){
+        s = -pow(psi[0], 3) / (
+            (psi[1] - psi[0]) * (psi[2] - psi[0]) * (psi[3] - psi[0])
+        );
+    }
+    else{
+        s = -1.0;
+    }
+
+    return s;
+}
+
+
+double interpolate_levelset_to_elements(
+    std::shared_ptr<Function> levelset_function,
+    double val1,
+    double val2,
+    std::shared_ptr<Function> ratio
+){
+    double s = 0.0;
+    std::shared_ptr<const Mesh> mesh = levelset_function->function_space()->mesh();
+    std::vector<double> ratio_vector;
+    std::vector<double> vertex_values;
+    std::vector<double> vals;
+    float psi0;
+    float psi1;
+    float psi2;
+    float psi3;
+
+    levelset_function->compute_vertex_values(vertex_values);
+    ratio->vector()->get_local(ratio_vector);
+
+    std::vector<unsigned int> cells = mesh->cells();
+    int meshdim = mesh->geometry().dim();
+
+    if (meshdim == 2){
+        int index = 0;
+        for (int i=0; i<cells.size(); i+=3){
+            psi0 = vertex_values[cells[i]];
+            psi1 = vertex_values[cells[i+1]];
+            psi2 = vertex_values[cells[i+2]];
+
+            if (psi0 < 0 && psi1 < 0 && psi2 < 0){
+                ratio_vector[index] = val1;
+            }
+            else if (psi0 > 0 && psi1 > 0 && psi2 > 0){
+                ratio_vector[index] = val2;
+            }
+            else{
+                s = get_volume_fraction_triangle(psi0, psi1, psi2);
+                ratio_vector[index] = val2 + s*(val1 - val2);
+            }
+            index += 1;
+        }
+    }
+    else if (meshdim == 3){
+        int index = 0;
+        for (int i=0; i<cells.size(); i+=4){
+            psi0 = vertex_values[cells[i]];
+            psi1 = vertex_values[cells[i+1]];
+            psi2 = vertex_values[cells[i+2]];
+            psi3 = vertex_values[cells[i+3]];
+
+            if (psi0 < 0 && psi1 < 0 && psi2 < 0 && psi3 < 0){
+                ratio_vector[index] = val1;
+            }
+            else if (psi0 > 0 && psi1 > 0 && psi2 > 0 && psi3 > 0){
+                ratio_vector[index] = val2;
+            }
+            else{
+                s = get_volume_fraction_tetrahedron(psi0, psi1, psi2, psi3);
+                ratio_vector[index] = val2 + s*(val1 - val2);
+            }
+            index += 1;
+        }
+    }
+
+    ratio->vector()->set_local(ratio_vector);
+
+    return 0.0;
+}
+
+PYBIND11_MODULE(SIGNATURE, m)
+{
+  m.def("get_volume_fraction_triangle", &get_volume_fraction_triangle);
+  m.def("interpolate_levelset_to_elements", &interpolate_levelset_to_elements);
+}
+
+"""
+
+interpolation_module = fenics.compile_cpp_code(cpp_code)
 
 
 def interpolate_levelset_function_to_cells(
@@ -107,18 +203,12 @@ def interpolate_levelset_function_to_cells(
             written.
 
     """
-    mesh = levelset_function.function_space().mesh()
-    meshdim = mesh.geometric_dimension()
-    mesh_cells = mesh.cells()
-    vals = np.sort(levelset_function.compute_vertex_values()[mesh_cells])
-
-    if meshdim == 2:
-        s = get_volume_fraction_triangle(vals[:, 0], vals[:, 1], vals[:, 2])
-    elif meshdim == 3:
-        s = get_volume_fraction_tetrahedron(
-            vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]
-        )
-    cell_function.vector()[:] = val_pos + s * (val_neg - val_pos)
+    interpolation_module.interpolate_levelset_to_elements(
+        levelset_function.cpp_object(),
+        val_neg,
+        val_pos,
+        cell_function.cpp_object(),
+    )
 
 
 def interpolate_by_volume(
@@ -186,7 +276,7 @@ def interpolate_by_angle(
     node_function.vector().vec().set(0.0)
     node_function.vector().apply("")
 
-    cpp_code = """
+    cpp_code_angle = """
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -336,153 +426,9 @@ PYBIND11_MODULE(SIGNATURE, m)
 }
 
 """
-    module = fenics.compile_cpp_code(cpp_code)
+    module = fenics.compile_cpp_code(cpp_code_angle)
     values, weights = module.interpolate(
         pwc_fun.cpp_object(), node_function.cpp_object()
-    )
-    values = np.array(values)
-    weights = np.array(weights)
-    values /= weights
-    d2v = fenics.dof_to_vertex_map(cg1_space)
-    node_function.vector()[:] = values[d2v]
-
-
-def interpolate_by_averaging(
-    form_neg: ufl.core.expr.Expr,
-    form_pos: ufl.core.expr.Expr,
-    levelset_function: fenics.Function,
-    node_function: fenics.Function,
-) -> None:
-    """Averages a piecewise constant forms and interpolates them into a CG1 space.
-
-    Args:
-        form_neg: The UFL form inside the domain (levelset_function < 0).
-        form_pos: The UFL form outside the domain (levelset_function > 0).
-        levelset_function: The levelset function representin the domain.
-        node_function: The resulting piecewise continuous function.
-
-    """
-    node_function.vector().vec().set(0.0)
-    node_function.vector().apply("")
-    cg1_space = node_function.function_space()
-    mesh = cg1_space.mesh()
-    dg0_space = fenics.FunctionSpace(mesh, "DG", 0)
-
-    fun_neg = fenics.project(form_neg, dg0_space)
-    fun_pos = fenics.project(form_pos, dg0_space)
-    dx = fenics.Measure("dx", mesh)
-
-    volumes = fenics.Function(dg0_space)
-    volumes.vector()[:] = fenics.assemble(fenics.TestFunction(dg0_space) * dx)
-    mesh_cells = mesh.cells()
-    vals = np.sort(levelset_function.compute_vertex_values()[mesh_cells])
-    volume_fraction = fenics.Function(dg0_space)
-    volume_fraction.vector()[:] = get_volume_fraction_triangle(
-        vals[:, 0], vals[:, 1], vals[:, 2]
-    )[:]
-
-    cpp_code = """
-    #include <pybind11/pybind11.h>
-    #include <pybind11/numpy.h>
-    #include <pybind11/stl.h>
-    #include <pybind11/eigen.h>
-    namespace py = pybind11;
-
-    #define _USE_MATH_DEFINES
-    #include <cmath>
-
-    #include <dolfin/mesh/Mesh.h>
-    #include <dolfin/mesh/Vertex.h>
-    #include <dolfin/mesh/MeshFunction.h>
-    #include <dolfin/mesh/Cell.h>
-    #include <dolfin/mesh/Vertex.h>
-    #include <dolfin/function/Function.h>
-    #include <dolfin/function/FunctionSpace.h>
-    #include <dolfin/la/Vector.h>
-
-    using namespace dolfin;
-
-    std::tuple<std::vector<double>, std::vector<double>>
-    interpolate(std::shared_ptr<dolfin::Function> td_neg,
-      std::shared_ptr<dolfin::Function> td_pos,
-      std::shared_ptr<dolfin::Function> volumes,
-      std::shared_ptr<dolfin::Function> td_vertex,
-      std::shared_ptr<dolfin::Function> volume_fraction,
-      std::shared_ptr<dolfin::Function> levelset_function,
-      double eps)
-    {
-      auto mesh = td_vertex->function_space()->mesh();
-      std::vector<double> td_neg_vec;
-      std::vector<double> td_pos_vec;
-      std::vector<double> td_vertex_vec;
-      std::vector<double> weights;
-      std::vector<double> volumes_vec;
-      std::vector<double> volume_fraction_vec;
-      std::vector<double> psi_vec;
-      std::vector<double> ents(3);
-
-      int i = 0;
-      double val;
-      double vol_frac_neg;
-      double vol_frac_pos;
-      double elem_volume;
-
-      td_neg->vector()->get_local(td_neg_vec);
-      td_pos->vector()->get_local(td_pos_vec);
-      td_vertex->vector()->get_local(td_vertex_vec);
-      td_vertex->vector()->get_local(weights);
-      volumes->vector()->get_local(volumes_vec);
-      volume_fraction->vector()->get_local(volume_fraction_vec);
-      levelset_function->compute_vertex_values(psi_vec);
-      //levelset_function->vector()->get_local(psi_vec);
-
-      for (CellIterator cell(*mesh); !cell.end(); ++cell)
-      {
-        ents[0] = cell->entities(0)[0];
-        ents[1] = cell->entities(0)[1];
-        ents[2] = cell->entities(0)[2];
-        vol_frac_neg = volume_fraction_vec[i];
-        vol_frac_pos = 1.0 - vol_frac_neg;
-        elem_volume = volumes_vec[i];
-
-        for (std::size_t k = 0; k < ents.size(); ++k)
-        {
-          val = psi_vec[ents[k]];
-
-          if (val > eps) {
-            td_vertex_vec[ents[k]] += td_pos_vec[i] * vol_frac_pos * elem_volume;
-            weights[ents[k]] += vol_frac_pos * elem_volume;
-          }
-          else if (val < -eps) {
-            td_vertex_vec[ents[k]] += td_neg_vec[i] * vol_frac_neg * elem_volume;
-            weights[ents[k]] += vol_frac_neg * elem_volume;
-          }
-          else {
-            td_vertex_vec[ents[k]] += (td_neg_vec[i] * vol_frac_neg
-              + td_pos_vec[i] * vol_frac_pos) * elem_volume;
-            weights[ents[k]] += elem_volume;
-          }
-        }
-        i += 1;
-      }
-      return std::make_tuple(td_vertex_vec, weights);
-    }
-
-    PYBIND11_MODULE(SIGNATURE, m)
-    {
-      m.def("interpolate", &interpolate);
-    }
-    """
-    module = fenics.compile_cpp_code(cpp_code)
-
-    values, weights = module.interpolate(
-        fun_neg.cpp_object(),
-        fun_pos.cpp_object(),
-        volumes.cpp_object(),
-        node_function.cpp_object(),
-        volume_fraction.cpp_object(),
-        levelset_function.cpp_object(),
-        1e-4,
     )
     values = np.array(values)
     weights = np.array(weights)

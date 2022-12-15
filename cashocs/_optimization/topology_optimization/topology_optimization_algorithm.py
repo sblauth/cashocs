@@ -242,13 +242,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 self.levelset_function,
                 self.topological_derivative_vertex,
             )
-        elif self.interpolation_scheme == "averaging":
-            _utils.interpolate_by_averaging(
-                self.topological_derivative_neg,
-                self.topological_derivative_pos,
-                self.levelset_function,
-                self.topological_derivative_vertex,
-            )
 
     def project_topological_derivative(self) -> None:
         """Projects the topological derivative to compute a topological gradient."""

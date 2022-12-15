@@ -37,7 +37,6 @@ from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.helpers import parse_remesh
 from cashocs._utils.interpolations import interpolate_by_angle
-from cashocs._utils.interpolations import interpolate_by_averaging
 from cashocs._utils.interpolations import interpolate_by_volume
 from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
 from cashocs._utils.linalg import assemble_and_solve_linear
@@ -71,5 +70,4 @@ __all__ = [
     "interpolate_levelset_function_to_cells",
     "interpolate_by_angle",
     "interpolate_by_volume",
-    "interpolate_by_averaging",
 ]

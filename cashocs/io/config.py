@@ -467,7 +467,7 @@ class Config(ConfigParser):
                 },
                 "interpolation_scheme": {
                     "type": "str",
-                    "possible_options": ["angle", "volume", "averaging"],
+                    "possible_options": ["angle", "volume"],
                 },
                 "normalize_topological_derivative": {
                     "type": "bool",
