@@ -52,7 +52,7 @@ ocp = cashocs.OptimalControlProblem(
     y,
     u,
     p,
-    config,
+    config=config,
     riesz_scalar_products=scalar_product,
     control_bcs_list=control_bcs,
 )

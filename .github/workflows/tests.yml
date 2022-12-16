@@ -26,19 +26,19 @@ jobs:
         rm -R /root/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0 
+      uses: actions/checkout@v3.2.0 
 
     - name: Install cashocs
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pip install .
+        pip install .[all]
 
     - name: Run tests
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        coverage run --source=cashocs -m pytest tests/ --ignore=tests/test_remeshing_parallel.py
+        coverage run --source=cashocs -m pytest tests/
 
     - name: Generate .xml coverage results
       shell: bash -l {0}

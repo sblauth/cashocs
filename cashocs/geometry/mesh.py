@@ -37,19 +37,6 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class Mesh(fenics.Mesh):
-    """A finite element mesh."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """See base class."""
-        super().__init__(*args, **kwargs)
-        self._config_flag = False
-
-    def _set_config_flag(self) -> None:
-        """Indicates, that the mesh has been loaded via a config file."""
-        self._config_flag = True
-
-
 def _get_mesh_stats(
     mode: Literal["import", "generate"] = "import"
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:

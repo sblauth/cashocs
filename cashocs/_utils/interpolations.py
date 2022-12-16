@@ -51,10 +51,10 @@ double get_volume_fraction_triangle(double psi0, double psi1, double psi2){
         s = 0.0;
     }
     else if (psi[1] <= 0.0 && psi[2] > 0.0){
-        s = 1 - pow(psi[2], 2) / ((psi[2] - psi[0]) * (psi[2] - psi[1]));
+        s = 1.0 - pow(psi[2], 2.0) / ((psi[2] - psi[0]) * (psi[2] - psi[1]));
     }
     else if (psi[0] <= 0.0 && psi[1] > 0.0){
-        s = pow(psi[0], 2) / ((psi[1] - psi[0]) * (psi[2] - psi[0]));
+        s = pow(psi[0], 2.0) / ((psi[1] - psi[0]) * (psi[2] - psi[0]));
     }
     else{
         s = -1.0;
@@ -118,10 +118,10 @@ double interpolate_levelset_to_elements(
     std::vector<double> ratio_vector;
     std::vector<double> vertex_values;
     std::vector<double> vals;
-    float psi0;
-    float psi1;
-    float psi2;
-    float psi3;
+    double psi0;
+    double psi1;
+    double psi2;
+    double psi3;
 
     levelset_function->compute_vertex_values(vertex_values);
     ratio->vector()->get_local(ratio_vector);

@@ -25,6 +25,7 @@ from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import line_search as ls
 
 
@@ -33,18 +34,20 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: _typing.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
 
         """
-        super().__init__(optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
+
         self.hessian_problem = optimization_problem.hessian_problem
 
         self.stepsize = 1.0
@@ -54,8 +57,6 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the truncated Newton method."""
-        self.initialize_solver()
-
         while True:
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
@@ -66,8 +67,7 @@ class NewtonMethod(optimization_algorithm.OptimizationAlgorithm):
             self.compute_search_direction()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info

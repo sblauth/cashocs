@@ -23,7 +23,7 @@ copyright = "2020-2022, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "1.8.12"
+release = "2.0.0-alpha0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -61,7 +61,7 @@ autodoc_default_options = {
     "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
-autodoc_member_order = "groupwise"
+autodoc_member_order = "alphabetical"
 autodoc_mock_imports = [
     "fenics",
     "numpy",
@@ -106,7 +106,7 @@ html_theme_options = {
         }
     ],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    # "navbar_persistent": [],
+    "navbar_persistent": [],
     "show_nav_level": 2,
     "favicons": [
         {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},

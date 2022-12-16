@@ -171,7 +171,7 @@ class Config(ConfigParser):
                 },
                 "rtol": {
                     "type": "float",
-                    "attributes": ["less_than_one", "positive"],
+                    "attributes": ["less_than_one", "non_negative"],
                 },
                 "atol": {
                     "type": "float",
@@ -400,9 +400,6 @@ class Config(ConfigParser):
                 "use_initial_barycenter": {
                     "type": "bool",
                 },
-                "measure_hole": {
-                    "type": "bool",
-                },
                 "x_start": {
                     "type": "float",
                 },
@@ -505,6 +502,10 @@ class Config(ConfigParser):
                 "result_dir": {
                     "type": "str",
                 },
+                "precision": {
+                    "type": "int",
+                    "attributes": ["positive"],
+                },
                 "time_suffix": {
                     "type": "bool",
                 },
@@ -596,7 +597,6 @@ factor_barycenter = 0.0
 target_barycenter = [0.0, 0.0, 0.0]
 use_initial_barycenter = False
 use_relative_scaling = False
-measure_hole = False
 x_start = 0.0
 x_end = 1.0
 y_start = 0.0
@@ -646,6 +646,7 @@ save_adjoint = False
 save_gradient = False
 save_mesh = False
 result_dir = ./results
+precision = 3
 time_suffix = False
 
 [Debug]

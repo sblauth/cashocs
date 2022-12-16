@@ -47,9 +47,9 @@ from cashocs._optimization.topology_optimization import TopologyOptimizationProb
 from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import interpolate_levelset_function_to_cells
 from cashocs._utils import Interpolator
+from cashocs.geometry import compute_mesh_quality
 from cashocs.geometry import DeformationHandler
 from cashocs.geometry import interval_mesh
-from cashocs.geometry import MeshQuality
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
 from cashocs.io import convert
@@ -58,7 +58,7 @@ from cashocs.io import load_config
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "1.8.12"
+__version__ = "2.0.0-alpha0"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
@@ -95,7 +95,7 @@ __all__ = [
     "regular_mesh",
     "regular_box_mesh",
     "DeformationHandler",
-    "MeshQuality",
+    "compute_mesh_quality",
     "newton_solve",
     "picard_iteration",
     "OptimalControlProblem",

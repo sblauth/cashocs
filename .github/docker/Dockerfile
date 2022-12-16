@@ -6,7 +6,7 @@ RUN apt-get update --fix-missing \
   && rm -rf /var/lib/apt/lists/*
 
 RUN conda install -c conda-forge mamba \
-  && mamba create -n cashocs -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" coverage">=6.1.0" mpich python=3.9 \
+  && mamba create -n cashocs -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" coverage">=6.1.0" mpich python=3.11 \
   && conda clean -tipsy
 
 
@@ -18,8 +18,8 @@ COPY . /root/cashocs
 
 RUN conda activate cashocs \
   && cd /root/cashocs \
-  && pip install .
+  && pip install .[all]
 
 RUN conda activate cashocs \
   && cd /root/cashocs \
-  && pytest tests/ --ignore=tests/test_remeshing_parallel.py
+  && pytest tests/

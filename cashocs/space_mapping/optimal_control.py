@@ -38,10 +38,6 @@ if TYPE_CHECKING:
     from cashocs import io
 
 
-def _hook() -> None:
-    return None
-
-
 class FineModel(abc.ABC):
     """Base class for the fine model in space mapping.
 
@@ -104,7 +100,12 @@ class CoarseModel:
             states: The state variables for the coarse problem
             controls: The control variables for the coarse problem
             adjoints: The adjoint variables for the coarse problem
-            config: The configuration for the problem
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             riesz_scalar_products: The scalar products for the coarse problem
             control_constraints: The box constraints for the problem
             initial_guess: The initial guess for solving a nonlinear state equation
@@ -127,8 +128,8 @@ class CoarseModel:
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
@@ -148,16 +149,14 @@ class CoarseModel:
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
-        self.optimal_control_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
+        self.optimal_control_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
         )
         self.optimal_control_problem.solve()
 
 
 class ParameterExtraction:
     """Parameter extraction for optimal control problems."""
-
-    controls: List[fenics.Function]
 
     def __init__(
         self,
@@ -178,7 +177,12 @@ class ParameterExtraction:
             cost_functional_form: The cost functional for the parameter extraction
             states: The state variables for the parameter extraction
             controls: The control variables for the parameter extraction
-            config: The configuration for the parameter extraction
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             desired_weights: The list of desired weights for the parameter extraction
             mode: The mode used for the initial guess of the parameter extraction. If
                 this is coarse_optimum, the default, then the coarse model optimum is
@@ -190,17 +194,17 @@ class ParameterExtraction:
         self.cost_functional_form = cost_functional_form
 
         self.states = _utils.enlist(states)
-        self.controls = _utils.enlist(controls)
+        self.controls: List[fenics.Function] = _utils.enlist(controls)
 
         self.config = config
         self.mode = mode
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.adjoints = _utils.create_function_list(
-            coarse_model.optimal_control_problem.form_handler.adjoint_spaces
+            coarse_model.optimal_control_problem.db.function_db.adjoint_spaces
         )
 
         dict_states = {
@@ -212,7 +216,9 @@ class ParameterExtraction:
             for i in range(len(self.adjoints))
         }
         dict_controls = {
-            coarse_model.optimal_control_problem.controls[i]: self.controls[i]
+            coarse_model.optimal_control_problem.db.function_db.controls[
+                i
+            ]: self.controls[i]
             for i in range(len(self.controls))
         }
         mapping_dict = {}
@@ -228,13 +234,14 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.riesz_scalar_products
         )
         self.control_constraints = (
-            coarse_model.optimal_control_problem.control_constraints
+            coarse_model.optimal_control_problem.box_constraints.control_constraints
         )
         self.initial_guess = coarse_model.optimal_control_problem.initial_guess
         self.ksp_options = coarse_model.optimal_control_problem.ksp_options
         self.adjoint_ksp_options = (
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
+        self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
 
     def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
         """Solves the parameter extraction problem.
@@ -258,26 +265,24 @@ class ParameterExtraction:
                 "ParameterExtraction._solve", "initial_guesses", ""
             )
 
-        self.optimal_control_problem: ocp.OptimalControlProblem = (
-            ocp.OptimalControlProblem(
-                self.state_forms,
-                self.bcs_list,
-                self.cost_functional_form,
-                self.states,
-                self.controls,
-                self.adjoints,
-                config=self.config,
-                riesz_scalar_products=self.riesz_scalar_products,
-                control_constraints=self.control_constraints,
-                initial_guess=self.initial_guess,
-                ksp_options=self.ksp_options,
-                adjoint_ksp_options=self.adjoint_ksp_options,
-                desired_weights=self.desired_weights,
-            )
+        self.optimal_control_problem = ocp.OptimalControlProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form,
+            self.states,
+            self.controls,
+            self.adjoints,
+            config=self.config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            control_constraints=self.control_constraints,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
         )
 
-        self.optimal_control_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
+        self.optimal_control_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
         )
         self.optimal_control_problem.solve()
 
@@ -353,17 +358,14 @@ class SpaceMapping:
         self.iteration = 0
         self.stepsize = 1.0
 
-        self.z_star = self.coarse_model.optimal_control_problem.controls
+        self.z_star = self.coarse_model.optimal_control_problem.db.function_db.controls
         self.norm_z_star = 1.0
-        self.control_dim = (
-            self.coarse_model.optimal_control_problem.form_handler.control_dim
-        )
 
         self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
-            self.coarse_model.optimal_control_problem.form_handler.control_spaces
+            self.coarse_model.optimal_control_problem.db.function_db.control_spaces
         )
         self.ips_to_coarse = [
             _utils.Interpolator(control_spaces_fine[i], control_spaces_coarse[i])
@@ -409,7 +411,7 @@ class SpaceMapping:
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
-        for i in range(self.control_dim):
+        for i in range(len(self.x)):
             self.x[i].vector().vec().aypx(
                 0.0,
                 self.scaling_factor
@@ -446,7 +448,7 @@ class SpaceMapping:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         while not self.converged:
-            for i in range(self.control_dim):
+            for i in range(len(self.dir_prev)):
                 self.dir_prev[i].vector().vec().aypx(
                     0.0,
                     -(self.p_prev[i].vector().vec() - self.z_star[i].vector().vec()),
@@ -460,7 +462,7 @@ class SpaceMapping:
 
             self._compute_search_direction(self.temp, self.h)
 
-            for i in range(self.control_dim):
+            for i in range(len(self.p_prev)):
                 self.p_prev[i].vector().vec().aypx(
                     0.0, self.p_current[i].vector().vec()
                 )
@@ -507,7 +509,7 @@ class SpaceMapping:
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
         if self.method == "broyden":
-            for i in range(self.control_dim):
+            for i in range(len(self.temp)):
                 self.temp[i].vector().vec().aypx(
                     0.0,
                     self.p_current[i].vector().vec() - self.p_prev[i].vector().vec(),
@@ -518,7 +520,7 @@ class SpaceMapping:
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
-                    for i in range(self.control_dim):
+                    for i in range(len(self.u)):
                         self.u[i].vector().vec().aypx(
                             0.0,
                             (self.h[i].vector().vec() - self.v[i].vector().vec())
@@ -531,7 +533,7 @@ class SpaceMapping:
 
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
-                    for i in range(self.control_dim):
+                    for i in range(len(self.u)):
                         self.u[i].vector().vec().aypx(
                             0.0,
                             (self.h[i].vector().vec() - self.v[i].vector().vec())
@@ -550,7 +552,7 @@ class SpaceMapping:
         """Updates the approximation of the mapping function with the BFGS method."""
         if self.method == "bfgs":
             if self.memory_size > 0:
-                for i in range(self.control_dim):
+                for i in range(len(self.temp)):
                     self.temp[i].vector().vec().aypx(
                         0.0,
                         self.p_current[i].vector().vec()
@@ -580,7 +582,7 @@ class SpaceMapping:
         """Updates the iterates either directly or via a line search."""
         self.stepsize = 1.0
         if not self.use_backtracking_line_search:
-            for i in range(self.control_dim):
+            for i in range(len(self.x)):
                 self.x[i].vector().vec().axpy(
                     self.scaling_factor,
                     self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
@@ -590,19 +592,19 @@ class SpaceMapping:
             self.fine_model.solve_and_evaluate()
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 initial_guesses=[
-                    self.ips_to_coarse[i].interpolate(self.x[i])
-                    for i in range(self.control_dim)
+                    ips.interpolate(self.x[i])
+                    for i, ips in enumerate(self.ips_to_coarse)
                 ]
             )
             self.eps = self._compute_eps()
 
         else:
-            for i in range(self.control_dim):
+            for i in range(len(self.x_save)):
                 self.x_save[i].vector().vec().aypx(0.0, self.x[i].vector().vec())
                 self.x_save[i].vector().apply("")
 
             while True:
-                for i in range(self.control_dim):
+                for i in range(len(self.x)):
                     self.x[i].vector().vec().aypx(0.0, self.x_save[i].vector().vec())
                     self.x[i].vector().apply("")
                     self.x[i].vector().vec().axpy(
@@ -613,8 +615,8 @@ class SpaceMapping:
                 self.fine_model.solve_and_evaluate()
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     initial_guesses=[
-                        self.ips_to_coarse[i].interpolate(self.x[i])
-                        for i in range(self.control_dim)
+                        ips.interpolate(self.x[i])
+                        for i, ips in enumerate(self.ips_to_coarse)
                     ]
                 )
                 eps_new = self._compute_eps()
@@ -683,7 +685,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for i in range(self.control_dim):
+        for i in range(len(out)):
             out[i].vector().vec().aypx(0.0, q[i].vector().vec())
             out[i].vector().apply("")
 
@@ -697,7 +699,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().aypx(0.0, q[j].vector().vec())
             out[j].vector().apply("")
 
@@ -713,7 +715,7 @@ class SpaceMapping:
                     "broyden_type has to be either 'good' or 'bad'.",
                 )
 
-            for j in range(self.control_dim):
+            for j in range(len(out)):
                 out[j].vector().vec().axpy(alpha, self.history_s[i][j].vector().vec())
                 out[j].vector().apply("")
 
@@ -727,7 +729,7 @@ class SpaceMapping:
             out: The output list of functions, in which the search direction is stored.
 
         """
-        for j in range(self.control_dim):
+        for j in range(len(out)):
             out[j].vector().vec().aypx(0.0, q[j].vector().vec())
             out[j].vector().apply("")
 
@@ -739,7 +741,7 @@ class SpaceMapping:
                     self.history_s[i], out
                 )
                 self.history_alpha.append(alpha)
-                for j in range(self.control_dim):
+                for j in range(len(out)):
                     out[j].vector().vec().axpy(
                         -alpha, self.history_y[i][j].vector().vec()
                     )
@@ -748,7 +750,7 @@ class SpaceMapping:
             bfgs_factor = self._scalar_product(
                 self.history_y[0], self.history_s[0]
             ) / self._scalar_product(self.history_y[0], self.history_y[0])
-            for j in range(self.control_dim):
+            for j in range(len(out)):
                 out[j].vector().vec().scale(bfgs_factor)
                 out[j].vector().apply("")
 
@@ -756,7 +758,7 @@ class SpaceMapping:
                 beta = self.history_rho[-1 - i] * self._scalar_product(
                     self.history_y[-1 - i], out
                 )
-                for j in range(self.control_dim):
+                for j in range(len(out)):
                     out[j].vector().vec().axpy(
                         self.history_alpha[-1 - i] - beta,
                         self.history_s[-1 - i][j].vector().vec(),
@@ -774,7 +776,7 @@ class SpaceMapping:
 
         """
         if self.iteration > 0:
-            for i in range(self.control_dim):
+            for i in range(len(self.difference)):
                 self.difference[i].vector().vec().aypx(
                     0.0, q[i].vector().vec() - self.dir_prev[i].vector().vec()
                 )
@@ -783,84 +785,85 @@ class SpaceMapping:
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "PR":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "HS":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "DY":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
 
             elif self.cg_type == "HZ":
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                for i in range(self.control_dim):
+                for i in range(len(self.difference)):
                     self.difference[i].vector().vec().aypx(
                         0.0,
                         -self.difference[i].vector().vec()
                         - 2 * y2 / dy * out[i].vector().vec(),
                     )
                     self.difference[i].vector().apply("")
-                self.beta = -self._scalar_product(self.difference, q) / dy
-
+                beta = -self._scalar_product(self.difference, q) / dy
+            else:
+                beta = 0.0
         else:
-            self.beta = 0.0
+            beta = 0.0
 
-        for i in range(self.control_dim):
-            out[i].vector().vec().aypx(self.beta, q[i].vector().vec())
+        for i in range(len(out)):
+            out[i].vector().vec().aypx(beta, q[i].vector().vec())
             out[i].vector().apply("")
 
     def _compute_eps(self) -> float:
         """Computes and returns the termination parameter epsilon."""
-        for i in range(self.control_dim):
+        for i in range(len(self.diff)):
             self.diff[i].vector().vec().aypx(
                 0.0, self.p_current[i].vector().vec() - self.z_star[i].vector().vec()
             )
             self.diff[i].vector().apply("")
-        eps: float = (
+        eps = float(
             np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
         )
 
         return eps
 
-    def inject_pre_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-priori hook of the OptimizationProblem.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self.coarse_model._pre_hook = function  # pylint: disable=protected-access
+        self.coarse_model._pre_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._pre_hook = function
+        self.parameter_extraction._pre_callback = function
 
-    def inject_post_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self.coarse_model._post_hook = function  # pylint: disable=protected-access
+        self.coarse_model._post_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._post_hook = function
+        self.parameter_extraction._post_callback = function
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -869,5 +872,5 @@ class SpaceMapping:
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)

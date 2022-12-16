@@ -893,6 +893,12 @@ in the line ::
 As before, this is either a relative or absolute path to the directory where the
 results should be placed.
 
+The parameter ``precision``, which is set via ::
+
+    precision = 3
+
+is an integer parameter which determines how many significant digits are printed in the output to the console and / or the result file.
+
 Moreover, we have the parameter ``time_suffix``, which adds a suffix to the result directory based on the current time. It is controlled by the line ::
 
 	time_suffix = False
@@ -1231,6 +1237,9 @@ in the following.
     * - use_initial_barycenter
       - ``False``
       - if ``True`` uses the barycenter of the initial geometry as prescribed barycenter
+    * - use_relative_scaling
+      - ``False``
+      - if ``True``, the regularization terms are scaling so that they have the magnitude specified in the respective factor for the initial iteration.
 
 
 
@@ -1303,6 +1312,9 @@ in the following.
     * - result_dir
       - ``./results``
       - path to the directory, where the output should be placed
+    * - precision
+      - 3
+      - number of significant digits to be printed
     * - time_suffix
       - ``False``
       - Boolean flag, which adds a suffix to ``result_dir`` based on the current time

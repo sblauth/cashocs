@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -28,11 +28,15 @@ import ufl
 import ufl.algorithms
 
 from cashocs import _exceptions
+from cashocs import _forms
+from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
 if TYPE_CHECKING:
+    from cashocs._database import database
+    from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimal_control
 
 
@@ -41,16 +45,20 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: topology_optimization_problem.TopologyOptimizationProblem,
+        line_search: ls.LineSearch,
     ) -> None:
         """Parent class for solvers for topology optimization problems.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem which shall be
                 solved.
+            line_search: The line search for the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(db, optimization_problem, line_search)
 
         self.levelset_function: fenics.Function = optimization_problem.levelset_function
         self.topological_derivative_neg = (
@@ -74,7 +82,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self._cashocs_problem: optimal_control.OptimalControlProblem = (
             optimization_problem._base_ocp
         )
-        self._cashocs_problem.is_topology_problem = True
+        self._cashocs_problem.db.parameter_db.problem_type = "topology"
 
         self.mesh = optimization_problem.mesh
         self.cg1_space = fenics.FunctionSpace(self.mesh, "CG", 1)
@@ -93,6 +101,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             The fenics measure which is used for projecting the topological derivative.
 
         """
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         is_everywhere = False
         subdomain_id_list = []
         for integral in self.form_handler.riesz_scalar_products[0].integrals():
@@ -135,6 +144,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
 
     def setup_assembler(self) -> None:
         """Sets up the assembler for projecting the topological derivative."""
+        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         modified_scalar_product = _utils.bilinear_boundary_form_modification(
             self.form_handler.riesz_scalar_products
         )
@@ -245,6 +255,9 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
 
     def project_topological_derivative(self) -> None:
         """Projects the topological derivative to compute a topological gradient."""
+        self.gradient_problem = cast(
+            _pde_problems.ControlGradientProblem, self.gradient_problem
+        )
         self.assembler.assemble(self.b_tensor)
         _utils.solve_linear_problem(
             A=self.riesz_matrix,

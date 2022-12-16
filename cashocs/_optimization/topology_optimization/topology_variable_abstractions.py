@@ -26,6 +26,7 @@ import fenics
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
+    from cashocs._database import database
     from cashocs._optimization import topology_optimization
 
 
@@ -35,15 +36,18 @@ class TopologyVariableAbstractions(
     """Abstractions for optimization variables in the case of topology optimization."""
 
     def __init__(
-        self, optimization_problem: topology_optimization.TopologyOptimizationProblem
+        self,
+        optimization_problem: topology_optimization.TopologyOptimizationProblem,
+        db: database.Database,
     ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(optimization_problem, db)
 
         self.levelset_function: fenics.Function = optimization_problem.levelset_function
         self.levelset_function_temp = fenics.Function(

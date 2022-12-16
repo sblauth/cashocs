@@ -20,13 +20,10 @@
 
 from __future__ import annotations
 
-import json
-import os
 import pathlib
 import subprocess  # nosec B404
-import sys
 import tempfile
-from typing import cast, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -35,14 +32,15 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
+from cashocs._optimization import line_search as ls
 from cashocs.geometry import deformations
 from cashocs.geometry import quality
 
 if TYPE_CHECKING:
+    from cashocs import _forms
+    from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
-    from cashocs._optimization.shape_optimization.shape_optimization_problem import (
-        ShapeOptimizationProblem,
-    )
+    from cashocs.geometry import mesh_testing
 
 
 def _remove_gmsh_parametrizations(mesh_file: str) -> None:
@@ -79,31 +77,6 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def filter_sys_argv(temp_dir: str) -> List[str]:  # pragma: no cover
-    """Filters the command line arguments for the cashocs remesh flag.
-
-    Args:
-        temp_dir: Path to directory for the temp files
-
-    """
-    arg_list = sys.argv.copy()
-    idx_cashocs_remesh_flag = [
-        i for i, s in enumerate(arg_list) if s == "--cashocs_remesh"
-    ]
-    if len(idx_cashocs_remesh_flag) == 1:
-        arg_list.pop(idx_cashocs_remesh_flag[0])
-
-    idx_temp_dir = [i for i, s in enumerate(arg_list) if s == temp_dir]
-    if len(idx_temp_dir) == 1:
-        arg_list.pop(idx_temp_dir[0])
-
-    idx_temp_dir_flag = [i for i, s in enumerate(arg_list) if s == "--temp_dir"]
-    if len(idx_temp_dir_flag) == 1:
-        arg_list.pop(idx_temp_dir_flag[0])
-
-    return arg_list
-
-
 class _MeshHandler:
     """Handles the mesh for shape optimization problems.
 
@@ -111,25 +84,38 @@ class _MeshHandler:
     transformations and remeshing. Also includes mesh quality control checks.
     """
 
-    current_mesh_quality: float
-    mesh_quality_measure: str
-    temp_dict: Optional[Dict]
-
-    def __init__(self, shape_optimization_problem: ShapeOptimizationProblem) -> None:
+    def __init__(
+        self,
+        db: database.Database,
+        form_handler: _forms.ShapeFormHandler,
+        a_priori_tester: mesh_testing.APrioriMeshTester,
+        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
+    ) -> None:
         """Initializes self.
 
         Args:
-            shape_optimization_problem: The corresponding shape optimization problem.
+            db: The database of the problem.
+            form_handler: The corresponding shape optimization problem.
+            a_priori_tester: The tester before mesh modification.
+            a_posteriori_tester: The tester after mesh modification.
 
         """
-        self.form_handler = shape_optimization_problem.form_handler
-        # Namespacing
-        self.mesh = self.form_handler.mesh
-        self.deformation_handler = deformations.DeformationHandler(self.mesh)
-        self.dx = self.form_handler.dx
-        self.bbtree = self.mesh.bounding_box_tree()
-        self.config = self.form_handler.config
+        self.db = db
+        self.form_handler = form_handler
+        self.a_priori_tester = a_priori_tester
+        self.a_posteriori_tester = a_posteriori_tester
 
+        # Namespacing
+        self.mesh = self.db.geometry_db.mesh
+        self.deformation_handler = deformations.DeformationHandler(
+            self.mesh, self.a_priori_tester, self.a_posteriori_tester
+        )
+        self.dx = self.db.geometry_db.dx
+        self.bbtree = self.mesh.bounding_box_tree()
+        self.config = self.db.config
+
+        self._current_mesh_quality = 1.0
+        self._gmsh_file = ""
         # setup from config
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
         self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
@@ -151,13 +137,41 @@ class _MeshHandler:
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
 
-        self.current_mesh_quality = 1.0
-        self.current_mesh_quality = quality.compute_mesh_quality(
+        self.current_mesh_quality: float = quality.compute_mesh_quality(
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
+        self.options_frobenius: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
+        self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
+        self.search_direction_container = fenics.Function(
+            self.db.function_db.control_spaces[0]
+        )
+        self.a_frobenius = None
+        self.l_frobenius = None
+
         self._setup_decrease_computation()
-        self._setup_a_priori()
+
+        self.options_prior: List[List[Union[str, int, float]]] = [
+            ["ksp_type", "preonly"],
+            ["pc_type", "jacobi"],
+            ["pc_jacobi_type", "diagonal"],
+            ["ksp_rtol", 1e-16],
+            ["ksp_atol", 1e-20],
+            ["ksp_max_it", 1000],
+        ]
+        self.transformation_container = fenics.Function(
+            self.db.function_db.control_spaces[0]
+        )
+        self.A_prior = None  # pylint: disable=invalid-name
+        self.l_prior = None
 
         # Remeshing initializations
         self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
@@ -168,28 +182,33 @@ class _MeshHandler:
                 pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
             )
 
-        if self.do_remesh and shape_optimization_problem.temp_dict is not None:
-            self.temp_dict = shape_optimization_problem.temp_dict
-            self.gmsh_file: str = self.temp_dict["gmsh_file"]
-            self.remesh_counter = self.temp_dict.get("remesh_counter", 0)
+        self.gmsh_file: str = ""
+        self.remesh_counter = 0
+        if self.do_remesh and self.db.parameter_db.temp_dict:
+            self.gmsh_file = self.db.parameter_db.temp_dict["gmsh_file"]
+            self.remesh_counter = self.db.parameter_db.temp_dict.get(
+                "remesh_counter", 0
+            )
 
-            if not self.form_handler.has_cashocs_remesh_flag:
+            if not self.db.parameter_db.is_remeshed:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     remesh_directory: str = tempfile.mkdtemp(
                         prefix="cashocs_remesh_", dir=self.mesh_directory
                     )
                 else:
                     remesh_directory = ""
-                self.remesh_directory: str = fenics.MPI.comm_world.bcast(
+                self.db.parameter_db.remesh_directory = fenics.MPI.comm_world.bcast(
                     remesh_directory, root=0
                 )
                 fenics.MPI.barrier(fenics.MPI.comm_world)
             else:
-                self.remesh_directory = self.temp_dict["remesh_directory"]
-            remesh_path = pathlib.Path(self.remesh_directory)
+                self.db.parameter_db.remesh_directory = self.db.parameter_db.temp_dict[
+                    "remesh_directory"
+                ]
+            remesh_path = pathlib.Path(self.db.parameter_db.remesh_directory)
             if not remesh_path.is_dir():
                 remesh_path.mkdir()
-            self.remesh_geo_file = f"{self.remesh_directory}/remesh.geo"
+            self.remesh_geo_file = f"{self.db.parameter_db.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
             self.gmsh_file = self.config.get("Mesh", "gmsh_file")
@@ -197,7 +216,8 @@ class _MeshHandler:
         # create a copy of the initial mesh file
         if self.do_remesh and self.remesh_counter == 0:
             self.gmsh_file_init = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.msh"
             )
             if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 subprocess.run(  # nosec 603
@@ -205,6 +225,25 @@ class _MeshHandler:
                 )
             fenics.MPI.barrier(fenics.MPI.comm_world)
             self.gmsh_file = self.gmsh_file_init
+
+    @property
+    def current_mesh_quality(self) -> float:
+        """The current mesh quality."""
+        return self._current_mesh_quality
+
+    @current_mesh_quality.setter
+    def current_mesh_quality(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["mesh_quality"] = value
+        self._current_mesh_quality = value
+
+    @property
+    def gmsh_file(self) -> str:
+        return self._gmsh_file
+
+    @gmsh_file.setter
+    def gmsh_file(self, value: str) -> None:
+        self.db.parameter_db.gmsh_file_path = value
+        self._gmsh_file = value
 
     def move_mesh(self, transformation: fenics.Function) -> bool:
         r"""Transforms the mesh by perturbation of identity.
@@ -226,7 +265,7 @@ class _MeshHandler:
         ):
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
-        if not self._test_a_priori(transformation):
+        if not self.a_priori_tester.test(transformation, self.volume_change):
             _loggers.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
@@ -249,23 +288,7 @@ class _MeshHandler:
 
     def _setup_decrease_computation(self) -> None:
         """Initializes attributes and solver for the frobenius norm check."""
-        self.options_frobenius: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        self.trial_dg0 = fenics.TrialFunction(self.form_handler.dg_function_space)
-        self.test_dg0 = fenics.TestFunction(self.form_handler.dg_function_space)
-
         if self.angle_change != float("inf"):
-            self.search_direction_container = fenics.Function(
-                self.form_handler.deformation_space
-            )
-
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
             self.l_frobenius = (
                 fenics.sqrt(
@@ -327,66 +350,6 @@ class _MeshHandler:
                 )
             )
 
-    def _setup_a_priori(self) -> None:
-        """Sets up the attributes and petsc solver for the a priori quality check."""
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
-
-        self.transformation_container = fenics.Function(
-            self.form_handler.deformation_space
-        )
-        dim = self.mesh.geometric_dimension()
-
-        # pylint: disable=invalid-name
-        self.A_prior = self.trial_dg0 * self.test_dg0 * self.dx
-        self.l_prior = (
-            fenics.det(
-                fenics.Identity(dim) + fenics.grad(self.transformation_container)
-            )
-            * self.test_dg0
-            * self.dx
-        )
-
-    def _test_a_priori(self, transformation: fenics.Function) -> bool:
-        r"""Check the quality of the transformation before the actual mesh is moved.
-
-        Checks the quality of the transformation. The criterion is that
-
-        .. math:: \det(I + D \texttt{transformation})
-
-        should neither be too large nor too small in order to achieve the best
-        transformations.
-
-        Args:
-            transformation: The transformation for the mesh.
-
-        Returns:
-            A boolean that indicates whether the desired transformation is feasible.
-
-        """
-        self.transformation_container.vector().vec().aypx(
-            0.0, transformation.vector().vec()
-        )
-        self.transformation_container.vector().apply("")
-        x = _utils.assemble_and_solve_linear(
-            self.A_prior,
-            self.l_prior,
-            ksp_options=self.options_prior,
-        )
-
-        min_det: float = x.min()[1]
-        max_det: float = x.max()[1]
-
-        return bool(
-            (min_det >= 1 / self.volume_change) and (max_det <= self.volume_change)
-        )
-
     def _generate_remesh_geo(self, input_mesh_file: str) -> None:
         """Generates a .geo file used for remeshing.
 
@@ -406,8 +369,7 @@ class _MeshHandler:
                 file.write("CreateGeometry;\n")
                 file.write("\n")
 
-                self.temp_dict = cast(Dict, self.temp_dict)
-                geo_file = self.temp_dict["geo_file"]
+                geo_file = self.db.parameter_db.temp_dict["geo_file"]
                 with open(geo_file, "r", encoding="utf-8") as f:
                     for line in f:
                         if line[0].islower():
@@ -425,7 +387,10 @@ class _MeshHandler:
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-        gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter - 1:d}.msh"
+        gmsh_file = (
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter - 1:d}.msh"
+        )
         if (
             pathlib.Path(gmsh_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -434,7 +399,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         gmsh_pre_remesh_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if (
             pathlib.Path(gmsh_pre_remesh_file).is_file()
@@ -443,7 +409,9 @@ class _MeshHandler:
             subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_h5_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
+        mesh_h5_file = (
+            f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
+        )
         if (
             pathlib.Path(mesh_h5_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -451,7 +419,10 @@ class _MeshHandler:
             subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}.xdmf"
+        mesh_xdmf_file = (
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}.xdmf"
+        )
         if (
             pathlib.Path(mesh_xdmf_file).is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -460,7 +431,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_h5_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.h5"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
         if (
             pathlib.Path(boundaries_h5_file).is_file()
@@ -470,7 +442,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         boundaries_xdmf_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if (
             pathlib.Path(boundaries_xdmf_file).is_file()
@@ -480,7 +453,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_h5_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.h5"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
         if (
             pathlib.Path(subdomains_h5_file).is_file()
@@ -490,7 +464,8 @@ class _MeshHandler:
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
         subdomains_xdmf_file = (
-            f"{self.remesh_directory}/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if (
             pathlib.Path(subdomains_xdmf_file).is_file()
@@ -499,28 +474,27 @@ class _MeshHandler:
             subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def _restart_script(self, temp_dir: str) -> None:
-        """Restarts the python script with itself and replaces the process.
+    def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
+        solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
+            solver.optimization_problem.mesh_parametrization,
+            self.db.parameter_db.temp_dict["mesh_file"],
+        )
 
-        Args:
-              temp_dir: Path to the directory for temporary files.
-
-        """
-        if not self.config.getboolean("Debug", "restart"):
-            sys.stdout.flush()
-            os.execv(  # nosec 606
-                sys.executable,
-                [sys.executable]
-                + filter_sys_argv(temp_dir)
-                + ["--cashocs_remesh"]
-                + ["--temp_dir"]
-                + [temp_dir],
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(
+                self.db, solver.optimization_problem
             )
+        elif line_search_type == "polynomial":
+            line_search = ls.PolynomialLineSearch(self.db, solver.optimization_problem)
         else:
-            raise _exceptions.CashocsDebugException(
-                "Debug flag detected. "
-                "Restart of script with remeshed geometry is cancelled."
-            )
+            raise Exception("This code cannot be reached.")
+
+        solver.__init__(  # type: ignore # pylint: disable=C2801
+            solver.optimization_problem.db,
+            solver.optimization_problem,
+            line_search,
+        )
 
     def remesh(self, solver: OptimizationAlgorithm) -> None:
         """Remeshes the current geometry with Gmsh.
@@ -532,37 +506,47 @@ class _MeshHandler:
             solver: The optimization algorithm used to solve the problem.
 
         """
-        if self.do_remesh and self.temp_dict is not None:
+        if self.do_remesh and self.db.parameter_db.temp_dict:
             self.remesh_counter += 1
             temp_file = (
-                f"{self.remesh_directory}/mesh_{self.remesh_counter:d}_pre_remesh.msh"
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}_pre_remesh.msh"
             )
             io.write_out_mesh(self.mesh, self.gmsh_file, temp_file)
             self._generate_remesh_geo(temp_file)
 
             # save the output dict (without the last entries since they are "remeshed")
-            self.temp_dict["output_dict"] = {}
-            self.temp_dict["output_dict"][
+            self.db.parameter_db.temp_dict["output_dict"] = {}
+            self.db.parameter_db.temp_dict["output_dict"][
                 "state_solves"
             ] = solver.state_problem.number_of_solves
-            self.temp_dict["output_dict"][
+            self.db.parameter_db.temp_dict["output_dict"][
                 "adjoint_solves"
             ] = solver.adjoint_problem.number_of_solves
-            self.temp_dict["output_dict"]["iterations"] = solver.iteration + 1
+            self.db.parameter_db.temp_dict["output_dict"]["iterations"] = (
+                solver.iteration + 1
+            )
 
-            output_dict = solver.output_manager.result_manager.output_dict
-            self.temp_dict["output_dict"]["cost_function_value"] = output_dict[
+            output_dict = solver.output_manager.output_dict
+            self.db.parameter_db.temp_dict["output_dict"][
                 "cost_function_value"
-            ][:]
-            self.temp_dict["output_dict"]["gradient_norm"] = output_dict[
+            ] = output_dict["cost_function_value"][:]
+            self.db.parameter_db.temp_dict["output_dict"][
                 "gradient_norm"
+            ] = output_dict["gradient_norm"][:]
+            self.db.parameter_db.temp_dict["output_dict"]["stepsize"] = output_dict[
+                "stepsize"
             ][:]
-            self.temp_dict["output_dict"]["stepsize"] = output_dict["stepsize"][:]
-            self.temp_dict["output_dict"]["MeshQuality"] = output_dict["MeshQuality"][:]
+            self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
+                "MeshQuality"
+            ][:]
 
             dim = self.mesh.geometric_dimension()
 
-            new_gmsh_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.msh"
+            new_gmsh_file = (
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.msh"
+            )
 
             gmsh_cmd_list = [
                 "gmsh",
@@ -584,31 +568,88 @@ class _MeshHandler:
 
             _remove_gmsh_parametrizations(new_gmsh_file)
 
-            self.temp_dict["remesh_counter"] = self.remesh_counter
-            self.temp_dict["remesh_directory"] = self.remesh_directory
-            self.temp_dict["result_dir"] = solver.output_manager.result_dir
+            self.db.parameter_db.temp_dict["remesh_counter"] = self.remesh_counter
+            self.db.parameter_db.temp_dict[
+                "remesh_directory"
+            ] = self.db.parameter_db.remesh_directory
+            self.db.parameter_db.temp_dict[
+                "result_dir"
+            ] = solver.output_manager.result_dir
 
-            new_xdmf_file = f"{self.remesh_directory}/mesh_{self.remesh_counter:d}.xdmf"
+            new_xdmf_file = (
+                f"{self.db.parameter_db.remesh_directory}"
+                f"/mesh_{self.remesh_counter:d}.xdmf"
+            )
 
             io.convert(new_gmsh_file, new_xdmf_file)
 
             self.clean_previous_gmsh_files()
 
-            self.temp_dict["mesh_file"] = new_xdmf_file
-            self.temp_dict["gmsh_file"] = new_gmsh_file
+            self.db.parameter_db.temp_dict["mesh_file"] = new_xdmf_file
+            self.db.parameter_db.temp_dict["gmsh_file"] = new_gmsh_file
 
-            self.temp_dict["OptimizationRoutine"]["iteration_counter"] = (
-                solver.iteration + 1
-            )
-            self.temp_dict["OptimizationRoutine"][
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "iteration_counter"
+            ] = solver.iteration
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 
-            temp_dir = self.temp_dict["temp_dir"]
+            self._reinitialize(solver)
+            self._check_imported_mesh_quality(solver)
 
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                with open(f"{temp_dir}/temp_dict.json", "w", encoding="utf-8") as file:
-                    json.dump(self.temp_dict, file)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+    def _check_imported_mesh_quality(self, solver: OptimizationAlgorithm) -> None:
+        """Checks the quality of an imported mesh.
 
-            self._restart_script(temp_dir)
+        This function raises exceptions when the mesh does not satisfy the desired
+        quality criteria.
+
+        Args:
+            solver: The solver instance carrying the new mesh
+
+        """
+        mesh_quality_tol_lower = self.db.config.getfloat("MeshQuality", "tol_lower")
+        mesh_quality_tol_upper = self.db.config.getfloat("MeshQuality", "tol_upper")
+
+        if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
+            _loggers.warning(
+                "You are using a lower remesh tolerance (tol_lower) close to "
+                "the upper one (tol_upper). This may slow down the "
+                "optimization considerably."
+            )
+
+        mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
+        mesh_quality_type = self.db.config.get("MeshQuality", "type")
+
+        mesh = solver.optimization_problem.states[0].function_space().mesh()
+
+        current_mesh_quality = quality.compute_mesh_quality(
+            mesh,
+            mesh_quality_type,
+            mesh_quality_measure,
+        )
+
+        failed = False
+        fail_msg = None
+        if current_mesh_quality < mesh_quality_tol_lower:
+            failed = True
+            fail_msg = (
+                "The quality of the mesh file you have specified is not "
+                "sufficient for evaluating the cost functional.\n"
+                f"It currently is {current_mesh_quality:.3e} but has to "
+                f"be at least {mesh_quality_tol_lower:.3e}."
+            )
+
+        if current_mesh_quality < mesh_quality_tol_upper:
+            failed = True
+            fail_msg = (
+                "The quality of the mesh file you have specified is not "
+                "sufficient for computing the shape gradient.\n "
+                + f"It currently is {current_mesh_quality:.3e} but has to "
+                f"be at least {mesh_quality_tol_lower:.3e}."
+            )
+
+        if failed:
+            raise _exceptions.InputError(
+                "cashocs.geometry.import_mesh", "input_arg", fail_msg
+            )

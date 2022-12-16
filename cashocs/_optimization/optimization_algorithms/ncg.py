@@ -26,6 +26,7 @@ from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import line_search as ls
 
 
@@ -34,23 +35,26 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: _typing.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
 
         """
-        super().__init__(optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
 
         self.gradient_prev = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
-        self.difference = _utils.create_function_list(self.form_handler.control_spaces)
+        self.difference = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
 
         self.cg_method = self.config.get("AlgoCG", "cg_method")
         self.cg_periodic_restart = self.config.getboolean(
@@ -67,7 +71,6 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def run(self) -> None:
         """Solves the optimization problem with the NCG method."""
-        self.initialize_solver()
         self.memory = 0
 
         while True:
@@ -85,8 +88,7 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.project_ncg_search_direction()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info

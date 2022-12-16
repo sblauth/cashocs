@@ -41,7 +41,7 @@ integrand = y * y * dx
 tracking_goal = 1.0
 J_tracking = cashocs.ScalarTrackingFunctional(integrand, tracking_goal)
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J_tracking, y, u, p, config)
+ocp = cashocs.OptimalControlProblem(e, bcs, J_tracking, y, u, p, config=config)
 ocp.solve()
 
 print("L2-Norm of y squared: " + format(assemble(y * y * dx), ".3e"))

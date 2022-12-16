@@ -4,75 +4,146 @@ Created on 13/08/2021, 09.06
 @author: blauths
 """
 
+from collections import namedtuple
 import pathlib
 
 from fenics import *
 import numpy as np
+import pytest
 
 import cashocs
 import cashocs.space_mapping.optimal_control as ocsm
 
-dir_path = str(pathlib.Path(__file__).parent)
-
 nonlinearity_factor = 5e2
 
-cfg = cashocs.load_config(f"{dir_path}/config_ocsm.ini")
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(16)
-V = FunctionSpace(mesh, "CG", 1)
 
-y_des = Expression(
-    "scale*(pow(x[0], 2)*(1 - x[0])*pow(x[1], 2)*(1 - x[1]))",
-    degree=6,
-    scale=729 / 16,
-)
-bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
+@pytest.fixture
+def config_ocsm(dir_path):
+    return cashocs.load_config(f"{dir_path}/config_ocsm.ini")
 
 
-class FineModel(ocsm.FineModel):
-    def __init__(self):
-        super().__init__()
+@pytest.fixture
+def geometry():
+    Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(16)
+    geom = Geometry(mesh, boundaries, dx, ds)
 
-        self.controls = Function(V)
-        self.y = Function(V)
-        phi = TestFunction(V)
-
-        self.F = (
-            dot(grad(self.y), grad(phi)) * dx
-            + Constant(nonlinearity_factor) * pow(self.y, 3) * phi * dx
-            - self.controls * phi * dx
-        )
-        self.J = cashocs.IntegralFunctional(Constant(0.5) * pow(self.y - y_des, 2) * dx)
-
-    def solve_and_evaluate(self):
-        self.y.vector().vec().set(0.0)
-        cashocs.newton_solve(self.F, self.y, bcs, verbose=False)
-        self.cost_functional_value = self.J.evaluate()
+    return geom
 
 
-fine_model = FineModel()
-
-y = Function(V)
-u = Function(V)
-p = Function(V)
-
-F = dot(grad(y), grad(p)) * dx - u * p * dx
-J = cashocs.IntegralFunctional(Constant(0.5) * pow(y - y_des, 2) * dx)
-
-coarse_model = ocsm.CoarseModel(F, bcs, J, y, u, p, config=cfg)
-
-y_sm = Function(V)
-u_sm = Function(V)
-J_parameter = cashocs.IntegralFunctional(
-    Constant(0.5) * pow(y_sm - fine_model.y, 2) * dx
-)
-
-parameter_extraction = ocsm.ParameterExtraction(
-    coarse_model, J_parameter, y_sm, u_sm, config=cfg
-)
+@pytest.fixture
+def CG1(geometry):
+    return FunctionSpace(geometry.mesh, "CG", 1)
 
 
-def test_ocsm_parameter_extraction_single():
-    config = cashocs.load_config(dir_path + "/config_ocsm.ini")
+@pytest.fixture
+def y_des():
+    return Expression(
+        "scale*(pow(x[0], 2)*(1 - x[0])*pow(x[1], 2)*(1 - x[1]))",
+        degree=6,
+        scale=729 / 16,
+    )
+
+
+@pytest.fixture
+def bcs(CG1, geometry):
+    return cashocs.create_dirichlet_bcs(
+        CG1, Constant(0.0), geometry.boundaries, [1, 2, 3, 4]
+    )
+
+
+@pytest.fixture
+def fine_model(CG1, geometry, bcs, y_des):
+    class FineModel(ocsm.FineModel):
+        def __init__(self):
+            super().__init__()
+
+            self.controls = Function(CG1)
+            self.y = Function(CG1)
+            phi = TestFunction(CG1)
+
+            self.F = (
+                dot(grad(self.y), grad(phi)) * geometry.dx
+                + Constant(nonlinearity_factor) * pow(self.y, 3) * phi * geometry.dx
+                - self.controls * phi * geometry.dx
+            )
+            self.J = cashocs.IntegralFunctional(
+                Constant(0.5) * pow(self.y - y_des, 2) * geometry.dx
+            )
+
+        def solve_and_evaluate(self):
+            self.y.vector().vec().set(0.0)
+            cashocs.newton_solve(self.F, self.y, bcs, verbose=False)
+            self.cost_functional_value = self.J.evaluate()
+
+    return FineModel()
+
+
+@pytest.fixture
+def y(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def u(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def p(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def F(y, u, p, geometry):
+    return dot(grad(y), grad(p)) * geometry.dx - u * p * geometry.dx
+
+
+@pytest.fixture
+def J(y, y_des, geometry):
+    return cashocs.IntegralFunctional(Constant(0.5) * pow(y - y_des, 2) * geometry.dx)
+
+
+@pytest.fixture
+def coarse_model(F, bcs, J, y, u, p, config_ocsm):
+    return ocsm.CoarseModel(F, bcs, J, y, u, p, config=config_ocsm)
+
+
+@pytest.fixture
+def y_sm(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def u_sm(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def J_parameter(y_sm, fine_model, geometry):
+    return cashocs.IntegralFunctional(
+        Constant(0.5) * pow(y_sm - fine_model.y, 2) * geometry.dx
+    )
+
+
+@pytest.fixture
+def parameter_extraction(coarse_model, J_parameter, y_sm, u_sm, config_ocsm):
+    return ocsm.ParameterExtraction(
+        coarse_model, J_parameter, y_sm, u_sm, config=config_ocsm
+    )
+
+
+@pytest.fixture
+def y_d():
+    return Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
+
+
+@pytest.fixture
+def z_d():
+    return Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
+
+
+def test_ocsm_parameter_extraction_single(config_ocsm, y_d):
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
     V = FunctionSpace(mesh, "CG", 1)
 
@@ -83,19 +154,18 @@ def test_ocsm_parameter_extraction_single():
     F = inner(grad(y), grad(p)) * dx - u * p * dx
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
     alpha = 1e-6
     J = cashocs.IntegralFunctional(
         Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
     )
 
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config)
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocsm)
     ocp.solve()
     control_ocp = u.vector()[:]
 
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    coarse_model = ocsm.CoarseModel(F, bcs, J, y, u, p, config=config)
+    coarse_model = ocsm.CoarseModel(F, bcs, J, y, u, p, config=config_ocsm)
     coarse_model.optimize()
     control_coarse_model = u.vector()[:]
 
@@ -109,15 +179,14 @@ def test_ocsm_parameter_extraction_single():
     )
 
     parameter_extraction = ocsm.ParameterExtraction(
-        coarse_model, J_pe, y_pe, u_pe, config=config
+        coarse_model, J_pe, y_pe, u_pe, config=config_ocsm
     )
     parameter_extraction._solve()
     control_pe = u_pe.vector()[:]
     assert np.allclose(control_ocp, control_pe)
 
 
-def test_ocsm_parameter_extraction_multiple():
-    config = cashocs.load_config(dir_path + "/config_ocsm.ini")
+def test_ocsm_parameter_extraction_multiple(config_ocsm, y_d, z_d):
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
     V = FunctionSpace(mesh, "CG", 1)
 
@@ -142,8 +211,6 @@ def test_ocsm_parameter_extraction_multiple():
 
     bcs_list = [bcs1, bcs2]
 
-    y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
-    z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)
     alpha = 1e-6
     beta = 1e-4
     J = cashocs.IntegralFunctional(
@@ -154,7 +221,7 @@ def test_ocsm_parameter_extraction_multiple():
     )
 
     ocp = cashocs.OptimalControlProblem(
-        e, bcs_list, J, states, controls, adjoints, config
+        e, bcs_list, J, states, controls, adjoints, config=config_ocsm
     )
     ocp.solve()
     u_ocp = u.vector()[:]
@@ -164,7 +231,9 @@ def test_ocsm_parameter_extraction_multiple():
     u.vector().apply("")
     v.vector().vec().set(0.0)
     v.vector().apply("")
-    coarse_model = ocsm.CoarseModel(e, bcs_list, J, states, controls, adjoints, config)
+    coarse_model = ocsm.CoarseModel(
+        e, bcs_list, J, states, controls, adjoints, config=config_ocsm
+    )
     coarse_model.optimize()
     u_cm = u.vector()[:]
     v_cm = v.vector()[:]
@@ -186,7 +255,7 @@ def test_ocsm_parameter_extraction_multiple():
     )
 
     parameter_extraction = ocsm.ParameterExtraction(
-        coarse_model, J, states_pe, controls_pe, config
+        coarse_model, J, states_pe, controls_pe, config=config_ocsm
     )
     parameter_extraction._solve()
 
@@ -194,8 +263,7 @@ def test_ocsm_parameter_extraction_multiple():
     assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-10
 
 
-def test_ocsm_broyden_good():
-    u.vector().vec().set(0.0)
+def test_ocsm_broyden_good(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -211,9 +279,7 @@ def test_ocsm_broyden_good():
     assert np.abs(fine_model.cost_functional_value - 9.940664295004186e-05) <= 1e-8
 
 
-def test_ocsm_broyden_bad():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_broyden_bad(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -229,9 +295,7 @@ def test_ocsm_broyden_bad():
     assert np.abs(fine_model.cost_functional_value - 0.00034133147129726136) <= 2e-8
 
 
-def test_ocsm_bfgs():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_bfgs(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -246,9 +310,7 @@ def test_ocsm_bfgs():
     assert np.abs(fine_model.cost_functional_value - 0.00015157187957497788) <= 1e-7
 
 
-def test_ocsm_steepest_descent():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_steepest_descent(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -262,9 +324,7 @@ def test_ocsm_steepest_descent():
     assert np.abs(fine_model.cost_functional_value - 0.008607376518100516) <= 2e-8
 
 
-def test_ocsm_ncg_FR():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_ncg_FR(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -279,9 +339,7 @@ def test_ocsm_ncg_FR():
     assert np.abs(fine_model.cost_functional_value - 0.001158786222806518) <= 1e-7
 
 
-def test_ocsm_ncg_PR():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_ncg_PR(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -296,9 +354,7 @@ def test_ocsm_ncg_PR():
     assert np.abs(fine_model.cost_functional_value - 0.008117963107823976) <= 1e-7
 
 
-def test_ocsm_ncg_HS():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_ncg_HS(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -313,9 +369,7 @@ def test_ocsm_ncg_HS():
     assert np.abs(fine_model.cost_functional_value - 0.00864625490666504) <= 6e-5
 
 
-def test_ocsm_ncg_DY():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_ncg_DY(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,
@@ -330,9 +384,7 @@ def test_ocsm_ncg_DY():
     assert np.abs(fine_model.cost_functional_value - 0.00048424837926872125) <= 1e-7
 
 
-def test_ocsm_ncg_HZ():
-    u.vector().vec().set(0.0)
-    u.vector().apply("")
+def test_ocsm_ncg_HZ(fine_model, coarse_model, parameter_extraction):
     space_mapping = ocsm.SpaceMapping(
         fine_model,
         coarse_model,

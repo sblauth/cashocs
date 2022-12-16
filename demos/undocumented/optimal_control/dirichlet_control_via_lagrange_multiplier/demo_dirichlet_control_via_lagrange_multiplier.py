@@ -55,7 +55,7 @@ scalar_product = TrialFunction(V) * TestFunction(V) * ds
 
 # define and solve the optimization problem
 ocp = cashocs.OptimalControlProblem(
-    e, bcs, J, y, u, p, config, riesz_scalar_products=scalar_product
+    e, bcs, J, y, u, p, config=config, riesz_scalar_products=scalar_product
 )
 ocp.solve()
 

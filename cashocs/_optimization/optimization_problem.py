@@ -26,21 +26,22 @@ from __future__ import annotations
 
 import abc
 import copy
-import json
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
 import ufl
 
 from cashocs import _exceptions
+from cashocs import _forms
 from cashocs import _loggers
+from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
+from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
-    from cashocs import _pde_problems
     from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
@@ -69,8 +70,6 @@ class OptimizationProblem(abc.ABC):
     adjoint_problem: _pde_problems.AdjointProblem
     state_problem: _pde_problems.StateProblem
     uses_custom_scalar_product: bool = False
-    temp_dict: Optional[Dict]
-    algorithm: str
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
     solver: Union[
@@ -101,6 +100,8 @@ class OptimizationProblem(abc.ABC):
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
+        temp_dict: Optional[Dict] = None,
+        initial_function_values: Optional[List[float]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -117,7 +118,7 @@ class OptimizationProblem(abc.ABC):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
@@ -138,6 +139,12 @@ class OptimizationProblem(abc.ABC):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            temp_dict: This is a private parameter of the class, required for remeshing.
+                This parameter must not be set by the user and should be ignored.
+                Using this parameter may result in unintended side effects.
+            initial_function_values: This is a privatve parameter of the class, required
+                for remeshing. This parameter must not be set by the user and should be
+                ignored. Using this parameter may result in unintended side effects.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -149,86 +156,73 @@ class OptimizationProblem(abc.ABC):
             ``adjoints[i]``.
 
         """
-        self.has_cashocs_remesh_flag, self.temp_dir = _utils.parse_remesh()
-
         self.state_forms = _utils.enlist(state_forms)
         self.state_dim = len(self.state_forms)
         self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
 
-        self._parse_cost_functional_form(cost_functional_form)
+        self.cost_functional_list = self._parse_cost_functional_form(
+            cost_functional_form
+        )
 
         self.states: List[fenics.Function] = _utils.enlist(states)
         self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
 
         self.use_scaling = False
 
-        self._parse_optional_inputs(
-            config,
+        if config is None:
+            self.config = io.Config()
+        else:
+            self.config = copy.deepcopy(config)
+        self.config.validate_config()
+
+        (
+            self.initial_guess,
+            self.ksp_options,
+            self.adjoint_ksp_options,
+            self.desired_weights,
+        ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
             desired_weights,
         )
 
+        if initial_function_values is not None:
+            self.initial_function_values = initial_function_values
+
+        self.algorithm = _utils.optimization_algorithm_configuration(self.config)
+
         fenics.set_log_level(fenics.LogLevel.CRITICAL)
 
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
 
-        self._is_shape_problem = False
-        self._is_topology_problem = False
-        self._is_control_problem = False
+        self.db = database.Database(
+            self.config,
+            self.states,
+            self.adjoints,
+            self.ksp_options,
+            self.adjoint_ksp_options,
+            self.cost_functional_list,
+            self.state_forms,
+            self.bcs_list,
+        )
+        if temp_dict is not None:
+            self.db.parameter_db.temp_dict.update(temp_dict)
+            self.db.parameter_db.is_remeshed = True
 
-    @property
-    def is_shape_problem(self) -> bool:
-        """Returns a boolean flag, ``True`` if self is a shape optimization problem."""
-        return self._is_shape_problem
-
-    @is_shape_problem.setter
-    def is_shape_problem(self, value: bool) -> None:
-        """Setter method for is_shape_problem."""
-        if value:
-            self._is_shape_problem = True
-            self._is_control_problem = False
-            self._is_topology_problem = False
-        else:
-            self._is_shape_problem = False
-            self._is_control_problem = False
-            self._is_topology_problem = False
-
-    @property
-    def is_control_problem(self) -> bool:
-        """Returns a boolean flag, ``True`` if self is an optimal control problem."""
-        return self._is_control_problem
-
-    @is_control_problem.setter
-    def is_control_problem(self, value: bool) -> None:
-        """Setter method for is_control_problem."""
-        if value:
-            self._is_control_problem = True
-            self._is_shape_problem = False
-            self._is_topology_problem = False
-        else:
-            self._is_control_problem = False
-            self._is_shape_problem = False
-            self._is_topology_problem = False
-
-    @property
-    def is_topology_problem(self) -> bool:
-        """``True`` if self is a topology optimization problem."""
-        return self._is_topology_problem
-
-    @is_topology_problem.setter
-    def is_topology_problem(self, value: bool) -> None:
-        """Setter method for is_topology_problem."""
-        if value:
-            self._is_topology_problem = True
-            self._is_shape_problem = False
-            self._is_control_problem = False
-        else:
-            self._is_topology_problem = False
-            self._is_shape_problem = False
-            self._is_control_problem = False
+        self.general_form_handler = _forms.GeneralFormHandler(self.db)
+        self.state_problem = _pde_problems.StateProblem(
+            self.db,
+            self.general_form_handler.state_form_handler,
+            self.initial_guess,
+        )
+        self.adjoint_problem = _pde_problems.AdjointProblem(
+            self.db,
+            self.general_form_handler.adjoint_form_handler,
+            self.state_problem,
+        )
+        self.output_manager = io.OutputManager(self.db)
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:
@@ -244,11 +238,16 @@ class OptimizationProblem(abc.ABC):
             List[ufl.Form],
             ufl.Form,
         ],
-    ) -> None:
-        """Parses the cost functional form for use in cashocs."""
-        self.input_cost_functional_list = _utils.enlist(cost_functional_form)
-        self.cost_functional_list = []
-        for functional in self.input_cost_functional_list:
+    ) -> List[_typing.CostFunctional]:
+        """Parses the cost functional form for use in cashocs.
+
+        Returns:
+            The list of cost functionals.
+
+        """
+        input_cost_functional_list = _utils.enlist(cost_functional_form)
+        cost_functional_list: List[_typing.CostFunctional] = []
+        for functional in input_cost_functional_list:
             if isinstance(
                 functional,
                 (
@@ -257,7 +256,7 @@ class OptimizationProblem(abc.ABC):
                     cost_functional.MinMaxFunctional,
                 ),
             ):
-                self.cost_functional_list.append(functional)
+                cost_functional_list.append(functional)
             else:
                 raise _exceptions.InputError(
                     "cashocs.OptimizationProblem",
@@ -268,9 +267,10 @@ class OptimizationProblem(abc.ABC):
                     "or cashocs.MinMaxFunctional is allowed.",
                 )
 
+        return cost_functional_list
+
     def _parse_optional_inputs(
         self,
-        config: Optional[io.Config],
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
         ksp_options: Optional[
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
@@ -279,12 +279,15 @@ class OptimizationProblem(abc.ABC):
             Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
         ],
         desired_weights: Optional[Union[List[float], float]],
-    ) -> None:
+    ) -> Tuple[
+        Optional[List[fenics.Function]],
+        _typing.KspOptions,
+        _typing.KspOptions,
+        Optional[List[float]],
+    ]:
         """Initializes the optional input parameters.
 
         Args:
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`.
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`.
             ksp_options: A list of strings corresponding to command line options for
@@ -297,40 +300,40 @@ class OptimizationProblem(abc.ABC):
                 magnitude of `desired_weights[i]` for the initial iteration.
 
         """
-        if config is None:
-            self.config = io.Config()
-        else:
-            self.config = copy.deepcopy(config)
-
-        self.config.validate_config()
-
         if initial_guess is None:
-            self.initial_guess = initial_guess
+            parsed_initial_guess = initial_guess
         else:
-            self.initial_guess = _utils.enlist(initial_guess)
+            parsed_initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            self.ksp_options: _typing.KspOptions = []
+            parsed_ksp_options: _typing.KspOptions = []
             option: List[List[Union[str, int, float]]] = copy.deepcopy(
                 _utils.linalg.direct_ksp_options
             )
 
             for _ in range(self.state_dim):
-                self.ksp_options.append(option)
+                parsed_ksp_options.append(option)
         else:
-            self.ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
+            parsed_ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
 
-        self.adjoint_ksp_options: _typing.KspOptions = (
-            self.ksp_options[:]
+        parsed_adjoint_ksp_options: _typing.KspOptions = (
+            parsed_ksp_options[:]
             if adjoint_ksp_options is None
             else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
         )
 
         if desired_weights is None:
-            self.desired_weights = desired_weights
+            parsed_desired_weights = desired_weights
         else:
-            self.desired_weights = _utils.enlist(desired_weights)
+            parsed_desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
+
+        return (
+            parsed_initial_guess,
+            parsed_ksp_options,
+            parsed_adjoint_ksp_options,
+            parsed_desired_weights,
+        )
 
     def compute_state_variables(self) -> None:
         """Solves the state system.
@@ -378,23 +381,27 @@ class OptimizationProblem(abc.ABC):
         else:
             mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)
 
-        self.form_handler.bcs_list_ad = mod_bcs_list
+        self.general_form_handler.adjoint_form_handler.bcs_list_ad = mod_bcs_list
 
-        self.form_handler.adjoint_eq_forms = mod_forms
+        self.general_form_handler.adjoint_form_handler.adjoint_eq_forms = mod_forms
         # replace the adjoint function by a TrialFunction for internal use
         repl_forms = [
             ufl.replace(
                 mod_forms[i],
-                {self.adjoints[i]: self.form_handler.trial_functions_adjoint[i]},
+                {self.adjoints[i]: self.db.function_db.trial_functions_adjoint[i]},
             )
             for i in range(self.state_dim)
         ]
-        self.form_handler.linear_adjoint_eq_forms = repl_forms
+        self.general_form_handler.adjoint_form_handler.linear_adjoint_eq_forms = (
+            repl_forms
+        )
 
         (
-            self.form_handler.adjoint_eq_lhs,
-            self.form_handler.adjoint_eq_rhs,
-        ) = _utils.split_linear_forms(self.form_handler.linear_adjoint_eq_forms)
+            self.general_form_handler.adjoint_form_handler.adjoint_eq_lhs,
+            self.general_form_handler.adjoint_form_handler.adjoint_eq_rhs,
+        ) = _utils.split_linear_forms(
+            self.general_form_handler.adjoint_form_handler.linear_adjoint_eq_forms
+        )
 
         self.has_custom_adjoint = True
 
@@ -428,36 +435,36 @@ class OptimizationProblem(abc.ABC):
                 "the Newton solver.",
             )
 
-    def inject_pre_hook(self, function: Callable) -> None:
-        """Changes the a-priori hook of the OptimizationProblem to function.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem to function.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self.form_handler.pre_hook = function
+        self.db.callback.pre_callback = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
 
-    def inject_post_hook(self, function: Callable) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem to function.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem to function.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self.form_handler.post_hook = function
+        self.db.callback.post_callback = function
         self.state_problem.has_solution = False
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable, post_function: Callable
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -466,8 +473,8 @@ class OptimizationProblem(abc.ABC):
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)
 
     def _set_tolerances(
         self, rtol: float | None, atol: float | None, max_iter: float | None
@@ -519,19 +526,12 @@ class OptimizationProblem(abc.ABC):
         Notes:
             If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
-
             - a purely relative one (if only ``rtol`` is specified), i.e.,
-
             .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-
             - a purely absolute one (if only ``atol`` is specified), i.e.,
-
             .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-
             - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
-
             .. math::
-
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
 
@@ -542,8 +542,8 @@ class OptimizationProblem(abc.ABC):
 
         self._set_tolerances(rtol, atol, max_iter)
 
+        self.config.validate_config()
         self._check_for_custom_forms()
-        self.output_manager = io.OutputManager(self)
 
     def shift_cost_functional(self, shift: float = 0.0) -> None:
         """Shifts the cost functional by a constant.
@@ -568,7 +568,7 @@ class OptimizationProblem(abc.ABC):
     def _compute_initial_function_values(self) -> None:
         """Computes the cost functional values for the initial iteration."""
         self.state_problem.solve()
-        self.initial_function_values: List[float] = []
+        self.initial_function_values = []
         for i, functional in enumerate(self.cost_functional_list):
             val = functional.evaluate()
 
@@ -591,15 +591,8 @@ class OptimizationProblem(abc.ABC):
         )
 
         if self.use_scaling and self.desired_weights is not None:
-            if not self.has_cashocs_remesh_flag:
+            if not self.db.parameter_db.is_remeshed:
                 self._compute_initial_function_values()
-
-            else:
-                with open(
-                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
-                ) as file:
-                    temp_dict: Dict = json.load(file)
-                self.initial_function_values = temp_dict["initial_function_values"]
 
             for i, functional in enumerate(self.cost_functional_list):
                 scaling_factor = np.abs(

@@ -29,31 +29,32 @@ from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
 class LineSearch(abc.ABC):
     """Abstract implementation of a line search."""
 
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self, db: database.Database, optimization_problem: _typing.OptimizationProblem
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
 
         """
-        self.config = optimization_problem.config
+        self.db = db
+
+        self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
-        self.gradient = optimization_problem.gradient
         self.state_problem = optimization_problem.state_problem
         self.optimization_variable_abstractions = (
             optimization_problem.optimization_variable_abstractions
         )
         self.cost_functional = optimization_problem.reduced_cost_functional
-
-        self.is_shape_problem = optimization_problem.is_shape_problem
-        self.is_control_problem = optimization_problem.is_control_problem
-        self.is_topology_problem = optimization_problem.is_topology_problem
 
         self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(
@@ -61,6 +62,10 @@ class LineSearch(abc.ABC):
         )
 
         self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
+        self.epsilon_armijo: float = self.config.getfloat(
+            "LineSearch", "epsilon_armijo"
+        )
+        self.search_direction_inf = 1.0
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
         self.is_newton_like = algorithm.casefold() == "lbfgs"
@@ -112,7 +117,7 @@ class LineSearch(abc.ABC):
         self.search_direction_inf = np.max(
             [
                 search_direction[i].vector().norm("linf")
-                for i in range(len(self.gradient))
+                for i in range(len(search_direction))
             ]
         )
 
@@ -158,3 +163,30 @@ class LineSearch(abc.ABC):
     def post_line_search(self) -> None:
         """Performs tasks after the line search was successful."""
         self.form_handler.update_scalar_product()
+
+    def _satisfies_armijo_condition(
+        self,
+        objective_step: float,
+        current_function_value: float,
+        decrease_measure: float,
+    ) -> bool:
+        """Checks whether the sufficient decrease condition is satisfied.
+
+        Args:
+            objective_step: The new objective value, after taking the step
+            current_function_value: The old objective value
+            decrease_measure: The directional derivative in direction of the search
+                direction
+
+        Returns:
+            A boolean flag which is True in case the condition is satisfied.
+
+        """
+        if not self.db.parameter_db.problem_type == "topology":
+            val = bool(
+                objective_step
+                < current_function_value + self.epsilon_armijo * decrease_measure
+            )
+        else:
+            val = bool(objective_step <= current_function_value)
+        return val

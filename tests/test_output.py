@@ -15,40 +15,71 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections import namedtuple
 import pathlib
 import subprocess
 
 from fenics import *
-import mpi4py.MPI
-import numpy as np
+import pytest
 
 import cashocs
 
-rng = np.random.RandomState(300696)
-dir_path = str(pathlib.Path(__file__).parent)
-config = cashocs.load_config(dir_path + "/config_ocp.ini")
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
-V = FunctionSpace(mesh, "CG", 1)
 
-y = Function(V)
-p = Function(V)
-u = Function(V)
+@pytest.fixture
+def geometry():
+    Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
+    geom = Geometry(mesh, boundaries, dx, ds)
 
-F = inner(grad(y), grad(p)) * dx - u * p * dx
-bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
-
-y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1, domain=mesh)
-alpha = 1e-6
-J = cashocs.IntegralFunctional(
-    Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
-)
+    return geom
 
 
-def test_time_suffix():
-    config.set("Output", "result_dir", f"{dir_path}/results")
-    config.set("Output", "time_suffix", "True")
-    config.set("Output", "save_txt", "True")
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+@pytest.fixture
+def CG1(geometry):
+    return FunctionSpace(geometry.mesh, "CG", 1)
+
+
+@pytest.fixture
+def y(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def p(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def u(CG1):
+    return Function(CG1)
+
+
+@pytest.fixture
+def F(y, u, p, geometry):
+    return dot(grad(y), grad(p)) * geometry.dx - u * p * geometry.dx
+
+
+@pytest.fixture
+def bcs(CG1, geometry):
+    return cashocs.create_dirichlet_bcs(
+        CG1, Constant(0), geometry.boundaries, [1, 2, 3, 4]
+    )
+
+
+@pytest.fixture
+def J(y, y_d, u, geometry):
+    alpha = 1e-6
+    return cashocs.IntegralFunctional(
+        Constant(0.5) * (y - y_d) * (y - y_d) * geometry.dx
+        + Constant(0.5 * alpha) * u * u * geometry.dx
+    )
+
+
+def test_time_suffix(config_ocp, dir_path, F, bcs, J, y, u, p):
+    config_ocp.set("Output", "result_dir", f"{dir_path}/results")
+    config_ocp.set("Output", "time_suffix", "True")
+    config_ocp.set("Output", "save_txt", "True")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve()
     suffix = ocp.solver.output_manager.suffix
     assert pathlib.Path(dir_path + f"/results_{suffix}").is_dir()
@@ -58,17 +89,16 @@ def test_time_suffix():
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_files_ocp():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("Output", "save_state", "True")
-    config.set("Output", "save_results", "True")
-    config.set("Output", "save_txt", "True")
-    config.set("Output", "save_adjoint", "True")
-    config.set("Output", "save_gradient", "True")
-    config.set("Output", "result_dir", dir_path + "/out")
+def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
+    config_ocp.set("Output", "save_state", "True")
+    config_ocp.set("Output", "save_results", "True")
+    config_ocp.set("Output", "save_txt", "True")
+    config_ocp.set("Output", "save_adjoint", "True")
+    config_ocp.set("Output", "save_gradient", "True")
+    config_ocp.set("Output", "result_dir", dir_path + "/out")
     u.vector().vec().set(0.0)
     u.vector().apply("")
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(dir_path + "/out").is_dir()
@@ -91,17 +121,16 @@ def test_save_xdmf_files_ocp():
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_files_mixed():
-    config = cashocs.load_config(dir_path + "/config_ocp.ini")
-    config.set("Output", "save_state", "True")
-    config.set("Output", "save_results", "True")
-    config.set("Output", "save_txt", "True")
-    config.set("Output", "save_adjoint", "True")
-    config.set("Output", "save_gradient", "True")
-    config.set("Output", "result_dir", dir_path + "/out")
-    elem1 = VectorElement("CG", mesh.ufl_cell(), 2)
-    elem2 = FiniteElement("CG", mesh.ufl_cell(), 1)
-    V = FunctionSpace(mesh, MixedElement([elem1, elem2]))
+def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
+    config_ocp.set("Output", "save_state", "True")
+    config_ocp.set("Output", "save_results", "True")
+    config_ocp.set("Output", "save_txt", "True")
+    config_ocp.set("Output", "save_adjoint", "True")
+    config_ocp.set("Output", "save_gradient", "True")
+    config_ocp.set("Output", "result_dir", dir_path + "/out")
+    elem1 = VectorElement("CG", geometry.mesh.ufl_cell(), 2)
+    elem2 = FiniteElement("CG", geometry.mesh.ufl_cell(), 1)
+    V = FunctionSpace(geometry.mesh, MixedElement([elem1, elem2]))
 
     up = Function(V)
     u, p = split(up)
@@ -109,23 +138,25 @@ def test_save_xdmf_files_mixed():
     v, q = split(vq)
     c = Function(V.sub(0).collapse())
     F = (
-        inner(grad(u), grad(v)) * dx
-        - p * div(v) * dx
-        - q * div(u) * dx
-        - inner(c, v) * dx
+        inner(grad(u), grad(v)) * geometry.dx
+        - p * div(v) * geometry.dx
+        - q * div(u) * geometry.dx
+        - inner(c, v) * geometry.dx
     )
     bcs = cashocs.create_dirichlet_bcs(
-        V.sub(0), Constant((0.0, 0.0)), boundaries, [1, 2, 3, 4]
+        V.sub(0), Constant((0.0, 0.0)), geometry.boundaries, [1, 2, 3, 4]
     )
 
     u_d = Expression(
         ("sin(2*pi*x[0])*sin(2*pi*x[1])", "sin(2*pi*x[0])*sin(2*pi*x[1])"),
         degree=1,
-        domain=mesh,
+        domain=geometry.mesh,
     )
-    J = cashocs.IntegralFunctional(Constant(0.5) * inner(u - u_d, u - u_d) * dx)
+    J = cashocs.IntegralFunctional(
+        Constant(0.5) * inner(u - u_d, u - u_d) * geometry.dx
+    )
 
-    ocp = cashocs.OptimalControlProblem(F, bcs, J, up, c, vq, config)
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, up, c, vq, config=config_ocp)
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9

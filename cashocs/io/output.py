@@ -21,26 +21,26 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from cashocs.io import managers
 
 if TYPE_CHECKING:
-    from cashocs import _typing
-    from cashocs._optimization import optimization_problem as op
+    from cashocs._database import database
 
 
 class OutputManager:
     """Class handling all the output."""
 
-    def __init__(self, optimization_problem: op.OptimizationProblem) -> None:
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
-            optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
-        self.config = optimization_problem.config
+        self.db = db
+        self.config = self.db.config
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
 
@@ -56,6 +56,7 @@ class OutputManager:
 
         self.result_path = pathlib.Path(self.result_dir)
 
+        verbose = self.config.getboolean("Output", "verbose")
         save_txt = self.config.getboolean("Output", "save_txt")
         save_results = self.config.getboolean("Output", "save_results")
         save_state = self.config.getboolean("Output", "save_state")
@@ -69,49 +70,33 @@ class OutputManager:
             if has_output:
                 self.result_path.mkdir(parents=True, exist_ok=True)
 
-        self.history_manager = managers.HistoryManager(
-            optimization_problem, self.result_dir
-        )
-        self.xdmf_file_manager = managers.XDMFFileManager(
-            optimization_problem, self.result_dir
-        )
-        self.result_manager = managers.ResultManager(
-            optimization_problem, self.result_dir
-        )
-        self.mesh_manager = managers.MeshManager(optimization_problem, self.result_dir)
-        self.temp_file_manager = managers.TempFileManager(optimization_problem)
+        self.managers: List[managers.IOManager] = []
+        if verbose:
+            self.managers.append(managers.ConsoleManager(self.db, self.result_dir))
+        if save_txt:
+            self.managers.append(managers.FileManager(self.db, self.result_dir))
+        if save_state or save_adjoint or save_gradient:
+            self.managers.append(managers.XDMFFileManager(self.db, self.result_dir))
+        self.output_dict = {}
+        if save_results:
+            result_manager = managers.ResultManager(self.db, self.result_dir)
+            self.output_dict = result_manager.output_dict
+            self.managers.append(result_manager)
 
-    def output(self, solver: _typing.SolutionAlgorithm) -> None:
-        """Writes the desired output to files and console.
+        self.managers.append(managers.MeshManager(self.db, self.result_dir))
+        self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
-        Args:
-            solver: The optimization algorithm.
+    def output(self) -> None:
+        """Writes the desired output to files and console."""
+        for manager in self.managers:
+            manager.output()
 
-        """
-        self.history_manager.print_to_console(solver)
-        self.history_manager.print_to_file(solver)
+    def output_summary(self) -> None:
+        """Writes the summary to files and console."""
+        for manager in self.managers:
+            manager.output_summary()
 
-        self.xdmf_file_manager.save_to_file(solver)
-
-        self.result_manager.save_to_dict(solver)
-
-    def output_summary(self, solver: _typing.SolutionAlgorithm) -> None:
-        """Writes the summary to files and console.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
-        self.history_manager.print_console_summary(solver)
-        self.history_manager.print_file_summary(solver)
-
-    def post_process(self, solver: _typing.SolutionAlgorithm) -> None:
-        """Performs a post processing of the output.
-
-        Args:
-            solver: The optimization algorithm.
-
-        """
-        self.result_manager.save_to_json(solver)
-        self.mesh_manager.save_optimized_mesh(solver)
-        self.temp_file_manager.clear_temp_files(solver)
+    def post_process(self) -> None:
+        """Performs a postprocessing of the output."""
+        for manager in self.managers:
+            manager.post_process()

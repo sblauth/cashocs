@@ -19,37 +19,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
-
-if TYPE_CHECKING:
-    from cashocs import _typing
-    from cashocs._optimization import line_search as ls
 
 
 class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
     """A gradient descent method."""
 
-    def __init__(
-        self,
-        optimization_problem: _typing.OptimizationProblem,
-        line_search: ls.LineSearch,
-    ) -> None:
-        """Initializes self.
-
-        Args:
-            optimization_problem: The corresponding optimization problem.
-            line_search: The corresponding line search.
-
-        """
-        super().__init__(optimization_problem)
-        self.line_search = line_search
-
     def run(self) -> None:
         """Performs the optimization with the gradient descent method."""
-        self.initialize_solver()
-
         while True:
 
             self.compute_gradient()
@@ -58,8 +35,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
             if self.convergence_test():
                 break
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.compute_search_direction()
             self.line_search.perform(
@@ -72,8 +48,8 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the gradient descent method."""
-        for i in range(len(self.gradient)):
+        for i in range(len(self.db.function_db.gradient)):
             self.search_direction[i].vector().vec().aypx(
-                0.0, -self.gradient[i].vector().vec()
+                0.0, -self.db.function_db.gradient[i].vector().vec()
             )
             self.search_direction[i].vector().apply("")

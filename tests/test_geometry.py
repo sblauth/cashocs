@@ -33,14 +33,23 @@ from cashocs._exceptions import InputError
 from cashocs.geometry import MeshQuality
 from cashocs.io.mesh import gather_coordinates
 
-c_mesh, _, _, _, _, _ = cashocs.regular_mesh(5)
-u_mesh = fenics.UnitSquareMesh(5, 5)
-i_mesh = fenics.UnitIntervalMesh(10)
-rng = np.random.RandomState(300696)
+
+@pytest.fixture
+def regular_mesh():
+    return cashocs.regular_mesh(5)[0]
 
 
-def test_mesh_import():
-    dir_path = str(pathlib.Path(__file__).parent)
+@pytest.fixture
+def unit_square_mesh():
+    return fenics.UnitSquareMesh(5, 5)
+
+
+@pytest.fixture
+def interval_mesh():
+    return fenics.UnitIntervalMesh(10)
+
+
+def test_mesh_import(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
@@ -95,56 +104,7 @@ def test_mesh_import():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_mesh_import_from_config():
-    dir_path = str(pathlib.Path(__file__).parent)
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
-    cfg = cashocs.load_config(dir_path + "/config_sop.ini")
-    cfg.set("Mesh", "mesh_file", dir_path + "/mesh/mesh.xdmf")
-    fenics.MPI.barrier(fenics.MPI.comm_world)
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(cfg)
-
-    gmsh_coords = np.array(
-        [
-            [0, 0],
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            [0.499999999998694, 0],
-            [1, 0.499999999998694],
-            [0.5000000000020591, 1],
-            [0, 0.5000000000020591],
-            [0.2500000000010297, 0.7500000000010296],
-            [0.3749999970924328, 0.3750000029075671],
-            [0.7187499979760099, 0.2812500030636815],
-            [0.6542968741702071, 0.6542968818888233],
-        ]
-    )
-
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
-
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
-
-    fe_coords = gather_coordinates(mesh)
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        assert np.allclose(fe_coords, gmsh_coords)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
-
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
-
-
-def test_regular_mesh():
-    rng = np.random.RandomState(300696)
+def test_regular_mesh(rng, unit_square_mesh, regular_mesh):
     lens = rng.uniform(0.5, 2, 2)
     r_mesh, _, _, _, _, _ = cashocs.regular_mesh(2, lens[0], lens[1])
 
@@ -155,8 +115,8 @@ def test_regular_mesh():
         2, min_vals[0], min_vals[1], min_vals[2], max_vals[0], max_vals[1], max_vals[2]
     )
 
-    u_coords = gather_coordinates(u_mesh)
-    c_coords = gather_coordinates(c_mesh)
+    u_coords = gather_coordinates(unit_square_mesh)
+    c_coords = gather_coordinates(regular_mesh)
     r_coords = gather_coordinates(r_mesh)
     s_coords = gather_coordinates(s_mesh)
 
@@ -195,24 +155,33 @@ def test_mesh_quality_2D():
     )
     q = np.minimum(q_1, q_2)
 
-    min_max_angle = MeshQuality.min_maximum_angle(mesh)
-    min_radius_ratios = MeshQuality.min_radius_ratios(mesh)
-    average_radius_ratios = MeshQuality.avg_radius_ratios(mesh)
-    min_condition = MeshQuality.min_condition_number(mesh)
-    average_condition = MeshQuality.avg_condition_number(mesh)
+    min_max_angle = cashocs.compute_mesh_quality(mesh, "min", "maximum_angle")
+    min_radius_ratios = cashocs.compute_mesh_quality(mesh, "min", "radius_ratios")
+    avg_radius_ratios = cashocs.compute_mesh_quality(mesh, "avg", "radius_ratios")
+    min_condition = cashocs.compute_mesh_quality(mesh, "min", "condition_number")
+    avg_condition = cashocs.compute_mesh_quality(mesh, "avg", "condition_number")
 
-    assert abs(min_max_angle - MeshQuality.avg_maximum_angle(mesh)) < 1e-14
+    assert (
+        abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "avg", "maximum_angle"))
+        < 1e-14
+    )
     assert abs(min_max_angle - q) < 1e-14
-    assert abs(min_max_angle - MeshQuality.avg_skewness(mesh)) < 1e-14
-    assert abs(min_max_angle - MeshQuality.min_skewness(mesh)) < 1e-14
+    assert (
+        abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "avg", "skewness"))
+        < 1e-14
+    )
+    assert (
+        abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "min", "skewness"))
+        < 1e-14
+    )
 
-    assert abs(min_radius_ratios - average_radius_ratios) < 1e-14
+    assert abs(min_radius_ratios - avg_radius_ratios) < 1e-14
     assert (
         abs(min_radius_ratios - np.min(fenics.MeshQuality.radius_ratio_min_max(mesh)))
         < 1e-14
     )
 
-    assert abs(min_condition - average_condition) < 1e-14
+    assert abs(min_condition - avg_condition) < 1e-14
     assert abs(min_condition - 0.4714045207910318) < 1e-14
 
 
@@ -237,26 +206,32 @@ def test_mesh_quality_3D():
     r_2 = 1 - np.maximum((alpha_min - opt_angle) / (np.pi - opt_angle), 0.0)
     r = np.minimum(r_1, r_2)
 
-    min_max_angle = MeshQuality.min_maximum_angle(mesh)
-    min_radius_ratios = MeshQuality.min_radius_ratios(mesh)
-    min_skewness = MeshQuality.min_skewness(mesh)
-    average_radius_ratios = MeshQuality.avg_radius_ratios(mesh)
-    min_condition = MeshQuality.min_condition_number(mesh)
-    average_condition = MeshQuality.avg_condition_number(mesh)
+    min_max_angle = cashocs.compute_mesh_quality(mesh, "min", "maximum_angle")
+    min_radius_ratios = cashocs.compute_mesh_quality(mesh, "min", "radius_ratios")
+    avg_radius_ratios = cashocs.compute_mesh_quality(mesh, "avg", "radius_ratios")
+    min_condition = cashocs.compute_mesh_quality(mesh, "min", "condition_number")
+    avg_condition = cashocs.compute_mesh_quality(mesh, "avg", "condition_number")
+    min_skewness = cashocs.compute_mesh_quality(mesh, "min", "skewness")
 
-    assert abs(min_max_angle - MeshQuality.avg_maximum_angle(mesh)) < 1e-14
+    assert (
+        abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "avg", "maximum_angle"))
+        < 1e-14
+    )
     assert abs(min_max_angle - r) < 1e-14
 
-    assert abs(min_skewness - MeshQuality.avg_skewness(mesh)) < 1e-14
+    assert (
+        abs(min_skewness - cashocs.compute_mesh_quality(mesh, "avg", "skewness"))
+        < 1e-14
+    )
     assert abs(min_skewness - q) < 1e-14
 
-    assert abs(min_radius_ratios - average_radius_ratios) < 1e-14
+    assert abs(min_radius_ratios - avg_radius_ratios) < 1e-14
     assert (
         abs(min_radius_ratios - np.min(fenics.MeshQuality.radius_ratio_min_max(mesh)))
         < 1e-14
     )
 
-    assert abs(min_condition - average_condition) < 1e-14
+    assert abs(min_condition - avg_condition) < 1e-14
     assert abs(min_condition - 0.3162277660168379) < 1e-14
 
 
@@ -296,7 +271,7 @@ def test_write_mesh():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_empty_measure():
+def test_empty_measure(rng):
     mesh, _, _, dx, ds, dS = cashocs.regular_mesh(5)
     V = fenics.FunctionSpace(mesh, "CG", 1)
     dm = cashocs.geometry._EmptyMeasure(dx)
@@ -334,7 +309,11 @@ def test_empty_measure():
 def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     coordinate_deformation = (
         fenics.interpolate(fenics.Expression(("x[0]", "x[1]"), degree=1), VCG)
@@ -350,10 +329,14 @@ def test_convert_coordinate_defo_to_dof_defo():
     assert np.max(np.abs(mesh.coordinates()[:, :] - coordinates_transformed)) <= 1e-15
 
 
-def test_convert_dof_defo_to_coordinate_defo():
+def test_convert_dof_defo_to_coordinate_defo(rng):
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     defo = fenics.Function(VCG)
     dof_vector = rng.randn(defo.vector().local_size())
@@ -372,7 +355,11 @@ def test_convert_dof_defo_to_coordinate_defo():
 def test_move_mesh():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
-    deformation_handler = cashocs.DeformationHandler(mesh)
+    a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
+    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
+    deformation_handler = cashocs.DeformationHandler(
+        mesh, a_priori_tester, a_posteriori_tester
+    )
 
     coordinate_deformation = coordinates_initial.copy()
     h = mesh.hmin()
@@ -496,12 +483,10 @@ def test_list_measure():
         assert m_sum._measures[i] == ref._measures[i]
 
 
-def test_interval_mesh():
-    rng = np.random.RandomState(300696)
-
+def test_interval_mesh(interval_mesh, rng):
     mesh, _, _, _, _, _ = cashocs.interval_mesh(10)
     coords = gather_coordinates(mesh)
-    i_coords = gather_coordinates(i_mesh)
+    i_coords = gather_coordinates(interval_mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(coords, i_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)

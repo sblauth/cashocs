@@ -29,16 +29,17 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import _utils
+from cashocs import io
 from cashocs._optimization import cost_functional
-from cashocs._optimization import line_search
+from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
+from cashocs._optimization.optimal_control import box_constraints
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class OptimalControlProblem(optimization_problem.OptimizationProblem):
@@ -53,118 +54,6 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     the same order (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of
     ``y1`` and so on).
     """
-
-    controls: List[fenics.Function]
-    control_spaces: List[fenics.FunctionSpace]
-    solver: optimization_algorithms.OptimizationAlgorithm
-
-    def __new__(
-        cls,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        control_bcs_list: Optional[
-            Union[
-                List[List[fenics.DirichletBC]],
-                List[fenics.DirichletBC],
-                fenics.DirichletBC,
-            ]
-        ] = None,
-    ) -> OptimalControlProblem:
-        r"""Initializes self.
-
-        Args:
-            state_forms: The weak form of the state equation (user implemented). Can be
-                either a single UFL form, or a (ordered) list of UFL forms.
-            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing
-                Dirichlet (essential) boundary conditions. If this is ``None``, then no
-                Dirichlet boundary conditions are imposed.
-            cost_functional_form: UFL form of the cost functional. Can also be a list of
-                summands of the cost functional
-            states: The state variable(s), can either be a :py:class:`fenics.Function`,
-                or a list of these.
-            controls: The control variable(s), can either be a
-                :py:class:`fenics.Function`, or a list of these.
-            adjoints: The adjoint variable(s), can either be a
-                :py:class:`fenics.Function`, or a (ordered) list of these.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
-                ``None``, in which case the default configurations are used, except for
-                the optimization algorithm. This has then to be specified in the
-                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
-                default is ``None``.
-            riesz_scalar_products: The scalar products of the control space. Can either
-                be None, a single UFL form, or a (ordered) list of UFL forms. If
-                ``None``, the :math:`L^2(\Omega)` product is used (default is ``None``).
-            control_constraints: Box constraints posed on the control, ``None`` means
-                that there are none (default is ``None``). The (inner) lists should
-                contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the
-                lower, and ``u_b`` the upper bound.
-            initial_guess: List of functions that act as initial guess for the state
-                variables, should be valid input for :py:func:`fenics.assign`. Defaults
-                to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
-                PETSc, used to solve the state systems. If this is ``None``, then the
-                direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
-                for PETSc, used to solve the adjoint systems. If this is ``None``, then
-                the same options as for the state systems are used (default is
-                ``None``).
-            desired_weights: A list of values for scaling the cost functional terms. If
-                this is supplied, the cost functional has to be given as list of
-                summands. The individual terms are then scaled, so that term `i` has the
-                magnitude of `desired_weights[i]` for the initial iteration. In case
-                that `desired_weights` is `None`, no scaling is performed. Default is
-                `None`.
-            control_bcs_list: A list of boundary conditions for the control variables.
-                This is passed analogously to ``bcs_list``. Default is ``None``.
-
-        Examples:
-            Examples how to use this class can be found in the :ref:`tutorial
-            <tutorial_index>`.
-
-        """
-        use_scaling = bool(desired_weights is not None)
-
-        if use_scaling:
-            unscaled_problem = super().__new__(cls)
-            unscaled_problem.__init__(  # type: ignore
-                state_forms,
-                bcs_list,
-                cost_functional_form,
-                states,
-                controls,
-                adjoints,
-                config=config,
-                riesz_scalar_products=riesz_scalar_products,
-                control_constraints=control_constraints,
-                initial_guess=initial_guess,
-                ksp_options=ksp_options,
-                adjoint_ksp_options=adjoint_ksp_options,
-                desired_weights=desired_weights,
-                control_bcs_list=control_bcs_list,
-            )
-            unscaled_problem._scale_cost_functional()  # overwrites cost functional list
-
-        return super().__new__(cls)
 
     def __init__(
         self,
@@ -214,7 +103,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             adjoints: The adjoint variable(s), can either be a
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
@@ -263,8 +152,18 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             desired_weights,
         )
 
-        self.controls = _utils.enlist(controls)
-        self.control_dim = len(self.controls)
+        self.db.function_db.controls = _utils.enlist(controls)
+
+        self.db.parameter_db.control_dim = len(self.db.function_db.controls)
+        self.db.function_db.control_spaces = [
+            x.function_space() for x in self.db.function_db.controls
+        ]
+        self.db.function_db.gradient = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
+        self.db.parameter_db.problem_type = "control"
+
+        self.mesh_parametrization = None
 
         # riesz_scalar_products
         self.riesz_scalar_products = self._parse_riesz_scalar_products(
@@ -288,43 +187,63 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
             self.use_control_bcs = True
         else:
-            self.control_bcs_list = [None] * self.control_dim
+            self.control_bcs_list = [None] * len(self.db.function_db.controls)
 
         # control_constraints
-        self.control_constraints = self._parse_control_constraints(control_constraints)
-        self._validate_control_constraints()
-
+        self.box_constraints = box_constraints.BoxConstraints(
+            self.db.function_db.controls, control_constraints
+        )
+        self.db.parameter_db.display_box_constraints = (
+            self.box_constraints.display_box_constraints
+        )
         # end overloading
 
         self.is_control_problem = True
-        self.form_handler: _forms.ControlFormHandler = _forms.ControlFormHandler(self)
-
-        self.state_spaces = self.form_handler.state_spaces
-        self.control_spaces = self.form_handler.control_spaces
-        self.adjoint_spaces = self.form_handler.adjoint_spaces
-
-        self.projected_difference = _utils.create_function_list(self.control_spaces)
-
-        self.state_problem = _pde_problems.StateProblem(
-            self.form_handler, self.initial_guess
+        self.form_handler: _forms.ControlFormHandler = _forms.ControlFormHandler(
+            self, self.db
         )
-        self.adjoint_problem = _pde_problems.AdjointProblem(
-            self.form_handler, self.state_problem
+
+        self.state_spaces = self.db.function_db.state_spaces
+        self.adjoint_spaces = self.db.function_db.adjoint_spaces
+
+        self.projected_difference = _utils.create_function_list(
+            self.db.function_db.control_spaces
         )
+
         self.gradient_problem: _pde_problems.ControlGradientProblem = (
             _pde_problems.ControlGradientProblem(
-                self.form_handler, self.state_problem, self.adjoint_problem
+                self.db, self.form_handler, self.state_problem, self.adjoint_problem
             )
         )
 
-        self.algorithm = _utils.optimization_algorithm_configuration(self.config)
-
         self.reduced_cost_functional = cost_functional.ReducedCostFunctional(
-            self.form_handler, self.state_problem
+            self.db, self.form_handler, self.state_problem
         )
 
-        self.gradient = self.gradient_problem.gradient
-        self.objective_value = 1.0
+        self.optimization_variable_abstractions = (
+            optimal_control.ControlVariableAbstractions(
+                self, self.box_constraints, self.db
+            )
+        )
+
+        if bool(desired_weights is not None):
+            self._scale_cost_functional()
+            self.__init__(  # type: ignore
+                state_forms,
+                bcs_list,
+                cost_functional_form,
+                states,
+                controls,
+                adjoints,
+                config,
+                riesz_scalar_products,
+                control_constraints,
+                initial_guess,
+                ksp_options,
+                adjoint_ksp_options,
+                None,
+                control_bcs_list,
+            )
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -338,9 +257,56 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
     def _setup_control_bcs(self) -> None:
         """Sets up the boundary conditions for the control variables."""
         if self.use_control_bcs:
-            for i in range(self.control_dim):
+            for i in range(len(self.db.function_db.controls)):
                 for bc in self.control_bcs_list_inhomogeneous[i]:
-                    bc.apply(self.controls[i].vector())
+                    bc.apply(self.db.function_db.controls[i].vector())
+
+    def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
+        elif line_search_type == "polynomial":
+            line_search = ls.PolynomialLineSearch(self.db, self)
+        else:
+            raise Exception("This code cannot be reached.")
+
+        if self.algorithm.casefold() == "newton":
+            self.form_handler.hessian_form_handler.compute_newton_forms()
+            self.hessian_problem = _pde_problems.HessianProblem(
+                self.db,
+                self.form_handler,
+                self.general_form_handler.adjoint_form_handler,
+                self.gradient_problem,
+                self.box_constraints,
+            )
+
+        if self.algorithm.casefold() == "gradient_descent":
+            solver: optimization_algorithms.OptimizationAlgorithm = (
+                optimization_algorithms.GradientDescentMethod(
+                    self.db, self, line_search
+                )
+            )
+        elif self.algorithm.casefold() == "lbfgs":
+            solver = optimization_algorithms.LBFGSMethod(self.db, self, line_search)
+        elif self.algorithm.casefold() == "conjugate_gradient":
+            solver = optimization_algorithms.NonlinearCGMethod(
+                self.db, self, line_search
+            )
+        elif self.algorithm.casefold() == "newton":
+            solver = optimization_algorithms.NewtonMethod(self.db, self, line_search)
+        elif self.algorithm.casefold() == "none":
+            raise _exceptions.InputError(
+                "cashocs.OptimalControlProblem.solve",
+                "algorithm",
+                "You did not specify a solution algorithm in your config file. "
+                "You have to specify one in the solve method. Needs to be one of"
+                "'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' "
+                "('cg'), or 'newton'.",
+            )
+        else:
+            raise Exception("This code cannot be reached.")
+
+        return solver
 
     def solve(
         self,
@@ -378,19 +344,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         Notes:
             If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
-
             - a purely relative one (if only ``rtol`` is specified), i.e.,
-
             .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-
             - a purely absolute one (if only ``atol`` is specified), i.e.,
-
             .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-
             - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
-
             .. math::
-
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
 
@@ -399,46 +358,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self._setup_control_bcs()
 
-        self.optimization_variable_abstractions = (
-            optimal_control.ControlVariableAbstractions(self)
-        )
-
-        line_search_type = self.config.get("LineSearch", "method").casefold()
-        if line_search_type == "armijo":
-            self.line_search = line_search.ArmijoLineSearch(self)
-        elif line_search_type == "polynomial":
-            self.line_search = line_search.PolynomialLineSearch(self)
-
-        if self.algorithm.casefold() == "newton":
-            self.form_handler.compute_newton_forms()
-
-        if self.algorithm.casefold() == "newton":
-            self.hessian_problem = _pde_problems.HessianProblem(
-                self.form_handler, self.gradient_problem
-            )
-
-        if self.algorithm.casefold() == "gradient_descent":
-            self.solver = optimization_algorithms.GradientDescentMethod(
-                self, self.line_search
-            )
-        elif self.algorithm.casefold() == "lbfgs":
-            self.solver = optimization_algorithms.LBFGSMethod(self, self.line_search)
-        elif self.algorithm.casefold() == "conjugate_gradient":
-            self.solver = optimization_algorithms.NonlinearCGMethod(
-                self, self.line_search
-            )
-        elif self.algorithm.casefold() == "newton":
-            self.solver = optimization_algorithms.NewtonMethod(self, self.line_search)
-        elif self.algorithm.casefold() == "none":
-            raise _exceptions.InputError(
-                "cashocs.OptimalControlProblem.solve",
-                "algorithm",
-                "You did not specify a solution algorithm in your config file. "
-                "You have to specify one in the solve method. Needs to be one of"
-                "'gradient_descent' ('gd'), 'lbfgs' ('bfgs'), 'conjugate_gradient' "
-                "('cg'), or 'newton'.",
-            )
-
+        self.solver = self._setup_solver()
         self.solver.run()
         self.solver.post_processing()
 
@@ -454,7 +374,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         """
         self.gradient_problem.solve()
 
-        return self.gradient
+        return self.db.function_db.gradient
 
     def supply_derivatives(self, derivatives: Union[ufl.Form, List[ufl.Form]]) -> None:
         """Overwrites the derivatives of the reduced cost functional w.r.t. controls.
@@ -543,143 +463,17 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         """
         if riesz_scalar_products is None:
-            dx = fenics.Measure("dx", self.controls[0].function_space().mesh())
+            dx = fenics.Measure(
+                "dx", self.db.function_db.controls[0].function_space().mesh()
+            )
             return [
                 fenics.inner(
-                    fenics.TrialFunction(self.controls[i].function_space()),
-                    fenics.TestFunction(self.controls[i].function_space()),
+                    fenics.TrialFunction(self.db.function_db.control_spaces[i]),
+                    fenics.TestFunction(self.db.function_db.control_spaces[i]),
                 )
                 * dx
-                for i in range(len(self.controls))
+                for i in range(len(self.db.function_db.controls))
             ]
         else:
             self.uses_custom_scalar_product = True
             return _utils.enlist(riesz_scalar_products)
-
-    def _parse_control_constraints(
-        self,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]],
-    ) -> List[List[fenics.Function]]:
-        """Checks, whether the given control constraints are feasible.
-
-        Args:
-            control_constraints: The control constraints.
-
-        Returns:
-            The (wrapped) list of control constraints.
-
-        """
-        temp_control_constraints: List[List[Union[fenics.Function, float]]]
-        if control_constraints is None:
-            temp_control_constraints = []
-            for control in self.controls:
-                u_a = fenics.Function(control.function_space())
-                u_a.vector().vec().set(float("-inf"))
-                u_a.vector().apply("")
-                u_b = fenics.Function(control.function_space())
-                u_b.vector().vec().set(float("inf"))
-                u_b.vector().apply("")
-                temp_control_constraints.append([u_a, u_b])
-        else:
-            temp_control_constraints = _utils.check_and_enlist_control_constraints(
-                control_constraints
-            )
-
-        # recast floats into functions for compatibility
-        formatted_control_constraints: List[List[fenics.Function]] = []
-        for idx, pair in enumerate(temp_control_constraints):
-            if isinstance(pair[0], fenics.Function):
-                lower_bound = pair[0]
-            else:
-                lower_bound = fenics.Function(self.controls[idx].function_space())
-                lower_bound.vector().vec().set(pair[0])
-                lower_bound.vector().apply("")
-
-            if isinstance(pair[1], fenics.Function):
-                upper_bound = pair[1]
-            else:
-                upper_bound = fenics.Function(self.controls[idx].function_space())
-                upper_bound.vector().vec().set(pair[1])
-                upper_bound.vector().apply("")
-
-            formatted_control_constraints.append([lower_bound, upper_bound])
-
-        return formatted_control_constraints
-
-    def _validate_control_constraints(self) -> None:
-        """Checks, whether given control constraints are valid."""
-        self.require_control_constraints = [False] * self.control_dim
-        for idx, pair in enumerate(self.control_constraints):
-            if not np.all(pair[0].vector()[:] < pair[1].vector()[:]):
-                raise _exceptions.InputError(
-                    (
-                        "cashocs._optimization.optimal_control."
-                        "optimal_control_problem.OptimalControlProblem"
-                    ),
-                    "control_constraints",
-                    (
-                        "The lower bound must always be smaller than the upper bound "
-                        "for the control_constraints."
-                    ),
-                )
-
-            if pair[0].vector().vec().max()[1] == float("-inf") and pair[
-                1
-            ].vector().vec().min()[1] == float("inf"):
-                # no control constraint for this component
-                pass
-            else:
-                self.require_control_constraints[idx] = True
-
-                control_element = self.controls[idx].ufl_element()
-                if control_element.family() == "Mixed":
-                    for j in range(control_element.value_size()):
-                        sub_elem = control_element.extract_component(j)[1]
-                        if not (
-                            sub_elem.family() == "Real"
-                            or (
-                                sub_elem.family() == "Lagrange"
-                                and sub_elem.degree() == 1
-                            )
-                            or (
-                                sub_elem.family() == "Discontinuous Lagrange"
-                                and sub_elem.degree() == 0
-                            )
-                        ):
-                            raise _exceptions.InputError(
-                                (
-                                    "cashocs._optimization.optimal_control."
-                                    "optimal_control_problem.OptimalControlProblem"
-                                ),
-                                "controls",
-                                (
-                                    "Control constraints are only implemented for "
-                                    "linear Lagrange, constant Discontinuous Lagrange, "
-                                    "and Real elements."
-                                ),
-                            )
-
-                else:
-                    if not (
-                        control_element.family() == "Real"
-                        or (
-                            control_element.family() == "Lagrange"
-                            and control_element.degree() == 1
-                        )
-                        or (
-                            control_element.family() == "Discontinuous Lagrange"
-                            and control_element.degree() == 0
-                        )
-                    ):
-                        raise _exceptions.InputError(
-                            (
-                                "cashocs._optimization.optimal_control."
-                                "optimal_control_problem.OptimalControlProblem"
-                            ),
-                            "controls",
-                            (
-                                "Control constraints are only implemented for "
-                                "linear Lagrange, constant Discontinuous Lagrange, "
-                                "and Real elements."
-                            ),
-                        )

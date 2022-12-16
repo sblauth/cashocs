@@ -24,10 +24,16 @@ problems.
 
 from cashocs._forms.control_form_handler import ControlFormHandler
 from cashocs._forms.form_handler import FormHandler
+from cashocs._forms.general_form_handler import AdjointFormHandler
+from cashocs._forms.general_form_handler import GeneralFormHandler
+from cashocs._forms.general_form_handler import StateFormHandler
 from cashocs._forms.shape_form_handler import ShapeFormHandler
 from cashocs._forms.shape_regularization import ShapeRegularization
 
 __all__ = [
+    "GeneralFormHandler",
+    "StateFormHandler",
+    "AdjointFormHandler",
     "ControlFormHandler",
     "FormHandler",
     "ShapeFormHandler",

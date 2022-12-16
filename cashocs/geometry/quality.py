@@ -19,12 +19,14 @@
 
 from __future__ import annotations
 
+import abc
 from typing import List, Union
 
 import fenics
 import numpy as np
 import ufl
 
+from cashocs import _exceptions
 from cashocs import _utils
 from cashocs.geometry import measure
 
@@ -48,256 +50,222 @@ def compute_mesh_quality(
         and 1 the best possible quality.
 
     """
-    min_functions = {
-        "skewness": MeshQuality.min_skewness,
-        "maximum_angle": MeshQuality.min_maximum_angle,
-        "radius_ratios": MeshQuality.min_radius_ratios,
-        "condition_number": MeshQuality.min_condition_number,
+    quality_calculators = {
+        "skewness": SkewnessCalculator(),
+        "maximum_angle": MaximumAngleCalculator(),
+        "radius_ratios": RadiusRatiosCalculator(),
+        "condition_number": ConditionNumberCalculator(),
     }
-    avg_functions = {
-        "skewness": MeshQuality.avg_skewness,
-        "maximum_angle": MeshQuality.avg_maximum_angle,
-        "radius_ratios": MeshQuality.avg_radius_ratios,
-        "condition_number": MeshQuality.avg_condition_number,
-    }
-    functions = {"min": min_functions, "avg": avg_functions}
-    quality = functions[quality_type][quality_measure](mesh)
+
+    if quality_type == "min":
+        quality = MeshQuality.min(quality_calculators[quality_measure], mesh)
+    elif quality_type == "avg":
+        quality = MeshQuality.avg(quality_calculators[quality_measure], mesh)
+    else:
+        raise _exceptions.InputError(
+            "cashocs.geometry.quality.compute_mesh_quality",
+            "quality_type",
+            "quality_type must be either 'min' or 'avg'.",
+        )
 
     return quality
 
 
-class MeshQuality:
-    r"""A class used to compute the quality of a mesh.
-
-    This class implements either a skewness quality measure, one based on the maximum
-    angle of the elements, or one based on the radius ratios. All quality measures have
-    values in :math:`[0,1]`, where 1 corresponds to the reference (optimal) element, and
-    0 corresponds to degenerate elements.
-
-    Examples:
-        This class can be directly used, without any instantiation, as shown here ::
-
-            import cashocs
-
-            mesh, _, _, _, _, _ = cashocs.regular_mesh(10)
-
-            min_skew = cashocs.MeshQuality.min_skewness(mesh)
-            avg_skew = cashocs.MeshQuality.avg_skewness(mesh)
-
-            min_angle = cashocs.MeshQuality.min_maximum_angle(mesh)
-            avg_angle = cashocs.MeshQuality.avg_maximum_angle(mesh)
-
-            min_rad = cashocs.MeshQuality.min_radius_ratios(mesh)
-            avg_rad = cashocs.MeshQuality.avg_radius_ratios(mesh)
-
-            min_cond = cashocs.MeshQuality.min_condition_number(mesh)
-            avg_cond = cashocs.MeshQuality.avg_condition_number(mesh)
-
-        This works analogously for any mesh compatible with FEniCS.
-
-    """
+class MeshQualityCalculator:
+    """Interface for calculating mesh quality."""
 
     _cpp_code_mesh_quality = """
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-namespace py = pybind11;
+    #include <pybind11/pybind11.h>
+    #include <pybind11/eigen.h>
+    namespace py = pybind11;
 
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/Vertex.h>
-#include <dolfin/mesh/MeshFunction.h>
-#include <dolfin/mesh/Cell.h>
-#include <dolfin/mesh/Vertex.h>
+    #include <dolfin/mesh/Mesh.h>
+    #include <dolfin/mesh/Vertex.h>
+    #include <dolfin/mesh/MeshFunction.h>
+    #include <dolfin/mesh/Cell.h>
+    #include <dolfin/mesh/Vertex.h>
 
-using namespace dolfin;
-
-
-void angles_triangle(const Cell& cell, std::vector<double>& angs)
-{
-  const Mesh& mesh = cell.mesh();
-  angs.resize(3);
-  const std::size_t i0 = cell.entities(0)[0];
-  const std::size_t i1 = cell.entities(0)[1];
-  const std::size_t i2 = cell.entities(0)[2];
-
-  const Point p0 = Vertex(mesh, i0).point();
-  const Point p1 = Vertex(mesh, i1).point();
-  const Point p2 = Vertex(mesh, i2).point();
-  Point e0 = p1 - p0;
-  Point e1 = p2 - p0;
-  Point e2 = p2 - p1;
-
-  e0 /= e0.norm();
-  e1 /= e1.norm();
-  e2 /= e2.norm();
-
-  angs[0] = acos(e0.dot(e1));
-  angs[1] = acos(-e0.dot(e2));
-  angs[2] = acos(e1.dot(e2));
-}
+    using namespace dolfin;
 
 
-
-void dihedral_angles(const Cell& cell, std::vector<double>& angs)
-{
-  const Mesh& mesh = cell.mesh();
-  angs.resize(6);
-
-  const std::size_t i0 = cell.entities(0)[0];
-  const std::size_t i1 = cell.entities(0)[1];
-  const std::size_t i2 = cell.entities(0)[2];
-  const std::size_t i3 = cell.entities(0)[3];
-
-  const Point p0 = Vertex(mesh, i0).point();
-  const Point p1 = Vertex(mesh, i1).point();
-  const Point p2 = Vertex(mesh, i2).point();
-  const Point p3 = Vertex(mesh, i3).point();
-
-  const Point e0 = p1 - p0;
-  const Point e1 = p2 - p0;
-  const Point e2 = p3 - p0;
-  const Point e3 = p2 - p1;
-  const Point e4 = p3 - p1;
-
-  Point n0 = e0.cross(e1);
-  Point n1 = e0.cross(e2);
-  Point n2 = e1.cross(e2);
-  Point n3 = e3.cross(e4);
-
-  n0 /= n0.norm();
-  n1 /= n1.norm();
-  n2 /= n2.norm();
-  n3 /= n3.norm();
-
-  angs[0] = acos(n0.dot(n1));
-  angs[1] = acos(-n0.dot(n2));
-  angs[2] = acos(n1.dot(n2));
-  angs[3] = acos(n0.dot(n3));
-  angs[4] = acos(n1.dot(-n3));
-  angs[5] = acos(n2.dot(n3));
-}
-
-
-
-dolfin::MeshFunction<double>
-skewness(std::shared_ptr<const Mesh> mesh)
-{
-  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
-
-  double opt_angle;
-  std::vector<double> angs;
-  std::vector<double> quals;
-
-  for (CellIterator cell(*mesh); !cell.end(); ++cell)
-  {
-    if (cell->dim() == 2)
+    void angles_triangle(const Cell& cell, std::vector<double>& angs)
     {
-      quals.resize(3);
-      angles_triangle(*cell, angs);
-      opt_angle = DOLFIN_PI / 3.0;
-    }
-    else if (cell->dim() == 3)
-    {
-      quals.resize(6);
-      dihedral_angles(*cell, angs);
-      opt_angle = acos(1.0/3.0);
-    }
-    else
-    {
-      dolfin_error(
-        "cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh."
-      );
+      const Mesh& mesh = cell.mesh();
+      angs.resize(3);
+      const std::size_t i0 = cell.entities(0)[0];
+      const std::size_t i1 = cell.entities(0)[1];
+      const std::size_t i2 = cell.entities(0)[2];
+
+      const Point p0 = Vertex(mesh, i0).point();
+      const Point p1 = Vertex(mesh, i1).point();
+      const Point p2 = Vertex(mesh, i2).point();
+      Point e0 = p1 - p0;
+      Point e1 = p2 - p0;
+      Point e2 = p2 - p1;
+
+      e0 /= e0.norm();
+      e1 /= e1.norm();
+      e2 /= e2.norm();
+
+      angs[0] = acos(e0.dot(e1));
+      angs[1] = acos(-e0.dot(e2));
+      angs[2] = acos(e1.dot(e2));
     }
 
-    for (unsigned int i = 0; i < angs.size(); ++i)
+
+
+    void dihedral_angles(const Cell& cell, std::vector<double>& angs)
     {
-      quals[i] = 1 - std::max(
-        (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle),
-        (opt_angle - angs[i]) / opt_angle
-      );
-    }
-    cf[*cell] = *std::min_element(quals.begin(), quals.end());
-  }
-  return cf;
-}
+      const Mesh& mesh = cell.mesh();
+      angs.resize(6);
 
+      const std::size_t i0 = cell.entities(0)[0];
+      const std::size_t i1 = cell.entities(0)[1];
+      const std::size_t i2 = cell.entities(0)[2];
+      const std::size_t i3 = cell.entities(0)[3];
 
+      const Point p0 = Vertex(mesh, i0).point();
+      const Point p1 = Vertex(mesh, i1).point();
+      const Point p2 = Vertex(mesh, i2).point();
+      const Point p3 = Vertex(mesh, i3).point();
 
-dolfin::MeshFunction<double>
-maximum_angle(std::shared_ptr<const Mesh> mesh)
-{
-  MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+      const Point e0 = p1 - p0;
+      const Point e1 = p2 - p0;
+      const Point e2 = p3 - p0;
+      const Point e3 = p2 - p1;
+      const Point e4 = p3 - p1;
 
-  double opt_angle;
-  std::vector<double> angs;
-  std::vector<double> quals;
+      Point n0 = e0.cross(e1);
+      Point n1 = e0.cross(e2);
+      Point n2 = e1.cross(e2);
+      Point n3 = e3.cross(e4);
 
-  for (CellIterator cell(*mesh); !cell.end(); ++cell)
-  {
-    if (cell->dim() == 2)
-    {
-      quals.resize(3);
-      angles_triangle(*cell, angs);
-      opt_angle = DOLFIN_PI / 3.0;
-    }
-    else if (cell->dim() == 3)
-    {
-      quals.resize(6);
-      dihedral_angles(*cell, angs);
-      opt_angle = acos(1.0/3.0);
-    }
-    else
-    {
-      dolfin_error(
-        "cashocs_quality.cpp", "maximum_angle", "Not a valid dimension for the mesh."
-      );
+      n0 /= n0.norm();
+      n1 /= n1.norm();
+      n2 /= n2.norm();
+      n3 /= n3.norm();
+
+      angs[0] = acos(n0.dot(n1));
+      angs[1] = acos(-n0.dot(n2));
+      angs[2] = acos(n1.dot(n2));
+      angs[3] = acos(n0.dot(n3));
+      angs[4] = acos(n1.dot(-n3));
+      angs[5] = acos(n2.dot(n3));
     }
 
-    for (unsigned int i = 0; i < angs.size(); ++i)
+
+
+    dolfin::MeshFunction<double>
+    skewness(std::shared_ptr<const Mesh> mesh)
     {
-      quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
+      MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+
+      double opt_angle;
+      std::vector<double> angs;
+      std::vector<double> quals;
+
+      for (CellIterator cell(*mesh); !cell.end(); ++cell)
+      {
+        if (cell->dim() == 2)
+        {
+          quals.resize(3);
+          angles_triangle(*cell, angs);
+          opt_angle = DOLFIN_PI / 3.0;
+        }
+        else if (cell->dim() == 3)
+        {
+          quals.resize(6);
+          dihedral_angles(*cell, angs);
+          opt_angle = acos(1.0/3.0);
+        }
+        else
+        {
+          dolfin_error(
+            "cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh."
+          );
+        }
+
+        for (unsigned int i = 0; i < angs.size(); ++i)
+        {
+          quals[i] = 1 - std::max(
+            (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle),
+            (opt_angle - angs[i]) / opt_angle
+          );
+        }
+        cf[*cell] = *std::min_element(quals.begin(), quals.end());
+      }
+      return cf;
     }
-    cf[*cell] = *std::min_element(quals.begin(), quals.end());
-  }
-  return cf;
-}
 
-PYBIND11_MODULE(SIGNATURE, m)
-{
-  m.def("skewness", &skewness);
-  m.def("maximum_angle", &maximum_angle);
-}
 
-"""
+
+    dolfin::MeshFunction<double>
+    maximum_angle(std::shared_ptr<const Mesh> mesh)
+    {
+      MeshFunction<double> cf(mesh, mesh->topology().dim(), 0.0);
+
+      double opt_angle;
+      std::vector<double> angs;
+      std::vector<double> quals;
+
+      for (CellIterator cell(*mesh); !cell.end(); ++cell)
+      {
+        if (cell->dim() == 2)
+        {
+          quals.resize(3);
+          angles_triangle(*cell, angs);
+          opt_angle = DOLFIN_PI / 3.0;
+        }
+        else if (cell->dim() == 3)
+        {
+          quals.resize(6);
+          dihedral_angles(*cell, angs);
+          opt_angle = acos(1.0/3.0);
+        }
+        else
+        {
+          dolfin_error(
+            "cashocs_quality.cpp", "maximum_angle", "Not a valid spatial dimension."
+          );
+        }
+
+        for (unsigned int i = 0; i < angs.size(); ++i)
+        {
+          quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);
+        }
+        cf[*cell] = *std::min_element(quals.begin(), quals.end());
+      }
+      return cf;
+    }
+
+    PYBIND11_MODULE(SIGNATURE, m)
+    {
+      m.def("skewness", &skewness);
+      m.def("maximum_angle", &maximum_angle);
+    }
+
+    """
     _quality_object = fenics.compile_cpp_code(_cpp_code_mesh_quality)
 
-    def __init__(self) -> None:
-        """Initializes self."""
-        pass
-
-    @classmethod
-    def _skewness(cls, mesh: fenics.Mesh) -> np.ndarray:
-        r"""Computes the skewness of the mesh.
+    @abc.abstractmethod
+    def compute(self, mesh: fenics.Mesh) -> np.ndarray:
+        """Compute the mesh quality based on the implemented quality measure.
 
         Args:
-            mesh: The mesh whose quality shall be computed.
+            mesh: The mesh under investigation.
 
         Returns:
-            The element wise skewness of the mesh on process 0.
+            The array of cell qualities, gathered on process 0.
 
         """
-        comm = fenics.MPI.comm_world
-        skewness_array = cls._quality_object.skewness(mesh).array()
-        skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
-        if comm.rank == 0:
-            skewness_list = np.concatenate(skewness_list, axis=None)
-        else:
-            skewness_list = np.zeros(1)
+        pass
 
-        return skewness_list
 
-    @classmethod
-    def min_skewness(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the minimal skewness of the mesh.
+class SkewnessCalculator(MeshQualityCalculator):
+    """Implements the skewness quality measure."""
+
+    def compute(self, mesh: fenics.Mesh) -> np.ndarray:
+        r"""Computes the skewness of the mesh.
 
         This measure the relative distance of a triangle's angles or
         a tetrahedron's dihedral angles to the corresponding optimal
@@ -314,72 +282,42 @@ PYBIND11_MODULE(SIGNATURE, m)
             \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
 
         where :math:`\alpha^*` is the corresponding angle of the reference
-        element. To compute the quality measure, the minimum of this expression
-        over all elements and all of their (dihedral) angles is computed.
+        element.
 
         Args:
             mesh: The mesh whose quality shall be computed.
 
         Returns:
-            The minimum skewness of the mesh.
+            The element wise skewness of the mesh on process 0.
 
         """
-        skewness_list = cls._skewness(mesh)
         comm = fenics.MPI.comm_world
-
+        skewness_array = self._quality_object.skewness(mesh).array()
+        skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
         if comm.rank == 0:
-            qual = float(np.min(skewness_list))
+            skewness_list = np.concatenate(skewness_list, axis=None)
         else:
-            qual = None
+            skewness_list = np.zeros(1)
 
-        quality: float = comm.bcast(qual, root=0)
+        return skewness_list
 
-        return quality
 
-    @classmethod
-    def avg_skewness(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the average skewness of the mesh.
+class MaximumAngleCalculator(MeshQualityCalculator):
+    """Implements the maximum angle quality measure."""
 
-        This measure the relative distance of a triangle's angles or
-        a tetrahedron's dihedral angles to the corresponding optimal
-        angle. The optimal angle is defined as the angle an equilateral,
-        and thus equiangular, element has. The skewness lies in
-        :math:`[0,1]`, where 1 corresponds to the case of an optimal
-        (equilateral) element, and 0 corresponds to a degenerate
-        element. The skewness corresponding to some (dihedral) angle
-        :math:`\alpha` is defined as
-
-        .. math::
-
-            1 - \max \left( \frac{\alpha - \alpha^*}{\pi - \alpha*} ,
-            \frac{\alpha^* - \alpha}{\alpha^* - 0} \right),
-
-        where :math:`\alpha^*` is the corresponding angle of the reference
-        element. To compute the quality measure, the average of this expression
-        over all elements and all of their (dihedral) angles is computed.
-
-        Args:
-            mesh: The mesh, whose quality shall be computed.
-
-        Returns:
-            The average skewness of the mesh.
-
-        """
-        skewness_list = cls._skewness(mesh)
-        comm = fenics.MPI.comm_world
-
-        if comm.rank == 0:
-            qual = float(np.average(skewness_list))
-        else:
-            qual = None
-
-        quality: float = comm.bcast(qual, root=0)
-
-        return quality
-
-    @classmethod
-    def _maximum_angle(cls, mesh: fenics.Mesh) -> np.ndarray:
+    def compute(self, mesh: fenics.Mesh) -> np.ndarray:
         r"""Computes the largest angle of each element.
+
+        This measures the relative distance of a triangle's angles or a
+        tetrahedron's dihedral angles to the corresponding optimal
+        angle. The optimal angle is defined as the angle an equilateral
+        (and thus equiangular) element has. This is defined as
+
+        .. math:: 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
+
+        where :math:`\alpha` is the corresponding (dihedral) angle of the element
+        and :math:`\alpha^*` is the corresponding (dihedral) angle of the reference
+        element.
 
         Args:
             mesh: The mesh, whose quality shall be computed.
@@ -389,7 +327,7 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         """
         comm = fenics.MPI.comm_world
-        maximum_angle_array = cls._quality_object.maximum_angle(mesh).array()
+        maximum_angle_array = self._quality_object.maximum_angle(mesh).array()
         maximum_angle_list: np.ndarray = comm.gather(maximum_angle_array, root=0)
         if comm.rank == 0:
             maximum_angle_list = np.concatenate(maximum_angle_list, axis=None)
@@ -398,79 +336,20 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         return maximum_angle_list
 
-    @classmethod
-    def min_maximum_angle(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the minimal quality measure based on the largest angle.
 
-        This measures the relative distance of a triangle's angles or a
-        tetrahedron's dihedral angles to the corresponding optimal
-        angle. The optimal angle is defined as the angle an equilateral
-        (and thus equiangular) element has. This is defined as
+class RadiusRatiosCalculator(MeshQualityCalculator):
+    """Implements the radius ratios quality measure."""
 
-        .. math:: 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
-
-        where :math:`\alpha` is the corresponding (dihedral) angle of the element
-        and :math:`\alpha^*` is the corresponding (dihedral) angle of the reference
-        element. To compute the quality measure, the minimum of this expression
-        over all elements and all of their (dihedral) angles is computed.
-
-        Args:
-            mesh: The mesh, whose quality shall be computed.
-
-        Returns:
-            The minimum value of the maximum angle quality measure.
-
-        """
-        maximum_angle_list = cls._maximum_angle(mesh)
-        comm = fenics.MPI.comm_world
-
-        if comm.rank == 0:
-            qual = float(np.min(maximum_angle_list))
-        else:
-            qual = None
-
-        quality: float = comm.bcast(qual, root=0)
-
-        return quality
-
-    @classmethod
-    def avg_maximum_angle(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the average quality measure based on the largest angle.
-
-        This measures the relative distance of a triangle's angles or a
-        tetrahedron's dihedral angles to the corresponding optimal
-        angle. The optimal angle is defined as the angle an equilateral
-        (and thus equiangular) element has. This is defined as
-
-        .. math:: 1 - \max\left( \frac{\alpha - \alpha^*}{\pi - \alpha^*} , 0 \right),
-
-        where :math:`\alpha` is the corresponding (dihedral) angle of the element
-        and :math:`\alpha^*` is the corresponding (dihedral) angle of the reference
-        element. To compute the quality measure, the average of this expression
-        over all elements and all of their (dihedral) angles is computed.
-
-        Args:
-            mesh: The mesh, whose quality shall be computed.
-
-        Returns:
-            The average quality, based on the maximum angle measure.
-
-        """
-        maximum_angle_list = cls._maximum_angle(mesh)
-        comm = fenics.MPI.comm_world
-
-        if comm.rank == 0:
-            qual = float(np.average(maximum_angle_list))
-        else:
-            qual = None
-
-        quality: float = comm.bcast(qual, root=0)
-
-        return quality
-
-    @classmethod
-    def _radius_ratios(cls, mesh: fenics.Mesh) -> np.ndarray:
+    def compute(self, mesh: fenics.Mesh) -> np.ndarray:
         r"""Computes the radius ratios of the mesh elements.
+
+        This measures the ratio of the element's inradius to its circumradius,
+        normalized by the geometric dimension. This is computed via
+
+        .. math:: d \frac{r}{R},
+
+        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and
+        :math:`R` is the circumradius.
 
         Args:
             mesh: The mesh, whose quality shall be computed.
@@ -489,72 +368,11 @@ PYBIND11_MODULE(SIGNATURE, m)
 
         return radius_ratios_list
 
-    @classmethod
-    def min_radius_ratios(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the minimal radius ratio of the mesh.
 
-        This measures the ratio of the element's inradius to its circumradius,
-        normalized by the geometric dimension. This is computed via
+class ConditionNumberCalculator(MeshQualityCalculator):
+    """Implements the condition number quality measure."""
 
-        .. math:: d \frac{r}{R},
-
-        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and
-        :math:`R` is the circumradius. To compute the (global) quality measure, the
-        minimum of this expression over all elements is returned.
-
-        Args:
-            mesh: The mesh, whose quality shall be computed.
-
-        Returns:
-            The minimal radius ratio of the mesh.
-
-        """
-        radius_ratios_list = cls._radius_ratios(mesh)
-        comm = fenics.MPI.comm_world
-
-        if comm.rank == 0:
-            qual = float(np.min(radius_ratios_list))
-        else:
-            qual = None
-
-        quality: float = comm.bcast(qual, root=0)
-
-        return quality
-
-    @classmethod
-    def avg_radius_ratios(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes the average radius ratio of the mesh.
-
-        This measures the ratio of the element's inradius to its circumradius,
-        normalized by the geometric dimension. This is computed via
-
-        .. math:: d \frac{r}{R},
-
-        where :math:`d` is the spatial dimension, :math:`r` is the inradius, and
-        :math:`R` is the circumradius. To compute the (global) quality measure, the
-        average of this expression over all elements is returned.
-
-        Args:
-            mesh: The mesh, whose quality shall be computed.
-
-        Returns:
-            The average radius ratio of the mesh.
-
-        """
-        radius_ratios_list = cls._radius_ratios(mesh)
-        comm = fenics.MPI.comm_world
-
-        if comm.rank == 0:
-            qual = float(np.average(radius_ratios_list))
-        else:
-            qual = None
-
-        quality: float = comm.bcast(qual, root=0)
-
-        return quality
-
-    @classmethod
-    def _cell_condition_number(cls, mesh: fenics.Mesh) -> fenics.Function:
+    def compute(self, mesh: fenics.Mesh) -> np.ndarray:
         r"""Computes the condition number quality for each cell.
 
         This quality criterion uses the condition number (in the Frobenius norm) of the
@@ -564,10 +382,10 @@ PYBIND11_MODULE(SIGNATURE, m)
             mesh: The mesh, whose quality shall be computed.
 
         Returns:
-            A fenics.Function of a piecewise constant function space which holds the
-            cell's condition number quality measure.
+            The condition numbers of the elements on process 0.
 
         """
+        comm = fenics.MPI.comm_world
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
@@ -604,45 +422,68 @@ PYBIND11_MODULE(SIGNATURE, m)
         cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
         cond.vector().apply("")
+        cond_array = cond.vector().vec().array
 
-        return cond
+        cond_list: np.ndarray = comm.gather(cond_array, root=0)
+        if comm.rank == 0:
+            cond_list = np.concatenate(cond_list, axis=None)
+        else:
+            cond_list = np.zeros(1)
+
+        return cond_list
+
+
+class MeshQuality:
+    r"""A class used to compute the quality of a mesh.
+
+    All quality measures have values in :math:`[0,1]`, where 1 corresponds to the
+    reference (optimal) element, and 0 corresponds to degenerate elements.
+
+    """
 
     @classmethod
-    def min_condition_number(cls, mesh: fenics.Mesh) -> float:
-        r"""Computes quality based on the condition number of the reference mapping.
-
-        This quality criterion uses the condition number (in the Frobenius norm) of the
-        (linear) mapping from the elements of the mesh to the reference element.
-        Computes the minimum of the condition number over all elements.
+    def min(cls, calculator: MeshQualityCalculator, mesh: fenics.Mesh) -> float:
+        """Computes the minimum mesh quality.
 
         Args:
-            mesh: The mesh, whose quality shall be computed.
+            calculator: The calculator used to compute the mesh quality.
+            mesh: The mesh under investigation.
 
         Returns:
-            The minimal condition number quality measure.
+            The minimum mesh quality according to the measure used.
 
         """
-        cond = cls._cell_condition_number(mesh)
-        quality: float = cond.vector().vec().min()[1]
+        quality_list = calculator.compute(mesh)
+        comm = fenics.MPI.comm_world
+        if comm.rank == 0:
+            qual = float(np.min(quality_list))
+        else:
+            qual = None
+
+        quality = float(comm.bcast(qual, root=0))
 
         return quality
 
     @classmethod
-    def avg_condition_number(cls, mesh: fenics.Mesh) -> float:
-        """Computes quality based on the condition number of the reference mapping.
-
-        This quality criterion uses the condition number (in the Frobenius norm) of the
-        (linear) mapping from the elements of the mesh to the reference element.
-        Computes the average of the condition number over all elements.
+    def avg(cls, calculator: MeshQualityCalculator, mesh: fenics.Mesh) -> float:
+        """Computes the average mesh quality.
 
         Args:
-            mesh: The mesh, whose quality shall be computed.
+            calculator: The calculator used to compute the mesh quality.
+            mesh: The mesh under investigation.
 
         Returns:
-            The average mesh quality based on the condition number.
+            The average mesh quality according to the measure used.
 
         """
-        cond = cls._cell_condition_number(mesh)
-        quality: float = cond.vector().vec().sum() / cond.vector().vec().getSize()
+        quality_list = calculator.compute(mesh)
+        comm = fenics.MPI.comm_world
+
+        if comm.rank == 0:
+            qual = float(np.average(quality_list))
+        else:
+            qual = None
+
+        quality = float(comm.bcast(qual, root=0))
 
         return quality

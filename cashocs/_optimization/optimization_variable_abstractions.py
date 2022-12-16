@@ -31,6 +31,7 @@ import fenics
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import geometry
+    from cashocs._database import database
 
 
 class OptimizationVariableAbstractions(abc.ABC):
@@ -38,14 +39,18 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     mesh_handler: geometry._MeshHandler  # pylint: disable=protected-access
 
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self, optimization_problem: _typing.OptimizationProblem, db: database.Database
+    ) -> None:
         """Initializes self.
 
         Args:
             optimization_problem: The corresponding optimization problem.
+            db: The database of the problem.
 
         """
-        self.gradient = optimization_problem.gradient
+        self.db = db
+
         self.form_handler = optimization_problem.form_handler
 
     @abc.abstractmethod
@@ -133,3 +138,53 @@ class OptimizationVariableAbstractions(abc.ABC):
 
         """
         pass
+
+    def compute_active_sets(self) -> None:
+        """Computes the active sets of the problem."""
+        pass
+
+    def restrict_to_inactive_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the inactive set.
+
+        Note, that nothing will happen if the type of the optimization problem does not
+        support box constraints.
+
+        Args:
+            a: The function, which shall be restricted to the inactive set
+            b: The output function, which will contain the result and is overridden.
+
+        Returns:
+            The result of the restriction (overrides input b)
+
+        """
+        for j in range(len(b)):
+            if not b[j].vector().vec().equal(a[j].vector().vec()):
+                b[j].vector().vec().aypx(0.0, a[j].vector().vec())
+                b[j].vector().apply("")
+
+        return b
+
+    # pylint: disable=unused-argument
+    def restrict_to_active_set(
+        self, a: List[fenics.Function], b: List[fenics.Function]
+    ) -> List[fenics.Function]:
+        """Restricts a function to the active set.
+
+        Note, that nothing will happen if the type of the optimization problem does not
+        support box constraints.
+
+        Args:
+            a: The function, which shall be restricted to the active set
+            b: The output function, which will contain the result and is overridden.
+
+        Returns:
+            The result of the restriction (overrides input b)
+
+        """
+        for j in range(len(b)):
+            b[j].vector().vec().set(0.0)
+            b[j].vector().apply("")
+
+        return b

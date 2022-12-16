@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import Callable, TYPE_CHECKING
 
 import fenics
@@ -27,6 +28,7 @@ import ufl
 from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
+from cashocs._optimization import line_search as ls
 from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
@@ -137,6 +139,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             desired_weights=desired_weights,
         )
 
+        self.db.parameter_db.problem_type = "topology"
+        self.mesh_parametrization = None
+
         self.levelset_function = levelset_function
         self.topological_derivative_pos = topological_derivative_pos
         self.topological_derivative_neg = topological_derivative_neg
@@ -162,6 +167,16 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
+        ocp_config = copy.deepcopy(self.config)
+        ocp_config.set("Output", "verbose", "False")
+        ocp_config.set("Output", "save_txt", "False")
+        ocp_config.set("Output", "save_results", "False")
+        ocp_config.set("Output", "save_state", "False")
+        ocp_config.set("Output", "save_adjoint", "False")
+        ocp_config.set("Output", "save_gradient", "False")
+        ocp_config.set("OptimizationRoutine", "soft_exit", "True")
+        ocp_config.set("OptimizationRoutine", "rtol", "0.0")
+        ocp_config.set("OptimizationRoutine", "atol", "0.0")
         self._base_ocp = optimal_control_problem.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -169,12 +184,16 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             self.states,
             self.levelset_function,
             self.adjoints,
-            config=self.config,
+            config=ocp_config,
             riesz_scalar_products=self.riesz_scalar_products,
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
             desired_weights=desired_weights,
+        )
+        self._base_ocp.db.parameter_db.problem_type = "topology"
+        self.db.function_db.control_spaces = (
+            self._base_ocp.db.function_db.control_spaces
         )
         self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
         self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
@@ -185,7 +204,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             self._base_ocp.gradient_problem
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
-        self.gradient = self._base_ocp.gradient
 
     def _erase_pde_memory(self) -> None:
         super()._erase_pde_memory()
@@ -229,11 +247,17 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 the value provided in the config file is used. Default is ``None``.
 
         """
-        self.output_manager = io.OutputManager(self)
-
         self.optimization_variable_abstractions = (
-            topology_variable_abstractions.TopologyVariableAbstractions(self)
+            topology_variable_abstractions.TopologyVariableAbstractions(self, self.db)
         )
+
+        line_search_type = self.config.get("LineSearch", "method").casefold()
+        if line_search_type == "armijo":
+            line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
+        elif line_search_type == "polynomial":
+            line_search = ls.PolynomialLineSearch(self.db, self)
+        else:
+            raise Exception("This code cannot be reached.")
 
         self._set_tolerances(rtol, atol, max_iter)
         if angle_tol is not None:
@@ -248,15 +272,15 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
 
         if self.algorithm.casefold() == "sphere_combination":
             self.solver = topology_optimization_algorithm.SphereCombinationAlgorithm(
-                self
+                self.db, self, line_search
             )
         elif self.algorithm.casefold() == "convex_combination":
             self.solver = topology_optimization_algorithm.ConvexCombinationAlgorithm(
-                self
+                self.db, self, line_search
             )
         else:
             self.solver = descent_topology_algorithm.DescentTopologyAlgorithm(
-                self, self.algorithm
+                self.db, self, line_search, self.algorithm
             )
 
         self.solver.run()

@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.2.0
 
     - name: Install micromamba
       uses: mamba-org/provision-with-micromamba@main
@@ -29,11 +29,11 @@ jobs:
           pytest">=7.0.0"
           gmsh">=4.8"
           matplotlib
-          python=3.10
+          python=3.11
 
     - name: Install package
       run: |
-        pip install .
+        pip install .[all]
     
     - name: Run demos
       env: 
@@ -54,7 +54,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.2.0
 
     - name: Install micromamba
       uses: mamba-org/provision-with-micromamba@main
@@ -67,11 +67,11 @@ jobs:
           gmsh">=4.8"
           mpich
           matplotlib
-          python=3.10
+          python=3.11
 
     - name: Install package
       run: |
-        pip install .
+        pip install .[all]
         
     - name: Run demos in parallel
       env:

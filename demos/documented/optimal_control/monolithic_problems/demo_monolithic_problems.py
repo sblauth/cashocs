@@ -62,7 +62,7 @@ J = cashocs.IntegralFunctional(
 )
 
 optimization_problem = cashocs.OptimalControlProblem(
-    e, bcs, J, state, controls, adjoint, config
+    e, bcs, J, state, controls, adjoint, config=config
 )
 optimization_problem.solve()
 

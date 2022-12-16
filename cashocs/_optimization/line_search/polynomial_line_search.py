@@ -33,6 +33,7 @@ from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
@@ -41,21 +42,19 @@ class PolynomialLineSearch(line_search.LineSearch):
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: _typing.OptimizationProblem,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(db, optimization_problem)
 
-        self.epsilon_armijo: float = self.config.getfloat(
-            "LineSearch", "epsilon_armijo"
-        )
         self.armijo_stepsize_initial = self.stepsize
-        self.search_direction_inf = 1.0
         self.decrease_measure_w_o_step = 1.0
 
         self.factor_low = self.config.getfloat("LineSearch", "factor_low")
@@ -80,7 +79,6 @@ class PolynomialLineSearch(line_search.LineSearch):
 
         """
         if solver.iteration >= solver.maximum_iterations:
-            solver.remeshing_its = True
             return True
 
         if self.stepsize * self.search_direction_inf <= 1e-8:
@@ -121,7 +119,7 @@ class PolynomialLineSearch(line_search.LineSearch):
             if self._check_for_nonconvergence(solver):
                 return None
 
-            if self.is_shape_problem:
+            if self.db.parameter_db.problem_type == "shape":
                 self.decrease_measure_w_o_step = (
                     self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
@@ -143,11 +141,11 @@ class PolynomialLineSearch(line_search.LineSearch):
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
-                objective_step, current_function_value, decrease_measure, solver
+                objective_step, current_function_value, decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
-                    solver.requires_remeshing = True
-                    return None
+                    self.optimization_variable_abstractions.mesh_handler.remesh(solver)
+                    break
 
                 if solver.iteration == 0:
                     self.armijo_stepsize_initial = self.stepsize
@@ -293,39 +291,11 @@ class PolynomialLineSearch(line_search.LineSearch):
             The computed decrease measure.
 
         """
-        if self.is_control_problem or self.is_topology_problem:
+        if self.db.parameter_db.problem_type in ["control", "topology"]:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )
-        elif self.is_shape_problem:
+        elif self.db.parameter_db.problem_type == "shape":
             return self.decrease_measure_w_o_step * self.stepsize
         else:
             return float("inf")
-
-    def _satisfies_armijo_condition(
-        self,
-        objective_step: float,
-        current_function_value: float,
-        decrease_measure: float,
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> bool:
-        """Checks whether the sufficient decrease condition is satisfied.
-
-        Args:
-            objective_step: The new objective value, after taking the step
-            current_function_value: The old objective value
-            decrease_measure: The directional derivative in direction of the search
-                direction
-            solver: The optimization algorithm
-
-        Returns:
-            A boolean flag which is True in case the condition is satisfied.
-
-        """
-        if not solver.is_topology_problem:
-            return (
-                objective_step
-                < current_function_value + self.epsilon_armijo * decrease_measure
-            )
-        else:
-            return objective_step <= current_function_value

@@ -19,8 +19,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_problem
+
+if TYPE_CHECKING:
+    from cashocs._database import database
+    from cashocs._optimization import line_search as ls
 
 
 class DescentTopologyAlgorithm(
@@ -34,17 +40,21 @@ class DescentTopologyAlgorithm(
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: topology_optimization_problem.TopologyOptimizationProblem,
+        line_search: ls.LineSearch,
         algorithm: str | None,
     ) -> None:
         """This solver is used to invoke classical optimization algorithms.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The optimization problem which is to be solved.
+            line_search: The line search for the problem.
             algorithm: The algorithm that is to be used.
 
         """
-        super().__init__(optimization_problem)
+        super().__init__(db, optimization_problem, line_search)
         self.algorithm = algorithm
 
         self.iteration = 0
@@ -61,16 +71,16 @@ class DescentTopologyAlgorithm(
         self.successful = False
         self.loop_restart = False
 
-        def pre_hook() -> None:
+        def pre_callback() -> None:
             self.normalize(self.levelset_function)
             self.update_levelset()
 
-        def post_hook() -> None:
+        def post_callback() -> None:
             self.compute_gradient()
-            self._cashocs_problem.gradient[0].vector().vec().aypx(
+            self._cashocs_problem.db.function_db.gradient[0].vector().vec().aypx(
                 0.0, -self.projected_gradient.vector().vec()
             )
-            self._cashocs_problem.gradient[0].vector().apply("")
+            self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
 
             self.angle = self.compute_angle()
             self.stepsize = self._cashocs_problem.solver.stepsize
@@ -83,8 +93,8 @@ class DescentTopologyAlgorithm(
             if self.convergence_test():
                 self.successful = True
                 self.output()
-                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
-                self._cashocs_problem.gradient[0].vector().apply("")
+                self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
+                self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
                 print("\nOptimization successful!\n")
 
             if not self.loop_restart and not self.successful:
@@ -95,12 +105,12 @@ class DescentTopologyAlgorithm(
             self.iteration += 1
 
             if self.iteration >= self.maximum_iterations:
-                self._cashocs_problem.gradient[0].vector().vec().set(0.0)
-                self._cashocs_problem.gradient[0].vector().apply("")
+                self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
+                self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
                 print("Maximum number of iterations reached.")
 
-        self._cashocs_problem.inject_pre_hook(pre_hook)
-        self._cashocs_problem.inject_post_hook(post_hook)
+        self._cashocs_problem.inject_pre_callback(pre_callback)
+        self._cashocs_problem.inject_post_callback(post_callback)
 
     def run(self) -> None:
         """Runs the optimization algorithm to solve the optimization problem."""

@@ -23,23 +23,33 @@ from fenics import *
 
 import cashocs
 
-config = cashocs.load_config("./config.ini")
+mesh_file = "./mesh/mesh.xdmf"
 
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(config)
 
-V = FunctionSpace(mesh, "CG", 1)
-u = Function(V)
-p = Function(V)
+def parametrization(mesh_file: str):
+    config = cashocs.load_config("./config.ini")
 
-x = SpatialCoordinate(mesh)
-f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
-e = inner(grad(u), grad(p)) * dx - f * p * dx
-bcs = DirichletBC(V, Constant(0), boundaries, 1)
+    V = FunctionSpace(mesh, "CG", 1)
+    u = Function(V)
+    p = Function(V)
 
-J = cashocs.IntegralFunctional(u * dx)
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
-sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+
+    J = cashocs.IntegralFunctional(u * dx)
+
+    args = (e, bcs, J, u, p, boundaries)
+    kwargs = {"config": config}
+
+    return args, kwargs
+
+
+sop = cashocs.ShapeOptimizationProblem(parametrization, mesh_file)
 sop.solve()
 
 
@@ -50,13 +60,13 @@ import matplotlib.pyplot as plt
 plt.figure(figsize=(10, 5))
 
 ax_mesh = plt.subplot(1, 2, 1)
-fig_mesh = plot(mesh)
+fig_mesh = plot(sop.mesh_handler.mesh)
 plt.title("Discretization of the optimized geometry")
 
 ax_u = plt.subplot(1, 2, 2)
 ax_u.set_xlim(ax_mesh.get_xlim())
 ax_u.set_ylim(ax_mesh.get_ylim())
-fig_u = plot(u)
+fig_u = plot(sop.states[0])
 plt.colorbar(fig_u, fraction=0.046, pad=0.04)
 plt.title("State variable u")
 

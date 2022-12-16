@@ -21,19 +21,19 @@ jobs:
         rm -R /root/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0 
+      uses: actions/checkout@v3.2.0 
 
     - name: Update cashocs installation
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pip install .
+        pip install .[all]
 
     - name: Run tests
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        pytest tests/ --ignore=tests/test_remeshing_parallel.py
+        pytest tests/
 
 
   release:
@@ -44,7 +44,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.2.0
     
 
     - name: Get tag name
@@ -52,12 +52,21 @@ jobs:
       run: |
         echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
 
+
+    - name: Check if release is a pre-release
+      id: check_version
+      uses: nowsprinting/check-version-format-action@v3
+      with:
+        prefix: 'v'
+
+
     - name: Create Github release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
-        body: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
+        generate_release_notes: true
+        prerelease: ${{ steps.check_version.outputs.is_stable == 'false' }}
 
 
   build_and_publish:
@@ -68,12 +77,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.2.0
 
-    - name: Set up Python 3.9
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
 
     - name: Install pypa/build
       run: python -m pip install build --user

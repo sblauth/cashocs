@@ -27,7 +27,6 @@ import numpy as np
 from typing_extensions import Literal
 import ufl
 
-from cashocs import _exceptions
 from cashocs import _utils
 from cashocs._constraints import solvers
 from cashocs._optimization import optimal_control
@@ -36,10 +35,6 @@ from cashocs._optimization import shape_optimization
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import io
-
-
-def _hook() -> None:
-    return None
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
@@ -84,8 +79,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
@@ -106,18 +101,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.bcs_list = bcs_list
         self.states = states
         self.adjoints = adjoints
-        if config is None:
-            self.config = io.Config()
-        else:
+
+        if config is not None:
             self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
         self.current_function_value = 0.0
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.cost_functional_form_initial: List[_typing.CostFunctional] = _utils.enlist(
             cost_functional_form
@@ -220,30 +218,30 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         self.rtol = inner_rtol or tol
 
-    def inject_pre_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-priori hook of the OptimizationProblem.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self._pre_hook = function
+        self._pre_callback = function
 
-    def inject_post_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self._post_hook = function
+        self._post_callback = function
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -252,8 +250,8 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)
 
 
 class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
@@ -308,8 +306,8 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 :py:class:`fenics.Function`, or a (ordered) list of these.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
@@ -342,7 +340,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             states,
             adjoints,
             constraint_list,
-            config=config,
+            config,
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
@@ -389,7 +387,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             control_bcs_list=self.control_bcs_list,
         )
 
-        optimal_control_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        optimal_control_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
+        )
         optimal_control_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )
@@ -468,8 +468,8 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 markers.
             constraint_list: (A list of) additional equality and inequality constraints
                 for the problem.
-            config: The config file for the problem, generated via
-                :py:func:`cashocs.create_config`. Alternatively, this can also be
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
@@ -504,11 +504,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
         )
-
-        if self.config.getboolean("Mesh", "remesh"):
-            raise _exceptions.CashocsException(
-                "Remeshing is not yet supported for constrained problems"
-            )
 
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product
@@ -546,7 +541,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
         )
-        shape_optimization_problem.inject_pre_post_hook(self._pre_hook, self._post_hook)
+        shape_optimization_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
+        )
         shape_optimization_problem.shift_cost_functional(
             self.solver.inner_cost_functional_shift
         )

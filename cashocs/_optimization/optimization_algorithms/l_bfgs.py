@@ -30,6 +30,7 @@ from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs._database import database
     from cashocs._optimization import line_search as ls
 
 
@@ -43,18 +44,19 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def __init__(
         self,
+        db: database.Database,
         optimization_problem: _typing.OptimizationProblem,
         line_search: ls.LineSearch,
     ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
             line_search: The corresponding line search.
 
         """
-        super().__init__(optimization_problem)
-        self.line_search = line_search
+        super().__init__(db, optimization_problem, line_search)
 
         self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
         self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
@@ -67,24 +69,23 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def _init_helpers(self) -> None:
         """Initializes the helper functions."""
-        self.temp = _utils.create_function_list(self.form_handler.control_spaces)
+        self.temp = _utils.create_function_list(self.db.function_db.control_spaces)
         if self.bfgs_memory_size > 0:
             self.history_s = collections.deque()
             self.history_y = collections.deque()
             self.history_rho = collections.deque()
             self.history_alpha = collections.deque()
             self.gradient_prev = _utils.create_function_list(
-                self.form_handler.control_spaces
+                self.db.function_db.control_spaces
             )
-            self.y_k = _utils.create_function_list(self.form_handler.control_spaces)
-            self.s_k = _utils.create_function_list(self.form_handler.control_spaces)
+            self.y_k = _utils.create_function_list(self.db.function_db.control_spaces)
+            self.s_k = _utils.create_function_list(self.db.function_db.control_spaces)
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""
-        self.initialize_solver()
         self.periodic_its = 0
         self.compute_gradient()
-        self.form_handler.compute_active_sets()
+        self.optimization_variable_abstractions.compute_active_sets()
         self.gradient_norm = (
             self.optimization_variable_abstractions.compute_gradient_norm()
         )
@@ -96,8 +97,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.check_restart()
             self.check_for_ascent()
 
-            self.objective_value = self.cost_functional.evaluate()
-            self.output()
+            self.evaluate_cost_functional()
 
             self.line_search.perform(
                 self, self.search_direction, self.has_curvature_info
@@ -109,7 +109,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
 
             self.store_previous_gradient()
             self.compute_gradient()
-            self.form_handler.compute_active_sets()
+            self.optimization_variable_abstractions.compute_active_sets()
             self.gradient_norm = (
                 self.optimization_variable_abstractions.compute_gradient_norm()
             )
@@ -178,23 +178,25 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.search_direction[j].vector().apply("")
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
 
             self._first_loop()
             self._bfgs_scaling()
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
 
             self._second_loop()
 
-            self.form_handler.restrict_to_inactive_set(
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
                 self.search_direction, self.search_direction
             )
-            self.form_handler.restrict_to_active_set(self.gradient, self.temp)
+            self.optimization_variable_abstractions.restrict_to_active_set(
+                self.gradient, self.temp
+            )
             for j in range(len(self.gradient)):
                 self.search_direction[j].vector().vec().axpy(
                     1.0, self.temp[j].vector().vec()
@@ -235,8 +237,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.s_k[i].vector().apply("")
 
-            self.form_handler.restrict_to_inactive_set(self.y_k, self.y_k)
-            self.form_handler.restrict_to_inactive_set(self.s_k, self.s_k)
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
+                self.y_k, self.y_k
+            )
+            self.optimization_variable_abstractions.restrict_to_inactive_set(
+                self.s_k, self.s_k
+            )
 
             self.history_y.appendleft([x.copy(True) for x in self.y_k])
             self.history_s.appendleft([x.copy(True) for x in self.s_k])

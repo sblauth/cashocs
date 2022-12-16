@@ -6,8 +6,8 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-in development
---------------
+2.0.0 (in development)
+----------------------
 
 * cashocs has a new docstyle. It now uses the pydata-sphinx-theme.
 
@@ -49,7 +49,7 @@ in development
 
   * Section LineSearch
 
-    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize```are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
+    * The parameters ``initial_stepsize``, ``epsilon_armijo``, ``beta_armijo``, and ``safeguard_stepsize`` are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.
 
 * New configuration file parameters
 
@@ -66,6 +66,10 @@ in development
     * ``factor_high`` is one parameter for the safeguarding, the upper bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
     
     * ``factor_low`` is the other parameter for the safeguarding, the lower bound for the search interval for the stepsize (this is multiplied with the previous stepsize)
+
+  * Section Output
+    
+    * ``precision`` is a integer which specifies the precision (number of significant digits) when printing to console or file. Default is, as before, 3 significant digits.
 
 1.8.0 (July 6, 2022)
 --------------------

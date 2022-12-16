@@ -24,8 +24,8 @@ and barycenter, and desired ones.
 
 from __future__ import annotations
 
-import json
-from typing import Dict, List, TYPE_CHECKING
+import abc
+from typing import List, TYPE_CHECKING
 
 import fenics
 import ufl
@@ -34,7 +34,9 @@ from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
-    from cashocs._forms import shape_form_handler
+    import ufl.core.expr
+
+    from cashocs._database import database
 
 
 def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
@@ -65,477 +67,415 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl.core.expr.Expr:
     return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
 
 
-class ShapeRegularization:
-    """Regularization terms for shape optimization problems."""
+class ShapeRegularizationTerm(abc.ABC):
+    """Regularization terms for shape optimization."""
 
-    def __init__(self, form_handler: shape_form_handler.ShapeFormHandler) -> None:
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
-            form_handler: The corresponding shape form handler object.
+            db: The database of the problem.
 
         """
-        self.test_vector_field = form_handler.test_vector_field
-        self.config = form_handler.config
-        self.geometric_dimension = form_handler.mesh.geometric_dimension()
-        self.mesh = form_handler.mesh
-        self.has_cashocs_remesh_flag = form_handler.has_cashocs_remesh_flag
-        self.temp_dir = form_handler.temp_dir
+        self.db = db
 
+        self.config = self.db.config
+        self.mesh = db.geometry_db.mesh
         self.dx = fenics.Measure("dx", self.mesh)
-        self.ds = fenics.Measure("ds", self.mesh)
-
-        self.a_curvature_matrix = fenics.PETScMatrix()
-        self.b_curvature = fenics.PETScVector()
-
-        self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
-
         self.use_relative_scaling = self.config.getboolean(
             "Regularization", "use_relative_scaling"
         )
+        self.is_active = False
+        self.test_vector_field = fenics.TestFunction(
+            self.db.function_db.control_spaces[0]
+        )
 
-        self.measure_hole = self.config.getboolean("Regularization", "measure_hole")
-        if self.measure_hole:
-            self.x_start = self.config.getfloat("Regularization", "x_start")
-            self.x_end = self.config.getfloat("Regularization", "x_end")
-            self.delta_x = self.x_end - self.x_start
+    @abc.abstractmethod
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
 
-            self.y_start = self.config.getfloat("Regularization", "y_start")
-            self.y_end = self.config.getfloat("Regularization", "y_end")
-            self.delta_y = self.y_end - self.y_start
+        Returns:
+            The ufl form of the shape derivative.
 
-            self.z_start = self.config.getfloat("Regularization", "z_start")
-            self.z_end = self.config.getfloat("Regularization", "z_end")
-            self.delta_z = self.z_end - self.z_start
-            if self.geometric_dimension == 2:
-                self.delta_z = 1.0
+        """
+        pass
 
-        self._init_volume_regularization()
-        self._init_surface_regularization()
-        self._init_curvature_regularization(form_handler)
-        self._init_barycenter_regularization()
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        pass
 
-        if (
-            self.mu_volume > 0.0
-            or self.mu_surface > 0.0
-            or self.mu_curvature > 0.0
-            or self.mu_barycenter > 0.0
-        ):
-            self.has_regularization = True
-        else:
-            self.has_regularization = False
+    @abc.abstractmethod
+    def compute_objective(self) -> float:
+        """Computes the objective value corresponding to the regularization term.
 
-        self._scale_weights()
+        Returns:
+            The objective value of the term.
 
-        self.current_volume = fenics.Expression("val", degree=0, val=1.0)
-        self.current_surface = fenics.Expression("val", degree=0, val=1.0)
-        self.current_barycenter_x = fenics.Expression("val", degree=0, val=0.0)
-        self.current_barycenter_y = fenics.Expression("val", degree=0, val=0.0)
-        self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
+        """
+        pass
 
-    def _init_volume_regularization(self) -> None:
-        """Initializes the terms corresponding to the volume regularization."""
-        self.mu_volume: float = self.config.getfloat("Regularization", "factor_volume")
+    @abc.abstractmethod
+    def scale(self) -> None:
+        """Scales the regularization term."""
+        pass
+
+
+class VolumeRegularization(ShapeRegularizationTerm):
+    """Quadratic volume regularization."""
+
+    def __init__(self, db: database.Database) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+
+        """
+        super().__init__(db)
+
+        self.mu = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
         if self.config.getboolean("Regularization", "use_initial_volume"):
             self.target_volume = self._compute_volume()
 
-    def _init_surface_regularization(self) -> None:
-        """Initializes the terms corresponding to the surface regularization."""
-        self.mu_surface: float = self.config.getfloat(
-            "Regularization", "factor_surface"
-        )
-        self.target_surface = self.config.getfloat("Regularization", "target_surface")
-        if self.config.getboolean("Regularization", "use_initial_surface"):
-            self.target_surface = fenics.assemble(fenics.Constant(1) * self.ds)
+        if self.mu > 0.0:
+            self.is_active = True
 
-    def _init_curvature_regularization(
-        self, form_handler: shape_form_handler.ShapeFormHandler
-    ) -> None:
-        """Initializes the terms corresponding to the surface regularization.
+        self.scale()
+        self.current_volume = fenics.Expression("val", degree=0, val=1.0)
 
-        Args:
-            form_handler: The form handler of the problem.
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
+
+        Returns:
+            The ufl form of the shape derivative.
 
         """
-        self.mu_curvature: float = self.config.getfloat(
-            "Regularization", "factor_curvature"
-        )
-        self.kappa_curvature = fenics.Function(form_handler.deformation_space)
-        if self.mu_curvature > 0.0:
+        if self.is_active:
+            shape_form = (
+                fenics.Constant(self.mu)
+                * (self.current_volume - fenics.Constant(self.target_volume))
+                * fenics.div(self.test_vector_field)
+                * self.dx
+            )
+            return shape_form
+        else:
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
+            )
+
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        self.current_volume.val = self._compute_volume()
+
+    def compute_objective(self) -> float:
+        """Computes the objective value corresponding to the regularization term.
+
+        Returns:
+            The objective value of the term.
+
+        """
+        value = 0.0
+        if self.is_active:
+            volume = self._compute_volume()
+            value += 0.5 * self.mu * pow(volume - self.target_volume, 2)
+
+        return value
+
+    def scale(self) -> None:
+        """Scales the regularization term."""
+        if self.use_relative_scaling and self.is_active:
+            if not self.db.parameter_db.temp_dict:
+                volume = self._compute_volume()
+                value = 0.5 * pow(volume - self.target_volume, 2)
+
+                if abs(value) < 1e-15:
+                    _loggers.info(
+                        "The volume regularization vanishes for the initial "
+                        "iteration. Multiplying this term with the factor you "
+                        "supplied as weight."
+                    )
+                else:
+                    self.mu /= abs(value)
+
+            else:
+                self.mu = self.db.parameter_db.temp_dict["Regularization"]["mu_volume"]
+
+    def _compute_volume(self) -> float:
+        """Computes the volume of the geometry.
+
+        Returns:
+            The volume of the geometry.
+
+        """
+        volume: float = fenics.assemble(fenics.Constant(1.0) * self.dx)
+        return volume
+
+
+class SurfaceRegularization(ShapeRegularizationTerm):
+    """Quadratic surface regularization."""
+
+    def __init__(self, db: database.Database) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+
+        """
+        super().__init__(db)
+
+        self.ds = fenics.Measure("ds", self.mesh)
+        self.mu = self.config.getfloat("Regularization", "factor_surface")
+        self.target_surface = self.config.getfloat("Regularization", "target_surface")
+        if self.config.getboolean("Regularization", "use_initial_surface"):
+            self.target_surface = self._compute_surface()
+
+        if self.mu > 0.0:
+            self.is_active = True
+
+        self.scale()
+        self.current_surface = fenics.Expression("val", degree=0, val=1.0)
+
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
+
+        Returns:
+            The ufl form of the shape derivative.
+
+        """
+        if self.is_active:
             n = fenics.FacetNormal(self.mesh)
-            x = fenics.SpatialCoordinate(self.mesh)
-            self.a_curvature = (
-                fenics.inner(
-                    fenics.TrialFunction(form_handler.deformation_space),
-                    fenics.TestFunction(form_handler.deformation_space),
-                )
+            shape_form = (
+                fenics.Constant(self.mu)
+                * (self.current_surface - fenics.Constant(self.target_surface))
+                * t_div(self.test_vector_field, n)
                 * self.ds
             )
-            self.l_curvature = (
-                fenics.inner(
-                    t_grad(x, n),
-                    t_grad(fenics.TestFunction(form_handler.deformation_space), n),
-                )
-                * self.ds
+            return shape_form
+        else:
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
-    def _init_barycenter_regularization(self) -> None:
-        """Initializes the terms corresponding to the barycenter regularization."""
-        self.mu_barycenter: float = self.config.getfloat(
-            "Regularization", "factor_barycenter"
-        )
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        self.current_surface.val = self._compute_surface()
 
+    def compute_objective(self) -> float:
+        """Computes the objective value corresponding to the regularization term.
+
+        Returns:
+            The objective value of the term.
+
+        """
+        value = 0.0
+        if self.is_active:
+            surface = self._compute_surface()
+            value = 0.5 * self.mu * pow(surface - self.target_surface, 2)
+
+        return value
+
+    def scale(self) -> None:
+        """Scales the regularization term."""
+        if self.use_relative_scaling and self.is_active:
+            if not self.db.parameter_db.temp_dict:
+                surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
+                value = 0.5 * pow(surface - self.target_surface, 2)
+
+                if abs(value) < 1e-15:
+                    _loggers.info(
+                        "The surface regularization vanishes for the initial "
+                        "iteration. Multiplying this term with the factor you "
+                        "supplied as weight."
+                    )
+                else:
+                    self.mu /= abs(value)
+            else:
+                self.mu = self.db.parameter_db.temp_dict["Regularization"]["mu_surface"]
+
+    def _compute_surface(self) -> float:
+        """Computes the surface of the geometry.
+
+        Returns:
+            The surface of the geometry.
+
+        """
+        surface: float = fenics.assemble(fenics.Constant(1) * self.ds)
+        return surface
+
+
+class BarycenterRegularization(ShapeRegularizationTerm):
+    """Quadratic barycenter regularization term."""
+
+    def __init__(self, db: database.Database) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+
+        """
+        super().__init__(db)
+
+        self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
+        self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
+
+        self.mu = self.config.getfloat("Regularization", "factor_barycenter")
         self.target_barycenter_list = self.config.getlist(
             "Regularization", "target_barycenter"
         )
-
         if self.geometric_dimension == 2 and len(self.target_barycenter_list) == 2:
             self.target_barycenter_list.append(0.0)
 
         if self.config.getboolean("Regularization", "use_initial_barycenter"):
             self.target_barycenter_list = self._compute_barycenter_list()
 
-    def update_geometric_quantities(self) -> None:
-        """Updates the geometric quantities.
+        if self.mu > 0.0:
+            self.is_active = True
 
-        Updates the volume, surface area, and barycenters (after the
-        mesh is updated).
+        self.scale()
+
+        self.current_barycenter_x = fenics.Expression("val", degree=0, val=0.0)
+        self.current_barycenter_y = fenics.Expression("val", degree=0, val=0.0)
+        self.current_barycenter_z = fenics.Expression("val", degree=0, val=0.0)
+        self.current_volume = fenics.Expression("val", degree=0, val=1.0)
+
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
+
+        Returns:
+            The ufl form of the shape derivative.
+
         """
-        volume = self._compute_volume()
+        if self.is_active:
+            shape_form = (
+                fenics.Constant(self.mu)
+                * (
+                    self.current_barycenter_x
+                    - fenics.Constant(self.target_barycenter_list[0])
+                )
+                * (
+                    self.current_barycenter_x
+                    / self.current_volume
+                    * fenics.div(self.test_vector_field)
+                    + 1
+                    / self.current_volume
+                    * (
+                        self.test_vector_field[0]
+                        + self.spatial_coordinate[0]
+                        * fenics.div(self.test_vector_field)
+                    )
+                )
+                * self.dx
+                + fenics.Constant(self.mu)
+                * (
+                    self.current_barycenter_y
+                    - fenics.Constant(self.target_barycenter_list[1])
+                )
+                * (
+                    self.current_barycenter_y
+                    / self.current_volume
+                    * fenics.div(self.test_vector_field)
+                    + 1
+                    / self.current_volume
+                    * (
+                        self.test_vector_field[1]
+                        + self.spatial_coordinate[1]
+                        * fenics.div(self.test_vector_field)
+                    )
+                )
+                * self.dx
+            )
+
+            if self.geometric_dimension == 3:
+                shape_form += (
+                    fenics.Constant(self.mu)
+                    * (
+                        self.current_barycenter_z
+                        - fenics.Constant(self.target_barycenter_list[2])
+                    )
+                    * (
+                        self.current_barycenter_z
+                        / self.current_volume
+                        * fenics.div(self.test_vector_field)
+                        + 1
+                        / self.current_volume
+                        * (
+                            self.test_vector_field[2]
+                            + self.spatial_coordinate[2]
+                            * fenics.div(self.test_vector_field)
+                        )
+                    )
+                    * self.dx
+                )
+            return shape_form
+        else:
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
+            )
+
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
         barycenter_list = self._compute_barycenter_list()
+        volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
 
-        surface = fenics.assemble(fenics.Constant(1) * self.ds)
-
-        self.current_volume.val = volume
-        self.current_surface.val = surface
         self.current_barycenter_x.val = barycenter_list[0]
         self.current_barycenter_y.val = barycenter_list[1]
         self.current_barycenter_z.val = barycenter_list[2]
-
-        self.compute_curvature()
-
-    def compute_curvature(self) -> None:
-        """Computes the mean curvature vector of the geometry."""
-        if self.mu_curvature > 0.0:
-            fenics.assemble(
-                self.a_curvature, keep_diagonal=True, tensor=self.a_curvature_matrix
-            )
-            self.a_curvature_matrix.ident_zeros()
-
-            fenics.assemble(self.l_curvature, tensor=self.b_curvature)
-
-            _utils.solve_linear_problem(
-                A=self.a_curvature_matrix.mat(),
-                b=self.b_curvature.vec(),
-                x=self.kappa_curvature.vector().vec(),
-            )
-            self.kappa_curvature.vector().apply("")
-
-        else:
-            pass
+        self.current_volume.val = volume
 
     def compute_objective(self) -> float:
-        """Computes the part of the objective value that comes from the regularization.
+        """Computes the objective value corresponding to the regularization term.
 
         Returns:
-            Part of the objective value coming from the regularization
+            The objective value of the term.
 
         """
-        if self.has_regularization:
+        value = 0.0
 
-            value = 0.0
-
-            if self.mu_volume > 0.0:
-                volume = self._compute_volume()
-                value += 0.5 * self.mu_volume * pow(volume - self.target_volume, 2)
-
-            if self.mu_surface > 0.0:
-                surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
-                value += 0.5 * self.mu_surface * pow(surface - self.target_surface, 2)
-
-            if self.mu_curvature > 0.0:
-                self.compute_curvature()
-                curvature_val = fenics.assemble(
-                    fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
-                )
-                value += 0.5 * self.mu_curvature * curvature_val
-
-            if self.mu_barycenter > 0.0:
-                barycenter_list = self._compute_barycenter_list()
-
-                value += (
-                    0.5
-                    * self.mu_barycenter
-                    * (
-                        pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
-                        + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
-                        + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
-                    )
-                )
-
-            return value
-
-        else:
-            return 0.0
-
-    def compute_shape_derivative(self) -> ufl.Form:
-        """Computes the part of the shape derivative that comes from the regularization.
-
-        Returns:
-            The weak form of the shape derivative coming from the regularization
-
-        """
-        vector_field = self.test_vector_field
-        if self.has_regularization:
-
-            x = fenics.SpatialCoordinate(self.mesh)
-            n = fenics.FacetNormal(self.mesh)
-            identity = fenics.Identity(self.geometric_dimension)
-
-            shape_form = (
-                fenics.Constant(self.mu_surface)
-                * (self.current_surface - fenics.Constant(self.target_surface))
-                * t_div(vector_field, n)
-                * self.ds
-            )
-
-            shape_form += fenics.Constant(self.mu_curvature) * (
-                fenics.inner(
-                    (identity - (t_grad(x, n) + (t_grad(x, n)).T))
-                    * t_grad(vector_field, n),
-                    t_grad(self.kappa_curvature, n),
-                )
-                * self.ds
-                + fenics.Constant(0.5)
-                * t_div(vector_field, n)
-                * t_div(self.kappa_curvature, n)
-                * self.ds
-            )
-
-            if not self.measure_hole:
-                shape_form += (
-                    fenics.Constant(self.mu_volume)
-                    * (self.current_volume - fenics.Constant(self.target_volume))
-                    * fenics.div(vector_field)
-                    * self.dx
-                )
-                shape_form += (
-                    fenics.Constant(self.mu_barycenter)
-                    * (
-                        self.current_barycenter_x
-                        - fenics.Constant(self.target_barycenter_list[0])
-                    )
-                    * (
-                        self.current_barycenter_x
-                        / self.current_volume
-                        * fenics.div(vector_field)
-                        + 1
-                        / self.current_volume
-                        * (
-                            vector_field[0]
-                            + self.spatial_coordinate[0] * fenics.div(vector_field)
-                        )
-                    )
-                    * self.dx
-                    + fenics.Constant(self.mu_barycenter)
-                    * (
-                        self.current_barycenter_y
-                        - fenics.Constant(self.target_barycenter_list[1])
-                    )
-                    * (
-                        self.current_barycenter_y
-                        / self.current_volume
-                        * fenics.div(vector_field)
-                        + 1
-                        / self.current_volume
-                        * (
-                            vector_field[1]
-                            + self.spatial_coordinate[1] * fenics.div(vector_field)
-                        )
-                    )
-                    * self.dx
-                )
-
-                if self.geometric_dimension == 3:
-                    shape_form += (
-                        fenics.Constant(self.mu_barycenter)
-                        * (
-                            self.current_barycenter_z
-                            - fenics.Constant(self.target_barycenter_list[2])
-                        )
-                        * (
-                            self.current_barycenter_z
-                            / self.current_volume
-                            * fenics.div(vector_field)
-                            + 1
-                            / self.current_volume
-                            * (
-                                vector_field[2]
-                                + self.spatial_coordinate[2] * fenics.div(vector_field)
-                            )
-                        )
-                        * self.dx
-                    )
-
-            else:
-                shape_form -= (
-                    fenics.Constant(self.mu_volume)
-                    * (self.current_volume - fenics.Constant(self.target_volume))
-                    * fenics.div(vector_field)
-                    * self.dx
-                )
-                shape_form += (
-                    fenics.Constant(self.mu_barycenter)
-                    * (
-                        self.current_barycenter_x
-                        - fenics.Constant(self.target_barycenter_list[0])
-                    )
-                    * (
-                        self.current_barycenter_x
-                        / self.current_volume
-                        * fenics.div(vector_field)
-                        - 1
-                        / self.current_volume
-                        * (
-                            vector_field[0]
-                            + self.spatial_coordinate[0] * fenics.div(vector_field)
-                        )
-                    )
-                    * self.dx
-                    + fenics.Constant(self.mu_barycenter)
-                    * (
-                        self.current_barycenter_y
-                        - fenics.Constant(self.target_barycenter_list[1])
-                    )
-                    * (
-                        self.current_barycenter_y
-                        / self.current_volume
-                        * fenics.div(vector_field)
-                        - 1
-                        / self.current_volume
-                        * (
-                            vector_field[1]
-                            + self.spatial_coordinate[1] * fenics.div(vector_field)
-                        )
-                    )
-                    * self.dx
-                )
-
-                if self.geometric_dimension == 3:
-                    shape_form += (
-                        fenics.Constant(self.mu_barycenter)
-                        * (
-                            self.current_barycenter_z
-                            - fenics.Constant(self.target_barycenter_list[2])
-                        )
-                        * (
-                            self.current_barycenter_z
-                            / self.current_volume
-                            * fenics.div(vector_field)
-                            - 1
-                            / self.current_volume
-                            * (
-                                vector_field[2]
-                                + self.spatial_coordinate[2] * fenics.div(vector_field)
-                            )
-                        )
-                        * self.dx
-                    )
-
-            return shape_form
-
-        else:
-            dim = self.geometric_dimension
-            return fenics.inner(fenics.Constant([0] * dim), vector_field) * self.dx
-
-    def _scale_volume_term(self) -> None:
-        """Scales the volume regularization parameter."""
-        if self.mu_volume > 0.0:
-            volume = self._compute_volume()
-            value = 0.5 * pow(volume - self.target_volume, 2)
-
-            if abs(value) < 1e-15:
-                _loggers.info(
-                    "The volume regularization vanishes for the initial "
-                    "iteration. Multiplying this term with the factor you "
-                    "supplied as weight."
-                )
-            else:
-                self.mu_volume /= abs(value)
-
-    def _scale_surface_term(self) -> None:
-        """Scales the surface regularization term."""
-        if self.mu_surface > 0.0:
-            surface = fenics.assemble(fenics.Constant(1.0) * self.ds)
-            value = 0.5 * pow(surface - self.target_surface, 2)
-
-            if abs(value) < 1e-15:
-                _loggers.info(
-                    "The surface regularization vanishes for the initial "
-                    "iteration. Multiplying this term with the factor you "
-                    "supplied as weight."
-                )
-            else:
-                self.mu_surface /= abs(value)
-
-    def _scale_curvature_term(self) -> None:
-        """Scales the curvature regularization term."""
-        if self.mu_curvature > 0.0:
-            self.compute_curvature()
-            value = 0.5 * fenics.assemble(
-                fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
-            )
-
-            if abs(value) < 1e-15:
-                _loggers.info(
-                    "The curvature regularization vanishes for the initial "
-                    "iteration. Multiplying this term with the factor you "
-                    "supplied as weight."
-                )
-            else:
-                self.mu_curvature /= abs(value)
-
-    def _scale_barycenter_term(self) -> None:
-        """Scales the barycenter regularization term."""
-        if self.mu_barycenter > 0.0:
+        if self.is_active:
             barycenter_list = self._compute_barycenter_list()
 
-            value = 0.5 * (
-                pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
-                + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
-                + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
+            value = (
+                0.5
+                * self.mu
+                * (
+                    pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
+                    + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
+                    + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
+                )
             )
 
-            if abs(value) < 1e-15:
-                _loggers.info(
-                    "The barycenter regularization vanishes for the initial "
-                    "iteration. Multiplying this term with the factor you "
-                    "supplied as weight."
+        return value
+
+    def scale(self) -> None:
+        """Scales the regularization term."""
+        if self.use_relative_scaling and self.is_active:
+            if not self.db.parameter_db.temp_dict:
+                barycenter_list = self._compute_barycenter_list()
+
+                value = 0.5 * (
+                    pow(barycenter_list[0] - self.target_barycenter_list[0], 2)
+                    + pow(barycenter_list[1] - self.target_barycenter_list[1], 2)
+                    + pow(barycenter_list[2] - self.target_barycenter_list[2], 2)
                 )
+
+                if abs(value) < 1e-15:
+                    _loggers.info(
+                        "The barycenter regularization vanishes for the initial "
+                        "iteration. Multiplying this term with the factor you "
+                        "supplied as weight."
+                    )
+                else:
+                    self.mu /= abs(value)
             else:
-                self.mu_barycenter /= abs(value)
-
-    def _scale_weights(self) -> None:
-        """Scales the terms of the regularization by the weights given in the config."""
-        if self.use_relative_scaling and self.has_regularization:
-            if not self.has_cashocs_remesh_flag:
-                self._scale_volume_term()
-                self._scale_surface_term()
-                self._scale_curvature_term()
-                self._scale_barycenter_term()
-
-            else:
-
-                with open(
-                    f"{self.temp_dir}/temp_dict.json", "r", encoding="utf-8"
-                ) as file:
-                    temp_dict: Dict = json.load(file)
-
-                self.mu_volume = temp_dict["Regularization"]["mu_volume"]
-                self.mu_surface = temp_dict["Regularization"]["mu_surface"]
-                self.mu_curvature = temp_dict["Regularization"]["mu_curvature"]
-                self.mu_barycenter = temp_dict["Regularization"]["mu_barycenter"]
+                self.mu = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_barycenter"
+                ]
 
     def _compute_barycenter_list(self) -> List[float]:
         """Computes the list of barycenters for the geometry.
@@ -545,65 +485,204 @@ class ShapeRegularization:
 
         """
         barycenter_list = [0.0] * 3
-        volume = self._compute_volume()
+        volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
 
-        if not self.measure_hole:
-            barycenter_list[0] = (
-                fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
+        barycenter_list[0] = (
+            fenics.assemble(self.spatial_coordinate[0] * self.dx) / volume
+        )
+        barycenter_list[1] = (
+            fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
+        )
+        if self.geometric_dimension == 3:
+            barycenter_list[2] = (
+                fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
             )
-            barycenter_list[1] = (
-                fenics.assemble(self.spatial_coordinate[1] * self.dx) / volume
-            )
-            if self.geometric_dimension == 3:
-                barycenter_list[2] = (
-                    fenics.assemble(self.spatial_coordinate[2] * self.dx) / volume
-                )
-            else:
-                barycenter_list[2] = 0.0
-
-            return barycenter_list
-
         else:
-            barycenter_list[0] = (
-                0.5
-                * (pow(self.x_end, 2) - pow(self.x_start, 2))
-                * self.delta_y
-                * self.delta_z
-                - fenics.assemble(self.spatial_coordinate[0] * self.dx)
-            ) / volume
-            barycenter_list[1] = (
-                0.5
-                * (pow(self.y_end, 2) - pow(self.y_start, 2))
-                * self.delta_x
-                * self.delta_z
-                - fenics.assemble(self.spatial_coordinate[1] * self.dx)
-            ) / volume
-            if self.geometric_dimension == 3:
-                barycenter_list[2] = (
-                    0.5
-                    * (pow(self.z_end, 2) - pow(self.z_start, 2))
-                    * self.delta_x
-                    * self.delta_y
-                    - fenics.assemble(self.spatial_coordinate[2] * self.dx)
-                ) / volume
-            else:
-                barycenter_list[2] = 0.0
+            barycenter_list[2] = 0.0
 
-            return barycenter_list
+        return barycenter_list
 
-    def _compute_volume(self) -> float:
-        """Computes the volume of the geometry.
 
-        Returns:
-            The volume of the geometry.
+class CurvatureRegularization(ShapeRegularizationTerm):
+    """Quadratic curvature regularization term."""
+
+    def __init__(self, db: database.Database) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
 
         """
-        volume: float
-        if not self.measure_hole:
-            volume = fenics.assemble(fenics.Constant(1.0) * self.dx)
+        super().__init__(db)
+
+        self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
+        self.ds = fenics.Measure("ds", self.mesh)
+        self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
+
+        self.a_curvature_matrix = fenics.PETScMatrix()
+        self.b_curvature = fenics.PETScVector()
+
+        self.mu = self.config.getfloat("Regularization", "factor_curvature")
+        self.kappa_curvature = fenics.Function(self.db.function_db.control_spaces[0])
+        n = fenics.FacetNormal(self.mesh)
+        x = fenics.SpatialCoordinate(self.mesh)
+        self.a_curvature = (
+            fenics.inner(
+                fenics.TrialFunction(self.db.function_db.control_spaces[0]),
+                fenics.TestFunction(self.db.function_db.control_spaces[0]),
+            )
+            * self.ds
+        )
+        self.l_curvature = (
+            fenics.inner(
+                t_grad(x, n),
+                t_grad(fenics.TestFunction(self.db.function_db.control_spaces[0]), n),
+            )
+            * self.ds
+        )
+
+        if self.mu > 0:
+            self.is_active = True
+
+        self.scale()
+
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
+
+        Returns:
+            The ufl form of the shape derivative.
+
+        """
+        if self.is_active:
+            x = fenics.SpatialCoordinate(self.mesh)
+            n = fenics.FacetNormal(self.mesh)
+            identity = fenics.Identity(self.geometric_dimension)
+
+            shape_form = fenics.Constant(self.mu) * (
+                fenics.inner(
+                    (identity - (t_grad(x, n) + (t_grad(x, n)).T))
+                    * t_grad(self.test_vector_field, n),
+                    t_grad(self.kappa_curvature, n),
+                )
+                * self.ds
+                + fenics.Constant(0.5)
+                * t_div(self.test_vector_field, n)
+                * t_div(self.kappa_curvature, n)
+                * self.ds
+            )
+            return shape_form
         else:
-            volume = self.delta_x * self.delta_y * self.delta_z - fenics.assemble(
-                fenics.Constant(1) * self.dx
+            return fenics.derivative(
+                fenics.Constant(0.0) * self.dx,
+                fenics.SpatialCoordinate(self.mesh),
+                self.test_vector_field,
             )
 
-        return volume
+    def compute_objective(self) -> float:
+        """Computes the objective value corresponding to the regularization term.
+
+        Returns:
+            The objective value of the term.
+
+        """
+        value = 0.0
+
+        if self.is_active:
+            self._compute_curvature()
+            curvature_val = fenics.assemble(
+                fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+            )
+            value += 0.5 * self.mu * curvature_val
+
+        return value
+
+    def _compute_curvature(self) -> None:
+        """Computes the curvature of the geometry."""
+        fenics.assemble(
+            self.a_curvature, keep_diagonal=True, tensor=self.a_curvature_matrix
+        )
+        self.a_curvature_matrix.ident_zeros()
+
+        fenics.assemble(self.l_curvature, tensor=self.b_curvature)
+
+        _utils.solve_linear_problem(
+            A=self.a_curvature_matrix.mat(),
+            b=self.b_curvature.vec(),
+            x=self.kappa_curvature.vector().vec(),
+        )
+        self.kappa_curvature.vector().apply("")
+
+    def scale(self) -> None:
+        """Scales the regularization term."""
+        if self.use_relative_scaling and self.is_active:
+            if not self.db.parameter_db.temp_dict:
+                self._compute_curvature()
+                value = 0.5 * fenics.assemble(
+                    fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+                )
+
+                if abs(value) < 1e-15:
+                    _loggers.info(
+                        "The curvature regularization vanishes for the initial "
+                        "iteration. Multiplying this term with the factor you "
+                        "supplied as weight."
+                    )
+                else:
+                    self.mu /= abs(value)
+            else:
+                self.mu = self.db.parameter_db.temp_dict["Regularization"][
+                    "mu_curvature"
+                ]
+
+
+class ShapeRegularization:
+    """Geometric regularization for shape optimization."""
+
+    def __init__(self, db: database.Database) -> None:
+        """Initializes self.
+
+        Args:
+            db: The database of the problem.
+
+        """
+        self.volume_regularization = VolumeRegularization(db)
+        self.surface_regularization = SurfaceRegularization(db)
+        self.barycenter_regularization = BarycenterRegularization(db)
+        self.curvature_regularization = CurvatureRegularization(db)
+
+        self.regularization_list = [
+            self.volume_regularization,
+            self.surface_regularization,
+            self.barycenter_regularization,
+            self.curvature_regularization,
+        ]
+
+    def update_geometric_quantities(self) -> None:
+        """Updates the internal parameters of the regularization terms."""
+        for term in self.regularization_list:
+            term.update()
+
+    def compute_objective(self) -> float:
+        """Computes the objective value corresponding to the regularization term.
+
+        Returns:
+            The objective value of the term.
+
+        """
+        value = 0.0
+        for term in self.regularization_list:
+            value += term.compute_objective()
+
+        return value
+
+    def compute_shape_derivative(self) -> ufl.Form:
+        """Computes the shape derivative of the regularization term.
+
+        Returns:
+            The ufl form of the shape derivative.
+
+        """
+        shape_derivative_list = [
+            term.compute_shape_derivative() for term in self.regularization_list
+        ]
+        return _utils.summation(shape_derivative_list)

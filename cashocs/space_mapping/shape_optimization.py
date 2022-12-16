@@ -33,14 +33,11 @@ from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
+from cashocs.geometry import mesh_testing
 
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import io
-
-
-def _hook() -> None:
-    return None
 
 
 class FineModel(abc.ABC):
@@ -77,8 +74,6 @@ class FineModel(abc.ABC):
 class CoarseModel:
     """Coarse Model for space mapping shape optimization."""
 
-    coordinates_optimal: np.ndarray
-
     def __init__(
         self,
         state_forms: Union[ufl.Form, List[ufl.Form]],
@@ -108,13 +103,18 @@ class CoarseModel:
         """Initializes self.
 
         Args:
-            state_forms: The list of weak forms for the coare state problem
+            state_forms: The list of weak forms for the coarse state problem
             bcs_list: The list of boundary conditions for the coarse problem
             cost_functional_form: The cost functional for the coarse problem
             states: The state variables for the coarse problem
             adjoints: The adjoint variables for the coarse problem
             boundaries: A fenics MeshFunction which marks the boundaries.
-            config: The configuration for the problem
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             shape_scalar_product: The scalar product for the shape optimization problem
             initial_guess: The initial guess for solving a nonlinear state equation
             ksp_options: The list of PETSc options for the state equations
@@ -135,8 +135,8 @@ class CoarseModel:
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
@@ -156,10 +156,12 @@ class CoarseModel:
             desired_weights=self.desired_weights,
         )
 
+        self.coordinates_optimal = self.mesh.coordinates().copy()
+
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
-        self.shape_optimization_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
+        self.shape_optimization_problem.inject_pre_post_callback(
+            self._pre_callback, self._post_callback
         )
         self.shape_optimization_problem.solve()
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -185,7 +187,12 @@ class ParameterExtraction:
             coarse_model: The coarse model optimization problem
             cost_functional_form: The cost functional for the parameter extraction
             states: The state variables for the parameter extraction
-            config: The configuration for the parameter extraction
+            config: config: The config file for the problem, generated via
+                :py:func:`cashocs.load_config`. Alternatively, this can also be
+                ``None``, in which case the default configurations are used, except for
+                the optimization algorithm. This has then to be specified in the
+                :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
+                default is ``None``.
             desired_weights: The list of desired weights for the parameter extraction
             mode: The mode used for the initial guess of the parameter extraction. If
                 this is coarse_optimum, the default, then the coarse model optimum is
@@ -203,11 +210,11 @@ class ParameterExtraction:
         self.config = config
         self.desired_weights = desired_weights
 
-        self._pre_hook = _hook
-        self._post_hook = _hook
+        self._pre_callback: Optional[Callable] = None
+        self._post_callback: Optional[Callable] = None
 
         self.adjoints = _utils.create_function_list(
-            coarse_model.shape_optimization_problem.form_handler.adjoint_spaces
+            coarse_model.shape_optimization_problem.db.function_db.adjoint_spaces
         )
 
         dict_states = {
@@ -238,7 +245,14 @@ class ParameterExtraction:
         )
 
         self.coordinates_initial = coarse_model.coordinates_initial
-        self.deformation_handler = geometry.DeformationHandler(self.mesh)
+
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.mesh)
+        self.deformation_handler = geometry.DeformationHandler(
+            self.mesh, a_priori_tester, a_posteriori_tester
+        )
+
+        self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
 
     def _solve(self) -> None:
         """Solves the parameter extraction problem.
@@ -254,27 +268,26 @@ class ParameterExtraction:
                 self.coarse_model.coordinates_optimal
             )
 
-        self.shape_optimization_problem: sop.ShapeOptimizationProblem = (
-            sop.ShapeOptimizationProblem(
-                self.state_forms,
-                self.bcs_list,
-                self.cost_functional_form,
-                self.states,
-                self.adjoints,
-                self.boundaries,
-                config=self.config,
-                shape_scalar_product=self.shape_scalar_product,
-                initial_guess=self.initial_guess,
-                ksp_options=self.ksp_options,
-                adjoint_ksp_options=self.adjoint_ksp_options,
-                desired_weights=self.desired_weights,
+        self.shape_optimization_problem = sop.ShapeOptimizationProblem(
+            self.state_forms,
+            self.bcs_list,
+            self.cost_functional_form,
+            self.states,
+            self.adjoints,
+            self.boundaries,
+            config=self.config,
+            shape_scalar_product=self.shape_scalar_product,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
+        )
+        if self.shape_optimization_problem is not None:
+            self.shape_optimization_problem.inject_pre_post_callback(
+                self._pre_callback, self._post_callback
             )
-        )
-        self.shape_optimization_problem.inject_pre_post_hook(
-            self._pre_hook, self._post_hook
-        )
 
-        self.shape_optimization_problem.solve()
+            self.shape_optimization_problem.solve()
 
 
 class SpaceMapping:
@@ -348,11 +361,16 @@ class SpaceMapping:
         self.x = self.fine_model.mesh
 
         self.deformation_space = fenics.VectorFunctionSpace(self.x, "CG", 1)
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.fine_model.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.fine_model.mesh)
         self.deformation_handler_fine = geometry.DeformationHandler(
-            self.fine_model.mesh
+            self.fine_model.mesh, a_priori_tester, a_posteriori_tester
         )
+
+        a_priori_tester = mesh_testing.APrioriMeshTester(self.coarse_model.mesh)
+        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.coarse_model.mesh)
         self.deformation_handler_coarse = geometry.DeformationHandler(
-            self.coarse_model.mesh
+            self.coarse_model.mesh, a_priori_tester, a_posteriori_tester
         )
 
         self.z_star = [fenics.Function(self.deformation_space)]
@@ -421,21 +439,21 @@ class SpaceMapping:
             * shape_optimization_problem.form_handler.dx
         )
         bc_helper = fenics.Function(
-            shape_optimization_problem.form_handler.deformation_space
+            shape_optimization_problem.db.function_db.control_spaces[0]
         )
         bc_helper.vector().vec().aypx(0, a[0].vector().vec())
         bc_helper.vector().apply("")
         boundary = fenics.CompiledSubDomain("on_boundary")
         bcs = [
             fenics.DirichletBC(
-                shape_optimization_problem.form_handler.deformation_space,
+                shape_optimization_problem.db.function_db.control_spaces[0],
                 bc_helper,
                 boundary,
             )
         ]
 
         result = [
-            fenics.Function(shape_optimization_problem.form_handler.deformation_space)
+            fenics.Function(shape_optimization_problem.db.function_db.control_spaces[0])
         ]
         fenics.solve(lhs == rhs, result[0], bcs)
 
@@ -680,8 +698,10 @@ class SpaceMapping:
             The scalar product between ``a`` and ``b``
 
         """
-        return self.coarse_model.shape_optimization_problem.form_handler.scalar_product(
-            a, b
+        return float(
+            self.coarse_model.shape_optimization_problem.form_handler.scalar_product(
+                a, b
+            )
         )
 
     def _compute_search_direction(
@@ -812,19 +832,19 @@ class SpaceMapping:
             if self.cg_type == "FR":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "PR":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = self._scalar_product(self.dir_prev, self.dir_prev)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "HS":
                 beta_num = self._scalar_product(q, self.difference)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "DY":
                 beta_num = self._scalar_product(q, q)
                 beta_denom = -self._scalar_product(out, self.difference)
-                self.beta = beta_num / beta_denom
+                beta = beta_num / beta_denom
             elif self.cg_type == "HZ":
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
@@ -835,11 +855,13 @@ class SpaceMapping:
                     - 2 * y2 / dy * out[0].vector().vec(),
                 )
                 self.difference[0].vector().apply("")
-                self.beta = -self._scalar_product(self.difference, q) / dy
+                beta = -self._scalar_product(self.difference, q) / dy
+            else:
+                beta = 0.0
         else:
-            self.beta = 0.0
+            beta = 0.0
 
-        out[0].vector().vec().aypx(self.beta, q[0].vector().vec())
+        out[0].vector().vec().aypx(beta, q[0].vector().vec())
         out[0].vector().apply("")
 
     def _compute_eps(self) -> float:
@@ -848,40 +870,40 @@ class SpaceMapping:
             0.0, self.p_current[0].vector().vec() - self.z_star[0].vector().vec()
         )
         self.diff[0].vector().apply("")
-        eps: float = (
+        eps = float(
             np.sqrt(self._scalar_product(self.diff, self.diff)) / self.norm_z_star
         )
 
         return eps
 
-    def inject_pre_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-priori hook of the OptimizationProblem.
+    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called before
                 each solve of the state system
 
         """
-        self.coarse_model._pre_hook = function  # pylint: disable=protected-access
+        self.coarse_model._pre_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._pre_hook = function
+        self.parameter_extraction._pre_callback = function
 
-    def inject_post_hook(self, function: Callable[[], None]) -> None:
-        """Changes the a-posteriori hook of the OptimizationProblem.
+    def inject_post_callback(self, function: Optional[Callable]) -> None:
+        """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
             function: A custom function without arguments, which will be called after
                 the computation of the gradient(s)
 
         """
-        self.coarse_model._post_hook = function  # pylint: disable=protected-access
+        self.coarse_model._post_callback = function  # pylint: disable=protected-access
         # pylint: disable=protected-access
-        self.parameter_extraction._post_hook = function
+        self.parameter_extraction._post_callback = function
 
-    def inject_pre_post_hook(
-        self, pre_function: Callable[[], None], post_function: Callable[[], None]
+    def inject_pre_post_callback(
+        self, pre_function: Optional[Callable], post_function: Optional[Callable]
     ) -> None:
-        """Changes the a-priori (pre) and a-posteriori (post) hook of the problem.
+        """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
         Args:
             pre_function: A function without arguments, which is to be called before
@@ -890,5 +912,5 @@ class SpaceMapping:
                 each computation of the (shape) gradient
 
         """
-        self.inject_pre_hook(pre_function)
-        self.inject_post_hook(post_function)
+        self.inject_pre_callback(pre_function)
+        self.inject_post_callback(post_function)

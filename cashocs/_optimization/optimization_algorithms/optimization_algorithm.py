@@ -20,61 +20,78 @@
 from __future__ import annotations
 
 import abc
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
+    from cashocs import _pde_problems
     from cashocs import _typing
+    from cashocs._database import database
+    from cashocs._optimization import line_search as ls
+    from cashocs._optimization import optimization_variable_abstractions as ov
 
 
 class OptimizationAlgorithm(abc.ABC):
     """Base class for optimization algorithms."""
 
-    stepsize: float = 1.0
-
-    def __init__(self, optimization_problem: _typing.OptimizationProblem) -> None:
+    def __init__(
+        self,
+        db: database.Database,
+        optimization_problem: _typing.OptimizationProblem,
+        line_search: ls.LineSearch,
+    ) -> None:
         """Initializes self.
 
         Args:
+            db: The database of the problem.
             optimization_problem: The corresponding optimization problem.
+            line_search: The corresponding line search.
 
         """
+        self.db = db
+        self.line_search = line_search
+
+        self.config = self.db.config
+
         self.line_search_broken = False
         self.has_curvature_info = False
 
+        self.optimization_problem = optimization_problem
         self.form_handler = optimization_problem.form_handler
-        self.state_problem = optimization_problem.state_problem
-        self.config = optimization_problem.config
-        self.adjoint_problem = optimization_problem.adjoint_problem
+        self.state_problem: _pde_problems.StateProblem = (
+            optimization_problem.state_problem
+        )
+        self.adjoint_problem: _pde_problems.AdjointProblem = (
+            optimization_problem.adjoint_problem
+        )
 
         self.gradient_problem = optimization_problem.gradient_problem
         self.cost_functional = optimization_problem.reduced_cost_functional
-        self.gradient = optimization_problem.gradient
+        self.gradient = self.db.function_db.gradient
         self.search_direction = _utils.create_function_list(
-            self.form_handler.control_spaces
+            self.db.function_db.control_spaces
         )
 
-        self.optimization_variable_abstractions = (
+        self.optimization_variable_abstractions: ov.OptimizationVariableAbstractions = (
             optimization_problem.optimization_variable_abstractions
         )
 
-        self.gradient_norm = 1.0
-        self.iteration = 0
-        self.objective_value = 1.0
-        self.gradient_norm_initial = 1.0
-        self.relative_norm = 1.0
-        self.angle = 360.0
+        self._gradient_norm: float = 1.0
+        self._iteration: int = 0
+        self._objective_value: float = 1.0
+        self._gradient_norm_initial: float = 1.0
+        self._relative_norm: float = 1.0
+        self._angle: float = 360.0
 
         self.requires_remeshing = False
-        self.remeshing_its = False
-        self.is_restarted = False
+        self.is_restarted: bool = False
 
+        self._stepsize: float = 1.0
         self.converged = False
         self.converged_reason = 0
 
@@ -85,16 +102,78 @@ class OptimizationAlgorithm(abc.ABC):
         )
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
-        self.is_shape_problem: bool = optimization_problem.is_shape_problem
-        self.is_topology_problem: bool = optimization_problem.is_topology_problem
-        self.is_control_problem: bool = optimization_problem.is_control_problem
-
-        if optimization_problem.is_shape_problem:
-            self.temp_dict: Optional[Dict] = optimization_problem.temp_dict
-        else:
-            self.temp_dict = None
-
         self.output_manager = optimization_problem.output_manager
+        self.initialize_solver()
+
+    @property
+    def iteration(self) -> int:
+        """The number of iterations performed by the solver."""
+        return self._iteration
+
+    @iteration.setter
+    def iteration(self, value: int) -> None:
+        self.db.parameter_db.optimization_state["iteration"] = value
+        self._iteration = value
+
+    @property
+    def objective_value(self) -> float:
+        """The current objective value."""
+        return self._objective_value
+
+    @objective_value.setter
+    def objective_value(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["objective_value"] = value
+        self._objective_value = value
+
+    @property
+    def relative_norm(self) -> float:
+        """The relative norm of the gradient."""
+        return self._relative_norm
+
+    @relative_norm.setter
+    def relative_norm(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["relative_norm"] = value
+        self._relative_norm = value
+
+    @property
+    def stepsize(self) -> float:
+        """The accepted stepsize of the line search."""
+        return self._stepsize
+
+    @stepsize.setter
+    def stepsize(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["stepsize"] = value
+        self._stepsize = value
+
+    @property
+    def gradient_norm(self) -> float:
+        """The current (absolute) gradient norm."""
+        return self._gradient_norm
+
+    @gradient_norm.setter
+    def gradient_norm(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["gradient_norm"] = value
+        self._gradient_norm = value
+
+    @property
+    def gradient_norm_initial(self) -> float:
+        """The initial (absolute) norm of the gradient."""
+        return self._gradient_norm_initial
+
+    @gradient_norm_initial.setter
+    def gradient_norm_initial(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["gradient_norm_initial"] = value
+        self._gradient_norm_initial = value
+
+    @property
+    def angle(self) -> float:
+        """The angle between levelset function and topological derivative."""
+        return self._angle
+
+    @angle.setter
+    def angle(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["angle"] = value
+        self._angle = value
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -112,15 +191,15 @@ class OptimizationAlgorithm(abc.ABC):
 
     def output(self) -> None:
         """Writes the output to console and files."""
-        self.output_manager.output(self)
+        self.output_manager.output()
 
     def output_summary(self) -> None:
         """Writes the summary of the optimization (to files and console)."""
-        self.output_manager.output_summary(self)
+        self.output_manager.output_summary()
 
     def post_process(self) -> None:
         """Performs the non-console output related post-processing."""
-        self.output_manager.post_process(self)
+        self.output_manager.post_process()
 
     def nonconvergence(self) -> bool:
         """Checks for nonconvergence of the solution algorithm.
@@ -135,8 +214,6 @@ class OptimizationAlgorithm(abc.ABC):
             self.converged_reason = -2
         if self.requires_remeshing:
             self.converged_reason = -3
-        if self.remeshing_its:
-            self.converged_reason = -4
 
         return bool(self.converged_reason < 0)
 
@@ -180,20 +257,9 @@ class OptimizationAlgorithm(abc.ABC):
             # Mesh Quality is too low
             elif self.converged_reason == -3:
                 self.iteration -= 1
-                if self.optimization_variable_abstractions.mesh_handler.do_remesh:
-                    _loggers.info(
-                        "Mesh quality too low. Performing a remeshing operation.\n"
-                    )
-                    self.optimization_variable_abstractions.mesh_handler.remesh(self)
-                else:
+                if not self.optimization_variable_abstractions.mesh_handler.do_remesh:
                     self.post_process()
                     self._exit("Mesh quality is too low.")
-
-            # Iteration for remeshing is the one exceeding the maximum number
-            # of iterations
-            elif self.converged_reason == -4:
-                self.post_process()
-                self._exit("Maximum number of iterations exceeded.")
 
     def convergence_test(self) -> bool:
         """Checks, whether the algorithm converged successfully.
@@ -213,7 +279,7 @@ class OptimizationAlgorithm(abc.ABC):
             self.converged = True
             return True
 
-        if self.is_topology_problem:
+        if self.db.parameter_db.problem_type == "topology":
             if self.angle <= self.config.getfloat("TopologyOptimization", "angle_tol"):
                 self.converged = True
                 return True
@@ -247,14 +313,14 @@ class OptimizationAlgorithm(abc.ABC):
         """Initializes the solver."""
         self.converged = False
 
-        if self.temp_dict is not None:
+        if self.db.parameter_db.temp_dict:
             try:
-                self.iteration = self.temp_dict["OptimizationRoutine"].get(
-                    "iteration_counter", 0
-                )
-                self.gradient_norm_initial = self.temp_dict["OptimizationRoutine"].get(
-                    "gradient_norm_initial", 0.0
-                )
+                self.iteration = self.db.parameter_db.temp_dict[
+                    "OptimizationRoutine"
+                ].get("iteration_counter", 0)
+                self.gradient_norm_initial = self.db.parameter_db.temp_dict[
+                    "OptimizationRoutine"
+                ].get("gradient_norm_initial", 0.0)
             except TypeError:
                 self.iteration = 0
                 self.gradient_norm_initial = 0.0
@@ -264,3 +330,10 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.relative_norm = 1.0
         self.state_problem.has_solution = False
+        self.adjoint_problem.has_solution = False
+        self.gradient_problem.has_solution = False
+
+    def evaluate_cost_functional(self) -> None:
+        """Evaluates the cost functional and performs the output operation."""
+        self.objective_value = self.cost_functional.evaluate()
+        self.output()
