@@ -195,6 +195,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.db.function_db.control_spaces = (
             self._base_ocp.db.function_db.control_spaces
         )
+        self.db.function_db.controls = self._base_ocp.db.function_db.controls
         self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
         self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
         self.adjoint_problem: _pde_problems.AdjointProblem = (
