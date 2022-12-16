@@ -39,7 +39,7 @@ jobs:
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        python3 -m pytest demos/test.py
+        python3 -m pytest -vv demos/test.py
 
         
         
@@ -77,4 +77,4 @@ jobs:
       env:
         OMP_NUM_THREADS: 1
       run: |
-        python3 -m pytest demos/test_mpi.py
+        python3 -m pytest -vv demos/test_mpi.py

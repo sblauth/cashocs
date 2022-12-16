@@ -61,7 +61,10 @@ cashocs-convert = "cashocs._cli:convert"
 tests = [
 	"pytest",
 	"pytest-randomly",
-	"coverage"
+	"pytest-cov",
+	"pytest-xdist",
+	"pytest-timeout",
+	"pytest-icdiff"
 ]
 docs = [
 	"sphinx",
@@ -71,11 +74,7 @@ docs = [
 	"sphinx-design"
 ]
 demos = ["matplotlib"]
-all = [
-	"cashocs[tests]",
-	"cashocs[docs]",
-	"cashocs[demos]"
-]
+all = ["cashocs[tests,docs,demos]"]
 
 [tool.setuptools.packages]
 find = {}

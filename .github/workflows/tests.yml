@@ -38,13 +38,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda activate cashocs
-        coverage run --source=cashocs -m pytest tests/
-
-    - name: Generate .xml coverage results
-      shell: bash -l {0}
-      run: |
-        conda activate cashocs
-        coverage xml
+        python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io
       uses: codecov/codecov-action@v3
