@@ -186,8 +186,6 @@ class OptimizationProblem(abc.ABC):
 
         self.algorithm = _utils.optimization_algorithm_configuration(self.config)
 
-        fenics.set_log_level(fenics.LogLevel.CRITICAL)
-
         self.has_custom_adjoint = False
         self.has_custom_derivative = False
 
