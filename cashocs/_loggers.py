@@ -57,6 +57,10 @@ _cashocs_handler.setFormatter(_cashocs_formatter)
 _cashocs_logger.addHandler(_cashocs_handler)
 _cashocs_logger.setLevel(LogLevel.INFO)
 
+fenics.set_log_level(fenics.LogLevel.WARNING)
+logging.getLogger("UFL").setLevel(logging.WARNING)
+logging.getLogger("FFC").setLevel(logging.WARNING)
+
 
 def set_log_level(level: int) -> None:
     """Determines the log level of cashocs.

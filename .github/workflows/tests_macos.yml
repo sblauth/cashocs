@@ -41,5 +41,5 @@ jobs:
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        python3 -m pytest tests/
+        python3 -m pytest -vv tests/
  

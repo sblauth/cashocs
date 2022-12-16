@@ -351,6 +351,10 @@ def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
     u_picard.vector()[:] = u.vector()[:]
     v_picard.vector()[:] = v.vector()[:]
 
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    v.vector().vec().set(0.0)
+    v.vector().apply("")
     ocp_mixed.solve(algorithm="newton", rtol=1e-6, atol=0.0, max_iter=2)
     assert ocp_mixed.solver.relative_norm < 1e-6
 

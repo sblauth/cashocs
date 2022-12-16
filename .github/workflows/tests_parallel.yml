@@ -46,4 +46,4 @@ jobs:
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/
+        mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/
