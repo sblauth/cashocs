@@ -219,9 +219,10 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"].append(
                 self.db.parameter_db.optimization_state["mesh_quality"]
             )
-        self.output_dict["angle"].append(
-            self.db.parameter_db.optimization_state["angle"]
-        )
+        if self.db.parameter_db.problem_type == "topology":
+            self.output_dict["angle"].append(
+                self.db.parameter_db.optimization_state["angle"]
+            )
         self.output_dict["stepsize"].append(
             self.db.parameter_db.optimization_state["stepsize"]
         )
