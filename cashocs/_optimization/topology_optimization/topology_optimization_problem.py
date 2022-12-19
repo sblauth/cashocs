@@ -61,7 +61,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         bcs_list: list[list[fenics.DirichletBC]]
         | list[fenics.DirichletBC]
         | fenics.DirichletBC,
-        cost_functional_form: list[_typing.CostFunctional],
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
         states: list[fenics.Function] | fenics.Function,
         adjoints: list[fenics.Function] | fenics.Function,
         levelset_function: fenics.Function,

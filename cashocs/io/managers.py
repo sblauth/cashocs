@@ -197,11 +197,15 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"] = self.db.parameter_db.temp_dict[
                 "output_dict"
             ]["MeshQuality"]
+            self.output_dict["angle"] = self.db.parameter_db.temp_dict["output_dict"][
+                "angle"
+            ]
         else:
             self.output_dict["cost_function_value"] = []
             self.output_dict["gradient_norm"] = []
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
+            self.output_dict["angle"] = []
 
     def output(self) -> None:
         """Saves the optimization history to a dictionary."""
@@ -215,6 +219,9 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"].append(
                 self.db.parameter_db.optimization_state["mesh_quality"]
             )
+        self.output_dict["angle"].append(
+            self.db.parameter_db.optimization_state["angle"]
+        )
         self.output_dict["stepsize"].append(
             self.db.parameter_db.optimization_state["stepsize"]
         )
