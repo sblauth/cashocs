@@ -99,7 +99,7 @@ class FineModel(space_mapping.FineModel):
         cashocs.convert(
             f"{dir}/mesh/fine/mesh_{self.iter}.msh", f"{dir}/mesh/fine/mesh.xdmf"
         )
-        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        mesh, self.subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
             "./mesh/fine/mesh.xdmf"
         )
 
@@ -155,3 +155,26 @@ problem = space_mapping.SpaceMapping(
 )
 problem.inject_pre_callback(callback)
 problem.solve()
+
+# Post-processing
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(15, 5))
+
+ax_coarse = plt.subplot(1, 3, 1)
+fig_coarse = plot(subdomains)
+plt.title("Coarse Model Optimal Geometry")
+
+ax_fine = plt.subplot(1, 3, 2)
+fig_fine = plot(fine_model.subdomains)
+plt.title("Fine Model Optimal Geometry")
+
+mesh, subdomains, _, _, _, _ = cashocs.import_mesh("./mesh/reference.xdmf")
+ax_ref = plt.subplot(1, 3, 3)
+fig_ref = plot(subdomains)
+plt.title("Reference Geometry")
+
+plt.tight_layout()
+plt.savefig(
+    "./img_space_mapping_semilinear_transmission.png", dpi=150, bbox_inches="tight"
+)

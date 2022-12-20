@@ -175,7 +175,7 @@ After defining the coarse model, we can now define the fine model by overloading
 		    cashocs.convert(
 		        f"{dir}/mesh/fine/mesh_{self.iter}.msh", f"{dir}/mesh/fine/mesh.xdmf"
 		    )
-		    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+		    mesh, self.subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
 		        "./mesh/fine/mesh.xdmf"
 		    )
 
@@ -216,7 +216,7 @@ After defining the coarse model, we can now define the fine model by overloading
 		    cashocs.convert(
 		        f"{dir}/mesh/fine/mesh_{self.iter}.msh", f"{dir}/mesh/fine/mesh.xdmf"
 		    )
-		    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+		    mesh, self.subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
 		        "./mesh/fine/mesh.xdmf"
 		    )
 
@@ -301,3 +301,11 @@ Finally, we have all ingredients available to define the space mapping problem a
 	problem.solve()
 
 There, we first define the problem, then inject the callback function we defined above so that the required re-interpolation takes place, and solve the problem with the call of it's :py:meth:`solve <cashocs.space_mapping.shape_optimization.SpaceMapping.solve>` method.
+
+The result of the optimization looks like this
+
+.. image:: /../../demos/documented/shape_optimization/space_mapping_semilinear_transmission/img_space_mapping_semilinear_transmission.png
+
+.. note::
+
+	The left image shows the optimized geometry with the coarse model, the middle image shows the optimized geometry with the fine model (with the space mapping technique), and the right image shows the reference geometry, which we were trying to reconstruct. We can see that using the coarse model alone as approximation of the original problem does not work sufficiently well as we recover some kind of rotated peanut shape, instead of an rotated ellipse. However, we see that the space mapping approach works very well for recovering the desired ellipse.
