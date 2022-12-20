@@ -277,7 +277,7 @@ def test_ocsm_parameter_extraction_multiple(config_ocsm, y_d, z_d):
 
 
 def test_ocsm_broyden_good(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -293,7 +293,7 @@ def test_ocsm_broyden_good(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_broyden_bad(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -309,7 +309,7 @@ def test_ocsm_broyden_bad(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_bfgs(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -324,7 +324,7 @@ def test_ocsm_bfgs(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_steepest_descent(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -338,7 +338,7 @@ def test_ocsm_steepest_descent(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_ncg_FR(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -353,7 +353,7 @@ def test_ocsm_ncg_FR(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_ncg_PR(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -368,7 +368,7 @@ def test_ocsm_ncg_PR(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_ncg_HS(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -383,7 +383,7 @@ def test_ocsm_ncg_HS(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_ncg_DY(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -398,7 +398,7 @@ def test_ocsm_ncg_DY(fine_model, coarse_model, parameter_extraction):
 
 
 def test_ocsm_ncg_HZ(fine_model, coarse_model, parameter_extraction):
-    space_mapping = ocsm.SpaceMapping(
+    space_mapping = ocsm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,

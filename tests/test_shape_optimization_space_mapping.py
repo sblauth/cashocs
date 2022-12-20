@@ -165,7 +165,7 @@ def test_sosm_broyden_good():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -198,7 +198,7 @@ def test_sosm_broyden_bad():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -231,7 +231,7 @@ def test_sosm_bfgs():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -263,7 +263,7 @@ def test_sosm_steepest_descent():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -293,7 +293,7 @@ def test_sosm_ncg_FR():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -324,7 +324,7 @@ def test_sosm_ncg_PR():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -355,7 +355,7 @@ def test_sosm_ncg_HS():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -386,7 +386,7 @@ def test_sosm_ncg_DY():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,
@@ -417,7 +417,7 @@ def test_sosm_ncg_HZ():
         coarse_model, J_param, up_param, config=cfg
     )
 
-    space_mapping = sosm.SpaceMapping(
+    space_mapping = sosm.SpaceMappingProblem(
         fine_model,
         coarse_model,
         parameter_extraction,

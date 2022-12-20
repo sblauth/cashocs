@@ -345,13 +345,20 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
             - a purely relative one (if only ``rtol`` is specified), i.e.,
-            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
-            - a purely absolute one (if only ``atol`` is specified), i.e.,
-            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
-            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
             .. math::
-                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
-                || \nabla J(u_0) ||
+                || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+
+            .. math::
+                || \nabla J(u_K) || \leq \texttt{atol}.
+
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
+            .. math::
+                || \nabla J(u_k) || \leq \texttt{atol}
+                + \texttt{rtol} || \nabla J(u_0) ||
 
         """
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
