@@ -20,6 +20,7 @@
 """Mesh conversion from GMSH .msh to .xdmf."""
 
 import argparse
+import contextlib
 import json
 import time
 from typing import Dict, List, Optional
@@ -222,7 +223,8 @@ def convert(argv: Optional[List[str]] = None) -> None:
     ostring = outputfile.rsplit(".", 1)[0]
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        mesh_collection = meshio.read(inputfile)
+        with contextlib.redirect_stdout(None):
+            mesh_collection = meshio.read(inputfile)
 
         points = mesh_collection.points
         cells_dict = mesh_collection.cells_dict
