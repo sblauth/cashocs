@@ -73,9 +73,12 @@ We start our description of the space mapping technqiue with the implementation 
 
 As usual, we begin the script with importing cashocs and fenics ::
 
-    from fenics import *
-    import cashocs
 	import os
+
+	from fenics import *
+
+	import cashocs
+
 
 Next, we define the space mapping module we are using in the line ::
 
@@ -284,7 +287,7 @@ Space Mapping Problem and Solution
 
 Finally, we have all ingredients available to define the space mapping problem and solve it. This is done with the lines ::
 
-	problem = space_mapping.SpaceMapping(
+	problem = space_mapping.SpaceMappingProblem(
 		fine_model,
 		coarse_model,
 		parameter_extraction,
@@ -300,7 +303,7 @@ Finally, we have all ingredients available to define the space mapping problem a
 	problem.inject_pre_callback(callback)
 	problem.solve()
 
-There, we first define the problem, then inject the callback function we defined above so that the required re-interpolation takes place, and solve the problem with the call of it's :py:meth:`solve <cashocs.space_mapping.shape_optimization.SpaceMapping.solve>` method.
+There, we first define the problem, then inject the callback function we defined above so that the required re-interpolation takes place, and solve the problem with the call of it's :py:meth:`solve <cashocs.space_mapping.shape_optimization.SpaceMappingProblem.solve>` method.
 
 The result of the optimization looks like this
 

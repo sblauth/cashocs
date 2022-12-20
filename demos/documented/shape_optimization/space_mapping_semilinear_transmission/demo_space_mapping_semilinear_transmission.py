@@ -140,7 +140,7 @@ parameter_extraction = space_mapping.ParameterExtraction(
 )
 
 
-problem = space_mapping.SpaceMapping(
+problem = space_mapping.SpaceMappingProblem(
     fine_model,
     coarse_model,
     parameter_extraction,
@@ -175,6 +175,6 @@ fig_ref = plot(subdomains)
 plt.title("Reference Geometry")
 
 plt.tight_layout()
-plt.savefig(
-    "./img_space_mapping_semilinear_transmission.png", dpi=150, bbox_inches="tight"
-)
+# plt.savefig(
+#     "./img_space_mapping_semilinear_transmission.png", dpi=150, bbox_inches="tight"
+# )

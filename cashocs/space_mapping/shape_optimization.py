@@ -290,7 +290,7 @@ class ParameterExtraction:
             self.shape_optimization_problem.solve()
 
 
-class SpaceMapping:
+class SpaceMappingProblem:
     """Space mapping method for shape optimization."""
 
     def __init__(

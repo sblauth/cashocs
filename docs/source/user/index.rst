@@ -48,4 +48,8 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
 
     On the contrary, the possibility to scale individual terms of a cost functional
     is only explained in :ref:`demo_scaling` for shape optimization problems, but
-    works completely analogous for optimal control problems.
+    works completely analogous for optimal control problems. 
+    Moreover, the space mapping capabilities of cashocs are only documented for shape optimization 
+    in :ref:`demo_space_mapping_semilinear_transmission` and 
+    :ref:`demo_space_mapping_uniform_flow_distribution`. Again, space mapping works the same for 
+    both optimal control and shape optimization.

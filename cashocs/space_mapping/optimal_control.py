@@ -287,7 +287,7 @@ class ParameterExtraction:
         self.optimal_control_problem.solve()
 
 
-class SpaceMapping:
+class SpaceMappingProblem:
     """Space mapping method for optimal control problems."""
 
     def __init__(
