@@ -28,3 +28,5 @@ cashocs.egg-info/
 /tests/temp
 /tests/out
 *cashocs_remesh_*/
+
+demos/documented/shape_optimization/space_mapping_semilinear_transmission/mesh/fine/

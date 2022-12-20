@@ -18,3 +18,5 @@ be treated with cashocs.
    doc_scaling
    doc_eikonal_stiffness
    doc_p_laplacian
+   doc_space_mapping_semilinear_transmission
+   doc_space_mapping_uniform_flow_distribution
