@@ -8,7 +8,7 @@ be treated with cashocs.
    :maxdepth: 1
    :caption: List of all optimal control demos:
 
-   doc_poisson
+   demo_poisson.md
    doc_config
    doc_box_constraints
    doc_neumann_control
@@ -26,4 +26,3 @@ be treated with cashocs.
    doc_constraints
    doc_control_boundary_conditions
    doc_pre_post_hooks
-   demo_poisson_myst.md
