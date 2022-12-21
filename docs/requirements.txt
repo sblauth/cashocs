@@ -8,3 +8,5 @@ sphinx-design==0.3
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
 typing_extensions
+myst-parser==0.18.1
+jupytext==1.14.4
