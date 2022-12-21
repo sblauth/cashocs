@@ -6,7 +6,7 @@ be treated with cashocs.
 
 .. toctree::
    :maxdepth: 1
-   :caption: List of all  optimal control demos:
+   :caption: List of all optimal control demos:
 
    doc_poisson
    doc_config

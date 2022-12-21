@@ -6,7 +6,7 @@ be treated with cashocs.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: List of all shape optimization problems:
 
    doc_shape_poisson
    doc_config
