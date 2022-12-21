@@ -26,7 +26,7 @@ def process():
 
         # Process each demo using jupytext/myst
         # for demo in subdir.glob("**/demo*.py"):
-        for demo in subdir.glob("**/demo_poisson.py"):
+        for demo in subdir.glob("**/demo_stokes.py"):
             python_demo = jupytext.read(demo)
             myst_text = jupytext.writes(python_demo, fmt="myst")
 
