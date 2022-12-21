@@ -10,5 +10,5 @@ can choose to supply these forms themselves.
    :maxdepth: 1
    :caption: Corresponding Demos:
 
-   doc_control_solver
-   doc_shape_solver
+   demo_control_solver.md
+   demo_shape_solver.md
