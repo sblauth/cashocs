@@ -71,7 +71,9 @@ docs = [
 	"pydata-sphinx-theme",
 	"sphinx-argparse",
 	"sphinx-copybutton",
-	"sphinx-design"
+	"sphinx-design",
+    "jupytext",
+    "myst-parser"
 ]
 demos = ["matplotlib"]
 all = ["cashocs[tests,docs,demos]"]

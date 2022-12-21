@@ -14,6 +14,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("."))
+
+import jupytext_process
+
+jupytext_process.process()
 
 
 # -- Project information -----------------------------------------------------
@@ -39,6 +44,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx.ext.viewcode",
     "sphinx_design",
+    "myst_parser",
 ]
 
 napoleon_google_docstring = True
@@ -126,3 +132,5 @@ pygments_style = "sphinx"
 
 autosummary_generate = True
 autosummary_imported_members = True
+
+myst_enable_extensions = ["dollarmath", "colon_fence"]
