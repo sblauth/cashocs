@@ -5,12 +5,12 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.6
+#       jupytext_version: 1.14.4
 # ---
 
 # (demo_poisson)=
 # # Distributed Control of a Poisson Problem
-
+#
 # ## Problem Formulation
 #
 # In this demo we investigate the basics of cashocs for
@@ -21,11 +21,11 @@
 # \begin{align}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
 #     \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
-#     &\text{ subject to } \quad \left\lbrace \quad
-#     \begin{alignedat}{2}
+#     &\text{ subject to } \qquad
+#     \begin{alignedat}[t]{2}
 #         -\Delta y &= u \quad &&\text{ in } \Omega,\\
 #         y &= 0 \quad &&\text{ on } \Gamma.
-#     \end{alignedat} \right.
+#     \end{alignedat}
 # \end{align}
 # $$
 #
