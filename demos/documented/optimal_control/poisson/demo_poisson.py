@@ -50,7 +50,7 @@
 # ## Implementation
 #
 # The complete python code can be found in the file
-# {download}`demo_poisson_myst.py
+# {download}`demo_poisson.py
 # </../../demos/documented/optimal_control/poisson/demo_poisson.py>`
 # and the corresponding config can be found in
 # {download}`config.ini </../../demos/documented/optimal_control/poisson/config.ini>`.
