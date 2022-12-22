@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_multiple_variables)=
 # # Using Multiple Variables and PDEs
-
+#
 # ## Problem Formulation
 #
 # In this demo we show how cashocs can be used to treat multiple
@@ -77,7 +81,7 @@ u = Function(V)
 e_y = inner(grad(y), grad(p)) * dx - u * p * dx
 bcs_y = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-# Similarly to before, `p` is the adjoint state corresponding to `y`.
+# Similarly to before, {python}`p` is the adjoint state corresponding to {python}`y`.
 #
 # Next, we define the second state equation (which is for the state $z$) via
 
@@ -87,7 +91,7 @@ v = Function(V)
 e_z = inner(grad(z), grad(q)) * dx - (y + v) * q * dx
 bcs_z = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 
-# Here, `q` is the adjoint state corresponding to `z`.
+# Here, {python}`q` is the adjoint state corresponding to {python}`z`.
 #
 # In order to treat this one-way coupled with cashocs, we now have to specify what
 # the state, adjoint, and control variables are. This is done by putting the
@@ -106,12 +110,13 @@ bcs_list = [bcs_y, bcs_z]
 # :::{note}
 # It is important, that the ordering of the state and adjoint variables, as well
 # as the state equations and boundary conditions is in the same way. This means,
-# that `e[i]` is the state equation for `state[i]`, which is supplemented
-# with Dirichlet boundary conditions defined in `bcs_list[i]`, and has a corresponding
-# adjoint state `adjoints[i]`, for all `i`. In analogy, the same holds true
-# for the control variables, the scalar product of the control space, and the
-# control constraints, i.e., `controls[j]`, `riesz_scalar_products[j]`, and
-# `control_constraints[j]` all have to belong to the same control variable.
+# that {python}`e[i]` is the state equation for {python}`state[i]`, which is
+# supplemented with Dirichlet boundary conditions defined in {python}`bcs_list[i]`, and
+# has a corresponding adjoint state {python}`adjoints[i]`, for all {python}`i`. In
+# analogy, the same holds true for the control variables, the scalar product of the
+# control space, and the control constraints, i.e., {python}`controls[j]`,
+# {python}`riesz_scalar_products[j]`, and {python}`control_constraints[j]` all have to
+# belong to the same control variable.
 # :::
 #
 # Note that the control variables are completely independent of the state
@@ -189,8 +194,8 @@ plt.tight_layout()
 # that the error between $y$ and $y_d$. This is due to the fact that
 # we use a different regularization parameter for the controls $u$ and $v$.
 # For the former, which only acts on $y$, we have a regularization parameter
-# of `alpha = 1e-6`, and for the latter we have `beta = 1e-4`. Hence, $v$
-# is penalized higher for being large, so that also $z$ is (significantly)
+# of {python}`alpha = 1e-6`, and for the latter we have {python}`beta = 1e-4`. Hence,
+# $v$ is penalized higher for being large, so that also $z$ is (significantly)
 # smaller than $z_d$.
 # :::
 #

@@ -1,24 +1,118 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
-#
-# This file is part of cashocs.
-#
-# cashocs is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cashocs is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
+# ---
+# jupyter:
+#   jupytext:
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+# ---
 
-"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/shape_optimization/doc_shape_stokes.html.
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
+# (demo_eikonal_stiffness)=
+# # Computing the Shape Stiffness via Distance to the Boundaries
+#
+# ## Problem Formulation
+#
+# We are solving the same problem as in {ref}`demo_shape_stokes`, but now use
+# a different approach for computing the stiffness of the shape gradient.
+# Recall, that the corresponding (regularized) shape optimization problem is given by
+#
+# $$
+# \begin{align}
+#     \min_\Omega J(u, \Omega) = &\int_{\Omega^\text{flow}} Du : Du\ \text{ d}x +
+#     \frac{\mu_\text{vol}}{2} \left( \int_\Omega 1 \text{ d}x
+#     - \text{vol}(\Omega_0) \right)^2 \\
+#     &+ \frac{\mu_\text{bary}}{2} \left\lvert \frac{1}{\text{vol}(\Omega)}
+#     \int_\Omega x \text{ d}x - \text{bary}(\Omega_0) \right\rvert^2 \\
+#     &\text{subject to } \qquad
+#     \begin{alignedat}[t]{2}
+#         - \Delta u + \nabla p &= 0 \quad &&\text{ in } \Omega, \\
+#         \text{div}(u) &= 0 \quad &&\text{ in } \Omega, \\
+#         u &= u^\text{in} \quad &&\text{ on } \Gamma^\text{in}, \\
+#         u &= 0 \quad &&\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
+#         \partial_n u - p n &= 0 \quad &&\text{ on } \Gamma^\text{out}.
+#     \end{alignedat}
+# \end{align}
+# $$
+#
+# For a background on the stiffness of the shape gradient, we refer to
+# {ref}`config_shape_shape_gradient`, where it is defined as the parameter
+# $\mu$ used in the computation of the shape gradient. Note that the distance
+# computation is done via an eikonal equation, hence the name of the demo.
+#
+# ## Implementation
+#
+# The complete python code can be found in the file {download}`demo_eikonal_stiffness.py
+# </../../demos/documented/shape_optimization/eikonal_stiffness/demo_eikonal_stiffness.py>`
+# and the corresponding config can be found in {download}`config.ini
+# </../../demos/documented/shape_optimization/eikonal_stiffness/config.ini>`.
+#
+# ### Changes in the config file
+#
+# In order to compute the stiffness $\mu$ based on the distance to selected boundaries,
+# we only have to change the configuration file we are using, the python code
+# for solving the shape optimization problem with cashocs stays exactly as
+# it was in {ref}`demo_shape_stokes`.
+#
+# To use the stiffness computation based on the distance to the boundary, we add the
+# following lines to the config file
+# :::ini
+# use_distance_mu = True
+# dist_min = 0.05
+# dist_max = 1.25
+# mu_min = 5e2
+# mu_max = 1.0
+# smooth_mu = false
+# boundaries_dist = [4]
+# :::
+#
+# The first line
+# :::ini
+# use_distance_mu = True
+# :::
+#
+# ensures that the stiffness will be computed based on the distance to the boundary.
+#
+# The next four lines then specify the behavior of this computation. In particular,
+# we have the following behavior for $\mu$
+#
+# $$
+# \mu = \begin{cases}
+#     \mu_\mathrm{min} \quad \text{ if } \delta \leq \delta_\mathrm{min},\\
+#     \mu_\mathrm{max} \quad \text{ if } \delta \geq \delta_\mathrm{max}
+# \end{cases}
+# $$
+#
+# where $\delta$ denotes the distance to the boundary and $\delta_\mathrm{min}$
+# and $\delta_\mathrm{max}$ correspond to {ini}`dist_min` and {ini}`dist_max`,
+# respectively.
+#
+# The values in-between are given by interpolation. Either a linear, continuous
+# interpolation is used, or a smooth $C^1$ interpolation given by a third order
+# polynomial. These can be selected with the option
+# :::ini
+# smooth_mu = False
+# :::
+#
+# where {ini}`smooth_mu = True` uses the third order polynomial, and
+# {ini}`smooth_mu = False` uses the linear function.
+#
+# Finally, the line
+# :::ini
+# boundaries_dist = [4]
+# :::
+#
+# specifies, which boundaries are considered for the distance computation. These are
+# again specified using the boundary markers, as it was previously explained in
+# {ref}`config_shape_shape_gradient`.
+#
+# For the sake of completeness, here is the code for solving the problem
 
-"""
-
+# +
 from fenics import *
 
 import cashocs
@@ -49,9 +143,6 @@ J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx)
 sop = cashocs.ShapeOptimizationProblem(e, bcs, J, up, vq, boundaries, config=config)
 sop.solve()
 
-
-### Post Processing
-
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(15, 3))
@@ -77,3 +168,7 @@ plt.title("State variable p")
 
 plt.tight_layout()
 # plt.savefig("./img_eikonal_stiffness.png", dpi=150, bbox_inches="tight")
+# -
+
+# The results should look like this
+# ![](/../../demos/documented/shape_optimization/shape_stokes/img_shape_stokes.png)

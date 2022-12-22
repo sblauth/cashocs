@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_monolithic_problems)=
 # # Coupled Problems - Monolithic Approach
-
+#
 # ## Problem Formulation
 #
 # In this demo we show how cashocs can be used with a coupled PDE constraint.
@@ -69,7 +73,8 @@ V = FunctionSpace(mesh, MixedElement([elem_1, elem_2]))
 
 U = FunctionSpace(mesh, "CG", 1)
 
-# Then, the state and adjoint variables `state` and `adjoint` are defined
+# Then, the state and adjoint variables {python}`state` and {python}`adjoint` are
+# defined
 
 state = Function(V)
 adjoint = Function(V)
@@ -80,8 +85,8 @@ adjoint = Function(V)
 y, z = split(state)
 p, q = split(adjoint)
 
-# Similarly to {ref}`demo_multiple_variables`, `p` is the adjoint state corresponding
-# to `y`, and `q` is the one corresponding to `z`.
+# Similarly to {ref}`demo_multiple_variables`, {python}`p` is the adjoint state
+# corresponding to {python}`y`, and {python}`q` is the one corresponding to {python}`z`.
 #
 # We then define the control variables as
 
@@ -89,9 +94,9 @@ u = Function(U)
 v = Function(U)
 controls = [u, v]
 
-# Note, that we directly put the control variables `u` and `v` into a list
-# `controls`, which implies that `u` is the first component of the control
-# variable, and `v` the second one.
+# Note, that we directly put the control variables {python}`u` and {python}`v` into a
+# list {python}`controls`, which implies that {python}`u` is the first component of the
+# control variable, and {python}`v` the second one.
 #
 # ::::{hint}
 # An alternative way of specifying the controls would be to reuse the mixed function
@@ -104,8 +109,8 @@ controls = [u, v]
 # Although this formulation is slightly different (it uses a
 # {py:class}`fenics.Function` for the controls, and not a list) the de-facto behavior of
 # both methods is completely identical, just the interpretation is slightly different
-# (since the individual components of the `V` {py:class}`fenics.FunctionSpace` are also
-# CG1 functions).
+# (since the individual components of the {py:class}`fenics.FunctionSpace` {python}`V`
+# are also CG1 functions).
 # ::::
 #
 # ### Definition of the mixed weak form
@@ -128,9 +133,9 @@ e = e_y + e_z
 bcs = bcs_y + bcs_z
 
 # Note, that we can only have one state equation as we also have only a single state
-# variable `state`, and the number of state variables and state equations has to
-# coincide, and the same is true for the boundary conditions, where also just a single
-# list is required.
+# variable {python}`state`, and the number of state variables and state equations has
+# to coincide, and the same is true for the boundary conditions, where also just a
+# single list is required.
 #
 # ### Defintion of the optimization problem
 #

@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_poisson)=
 # # Distributed Control of a Poisson Problem
 #
@@ -72,9 +76,9 @@ cashocs.set_log_level(cashocs.LogLevel.INFO)
 # There are a total of five levels of verbosity, given by
 # {py:class}`cashocs.LogLevel.DEBUG`, {py:class}`cashocs.LogLevel.INFO`,
 # {py:class}`cashocs.LogLevel.WARNING`, {py:class}`cashocs.LogLevel.ERROR`,
-# and {py:class}`cashocs.LogLevel.CRITICAL`. The default value is `INFO`, which would
-# also be selected if the {py:func}`cashocs.set_log_level` method would not have been
-# called.
+# and {py:class}`cashocs.LogLevel.CRITICAL`. The default value is {python}`INFO`, which
+# would also be selected if the {py:func}`cashocs.set_log_level` method would not have
+# been called.
 # :::
 #
 # Next, we have to load the config file which loads the user's input parameters into the
@@ -96,8 +100,8 @@ mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 # are placed along each axis of the square. Note, that the mesh could be
 # further manipulated with additional, optional arguments, and we
 # refer to {py:func}`regular_mesh <cashocs.regular_mesh>` for more infos. Note,
-# that the `subdomains` object is a (empty) `MeshFunction`, and that
-# `boundaries` is a `MeshFunction` that contains markers for the following
+# that the {python}`subdomains` object is a (empty) {py:class}`MeshFunction`, and that
+# {python}`boundaries` is a {py:class}`MeshFunction` that contains markers for the following
 # boundaries
 #
 # - The left side of the square is marked by 1
@@ -118,21 +122,21 @@ V = FunctionSpace(mesh, "CG", 1)
 #
 # To describe the state system in cashocs, we use (almost) standard
 # FEniCS syntax, and the differences will be highlighted in the
-# following. First, we define a {py:class}`fenics.Function` `y` that models our
-# state variable $y$, and a {py:class}`fenics.Function` `p` that models
+# following. First, we define a {py:class}`fenics.Function` {python}`y` that models our
+# state variable $y$, and a {py:class}`fenics.Function` {python}`p` that models
 # the corresponding adjoint variable $p$ via
 
 y = Function(V)
 p = Function(V)
 
 # Next up, we analogously define the control variable as {py:class}`fenics.Function`
-# `u`
+# {python}`u`
 
 u = Function(V)
 
 # This enables us to define the weak form of the state equation,
 # which is tested not with a {py:class}`fenics.TestFunction` but with the adjoint
-# variable `p` via the classical FEniCS / UFL syntax
+# variable {python}`p` via the classical FEniCS / UFL syntax
 
 e = inner(grad(y), grad(p)) * dx - u * p * dx
 
@@ -205,12 +209,12 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 #
 # Now, we have to define the optimal control problem which we do
 # by first specifying the cost functional. To do so, we define the
-# desired state $y_d$ as an {py:class}`fenics.Expression` `y_d`, i.e.,
+# desired state $y_d$ as an {py:class}`fenics.Expression` {python}`y_d`, i.e.,
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 
-# Alternatively, `y_d` could also be a {py:class}`fenics.Function` or any other object
-# that is usable in an UFL form (e.g. generated with
+# Alternatively, {python}`y_d` could also be a {py:class}`fenics.Function` or any other
+# object that is usable in an UFL form (e.g. generated with
 # {py:func}`fenics.SpatialCoordinate`).
 #
 # Then, we define the regularization parameter $\alpha$ and the tracking-type
@@ -231,8 +235,8 @@ J = cashocs.IntegralFunctional(
 # ### Definition of the optimization problem and its solution
 #
 # Finally, we set up an
-# {py:class}`OptimalControlProblem <cashocs.OptimalControlProblem>` `ocp` and then
-# directly solve it with the method {py:meth}`ocp.solve()
+# {py:class}`OptimalControlProblem <cashocs.OptimalControlProblem>` {python}`ocp` and
+# then directly solve it with the method {py:meth}`ocp.solve()
 # <cashocs.OptimalControlProblem.solve>`
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, y, u, p, config=config)
@@ -244,10 +248,10 @@ ocp.solve()
 # config file. However, there are some options that can be directly set with keyword
 # arguments for the {py:meth}`solve <cashocs.OptimalControlProblem.solve>` call. These
 # are
-# - `algorithm` : Specifies which solution algorithm shall be used.
-# - `rtol` : The relative tolerance for the optimization algorithm.
-# - `atol` : The absolute tolerance for the optimization algorithm.
-# - `max_iter` : The maximum amount of iterations that can be carried out.
+# - {python}`algorithm` : Specifies which solution algorithm shall be used.
+# - {python}`rtol` : The relative tolerance for the optimization algorithm.
+# - {python}`atol` : The absolute tolerance for the optimization algorithm.
+# - {python}`max_iter` : The maximum amount of iterations that can be carried out.
 #
 # Hence, we could also use the command
 #
@@ -256,7 +260,7 @@ ocp.solve()
 # :::
 #
 # to solve the optimization problem with the L-BFGS method, a relative tolerance of
-# `1e-3`, no absolute tolerance, and a maximum of 100 iterations.
+# {python}`1e-3`, no absolute tolerance, and a maximum of 100 iterations.
 #
 # The possible values for these arguments are the same as {ref}`the corresponding ones
 # in the config file <config_ocp_optimization_routine>`. This just allows for some

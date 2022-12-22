@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_dirichlet_control)=
 # # Dirichlet Boundary Control
 #
@@ -127,9 +131,9 @@ p = Function(V)
 u = Function(V)
 # -
 
-# The only difference is, that we now also define `n`, which is the outer unit
-# normal vector on $\Gamma$, and `h`, which is the maximum length of an edge of the
-# respective finite element (during assemly).
+# The only difference is, that we now also define {python}`n`, which is the outer unit
+# normal vector on $\Gamma$, and {python}`h`, which is the maximum length of an edge of
+# the respective finite element (during assemly).
 #
 # Then, we define the Dirichlet boundary conditions, which are enforced strongly.
 # As we use Nitsche's method to implement the boundary conditions on the entire
@@ -195,7 +199,7 @@ bdry_idx = Function(V)
 [bc.apply(bdry_idx.vector()) for bc in bcs]
 mask = np.where(bdry_idx.vector()[:] == 1)[0]
 
-# Then, we restrict both `y` and `u` to the boundary by
+# Then, we restrict both {python}`y` and {python}`u` to the boundary by
 
 y_bdry = Function(V)
 u_bdry = Function(V)
@@ -217,7 +221,7 @@ print("Error regarding the (weak) imposition of the boundary values")
 print("Error L^\infty: " + format(error_inf, ".3e") + " %")
 print("Error L^2: " + format(error_l2, ".3e") + " %")
 
-# We see, that with `eta = 1e4` we get a relative error of under 5e-3 % in the
+# We see, that with {python}`eta = 1e4` we get a relative error of under 5e-3 % in the
 # $L^\infty(\Omega)$ norm, and under 5e-4 in the $L^2(\Omega)$ norm, which is
 # sufficient for applications.
 #

@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_picard_iteration)=
 # # Coupled Problems - Picard Iteration
 #
@@ -122,7 +126,7 @@ bcs = [bcs_y, bcs_z]
 # ### Definition of the optimization problem
 #
 # The cost functional is defined as in {ref}`demo_monolithic_problems`, the only
-# difference is that `y` and `z` now are {py:class}`fenics.Function` objects, whereas
+# difference is that {python}`y` and {python}`z` now are {py:class}`fenics.Function` objects, whereas
 # they were generated with the {py:func}`fenics.split` command previously
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)

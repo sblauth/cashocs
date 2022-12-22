@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_state_constraints)=
 # # Optimal Control with State Constraints
 #
@@ -97,7 +101,7 @@ ocp_init.solve()
 # Cashocs automatically updates the user input during the runtime of the optimization
 # algorithm. Hence, after the {py:meth}`ocp_init.solve()
 # <cashocs.OptimalControlProblem.solve>` command has returned, the solution is already
-# stored in `u`.
+# stored in {python}`u`.
 # :::
 #
 # ### The regularized problems
@@ -108,7 +112,7 @@ ocp_init.solve()
 y_bar = 1e-1
 gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
-# Solving the regularized problems is then as simple as writing a `for` loop
+# Solving the regularized problems is then as simple as writing a {python}`for` loop
 
 # +
 for gamma in gammas:
@@ -122,11 +126,11 @@ for gamma in gammas:
     ocp_gamma.solve()
 # -
 
-# Here, we use a `for` loop, define the new cost functional (with the new value of
+# Here, we use a {python}`for` loop, define the new cost functional (with the new value of
 # $\gamma$), set up the optimal control problem and solve it, as previously.
 #
 # :::{hint}
-# Note that we could have also defined `y_bar` as a {py:class}`fenics.Function`
+# Note that we could have also defined {python}`y_bar` as a {py:class}`fenics.Function`
 # or {py:class}`fenics.Expression`, and the method would have worked exactly the same,
 # the corresponding object just has to be a valid input for an UFL form.
 # :::
@@ -149,8 +153,8 @@ for gamma in gammas:
 # ### Validation of the method
 #
 # Finally, we perform a post-processing to see whether the state constraint is
-# (approximately) satisfied. Therefore, we compute the maximum value of `y`,
-# and compute the relative error between this and `y_bar`
+# (approximately) satisfied. Therefore, we compute the maximum value of {python}`y`,
+# and compute the relative error between this and {python}`y_bar`
 
 y_max = np.max(y.vector()[:])
 error = abs(y_max - y_bar) / abs(y_bar) * 100

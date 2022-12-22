@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_heat_equation)=
 # # Distributed Control for Time Dependent Problems
-
+#
 # ## Problem Formulation
 #
 # In this demo  we take a look at how time dependent problems can be treated with
@@ -117,7 +121,7 @@ t_start = dt
 t_end = 1.0
 t_array = np.linspace(t_start, t_end, int(1 / dt))
 
-# Here, `t_array` is a numpy array containing all time steps. Note, that we do **not**
+# Here, {python}`t_array` is a numpy array containing all time steps. Note, that we do **not**
 # include $t=0$ in the array. This is due to the fact, that the initial condition
 # is prescribed and fixed.
 #
@@ -130,8 +134,8 @@ states = [Function(V) for i in range(len(t_array))]
 controls = [Function(V) for i in range(len(t_array))]
 adjoints = [Function(V) for i in range(len(t_array))]
 
-# Note, that `states[k]` corresponds to $y_{k+1}$ since indices start at
-# `0` in most programming languages (as it is the case in python).
+# Note, that {python}`states[k]` corresponds to $y_{k+1}$ since indices start at
+# {python}`0` in most programming languages (as it is the case in python).
 #
 # As the boundary conditions are not time dependent, we can initialize them now, and
 # repeat them in a list, since they are the same for every state
@@ -193,14 +197,14 @@ for k in range(len(t_array)):
     )
 
 # ::::{admonition} Description of the for-loop
-# At the beginning, the 'current' time t is determined from ``t_array``, and the
+# At the beginning, the 'current' time t is determined from {python}`t_array`, and the
 # expression for the desired state is updated to reflect the current time with the code
 # :::python
 # t = t_array[k]
 # y_d_expr.t = t
 # :::
 #
-# The following line sets the object `y` to $y_{k+1}$
+# The following line sets the object {python}`y` to $y_{k+1}$
 # :::python
 # y = states[k]
 # :::
@@ -215,7 +219,7 @@ for k in range(len(t_array)):
 # :::
 #
 # which ensures that $y_0 = 0$, which corresponds to the initial condition
-# $y^{(0)} = 0$. Hence, `y_prev` indeed corresponds to $y_{k}$.
+# $y^{(0)} = 0$. Hence, {python}`y_prev` indeed corresponds to $y_{k}$.
 #
 # Moreover, we get the current control and adjoint state via
 # :::python

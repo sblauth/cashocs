@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_scalar_control_tracking)=
 # # Tracking of Scalar Functionals for Optimal Control Problems
-
+#
 # ## Problem Formulation
 #
 # In this demo we investigate cashocs functionality of tracking scalar functionals
@@ -116,8 +120,9 @@ J_tracking = cashocs.ScalarTrackingFunctional(integrand, tracking_goal)
 
 # :::{note}
 # The factor in front of the quadratic term can also be adapted, by using the keyword
-# argument `weight` of {py:class}`cashocs.ScalarTrackingFunctional`. Note that the
-# default factor is `0.5`, and that each weight will be multiplied by this value.
+# argument {python}`weight` of {py:class}`cashocs.ScalarTrackingFunctional`. Note that
+# the default factor is {python}`0.5`, and that each weight will be multiplied by this
+# value.
 # :::
 #
 # Finally, we set up our optimization problem and solve it with the

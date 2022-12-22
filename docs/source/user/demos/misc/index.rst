@@ -6,5 +6,5 @@ In this part of the tutorial, we showcase several other features of cashocs, whi
 .. toctree::
    :maxdepth: 1
    :caption: List of all miscellaneous tutorials:
-
-   doc_xdmf_io
+   
+   demo_xdmf_io.md

@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_control_solver)=
 # # cashocs as Solver for Optimal Control Problems
 #
@@ -123,8 +127,8 @@ adjoint_bcs = bcs
 # For both objects, one has to define them as a single UFL form for cashocs, as with the
 # state system and cost functional. In particular, the adjoint weak form has to be in
 # the form of a nonlinear variational problem, so that
-# `fenics.solve(adjoint_form == 0, p, adjoint_bcs)` could be used to solve it. In
-# particular, both forms have to include {py:class}`fenics.TestFunction` objects from
+# {python}`fenics.solve(adjoint_form == 0, p, adjoint_bcs)` could be used to solve it.
+# In particular, both forms have to include {py:class}`fenics.TestFunction` objects from
 # the control space and adjoint space, respectively, and must not contain
 # {py:class}`fenics.TrialFunction` objects.
 #

@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_constraints)=
 # # Treatment of additional constraints
 #
@@ -103,10 +107,10 @@ pointwise_equality_constraint = cashocs.EqualityConstraint(
 # indicator function for the lower left quarter multiplied by the state variable y.
 # The next argument is the right-hand side of the equality constraint, i.e.,
 # $c_{b,l}$ which we choose as 0 in this example. Finally, the keyword argument
-# `measure` is used to specify the integration measure that should be used to define
-# where the constraint is given. Typical examples are a volume measure (`dx`, as it is
-# the case here) or surface measure (`ds`, which could be used if we wanted to pose the
-# constraint only on the boundary).
+# {python}`measure` is used to specify the integration measure that should be used to
+# define where the constraint is given. Typical examples are a volume measure (`dx`, as
+# it is the case here) or surface measure (`ds`, which could be used if we wanted to
+# pose the constraint only on the boundary).
 #
 # Let's move on to the next constraint. Again, we have an equality constraint, but now
 # it is a scalar value which is constrained, and its given by the integral over some
@@ -122,7 +126,7 @@ integral_equality_constraint = cashocs.EqualityConstraint(
 # case $y^2$ multiplied by the indicator function of the bottom right quarter, i.e.,
 # the left-hand side of the constraint. The second and final argument for this
 # constraint is right-hand side of the constraint, i.e., $c_{b,r}$, which we choose as
-# `0.01` in this example.
+# {python}`0.01` in this example.
 #
 # Let's move on to the interesting case of inequality constraints. Let us first consider
 # a setting similar to before, where the constraint's left-hand side is given by an
@@ -135,9 +139,9 @@ integral_inequality_constraint = cashocs.InequalityConstraint(
 
 # Here, as before, the first argument is the left-hand side of the constraint, i.e., the
 # UFL form of the integrand, in this case $y$ times the indicator function of the top
-# left quarter, which is to be integrated over the measure `dx`. The second argument
-# `lower_bound = -0.025` specifies the lower bound for this inequality constraint, that
-# means, that $c_{t,l} = -0.025$ in our case.
+# left quarter, which is to be integrated over the measure {python}`dx`. The second
+# argument {python}`lower_bound = -0.025` specifies the lower bound for this inequality
+# constraint, that means, that $c_{t,l} = -0.025$ in our case.
 #
 # Finally, let us take a look at the case of pointwise inequality constraint. This is,
 # as before, implemented via the {py:class}`cashocs.InequalityConstraint` class
@@ -148,14 +152,16 @@ pointwise_inequality_constraint = cashocs.InequalityConstraint(
 
 # Here, again the first argument is the function on the left-hand side of the
 # constraint, i.e., $y$ times the indicator function of the top right quarter. The
-# second argument, `upper_bound=0.25`, defines the right-hand side of the constraint,
-# i.e., we choose $c_{t,r} = 0.25$. Finally, as for the pointwise equality constraint,
-# we specify the integration measure for which the constraint is posed, in our case
-# `measure=dx`, as we consider the constraint pointwise in the domain $\Omega$.
+# second argument, {python}`upper_bound=0.25`, defines the right-hand side of the
+# constraint, i.e., we choose $c_{t,r} = 0.25$. Finally, as for the pointwise equality
+# constraint, we specify the integration measure for which the constraint is posed, in
+# our case {python}`measure=dx`, as we consider the constraint pointwise in the domain
+# $\Omega$.
 #
 # :::{note}
-# For bilateral inequality constraints we can use both keyword arguments `upper_bound`
-# and `lower_bound` to define both bounds for the constraint.
+# For bilateral inequality constraints we can use both keyword arguments
+# {python}`upper_bound` and {python}`lower_bound` to define both bounds for the
+# constraint.
 # :::
 #
 # As is usual in cashocs, once we have defined multiple constraints, we gather them into
@@ -182,7 +188,7 @@ problem.solve(method="AL")
 # :::{note}
 # To be able to treat (nearly) arbitrary types of constraints, cashocs regularizes
 # these using either an augmented Lagrangian method or a quadratic penalty method.
-# Which method is used can be specified via the keyword argument `method`, which
+# Which method is used can be specified via the keyword argument {python}`method`, which
 # is chosen to be an augmented Lagrangian method (`'AL'`) in this demo.
 # :::
 #

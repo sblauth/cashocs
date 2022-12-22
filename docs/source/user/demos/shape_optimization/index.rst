@@ -8,15 +8,15 @@ be treated with cashocs.
    :maxdepth: 1
    :caption: List of all shape optimization problems:
 
-   doc_shape_poisson
+   demo_shape_poisson.md
    doc_config
-   doc_regularization
-   doc_inverse_tomography
-   doc_shape_stokes
-   doc_remeshing
-   doc_custom_scalar_product
-   doc_scaling
-   doc_eikonal_stiffness
-   doc_p_laplacian
-   doc_space_mapping_semilinear_transmission
-   doc_space_mapping_uniform_flow_distribution
+   demo_regularization.md
+   demo_inverse_tomography.md
+   demo_shape_stokes.md
+   demo_remeshing.md
+   demo_custom_scalar_product.md
+   demo_scaling.md
+   demo_eikonal_stiffness.md
+   demo_p_laplacian.md
+   demo_space_mapping_semilinear_transmission.md
+   demo_space_mapping_uniform_flow_distribution.md

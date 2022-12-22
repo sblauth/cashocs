@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_neumann_control)=
 # # Neumann Boundary Control
-
+#
 # ## Problem Formulation
 #
 # In this demo we investigate an optimal control problem with a Neumann type boundary
@@ -120,7 +124,7 @@ scalar_product = TrialFunction(V) * TestFunction(V) * ds
 # ### Setup of the optimization problem and its solution
 #
 # With this, we can now define the optimal control problem with the
-# additional keyword argument `riesz_scalar_products` and solve it with the
+# additional keyword argument {python}`riesz_scalar_products` and solve it with the
 # {py:meth}`ocp.solve() <cashocs.OptimalControlProblem.solve>` command
 
 ocp = cashocs.OptimalControlProblem(

@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_nonlinear_pdes)=
 # # Optimal Control with Nonlinear PDE Constraints
-
+#
 # ## Problem Formulation
 #
 # In this demo, we take a look at the case of nonlinear PDE constraints for optimization
@@ -35,12 +39,12 @@
 # is_linear = False
 # :::
 #
-# Note, that `is_linear = False` works for any problem, as linear equations are just a
-# special case of nonlinear ones, and the corresponding nonlinear solver converges in a
-# single iteration for these. However, in the opposite case, FEniCS will raise an error,
-# so that an actually nonlinear equation cannot be solved using `is_linear = True`.
-# Also, we briefly recall from {ref}`config_optimal_control`, that the default behavior
-# is `is_linear = False`, so that this is not an issue.
+# Note, that {ini}`is_linear = False` works for any problem, as linear equations are
+# just a special case of nonlinear ones, and the corresponding nonlinear solver
+# converges in a single iteration for these. However, in the opposite case, FEniCS will
+# raise an error, so that an actually nonlinear equation cannot be solved using
+# {ini}`is_linear = True`. Also, we briefly recall from {ref}`config_optimal_control`,
+# that the default behavior is {ini}`is_linear = False`, so that this is not an issue.
 #
 # ## Implementation
 #

@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_box_constraints)=
 # # Control Constraints
 #
@@ -88,8 +92,8 @@ u_a = interpolate(Expression("50*(x[0]-1)", degree=1), V)
 u_b = interpolate(Expression("50*x[0]", degree=1), V)
 
 # which just corresponds to two functions, generated from {py:class}`fenics.Expression`
-# objects via {py:func}`fenics.interpolate`. These are then put into the list `cc`,
-# which models the control constraints, i.e.,
+# objects via {py:func}`fenics.interpolate`. These are then put into the list
+# {python}`cc`, which models the control constraints, i.e.,
 
 cc = [u_a, u_b]
 
@@ -105,18 +109,19 @@ cc = [u_a, u_b]
 # cc = [u_a, u_b]
 # :::
 #
-# and completely analogous with `float('-inf')` for no constraint on the lower bound.
-# Moreover, note that the specification of using either constant `float` values and
-# {py:class}`fenics.Function` objects can be mixed arbitrarily, so that one can, e.g.,
-# specify a constant value for the upper boundary and use a {py:class}`fenics.Function`
-# on the lower one.
+# and completely analogous with {python}`float('-inf')` for no constraint on the lower
+# bound. Moreover, note that the specification of using either constant {python}`float`
+# values and {py:class}`fenics.Function` objects can be mixed arbitrarily, so that one
+# can, e.g., specify a constant value for the upper boundary and use a
+# {py:class}`fenics.Function` on the lower one.
 # ::::
 #
 # ### Setup of the optimization problem and its solution
 #
 # Now, we can set up the optimal control problem as we did before, using the additional
-# keyword argument `control_constraints` into which we put the list `cc`, and then solve
-# it via the {py:meth}`ocp.solve() <cashocs.OptimalControlProblem.solve>` method
+# keyword argument {python}`control_constraints` into which we put the list
+# {python}`cc`, and then solve it via the {py:meth}`ocp.solve()
+# <cashocs.OptimalControlProblem.solve>` method
 
 ocp = cashocs.OptimalControlProblem(
     e, bcs, J, y, u, p, config=config, control_constraints=cc

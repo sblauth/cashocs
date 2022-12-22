@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_stokes)=
 # # Distributed Control of a Stokes Problem
 #
@@ -85,8 +89,8 @@ p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
 V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
 U = VectorFunctionSpace(mesh, "CG", 1)
 
-# Moreover, we have defined the control space `U` as {py:class}`fenics.FunctionSpace`
-# with piecewise linear Lagrange elements.
+# Moreover, we have defined the control space {python}`U` as
+# {py:class}`fenics.FunctionSpace`  with piecewise linear Lagrange elements.
 #
 # Next, we set up the corresponding function objects, as follows
 
@@ -96,11 +100,12 @@ vq = Function(V)
 v, q = split(vq)
 c = Function(U)
 
-# Here, `up` plays the role of the state variable, having components `u` and `p`, which
-# are extracted using the {py:func}`fenics.split` command. The adjoint state `vq`  is
-# structured in exactly the same fashion. See {ref}`demo_monolithic_problems` for more
-# details. Similarly to there, `v` will play the role of the adjoint velocity, and
-# `q` the one of the adjoint pressure.
+# Here, {python}`up` plays the role of the state variable, having components {python}`u`
+# and {python}`p`, which are extracted using the {py:func}`fenics.split` command. The
+# adjoint state {python}`vq`  is structured in exactly the same fashion. See
+# {ref}`demo_monolithic_problems` for more details. Similarly to there, {python}`v` will
+# play the role of the adjoint velocity, and {python}`q` the one of the adjoint
+# pressure.
 #
 # Next up is the definition of the Stokes system. This can be done via
 
@@ -136,13 +141,14 @@ bcs = no_slip_bcs + [bc_lid, bc_pressure]
 # for the lid of the cavity as a {py:class}`fenics.Expression`, and create a
 # corresponding boundary condition. Finally, the Dirichlet condition for the pressure is
 # defined. Note that in order to make this work, one has to specify the keyword argument
-# `method='pointwise'`.
+# {python}`method='pointwise'`.
 #
 # ### Defintion of the optimization problem
 #
 # The definition of the optimization problem is in complete analogy to the previous
 # ones we considered. The only difference is the fact that we now have to use
-# {py:func}`fenics.inner` to multiply the vector valued functions `u`, `u_d` and `c`.
+# {py:func}`fenics.inner` to multiply the vector valued functions {python}`u`,
+# {python}`u_d` and {python}`c`.
 
 alpha = 1e-5
 u_d = Expression(
@@ -157,8 +163,8 @@ J = cashocs.IntegralFunctional(
     + Constant(0.5 * alpha) * inner(c, c) * dx
 )
 
-# As in {ref}`demo_monolithic_problems`, we then set up the optimization problem `ocp`
-# and solve it with the command
+# As in {ref}`demo_monolithic_problems`, we then set up the optimization problem
+# {python}`ocp` and solve it with the command
 # {py:meth}`ocp.solve() <cashocs.OptimalControlProblem.solve>`
 
 ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config=config)

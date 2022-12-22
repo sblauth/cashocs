@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_iterative_solvers)=
 # # Iterative Solvers for State and Adjoint Systems
-
+#
 # ## Problem Formulation
 #
 # cashocs is also capable of using iterative solvers through the linear algebra
@@ -187,13 +191,13 @@ ocp.solve()
 # -
 
 # :::{note}
-# Note, that if the `ksp_options` and `adjoint_ksp_options` are not passed
-# to the {py:class}`OptimalControlProblem <cashocs.OptimalControlProblem>` or `None`,
-# which is the default value of these keyword parameters, then the direct solver MUMPS
-# is used. Moreover, if one wants to use identical options for state and adjoint
-# systems, then only the `ksp_options` have to be passed. This is because
-# `adjoint_ksp_options` always mirrors the ksp_options in case that the input is `None`
-# for `adjoint_ksp_options`.
+# Note, that if the {python}`ksp_options` and {python}`adjoint_ksp_options` are not
+# passed to the {py:class}`OptimalControlProblem <cashocs.OptimalControlProblem>` or
+# {python}`None`, which is the default value of these keyword parameters, then the
+# direct solver MUMPS is used. Moreover, if one wants to use identical options for state
+# and adjoint systems, then only the {python}`ksp_options` have to be passed. This is
+# because {python}`adjoint_ksp_options` always mirrors the ksp_options in case that the
+# input is {python}`None` for {python}`adjoint_ksp_options`.
 # :::
 #
 # We visualize the results of the optimization with the lines

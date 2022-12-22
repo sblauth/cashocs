@@ -134,3 +134,17 @@ autosummary_generate = True
 autosummary_imported_members = True
 
 myst_enable_extensions = ["dollarmath", "colon_fence"]
+
+rst_prolog = """
+.. role:: ini(code)
+    :language: ini
+    :class: highlight
+
+.. role:: python(code)
+    :language: python
+    :class: highlight
+    
+.. role:: cpp(code)
+    :language: cpp
+    :class: highlight
+"""
