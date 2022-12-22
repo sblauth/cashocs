@@ -75,7 +75,7 @@ V = FunctionSpace(mesh, "CG", 1)
 # However, compared to the previous examples, there is a major change in the config
 # file. As we want to use the Picard iteration as solver for the state PDEs, we now
 # specify
-# :::python
+# :::ini
 # picard_iteration = True
 # :::
 #

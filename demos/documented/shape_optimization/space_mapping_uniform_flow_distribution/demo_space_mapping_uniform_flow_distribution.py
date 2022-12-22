@@ -375,7 +375,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # :::
 #
 # Finally, the mesh generated with the above command is converted to XDMF with
-# {py:func}`<cashocs.convert>`
+# {py:func}`cashocs.convert`
 # :::python
 # cashocs.convert("./mesh/fine/fine.msh", "./mesh/fine/fine.xdmf")
 # :::
