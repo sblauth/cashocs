@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_sparse_control)=
 # # Sparse Control
-
+#
 # ## Problem Formulation
 #
 # In this demo, we investigate a possibility for obtaining sparse optimal controls.
@@ -72,8 +76,9 @@ J = cashocs.IntegralFunctional(
 )
 
 # ::::{note}
-# Note that for the regularization term we now do not use `Constant(0.5*alpha)*u*u*dx`,
-# which corresponds to the $L^2(\Omega)$ norm squared, but rather
+# Note that for the regularization term we now do not use
+# {python}`Constant(0.5*alpha)*u*u*dx`,  which corresponds to the $L^2(\Omega)$ norm
+# squared, but rather
 # :::python
 # Constant(0.5 * alpha) * abs(u) * dx
 # :::
@@ -116,6 +121,6 @@ plt.tight_layout()
 # ![](/../../demos/documented/optimal_control/sparse_control/img_sparse_control.png)
 #
 # :::{note}
-# The oscillations in between the peaks for the control variable `u` are just numerical
-# noise, which comes from the discretization error.
+# The oscillations in between the peaks for the control variable {python}`u` are just
+# numerical noise, which comes from the discretization error.
 # :::

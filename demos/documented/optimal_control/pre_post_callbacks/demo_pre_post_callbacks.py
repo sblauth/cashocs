@@ -8,9 +8,13 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_pre_post_hooks)=
 # # Pre- and Post-Callbacks for the optimization
-
+#
 # ## Problem Formulation
 #
 # In this demo we show how one can use the flexibility of cashocs
@@ -40,7 +44,7 @@
 # equations.
 #
 # In the following, we will describe how to solve this problem
-# using cashocs, where we will use the `pre_callback` functionality to implement
+# using cashocs, where we will use the {python}`pre_callback` functionality to implement
 # a homotopy method for solving the Navier-Stokes equations.
 #
 # ## Implementation
@@ -113,14 +117,15 @@ J = cashocs.IntegralFunctional(
 
 # ### Callbacks
 #
-# Note, that we have chosen a Reynolds number of `Re = 1e2` for this demo.
+# Note, that we have chosen a Reynolds number of {python}`Re = 1e2` for this demo.
 # In order to solve the Navier-Stokes equations for higher Reynolds numbers, it is
 # often sensible to first solve the equations for a lower Reynolds number and then
 # use this solution as initial guess for the original high Reynolds number problem.
-# We can use this procedure in cashocs with its `pre_callback` functionality.
-# A `pre_callback` is a function without arguments, which gets called each time before
-# solving the state equation. In our case, the `pre_callback` should solve the
-# Navier-Stokes equations for a lower Reynolds number, so we define it as follows
+# We can use this procedure in cashocs with its {python}`pre_callback` functionality.
+# A {python}`pre_callback` is a function without arguments, which gets called each time
+# before solving the state equation. In our case, the {python}`pre_callback` should
+# solve the Navier-Stokes equations for a lower Reynolds number, so we define it as
+# follows
 
 
 def pre_callback():
@@ -137,14 +142,15 @@ def pre_callback():
 
 
 # where we solve the Navier-Stokes equations with a lower Reynolds number of
-# `Re / 10.0`. Later on, we inject this `pre_callback` into cashocs by using the
+# {python}`Re / 10.0`. Later on, we inject this {python}`pre_callback` into cashocs by
+# using the
 # {py:meth}`inject_pre_callback <cashocs.OptimalControlProblem.inject_pre_callback>`
 # method.
 #
 # Additionally, cashocs implements the functionality of also performing a pre-defined
-# action after each gradient computation, given by a so-called `post_callback`. In our
-# case, we just want to print a statement so that we can visualize what is happening.
-# Therefore, we define our `post_callback` as
+# action after each gradient computation, given by a so-called {python}`post_callback`.
+# In our case, we just want to print a statement so that we can visualize what is
+# happening. Therefore, we define our {python}`post_callback` as
 
 
 def post_callback():

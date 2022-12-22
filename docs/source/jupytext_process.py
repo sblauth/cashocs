@@ -4,9 +4,7 @@ Created on 21/12/2022, 08.39
 @author: blauths
 """
 
-import os
 import pathlib
-import shutil
 
 import jupytext
 
@@ -16,7 +14,7 @@ def process():
     ipynb using Jupytext. These files can then be included in Sphinx
     documentation"""
     # Directories to scan
-    subdirs = [pathlib.Path("../../demos")]
+    subdirs = [pathlib.Path("../../demos/documented")]
 
     # Iterate over subdirectories containing demos
     for subdir in subdirs:
@@ -25,8 +23,8 @@ def process():
         demo_dir.mkdir(parents=True, exist_ok=True)
 
         # Process each demo using jupytext/myst
-        # for demo in subdir.glob("**/demo*.py"):
-        for demo in subdir.glob("**/demo_shape_solver.py"):
+        for demo in subdir.glob("**/demo*.py"):
+            # for demo in subdir.glob("**/demo_space_mapping_semilinear_transmission.py"):
             python_demo = jupytext.read(demo)
             myst_text = jupytext.writes(python_demo, fmt="myst")
 

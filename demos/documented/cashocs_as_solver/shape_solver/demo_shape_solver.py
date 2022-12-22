@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_shape_solver)=
 # # cashocs as Solver for Shape Optimization Problems
 #
@@ -132,7 +136,7 @@ dJ = (
 # at its place.
 #
 # ::::{hint}
-# Alternatively, one could define the variable `vector_field` as follows
+# Alternatively, one could define the variable {python}`vector_field` as follows
 # :::python
 # space = VectorFunctionSpace(mesh, 'CG', 1)
 # vector_field = TestFunction(space)

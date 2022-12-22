@@ -8,6 +8,10 @@
 #       jupytext_version: 1.14.4
 # ---
 
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
 # (demo_control_boundary_conditions)=
 # # Boundary conditions for control variables
 #
@@ -102,8 +106,9 @@ ocp = cashocs.OptimalControlProblem(
 ocp.solve()
 
 # where the only additional parts in comparison to {ref}`demo_poisson` are the keyword
-# arguments `riesz_scalar_products`, which was already covered in
-# {ref}`demo_neumann_control`, and `control_bcs_list`, which we have defined previously.
+# arguments {python}`riesz_scalar_products`, which was already covered in
+# {ref}`demo_neumann_control`, and {python}`control_bcs_list`, which we have defined
+# previously.
 #
 # After solving this problem with cashocs, we visualize the solution with the code
 
