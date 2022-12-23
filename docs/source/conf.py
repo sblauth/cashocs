@@ -111,13 +111,17 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         }
     ],
-    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "navbar_persistent": [],
     "show_nav_level": 2,
     "favicons": [
         {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
         {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
     ],
+    "switcher": {
+        "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
+        "version_match": release,
+    },
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
