@@ -99,7 +99,8 @@ J = cashocs.IntegralFunctional(
 # </../../demos/documented/shape_optimization/regularization/config.ini>`, where
 # the following lines are relevant
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [Regularization]
 # factor_volume = 1.0
 # target_volume = 1.5

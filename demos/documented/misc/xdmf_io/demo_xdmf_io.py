@@ -40,7 +40,10 @@
 # code in complete analogy to {ref}`demo_shape_poisson`. The only difference lies in the
 # config file, where we use the following
 #
-# :::ini
+#
+# :::{code-block} ini
+# :caption: config.ini
+#
 # [Output]
 # save_state = True
 # save_adjoint = True

@@ -63,7 +63,8 @@
 # All the relevant changes appear in the ShapeGradient Section of the config file,
 # where we now add the following three lines
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [ShapeGradient]
 # use_p_laplacian = True
 # p_laplacian_power = 10

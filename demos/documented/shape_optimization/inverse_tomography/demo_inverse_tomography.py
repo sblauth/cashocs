@@ -300,7 +300,8 @@ J = [J1, J2, J3]
 # Before we can define the shape optimization properly, we have to take a look at the
 # config file to specify which boundaries are fixed, and which are deformable. There,
 # we have the following lines
-# :::ini
+# :::{code-block} ini
+# :caption: config.ini
 # [ShapeGradient]
 # shape_bdry_def = []
 # shape_bdry_fix = [1, 2, 3, 4]
@@ -318,7 +319,8 @@ J = [J1, J2, J3]
 # As stated in {ref}`config_shape_optimization`, we have to use the config file
 # setting
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # use_pull_back = False
 # ```
 #

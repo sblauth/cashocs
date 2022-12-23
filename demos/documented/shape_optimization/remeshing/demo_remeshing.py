@@ -108,7 +108,8 @@
 # </../../demos/documented/shape_optimization/remeshing/config.ini>`.
 # For this, we have the following lines
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [Mesh]
 # mesh_file = ./mesh/mesh.xdmf
 # gmsh_file = ./mesh/mesh.msh
@@ -272,7 +273,9 @@ plt.tight_layout()
 # The example for remeshing is somewhat artificial, as the problem does not
 # actually need remeshing. Therefore, the tolerances used in the config file, i.e.,
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
+# [MeshQuality]
 # tol_lower = 0.1
 # tol_upper = 0.25
 # ```

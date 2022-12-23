@@ -84,7 +84,8 @@ mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf
 # in the section {ref}`ShapeGradient <config_shape_shape_gradient>`, there is
 # the line
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [ShapeGradient]
 # shape_bdry_def = [1]
 # ```

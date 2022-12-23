@@ -133,7 +133,8 @@ mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh("./mesh/mesh.xdmf
 # To include the fact that only the obstacle boundary, with index {python}`4`, is
 # deformable, we have the following lines in the config file
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [ShapeGradient]
 # shape_bdry_def = [4]
 # shape_bdry_fix = [1,2,3]
@@ -195,7 +196,8 @@ J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx)
 # {ref}`demo_regularization`.
 # In the config file, we have the following (relevant) lines:
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [Regularization]
 # factor_volume = 1e4
 # use_initial_volume = True
@@ -225,7 +227,8 @@ sop.solve()
 # https://doi.org/10.1515/cmam-2016-0009). These are defined in the config file
 # in the {ref}`ShapeGradient section <config_shape_shape_gradient>`
 #
-# ```ini
+# ```{code-block} ini
+# :caption: config.ini
 # [ShapeGradient]
 # lambda_lame = 0.0
 # damping_factor = 0.0

@@ -60,7 +60,8 @@
 #
 # To use the stiffness computation based on the distance to the boundary, we add the
 # following lines to the config file
-# :::ini
+# :::{code-block}
+# :caption: config.ini
 # [ShapeGradient]
 # use_distance_mu = True
 # dist_min = 0.05

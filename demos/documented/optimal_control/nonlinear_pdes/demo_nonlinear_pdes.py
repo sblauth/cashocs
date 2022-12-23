@@ -35,7 +35,9 @@
 # As this problem has a nonlinear PDE as state constraint, we have to modify the config
 # file slightly. In particular, in the Section
 # {ref}`StateSystem <config_ocp_state_system>` we have to write
-# :::python
+# :::{code-block} ini
+# :caption: config.ini
+#
 # is_linear = False
 # :::
 #
