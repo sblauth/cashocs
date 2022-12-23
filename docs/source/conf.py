@@ -99,6 +99,12 @@ exclude_patterns = ["_build"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+
+if "dev" in release:
+    switcher_version = "dev"
+else:
+    switcher_version = release
+
 html_theme = "pydata_sphinx_theme"
 html_logo = "logo.png"
 html_theme_options = {
@@ -120,7 +126,7 @@ html_theme_options = {
     ],
     "switcher": {
         "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
-        "version_match": release,
+        "version_match": switcher_version,
     },
 }
 
