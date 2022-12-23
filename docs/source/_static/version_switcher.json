@@ -5,11 +5,6 @@
         "url": "https://cashocs.readthedocs.io/en/latest/"
     },
     {
-        "name": "2.0-alpha0",
-        "version": "2.0.0-alpha0",
-        "url": "https://cashocs.readthedocs.io/en/v2.0.0-alpha0/"
-    },
-    {
         "name": "1.8 (stable)",
         "version": "1.8.12",
         "url": "https://cashocs.readthedocs.io/en/v1.8.12/"
