@@ -28,7 +28,7 @@ copyright = "2020-2022, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.0-alpha1"
+release = "2.0.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
