@@ -7,7 +7,7 @@ RUN apt-get update --fix-missing \
 
 RUN conda install -c conda-forge mamba \
   && mamba create -n cashocs -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" coverage">=6.1.0" mpich python=3.11 \
-  && conda clean -tipsy
+  && conda clean --all --yes
 
 
 FROM test-env AS cashocs
