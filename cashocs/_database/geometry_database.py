@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
