@@ -24,7 +24,11 @@
 #
 # $$
 # \begin{align}
-#     &\min\; J((y,z), (u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right) \text{ d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right) \text{ d}x + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x + \frac{\beta}{2} \int_\Omega v^2 \text{ d}x \\
+#     &\min\; J((y,z), (u,v)) =
+#     \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{ d}x
+#     + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{ d}x
+#     + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x
+#     + \frac{\beta}{2} \int_\Omega v^2 \text{ d}x \\
 #     &\text{ subject to } \qquad
 #     \begin{alignedat}[t]{2}
 #         -\Delta y &= u \quad &&\text{ in } \Omega, \\
