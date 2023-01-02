@@ -215,6 +215,13 @@ Additionally, if you are using the nonlinear conjugate gradient methods for shap
 	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
 	https://doi.org/10.1137/20M1367738
 
+and if you are using the space mapping methods for shape optimization, please cite the preprint
+
+.. code-block:: text
+
+	Space Mapping for PDE Constrained Shape Optimization
+	Sebastian Blauth
+	https://doi.org/10.48550/arXiv.2208.05747
 	
 If you are using BibTeX, you can use the following entries
 
@@ -232,7 +239,6 @@ If you are using BibTeX, you can use the following entries
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
 	}
 
-as well as
 
 .. code-block:: bibtex
 
@@ -246,6 +252,17 @@ as well as
 		volume   = {31},
 		doi      = {10.1137/20M1367738},
 		fjournal = {SIAM Journal on Optimization},
+	}
+
+
+.. code-block:: bibtex
+
+	@article{Blauth2022Space,
+		author = {Sebastian Blauth},
+		publisher = {arXiv},
+		title = {Space Mapping for PDE Constrained Shape Optimization},
+		year = {2022},
+		doi = {10.48550/ARXIV.2208.05747},
 	}
 
 .. readme_end_citing
