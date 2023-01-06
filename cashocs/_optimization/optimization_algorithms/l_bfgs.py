@@ -64,6 +64,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             "AlgoLBFGS", "bfgs_periodic_restart"
         )
         self.periodic_its = 0
+        self.damped = self.config.getboolean("AlgoLBFGS", "damped")
 
         self._init_helpers()
 
@@ -80,6 +81,13 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             )
             self.y_k = _utils.create_function_list(self.db.function_db.control_spaces)
             self.s_k = _utils.create_function_list(self.db.function_db.control_spaces)
+            self.r_k = _utils.create_function_list(self.db.function_db.control_spaces)
+            self.storage = _utils.create_function_list(
+                self.db.function_db.control_spaces
+            )
+            self.approx_hessian_applied_to_y = _utils.create_function_list(
+                self.db.function_db.control_spaces
+            )
 
     def run(self) -> None:
         """Solves the optimization problem with the L-BFGS method."""
@@ -244,24 +252,67 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.s_k, self.s_k
             )
 
-            self.history_y.appendleft([x.copy(True) for x in self.y_k])
-            self.history_s.appendleft([x.copy(True) for x in self.s_k])
             curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
             denominator = np.sqrt(
                 self.form_handler.scalar_product(self.s_k, self.s_k)
                 * self.form_handler.scalar_product(self.y_k, self.y_k)
             )
 
-            if denominator <= 1e-15 or curvature_condition / denominator <= 1e-14:
-                self.has_curvature_info = False
+            if not self.damped:
+                self.history_y.appendleft([x.copy(True) for x in self.y_k])
+                self.history_s.appendleft([x.copy(True) for x in self.s_k])
+                if denominator <= 1e-15 or curvature_condition / denominator <= 1e-14:
+                    self.has_curvature_info = False
 
-                self.history_s.clear()
-                self.history_y.clear()
-                self.history_rho.clear()
+                    self.history_s.clear()
+                    self.history_y.clear()
+                    self.history_rho.clear()
+
+                else:
+                    self.has_curvature_info = True
+                    rho = 1 / curvature_condition
+                    self.history_rho.appendleft(rho)
 
             else:
+                for i in range(len(self.gradient)):
+                    self.storage[i].vector().vec().aypx(
+                        0.0, self.search_direction[i].vector().vec()
+                    )
+                    self.storage[i].vector().apply("")
+
+                self.compute_search_direction(self.y_k)
+                for i in range(len(self.gradient)):
+                    self.approx_hessian_applied_to_y[i].vector().vec().aypx(
+                        0.0, -self.search_direction[i].vector().vec()
+                    )
+                    self.approx_hessian_applied_to_y[i].vector().apply("")
+                    self.search_direction[i].vector().vec().aypx(
+                        0.0, self.storage[i].vector().vec()
+                    )
+                    self.search_direction[i].vector().apply("")
+
+                gamma = self.form_handler.scalar_product(
+                    self.y_k, self.approx_hessian_applied_to_y
+                )
+
+                if curvature_condition >= 0.2 * gamma:
+                    phi = 1.0
+                else:
+                    phi = (0.8 * gamma) / (gamma - curvature_condition)
+
+                for i in range(len(self.gradient)):
+                    self.r_k[i].vector().vec().aypx(
+                        0.0,
+                        phi * self.s_k[i].vector().vec()
+                        + (1.0 - phi)
+                        * self.approx_hessian_applied_to_y[i].vector().vec(),
+                    )
+                    self.r_k[i].vector().apply("")
+
+                self.history_s.appendleft([x.copy(True) for x in self.r_k])
+                self.history_y.appendleft([x.copy(True) for x in self.y_k])
                 self.has_curvature_info = True
-                rho = 1 / curvature_condition
+                rho = 1 / self.form_handler.scalar_product(self.y_k, self.r_k)
                 self.history_rho.appendleft(rho)
 
             if len(self.history_s) > self.bfgs_memory_size:
