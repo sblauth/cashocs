@@ -23,7 +23,6 @@ import collections
 from typing import List, TYPE_CHECKING
 
 import fenics
-import numpy as np
 
 from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
@@ -253,17 +252,19 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             )
 
             curvature_condition = self.form_handler.scalar_product(self.y_k, self.s_k)
-            denominator = np.sqrt(
-                self.form_handler.scalar_product(self.s_k, self.s_k)
-                * self.form_handler.scalar_product(self.y_k, self.y_k)
+
+            self._compute_approximate_inverse_hessian_application(
+                self.y_k, self.approx_hessian_applied_to_y
+            )
+            gamma = self.form_handler.scalar_product(
+                self.y_k, self.approx_hessian_applied_to_y
             )
 
             if not self.damped:
                 self.history_y.appendleft([x.copy(True) for x in self.y_k])
                 self.history_s.appendleft([x.copy(True) for x in self.s_k])
-                if denominator <= 1e-15 or curvature_condition / denominator <= 1e-14:
+                if curvature_condition < 1e-4 * gamma:
                     self.has_curvature_info = False
-
                     self.history_s.clear()
                     self.history_y.clear()
                     self.history_rho.clear()
@@ -274,27 +275,6 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     self.history_rho.appendleft(rho)
 
             else:
-                for i in range(len(self.gradient)):
-                    self.storage[i].vector().vec().aypx(
-                        0.0, self.search_direction[i].vector().vec()
-                    )
-                    self.storage[i].vector().apply("")
-
-                self.compute_search_direction(self.y_k)
-                for i in range(len(self.gradient)):
-                    self.approx_hessian_applied_to_y[i].vector().vec().aypx(
-                        0.0, -self.search_direction[i].vector().vec()
-                    )
-                    self.approx_hessian_applied_to_y[i].vector().apply("")
-                    self.search_direction[i].vector().vec().aypx(
-                        0.0, self.storage[i].vector().vec()
-                    )
-                    self.search_direction[i].vector().apply("")
-
-                gamma = self.form_handler.scalar_product(
-                    self.y_k, self.approx_hessian_applied_to_y
-                )
-
                 if curvature_condition >= 0.2 * gamma:
                     phi = 1.0
                 else:
@@ -339,3 +319,28 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.history_s.clear()
                 self.history_y.clear()
                 self.history_rho.clear()
+
+    def _compute_approximate_inverse_hessian_application(
+        self, y: List[fenics.Function], res: List[fenics.Function]
+    ) -> None:
+        """Computes the application of the approximate inverse Hessian to y.
+
+        Args:
+            y: The vector, on which the approximate inverse Hessian is applied to.
+            res: The result of the application, i.e., Hy.
+
+        """
+        for i in range(len(self.gradient)):
+            self.storage[i].vector().vec().aypx(
+                0.0, self.search_direction[i].vector().vec()
+            )
+            self.storage[i].vector().apply("")
+
+        self.compute_search_direction(y)
+        for i in range(len(self.gradient)):
+            res[i].vector().vec().aypx(0.0, -self.search_direction[i].vector().vec())
+            res[i].vector().apply("")
+            self.search_direction[i].vector().vec().aypx(
+                0.0, self.storage[i].vector().vec()
+            )
+            self.search_direction[i].vector().apply("")
