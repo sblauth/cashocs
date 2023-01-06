@@ -625,7 +625,7 @@ def test_polynomial_stepsize(ocp, polynomial_model, iterations):
 
 
 def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
-    U = FunctionSpace(geometry.mesh, "R", 0)
+    U = FunctionSpace(geometry.mesh, "CG", 1)
     u0 = Function(U)
     u1 = Function(U)
 
@@ -653,6 +653,7 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
             F, bcs, J, y, [u0, u1], p, config=config_ocp
         )
         ocp.solve()
+        MPI.barrier(MPI.comm_world)
         assert "Armijo rule failed." in str(e_info)
 
     u0.vector().vec().set(-0.5)
@@ -662,5 +663,6 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     config_ocp.set("AlgoLBFGS", "damped", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, [u0, u1], p, config=config_ocp)
     ocp.solve()
+    MPI.barrier(MPI.comm_world)
 
     assert ocp.solver.relative_norm <= ocp.solver.rtol
