@@ -374,6 +374,14 @@ Third, we have the parameter :ini:`bfgs_periodic_restart`, which is set in the l
    
 This is a non-negative integer value, which indicates the number of BFGS iterations, before a reinitialization takes place. In case that this is :ini:`bfgs_periodic_restart = 0` (which is the default), no restarts are performed. 
 
+Finally, we have the parameter :ini:`damped`, which can be set with
+
+.. code-block:: ini
+
+    damped = False
+
+This parameter is a boolean flag, which indicates whether Powell's damping (on H) should be used or not. This is useful, when the curvature condition is not satisfied and (without damping) a restart would be required. The default is :ini:`damped = False`.
+
 .. _config_ocp_algocg:
 
 Section AlgoCG
@@ -695,6 +703,8 @@ in the following.
       - if :ini:`use_bfgs_scaling = True`, uses a scaled identity mapping as initial guess for the inverse Hessian
     * - :ini:`bfgs_periodic_restart = 0`
       - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
+    * - :ini:`damped = False`
+      - specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting
 
 
 [AlgoCG]

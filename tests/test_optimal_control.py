@@ -622,3 +622,45 @@ def test_polynomial_stepsize(ocp, polynomial_model, iterations):
     ocp.config.set("LineSearch", "polynomial_model", polynomial_model)
     ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=iterations)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
+    U = FunctionSpace(geometry.mesh, "R", 0)
+    u0 = Function(U)
+    u1 = Function(U)
+
+    u0.vector().vec().set(-0.5)
+    u0.vector().apply("")
+    u1.vector().vec().set(-0.5)
+    u1.vector().apply("")
+
+    F = y * p * geometry.dx
+
+    J = cashocs.IntegralFunctional(
+        (
+            20
+            + (u0**2 - 10 * cos(2 * np.pi * u0))
+            + (u1**2 - 10 * cos(2 * np.pi * u1))
+        )
+        * geometry.dx
+    )
+
+    config_ocp.set("LineSearch", "initial_stepsize", "1e-2")
+    config_ocp.set("OptimizationRoutine", "rtol", "1e-7")
+    with pytest.raises(NotConvergedError) as e_info:
+        config_ocp.set("AlgoLBFGS", "damped", "False")
+        ocp = cashocs.OptimalControlProblem(
+            F, bcs, J, y, [u0, u1], p, config=config_ocp
+        )
+        ocp.solve()
+        assert "Armijo rule failed." in str(e_info)
+
+    u0.vector().vec().set(-0.5)
+    u0.vector().apply("")
+    u1.vector().vec().set(-0.5)
+    u1.vector().apply("")
+    config_ocp.set("AlgoLBFGS", "damped", "True")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, [u0, u1], p, config=config_ocp)
+    ocp.solve()
+
+    assert ocp.solver.relative_norm <= ocp.solver.rtol

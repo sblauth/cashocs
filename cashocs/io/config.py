@@ -235,6 +235,9 @@ class Config(ConfigParser):
                     "type": "int",
                     "attributes": ["non_negative"],
                 },
+                "damped": {
+                    "type": "bool",
+                },
             },
             "AlgoCG": {
                 "cg_method": {
@@ -593,6 +596,7 @@ inner_newton_atol = 0.0
 bfgs_memory_size = 5
 use_bfgs_scaling = True
 bfgs_periodic_restart = 0
+damped = False
 
 [AlgoCG]
 cg_method = DY
