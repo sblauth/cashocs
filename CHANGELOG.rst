@@ -37,7 +37,9 @@ of the maintenance releases, please take a look at
 
 * The usage of the keyword arguments :python:`scalar_tracking_forms` and :python:`min_max_terms` in :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>` and :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` has been removed. Instead, every cost functional is now passed via the :python:`cost_functional_list` parameter. Scalar tracking forms are now realized via :py:class:`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>` and min-max terms via :py:class:`MinMaxFunctional <cashocs.MinMaxFunctional>`, see `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_scalar_control_tracking.html>`_.
 
-* BFGS methods can now be used in a restarted fashion, if desired
+* BFGS methods can now be used in a restarted fashion, if desired.
+
+* The BFGS method can now be used in a damped fashion. This ensures that the inverse Hessian approximation stays positive definite.
 
 * Changed configuration file parameters
 
@@ -58,6 +60,8 @@ of the maintenance releases, please take a look at
   * Section AlgoLBFGS
   
     * :ini:`bfgs_periodic_restart` is an integer parameter. If this is 0 (the default), no restarting is done. If this is >0, then the BFGS method is restarted after as many iterations, as given in the parameter
+
+    * :ini:`damped` is a boolean flag which indicates, whether damping should be used for the BFGS method. The default is :ini:`damped = False`.
   
   * Section LineSearch is a completely new section where the line searches can be configured.
   
