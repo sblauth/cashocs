@@ -1,7 +1,7 @@
 cashocs in a nutshell
 =====================
 
-As newcomer to cashocs, we recommend the paper `Blauth, cashocs: A Computational, Adjoint-Based
+As newcomer to cashocs, we recommend the paper `Blauth - cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_, which
 gives an overview over cashocs and its capabilities. Moreover, for a
 comprehensive description of cashocs, we refer to its :ref:`tutorial <tutorial_index>`.
@@ -41,8 +41,8 @@ The config object, which is created from a .ini file, is used to determine the
 parameters for the optimization algorithms. This is where the user can finely
 tune the behavior of the algorithms.
 
-To define the state problem, we then define a state variable ``y``, an adjoint variable
-``p`` and a control variable ``u``, and write the PDE as a weak form ::
+To define the state problem, we then define a state variable :python:`y`, an adjoint variable
+:python:`p` and a control variable :python:`u`, and write the PDE as a weak form ::
 
     y = Function(V)
     p = Function(V)

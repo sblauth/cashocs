@@ -14,16 +14,21 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("."))
+
+import jupytext_process
+
+jupytext_process.process()
 
 
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2022, Sebastian Blauth"
+copyright = "2020-2023, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.0-alpha0"
+release = "2.0.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,6 +44,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx.ext.viewcode",
     "sphinx_design",
+    "myst_parser",
 ]
 
 napoleon_google_docstring = True
@@ -93,6 +99,12 @@ exclude_patterns = ["_build"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+
+if "dev" in release:
+    switcher_version = "dev"
+else:
+    switcher_version = release
+
 html_theme = "pydata_sphinx_theme"
 html_logo = "logo.png"
 html_theme_options = {
@@ -105,12 +117,20 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         }
     ],
-    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "navbar_persistent": [],
     "show_nav_level": 2,
     "favicons": [
         {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
         {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
+    ],
+    "switcher": {
+        "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
+        "version_match": switcher_version,
+    },
+    "primary_sidebar_end": [
+        "indices.html",
+        "sidebar-ethical-ads",
     ],
 }
 
@@ -126,3 +146,23 @@ pygments_style = "sphinx"
 
 autosummary_generate = True
 autosummary_imported_members = True
+
+myst_enable_extensions = ["dollarmath", "colon_fence"]
+
+rst_prolog = """
+.. role:: ini(code)
+    :language: ini
+    :class: highlight
+
+.. role:: python(code)
+    :language: python
+    :class: highlight
+    
+.. role:: cpp(code)
+    :language: cpp
+    :class: highlight
+
+.. role:: bash(code)
+    :language: bash
+    :class: highlight
+"""

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.0.0-alpha0"
+version = "2.0.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
 requires-python = ">=3.8"
@@ -71,7 +71,9 @@ docs = [
 	"pydata-sphinx-theme",
 	"sphinx-argparse",
 	"sphinx-copybutton",
-	"sphinx-design"
+	"sphinx-design",
+    "jupytext",
+    "myst-parser"
 ]
 demos = ["matplotlib"]
 all = ["cashocs[tests,docs,demos]"]

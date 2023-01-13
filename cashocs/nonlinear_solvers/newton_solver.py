@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -259,12 +259,11 @@ class _NewtonSolver:
             _utils.solve_linear_problem(
                 A=self.A_matrix,
                 b=self.b,
-                x=self.du.vector().vec(),
+                fun=self.du,
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
             )
-            self.du.vector().apply("")
 
             if self.is_linear:
                 self.u.vector().vec().axpy(1.0, self.du.vector().vec())
@@ -364,12 +363,11 @@ class _NewtonSolver:
                 _utils.solve_linear_problem(
                     A=self.A_matrix,
                     b=self.b,
-                    x=self.ddu.vector().vec(),
+                    fun=self.ddu,
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,
                 )
-                self.ddu.vector().apply("")
 
                 if (
                     self.ddu.vector().norm(self.norm_type)

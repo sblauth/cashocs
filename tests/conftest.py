@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
-from collections import namedtuple
+
 import pathlib
 
 import fenics

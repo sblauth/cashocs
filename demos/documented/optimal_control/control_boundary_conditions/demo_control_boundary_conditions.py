@@ -1,24 +1,55 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
-#
-# This file is part of cashocs.
-#
-# cashocs is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cashocs is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
+# ---
+# jupyter:
+#   jupytext:
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.14.4
+# ---
 
-"""For the documentation of this demo see https://cashocs.readthedocs.io/en/latest/demos/optimal_control/doc_control_boundary_conditions.html.
+# ```{eval-rst}
+# .. include:: ../../../global.rst
+# ```
+#
+# (demo_control_boundary_conditions)=
+# # Boundary conditions for control variables
+#
+# ## Problem Formulation
+#
+# In this demo we investigate cashocs for solving PDE constrained optimization problems
+# with additional boundary conditions for the control variables. Our problem is given by
+#
+# $$
+# \begin{align}
+#     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
+#     \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
+#     &\text{ subject to } \qquad
+#     \begin{alignedat}[t]{2}
+#         -\Delta y &= u \quad &&\text{ in } \Omega,\\
+#         y &= 0 \quad &&\text{ on } \Gamma, \\
+#         u &= u_{\Gamma} \quad &&\text{ on } \Gamma,
+#     \end{alignedat}
+# \end{align}
+# $$
+#
+# Here, we consider the control variable $u$ in
+# $H^1_\Gamma(\Omega) = \{ v \in H^1(\Omega) \vert v = u_\Gamma \text{ on } \Gamma \}$.
+#
+# In the following, we will describe how to solve this problem using cashocs.
+#
+# ## Implementation
+#
+# The complete python code can be found in the file {download}`demo_constraints.py
+# </../../demos/documented/optimal_control/control_boundary_conditions/demo_control_boundary_conditions.py>`
+# and the corresponding config can be found in {download}`config.ini
+# </../../demos/documented/optimal_control/control_boundary_conditions/config.ini>`.
+#
+# ### Initialization
+#
+# The beginning of the program is nearly the same as for {ref}`demo_poisson`
 
-"""
-
+# +
 from fenics import *
 
 import cashocs
@@ -41,9 +72,25 @@ alpha = 1e-6
 J = cashocs.IntegralFunctional(
     Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 )
+# -
+
+# ### Scalar product and boundary conditions for the control variable
+#
+# Now, we can first define the scalar product for the control variable $u$, which we
+# choose as the standard $H^1_0(\Omega)$ scalar product. This can be implemented as
+# follows in cashocs
 
 scalar_product = dot(grad(TrialFunction(V)), grad(TestFunction(V))) * dx
+
+# Moreover, we define the list of boundary conditions for the control variable as usual
+# in FEniCS and cashocs with the help of {py:func}`cashocs.create_dirichlet_bcs`
+
 control_bcs = cashocs.create_dirichlet_bcs(V, Constant(100.0), boundaries, [1, 2, 3, 4])
+
+# Here, we have chosen a value of $u_\Gamma = 100$ for this particular demo, in
+# order to be able to visually see, whether the proposed method works.
+#
+# Finally, we can set up and solve the optimization problem as usual
 
 ocp = cashocs.OptimalControlProblem(
     e,
@@ -58,9 +105,14 @@ ocp = cashocs.OptimalControlProblem(
 )
 ocp.solve()
 
+# where the only additional parts in comparison to {ref}`demo_poisson` are the keyword
+# arguments {python}`riesz_scalar_products`, which was already covered in
+# {ref}`demo_neumann_control`, and {python}`control_bcs_list`, which we have defined
+# previously.
+#
+# After solving this problem with cashocs, we visualize the solution with the code
 
-### Post Processing
-
+# +
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(15, 5))
@@ -81,4 +133,8 @@ plt.colorbar(fig, fraction=0.046, pad=0.04)
 plt.title("Desired state y_d")
 
 plt.tight_layout()
-plt.savefig("./img_control_boundary_conditions.png", dpi=150, bbox_inches="tight")
+# plt.savefig("./img_control_boundary_conditions.png", dpi=150, bbox_inches="tight")
+# -
+
+# and the result should look like this
+# ![](/../../demos/documented/optimal_control/control_boundary_conditions/img_control_boundary_conditions.png)

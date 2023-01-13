@@ -20,12 +20,13 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: List of all demos:
+   :maxdepth: 1
+   :caption: List of tutorial topics:
 
-   demos/optimal_control/optimal_control_index
-   demos/shape_optimization/shape_optimization_index
-   demos/cashocs_as_solver/solver_index
+   demos/optimal_control/index
+   demos/shape_optimization/index
+   demos/cashocs_as_solver/index
+   demos/misc/index
 
 
 .. note::

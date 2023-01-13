@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -236,6 +236,9 @@ class Config(ConfigParser):
                 "bfgs_periodic_restart": {
                     "type": "int",
                     "attributes": ["non_negative"],
+                },
+                "damped": {
+                    "type": "bool",
                 },
             },
             "AlgoCG": {
@@ -614,6 +617,7 @@ inner_newton_atol = 0.0
 bfgs_memory_size = 5
 use_bfgs_scaling = True
 bfgs_periodic_restart = 0
+damped = False
 
 [AlgoCG]
 cg_method = DY

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -608,9 +608,8 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         _utils.solve_linear_problem(
             A=self.a_curvature_matrix.mat(),
             b=self.b_curvature.vec(),
-            x=self.kappa_curvature.vector().vec(),
+            fun=self.kappa_curvature,
         )
-        self.kappa_curvature.vector().apply("")
 
     def scale(self) -> None:
         """Scales the regularization term."""

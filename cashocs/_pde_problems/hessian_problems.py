@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -172,10 +172,9 @@ class HessianProblem:
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.hessian_form_handler.sensitivity_eqs_rhs[i],
                     self.bcs_list_ad[i],
-                    x=self.db.function_db.states_prime[i].vector().vec(),
+                    fun=self.db.function_db.states_prime[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
                 )
-                self.db.function_db.states_prime[i].vector().apply("")
 
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
@@ -184,10 +183,9 @@ class HessianProblem:
                     ],
                     self.form_handler.hessian_form_handler.w_1[-1 - i],
                     self.bcs_list_ad[-1 - i],
-                    x=self.db.function_db.adjoints_prime[-1 - i].vector().vec(),
+                    fun=self.db.function_db.adjoints_prime[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                 )
-                self.db.function_db.adjoints_prime[-1 - i].vector().apply("")
 
         else:
             nonlinear_solvers.picard_iteration(
@@ -234,10 +232,9 @@ class HessianProblem:
             _utils.solve_linear_problem(
                 A=self.form_handler.riesz_projection_matrices[i],
                 b=b,
-                x=out[i].vector().vec(),
+                fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
             )
-            out[i].vector().apply("")
 
         self.no_sensitivity_solves += 2
 

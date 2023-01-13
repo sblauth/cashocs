@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -208,9 +208,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         rhs = project_term * test * measure
 
         _utils.assemble_and_solve_linear(
-            lhs, rhs, A=A_tensor, b=b_tensor, x=multiplier.vector().vec()
+            lhs, rhs, A=A_tensor, b=b_tensor, fun=multiplier
         )
-        multiplier.vector().apply("")
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""

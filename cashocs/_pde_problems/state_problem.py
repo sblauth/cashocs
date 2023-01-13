@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -126,10 +126,9 @@ class StateProblem(pde_problem.PDEProblem):
                             self.bcs_list[i],
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
-                            x=self.states[i].vector().vec(),
+                            fun=self.states[i],
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
                         )
-                        self.states[i].vector().apply("")
 
                 else:
                     for i in range(self.db.parameter_db.state_dim):

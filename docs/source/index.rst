@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-cashocs Documentation
-=====================
+Documentation of cashocs
+========================
 
-cashocs is a software for solving PDE constrained optimization problems. It is a python package which is based on the finite element software FEniCS and enables the fast and efficient solution of optimization problems constrained by partial differential equations in the fields of shape optimization and optimal control.
+cashocs is a software for solving PDE constrained optimization problems in the fields of shape optimization and optimal control.
 
 .. toctree::
    :maxdepth: 1
@@ -23,7 +23,7 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
 **Useful links**:
 :ref:`Installation <installation_instructions>` |
 `Source Repository <https://github.com/sblauth/cashocs>`_ |
-`Issues & Ideas <https://github.com/sblauth/cashocs/issues>`_ |
+`Issues <https://github.com/sblauth/cashocs/issues>`_ |
 :ref:`Tutorial <tutorial_index>` |
 :ref:`Config File Documentation <config_shape_optimization>`
 
@@ -32,9 +32,8 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
 
    .. grid-item-card:: Getting Started
       :img-top: icons/getting_started.svg
-
-      Are you new to cashocs or want to find information about its installation
-      and other parts? Then go no further and start here.
+      
+      Here, you can find information on how to get started with cashocs.
       
       +++ 
 
@@ -48,8 +47,7 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
    .. grid-item-card:: User Guide
       :img-top: icons/user_guide.svg
 
-      The user guide provides a tutorial for cashocs which explains each of its 
-      features and the mathematical background detailedly.
+      The user guide explains cashocs' features and background detailedly.
 
       +++
 
@@ -62,10 +60,8 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
 
    .. grid-item-card:: API Reference
       :img-top: icons/api.svg
-
-      The reference guide contains a detailed explanation of cashocs public API: Each
-      class, function, and module you can use and its parameters are described in
-      detail here.
+      
+      The reference guide documents the public API of cashocs.
 
       +++
 
@@ -89,10 +85,3 @@ cashocs is a software for solving PDE constrained optimization problems. It is a
          :click-parent:
 
          To the contributor's guide
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

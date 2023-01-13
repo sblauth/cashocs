@@ -60,22 +60,22 @@ constrained optimization and FEniCS. For a introduction to these topics,
 we can recommend the textbooks
 
 - Optimal Control and general PDE constrained optimization
-    - `Hinze, Ulbrich, Ulbrich, and Pinnau, Optimization with PDE Constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_
-    - `Tröltzsch, Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
+    - `Hinze, Ulbrich, Ulbrich, and Pinnau - Optimization with PDE Constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_
+    - `Tröltzsch - Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
 - Shape Optimization
-    - `Delfour and Zolesio, Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
-    - `Sokolowski and Zolesio, Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
+    - `Delfour and Zolesio - Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
+    - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
 - FEniCS
-    - `Logg, Mardal, and Wells, Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
+    - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
     - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
 
 .. readme_end_disclaimer
 
-However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_ also gives many references either
+However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user/index.html>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
-An overview over cashocs and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
+An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
 the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
 
@@ -89,16 +89,20 @@ Via conda-forge
 ---------------
 
 cashocs is available via the anaconda package manager, and you can install it
-with ::
+with
+
+.. code-block:: bash
 
     conda install -c conda-forge cashocs
 
 Alternatively, you might want to create a new, clean conda environment with the
-command ::
+command
+
+.. code-block:: bash
 
     conda create -n <ENV_NAME> -c conda-forge cashocs
 
-where <ENV_NAME> is the desired name of the new environment.
+where `<ENV_NAME>` is the desired name of the new environment.
 
 .. note::
 
@@ -109,8 +113,8 @@ where <ENV_NAME> is the desired name of the new environment.
 Manual Installation
 -------------------
 
-- First, install `FEniCS <https://fenicsproject.org/download/>`__, version 2019.1.
-  Note, that FEniCS should be compiled with PETSc and petsc4py.
+- First, install `FEniCS <https://fenicsproject.org/download/>`_, version 2019.1.
+  Note that FEniCS should be compiled with PETSc and petsc4py.
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
@@ -127,37 +131,49 @@ Manual Installation
     This can (hopefully) be resolved by following the suggestions from `this thread
     <https://fenicsproject.discourse.group/t/meshio-convert-to-xdmf-from-abaqus-raises-version-error-for-h5py/1480>`_,
     i.e., you should try to install `meshio <https://github.com/nschloe/meshio>`_
-    using the command ::
+    using the command
+
+    .. code-block:: bash
 
         pip3 install meshio[all] --no-binary=h5py
 
-- You can install cashocs via the `PYPI <https://pypi.org/>`_::
+- You can install cashocs via the `PYPI <https://pypi.org/>`_ as follows
 
-        pip3 install cashocs
+  .. code-block:: bash
 
-  You can install the newest (development) version of cashocs with::
+      pip3 install cashocs
 
-        pip3 install git+https://github.com/sblauth/cashocs.git
+- You can install the newest (development) version of cashocs with
 
-- To get the latest (development) version of cashocs, clone this repository with git and install it with pip ::
+  .. code-block:: bash
 
-        git clone https://github.com/sblauth/cashocs.git
-        cd cashocs
-        pip3 install .
+      pip3 install git+https://github.com/sblauth/cashocs.git
+
+- To get the latest (development) version of cashocs, clone this repository with git and install it with pip
+
+  .. code-block:: bash
+
+      git clone https://github.com/sblauth/cashocs.git
+      cd cashocs
+      pip3 install .
 
 
 .. note::
 
     To verify that the installation was successful, run the tests for cashocs
-    with ::
+    with
+
+    .. code-block:: bash
 
         python3 -m pytest tests/
 
-    or simply ::
+    or simply
+
+    .. code-block:: bash
 
         pytest tests/
 
-    from the source / repository root directory. Note, that it might take some
+    from the source / repository root directory. Note that it might take some
     time to perform all of these tests for the very first time, as FEniCS
     compiles the necessary code. However, on subsequent iterations the
     compiled code is retrieved from a cache, so that the tests are singificantly
@@ -171,7 +187,7 @@ Usage
 =====
 
 The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest/index.html>`_. For a detailed
-introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/tutorial_index.html>`_. The python source code
+introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user/index.html>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 
@@ -181,22 +197,35 @@ for the demo programs is located inside the "demos" folder.
 Citing
 ======
 
-If you use cashocs for your research, I would be grateful if you would cite the following paper ::
+If you use cashocs for your research, I would be grateful if you would cite the following paper
+
+.. code-block:: text
 
 	cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
 	Sebastian Blauth
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
 
-Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper ::
+Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper
 	
+.. code-block:: text
+
 	Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov--Poincaré-Type Metrics
 	Sebastian Blauth
 	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
 	https://doi.org/10.1137/20M1367738
 
+and if you are using the space mapping methods for shape optimization, please cite the preprint
+
+.. code-block:: text
+
+	Space Mapping for PDE Constrained Shape Optimization
+	Sebastian Blauth
+	https://doi.org/10.48550/arXiv.2208.05747
 	
-If you are using BibTeX, you can use the following entries::
+If you are using BibTeX, you can use the following entries
+
+.. code-block:: bibtex
 	
 	@Article{Blauth2021cashocs,
 	  author   = {Sebastian Blauth},
@@ -210,7 +239,8 @@ If you are using BibTeX, you can use the following entries::
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
 	}
 
-as well as ::	
+
+.. code-block:: bibtex
 
 	@Article{Blauth2021Nonlinear,
 		author   = {Sebastian Blauth},
@@ -222,6 +252,17 @@ as well as ::
 		volume   = {31},
 		doi      = {10.1137/20M1367738},
 		fjournal = {SIAM Journal on Optimization},
+	}
+
+
+.. code-block:: bibtex
+
+	@article{Blauth2022Space,
+		author = {Sebastian Blauth},
+		publisher = {arXiv},
+		title = {Space Mapping for PDE Constrained Shape Optimization},
+		year = {2022},
+		doi = {10.48550/ARXIV.2208.05747},
 	}
 
 .. readme_end_citing
