@@ -177,10 +177,49 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) 
         ksps[i].setFromOptions()
 
 
+def setup_fieldsplit_preconditioner(
+    fun: Optional[fenics.Function],
+    ksp: PETSc.KSP,
+    options: List[List[Union[str, int, float]]],
+) -> None:
+    """Sets up the preconditioner for the fieldsplit case.
+
+    This defines the index sets which indicate where the splitting should take place.
+
+    Args:
+        fun: The function corresponding to the mixed system to be solved.
+        ksp: The ksp object.
+        options: The options for the ksp.
+
+    """
+    if fun is not None:
+        if ["pc_type", "fieldsplit"] in options:
+            function_space = fun.function_space()
+            if not function_space.num_sub_spaces() > 1:
+                raise _exceptions.InputError(
+                    "cashocs._utils.solve_linear_problem",
+                    "ksp_options",
+                    "You have specified a fieldsplit preconditioner, but the "
+                    "problem to be solved is not a mixed one.",
+                )
+
+            pc = ksp.getPC()
+            pc.setType("fieldsplit")
+            idx = []
+            name = []
+            for i in range(function_space.num_sub_spaces()):
+                idx_i = PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
+                idx.append(idx_i)
+                name.append(f"{i:d}")
+            idx_tuples = zip(name, idx)
+
+            pc.setFieldSplitIS(*idx_tuples)
+
+
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
-    x: Optional[PETSc.Vec] = None,
+    fun: Optional[fenics.Function] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
@@ -194,7 +233,7 @@ def solve_linear_problem(
         b: The PETSc vector corresponding to the right-hand side of the problem.
             If this is None, then a zero right-hand side is assumed, and a zero vector
             is returned. Default is None.
-        x: The PETSc vector that stores the solution of the problem. If this is
+        fun: The function which will store the solution of the problem. If this is
             None, then a new vector will be created (and returned).
         ksp_options: The options for the PETSc ksp object. If this is None (the default)
             a direct method is used.
@@ -226,13 +265,17 @@ def solve_linear_problem(
     if b is None:
         return A.getVecs()[0]
 
-    if x is None:
+    if fun is None:
         x, _ = A.getVecs()
+    else:
+        x = fun.vector().vec()
 
     if ksp_options is None:
         options = copy.deepcopy(direct_ksp_options)
     else:
         options = ksp_options
+
+    setup_fieldsplit_preconditioner(fun, ksp, options)
 
     setup_petsc_options([ksp], [options])
 
@@ -245,6 +288,9 @@ def solve_linear_problem(
     if ksp.getConvergedReason() < 0:
         raise _exceptions.PETScKSPError(ksp.getConvergedReason())
 
+    if fun is not None:
+        fun.vector().apply("")
+
     return x
 
 
@@ -254,7 +300,7 @@ def assemble_and_solve_linear(
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
     A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
-    x: Optional[PETSc.Vec] = None,
+    fun: Optional[fenics.Function] = None,
     ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
@@ -267,7 +313,7 @@ def assemble_and_solve_linear(
         bcs: A list of Dirichlet boundary conditions.
         A: A matrix into which the lhs is assembled. Default is ``None``.
         b: A vector into which the rhs is assembled. Default is ``None``.
-        x: The PETSc vector that stores the solution of the problem. If this is
+        fun: The function which will be solution of the problem. If this is
             None, then a new vector will be created (and returned).
         ksp_options: The options for the PETSc ksp object. If this is None (the default)
             a direct method is used.
@@ -289,7 +335,7 @@ def assemble_and_solve_linear(
     solution = solve_linear_problem(
         A=A_matrix,
         b=b_vector,
-        x=x,
+        fun=fun,
         ksp_options=ksp_options,
         rtol=rtol,
         atol=atol,

@@ -152,10 +152,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 _utils.solve_linear_problem(
                     A=self.form_handler.scalar_product_matrix,
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
-                    x=self.db.function_db.gradient[0].vector().vec(),
+                    fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
                 )
-                self.db.function_db.gradient[0].vector().apply("")
 
                 self.has_solution = True
 
