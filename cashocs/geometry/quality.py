@@ -414,10 +414,7 @@ class ConditionNumberCalculator(MeshQualityCalculator):
 
         cond = fenics.Function(function_space_dg0)
 
-        _utils.assemble_and_solve_linear(
-            lhs, rhs, x=cond.vector().vec(), ksp_options=options
-        )
-        cond.vector().apply("")
+        _utils.assemble_and_solve_linear(lhs, rhs, fun=cond, ksp_options=options)
         cond.vector().vec().reciprocal()
         cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))

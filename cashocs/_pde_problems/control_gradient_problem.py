@@ -109,10 +109,9 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                 _utils.solve_linear_problem(
                     A=self.form_handler.riesz_projection_matrices[i],
                     b=self.b_tensors[i].vec(),
-                    x=self.db.function_db.gradient[i].vector().vec(),
+                    fun=self.db.function_db.gradient[i],
                     ksp_options=self.riesz_ksp_options[i],
                 )
-                self.db.function_db.gradient[i].vector().apply("")
 
             self.has_solution = True
 

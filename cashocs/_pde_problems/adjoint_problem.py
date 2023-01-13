@@ -117,10 +117,9 @@ class AdjointProblem(pde_problem.PDEProblem):
                         self.bcs_list_ad[-1 - i],
                         A=self.A_tensors[-1 - i],
                         b=self.b_tensors[-1 - i],
-                        x=self.adjoints[-1 - i].vector().vec(),
+                        fun=self.adjoints[-1 - i],
                         ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                     )
-                    self.adjoints[-1 - i].vector().apply("")
 
             else:
                 nonlinear_solvers.picard_iteration(
