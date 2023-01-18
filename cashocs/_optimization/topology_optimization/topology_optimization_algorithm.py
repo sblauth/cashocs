@@ -262,10 +262,9 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         _utils.solve_linear_problem(
             A=self.riesz_matrix,
             b=self.b_tensor.vec(),
-            x=self.topological_derivative_vertex.vector().vec(),
+            fun=self.topological_derivative_vertex,
             ksp_options=self.gradient_problem.riesz_ksp_options[0],
         )
-        self.topological_derivative_vertex.vector().apply("")
 
     def compute_gradient(self, cached: bool = True) -> None:
         """Computes the "topological gradient".
