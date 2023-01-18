@@ -268,7 +268,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, self)
         else:
-            raise Exception("This code cannot be reached.")
+            raise _exceptions.CashocsException("This code cannot be reached.")
 
         if self.algorithm.casefold() == "newton":
             self.form_handler.hessian_form_handler.compute_newton_forms()
@@ -304,7 +304,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 "('cg'), or 'newton'.",
             )
         else:
-            raise Exception("This code cannot be reached.")
+            raise _exceptions.CashocsException("This code cannot be reached.")
 
         return solver
 

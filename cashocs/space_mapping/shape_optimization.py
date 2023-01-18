@@ -763,7 +763,7 @@ class SpaceMappingProblem:
             elif self.broyden_type == "bad":
                 alpha = self._scalar_product(self.history_y[i], q)
             else:
-                raise Exception(
+                raise _exceptions.CashocsException(
                     "Type of Broyden's method has to be either 'good' or 'bad'."
                 )
 
