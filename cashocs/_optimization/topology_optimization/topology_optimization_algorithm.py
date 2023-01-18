@@ -287,18 +287,15 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         if not self.topological_derivative_is_identical:
             self.average_topological_derivative()
         else:
-            self.topological_derivative_vertex.vector()[:] = fenics.project(
-                self.topological_derivative_pos, self.cg1_space
-            ).vector()[:]
+            self.topological_derivative_vertex.vector().vec().aypx(
+                0.0,
+                fenics.project(self.topological_derivative_pos, self.cg1_space)
+                .vector()
+                .vec(),
+            )
+            self.topological_derivative_vertex.vector().apply("")
 
-        temp = fenics.Function(self.cg1_space)
-        temp.vector()[:] = self.topological_derivative_vertex.vector()[:]
         self.project_topological_derivative()
-        # error = np.max(
-        #     np.abs(temp.vector()[:] - self.topological_derivative_vertex.vector()[:])
-        #     / np.max(np.abs(temp.vector()[:]))
-        # )
-        # print(f"DEBUG: {error = :.3e}")
 
         if self.normalize_topological_derivative:
             norm = self.norm(self.topological_derivative_vertex)
