@@ -31,20 +31,18 @@ h3 {
   letter-spacing: -.03em;
 }
 
+
+
 /* Style the active version button.
 
 - dev: orange
 - stable: green
 - old, PR: red
 
-Colors from:
-
+/* Colors from:
 Wong, B. Points of view: Color blindness.
 Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
 */
-
-
-
 
 /* If the active version has the name "dev", style it orange */
 .version_switcher__button[data-active-version-name*="dev"] {
@@ -66,7 +64,7 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   border-color: #980F0F;
   color: white;
 }
-}
+
 
 /* Main page overview cards */
 
@@ -86,8 +84,8 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
 }
 
 .sd-card .sd-card-img-top {
-  height: 40px;
-  width: 40px;
+  height: 52px;
+  width: 52px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -111,6 +109,32 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   margin-left: auto;
   margin-right: auto;
 }
+
+
+.custom-button {
+  background-color:#DCDCDC;
+  border: none;
+  color: #484848;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+  max-width: 120px;
+  padding: 0.5rem 0rem;
+}
+
+.custom-button a {
+  color: #484848;
+}
+
+.custom-button p {
+  margin-top: 0;
+  margin-bottom: 0rem;
+  color: #484848;
+}
+
+
 
 /* Dark theme tweaking */
 html[data-theme=dark] .sd-card img[src*='.svg'] {
