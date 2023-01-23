@@ -336,7 +336,7 @@ def read_mesh_from_xdmf(filename: str, step: int = 0) -> fenics.Mesh:
     elif cells.shape[1] == 3:
         tdim = 2
         cell_type = "triangle"
-    elif cells.shape[2] == 4:
+    elif cells.shape[1] == 4:
         tdim = 3
         cell_type = "tetrahedron"
     else:
