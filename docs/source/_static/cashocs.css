@@ -51,7 +51,6 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   color: white;
 }
 
-
 /* green for `stable` */
 .version-switcher__button[data-active-version-name*="stable"] {
   background-color: var(--pst-color-success);
@@ -59,34 +58,12 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   color: white;
 }
 
-/* red for `old` 
+/* red for `old` */
 .version-switcher__button:not([data-active-version-name*="stable"]):not([data-active-version-name*="dev"]):not([data-active-version-name*="pull"]) {
   background-color: #980F0F;
   border-color: #980F0F;
   color: white;
 }
-*/
-
-/* If the active version has the name "dev", style it orange 
-.version-switcher__button a[data-active-version-name*="dev"] {
-  position: relative
-}
-
-.version-switcher__button a[data-active-version-name*="dev"] span {
-  color: white;
-}
-
-.version-switcher__button a[data-active-version-name*="dev"] span:before {
-  content: "";
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: #E69F00;
-}
-
-*/
 
 
 /* Background of stable should be green */
