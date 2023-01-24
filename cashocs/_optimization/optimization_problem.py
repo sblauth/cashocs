@@ -87,11 +87,9 @@ class OptimizationProblem(abc.ABC):
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
@@ -120,10 +118,10 @@ class OptimizationProblem(abc.ABC):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
@@ -264,17 +262,15 @@ class OptimizationProblem(abc.ABC):
     def _parse_optional_inputs(
         self,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ],
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]],
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ],
         desired_weights: Optional[Union[List[float], float]],
     ) -> Tuple[
         Optional[List[fenics.Function]],
-        _typing.KspOptions,
-        _typing.KspOptions,
+        List[_typing.KspOption],
+        List[_typing.KspOption],
         Optional[List[float]],
     ]:
         """Initializes the optional input parameters.
@@ -282,9 +278,9 @@ class OptimizationProblem(abc.ABC):
         Args:
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems.
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
@@ -298,20 +294,18 @@ class OptimizationProblem(abc.ABC):
             parsed_initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            parsed_ksp_options: _typing.KspOptions = []
-            option: List[List[Union[str, int, float]]] = copy.deepcopy(
-                _utils.linalg.direct_ksp_options
-            )
+            parsed_ksp_options: List[_typing.KspOption] = []
+            option = copy.deepcopy(_utils.linalg.direct_ksp_options)
 
             for _ in range(self.state_dim):
                 parsed_ksp_options.append(option)
         else:
-            parsed_ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
+            parsed_ksp_options = _utils.enlist(ksp_options)
 
-        parsed_adjoint_ksp_options: _typing.KspOptions = (
+        parsed_adjoint_ksp_options: List[_typing.KspOption] = (
             parsed_ksp_options[:]
             if adjoint_ksp_options is None
-            else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
+            else _utils.enlist(adjoint_ksp_options)
         )
 
         if desired_weights is None:

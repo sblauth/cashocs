@@ -41,6 +41,8 @@ of the maintenance releases, please take a look at
 
 * The BFGS method can now be used in a damped fashion. This ensures that the inverse Hessian approximation stays positive definite.
 
+* The options for defining parameters which are to be supplied to PETSc KSP objects have changed their datatype: They are now given by (lists of) dictionaries instead of nested lists. For options without a value in the command line (e.g. the option :bash:`-ksp_view`) have a value of :python:`None` in the dictionary (so :python:`'ksp_view': None` can be used inside the dictionary to supply the aforementioned option).
+
 * Changed configuration file parameters
 
   * Section Output

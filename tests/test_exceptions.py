@@ -83,15 +83,15 @@ def J(y, y_d, u, geometry):
 
 @pytest.fixture
 def ksp_options():
-    return [
-        ["ksp_type", "cg"],
-        ["pc_type", "hypre"],
-        ["pc_hypre_type", "boomeramg"],
-        ["ksp_rtol", 0.0],
-        ["ksp_atol", 0.0],
-        ["ksp_max_it", 1],
-        ["ksp_monitor_true_residual"],
-    ]
+    return {
+        "ksp_type": "cg",
+        "pc_type": "hypre",
+        "pc_hypre_type": "boomeramg",
+        "ksp_rtol": 0.0,
+        "ksp_atol": 0.0,
+        "ksp_max_it": 1,
+        "ksp_monitor_true_residual": None,
+    }
 
 
 @pytest.fixture

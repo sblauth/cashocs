@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -37,6 +37,7 @@ from cashocs.geometry import boundary_distance
 if TYPE_CHECKING:
     import ufl.core.expr
 
+    from cashocs import _typing
     from cashocs import io
     from cashocs._database import database
     from cashocs._optimization import shape_optimization
@@ -84,7 +85,7 @@ class Stiffness:
 
         self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
         self.b_mu = fenics.PETScVector()
-        self.options_mu: List[List[Union[str, int, float]]] = []
+        self.options_mu: _typing.KspOption = {}
 
         self._setup_mu_computation()
 
@@ -98,14 +99,14 @@ class Stiffness:
 
                 self.inhomogeneous_mu = True
 
-                self.options_mu = [
-                    ["ksp_type", "cg"],
-                    ["pc_type", "hypre"],
-                    ["pc_hypre_type", "boomeramg"],
-                    ["ksp_rtol", 1e-16],
-                    ["ksp_atol", 1e-50],
-                    ["ksp_max_it", 100],
-                ]
+                self.options_mu = {
+                    "ksp_type": "cg",
+                    "pc_type": "hypre",
+                    "pc_hypre_type": "boomeramg",
+                    "ksp_rtol": 1e-16,
+                    "ksp_atol": 1e-50,
+                    "ksp_max_it": 100,
+                }
 
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)

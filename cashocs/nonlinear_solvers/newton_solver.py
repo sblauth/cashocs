@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -29,6 +29,9 @@ import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 class _NewtonSolver:
@@ -49,7 +52,7 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+        ksp_options: Optional[_typing.KspOption] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
@@ -402,7 +405,7 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,

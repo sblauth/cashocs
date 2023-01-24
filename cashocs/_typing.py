@@ -17,7 +17,7 @@
 
 """Type hints for cashocs."""
 
-from typing import List, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import fenics
 
@@ -44,7 +44,7 @@ MeshTuple = Tuple[
     fenics.Measure,
 ]
 
-KspOptions = List[List[List[Union[str, int, float]]]]
+KspOption = Dict[str, Union[int, float, str, None]]
 Constraint = Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
 
 CostFunctional = Union[

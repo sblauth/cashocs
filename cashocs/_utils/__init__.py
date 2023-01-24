@@ -31,7 +31,6 @@ from cashocs._utils.forms import multiplication
 from cashocs._utils.forms import summation
 from cashocs._utils.helpers import check_and_enlist_bcs
 from cashocs._utils.helpers import check_and_enlist_control_constraints
-from cashocs._utils.helpers import check_and_enlist_ksp_options
 from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import optimization_algorithm_configuration
@@ -49,7 +48,6 @@ __all__ = [
     "max_",
     "min_",
     "moreau_yosida_regularization",
-    "check_and_enlist_ksp_options",
     "check_and_enlist_control_constraints",
     "check_and_enlist_bcs",
     "enlist",
