@@ -29,6 +29,7 @@ import fenics
 import meshio
 import numpy as np
 
+from cashocs import _exceptions
 from cashocs import _loggers
 
 
@@ -56,7 +57,7 @@ def _generate_parser() -> argparse.ArgumentParser:
 def check_file_extension(file: str, required_extension: str) -> None:
     """Checks whether a given file extension is correct."""
     if not file.rsplit(".", 1)[-1] == required_extension:
-        raise Exception(
+        raise _exceptions.CashocsException(
             f"Cannot use {file} due to wrong format.",
         )
 

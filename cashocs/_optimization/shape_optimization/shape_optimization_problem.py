@@ -324,7 +324,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, self)
         else:
-            raise Exception("This code cannot be reached.")
+            raise _exceptions.CashocsException("This code cannot be reached.")
 
         if self.algorithm.casefold() == "gradient_descent":
             solver: optimization_algorithms.OptimizationAlgorithm = (
@@ -348,7 +348,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 "'lbfgs' ('bfgs'), or 'conjugate_gradient' ('cg').",
             )
         else:
-            raise Exception("This code cannot be reached.")
+            raise _exceptions.CashocsException("This code cannot be reached.")
 
         return solver
 

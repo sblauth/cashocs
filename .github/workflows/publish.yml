@@ -65,7 +65,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
-        generate_release_notes: true
+        generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'false' }}
         prerelease: ${{ steps.check_version.outputs.is_stable == 'false' }}
 
 
