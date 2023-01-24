@@ -23,7 +23,7 @@ from __future__ import annotations
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -38,6 +38,7 @@ from cashocs.geometry import quality
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs.geometry import mesh_testing
@@ -141,14 +142,14 @@ class _MeshHandler:
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
-        self.options_frobenius: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        self.options_frobenius: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
         self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
@@ -159,14 +160,14 @@ class _MeshHandler:
 
         self._setup_decrease_computation()
 
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        self.options_prior: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
         self.transformation_container = fenics.Function(
             self.db.function_db.control_spaces[0]
         )

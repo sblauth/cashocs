@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -29,6 +29,9 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs.geometry import measure
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 def compute_mesh_quality(
@@ -390,14 +393,14 @@ class ConditionNumberCalculator(MeshQualityCalculator):
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
-        options: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        options: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (

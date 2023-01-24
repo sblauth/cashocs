@@ -56,11 +56,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
         constraint_list: Union[List[_typing.Constraint], _typing.Constraint],
         config: Optional[io.Config] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
     ) -> None:
         """Initializes self.
@@ -88,10 +86,10 @@ class ConstrainedOptimizationProblem(abc.ABC):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
@@ -274,11 +272,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         control_bcs_list: Optional[
             Union[
@@ -322,10 +318,10 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
@@ -443,11 +439,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
     ) -> None:
         """Initializes self.
@@ -483,10 +477,10 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).

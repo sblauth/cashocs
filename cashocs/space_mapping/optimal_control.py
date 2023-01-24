@@ -83,11 +83,9 @@ class CoarseModel:
         riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
         control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
     ) -> None:

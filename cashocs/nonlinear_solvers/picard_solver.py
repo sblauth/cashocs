@@ -88,7 +88,7 @@ def picard_iteration(
     inner_inexact: bool = True,
     inner_verbose: bool = False,
     inner_max_its: int = 25,
-    ksp_options: Optional[_typing.KspOptions] = None,
+    ksp_options: Optional[List[_typing.KspOption]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
@@ -217,13 +217,11 @@ def _compute_residual(
 
 def _get_linear_solver_options(
     j: int,
-    ksp_options: Optional[_typing.KspOptions],
+    ksp_options: Optional[List[_typing.KspOption]],
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]],
     b_tensors: Optional[List[fenics.PETScVector]],
-) -> Tuple[
-    Optional[List[List[Union[str, int, float]]]], fenics.PETScMatrix, fenics.PETScVector
-]:
+) -> Tuple[Optional[_typing.KspOption], fenics.PETScMatrix, fenics.PETScVector]:
     """Computes the arguments for the individual components considered in the iteration.
 
     Returns:

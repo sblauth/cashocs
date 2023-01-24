@@ -23,7 +23,7 @@ in the truncated Newton method.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -127,16 +127,16 @@ class HessianProblem:
 
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
-        option: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "cg"],
-            ["pc_type", "hypre"],
-            ["pc_hypre_type", "boomeramg"],
-            ["pc_hypre_boomeramg_strong_threshold", 0.7],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-50],
-            ["ksp_max_it", 100],
-        ]
-        self.riesz_ksp_options: _typing.KspOptions = []
+        option: _typing.KspOption = {
+            "ksp_type": "cg",
+            "pc_type": "hypre",
+            "pc_hypre_type": "boomeramg",
+            "pc_hypre_boomeramg_strong_threshold": 0.7,
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-50,
+            "ksp_max_it": 100,
+        }
+        self.riesz_ksp_options: List[_typing.KspOption] = []
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 

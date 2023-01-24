@@ -33,22 +33,22 @@ from cashocs._utils import forms as forms_module
 if TYPE_CHECKING:
     from cashocs import _typing
 
-iterative_ksp_options: List[List[Union[str, int, float]]] = [
-    ["ksp_type", "cg"],
-    ["pc_type", "hypre"],
-    ["pc_hypre_type", "boomeramg"],
-    ["pc_hypre_boomeramg_strong_threshold", 0.7],
-    ["ksp_rtol", 1e-20],
-    ["ksp_atol", 1e-50],
-    ["ksp_max_it", 1000],
-]
+iterative_ksp_options: _typing.KspOption = {
+    "ksp_type": "cg",
+    "pc_type": "hypre",
+    "pc_hypre_type": "boomeramg",
+    "pc_hypre_boomeramg_strong_threshold": 0.7,
+    "ksp_rtol": 1e-20,
+    "ksp_atol": 1e-50,
+    "ksp_max_it": 1000,
+}
 
-direct_ksp_options: List[List[Union[str, int, float]]] = [
-    ["ksp_type", "preonly"],
-    ["pc_type", "lu"],
-    ["pc_factor_mat_solver_type", "mumps"],
-    ["mat_mumps_icntl_24", 1],
-]
+direct_ksp_options: _typing.KspOption = {
+    "ksp_type": "preonly",
+    "pc_type": "lu",
+    "pc_factor_mat_solver_type": "mumps",
+    "mat_mumps_icntl_24": 1,
+}
 
 
 def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
@@ -153,7 +153,9 @@ def assemble_petsc_system(
     return A, b
 
 
-def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) -> None:
+def setup_petsc_options(
+    ksps: List[PETSc.KSP], ksp_options: List[_typing.KspOption]
+) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
@@ -166,13 +168,14 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) 
             from PETSc.
 
     """
-    opts = fenics.PETScOptions
+    opts = PETSc.Options()
 
     for i in range(len(ksps)):
         opts.clear()
 
-        for option in ksp_options[i]:
-            opts.set(*option)
+        for key, value in ksp_options[i].items():
+            val = None if value == "none" else value
+            opts.setValue(key, val)
 
         ksps[i].setFromOptions()
 
@@ -180,7 +183,7 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) 
 def setup_fieldsplit_preconditioner(
     fun: Optional[fenics.Function],
     ksp: PETSc.KSP,
-    options: List[List[Union[str, int, float]]],
+    options: _typing.KspOption,
 ) -> None:
     """Sets up the preconditioner for the fieldsplit case.
 
@@ -193,7 +196,7 @@ def setup_fieldsplit_preconditioner(
 
     """
     if fun is not None:
-        if ["pc_type", "fieldsplit"] in options:
+        if "pc_type" in options.keys() and options["pc_type"] == "fieldsplit":
             function_space = fun.function_space()
             if not function_space.num_sub_spaces() > 1:
                 raise _exceptions.InputError(
@@ -220,7 +223,7 @@ def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     fun: Optional[fenics.Function] = None,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:
@@ -301,7 +304,7 @@ def assemble_and_solve_linear(
     A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
     fun: Optional[fenics.Function] = None,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> PETSc.Vec:
