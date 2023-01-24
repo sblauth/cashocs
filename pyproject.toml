@@ -49,9 +49,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://cashocs.readthedocs.io/en/latest/index.html"
+Documentation = "https://cashocs.readthedocs.io/en/latest"
 Source = "https://github.com/sblauth/cashocs"
-Tutorial = "https://cashocs.readthedocs.io/en/latest/user/index.html"
+Tutorial = "https://cashocs.readthedocs.io/en/latest/user"
 Tracker = "https://github.com/sblauth/cashocs/issues"
 
 [project.scripts]
