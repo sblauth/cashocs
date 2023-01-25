@@ -78,6 +78,29 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
+def check_mesh_quality_tolerance(mesh_quality: float, tolerance: float) -> None:
+    """Compares the current mesh quality with the (upper) tolerance.
+
+    This function raises an appropriate exception, when the mesh quality is not
+    sufficiently high.
+
+    Args:
+        mesh_quality: The current mesh quality.
+        tolerance: The upper mesh quality tolerance.
+
+    """
+    if mesh_quality < tolerance:
+        fail_msg = (
+            "The quality of the mesh file you have specified is not "
+            "sufficient for computing the shape gradient.\n "
+            + f"It currently is {mesh_quality:.3e} but has to "
+            f"be at least {tolerance:.3e}."
+        )
+        raise _exceptions.InputError(
+            "cashocs.geometry.import_mesh", "input_arg", fail_msg
+        )
+
+
 class _MeshHandler:
     """Handles the mesh for shape optimization problems.
 
@@ -140,6 +163,10 @@ class _MeshHandler:
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+        )
+
+        check_mesh_quality_tolerance(
+            self.current_mesh_quality, self.mesh_quality_tol_upper
         )
 
         self.options_frobenius: _typing.KspOption = {
@@ -630,27 +657,4 @@ class _MeshHandler:
             mesh_quality_measure,
         )
 
-        failed = False
-        fail_msg = None
-        if current_mesh_quality < mesh_quality_tol_lower:
-            failed = True
-            fail_msg = (
-                "The quality of the mesh file you have specified is not "
-                "sufficient for evaluating the cost functional.\n"
-                f"It currently is {current_mesh_quality:.3e} but has to "
-                f"be at least {mesh_quality_tol_lower:.3e}."
-            )
-
-        if current_mesh_quality < mesh_quality_tol_upper:
-            failed = True
-            fail_msg = (
-                "The quality of the mesh file you have specified is not "
-                "sufficient for computing the shape gradient.\n "
-                + f"It currently is {current_mesh_quality:.3e} but has to "
-                f"be at least {mesh_quality_tol_lower:.3e}."
-            )
-
-        if failed:
-            raise _exceptions.InputError(
-                "cashocs.geometry.import_mesh", "input_arg", fail_msg
-            )
+        check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)
