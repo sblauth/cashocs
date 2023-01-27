@@ -552,6 +552,7 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""

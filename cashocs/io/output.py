@@ -62,13 +62,16 @@ class OutputManager:
         save_state = self.config.getboolean("Output", "save_state")
         save_adjoint = self.config.getboolean("Output", "save_adjoint")
         save_gradient = self.config.getboolean("Output", "save_gradient")
-        has_output = (
-            save_txt or save_results or save_state or save_gradient or save_adjoint
-        )
+        save_xdmf = save_state or save_gradient or save_adjoint
+        has_output = save_txt or save_results or save_xdmf
 
         if not self.result_path.is_dir():
             if has_output:
                 self.result_path.mkdir(parents=True, exist_ok=True)
+            if save_xdmf:
+                pathlib.Path().joinpath(self.result_path, "xdmf").mkdir(
+                    parents=True, exist_ok=True
+                )
 
         self.managers: List[managers.IOManager] = []
         if verbose:
