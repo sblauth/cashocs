@@ -100,6 +100,12 @@ class OptimizationAlgorithm(abc.ABC):
             self.maximum_iterations = self.db.parameter_db.temp_dict[
                 "OptimizationRoutine"
             ]["max_iter"]
+            self.optimization_problem.initialize_solve_parameters(
+                algorithm=self.optimization_problem.algorithm,
+                rtol=self.rtol,
+                atol=self.atol,
+                max_iter=self.maximum_iterations,
+            )
         else:
             self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
             self.atol = self.config.getfloat("OptimizationRoutine", "atol")
