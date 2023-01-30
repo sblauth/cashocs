@@ -174,8 +174,7 @@ def setup_petsc_options(
         opts.clear()
 
         for key, value in ksp_options[i].items():
-            val = None if value == "none" else value
-            opts.setValue(key, val)
+            opts.setValue(key, value)
 
         ksps[i].setFromOptions()
 
