@@ -462,8 +462,7 @@ class OptimizationProblem(abc.ABC):
         self.inject_pre_callback(pre_function)
         self.inject_post_callback(post_function)
 
-    @abc.abstractmethod
-    def solve(
+    def initialize_solve_parameters(
         self,
         algorithm: Optional[str] = None,
         rtol: Optional[float] = None,
@@ -523,6 +522,51 @@ class OptimizationProblem(abc.ABC):
         if max_iter is not None:
             self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
 
+    @abc.abstractmethod
+    def solve(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
+    ) -> None:
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
+                for limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``. In addition, for optimal
+                control problems, one can use ``'newton'`` for a truncated Newton
+                method.
+            rtol: The relative tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            atol: The absolute tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm can
+                carry out before it is terminated. Overwrites the value specified in the
+                config file. If this is ``None``, the value from the config file is
+                taken. Default is ``None``.
+
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
+            call, the termination criterion changes to:
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+            .. math::
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
+        """
+        self.initialize_solve_parameters(algorithm, rtol, atol, max_iter)
         self.config.validate_config()
         self._check_for_custom_forms()
 
