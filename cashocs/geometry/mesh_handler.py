@@ -507,6 +507,7 @@ class _MeshHandler:
             solver.optimization_problem.mesh_parametrization,
             self.db.parameter_db.temp_dict["mesh_file"],
         )
+        solver.optimization_problem.initialize_solve_parameters()
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
@@ -568,6 +569,16 @@ class _MeshHandler:
             self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
                 "MeshQuality"
             ][:]
+
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "rtol"
+            ] = self.config.getfloat("OptimizationRoutine", "rtol")
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "atol"
+            ] = self.config.getfloat("OptimizationRoutine", "atol")
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "max_iter"
+            ] = self.config.getint("OptimizationRoutine", "maximum_iterations")
 
             dim = self.mesh.geometric_dimension()
 
