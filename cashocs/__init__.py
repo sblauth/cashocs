@@ -34,6 +34,7 @@ from cashocs._constraints.constraints import InequalityConstraint
 from cashocs._loggers import LogLevel
 from cashocs._loggers import set_log_level
 from cashocs._optimization import verification
+from cashocs._optimization.cost_functional import Functional
 from cashocs._optimization.cost_functional import IntegralFunctional
 from cashocs._optimization.cost_functional import MinMaxFunctional
 from cashocs._optimization.cost_functional import ScalarTrackingFunctional
@@ -110,6 +111,7 @@ __all__ = [
     "IntegralFunctional",
     "ScalarTrackingFunctional",
     "MinMaxFunctional",
+    "Functional",
     "interval_mesh",
     "convert",
     "space_mapping",

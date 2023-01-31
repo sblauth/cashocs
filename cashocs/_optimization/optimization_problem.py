@@ -244,6 +244,7 @@ class OptimizationProblem(abc.ABC):
                     cost_functional.IntegralFunctional,
                     cost_functional.ScalarTrackingFunctional,
                     cost_functional.MinMaxFunctional,
+                    cost_functional.Functional,
                 ),
             ):
                 cost_functional_list.append(functional)
