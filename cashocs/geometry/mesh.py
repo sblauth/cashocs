@@ -34,6 +34,8 @@ from cashocs import _loggers
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
+    from mpi4py import MPI
+
     from cashocs import _typing
 
 
@@ -109,6 +111,7 @@ def interval_mesh(
     start: float = 0.0,
     end: float = 1.0,
     partitions: Optional[List[float]] = None,
+    comm: Optional[MPI.Comm] = None,
 ) -> _typing.MeshTuple:
     r"""Creates an 1D interval mesh starting at x=0 to x=length.
 
@@ -127,6 +130,7 @@ def interval_mesh(
         partitions: Points in the interval at which a partition in subdomains should be
             made. The resulting volume measure is sorted ascendingly according to the
             sub-intervals defined in partitions (starting at 1). Defaults to ``None``.
+        comm: MPI communicator that is to be used for creating the mesh.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -151,7 +155,10 @@ def interval_mesh(
     n = int(n)
     dim = 1
 
-    mesh = fenics.IntervalMesh(n, start, end)
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
+    mesh = fenics.IntervalMesh(comm, n, start, end)
 
     subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
     boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
@@ -195,6 +202,7 @@ def regular_mesh(
     length_y: float = 1.0,
     length_z: Optional[float] = None,
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
+    comm: Optional[MPI.Comm] = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -232,6 +240,7 @@ def regular_mesh(
         diagonal: This defines the type of diagonal used to create the box mesh in 2D.
             This can be one of ``"right"``, ``"left"``, ``"left/right"``,
             ``"right/left"`` or ``"crossed"``.
+        comm: MPI communicator that is to be used for creating the mesh.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -257,6 +266,9 @@ def regular_mesh(
 
     n = int(n)
 
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
     if length_z is None:
         sizes = [length_x, length_y]
         dim = 2
@@ -269,6 +281,7 @@ def regular_mesh(
 
     if length_z is None:
         mesh = fenics.RectangleMesh(
+            comm,
             fenics.Point(0, 0),
             fenics.Point(sizes),
             num_points[0],
@@ -277,6 +290,7 @@ def regular_mesh(
         )
     else:
         mesh = fenics.BoxMesh(
+            comm,
             fenics.Point(0, 0, 0),
             fenics.Point(sizes),
             num_points[0],
@@ -334,6 +348,7 @@ def regular_box_mesh(
     end_y: float = 1.0,
     end_z: Optional[float] = None,
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
+    comm: Optional[MPI.Comm] = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -376,6 +391,7 @@ def regular_box_mesh(
         diagonal: This defines the type of diagonal used to create the box mesh in 2D.
             This can be one of ``"right"``, ``"left"``, ``"left/right"``,
             ``"right/left"`` or ``"crossed"``.
+        comm: MPI communicator that is to be used for creating the mesh.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -388,6 +404,9 @@ def regular_box_mesh(
 
     dim = 2
     sizes = [1.0, 1.0]
+
+    if comm is None:
+        comm = fenics.MPI.comm_world
 
     if start_z is None and end_z is None:
         lx = end_x - start_x
@@ -418,6 +437,7 @@ def regular_box_mesh(
 
     if start_z is None:
         mesh = fenics.RectangleMesh(
+            comm,
             fenics.Point(start_x, start_y),
             fenics.Point(end_x, end_y),
             num_points[0],
@@ -426,6 +446,7 @@ def regular_box_mesh(
         )
     else:
         mesh = fenics.BoxMesh(
+            comm,
             fenics.Point(start_x, start_y, start_z),
             fenics.Point(end_x, end_y, end_z),
             num_points[0],
