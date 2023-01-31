@@ -169,7 +169,7 @@ class Config(ConfigParser):
                 },
                 "rtol": {
                     "type": "float",
-                    "attributes": ["less_than_one", "positive"],
+                    "attributes": ["less_than_one", "non_negative"],
                 },
                 "atol": {
                     "type": "float",
