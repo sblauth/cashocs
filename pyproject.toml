@@ -131,6 +131,7 @@ module = [
 	"ufl.*",
 	"dolfin.*",
 	"petsc4py",
+    "mpi4py",
 	"meshio",
 	"h5py",
 ]
