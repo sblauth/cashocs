@@ -92,14 +92,13 @@ class APrioriMeshTester:
             A boolean that indicates whether the desired transformation is feasible.
 
         """
+        comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
         self.transformation_container.vector().apply("")
         x = _utils.assemble_and_solve_linear(
-            self.A_prior,
-            self.l_prior,
-            ksp_options=self.options_prior,
+            self.A_prior, self.l_prior, ksp_options=self.options_prior, comm=comm
         )
 
         min_det = float(x.min()[1])

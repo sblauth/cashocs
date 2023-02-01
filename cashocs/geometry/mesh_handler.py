@@ -363,6 +363,7 @@ class _MeshHandler:
                 self.a_frobenius,
                 self.l_frobenius,
                 ksp_options=self.options_frobenius,
+                comm=self.db.geometry_db.mpi_comm,
             )
 
             frobenius_norm = x.max()[1]

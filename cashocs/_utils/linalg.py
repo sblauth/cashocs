@@ -31,6 +31,8 @@ from cashocs import _exceptions
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
+    from mpi4py import MPI
+
     from cashocs import _typing
 
 iterative_ksp_options: _typing.KspOption = {
@@ -218,6 +220,24 @@ def setup_fieldsplit_preconditioner(
             pc.setFieldSplitIS(*idx_tuples)
 
 
+def _initialize_comm(comm: Optional[MPI.Comm] = None) -> MPI.Comm:
+    """Initializes the MPI communicator.
+
+    If the supplied communicator is `None`, return MPI.comm_world.
+
+    Args:
+        comm: The supplied communicator or `None`
+
+    Returns:
+        The resulting communicator.
+
+    """
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
+    return comm
+
+
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
@@ -225,6 +245,7 @@ def solve_linear_problem(
     ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
+    comm: Optional[MPI.Comm] = None,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -245,12 +266,14 @@ def solve_linear_problem(
         atol: The absolute tolerance used in case an iterative solver is used for
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
+        comm: The MPI communicator for the problem.
 
     Returns:
         The solution vector.
 
     """
-    ksp = PETSc.KSP().create()
+    comm = _initialize_comm(comm)
+    ksp = PETSc.KSP().create(comm=comm)
 
     if A is not None:
         ksp.setOperators(A)
@@ -306,6 +329,7 @@ def assemble_and_solve_linear(
     ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
+    comm: Optional[MPI.Comm] = None,
 ) -> PETSc.Vec:
     """Assembles and solves a linear system.
 
@@ -325,6 +349,7 @@ def assemble_and_solve_linear(
         atol: The absolute tolerance used in case an iterative solver is used for
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
+        comm: The MPI communicator for solving the problem.
 
     Returns:
         A PETSc vector containing the solution x.
@@ -341,6 +366,7 @@ def assemble_and_solve_linear(
         ksp_options=ksp_options,
         rtol=rtol,
         atol=atol,
+        comm=comm,
     )
 
     return solution

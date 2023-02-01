@@ -65,6 +65,8 @@ def compute_boundary_distance(
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure.NamedMeasure("dx", mesh)
 
+    comm = mesh.mpi_comm()
+
     ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
 
     u = fenics.TrialFunction(function_space)
@@ -95,7 +97,9 @@ def compute_boundary_distance(
     lhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
     rhs = fenics.Constant(1.0) * v * dx
 
-    _utils.assemble_and_solve_linear(lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options)
+    _utils.assemble_and_solve_linear(
+        lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options, comm=comm
+    )
 
     rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
 
@@ -114,7 +118,7 @@ def compute_boundary_distance(
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         u_prev.vector().apply("")
         _utils.assemble_and_solve_linear(
-            lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options
+            lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options, comm=comm
         )
         res = np.sqrt(fenics.assemble(residual_form))
 

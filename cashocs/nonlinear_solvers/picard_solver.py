@@ -128,9 +128,11 @@ def picard_iteration(
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
 
+    comm = u_list[0].function_space().mesh().mpi_comm()
+
     prefix = "Picard iteration:  "
 
-    res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
+    res_tensor = [fenics.PETScVector(comm) for _ in u_list]
     eta_max = 0.9
     gamma = 0.9
     res_0 = 1.0

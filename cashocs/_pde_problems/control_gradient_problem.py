@@ -111,6 +111,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                     b=self.b_tensors[i].vec(),
                     fun=self.db.function_db.gradient[i],
                     ksp_options=self.riesz_ksp_options[i],
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
             self.has_solution = True

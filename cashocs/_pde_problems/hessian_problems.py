@@ -174,6 +174,7 @@ class HessianProblem:
                     self.bcs_list_ad[i],
                     fun=self.db.function_db.states_prime[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
             for i in range(self.state_dim):
@@ -185,6 +186,7 @@ class HessianProblem:
                     self.bcs_list_ad[-1 - i],
                     fun=self.db.function_db.adjoints_prime[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
         else:
@@ -234,6 +236,7 @@ class HessianProblem:
                 b=b,
                 fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
+                comm=self.db.geometry_db.mpi_comm,
             )
 
         self.no_sensitivity_solves += 2

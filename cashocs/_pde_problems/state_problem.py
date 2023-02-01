@@ -128,6 +128,7 @@ class StateProblem(pde_problem.PDEProblem):
                             b=self.b_tensors[i],
                             fun=self.states[i],
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
+                            comm=self.db.geometry_db.mpi_comm,
                         )
 
                 else:

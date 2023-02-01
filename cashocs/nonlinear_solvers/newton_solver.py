@@ -148,9 +148,11 @@ class _NewtonSolver:
             self.derivative, -self.nonlinear_form, self.bcs_hom
         )
         self.assembler.keep_diagonal = True
+
+        self.comm = self.u.function_space().mesh().mpi_comm()
         # pylint: disable=invalid-name
-        self.A_fenics = self.A_tensor or fenics.PETScMatrix()
-        self.residual = self.b_tensor or fenics.PETScVector()
+        self.A_fenics = self.A_tensor or fenics.PETScMatrix(self.comm)
+        self.residual = self.b_tensor or fenics.PETScVector(self.comm)
         self.b = fenics.as_backend_type(self.residual).vec()
         self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
 
@@ -160,7 +162,7 @@ class _NewtonSolver:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs_hom
             )
-            self.residual_shift = fenics.PETScVector()
+            self.residual_shift = fenics.PETScVector(self.comm)
 
         self.breakdown = False
         self.res = 1.0
@@ -266,6 +268,7 @@ class _NewtonSolver:
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
+                comm=self.comm,
             )
 
             if self.is_linear:
@@ -370,6 +373,7 @@ class _NewtonSolver:
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,
+                    comm=self.comm,
                 )
 
                 if (
