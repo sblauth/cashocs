@@ -294,7 +294,7 @@ class SkewnessCalculator(MeshQualityCalculator):
             The element wise skewness of the mesh on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         skewness_array = self._quality_object.skewness(mesh).array()
         skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
         if comm.rank == 0:
@@ -329,7 +329,7 @@ class MaximumAngleCalculator(MeshQualityCalculator):
             The maximum angle quality measure for each element on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         maximum_angle_array = self._quality_object.maximum_angle(mesh).array()
         maximum_angle_list: np.ndarray = comm.gather(maximum_angle_array, root=0)
         if comm.rank == 0:
@@ -361,7 +361,7 @@ class RadiusRatiosCalculator(MeshQualityCalculator):
             The radius ratios of the mesh elements on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         radius_ratios_array = fenics.MeshQuality.radius_ratios(mesh).array()
         radius_ratios_list: np.ndarray = comm.gather(radius_ratios_array, root=0)
         if comm.rank == 0:
@@ -388,7 +388,7 @@ class ConditionNumberCalculator(MeshQualityCalculator):
             The condition numbers of the elements on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
@@ -417,7 +417,9 @@ class ConditionNumberCalculator(MeshQualityCalculator):
 
         cond = fenics.Function(function_space_dg0)
 
-        _utils.assemble_and_solve_linear(lhs, rhs, fun=cond, ksp_options=options)
+        _utils.assemble_and_solve_linear(
+            lhs, rhs, fun=cond, ksp_options=options, comm=comm
+        )
         cond.vector().vec().reciprocal()
         cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
@@ -454,7 +456,7 @@ class MeshQuality:
 
         """
         quality_list = calculator.compute(mesh)
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         if comm.rank == 0:
             qual = float(np.min(quality_list))
         else:
@@ -477,7 +479,7 @@ class MeshQuality:
 
         """
         quality_list = calculator.compute(mesh)
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
 
         if comm.rank == 0:
             qual = float(np.average(quality_list))

@@ -154,6 +154,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
                     fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
                 self.has_solution = True

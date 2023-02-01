@@ -207,7 +207,7 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
         A numpy array which contains the vertex coordinates of the mesh
 
     """
-    comm = fenics.MPI.comm_world
+    comm = mesh.mpi_comm()
     rank = comm.Get_rank()
     top = mesh.topology()
     global_vertex_indices = top.global_indices(0)

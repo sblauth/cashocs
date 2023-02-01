@@ -189,6 +189,7 @@ class Stiffness:
                     A=self.A_mu_matrix,
                     b=self.b_mu,
                     ksp_options=self.options_mu,
+                    comm=self.mesh.mpi_comm(),
                 )
 
                 if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
