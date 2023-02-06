@@ -110,7 +110,6 @@ class StateProblem(pde_problem.PDEProblem):
 
         """
         if not self.has_solution:
-
             self.db.callback.call_pre()
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")

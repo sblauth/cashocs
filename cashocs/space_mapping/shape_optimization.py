@@ -658,7 +658,6 @@ class SpaceMappingProblem:
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
-
                     self.fine_model.solve_and_evaluate()
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve()

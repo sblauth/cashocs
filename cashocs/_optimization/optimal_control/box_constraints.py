@@ -222,7 +222,6 @@ class Restrictor:
         self.idx_inactive.clear()
 
         for j in range(len(self.controls)):
-
             if self.require_control_constraints[j]:
                 self.idx_active_lower.append(
                     np.nonzero(

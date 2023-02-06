@@ -889,7 +889,6 @@ def test_scaling_shape_regularization():
     config.set("Regularization", "target_barycenter", "[1.0, 1.0, 0.0]")
 
     for iteration in range(no_iterations):
-
         mesh.coordinates()[:, :] = initial_coordinates
         mesh.bounding_box_tree().build(mesh)
 
