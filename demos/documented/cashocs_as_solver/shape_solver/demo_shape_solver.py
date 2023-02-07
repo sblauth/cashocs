@@ -113,6 +113,7 @@ sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=confi
 # To supply these weak forms to cashocs, we can use the following code. For the
 # shape derivative, we write
 
+
 # +
 def eps(u):
     return Constant(0.5) * (grad(u) + grad(u).T)

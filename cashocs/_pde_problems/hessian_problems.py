@@ -166,7 +166,6 @@ class HessianProblem:
             not self.config.getboolean("StateSystem", "picard_iteration")
             or self.state_dim == 1
         ):
-
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
@@ -307,7 +306,6 @@ class HessianProblem:
         eps_0 = np.sqrt(rsold)
 
         for _ in range(self.max_it_inner_newton):
-
             self.reduced_hessian_application(self.p, self.q)
 
             self.box_constraints.restrictor.restrict_to_active_set(self.p, self.temp1)
@@ -373,7 +371,6 @@ class HessianProblem:
         rar = sp_val1 + sp_val2
 
         for i in range(self.max_it_inner_newton):
-
             self.box_constraints.restrictor.restrict_to_active_set(self.q, self.temp1)
             self.box_constraints.restrictor.restrict_to_inactive_set(self.q, self.temp2)
             denom1 = self.form_handler.scalar_product(self.temp1, self.temp1)

@@ -237,7 +237,6 @@ class InequalityConstraint(Constraint):
                 )
 
         elif self.is_pointwise_constraint:
-
             if self.upper_bound is not None:
                 violation += fenics.assemble(
                     pow(

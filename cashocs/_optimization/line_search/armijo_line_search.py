@@ -105,7 +105,6 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
 
         while True:
-
             if self._check_for_nonconvergence(solver):
                 return None
 

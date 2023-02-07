@@ -374,7 +374,6 @@ def test_different_spaces(config_ocp):
 
 
 def test_nonlinear_state_eq(rng, CG1, geometry, y, u, p, config_ocp, bcs, J):
-
     initial_guess = Function(CG1)
     F = (
         dot(grad(y), grad(p)) * geometry.dx
@@ -447,7 +446,6 @@ def test_callbacks(ocp, u, CG1):
 
 
 def test_scaling_control(rng, F, bcs, y, u, p, y_d, config_ocp, geometry):
-
     u.vector().vec().set(1e-2)
     u.vector().apply("")
 
@@ -473,7 +471,6 @@ def test_scaling_control(rng, F, bcs, y, u, p, y_d, config_ocp, geometry):
 
 
 def test_scaling_scalar_only(rng, F, bcs, y, u, p, config_ocp, geometry):
-
     u.vector().vec().set(40.0)
     u.vector().apply("")
 
@@ -509,7 +506,6 @@ def test_scaling_scalar_only(rng, F, bcs, y, u, p, config_ocp, geometry):
 def test_scaling_scalar_and_single_cost(
     rng, F, bcs, y, u, p, y_d, config_ocp, geometry
 ):
-
     u.vector().vec().set(40.0)
     u.vector().apply("")
 

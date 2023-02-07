@@ -96,7 +96,6 @@ class Stiffness:
             mu_fix = self.config.getfloat("ShapeGradient", "mu_fix")
 
             if np.abs(mu_def - mu_fix) / mu_fix > 1e-2:
-
                 self.inhomogeneous_mu = True
 
                 self.options_mu = {
@@ -450,7 +449,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             self._parse_pull_back_coefficients()
 
             for coeff in self.material_derivative_coeffs:
-
                 material_derivative = self.lagrangian.derivative(
                     coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
@@ -597,7 +595,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     def _project_scalar_product(self) -> None:
         """Ensures, that only free dimensions can be deformed."""
         if self.use_fixed_dimensions:
-
             copy_mat = self.fe_scalar_product_matrix.copy()
 
             copy_mat.ident(self.fixed_indices)
@@ -658,7 +655,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             result = fenics.assemble(form)
 
         else:
-
             x = fenics.as_backend_type(a[0].vector()).vec()
             y = fenics.as_backend_type(b[0].vector()).vec()
 

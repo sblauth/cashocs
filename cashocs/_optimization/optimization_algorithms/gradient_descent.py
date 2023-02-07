@@ -28,7 +28,6 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
     def run(self) -> None:
         """Performs the optimization with the gradient descent method."""
         while True:
-
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
 

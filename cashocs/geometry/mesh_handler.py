@@ -58,11 +58,9 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
         with open(mesh_file, "r", encoding="utf-8") as in_file, open(
             temp_location, "w", encoding="utf-8"
         ) as temp_file:
-
             parametrizations_section = False
 
             for line in in_file:
-
                 if line == "$Parametrizations\n":
                     parametrizations_section = True
 

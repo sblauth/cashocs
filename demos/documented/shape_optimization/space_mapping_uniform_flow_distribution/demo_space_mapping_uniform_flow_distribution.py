@@ -227,6 +227,7 @@ coarse_model = space_mapping.CoarseModel(F, bcs, J, up, vq, boundaries, config=c
 #
 # As next step, we define the fine model optimization problem as follows
 
+
 # +
 class FineModel(space_mapping.FineModel):
     def __init__(self, mesh, Re, q_in, output_list):

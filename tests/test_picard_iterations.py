@@ -182,7 +182,6 @@ def beta():
 
 @pytest.fixture
 def J(y, z, u, v, geometry, alpha, beta, y_d, z_d):
-
     return cashocs.IntegralFunctional(
         Constant(0.5) * (y - y_d) * (y - y_d) * geometry.dx
         + Constant(0.5) * (z - z_d) * (z - z_d) * geometry.dx
