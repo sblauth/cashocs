@@ -238,6 +238,28 @@ def _initialize_comm(comm: Optional[MPI.Comm] = None) -> MPI.Comm:
     return comm
 
 
+def define_ksp_options(
+    ksp_options: Optional[_typing.KspOption] = None,
+) -> _typing.KspOption:
+    """Defines the KSP options to be used by PETSc.
+
+    If no options are supplied, the direct solver mumps will be used.
+
+    Args:
+        ksp_options: The KSP options for PETSc
+
+    Returns:
+        The KSP options that are supplied of the default ones (for mumps).
+
+    """
+    if ksp_options is None:
+        options = copy.deepcopy(direct_ksp_options)
+    else:
+        options = ksp_options
+
+    return options
+
+
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
@@ -246,6 +268,7 @@ def solve_linear_problem(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
     comm: Optional[MPI.Comm] = None,
+    P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -276,7 +299,10 @@ def solve_linear_problem(
     ksp = PETSc.KSP().create(comm=comm)
 
     if A is not None:
-        ksp.setOperators(A)
+        if P is None:
+            ksp.setOperators(A)
+        else:
+            ksp.setOperators(A, P)
     else:
         A = ksp.getOperators()[0]
         if A.size[0] == -1 and A.size[1] == -1:
@@ -295,13 +321,9 @@ def solve_linear_problem(
     else:
         x = fun.vector().vec()
 
-    if ksp_options is None:
-        options = copy.deepcopy(direct_ksp_options)
-    else:
-        options = ksp_options
+    options = define_ksp_options(ksp_options)
 
     setup_fieldsplit_preconditioner(fun, ksp, options)
-
     setup_petsc_options([ksp], [options])
 
     if rtol is not None:

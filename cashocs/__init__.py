@@ -54,6 +54,7 @@ from cashocs.geometry import regular_mesh
 from cashocs.io import convert
 from cashocs.io import import_mesh
 from cashocs.io import load_config
+from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
@@ -115,4 +116,5 @@ __all__ = [
     "interval_mesh",
     "convert",
     "space_mapping",
+    "linear_solve",
 ]
