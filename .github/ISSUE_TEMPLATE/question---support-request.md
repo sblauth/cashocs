@@ -3,7 +3,7 @@ name: Question / Support Request
 about: Questions, issues, and support requests for cashocs. Please check the documentation
   at https://cashocs.readthedocs.io/ first before posting here.
 title: "[Support Request]"
-labels: ''
+labels: Support Request
 assignees: ''
 
 ---
