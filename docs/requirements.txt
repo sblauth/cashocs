@@ -3,7 +3,7 @@ sphinx-argparse==0.4.0
 sphinx-copybutton==0.5.1
 meshio==5.3.4
 docutils==0.19
-pydata-sphinx-theme==0.13
+pydata-sphinx-theme==0.13.1
 sphinx-design==0.3
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
