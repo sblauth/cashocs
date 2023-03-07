@@ -32,6 +32,7 @@ jobs:
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
+          imath"<=3.1.6"
 
     - name: Install package
       run: |
