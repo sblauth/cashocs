@@ -29,6 +29,7 @@ jobs:
           pytest">=7.0.0"
           gmsh">=4.8"
           matplotlib
+          imath"<=3.1.6"
           python=3.11
 
     - name: Install package
@@ -67,6 +68,7 @@ jobs:
           gmsh">=4.8"
           mpich
           matplotlib
+          imath"<=3.1.6"
           python=3.11
 
     - name: Install package

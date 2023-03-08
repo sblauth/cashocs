@@ -45,6 +45,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_design",
     "myst_parser",
+    "sphinx_favicon",
 ]
 
 napoleon_google_docstring = True
@@ -93,6 +94,10 @@ source_suffix = ".rst"
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build"]
 
+favicons = [
+    {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
+    {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
+]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -120,10 +125,6 @@ html_theme_options = {
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "navbar_persistent": [],
     "show_nav_level": 2,
-    "favicons": [
-        {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
-        {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
-    ],
     "switcher": {
         "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": switcher_version,

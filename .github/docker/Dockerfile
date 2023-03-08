@@ -6,7 +6,7 @@ RUN apt-get update --fix-missing \
   && rm -rf /var/lib/apt/lists/*
 
 RUN conda install -c conda-forge mamba \
-  && mamba create -n cashocs -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" coverage">=6.1.0" mpich python=3.11 \
+  && mamba create -n cashocs -c conda-forge fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" coverage">=6.1.0" mpich imath"<=3.1.6" python=3.11 \
   && conda clean --all --yes
 
 
