@@ -36,7 +36,6 @@ jobs:
           pytest">=7.0.0"
           gmsh">=4.8"
           ${{ matrix.mpi }}
-          imath"<=3.1.6"
           python=${{ matrix.python-version }}
 
     - name: Install package
