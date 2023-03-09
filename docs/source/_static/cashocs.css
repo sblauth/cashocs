@@ -99,25 +99,7 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   opacity: 0.1;
 }
 
-/* Background of old versions should be red */
-.version-switcher__container a:not([data-version-name*="dev"]):not([data-version-name*="stable"]) {
-  position: relative;
-}
 
-.version-switcher__container a:not([data-version-name*="dev"]):not([data-version-name*="stable"]) span {
-  color: #980F0F;
-}
-
-.version-switcher__container a:not([data-version-name*="dev"]):not([data-version-name*="stable"]) span:before {
-  content: "";
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: #980F0F;
-  opacity: 0.1;
-}
 
 
 /* Main page overview cards */
