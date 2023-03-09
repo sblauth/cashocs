@@ -22,6 +22,8 @@
 import argparse
 import contextlib
 import json
+import pathlib
+import subprocess  # nosec B404
 import time
 from typing import Dict, List, Optional
 
@@ -50,6 +52,16 @@ def _generate_parser() -> argparse.ArgumentParser:
         metavar="outfile",
     )
     parser.add_argument("-q", "--quiet", action="store_true")
+    parser.add_argument(
+        "-m",
+        "--mode",
+        action="store",
+        type=str,
+        help="The mode used to define the subdomains and boundaries. "
+        "This can be either 'physical', 'geometrical' or 'none'.",
+        default="physical",
+        metavar="mode",
+    )
 
     return parser
 
@@ -59,6 +71,23 @@ def check_file_extension(file: str, required_extension: str) -> None:
     if not file.rsplit(".", 1)[-1] == required_extension:
         raise _exceptions.CashocsException(
             f"Cannot use {file} due to wrong format.",
+        )
+
+
+def check_mode(mode: str) -> None:
+    """Cheks, whether the supplied mode is sensible.
+
+    Args:
+        mode: The mode that should be used for the conversion.
+
+    Returns:
+        Raises an exception if the supplied mode is not supported.
+
+    """
+    if mode not in ["physical", "geometrical", "none"]:
+        raise _exceptions.CashocsException(
+            f"The supplied mode {mode} is invalid. "
+            f"Only possible options are 'physical', 'geometrical', or 'none'."
         )
 
 
@@ -91,6 +120,7 @@ def write_subdomains(
     points: np.ndarray,
     cells_dict: dict,
     ostring: str,
+    mode: str,
 ) -> None:
     """Writes out a xdmf file with meshio corresponding to the subdomains.
 
@@ -101,6 +131,8 @@ def write_subdomains(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+        mode: The mode which is used to define the subdomains and boundaries. Should be
+            one of 'physical' (the default), 'geometrical', or 'none'.
 
     """
     cells_str = "triangle"
@@ -109,14 +141,28 @@ def write_subdomains(
     elif topological_dimension == 3:
         cells_str = "tetra"
 
-    if "gmsh:physical" in cell_data_dict.keys():
-        if cells_str in cell_data_dict["gmsh:physical"].keys():
+    if mode == "physical":
+        dict_key = "gmsh:physical"
+    elif mode == "geometrical":
+        dict_key = "gmsh:geometrical"
+    else:
+        dict_key = None
+
+    if mode != "none" and dict_key in cell_data_dict.keys():
+        if cells_str in cell_data_dict[dict_key].keys():
             subdomains = meshio.Mesh(
                 points=points,
                 cells={cells_str: cells_dict[cells_str]},
-                cell_data={"subdomains": [cell_data_dict["gmsh:physical"][cells_str]]},
+                cell_data={"subdomains": [cell_data_dict[dict_key][cells_str]]},
             )
             meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
+    else:
+        if pathlib.Path(f"{ostring}_subdomains.xdmf").is_file():
+            subprocess.run(  # nosec 603
+                ["rm", f"{ostring}_subdomains.xdmf"], check=True
+            )
+        if pathlib.Path(f"{ostring}_subdomains.h5").is_file():
+            subprocess.run(["rm", f"{ostring}_subdomains.h5"], check=True)  # nosec 603
 
 
 def write_boundaries(
@@ -125,6 +171,7 @@ def write_boundaries(
     points: np.ndarray,
     cells_dict: dict,
     ostring: str,
+    mode: str,
 ) -> None:
     """Writes out a xdmf file with meshio corresponding to the boundaries.
 
@@ -135,6 +182,8 @@ def write_boundaries(
         cells_dict: The cells_dict of the mesh.
         ostring: The output string, containing the name and path to the output file,
             without extension.
+        mode: The mode which is used to define the subdomains and boundaries. Should be
+            one of 'physical' (the default), 'geometrical', or 'none'.
 
     """
     facet_str = "line"
@@ -143,14 +192,28 @@ def write_boundaries(
     elif topological_dimension == 3:
         facet_str = "triangle"
 
-    if "gmsh:physical" in cell_data_dict.keys():
-        if facet_str in cell_data_dict["gmsh:physical"].keys():
+    if mode == "physical":
+        dict_key = "gmsh:physical"
+    elif mode == "geometrical":
+        dict_key = "gmsh:geometrical"
+    else:
+        dict_key = None
+
+    if mode != "none" and dict_key in cell_data_dict.keys():
+        if facet_str in cell_data_dict[dict_key].keys():
             xdmf_boundaries = meshio.Mesh(
                 points=points,
                 cells={facet_str: cells_dict[facet_str]},
-                cell_data={"boundaries": [cell_data_dict["gmsh:physical"][facet_str]]},
+                cell_data={"boundaries": [cell_data_dict[dict_key][facet_str]]},
             )
             meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
+    else:
+        if pathlib.Path(f"{ostring}_boundaries.xdmf").is_file():
+            subprocess.run(  # nosec 603
+                ["rm", f"{ostring}_boundaries.xdmf"], check=True
+            )
+        if pathlib.Path(f"{ostring}_boundaries.h5").is_file():
+            subprocess.run(["rm", f"{ostring}_boundaries.h5"], check=True)  # nosec 603
 
 
 def check_for_physical_names(
@@ -214,6 +277,9 @@ def convert(argv: Optional[List[str]] = None) -> None:
     inputfile = args.infile
     check_file_extension(inputfile, "msh")
 
+    mode = args.mode
+    check_mode(mode)
+
     outputfile = args.outfile
     if outputfile is None:
         outputfile = f"{inputfile[:-4]}.xdmf"
@@ -245,10 +311,10 @@ def convert(argv: Optional[List[str]] = None) -> None:
 
         write_mesh(topological_dimension, points, cells_dict, ostring)
         write_subdomains(
-            topological_dimension, cell_data_dict, points, cells_dict, ostring
+            topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
         )
         write_boundaries(
-            topological_dimension, cell_data_dict, points, cells_dict, ostring
+            topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
         )
         check_for_physical_names(inputfile, topological_dimension, ostring)
     fenics.MPI.barrier(fenics.MPI.comm_world)

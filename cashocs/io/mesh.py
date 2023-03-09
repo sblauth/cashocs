@@ -143,7 +143,10 @@ def import_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.Mesh
 
 
 def convert(
-    input_file: str, output_file: Optional[str] = None, quiet: bool = False
+    input_file: str,
+    output_file: Optional[str] = None,
+    mode: str = "physical",
+    quiet: bool = False,
 ) -> None:
     """Converts the input mesh file to a xdmf mesh file for cashocs to work with.
 
@@ -153,6 +156,8 @@ def convert(
             then a file name.msh will be converted to name.xdmf, i.e., the name of the
             input file stays the same
         quiet: A boolean flag which silences the output.
+        mode: The mode which is used to define the subdomains and boundaries. Should be
+            one of 'physical' (the default), 'geometrical', or 'none'.
 
     """
     args = [input_file]
@@ -161,6 +166,8 @@ def convert(
         args += ["-o", output_file]
     if quiet:
         args += ["-q"]
+
+    args += ["--mode", mode]
 
     cli_convert(args)
     fenics.MPI.barrier(fenics.MPI.comm_world)
