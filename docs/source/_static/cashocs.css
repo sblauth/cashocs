@@ -102,8 +102,8 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
 /* Background of old versions should be red */
 
 
-.version-switcher__container a[data-version-name="1.7"] span {
-  color: #980F0F;
+.version-switcher__container a:not([data-version-name="1.7"]) span {
+  background color: #980F0F;
 }
 
 
