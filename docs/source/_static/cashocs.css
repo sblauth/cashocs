@@ -99,6 +99,13 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   opacity: 0.1;
 }
 
+/* Background of old versions should be red */
+
+
+.version-switcher__container a[data-version-name="1.7"] span {
+  color: #980F0F;
+}
+
 
 
 
