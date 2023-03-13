@@ -43,6 +43,10 @@ of the maintenance releases, please take a look at
 
 * The options for defining parameters which are to be supplied to PETSc KSP objects have changed their datatype: They are now given by (lists of) dictionaries instead of nested lists. For options without a value in the command line (e.g. the option :bash:`-ksp_view`) have a value of :python:`None` in the dictionary (so :python:`'ksp_view': None` can be used inside the dictionary to supply the aforementioned option).
 
+* cashocs now includes a :py:func:`cashocs.linear_solve` that can be used to solve linear problems.
+
+* Optimization problems, constrained problems, space mapping problems, and linear and nonlinear solvers now include the keyword argument :python:`preconditioner_forms`, which is a list of UFL forms used to define the preconditioner matrices for solving the respective PDEs.
+
 * Added different mesh conversion modes for :py:func:`cashocs.convert`, which are :python:`"physical"`, :python:`"geometrical"`, and :python:`"none"`. These are used to either use the physical or geometrical entities of Gmsh for the definition of the boundaries and subdomains (or neither of these).
 
 * Changed configuration file parameters
