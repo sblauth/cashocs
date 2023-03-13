@@ -104,7 +104,8 @@ def assemble_petsc_system(
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
-) -> Tuple[PETSc.Mat, PETSc.Vec]:
+    preconditioner_form: Optional[ufl.Form] = None,
+) -> Tuple[PETSc.Mat, PETSc.Vec, Optional[PETSc.Mat]]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Args:
@@ -129,6 +130,7 @@ def assemble_petsc_system(
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
+
     try:
         fenics.assemble_system(
             mod_lhs_form,
@@ -138,6 +140,7 @@ def assemble_petsc_system(
             A_tensor=A_tensor,
             b_tensor=b_tensor,
         )
+
     except ValueError as value_exception:
         raise _exceptions.CashocsException(
             "The state system could not be transferred to a linear "
@@ -149,10 +152,26 @@ def assemble_petsc_system(
         ) from value_exception
     A_tensor.ident_zeros()
 
+    if preconditioner_form is not None:
+        P_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
+        c_tensor = fenics.PETScVector()
+        fenics.assemble_system(
+            preconditioner_form,
+            rhs_form,
+            bcs,
+            keep_diagonal=True,
+            A_tensor=P_tensor,
+            b_tensor=c_tensor,
+        )
+        P_tensor.ident_zeros()
+        P = P_tensor.mat()  # pylint: disable=invalid-name
+    else:
+        P = None  # pylint: disable=invalid-name
+
     A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
 
-    return A, b
+    return A, b, P
 
 
 def setup_petsc_options(
@@ -352,6 +371,7 @@ def assemble_and_solve_linear(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
     comm: Optional[MPI.Comm] = None,
+    preconditioner_form: Optional[ufl.Form] = None,
 ) -> PETSc.Vec:
     """Assembles and solves a linear system.
 
@@ -378,8 +398,13 @@ def assemble_and_solve_linear(
 
     """
     # pylint: disable=invalid-name
-    A_matrix, b_vector = assemble_petsc_system(
-        lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
+    A_matrix, b_vector, P_matrix = assemble_petsc_system(
+        lhs_form,
+        rhs_form,
+        bcs,
+        A_tensor=A,
+        b_tensor=b,
+        preconditioner_form=preconditioner_form,
     )
     solution = solve_linear_problem(
         A=A_matrix,
@@ -389,6 +414,7 @@ def assemble_and_solve_linear(
         rtol=rtol,
         atol=atol,
         comm=comm,
+        P=P_matrix,
     )
 
     return solution

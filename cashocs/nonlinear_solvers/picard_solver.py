@@ -93,6 +93,7 @@ def picard_iteration(
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
+    preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
@@ -120,6 +121,9 @@ def picard_iteration(
             equations.
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
+        preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
     """
     is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -127,6 +131,7 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
+    preconditioner_form_list = _utils.enlist(preconditioner_forms)
 
     comm = u_list[0].function_space().mesh().mpi_comm()
 
@@ -182,6 +187,7 @@ def picard_iteration(
                 A_tensor=A_tensor,
                 b_tensor=b_tensor,
                 is_linear=inner_is_linear,
+                preconditioner_form=preconditioner_form_list[j],
             )
 
     if is_printing:

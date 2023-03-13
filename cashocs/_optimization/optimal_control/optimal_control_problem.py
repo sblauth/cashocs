@@ -83,6 +83,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 fenics.DirichletBC,
             ]
         ] = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -131,6 +132,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 `None`.
             control_bcs_list: A list of boundary conditions for the control variables.
                 This is passed analogously to ``bcs_list``. Default is ``None``.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -143,11 +147,12 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             cost_functional_form,
             states,
             adjoints,
-            config,
-            initial_guess,
-            ksp_options,
-            adjoint_ksp_options,
-            desired_weights,
+            config=config,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
         )
 
         self.db.function_db.controls = _utils.enlist(controls)
