@@ -25,40 +25,6 @@ h3 {
 }
 
 
-
-/* Style the active version button.
-
-- dev: orange
-- stable: green
-- old, PR: red
-
-/* Colors from:
-Wong, B. Points of view: Color blindness.
-Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
-*/
-
-/* If the active version has the name "dev", style it orange */
-.version-switcher__button[data-active-version-name*="dev"] {
-  background-color: #E69F00;
-  border-color: #E69F00;
-  color: white;
-}
-
-/* green for `stable` */
-.version-switcher__button[data-active-version-name*="stable"] {
-  background-color: var(--pst-color-success);
-  border-color: var(--pst-color-success);
-  color: white;
-}
-
-/* red for `old` */
-.version-switcher__button:not([data-active-version-name*="stable"]):not([data-active-version-name*="dev"]):not([data-active-version-name*="pull"]) {
-  background-color: #980F0F;
-  border-color: #980F0F;
-  color: white;
-}
-
-
 /* Background of stable should be green */
 .version-switcher__container a[data-version-name*="stable"] {
   position: relative;
@@ -79,6 +45,25 @@ Nat Methods 8, 441 (2011). https://doi.org/10.1038/nmeth.1618
   opacity: 0.1;
 }
 
+/* Background of dev should be orange */
+.version-switcher__container a[data-version-name*="dev"] {
+  position: relative;
+}
+
+.version-switcher__container a[data-version-name*="dev"] span {
+  color: #E69F00;
+}
+
+.version-switcher__container a[data-version-name*="dev"] span:before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: #E69F00;
+  opacity: 0.1;
+}
 
 
 /* Main page overview cards */
