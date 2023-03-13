@@ -60,6 +60,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        preconditioner_forms: Optional[List[ufl.Form]] = None,
     ) -> None:
         """Initializes self.
 
@@ -93,6 +94,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         self.state_forms = state_forms
@@ -109,6 +113,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.preconditioner_forms = preconditioner_forms
 
         self.current_function_value = 0.0
 
@@ -283,6 +288,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 List[List[fenics.DirichletBC]],
             ]
         ] = None,
+        preconditioner_forms: Optional[List[ufl.Form]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -327,6 +333,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 ``None``).
             control_bcs_list: A list of boundary conditions for the control variables.
                 This is passed analogously to ``bcs_list``. Default is ``None``.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         super().__init__(
@@ -340,6 +349,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            preconditioner_forms=preconditioner_forms,
         )
 
         self.controls = controls
@@ -381,6 +391,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             control_bcs_list=self.control_bcs_list,
+            preconditioner_forms=self.preconditioner_forms,
         )
 
         optimal_control_problem.inject_pre_post_callback(
@@ -443,6 +454,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        preconditioner_forms: Optional[List[ufl.Form]] = None,
     ) -> None:
         """Initializes self.
 
@@ -484,6 +496,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         super().__init__(
@@ -497,6 +512,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            preconditioner_forms=preconditioner_forms,
         )
 
         self.boundaries = boundaries
@@ -534,6 +550,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            preconditioner_forms=self.preconditioner_forms,
         )
         shape_optimization_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
