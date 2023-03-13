@@ -88,6 +88,7 @@ class CoarseModel:
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
+        preconditioner_forms: Optional[List[ufl.Form]] = None,
     ) -> None:
         """Initializes self.
 
@@ -109,7 +110,10 @@ class CoarseModel:
             initial_guess: The initial guess for solving a nonlinear state equation
             ksp_options: The list of PETSc options for the state equations
             adjoint_ksp_options: The list of PETSc options for the adjoint equations
-            desired_weights: The desired weights for the cost functional
+            desired_weights: The desired weights for the cost functional.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         self.state_forms = state_forms
@@ -125,6 +129,7 @@ class CoarseModel:
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
+        self.preconditioner_forms = preconditioner_forms
 
         self._pre_callback: Optional[Callable] = None
         self._post_callback: Optional[Callable] = None
@@ -143,6 +148,7 @@ class CoarseModel:
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
+            preconditioner_forms=self.preconditioner_forms,
         )
 
     def optimize(self) -> None:
@@ -239,6 +245,7 @@ class ParameterExtraction:
         self.adjoint_ksp_options = (
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
+        self.preconditioner_forms = coarse_model.preconditioner_forms
         self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
 
     def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
@@ -277,6 +284,7 @@ class ParameterExtraction:
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
+            preconditioner_forms=self.preconditioner_forms,
         )
 
         self.optimal_control_problem.inject_pre_post_callback(

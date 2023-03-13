@@ -90,6 +90,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         """Initializes self.
 
@@ -141,6 +142,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_function_values: This is a privatve parameter of the class, required
                 for remeshing. This parameter must not be set by the user and should be
                 ignored. Using this parameter may result in unintended side effects.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         super().__init__(
@@ -149,13 +153,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             cost_functional_form,
             states,
             adjoints,
-            config,
-            initial_guess,
-            ksp_options,
-            adjoint_ksp_options,
-            desired_weights,
-            temp_dict,
-            initial_function_values,
+            config=config,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+            temp_dict=temp_dict,
+            initial_function_values=initial_function_values,
+            preconditioner_forms=preconditioner_forms,
         )
 
         if shape_scalar_product is None:

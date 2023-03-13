@@ -174,6 +174,7 @@ class HessianProblem:
                     fun=self.db.function_db.states_prime[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
                     comm=self.db.geometry_db.mpi_comm,
+                    preconditioner_form=self.db.form_db.preconditioner_forms[i],
                 )
 
             for i in range(self.state_dim):
@@ -186,6 +187,7 @@ class HessianProblem:
                     fun=self.db.function_db.adjoints_prime[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
                     comm=self.db.geometry_db.mpi_comm,
+                    preconditioner_form=self.db.form_db.preconditioner_forms[-1 - i],
                 )
 
         else:
@@ -205,6 +207,7 @@ class HessianProblem:
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
+                preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
             nonlinear_solvers.picard_iteration(
@@ -223,6 +226,7 @@ class HessianProblem:
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,
+                preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
         for i in range(len(out)):

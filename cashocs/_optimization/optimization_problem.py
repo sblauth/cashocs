@@ -94,6 +94,7 @@ class OptimizationProblem(abc.ABC):
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -137,6 +138,9 @@ class OptimizationProblem(abc.ABC):
             initial_function_values: This is a privatve parameter of the class, required
                 for remeshing. This parameter must not be set by the user and should be
                 ignored. Using this parameter may result in unintended side effects.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -172,11 +176,13 @@ class OptimizationProblem(abc.ABC):
             self.ksp_options,
             self.adjoint_ksp_options,
             self.desired_weights,
+            self.preconditioner_forms,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
             desired_weights,
+            preconditioner_forms,
         )
 
         if initial_function_values is not None:
@@ -196,6 +202,7 @@ class OptimizationProblem(abc.ABC):
             self.cost_functional_list,
             self.state_forms,
             self.bcs_list,
+            self.preconditioner_forms,
         )
         if temp_dict is not None:
             self.db.parameter_db.temp_dict.update(temp_dict)
@@ -268,11 +275,13 @@ class OptimizationProblem(abc.ABC):
             Union[_typing.KspOption, List[_typing.KspOption]]
         ],
         desired_weights: Optional[Union[List[float], float]],
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]],
     ) -> Tuple[
         Optional[List[fenics.Function]],
         List[_typing.KspOption],
         List[_typing.KspOption],
         Optional[List[float]],
+        List[Optional[ufl.Form]],
     ]:
         """Initializes the optional input parameters.
 
@@ -287,6 +296,9 @@ class OptimizationProblem(abc.ABC):
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
                 magnitude of `desired_weights[i]` for the initial iteration.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         if initial_guess is None:
@@ -315,11 +327,19 @@ class OptimizationProblem(abc.ABC):
             parsed_desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
+        if preconditioner_forms is None:
+            parsed_preconditioner_forms: List[Optional[ufl.Form]] = []
+            for _ in range(self.state_dim):
+                parsed_preconditioner_forms.append(None)
+        else:
+            parsed_preconditioner_forms = _utils.enlist(preconditioner_forms)
+
         return (
             parsed_initial_guess,
             parsed_ksp_options,
             parsed_adjoint_ksp_options,
             parsed_desired_weights,
+            parsed_preconditioner_forms,
         )
 
     def compute_state_variables(self) -> None:

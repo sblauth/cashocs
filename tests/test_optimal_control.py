@@ -662,3 +662,75 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     MPI.barrier(MPI.comm_world)
 
     assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_optimal_control_with_custom_preconditioner(geometry, config_ocp):
+    mesh = geometry.mesh
+    dx = geometry.dx
+
+    v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, v_elem * p_elem)
+    W = VectorFunctionSpace(mesh, "CG", 1)
+
+    up = Function(V)
+    u, p = split(up)
+    vq = Function(V)
+    v, q = split(vq)
+    c = Function(W)
+
+    F = (
+        inner(grad(u), grad(v)) * dx
+        - p * div(v) * dx
+        - q * div(u) * dx
+        - dot(c, v) * dx
+    )
+
+    def pressure_point(x, on_boundary):
+        return near(x[0], 0) and near(x[1], 0)
+
+    bcs = cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0, 0)), geometry.boundaries, [1, 2, 3]
+    )
+    lid_velocity = Expression(("4*x[0]*(1-x[0])", "0.0"), degree=2)
+    bcs += cashocs.create_dirichlet_bcs(V.sub(0), lid_velocity, geometry.boundaries, 4)
+    bcs += [DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")]
+    u_d = Expression(
+        (
+            "sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])",
+            "-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])",
+        ),
+        degree=2,
+    )
+    J = cashocs.IntegralFunctional(Constant(0.5) * dot(u - u_d, u - u_d) * dx)
+
+    u_, p_ = TrialFunctions(V)
+    v_, q_ = TestFunctions(V)
+    pc_form = inner(grad(u_), grad(v_)) * dx + p_ * q_ * dx
+
+    ksp_options = {
+        "ksp_type": "minres",
+        "ksp_max_it": 90,
+        "ksp_rtol": 1e-10,
+        "ksp_atol": 1e-30,
+        "pc_type": "fieldsplit",
+        "pc_fieldsplit_type": "additive",
+        "fieldsplit_0_ksp_type": "preonly",
+        "fieldsplit_0_pc_type": "hypre",
+        "fieldsplit_0_pc_hypre_type": "boomeramg",
+        "fieldsplit_1_ksp_type": "preonly",
+        "fieldsplit_1_pc_type": "jacobi",
+    }
+
+    ocp = cashocs.OptimalControlProblem(
+        F,
+        bcs,
+        J,
+        up,
+        c,
+        vq,
+        config=config_ocp,
+        preconditioner_forms=pc_form,
+        ksp_options=ksp_options,
+    )
+    ocp.solve(rtol=1e-2, max_iter=38)
