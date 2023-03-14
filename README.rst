@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/sblauth/cashocs/master/logo.png
+.. image:: https://raw.githubusercontent.com/sblauth/cashocs/main/logos/cashocs_banner.jpg
     :width: 800
     :align: center
     :target: https://github.com/sblauth/cashocs

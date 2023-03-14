@@ -95,8 +95,8 @@ source_suffix = ".rst"
 exclude_patterns = ["_build"]
 
 favicons = [
-    {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.png"},
-    {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.png"},
+    {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.jpg"},
+    {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -111,7 +111,7 @@ else:
     switcher_version = release
 
 html_theme = "pydata_sphinx_theme"
-html_logo = "logo.png"
+html_logo = "logo.jpg"
 html_theme_options = {
     "github_url": "https://github.com/sblauth/cashocs",
     "header_links_before_dropdown": 5,
@@ -133,6 +133,8 @@ html_theme_options = {
         "indices.html",
         "sidebar-ethical-ads",
     ],
+    "logo": {"text": "cashocs", "alt_text": "cashocs"},
+    "navbar_align": "content",
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
