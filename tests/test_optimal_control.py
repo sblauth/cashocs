@@ -157,12 +157,12 @@ def test_control_gd(ocp):
 def set_cg_tolerances(config_ocp):
     cg_method = config_ocp.get("AlgoCG", "cg_method")
     iterations = {"FR": "20", "PR": "25", "HS": "27", "DY": "9", "HZ": "27"}
-    config_ocp.set("OptimizationRoutine", "maximum_iterations", iterations[cg_method])
+    config_ocp.set("OptimizationRoutine", "max_iter", iterations[cg_method])
 
 
 def test_conjugate_gradient_solver(setup_cg_method, set_cg_tolerances, ocp):
     print(ocp.db.config.get("AlgoCG", "cg_method"))
-    print(ocp.db.config.get("OptimizationRoutine", "maximum_iterations"))
+    print(ocp.db.config.get("OptimizationRoutine", "max_iter"))
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -210,7 +210,7 @@ def test_control_gd_cc(ocp_cc, cc):
 def set_cg_tolerances_constrained(config_ocp):
     cg_method = config_ocp.get("AlgoCG", "cg_method")
     iterations = {"FR": "47", "PR": "24", "HS": "30", "DY": "9", "HZ": "37"}
-    config_ocp.set("OptimizationRoutine", "maximum_iterations", iterations[cg_method])
+    config_ocp.set("OptimizationRoutine", "max_iter", iterations[cg_method])
 
 
 def test_conjugate_gradient_solver_constrained(
@@ -304,7 +304,7 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
 def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):
     config_ocp.set("OptimizationRoutine", "algorithm", "bfgs")
     config_ocp.set("OptimizationRoutine", "rtol", "1e-6")
-    config_ocp.set("OptimizationRoutine", "maximum_iterations", "500")
+    config_ocp.set("OptimizationRoutine", "max_iter", "500")
 
     u.vector().vec().set(40.0)
     u.vector().apply("")

@@ -646,7 +646,7 @@ def test_scalar_tracking_norm():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config.set("OptimizationRoutine", "algorithm", "bfgs")
     config.set("OptimizationRoutine", "rtol", "1e-5")
-    config.set("OptimizationRoutine", "maximum_iterations", "50")
+    config.set("OptimizationRoutine", "max_iter", "50")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

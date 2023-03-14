@@ -548,7 +548,7 @@ class OptimizationProblem(abc.ABC):
             self.config.set("OptimizationRoutine", "atol", str(atol))
 
         if max_iter is not None:
-            self.config.set("OptimizationRoutine", "maximum_iterations", str(max_iter))
+            self.config.set("OptimizationRoutine", "max_iter", str(max_iter))
 
     @abc.abstractmethod
     def solve(

@@ -163,7 +163,7 @@ class StateProblem(pde_problem.PDEProblem):
                     inner_damped=self.newton_damped,
                     inner_inexact=self.newton_inexact,
                     inner_verbose=self.newton_verbose,
-                    inner_max_its=self.newton_iter,
+                    inner_max_iter=self.newton_iter,
                     ksp_options=self.db.parameter_db.state_ksp_options,
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,

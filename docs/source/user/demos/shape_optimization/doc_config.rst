@@ -258,9 +258,9 @@ the optimization algorithm. It is set via
 
 .. code-block:: ini
 
-    maximum_iterations = 50
+    max_iter = 50
 
-and defaults to :ini:`maximum_iterations = 100`.
+and defaults to :ini:`max_iter = 100`.
 
 Next up, we have the initial guess for the step size, which can be determined via
 
@@ -1143,7 +1143,7 @@ in the following.
     - relative tolerance for the optimization algorithm
   * - :ini:`atol = 0.0`
     - absolute tolerance for the optimization algorithm
-  * - :ini:`maximum_iterations = 100`
+  * - :ini:`max_iter = 100`
     - maximum iterations for the optimization algorithm
   * - :ini:`gradient_method = direct`
     - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
