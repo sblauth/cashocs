@@ -38,6 +38,7 @@ class FormDatabase:
         cost_functional_list: List[_typing.CostFunctional],
         state_forms: List[ufl.Form],
         bcs_list: List[List[fenics.DirichletBC]],
+        preconditioner_forms: List[ufl.Form],
     ):
         """Initializes the form database.
 
@@ -45,11 +46,15 @@ class FormDatabase:
             cost_functional_list: The list of cost functionals.
             state_forms: The list of state forms.
             bcs_list: The list of boundary conditions for the state system.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         self.cost_functional_list = cost_functional_list
         self.state_forms = state_forms
         self.bcs_list = bcs_list
+        self.preconditioner_forms = preconditioner_forms
 
         self.lagrangian = cost_functional.Lagrangian(
             self.cost_functional_list, self.state_forms

@@ -116,7 +116,6 @@ gammas = [pow(10, i) for i in np.arange(1, 9, 3)]
 
 # +
 for gamma in gammas:
-
     J_form = J_init_form + cashocs._utils.moreau_yosida_regularization(
         y, gamma, dx, upper_threshold=y_bar
     )

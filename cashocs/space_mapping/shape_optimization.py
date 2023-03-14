@@ -92,13 +92,12 @@ class CoarseModel:
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
+        preconditioner_forms: Optional[List[ufl.Form]] = None,
     ):
         """Initializes self.
 
@@ -120,6 +119,9 @@ class CoarseModel:
             ksp_options: The list of PETSc options for the state equations
             adjoint_ksp_options: The list of PETSc options for the adjoint equations
             desired_weights: The desired weights for the cost functional
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         self.state_forms = state_forms
@@ -134,6 +136,7 @@ class CoarseModel:
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
         self.desired_weights = desired_weights
+        self.preconditioner_forms = preconditioner_forms
 
         self._pre_callback: Optional[Callable] = None
         self._post_callback: Optional[Callable] = None
@@ -154,6 +157,7 @@ class CoarseModel:
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
+            preconditioner_forms=self.preconditioner_forms,
         )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -243,6 +247,7 @@ class ParameterExtraction:
         self.adjoint_ksp_options = (
             coarse_model.shape_optimization_problem.adjoint_ksp_options
         )
+        self.preconditioner_forms = coarse_model.preconditioner_forms
 
         self.coordinates_initial = coarse_model.coordinates_initial
 
@@ -281,6 +286,7 @@ class ParameterExtraction:
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
             desired_weights=self.desired_weights,
+            preconditioner_forms=self.preconditioner_forms,
         )
         if self.shape_optimization_problem is not None:
             self.shape_optimization_problem.inject_pre_post_callback(
@@ -660,7 +666,6 @@ class SpaceMappingProblem:
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
-
                     self.fine_model.solve_and_evaluate()
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve()

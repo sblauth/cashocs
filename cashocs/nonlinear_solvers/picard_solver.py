@@ -88,11 +88,12 @@ def picard_iteration(
     inner_inexact: bool = True,
     inner_verbose: bool = False,
     inner_max_its: int = 25,
-    ksp_options: Optional[_typing.KspOptions] = None,
+    ksp_options: Optional[List[_typing.KspOption]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
+    preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
@@ -120,6 +121,9 @@ def picard_iteration(
             equations.
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
+        preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
     """
     is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -127,10 +131,13 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
+    preconditioner_form_list = _utils.enlist(preconditioner_forms)
+
+    comm = u_list[0].function_space().mesh().mpi_comm()
 
     prefix = "Picard iteration:  "
 
-    res_tensor = [fenics.PETScVector() for _ in range(len(u_list))]
+    res_tensor = [fenics.PETScVector(comm) for _ in u_list]
     eta_max = 0.9
     gamma = 0.9
     res_0 = 1.0
@@ -180,6 +187,7 @@ def picard_iteration(
                 A_tensor=A_tensor,
                 b_tensor=b_tensor,
                 is_linear=inner_is_linear,
+                preconditioner_form=preconditioner_form_list[j],
             )
 
     if is_printing:
@@ -217,13 +225,11 @@ def _compute_residual(
 
 def _get_linear_solver_options(
     j: int,
-    ksp_options: Optional[_typing.KspOptions],
+    ksp_options: Optional[List[_typing.KspOption]],
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]],
     b_tensors: Optional[List[fenics.PETScVector]],
-) -> Tuple[
-    Optional[List[List[Union[str, int, float]]]], fenics.PETScMatrix, fenics.PETScVector
-]:
+) -> Tuple[Optional[_typing.KspOption], fenics.PETScMatrix, fenics.PETScVector]:
     """Computes the arguments for the individual components considered in the iteration.
 
     Returns:

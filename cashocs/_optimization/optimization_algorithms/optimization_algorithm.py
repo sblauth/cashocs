@@ -95,11 +95,24 @@ class OptimizationAlgorithm(abc.ABC):
         self.converged = False
         self.converged_reason = 0
 
-        self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
-        self.atol = self.config.getfloat("OptimizationRoutine", "atol")
-        self.maximum_iterations = self.config.getint(
-            "OptimizationRoutine", "maximum_iterations"
-        )
+        if self.db.parameter_db.is_remeshed:
+            self.rtol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"]
+            self.atol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"]
+            self.maximum_iterations = self.db.parameter_db.temp_dict[
+                "OptimizationRoutine"
+            ]["max_iter"]
+            self.optimization_problem.initialize_solve_parameters(
+                algorithm=self.optimization_problem.algorithm,
+                rtol=self.rtol,
+                atol=self.atol,
+                max_iter=self.maximum_iterations,
+            )
+        else:
+            self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
+            self.atol = self.config.getfloat("OptimizationRoutine", "atol")
+            self.maximum_iterations = self.config.getint(
+                "OptimizationRoutine", "maximum_iterations"
+            )
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
         self.output_manager = optimization_problem.output_manager

@@ -77,14 +77,14 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 # The options for the state and adjoint systems are defined as follows. For the state
 # system we have
 
-ksp_options = [
-    ["ksp_type", "cg"],
-    ["pc_type", "hypre"],
-    ["pc_hypre_type", "boomeramg"],
-    ["ksp_rtol", 1e-10],
-    ["ksp_atol", 1e-13],
-    ["ksp_max_it", 100],
-]
+ksp_options = {
+    "ksp_type": "cg",
+    "pc_type": "hypre",
+    "pc_hypre_type": "boomeramg",
+    "ksp_rtol": 1e-10,
+    "ksp_atol": 1e-13,
+    "ksp_max_it": 100,
+}
 
 # This is a list of lists, where the inner ones have either 1 or 2 entries, which
 # correspond to the command line options for PETSc. For a detailed documentation of the
@@ -97,9 +97,9 @@ ksp_options = [
 # relevant options for the command line are described under "Options Database Keys".
 #
 # ::::{note}
-# For example, the first command
+# For example, the first line
 # :::python
-# ["ksp_type", "cg"],
+# "ksp_type": "cg",
 # :::
 #
 # can be found in [KSPSetType](
@@ -109,8 +109,8 @@ ksp_options = [
 # Here, we see that the above line corresponds to using the conjugate gradient method as
 # krylov solver. The following two lines
 # :::python
-# ["pc_type", "hypre"],
-# ["pc_hypre_type", "boomeramg"],
+# "pc_type": "hypre",
+# "pc_hypre_type": "boomeramg",
 # :::
 #
 # specify that we use the algebraic multigrid preconditioner BOOMERAMG from HYPRE.
@@ -122,9 +122,9 @@ ksp_options = [
 # https://petsc.org/release/docs/manualpages/PC/PCHYPRE/).
 # Finally, the last three lines
 # :::python
-# ["ksp_rtol", 1e-10],
-# ["ksp_atol", 1e-13],
-# ["ksp_max_it", 100],
+# "ksp_rtol": 1e-10,
+# "ksp_atol": 1e-13,
+# "ksp_max_it": 100,
 # :::
 #
 # specify that we use a relative tolerance of 1e-10, an absolute one of 1e-13, and
@@ -136,12 +136,12 @@ ksp_options = [
 # the adjoint system should be solved exactly the same as the state system. This is why
 # we can also define PETSc options for the adjoint system, which we do with
 
-adjoint_ksp_options = [
-    ["ksp_type", "minres"],
-    ["pc_type", "jacobi"],
-    ["ksp_rtol", 1e-6],
-    ["ksp_atol", 1e-15],
-]
+adjoint_ksp_options = {
+    "ksp_type": "minres",
+    "pc_type": "jacobi",
+    "ksp_rtol": 1e-6,
+    "ksp_atol": 1e-15,
+}
 
 # As can be seen, we now use a completely different solver, namely MINRES (the minimal
 # residual method) with a jacobi preconditioner. Finally, the tolerances for the adjoint
@@ -151,12 +151,12 @@ adjoint_ksp_options = [
 # ::::{hint}
 # To verify that the options indeed are used, one can supply the option
 # :::python
-# ['ksp_view'],
+# 'ksp_view': None,
 # :::
 #
 # which shows the detailed settings of the solvers, and also
 # :::python
-# ['ksp_monitor_true_residual'],
+# 'ksp_monitor_true_residual': None,
 # :::
 #
 # which prints the residual of the method over its iterations.

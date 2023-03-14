@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -29,6 +29,9 @@ import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 class _NewtonSolver:
@@ -49,10 +52,11 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+        ksp_options: Optional[_typing.KspOption] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
+        preconditioner_form: ufl.Form = None,
     ) -> None:
         r"""Initializes self.
 
@@ -90,6 +94,7 @@ class _NewtonSolver:
                 sub-problem.
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
+            preconditioner_form: A UFL form which defines the preconditioner matrix.
 
         """
         self.nonlinear_form = nonlinear_form
@@ -106,6 +111,10 @@ class _NewtonSolver:
         self.A_tensor = A_tensor  # pylint: disable=invalid-name
         self.b_tensor = b_tensor
         self.is_linear = is_linear
+        if preconditioner_form is not None:
+            self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
+        else:
+            self.preconditioner_form = preconditioner_form
 
         self.verbose = verbose if not self.is_linear else False
 
@@ -145,11 +154,21 @@ class _NewtonSolver:
             self.derivative, -self.nonlinear_form, self.bcs_hom
         )
         self.assembler.keep_diagonal = True
+
+        if self.preconditioner_form is not None:
+            self.assembler_pc = fenics.SystemAssembler(
+                self.preconditioner_form, -self.nonlinear_form, self.bcs_hom
+            )
+            self.assembler_pc.keep_diagonal = True
+
+        self.comm = self.u.function_space().mesh().mpi_comm()
         # pylint: disable=invalid-name
-        self.A_fenics = self.A_tensor or fenics.PETScMatrix()
-        self.residual = self.b_tensor or fenics.PETScVector()
+        self.A_fenics = self.A_tensor or fenics.PETScMatrix(self.comm)
+        self.residual = self.b_tensor or fenics.PETScVector(self.comm)
         self.b = fenics.as_backend_type(self.residual).vec()
         self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
+
+        self.P_fenics = fenics.PETScMatrix(self.comm)
 
         self.assembler_shift: Optional[fenics.SystemAssembler] = None
         self.residual_shift: Optional[fenics.PETScVector] = None
@@ -157,7 +176,7 @@ class _NewtonSolver:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs_hom
             )
-            self.residual_shift = fenics.PETScVector()
+            self.residual_shift = fenics.PETScVector(self.comm)
 
         self.breakdown = False
         self.res = 1.0
@@ -194,6 +213,15 @@ class _NewtonSolver:
         self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
             self.A_fenics
         ).mat()
+
+        if self.preconditioner_form is not None:
+            self.assembler_pc.assemble(self.P_fenics)
+            self.P_fenics.ident_zeros()
+            self.P_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
+                self.P_fenics
+            ).mat()
+        else:
+            self.P_matrix = None
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -263,6 +291,8 @@ class _NewtonSolver:
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
+                comm=self.comm,
+                P=self.P_matrix,
             )
 
             if self.is_linear:
@@ -367,6 +397,8 @@ class _NewtonSolver:
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,
+                    comm=self.comm,
+                    P=self.P_matrix,
                 )
 
                 if (
@@ -402,10 +434,11 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
+    preconditioner_form: ufl.Form = None,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 
@@ -488,6 +521,7 @@ def newton_solve(
         A_tensor=A_tensor,
         b_tensor=b_tensor,
         is_linear=is_linear,
+        preconditioner_form=preconditioner_form,
     )
 
     solution = solver.solve()

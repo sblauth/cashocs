@@ -23,7 +23,7 @@ from __future__ import annotations
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -38,6 +38,7 @@ from cashocs.geometry import quality
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs.geometry import mesh_testing
@@ -57,11 +58,9 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
         with open(mesh_file, "r", encoding="utf-8") as in_file, open(
             temp_location, "w", encoding="utf-8"
         ) as temp_file:
-
             parametrizations_section = False
 
             for line in in_file:
-
                 if line == "$Parametrizations\n":
                     parametrizations_section = True
 
@@ -75,6 +74,29 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
 
         subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
     fenics.MPI.barrier(fenics.MPI.comm_world)
+
+
+def check_mesh_quality_tolerance(mesh_quality: float, tolerance: float) -> None:
+    """Compares the current mesh quality with the (upper) tolerance.
+
+    This function raises an appropriate exception, when the mesh quality is not
+    sufficiently high.
+
+    Args:
+        mesh_quality: The current mesh quality.
+        tolerance: The upper mesh quality tolerance.
+
+    """
+    if mesh_quality < tolerance:
+        fail_msg = (
+            "The quality of the mesh file you have specified is not "
+            "sufficient for computing the shape gradient.\n "
+            + f"It currently is {mesh_quality:.3e} but has to "
+            f"be at least {tolerance:.3e}."
+        )
+        raise _exceptions.InputError(
+            "cashocs.geometry.import_mesh", "input_arg", fail_msg
+        )
 
 
 class _MeshHandler:
@@ -141,14 +163,18 @@ class _MeshHandler:
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
-        self.options_frobenius: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        check_mesh_quality_tolerance(
+            self.current_mesh_quality, self.mesh_quality_tol_upper
+        )
+
+        self.options_frobenius: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
         self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
@@ -159,14 +185,14 @@ class _MeshHandler:
 
         self._setup_decrease_computation()
 
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        self.options_prior: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
         self.transformation_container = fenics.Function(
             self.db.function_db.control_spaces[0]
         )
@@ -335,6 +361,7 @@ class _MeshHandler:
                 self.a_frobenius,
                 self.l_frobenius,
                 ksp_options=self.options_frobenius,
+                comm=self.db.geometry_db.mpi_comm,
             )
 
             frobenius_norm = x.max()[1]
@@ -479,6 +506,7 @@ class _MeshHandler:
             solver.optimization_problem.mesh_parametrization,
             self.db.parameter_db.temp_dict["mesh_file"],
         )
+        solver.optimization_problem.initialize_solve_parameters()
 
         line_search_type = self.config.get("LineSearch", "method").casefold()
         if line_search_type == "armijo":
@@ -543,6 +571,16 @@ class _MeshHandler:
             self.db.parameter_db.temp_dict["output_dict"]["angle"] = output_dict[
                 "angle"
             ][:]
+
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "rtol"
+            ] = self.config.getfloat("OptimizationRoutine", "rtol")
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "atol"
+            ] = self.config.getfloat("OptimizationRoutine", "atol")
+            self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "max_iter"
+            ] = self.config.getint("OptimizationRoutine", "maximum_iterations")
 
             dim = self.mesh.geometric_dimension()
 
@@ -632,27 +670,4 @@ class _MeshHandler:
             mesh_quality_measure,
         )
 
-        failed = False
-        fail_msg = None
-        if current_mesh_quality < mesh_quality_tol_lower:
-            failed = True
-            fail_msg = (
-                "The quality of the mesh file you have specified is not "
-                "sufficient for evaluating the cost functional.\n"
-                f"It currently is {current_mesh_quality:.3e} but has to "
-                f"be at least {mesh_quality_tol_lower:.3e}."
-            )
-
-        if current_mesh_quality < mesh_quality_tol_upper:
-            failed = True
-            fail_msg = (
-                "The quality of the mesh file you have specified is not "
-                "sufficient for computing the shape gradient.\n "
-                + f"It currently is {current_mesh_quality:.3e} but has to "
-                f"be at least {mesh_quality_tol_lower:.3e}."
-            )
-
-        if failed:
-            raise _exceptions.InputError(
-                "cashocs.geometry.import_mesh", "input_arg", fail_msg
-            )
+        check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)

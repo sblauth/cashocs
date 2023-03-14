@@ -609,6 +609,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
             A=self.a_curvature_matrix.mat(),
             b=self.b_curvature.vec(),
             fun=self.kappa_curvature,
+            comm=self.db.geometry_db.mpi_comm,
         )
 
     def scale(self) -> None:

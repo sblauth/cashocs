@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -37,6 +37,7 @@ from cashocs.geometry import boundary_distance
 if TYPE_CHECKING:
     import ufl.core.expr
 
+    from cashocs import _typing
     from cashocs import io
     from cashocs._database import database
     from cashocs._optimization import shape_optimization
@@ -84,7 +85,7 @@ class Stiffness:
 
         self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
         self.b_mu = fenics.PETScVector()
-        self.options_mu: List[List[Union[str, int, float]]] = []
+        self.options_mu: _typing.KspOption = {}
 
         self._setup_mu_computation()
 
@@ -95,17 +96,16 @@ class Stiffness:
             mu_fix = self.config.getfloat("ShapeGradient", "mu_fix")
 
             if np.abs(mu_def - mu_fix) / mu_fix > 1e-2:
-
                 self.inhomogeneous_mu = True
 
-                self.options_mu = [
-                    ["ksp_type", "cg"],
-                    ["pc_type", "hypre"],
-                    ["pc_hypre_type", "boomeramg"],
-                    ["ksp_rtol", 1e-16],
-                    ["ksp_atol", 1e-50],
-                    ["ksp_max_it", 100],
-                ]
+                self.options_mu = {
+                    "ksp_type": "cg",
+                    "pc_type": "hypre",
+                    "pc_hypre_type": "boomeramg",
+                    "ksp_rtol": 1e-16,
+                    "ksp_atol": 1e-50,
+                    "ksp_max_it": 100,
+                }
 
                 phi = fenics.TrialFunction(self.cg_function_space)
                 psi = fenics.TestFunction(self.cg_function_space)
@@ -188,6 +188,7 @@ class Stiffness:
                     A=self.A_mu_matrix,
                     b=self.b_mu,
                     ksp_options=self.options_mu,
+                    comm=self.mesh.mpi_comm(),
                 )
 
                 if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
@@ -448,7 +449,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             self._parse_pull_back_coefficients()
 
             for coeff in self.material_derivative_coeffs:
-
                 material_derivative = self.lagrangian.derivative(
                     coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
@@ -595,7 +595,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     def _project_scalar_product(self) -> None:
         """Ensures, that only free dimensions can be deformed."""
         if self.use_fixed_dimensions:
-
             copy_mat = self.fe_scalar_product_matrix.copy()
 
             copy_mat.ident(self.fixed_indices)
@@ -656,7 +655,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             result = fenics.assemble(form)
 
         else:
-
             x = fenics.as_backend_type(a[0].vector()).vec()
             y = fenics.as_backend_type(b[0].vector()).vec()
 

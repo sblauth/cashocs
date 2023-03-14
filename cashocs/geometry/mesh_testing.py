@@ -20,13 +20,16 @@
 from __future__ import annotations
 
 import collections
-from typing import List, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from cashocs import _loggers
 from cashocs import _utils
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 class APrioriMeshTester:
@@ -61,14 +64,14 @@ class APrioriMeshTester:
             * fenics.TestFunction(dg_function_space)
             * dx
         )
-        self.options_prior: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        self.options_prior: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
 
     def test(self, transformation: fenics.Function, volume_change: float) -> bool:
         r"""Check the quality of the transformation before the actual mesh is moved.
@@ -89,14 +92,13 @@ class APrioriMeshTester:
             A boolean that indicates whether the desired transformation is feasible.
 
         """
+        comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
         self.transformation_container.vector().apply("")
         x = _utils.assemble_and_solve_linear(
-            self.A_prior,
-            self.l_prior,
-            ksp_options=self.options_prior,
+            self.A_prior, self.l_prior, ksp_options=self.options_prior, comm=comm
         )
 
         min_det = float(x.min()[1])

@@ -24,7 +24,7 @@ cost functional.
 from __future__ import annotations
 
 import copy
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 import fenics
 
@@ -33,6 +33,7 @@ from cashocs import _utils
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
@@ -71,19 +72,18 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 
-        option: List[List[Union[str, int, float]]] = []
         if gradient_method.casefold() == "direct":
-            option = copy.deepcopy(_utils.linalg.direct_ksp_options)
+            option: _typing.KspOption = copy.deepcopy(_utils.linalg.direct_ksp_options)
         elif gradient_method.casefold() == "iterative":
-            option = [
-                ["ksp_type", "cg"],
-                ["pc_type", "hypre"],
-                ["pc_hypre_type", "boomeramg"],
-                ["pc_hypre_boomeramg_strong_threshold", 0.7],
-                ["ksp_rtol", gradient_tol],
-                ["ksp_atol", 1e-50],
-                ["ksp_max_it", 250],
-            ]
+            option = {
+                "ksp_type": "cg",
+                "pc_type": "hypre",
+                "pc_hypre_type": "boomeramg",
+                "pc_hypre_boomeramg_strong_threshold": 0.7,
+                "ksp_rtol": gradient_tol,
+                "ksp_atol": 1e-50,
+                "ksp_max_it": 250,
+            }
 
         self.riesz_ksp_options = []
         for _ in range(len(self.db.function_db.gradient)):
@@ -111,6 +111,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                     b=self.b_tensors[i].vec(),
                     fun=self.db.function_db.gradient[i],
                     ksp_options=self.riesz_ksp_options[i],
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
             self.has_solution = True

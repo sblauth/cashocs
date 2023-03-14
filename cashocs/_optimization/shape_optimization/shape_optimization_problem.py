@@ -83,15 +83,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         config: Optional[io.Config] = None,
         shape_scalar_product: Optional[ufl.Form] = None,
         initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         """Initializes self.
 
@@ -124,10 +123,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
@@ -143,6 +142,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_function_values: This is a privatve parameter of the class, required
                 for remeshing. This parameter must not be set by the user and should be
                 ignored. Using this parameter may result in unintended side effects.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         super().__init__(
@@ -151,13 +153,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             cost_functional_form,
             states,
             adjoints,
-            config,
-            initial_guess,
-            ksp_options,
-            adjoint_ksp_options,
-            desired_weights,
-            temp_dict,
-            initial_function_values,
+            config=config,
+            initial_guess=initial_guess,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            desired_weights=desired_weights,
+            temp_dict=temp_dict,
+            initial_function_values=initial_function_values,
+            preconditioner_forms=preconditioner_forms,
         )
 
         if shape_scalar_product is None:

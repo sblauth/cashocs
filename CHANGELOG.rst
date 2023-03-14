@@ -31,15 +31,23 @@ of the maintenance releases, please take a look at
 
 * cashocs' loggers are now not colored anymore, which makes reading the log easier if one logs to a file
 
-* Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization. This is documented `here <https://cashocs.readthedocs.io/en/latest/user/demos/misc/demo_xdmf_io.html>`_.
+* Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization. This is documented `here <https://cashocs.readthedocs.io/en/latest/user/demos/misc/demo_xdmf_io>`_.
 
 * Deprecated functions have been removed. In particular, the functions :py:func:`create_bcs_list`, :py:func:`create_config`, :py:func:`damped_newton_solve` are removed. They are replaced by :py:func:`create_dirichlet_bcs <cashocs.create_dirichlet_bcs>`, :py:func:`load_config <cashocs.load_config>`, and :py:func:`newton_solve <cashocs.newton_solve>`.
 
-* The usage of the keyword arguments :python:`scalar_tracking_forms` and :python:`min_max_terms` in :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>` and :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` has been removed. Instead, every cost functional is now passed via the :python:`cost_functional_list` parameter. Scalar tracking forms are now realized via :py:class:`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>` and min-max terms via :py:class:`MinMaxFunctional <cashocs.MinMaxFunctional>`, see `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_scalar_control_tracking.html>`_.
+* The usage of the keyword arguments :python:`scalar_tracking_forms` and :python:`min_max_terms` in :py:class:`ShapeOptimizationProblem <cashocs.ShapeOptimizationProblem>` and :py:class:`OptimalControlProblem <cashocs.OptimalControlProblem>` has been removed. Instead, every cost functional is now passed via the :python:`cost_functional_list` parameter. Scalar tracking forms are now realized via :py:class:`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>` and min-max terms via :py:class:`MinMaxFunctional <cashocs.MinMaxFunctional>`, see `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_scalar_control_tracking>`_.
 
 * BFGS methods can now be used in a restarted fashion, if desired.
 
 * The BFGS method can now be used in a damped fashion. This ensures that the inverse Hessian approximation stays positive definite.
+
+* The options for defining parameters which are to be supplied to PETSc KSP objects have changed their datatype: They are now given by (lists of) dictionaries instead of nested lists. For options without a value in the command line (e.g. the option :bash:`-ksp_view`) have a value of :python:`None` in the dictionary (so :python:`'ksp_view': None` can be used inside the dictionary to supply the aforementioned option).
+
+* cashocs now includes a :py:func:`cashocs.linear_solve` that can be used to solve linear problems.
+
+* Optimization problems, constrained problems, space mapping problems, and linear and nonlinear solvers now include the keyword argument :python:`preconditioner_forms`, which is a list of UFL forms used to define the preconditioner matrices for solving the respective PDEs.
+
+* Added different mesh conversion modes for :py:func:`cashocs.convert`, which are :python:`"physical"`, :python:`"geometrical"`, and :python:`"none"`. These are used to either use the physical or geometrical entities of Gmsh for the definition of the boundaries and subdomains (or neither of these).
 
 * Changed configuration file parameters
 
@@ -106,11 +114,11 @@ of the maintenance releases, please take a look at
 1.6.0 (April 4, 2022)
 ---------------------
 
-* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_constraints.html>`_.
+* Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_constraints>`_.
 
-* Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_callback <cashocs.optimization_problem.OptimizationProblem.inject_pre_callback>` and :py:meth:`inject_post_callback <cashocs.optimization_problem.OptimizationProblem.inject_post_callback>`. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_pre_post_callbacks.html>`_.
+* Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of :py:meth:`inject_pre_callback <cashocs.optimization_problem.OptimizationProblem.inject_pre_callback>` and :py:meth:`inject_post_callback <cashocs.optimization_problem.OptimizationProblem.inject_post_callback>`. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_pre_post_callbacks>`_.
 
-* Added the possibility to define boundary conditions for control variables. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_control_boundary_conditions.html>`_.
+* Added the possibility to define boundary conditions for control variables. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_control_boundary_conditions>`_.
 
 * Added new style cost functionals, namely :py:class:`cashocs.IntegralFunctional`, :py:class:`cashocs.ScalarTrackingFunctional` and :py:class:`cashocs.MinMaxFunctional`. These allow for a clearer definition of cost functionals and will replace the keyword arguments :python:`scalar_tracking_forms` and :python:`min_max_terms` in the future. The new style cost functionals allow for greater flexibility and extensibility in the future.
 
@@ -160,7 +168,7 @@ of the maintenance releases, please take a look at
 
 * Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation
 
-* Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is :python:`scalar_tracking_forms`, which is a dictionary consisting of :python:`'integrand'`, which is the integrand of the scalar quantity, and :python:`'tracking_goal'`, which is the (scalar) value that shall be achieved. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_scalar_control_tracking.html>`_.
+* Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is :python:`scalar_tracking_forms`, which is a dictionary consisting of :python:`'integrand'`, which is the integrand of the scalar quantity, and :python:`'tracking_goal'`, which is the (scalar) value that shall be achieved. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/optimal_control/demo_scalar_control_tracking>`_.
 
 * Fixed a bug concerning cashocs' memory management, which would occur if several OptimizationProblems were created one after the other
 
@@ -212,11 +220,11 @@ of the maintenance releases, please take a look at
 1.2.0 (December 01, 2020)
 -------------------------
 
-* Users can now supply their own bilinear form (or scalar product) for the computation of the shape gradient, which is then used instead of the linear elasticity formulation. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_custom_scalar_product.html>`_.
+* Users can now supply their own bilinear form (or scalar product) for the computation of the shape gradient, which is then used instead of the linear elasticity formulation. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_custom_scalar_product>`_.
 
-* Added a curvature regularization term for shape optimization, which can be enabled via the config files, similarly to already implemented regularizations. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_regularization.html>`_.
+* Added a curvature regularization term for shape optimization, which can be enabled via the config files, similarly to already implemented regularizations. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_regularization>`_.
 
-* cashocs can now scale individual terms of the cost functional if this is desired. This allows for a more granular handling of problems with cost functionals consisting of multiple terms. This also extends to the regularizations for shape optimization, see `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_regularization.html>`_. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_scaling.html>`_.
+* cashocs can now scale individual terms of the cost functional if this is desired. This allows for a more granular handling of problems with cost functionals consisting of multiple terms. This also extends to the regularizations for shape optimization, see `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_regularization>`_. This feature is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/shape_optimization/demo_scaling>`_.
 
 * cashocs now uses the logging module to issue messages for the user. The level of verbosity can be controlled via :py:func:`cashocs.set_log_level`.
 
@@ -232,7 +240,7 @@ of the maintenance releases, please take a look at
 1.1.0 (November 13, 2020)
 -------------------------
 
-* Added the functionality for cashocs to be used as a solver only, where users can specify their custom adjoint equations and (shape) derivatives for the optimization problems. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/cashocs_as_solver/index.html>`_.
+* Added the functionality for cashocs to be used as a solver only, where users can specify their custom adjoint equations and (shape) derivatives for the optimization problems. This is documented at `<https://cashocs.readthedocs.io/en/latest/user/demos/cashocs_as_solver/index>`_.
 
 * Using :py:func:`cashocs.create_config` is deprecated and replaced by :py:func:`cashocs.load_config`, but the former will still be supported.
 

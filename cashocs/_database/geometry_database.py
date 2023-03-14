@@ -39,3 +39,4 @@ class GeometryDatabase:
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
         self.dx: fenics.Measure = fenics.Measure("dx", self.mesh)
+        self.mpi_comm = self.mesh.mpi_comm()

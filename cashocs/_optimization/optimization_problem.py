@@ -93,15 +93,14 @@ class OptimizationProblem(abc.ABC):
         adjoints: Union[List[fenics.Function], fenics.Function],
         config: Optional[io.Config] = None,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ] = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -126,10 +125,10 @@ class OptimizationProblem(abc.ABC):
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems. If this is ``None``, then the
                 direct solver mumps is used (default is ``None``).
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
@@ -145,6 +144,9 @@ class OptimizationProblem(abc.ABC):
             initial_function_values: This is a privatve parameter of the class, required
                 for remeshing. This parameter must not be set by the user and should be
                 ignored. Using this parameter may result in unintended side effects.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -180,11 +182,13 @@ class OptimizationProblem(abc.ABC):
             self.ksp_options,
             self.adjoint_ksp_options,
             self.desired_weights,
+            self.preconditioner_forms,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
             desired_weights,
+            preconditioner_forms,
         )
 
         if initial_function_values is not None:
@@ -204,6 +208,7 @@ class OptimizationProblem(abc.ABC):
             self.cost_functional_list,
             self.state_forms,
             self.bcs_list,
+            self.preconditioner_forms,
         )
         if temp_dict is not None:
             self.db.parameter_db.temp_dict.update(temp_dict)
@@ -252,6 +257,7 @@ class OptimizationProblem(abc.ABC):
                     cost_functional.IntegralFunctional,
                     cost_functional.ScalarTrackingFunctional,
                     cost_functional.MinMaxFunctional,
+                    cost_functional.Functional,
                 ),
             ):
                 cost_functional_list.append(functional)
@@ -270,32 +276,35 @@ class OptimizationProblem(abc.ABC):
     def _parse_optional_inputs(
         self,
         initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
-        ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
-        ],
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]],
         adjoint_ksp_options: Optional[
-            Union[_typing.KspOptions, List[List[Union[str, int, float]]]]
+            Union[_typing.KspOption, List[_typing.KspOption]]
         ],
         desired_weights: Optional[Union[List[float], float]],
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]],
     ) -> Tuple[
         Optional[List[fenics.Function]],
-        _typing.KspOptions,
-        _typing.KspOptions,
+        List[_typing.KspOption],
+        List[_typing.KspOption],
         Optional[List[float]],
+        List[Optional[ufl.Form]],
     ]:
         """Initializes the optional input parameters.
 
         Args:
             initial_guess: List of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`.
-            ksp_options: A list of strings corresponding to command line options for
+            ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems.
-            adjoint_ksp_options: A list of strings corresponding to command line options
+            adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
                 magnitude of `desired_weights[i]` for the initial iteration.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         if initial_guess is None:
@@ -304,20 +313,18 @@ class OptimizationProblem(abc.ABC):
             parsed_initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            parsed_ksp_options: _typing.KspOptions = []
-            option: List[List[Union[str, int, float]]] = copy.deepcopy(
-                _utils.linalg.direct_ksp_options
-            )
+            parsed_ksp_options: List[_typing.KspOption] = []
+            option = copy.deepcopy(_utils.linalg.direct_ksp_options)
 
             for _ in range(self.state_dim):
                 parsed_ksp_options.append(option)
         else:
-            parsed_ksp_options = _utils.check_and_enlist_ksp_options(ksp_options)
+            parsed_ksp_options = _utils.enlist(ksp_options)
 
-        parsed_adjoint_ksp_options: _typing.KspOptions = (
+        parsed_adjoint_ksp_options: List[_typing.KspOption] = (
             parsed_ksp_options[:]
             if adjoint_ksp_options is None
-            else _utils.check_and_enlist_ksp_options(adjoint_ksp_options)
+            else _utils.enlist(adjoint_ksp_options)
         )
 
         if desired_weights is None:
@@ -326,11 +333,19 @@ class OptimizationProblem(abc.ABC):
             parsed_desired_weights = _utils.enlist(desired_weights)
             self.use_scaling = True
 
+        if preconditioner_forms is None:
+            parsed_preconditioner_forms: List[Optional[ufl.Form]] = []
+            for _ in range(self.state_dim):
+                parsed_preconditioner_forms.append(None)
+        else:
+            parsed_preconditioner_forms = _utils.enlist(preconditioner_forms)
+
         return (
             parsed_initial_guess,
             parsed_ksp_options,
             parsed_adjoint_ksp_options,
             parsed_desired_weights,
+            parsed_preconditioner_forms,
         )
 
     def compute_state_variables(self) -> None:
@@ -474,9 +489,60 @@ class OptimizationProblem(abc.ABC):
         self.inject_pre_callback(pre_function)
         self.inject_post_callback(post_function)
 
-    def _set_tolerances(
-        self, rtol: float | None, atol: float | None, max_iter: float | None
+    def initialize_solve_parameters(
+        self,
+        algorithm: Optional[str] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
     ) -> None:
+        r"""Solves the optimization problem by the method specified in the config file.
+
+        Args:
+            algorithm: Selects the optimization algorithm. Valid choices are
+                ``'gradient_descent'`` or ``'gd'`` for a gradient descent method,
+                ``'conjugate_gradient'``, ``'nonlinear_cg'``, ``'ncg'`` or ``'cg'``
+                for nonlinear conjugate gradient methods, and ``'lbfgs'`` or ``'bfgs'``
+                for limited memory BFGS methods. This overwrites the value specified
+                in the config file. If this is ``None``, then the value in the
+                config file is used. Default is ``None``. In addition, for optimal
+                control problems, one can use ``'newton'`` for a truncated Newton
+                method.
+            rtol: The relative tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            atol: The absolute tolerance used for the termination criterion. Overwrites
+                the value specified in the config file. If this is ``None``, the value
+                from the config file is taken. Default is ``None``.
+            max_iter: The maximum number of iterations the optimization algorithm can
+                carry out before it is terminated. Overwrites the value specified in the
+                config file. If this is ``None``, the value from the config file is
+                taken. Default is ``None``.
+
+        Notes:
+            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
+            call, the termination criterion changes to:
+
+            - a purely relative one (if only ``rtol`` is specified), i.e.,
+
+            .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+
+            - a purely absolute one (if only ``atol`` is specified), i.e.,
+
+            .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+
+            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
+            .. math::
+
+                || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
+                || \nabla J(u_0) ||
+
+        """
+        self.algorithm = _utils.optimization_algorithm_configuration(
+            self.config, algorithm
+        )
+
         if (rtol is not None) and (atol is None):
             self.config.set("OptimizationRoutine", "rtol", str(rtol))
             self.config.set("OptimizationRoutine", "atol", str(0.0))
@@ -524,22 +590,24 @@ class OptimizationProblem(abc.ABC):
         Notes:
             If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
+
             - a purely relative one (if only ``rtol`` is specified), i.e.,
+
             .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+
             - a purely absolute one (if only ``atol`` is specified), i.e.,
+
             .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+
             - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
             .. math::
+
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
 
         """
-        self.algorithm = _utils.optimization_algorithm_configuration(
-            self.config, algorithm
-        )
-
-        self._set_tolerances(rtol, atol, max_iter)
-
+        self.initialize_solve_parameters(algorithm, rtol, atol, max_iter)
         self.config.validate_config()
         self._check_for_custom_forms()
 

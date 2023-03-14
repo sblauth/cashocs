@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -29,6 +29,9 @@ import ufl
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs.geometry import measure
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 def compute_mesh_quality(
@@ -291,7 +294,7 @@ class SkewnessCalculator(MeshQualityCalculator):
             The element wise skewness of the mesh on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         skewness_array = self._quality_object.skewness(mesh).array()
         skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
         if comm.rank == 0:
@@ -326,7 +329,7 @@ class MaximumAngleCalculator(MeshQualityCalculator):
             The maximum angle quality measure for each element on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         maximum_angle_array = self._quality_object.maximum_angle(mesh).array()
         maximum_angle_list: np.ndarray = comm.gather(maximum_angle_array, root=0)
         if comm.rank == 0:
@@ -358,7 +361,7 @@ class RadiusRatiosCalculator(MeshQualityCalculator):
             The radius ratios of the mesh elements on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         radius_ratios_array = fenics.MeshQuality.radius_ratios(mesh).array()
         radius_ratios_list: np.ndarray = comm.gather(radius_ratios_array, root=0)
         if comm.rank == 0:
@@ -385,19 +388,19 @@ class ConditionNumberCalculator(MeshQualityCalculator):
             The condition numbers of the elements on process 0.
 
         """
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         function_space_dg0 = fenics.FunctionSpace(mesh, "DG", 0)
         jac = ufl.Jacobian(mesh)
         inv = ufl.JacobianInverse(mesh)
 
-        options: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "preonly"],
-            ["pc_type", "jacobi"],
-            ["pc_jacobi_type", "diagonal"],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-20],
-            ["ksp_max_it", 1000],
-        ]
+        options: _typing.KspOption = {
+            "ksp_type": "preonly",
+            "pc_type": "jacobi",
+            "pc_jacobi_type": "diagonal",
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-20,
+            "ksp_max_it": 1000,
+        }
 
         dx = measure.NamedMeasure("dx", mesh)
         lhs = (
@@ -414,7 +417,9 @@ class ConditionNumberCalculator(MeshQualityCalculator):
 
         cond = fenics.Function(function_space_dg0)
 
-        _utils.assemble_and_solve_linear(lhs, rhs, fun=cond, ksp_options=options)
+        _utils.assemble_and_solve_linear(
+            lhs, rhs, fun=cond, ksp_options=options, comm=comm
+        )
         cond.vector().vec().reciprocal()
         cond.vector().apply("")
         cond.vector().vec().scale(np.sqrt(mesh.geometric_dimension()))
@@ -451,7 +456,7 @@ class MeshQuality:
 
         """
         quality_list = calculator.compute(mesh)
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
         if comm.rank == 0:
             qual = float(np.min(quality_list))
         else:
@@ -474,7 +479,7 @@ class MeshQuality:
 
         """
         quality_list = calculator.compute(mesh)
-        comm = fenics.MPI.comm_world
+        comm = mesh.mpi_comm()
 
         if comm.rank == 0:
             qual = float(np.average(quality_list))

@@ -71,13 +71,13 @@ we can recommend the textbooks
 
 .. readme_end_disclaimer
 
-However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user/index.html>`_ also gives many references either
+However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
 An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
-the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest/index.html>`_.
+the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest>`_.
 
 
 .. readme_start_installation
@@ -186,8 +186,8 @@ Manual Installation
 Usage
 =====
 
-The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest/index.html>`_. For a detailed
-introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user/index.html>`_. The python source code
+The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest>`_. For a detailed
+introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 

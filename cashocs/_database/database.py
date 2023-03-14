@@ -44,11 +44,12 @@ class Database:
         config: io.Config,
         states: List[fenics.Function],
         adjoints: List[fenics.Function],
-        state_ksp_options: _typing.KspOptions,
-        adjoint_ksp_options: _typing.KspOptions,
+        state_ksp_options: List[_typing.KspOption],
+        adjoint_ksp_options: List[_typing.KspOption],
         cost_functional_list: List[_typing.CostFunctional],
         state_forms: List[ufl.Form],
         bcs_list: List[List[fenics.DirichletBC]],
+        preconditioner_forms: List[ufl.Form],
     ) -> None:
         """Initialize the database.
 
@@ -61,6 +62,9 @@ class Database:
             cost_functional_list: The list of cost functionals.
             state_forms: The list of state forms.
             bcs_list: The list of Dirichlet boundary conditions for the state system.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         self.config = config
@@ -75,5 +79,5 @@ class Database:
         )
         self.geometry_db = geometry_database.GeometryDatabase(self.function_db)
         self.form_db = form_database.FormDatabase(
-            cost_functional_list, state_forms, bcs_list
+            cost_functional_list, state_forms, bcs_list, preconditioner_forms
         )

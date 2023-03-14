@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import copy
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import ufl
 
+from cashocs import _exceptions
 from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
@@ -71,10 +72,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
-        ksp_options: _typing.KspOptions | list[list[str | int | float]] | None = None,
-        adjoint_ksp_options: _typing.KspOptions
-        | list[list[str | int | float]]
-        | None = None,
+        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
+        adjoint_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         desired_weights: list[float] | None = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
@@ -248,6 +249,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 the value provided in the config file is used. Default is ``None``.
 
         """
+        super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
+
         self.optimization_variable_abstractions = (
             topology_variable_abstractions.TopologyVariableAbstractions(self, self.db)
         )
@@ -258,24 +261,16 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, self)
         else:
-            raise Exception("This code cannot be reached.")
+            raise _exceptions.CashocsException("This code cannot be reached.")
 
-        self._set_tolerances(rtol, atol, max_iter)
         if angle_tol is not None:
             self.config.set("TopologyOptimization", "angle_tol", str(angle_tol))
 
-        if algorithm is None:
-            self.algorithm = _utils.optimization_algorithm_configuration(
-                self.config, algorithm
-            )
-        else:
-            self.algorithm = algorithm
-
-        if self.algorithm.casefold() == "sphere_combination":
+        if self.algorithm == "sphere_combination":
             self.solver = topology_optimization_algorithm.SphereCombinationAlgorithm(
                 self.db, self, line_search
             )
-        elif self.algorithm.casefold() == "convex_combination":
+        elif self.algorithm == "convex_combination":
             self.solver = topology_optimization_algorithm.ConvexCombinationAlgorithm(
                 self.db, self, line_search
             )

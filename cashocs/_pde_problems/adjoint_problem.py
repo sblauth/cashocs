@@ -68,14 +68,17 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         # pylint: disable=invalid-name
         self.A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self.res_j_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self._number_of_solves = 0
@@ -119,6 +122,10 @@ class AdjointProblem(pde_problem.PDEProblem):
                         b=self.b_tensors[-1 - i],
                         fun=self.adjoints[-1 - i],
                         ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
+                        comm=self.db.geometry_db.mpi_comm,
+                        preconditioner_form=self.db.form_db.preconditioner_forms[
+                            -1 - i
+                        ],
                     )
 
             else:
@@ -138,6 +145,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],
                     inner_is_linear=True,
+                    preconditioner_forms=self.db.form_db.preconditioner_forms[::-1],
                 )
 
             self.has_solution = True

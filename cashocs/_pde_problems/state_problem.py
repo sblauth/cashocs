@@ -110,7 +110,6 @@ class StateProblem(pde_problem.PDEProblem):
 
         """
         if not self.has_solution:
-
             self.db.callback.call_pre()
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
@@ -128,6 +127,8 @@ class StateProblem(pde_problem.PDEProblem):
                             b=self.b_tensors[i],
                             fun=self.states[i],
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
+                            comm=self.db.geometry_db.mpi_comm,
+                            preconditioner_form=self.db.form_db.preconditioner_forms[i],
                         )
 
                 else:
@@ -147,6 +148,7 @@ class StateProblem(pde_problem.PDEProblem):
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
+                            preconditioner_form=self.db.form_db.preconditioner_forms[i],
                         )
 
             else:
@@ -166,6 +168,7 @@ class StateProblem(pde_problem.PDEProblem):
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
                     inner_is_linear=self.config.getboolean("StateSystem", "is_linear"),
+                    preconditioner_forms=self.db.form_db.preconditioner_forms,
                 )
 
             self.has_solution = True

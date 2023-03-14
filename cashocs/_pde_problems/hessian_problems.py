@@ -23,7 +23,7 @@ in the truncated Newton method.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -127,16 +127,16 @@ class HessianProblem:
 
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
-        option: List[List[Union[str, int, float]]] = [
-            ["ksp_type", "cg"],
-            ["pc_type", "hypre"],
-            ["pc_hypre_type", "boomeramg"],
-            ["pc_hypre_boomeramg_strong_threshold", 0.7],
-            ["ksp_rtol", 1e-16],
-            ["ksp_atol", 1e-50],
-            ["ksp_max_it", 100],
-        ]
-        self.riesz_ksp_options: _typing.KspOptions = []
+        option: _typing.KspOption = {
+            "ksp_type": "cg",
+            "pc_type": "hypre",
+            "pc_hypre_type": "boomeramg",
+            "pc_hypre_boomeramg_strong_threshold": 0.7,
+            "ksp_rtol": 1e-16,
+            "ksp_atol": 1e-50,
+            "ksp_max_it": 100,
+        }
+        self.riesz_ksp_options: List[_typing.KspOption] = []
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
@@ -166,7 +166,6 @@ class HessianProblem:
             not self.config.getboolean("StateSystem", "picard_iteration")
             or self.state_dim == 1
         ):
-
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
@@ -174,6 +173,8 @@ class HessianProblem:
                     self.bcs_list_ad[i],
                     fun=self.db.function_db.states_prime[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
+                    comm=self.db.geometry_db.mpi_comm,
+                    preconditioner_form=self.db.form_db.preconditioner_forms[i],
                 )
 
             for i in range(self.state_dim):
@@ -185,6 +186,8 @@ class HessianProblem:
                     self.bcs_list_ad[-1 - i],
                     fun=self.db.function_db.adjoints_prime[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
+                    comm=self.db.geometry_db.mpi_comm,
+                    preconditioner_form=self.db.form_db.preconditioner_forms[-1 - i],
                 )
 
         else:
@@ -204,6 +207,7 @@ class HessianProblem:
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
                 inner_is_linear=True,
+                preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
             nonlinear_solvers.picard_iteration(
@@ -222,6 +226,7 @@ class HessianProblem:
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
                 inner_is_linear=True,
+                preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
         for i in range(len(out)):
@@ -234,6 +239,7 @@ class HessianProblem:
                 b=b,
                 fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
+                comm=self.db.geometry_db.mpi_comm,
             )
 
         self.no_sensitivity_solves += 2
@@ -304,7 +310,6 @@ class HessianProblem:
         eps_0 = np.sqrt(rsold)
 
         for _ in range(self.max_it_inner_newton):
-
             self.reduced_hessian_application(self.p, self.q)
 
             self.box_constraints.restrictor.restrict_to_active_set(self.p, self.temp1)
@@ -370,7 +375,6 @@ class HessianProblem:
         rar = sp_val1 + sp_val2
 
         for i in range(self.max_it_inner_newton):
-
             self.box_constraints.restrictor.restrict_to_active_set(self.q, self.temp1)
             self.box_constraints.restrictor.restrict_to_inactive_set(self.q, self.temp2)
             denom1 = self.form_handler.scalar_product(self.temp1, self.temp1)

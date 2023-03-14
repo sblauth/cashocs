@@ -20,14 +20,11 @@
 from __future__ import annotations
 
 import configparser
-from typing import cast, List, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import cast, List, Optional, TypeVar, Union
 
 import fenics
 
 from cashocs import _exceptions
-
-if TYPE_CHECKING:
-    from cashocs import _typing
 
 T = TypeVar("T")
 
@@ -112,41 +109,6 @@ def check_and_enlist_control_constraints(
             "cashocs._utils.check_and_enlist_control_constraints",
             "control_constraints",
             "Type of control_constraints is wrong",
-        )
-
-
-def check_and_enlist_ksp_options(
-    ksp_options: Union[List[List[Union[str, int, float]]], _typing.KspOptions]
-) -> _typing.KspOptions:
-    """Wraps ksp options into a list suitable for cashocs.
-
-    Args:
-        ksp_options: The list of ksp options.
-
-    Returns:
-        The wrapped list of ksp options.
-
-    """
-    if (
-        isinstance(ksp_options, list)
-        and isinstance(ksp_options[0], list)
-        and isinstance(ksp_options[0][0], (str, int, float))
-    ):
-        ksp_options = cast(List[List[Union[str, int, float]]], ksp_options)
-        return [ksp_options[:]]
-
-    elif (
-        isinstance(ksp_options, list)
-        and isinstance(ksp_options[0], list)
-        and isinstance(ksp_options[0][0], list)
-    ):
-        # ksp_options = cast(_typing.KspOptions, ksp_options)
-        return ksp_options[:]  # type: ignore
-    else:
-        raise _exceptions.InputError(
-            "cashocs._utils.check_and_enlist_ksp_options",
-            "ksp_options",
-            "Type of ksp_options is wrong.",
         )
 
 

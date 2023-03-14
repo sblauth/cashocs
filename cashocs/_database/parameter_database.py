@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -37,8 +37,8 @@ class ParameterDatabase:
         self,
         function_db: function_database.FunctionDatabase,
         config: io.Config,
-        state_ksp_options: _typing.KspOptions,
-        adjoint_ksp_options: _typing.KspOptions,
+        state_ksp_options: List[_typing.KspOption],
+        adjoint_ksp_options: List[_typing.KspOption],
     ) -> None:
         """Initializes the database.
 

@@ -31,24 +31,26 @@ from cashocs import _exceptions
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
+    from mpi4py import MPI
+
     from cashocs import _typing
 
-iterative_ksp_options: List[List[Union[str, int, float]]] = [
-    ["ksp_type", "cg"],
-    ["pc_type", "hypre"],
-    ["pc_hypre_type", "boomeramg"],
-    ["pc_hypre_boomeramg_strong_threshold", 0.7],
-    ["ksp_rtol", 1e-20],
-    ["ksp_atol", 1e-50],
-    ["ksp_max_it", 1000],
-]
+iterative_ksp_options: _typing.KspOption = {
+    "ksp_type": "cg",
+    "pc_type": "hypre",
+    "pc_hypre_type": "boomeramg",
+    "pc_hypre_boomeramg_strong_threshold": 0.7,
+    "ksp_rtol": 1e-20,
+    "ksp_atol": 1e-50,
+    "ksp_max_it": 1000,
+}
 
-direct_ksp_options: List[List[Union[str, int, float]]] = [
-    ["ksp_type", "preonly"],
-    ["pc_type", "lu"],
-    ["pc_factor_mat_solver_type", "mumps"],
-    ["mat_mumps_icntl_24", 1],
-]
+direct_ksp_options: _typing.KspOption = {
+    "ksp_type": "preonly",
+    "pc_type": "lu",
+    "pc_factor_mat_solver_type": "mumps",
+    "mat_mumps_icntl_24": 1,
+}
 
 
 def split_linear_forms(forms: List[ufl.Form]) -> Tuple[List[ufl.Form], List[ufl.Form]]:
@@ -102,7 +104,8 @@ def assemble_petsc_system(
     bcs: Optional[Union[fenics.DirichletBC, List[fenics.DirichletBC]]] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
-) -> Tuple[PETSc.Mat, PETSc.Vec]:
+    preconditioner_form: Optional[ufl.Form] = None,
+) -> Tuple[PETSc.Mat, PETSc.Vec, Optional[PETSc.Mat]]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
     Args:
@@ -127,6 +130,7 @@ def assemble_petsc_system(
         A_tensor = fenics.PETScMatrix()
     if b_tensor is None:
         b_tensor = fenics.PETScVector()
+
     try:
         fenics.assemble_system(
             mod_lhs_form,
@@ -136,6 +140,7 @@ def assemble_petsc_system(
             A_tensor=A_tensor,
             b_tensor=b_tensor,
         )
+
     except ValueError as value_exception:
         raise _exceptions.CashocsException(
             "The state system could not be transferred to a linear "
@@ -147,13 +152,31 @@ def assemble_petsc_system(
         ) from value_exception
     A_tensor.ident_zeros()
 
+    if preconditioner_form is not None:
+        P_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
+        c_tensor = fenics.PETScVector()
+        fenics.assemble_system(
+            preconditioner_form,
+            rhs_form,
+            bcs,
+            keep_diagonal=True,
+            A_tensor=P_tensor,
+            b_tensor=c_tensor,
+        )
+        P_tensor.ident_zeros()
+        P = P_tensor.mat()  # pylint: disable=invalid-name
+    else:
+        P = None  # pylint: disable=invalid-name
+
     A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
 
-    return A, b
+    return A, b, P
 
 
-def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) -> None:
+def setup_petsc_options(
+    ksps: List[PETSc.KSP], ksp_options: List[_typing.KspOption]
+) -> None:
     """Sets up an (iterative) linear solver.
 
     This is used to pass user defined command line type options for PETSc
@@ -166,13 +189,13 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) 
             from PETSc.
 
     """
-    opts = fenics.PETScOptions
+    opts = PETSc.Options()
 
     for i in range(len(ksps)):
         opts.clear()
 
-        for option in ksp_options[i]:
-            opts.set(*option)
+        for key, value in ksp_options[i].items():
+            opts.setValue(key, value)
 
         ksps[i].setFromOptions()
 
@@ -180,7 +203,7 @@ def setup_petsc_options(ksps: List[PETSc.KSP], ksp_options: _typing.KspOptions) 
 def setup_fieldsplit_preconditioner(
     fun: Optional[fenics.Function],
     ksp: PETSc.KSP,
-    options: List[List[Union[str, int, float]]],
+    options: _typing.KspOption,
 ) -> None:
     """Sets up the preconditioner for the fieldsplit case.
 
@@ -193,7 +216,7 @@ def setup_fieldsplit_preconditioner(
 
     """
     if fun is not None:
-        if ["pc_type", "fieldsplit"] in options:
+        if "pc_type" in options.keys() and options["pc_type"] == "fieldsplit":
             function_space = fun.function_space()
             if not function_space.num_sub_spaces() > 1:
                 raise _exceptions.InputError(
@@ -216,13 +239,55 @@ def setup_fieldsplit_preconditioner(
             pc.setFieldSplitIS(*idx_tuples)
 
 
+def _initialize_comm(comm: Optional[MPI.Comm] = None) -> MPI.Comm:
+    """Initializes the MPI communicator.
+
+    If the supplied communicator is `None`, return MPI.comm_world.
+
+    Args:
+        comm: The supplied communicator or `None`
+
+    Returns:
+        The resulting communicator.
+
+    """
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
+    return comm
+
+
+def define_ksp_options(
+    ksp_options: Optional[_typing.KspOption] = None,
+) -> _typing.KspOption:
+    """Defines the KSP options to be used by PETSc.
+
+    If no options are supplied, the direct solver mumps will be used.
+
+    Args:
+        ksp_options: The KSP options for PETSc
+
+    Returns:
+        The KSP options that are supplied of the default ones (for mumps).
+
+    """
+    if ksp_options is None:
+        options = copy.deepcopy(direct_ksp_options)
+    else:
+        options = ksp_options
+
+    return options
+
+
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
     fun: Optional[fenics.Function] = None,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
+    comm: Optional[MPI.Comm] = None,
+    P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -243,15 +308,20 @@ def solve_linear_problem(
         atol: The absolute tolerance used in case an iterative solver is used for
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
+        comm: The MPI communicator for the problem.
 
     Returns:
         The solution vector.
 
     """
-    ksp = PETSc.KSP().create()
+    comm = _initialize_comm(comm)
+    ksp = PETSc.KSP().create(comm=comm)
 
     if A is not None:
-        ksp.setOperators(A)
+        if P is None:
+            ksp.setOperators(A)
+        else:
+            ksp.setOperators(A, P)
     else:
         A = ksp.getOperators()[0]
         if A.size[0] == -1 and A.size[1] == -1:
@@ -270,13 +340,9 @@ def solve_linear_problem(
     else:
         x = fun.vector().vec()
 
-    if ksp_options is None:
-        options = copy.deepcopy(direct_ksp_options)
-    else:
-        options = ksp_options
+    options = define_ksp_options(ksp_options)
 
     setup_fieldsplit_preconditioner(fun, ksp, options)
-
     setup_petsc_options([ksp], [options])
 
     if rtol is not None:
@@ -301,9 +367,11 @@ def assemble_and_solve_linear(
     A: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b: Optional[fenics.PETScVector] = None,
     fun: Optional[fenics.Function] = None,
-    ksp_options: Optional[List[List[Union[str, int, float]]]] = None,
+    ksp_options: Optional[_typing.KspOption] = None,
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
+    comm: Optional[MPI.Comm] = None,
+    preconditioner_form: Optional[ufl.Form] = None,
 ) -> PETSc.Vec:
     """Assembles and solves a linear system.
 
@@ -323,14 +391,20 @@ def assemble_and_solve_linear(
         atol: The absolute tolerance used in case an iterative solver is used for
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
+        comm: The MPI communicator for solving the problem.
 
     Returns:
         A PETSc vector containing the solution x.
 
     """
     # pylint: disable=invalid-name
-    A_matrix, b_vector = assemble_petsc_system(
-        lhs_form, rhs_form, bcs, A_tensor=A, b_tensor=b
+    A_matrix, b_vector, P_matrix = assemble_petsc_system(
+        lhs_form,
+        rhs_form,
+        bcs,
+        A_tensor=A,
+        b_tensor=b,
+        preconditioner_form=preconditioner_form,
     )
     solution = solve_linear_problem(
         A=A_matrix,
@@ -339,6 +413,8 @@ def assemble_and_solve_linear(
         ksp_options=ksp_options,
         rtol=rtol,
         atol=atol,
+        comm=comm,
+        P=P_matrix,
     )
 
     return solution

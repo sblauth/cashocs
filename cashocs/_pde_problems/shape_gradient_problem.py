@@ -78,15 +78,15 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         if gradient_method.casefold() == "direct":
             self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
         elif gradient_method.casefold() == "iterative":
-            self.ksp_options = [
-                ["ksp_type", "cg"],
-                ["pc_type", "hypre"],
-                ["pc_hypre_type", "boomeramg"],
-                ["pc_hypre_boomeramg_strong_threshold", 0.7],
-                ["ksp_rtol", gradient_tol],
-                ["ksp_atol", 1e-50],
-                ["ksp_max_it", 250],
-            ]
+            self.ksp_options = {
+                "ksp_type": "cg",
+                "pc_type": "hypre",
+                "pc_hypre_type": "boomeramg",
+                "pc_hypre_boomeramg_strong_threshold": 0.7,
+                "ksp_rtol": gradient_tol,
+                "ksp_atol": 1e-50,
+                "ksp_max_it": 250,
+            }
 
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
@@ -124,7 +124,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
-
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
@@ -154,6 +153,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
                     fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
+                    comm=self.db.geometry_db.mpi_comm,
                 )
 
                 self.has_solution = True
@@ -229,14 +229,14 @@ class _PLaplaceProjector:
             if gradient_method.casefold() == "direct":
                 self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
             elif gradient_method.casefold() == "iterative":
-                self.ksp_options = [
-                    ["ksp_type", "cg"],
-                    ["pc_type", "hypre"],
-                    ["pc_hypre_type", "boomeramg"],
-                    ["ksp_rtol", 1e-16],
-                    ["ksp_atol", 1e-50],
-                    ["ksp_max_it", 100],
-                ]
+                self.ksp_options = {
+                    "ksp_type": "cg",
+                    "pc_type": "hypre",
+                    "pc_hypre_type": "boomeramg",
+                    "ksp_rtol": 1e-16,
+                    "ksp_atol": 1e-50,
+                    "ksp_max_it": 100,
+                }
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""

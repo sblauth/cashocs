@@ -427,7 +427,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                         failed = True
                         break
                     else:
-                        raise Exception("Stepsize computation failed.")
+                        raise _exceptions.NotConvergedError(
+                            "cashocs._optimization.topology_optimization."
+                            "topology_optimization_algorithm",
+                            "Stepsize computation failed.",
+                        )
 
 
 class ConvexCombinationAlgorithm(LevelSetTopologyAlgorithm):

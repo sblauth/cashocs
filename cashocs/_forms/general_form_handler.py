@@ -165,7 +165,6 @@ class AdjointFormHandler:
                 for bc in bcs_list_ad[i]:
                     bc.homogenize()
         else:
-
             bcs_list_ad = [
                 [1] * len(self.db.form_db.bcs_list[i])
                 for i in range(self.db.parameter_db.state_dim)
