@@ -216,11 +216,11 @@ Next up, we have
 
 .. code-block:: ini
 
-    maximum_iterations = 100
+    max_iter = 100
 
 This parameter determines the maximum number of iterations carried out by the
 solution algorithm before it is terminated. It defaults to
-:ini:`maximum_iterations = 100`.
+:ini:`max_iter = 100`.
 
 The initial step size for the Armijo line search can be set via 
 
@@ -353,7 +353,7 @@ For the L-BFGS method we have the following parameters. First, we have
 and determines the size of the memory of the L-BFGS method. E.g., the command
 above specifies that information of the previous two iterations shall be used.
 The case :ini:`bfgs_memory_size = 0` yields the classical gradient descent method,
-whereas :python:`bfgs_memory_size > maximum_iterations` gives rise to the classical
+whereas :python:`bfgs_memory_size > max_iter` gives rise to the classical
 BFGS method with unlimited memory. The default behavior is :ini:`bfgs_memory_size = 5`.
 
 Second, we have the parameter :ini:`use_bfgs_scaling`, that is set via 

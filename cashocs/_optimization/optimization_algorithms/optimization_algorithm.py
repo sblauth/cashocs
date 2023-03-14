@@ -97,21 +97,19 @@ class OptimizationAlgorithm(abc.ABC):
         if self.db.parameter_db.is_remeshed:
             self.rtol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"]
             self.atol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"]
-            self.maximum_iterations = self.db.parameter_db.temp_dict[
-                "OptimizationRoutine"
-            ]["max_iter"]
+            self.max_iter = self.db.parameter_db.temp_dict["OptimizationRoutine"][
+                "max_iter"
+            ]
             self.optimization_problem.initialize_solve_parameters(
                 algorithm=self.optimization_problem.algorithm,
                 rtol=self.rtol,
                 atol=self.atol,
-                max_iter=self.maximum_iterations,
+                max_iter=self.max_iter,
             )
         else:
             self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
             self.atol = self.config.getfloat("OptimizationRoutine", "atol")
-            self.maximum_iterations = self.config.getint(
-                "OptimizationRoutine", "maximum_iterations"
-            )
+            self.max_iter = self.config.getint("OptimizationRoutine", "max_iter")
         self.soft_exit = self.config.getboolean("OptimizationRoutine", "soft_exit")
 
         self.output_manager = optimization_problem.output_manager
@@ -210,7 +208,7 @@ class OptimizationAlgorithm(abc.ABC):
             A flag which is True, when the algorithm did not converge
 
         """
-        if self.iteration >= self.maximum_iterations:
+        if self.iteration >= self.max_iter:
             self.converged_reason = -1
         if self.line_search_broken:
             self.converged_reason = -2

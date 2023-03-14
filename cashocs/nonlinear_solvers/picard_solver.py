@@ -87,7 +87,7 @@ def picard_iteration(
     inner_damped: bool = True,
     inner_inexact: bool = True,
     inner_verbose: bool = False,
-    inner_max_its: int = 25,
+    inner_max_iter: int = 25,
     ksp_options: Optional[List[_typing.KspOption]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
@@ -112,8 +112,8 @@ def picard_iteration(
             inexact Newton method, default is ``True``
         inner_verbose: Boolean flag, if ``True``, the inner problems write the history
             to stdout, default is ``False``.
-        inner_max_its: Maximum number of iterations for the inner Newton solver; default
-            is 25.
+        inner_max_iter: Maximum number of iterations for the inner Newton solver;
+            default is 25.
         ksp_options: List of options for the KSP objects.
         A_tensors: List of matrices for the right-hand sides of the inner (linearized)
             equations.
@@ -179,7 +179,7 @@ def picard_iteration(
                 bcs_list[j],
                 rtol=eta,
                 atol=atol * 1e-1,
-                max_iter=inner_max_its,
+                max_iter=inner_max_iter,
                 damped=inner_damped,
                 inexact=inner_inexact,
                 verbose=inner_verbose,
