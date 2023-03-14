@@ -104,7 +104,7 @@ class DescentTopologyAlgorithm(
 
             self.iteration += 1
 
-            if self.iteration >= self.maximum_iterations:
+            if self.iteration >= self.max_iter:
                 self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
                 print("Maximum number of iterations reached.")
@@ -123,7 +123,7 @@ class DescentTopologyAlgorithm(
                 algorithm=self.algorithm,
                 rtol=self.rtol,
                 atol=self.atol,
-                max_iter=self.maximum_iterations,
+                max_iter=self.max_iter,
             )
 
             if self._cashocs_problem.solver.converged_reason < -1:

@@ -380,7 +380,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         self._cashocs_problem.state_problem.has_solution = False
 
         failed = False
-        for k in range(self.config.getint("OptimizationRoutine", "maximum_iterations")):
+        for k in range(self.config.getint("OptimizationRoutine", "max_iter")):
             if failed:
                 break
 
