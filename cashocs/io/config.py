@@ -177,7 +177,7 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["non_negative"],
                 },
-                "maximum_iterations": {
+                "max_iter": {
                     "type": "int",
                     "attributes": ["non_negative"],
                 },
@@ -546,7 +546,7 @@ picard_verbose = False
 algorithm = none
 rtol = 1e-3
 atol = 0.0
-maximum_iterations = 100
+max_iter = 100
 soft_exit = False
 gradient_tol = 1e-9
 gradient_method = direct
