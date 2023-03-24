@@ -577,7 +577,7 @@ class _MeshHandler:
             ] = self.config.getfloat("OptimizationRoutine", "atol")
             self.db.parameter_db.temp_dict["OptimizationRoutine"][
                 "max_iter"
-            ] = self.config.getint("OptimizationRoutine", "maximum_iterations")
+            ] = self.config.getint("OptimizationRoutine", "max_iter")
 
             dim = self.mesh.geometric_dimension()
 

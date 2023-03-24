@@ -51,6 +51,10 @@ of the maintenance releases, please take a look at
 
 * Changed configuration file parameters
 
+  * Section OptimizationRoutine
+
+    * :ini:`maximum_iterations` is now called :ini:`max_iter`
+
   * Section Output
 
     * :ini:`save_pvd` is now called :ini:`save_state`, functionality is the same

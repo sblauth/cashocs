@@ -69,7 +69,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             satisfied.
 
         """
-        if solver.iteration >= solver.maximum_iterations:
+        if solver.iteration >= solver.max_iter:
             return True
 
         if self.stepsize * self.search_direction_inf <= 1e-8:

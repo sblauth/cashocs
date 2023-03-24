@@ -372,7 +372,7 @@ def test_picard_nonlinear(
     config_picard.set("OptimizationRoutine", "algorithm", "newton")
     config_picard.set("OptimizationRoutine", "rtol", "1e-6")
     config_picard.set("OptimizationRoutine", "atol", "0.0")
-    config_picard.set("OptimizationRoutine", "maximum_iterations", "10")
+    config_picard.set("OptimizationRoutine", "max_iter", "10")
 
     ocp_nonlinear = cashocs.OptimalControlProblem(
         e_nonlinear, bcs, J, states, controls, adjoints, config=config_picard
