@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -207,9 +207,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
 
-    def _erase_pde_memory(self) -> None:
+    def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()
-        pass
 
     def gradient_test(self) -> float:
         """Gradient test for topology optimization - not implemented."""

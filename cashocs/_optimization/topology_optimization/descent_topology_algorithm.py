@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2023 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,11 +22,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
-from cashocs._optimization.topology_optimization import topology_optimization_problem
 
 if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._optimization import line_search as ls
+    from cashocs._optimization.topology_optimization import (
+        topology_optimization_problem,
+    )
 
 
 class DescentTopologyAlgorithm(

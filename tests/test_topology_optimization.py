@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Methods and classes for topology optimization problems."""
+"""Tests for topology optimization problems."""
 
-from cashocs._optimization.topology_optimization.topology_optimization_problem import (
-    TopologyOptimizationProblem,
-)
+from fenics import *
+import numpy as np
 
-__all__ = ["TopologyOptimizationProblem"]
+import cashocs
