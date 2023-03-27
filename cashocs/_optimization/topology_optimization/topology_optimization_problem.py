@@ -279,7 +279,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             )
 
         self.solver.run()
-        self.solver.post_process()
+        self.solver.post_processing()
 
     def plot_shape(self) -> None:
         """Visualize the current shape in a plot."""

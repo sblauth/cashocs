@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from cashocs import _exceptions
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 
 if TYPE_CHECKING:
@@ -79,6 +80,16 @@ class DescentTopologyAlgorithm(
 
         def post_callback() -> None:
             self.compute_gradient()
+            self.db.parameter_db.optimization_state[
+                "no_adjoint_solves"
+            ] = self._cashocs_problem.db.parameter_db.optimization_state[
+                "no_adjoint_solves"
+            ]
+            self.db.parameter_db.optimization_state[
+                "no_state_solves"
+            ] = self._cashocs_problem.db.parameter_db.optimization_state[
+                "no_state_solves"
+            ]
             self._cashocs_problem.db.function_db.gradient[0].vector().vec().aypx(
                 0.0, -self.projected_gradient.vector().vec()
             )
@@ -94,10 +105,9 @@ class DescentTopologyAlgorithm(
 
             if self.convergence_test():
                 self.successful = True
-                self.output()
+                self.iteration -= 1
                 self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
-                print("\nOptimization successful!\n")
 
             if not self.loop_restart and not self.successful:
                 self.output()
@@ -109,7 +119,10 @@ class DescentTopologyAlgorithm(
             if self.iteration >= self.max_iter:
                 self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
-                print("Maximum number of iterations reached.")
+                raise _exceptions.NotConvergedError(
+                    "Topology Optimization Algorithm",
+                    "Maximum number of iterations reached.",
+                )
 
         self._cashocs_problem.inject_pre_callback(pre_callback)
         self._cashocs_problem.inject_post_callback(post_callback)
@@ -133,8 +146,9 @@ class DescentTopologyAlgorithm(
                 self.loop_restart = True
 
                 if self.iteration == stop_iter:
-                    print("The line search failed.")
-                    break
+                    raise _exceptions.NotConvergedError(
+                        "Topology Optimization Solver", "The line search failed."
+                    )
 
                 stop_iter = self.iteration
 

@@ -392,6 +392,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
             self._cashocs_problem.adjoint_problem.has_solution = False
             self.compute_gradient()
+            self.db.parameter_db.optimization_state[
+                "no_adjoint_solves"
+            ] = self._cashocs_problem.db.parameter_db.optimization_state[
+                "no_adjoint_solves"
+            ]
 
             self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
@@ -401,8 +406,6 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             self.gradient_norm = self.compute_gradient_norm()
 
             if self.convergence_test():
-                self.output()
-                print("\nOptimization successful!\n")
                 break
 
             self.output()
@@ -414,6 +417,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
+                self.db.parameter_db.optimization_state[
+                    "no_state_solves"
+                ] = self._cashocs_problem.db.parameter_db.optimization_state[
+                    "no_state_solves"
+                ]
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
@@ -432,6 +440,10 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                             "topology_optimization_algorithm",
                             "Stepsize computation failed.",
                         )
+
+            self.iteration += 1
+            if self.nonconvergence():
+                break
 
 
 class ConvexCombinationAlgorithm(LevelSetTopologyAlgorithm):

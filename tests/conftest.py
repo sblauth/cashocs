@@ -40,6 +40,11 @@ def config_sop(dir_path):
 
 
 @pytest.fixture
+def config_top(dir_path):
+    return cashocs.load_config(f"{dir_path}/config_top.ini")
+
+
+@pytest.fixture
 def rng():
     return np.random.RandomState(300696)
 
