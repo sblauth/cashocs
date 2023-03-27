@@ -97,6 +97,8 @@ def generate_output_str(db: database.Database, precision: int) -> str:
         ]
         if mesh_quality is not None:
             info_list.append("mesh qlty,  ".rjust(max(12, precision + 9)))
+        if db.parameter_db.problem_type == "topology":
+            info_list.append("angle,  ".rjust(max(10, precision + 7)))
         info_list.append("step size".rjust(max(9, precision + 6)))
         info_list.append("\n\n")
         info_str = "".join(info_list)
@@ -111,6 +113,8 @@ def generate_output_str(db: database.Database, precision: int) -> str:
     ]
     if mesh_quality is not None:
         strs.append(f"{mesh_quality:>9.{precision}e},  ")
+    if db.parameter_db.problem_type == "topology":
+        strs.append(f"{db.parameter_db.optimization_state['angle']:>7.{precision}f},  ")
 
     if iteration > 0:
         strs.append(f"{optimization_state['stepsize']:>9.{precision}e}")
@@ -135,7 +139,6 @@ class IOManager(abc.ABC):
         self.result_dir = result_dir
 
         self.config = self.db.config
-        self.optimization_state = self.db.parameter_db.optimization_state
 
     def output(self) -> None:
         """The output operation, which is performed after every iteration.
@@ -194,38 +197,50 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"] = self.db.parameter_db.temp_dict[
                 "output_dict"
             ]["MeshQuality"]
+            self.output_dict["angle"] = self.db.parameter_db.temp_dict["output_dict"][
+                "angle"
+            ]
         else:
             self.output_dict["cost_function_value"] = []
             self.output_dict["gradient_norm"] = []
             self.output_dict["stepsize"] = []
             self.output_dict["MeshQuality"] = []
+            self.output_dict["angle"] = []
 
     def output(self) -> None:
         """Saves the optimization history to a dictionary."""
         self.output_dict["cost_function_value"].append(
-            self.optimization_state["objective_value"]
+            self.db.parameter_db.optimization_state["objective_value"]
         )
         self.output_dict["gradient_norm"].append(
-            self.optimization_state["relative_norm"]
+            self.db.parameter_db.optimization_state["relative_norm"]
         )
         if self.db.parameter_db.problem_type == "shape":
             self.output_dict["MeshQuality"].append(
                 self.db.parameter_db.optimization_state["mesh_quality"]
             )
-        self.output_dict["stepsize"].append(self.optimization_state["stepsize"])
+        if self.db.parameter_db.problem_type == "topology":
+            self.output_dict["angle"].append(
+                self.db.parameter_db.optimization_state["angle"]
+            )
+        self.output_dict["stepsize"].append(
+            self.db.parameter_db.optimization_state["stepsize"]
+        )
 
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
-        self.output_dict["initial_gradient_norm"] = self.optimization_state[
-            "gradient_norm_initial"
-        ]
+        self.output_dict[
+            "initial_gradient_norm"
+        ] = self.db.parameter_db.optimization_state["gradient_norm_initial"]
         self.output_dict["state_solves"] = self.db.parameter_db.optimization_state[
             "no_state_solves"
         ]
         self.output_dict["adjoint_solves"] = self.db.parameter_db.optimization_state[
             "no_adjoint_solves"
         ]
-        self.output_dict["iterations"] = self.optimization_state["iteration"]
+        self.output_dict["iterations"] = self.db.parameter_db.optimization_state[
+            "iteration"
+        ]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file)
@@ -276,7 +291,7 @@ class FileManager(IOManager):
     def output(self) -> None:
         """Saves the output string in a file."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            if self.optimization_state["iteration"] == 0:
+            if self.db.parameter_db.optimization_state["iteration"] == 0:
                 file_attr = "w"
             else:
                 file_attr = "a"
@@ -368,7 +383,10 @@ class XDMFFileManager(IOManager):
 
     def _initialize_controls_xdmf(self) -> None:
         """Initializes the list of xdmf files for the control variables."""
-        if self.save_state and self.db.parameter_db.problem_type == "control":
+        if self.save_state and self.db.parameter_db.problem_type in [
+            "control",
+            "topology",
+        ]:
             for i in range(self.db.parameter_db.control_dim):
                 self.control_xdmf_list.append(
                     self._generate_xdmf_file_strings(
@@ -390,7 +408,7 @@ class XDMFFileManager(IOManager):
         """Initialize the list of xdmf files for the gradients."""
         if self.save_gradient:
             for i in range(self.db.parameter_db.control_dim):
-                if self.db.parameter_db.problem_type == "control":
+                if self.db.parameter_db.problem_type in ["control", "topology"]:
                     gradient_str = f"gradient_{i:d}"
                 else:
                     gradient_str = "shape_gradient"
@@ -464,7 +482,10 @@ class XDMFFileManager(IOManager):
             iteration: The current iteration count.
 
         """
-        if self.save_state and self.db.parameter_db.problem_type == "control":
+        if self.save_state and self.db.parameter_db.problem_type in [
+            "control",
+            "topology",
+        ]:
             for i in range(len(self.db.function_db.controls)):
                 self._write_xdmf_step(
                     cast(str, self.control_xdmf_list[i]),
@@ -558,7 +579,7 @@ class XDMFFileManager(IOManager):
         """Saves the variables to xdmf files."""
         self._initialize_xdmf_lists()
 
-        iteration = int(self.optimization_state["iteration"])
+        iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
         self._save_states(iteration)
         self._save_controls(iteration)

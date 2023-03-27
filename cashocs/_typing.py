@@ -26,10 +26,14 @@ from cashocs import _pde_problems
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 from cashocs._optimization import optimal_control
+from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import shape_optimization
+from cashocs._optimization import topology_optimization
 
 OptimizationProblem = Union[
-    shape_optimization.ShapeOptimizationProblem, optimal_control.OptimalControlProblem
+    shape_optimization.ShapeOptimizationProblem,
+    optimal_control.OptimalControlProblem,
+    topology_optimization.TopologyOptimizationProblem,
 ]
 GradientProblem = Union[
     _pde_problems.ShapeGradientProblem, _pde_problems.ControlGradientProblem
@@ -43,6 +47,7 @@ MeshTuple = Tuple[
     fenics.Measure,
     fenics.Measure,
 ]
+SolutionAlgorithm = Union[optimization_algorithms.OptimizationAlgorithm]
 
 KspOption = Dict[str, Union[int, float, str, None]]
 Constraint = Union[constraints.EqualityConstraint, constraints.InequalityConstraint]

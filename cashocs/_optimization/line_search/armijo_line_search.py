@@ -50,9 +50,6 @@ class ArmijoLineSearch(line_search.LineSearch):
         """
         super().__init__(db, optimization_problem)
 
-        self.epsilon_armijo: float = self.config.getfloat(
-            "LineSearch", "epsilon_armijo"
-        )
         self.armijo_stepsize_initial = self.stepsize
         self.decrease_measure_w_o_step = 1.0
 
@@ -127,9 +124,8 @@ class ArmijoLineSearch(line_search.LineSearch):
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
-            if (
-                objective_step
-                < current_function_value + self.epsilon_armijo * decrease_measure
+            if self._satisfies_armijo_condition(
+                objective_step, current_function_value, decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
                     self.optimization_variable_abstractions.mesh_handler.remesh(solver)
@@ -162,7 +158,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             The computed decrease measure.
 
         """
-        if self.db.parameter_db.problem_type == "control":
+        if self.db.parameter_db.problem_type in ["control", "topology"]:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )

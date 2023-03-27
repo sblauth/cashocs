@@ -78,7 +78,7 @@ class ParameterDatabase:
 
     @problem_type.setter
     def problem_type(self, value: str) -> None:
-        if value in ["control", "shape"]:
+        if value in ["control", "shape", "topology"]:
             self._problem_type = value
         else:
             raise _exceptions.InputError(

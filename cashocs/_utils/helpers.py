@@ -142,6 +142,10 @@ def optimization_algorithm_configuration(
         internal_algorithm = "lbfgs"
     elif algorithm.casefold() in ["newton"]:
         internal_algorithm = "newton"
+    elif algorithm.casefold() in ["sphere_combination"]:
+        internal_algorithm = "sphere_combination"
+    elif algorithm.casefold() in ["convex_combination"]:
+        internal_algorithm = "convex_combination"
     elif algorithm.casefold() == "none":
         internal_algorithm = "none"
     else:
@@ -153,7 +157,11 @@ def optimization_algorithm_configuration(
             "	For a nonlinear conjugate gradient method use 'cg', "
             "'conjugate_gradient', 'ncg', or 'nonlinear_cg'.\n"
             "	For a limited memory BFGS method use 'bfgs' or 'lbfgs'.\n"
-            "	For a truncated Newton method use 'newton' (optimal control only).\n",
+            "	For a truncated Newton method use 'newton' (optimal control only).\n"
+            "   For Euler's method on the sphere use 'sphere_combination' (topology"
+            "optimization only).\n"
+            "   For the convex combination approach use 'convex_combination' (topology"
+            "optimization only).",
         )
 
     if overwrite:

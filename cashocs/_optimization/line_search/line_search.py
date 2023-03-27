@@ -62,6 +62,9 @@ class LineSearch(abc.ABC):
         )
 
         self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
+        self.epsilon_armijo: float = self.config.getfloat(
+            "LineSearch", "epsilon_armijo"
+        )
         self.search_direction_inf = 1.0
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
@@ -160,3 +163,30 @@ class LineSearch(abc.ABC):
     def post_line_search(self) -> None:
         """Performs tasks after the line search was successful."""
         self.form_handler.update_scalar_product()
+
+    def _satisfies_armijo_condition(
+        self,
+        objective_step: float,
+        current_function_value: float,
+        decrease_measure: float,
+    ) -> bool:
+        """Checks whether the sufficient decrease condition is satisfied.
+
+        Args:
+            objective_step: The new objective value, after taking the step
+            current_function_value: The old objective value
+            decrease_measure: The directional derivative in direction of the search
+                direction
+
+        Returns:
+            A boolean flag which is True in case the condition is satisfied.
+
+        """
+        if not self.db.parameter_db.problem_type == "topology":
+            val = bool(
+                objective_step
+                < current_function_value + self.epsilon_armijo * decrease_measure
+            )
+        else:
+            val = bool(objective_step <= current_function_value)
+        return val

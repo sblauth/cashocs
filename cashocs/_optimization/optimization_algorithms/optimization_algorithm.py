@@ -86,6 +86,7 @@ class OptimizationAlgorithm(abc.ABC):
         self._objective_value: float = 1.0
         self._gradient_norm_initial: float = 1.0
         self._relative_norm: float = 1.0
+        self._angle: float = 360.0
 
         self.requires_remeshing = False
         self.is_restarted: bool = False
@@ -174,6 +175,16 @@ class OptimizationAlgorithm(abc.ABC):
     def gradient_norm_initial(self, value: float) -> None:
         self.db.parameter_db.optimization_state["gradient_norm_initial"] = value
         self._gradient_norm_initial = value
+
+    @property
+    def angle(self) -> float:
+        """The angle between levelset function and topological derivative."""
+        return self._angle
+
+    @angle.setter
+    def angle(self, value: float) -> None:
+        self.db.parameter_db.optimization_state["angle"] = value
+        self._angle = value
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -278,6 +289,11 @@ class OptimizationAlgorithm(abc.ABC):
             self.objective_value = self.cost_functional.evaluate()
             self.converged = True
             return True
+
+        if self.db.parameter_db.problem_type == "topology":
+            if self.angle <= self.config.getfloat("TopologyOptimization", "angle_tol"):
+                self.converged = True
+                return True
 
         return False
 

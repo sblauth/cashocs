@@ -568,6 +568,9 @@ class _MeshHandler:
             self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
                 "MeshQuality"
             ][:]
+            self.db.parameter_db.temp_dict["output_dict"]["angle"] = output_dict[
+                "angle"
+            ][:]
 
             self.db.parameter_db.temp_dict["OptimizationRoutine"][
                 "rtol"

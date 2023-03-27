@@ -46,6 +46,9 @@ if TYPE_CHECKING:
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
+    from cashocs._optimization.topology_optimization import (
+        topology_optimization_algorithm,
+    )
 
 
 class OptimizationProblem(abc.ABC):
@@ -69,7 +72,10 @@ class OptimizationProblem(abc.ABC):
     uses_custom_scalar_product: bool = False
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
-    solver: optimization_algorithms.OptimizationAlgorithm
+    solver: Union[
+        optimization_algorithms.OptimizationAlgorithm,
+        topology_optimization_algorithm.TopologyOptimizationAlgorithm,
+    ]
     config: io.Config
     initial_guess: Optional[List[fenics.Function]]
     cost_functional_list: List[_typing.CostFunctional]
@@ -584,12 +590,19 @@ class OptimizationProblem(abc.ABC):
         Notes:
             If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``
             call, the termination criterion changes to:
+
             - a purely relative one (if only ``rtol`` is specified), i.e.,
+
             .. math:: || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.
+
             - a purely absolute one (if only ``atol`` is specified), i.e.,
+
             .. math:: || \nabla J(u_K) || \leq \texttt{atol}.
+
             - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,
+
             .. math::
+
                 || \nabla J(u_k) || \leq \texttt{atol} + \texttt{rtol}
                 || \nabla J(u_0) ||
 
