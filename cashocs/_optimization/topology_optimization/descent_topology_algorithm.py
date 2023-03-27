@@ -119,10 +119,13 @@ class DescentTopologyAlgorithm(
             if self.iteration >= self.max_iter:
                 self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
-                raise _exceptions.NotConvergedError(
-                    "Topology Optimization Algorithm",
-                    "Maximum number of iterations reached.",
-                )
+                if self.config.getboolean("OptimizationRoutine", "soft_exit"):
+                    print("Maximum number of iterations reached.")
+                else:
+                    raise _exceptions.NotConvergedError(
+                        "Topology Optimization Algorithm",
+                        "Maximum number of iterations reached.",
+                    )
 
         self._cashocs_problem.inject_pre_callback(pre_callback)
         self._cashocs_problem.inject_post_callback(post_callback)
