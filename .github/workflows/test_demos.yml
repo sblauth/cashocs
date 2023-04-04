@@ -28,6 +28,7 @@ jobs:
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
+          occt"<=7.7.0"
           matplotlib
           python=3.11
 
@@ -65,6 +66,7 @@ jobs:
           meshio">=5.0.0"
           pytest">=7.0.0"
           gmsh">=4.8"
+          occt"<=7.7.0"
           mpich
           matplotlib
           python=3.11
