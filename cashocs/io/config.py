@@ -636,7 +636,7 @@ angle_change = inf
 
 [TopologyOptimization]
 angle_tol = 1.0
-interpolation_scheme = angle
+interpolation_scheme = volume
 normalize_topological_derivative = False
 re_normalize_levelset = False
 topological_derivative_is_identical = False
