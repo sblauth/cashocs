@@ -296,10 +296,10 @@ along with cashocs.  If not, see `<https://www.gnu.org/licenses/>`_.
 Contact / About
 ===============
 
-I'm `Sebastian Blauth <https://www.itwm.fraunhofer.de/en/departments/tv/staff/sebastian-blauth.html>`_, a scientific employee at `Fraunhofer ITWM
+I'm `Sebastian Blauth <https://sblauth.github.io/>`_, a scientific employee at `Fraunhofer ITWM
 <https://www.itwm.fraunhofer.de/en.html>`_. I have developed this project as part of my PhD thesis.
 If you have any questions / suggestions / feedback, etc., you can contact me
 via `sebastian.blauth@itwm.fraunhofer.de
-<mailto:sebastian.blauth@itwm.fraunhofer.de>`_.
+<mailto:sebastian.blauth@itwm.fraunhofer.de>`_. For more information, visit my website at `<https://sblauth.github.io/>`_.
 
 .. readme_end_about
