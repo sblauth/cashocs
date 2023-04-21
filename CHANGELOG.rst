@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-This are cashocs' release notes. Note, that only major and minor releases are covered
+These are cashocs' release notes. Note, that only major and minor releases are covered
 here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
