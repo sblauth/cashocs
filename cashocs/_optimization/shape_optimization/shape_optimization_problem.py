@@ -174,6 +174,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.Function(self.db.function_db.control_spaces[0])
         ]
         self.db.parameter_db.problem_type = "shape"
+        self.db.geometry_db.init_transfer_matrix()
 
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh")
@@ -328,6 +329,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             line_search = ls.PolynomialLineSearch(self.db, self)
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
+
+        self.global_deformation_vector = line_search.global_deformation_vector
+        self.global_deformation_function = line_search.deformation_function
 
         if self.algorithm.casefold() == "gradient_descent":
             solver: optimization_algorithms.OptimizationAlgorithm = (

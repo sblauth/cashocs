@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import collections
-from typing import Deque, List
+from typing import Deque, List, Optional, Tuple
 
 import fenics
 import numpy as np
@@ -101,7 +101,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
-    ) -> None:
+    ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
         Args:
@@ -110,14 +110,20 @@ class PolynomialLineSearch(line_search.LineSearch):
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
 
+        Returns:
+            The accepted deformation / update or None, in case the update was not
+            successful.
+
         """
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
 
         self.f_vals.clear()
         self.alpha_vals.clear()
+
+        is_remeshed = False
         while True:
             if self._check_for_nonconvergence(solver):
-                return None
+                return (None, False)
 
             if self.db.parameter_db.problem_type == "shape":
                 self.decrease_measure_w_o_step = (
@@ -145,6 +151,7 @@ class PolynomialLineSearch(line_search.LineSearch):
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
                     self.optimization_variable_abstractions.mesh_handler.remesh(solver)
+                    is_remeshed = True
                     break
 
                 if solver.iteration == 0:
@@ -165,7 +172,10 @@ class PolynomialLineSearch(line_search.LineSearch):
         if not has_curvature_info:
             self.stepsize /= self.factor_high
 
-        return None
+        if self.db.parameter_db.problem_type == "shape":
+            return (self.optimization_variable_abstractions.deformation, is_remeshed)
+        else:
+            return (None, False)
 
     def _compute_polynomial_stepsize(
         self,
