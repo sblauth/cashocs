@@ -117,7 +117,6 @@ class LineSearch(abc.ABC):
             _, temp = transfer_matrix.getVecs()
             transfer_matrix.mult(x, temp)
             self.global_deformation_vector.axpy(1.0, temp)
-            print("Update global deformation")
             self.deformation_function.vector().apply("")
 
         self.post_line_search()
