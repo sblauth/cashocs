@@ -52,7 +52,6 @@ class ShapeVariableAbstractions(
         super().__init__(optimization_problem, db)
         self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
-        self.deformation = fenics.Function(self.db.function_db.control_spaces[0])
 
     def compute_decrease_measure(
         self, search_direction: List[fenics.Function]

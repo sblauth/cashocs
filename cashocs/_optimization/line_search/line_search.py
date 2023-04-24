@@ -20,10 +20,11 @@
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING
+from typing import cast, List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 
 from cashocs import _utils
 
@@ -55,6 +56,12 @@ class LineSearch(abc.ABC):
             optimization_problem.optimization_variable_abstractions
         )
         self.cost_functional = optimization_problem.reduced_cost_functional
+
+        if self.db.parameter_db.problem_type == "shape":
+            self.deformation_function = fenics.Function(
+                self.db.function_db.control_spaces[0]
+            )
+            self.global_deformation_vector = self.deformation_function.vector().vec()
 
         self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
         self.safeguard_stepsize = self.config.getboolean(
@@ -94,7 +101,24 @@ class LineSearch(abc.ABC):
                 is (presumably) scaled.
 
         """
-        self.search(solver, search_direction, has_curvature_info)
+        deformation, is_remeshed = self.search(
+            solver, search_direction, has_curvature_info
+        )
+        if deformation is not None:
+            x = fenics.as_backend_type(deformation.vector()).vec()
+
+            if not is_remeshed:
+                transfer_matrix = self.db.geometry_db.transfer_matrix
+            else:
+                transfer_matrix = self.db.geometry_db.old_transfer_matrix
+
+            transfer_matrix = cast(PETSc.Mat, transfer_matrix)
+
+            _, temp = transfer_matrix.getVecs()
+            transfer_matrix.mult(x, temp)
+            self.global_deformation_vector.axpy(1.0, temp)
+            self.deformation_function.vector().apply("")
+
         self.post_line_search()
 
     def initialize_stepsize(
@@ -148,7 +172,7 @@ class LineSearch(abc.ABC):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
-    ) -> None:
+    ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs a line search.
 
         Args:
@@ -156,6 +180,10 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+
+        Returns:
+            The accepted deformation or None, in case the deformation was not
+            successful.
 
         """
         pass

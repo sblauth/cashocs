@@ -22,13 +22,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
+import mpi4py.MPI
+
+from cashocs import _utils
 
 if TYPE_CHECKING:
+    from petsc4py import PETSc
+
     from cashocs._database import function_database
 
 
 class GeometryDatabase:
     """Database for geometry parameters."""
+
+    transfer_matrix: PETSc.Mat
+    old_transfer_matrix: PETSc.Mat
 
     def __init__(self, function_db: function_database.FunctionDatabase) -> None:
         """Initializes the geometry database.
@@ -39,4 +47,13 @@ class GeometryDatabase:
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
         self.dx: fenics.Measure = fenics.Measure("dx", self.mesh)
-        self.mpi_comm = self.mesh.mpi_comm()
+        self.mpi_comm: mpi4py.MPI.Intracomm = self.mesh.mpi_comm()
+
+        self.function_db = function_db
+
+    def init_transfer_matrix(self) -> None:
+        """Initializes the transfer matrix for computing the global deformation."""
+        interp = _utils.Interpolator(
+            self.function_db.control_spaces[0], self.function_db.control_spaces[0]
+        )
+        self.transfer_matrix = interp.transfer_matrix

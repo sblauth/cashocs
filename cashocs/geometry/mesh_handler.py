@@ -35,6 +35,7 @@ from cashocs import io
 from cashocs._optimization import line_search as ls
 from cashocs.geometry import deformations
 from cashocs.geometry import quality
+from cashocs.io.mesh import import_mesh
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -636,6 +637,8 @@ class _MeshHandler:
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 
+            self._update_mesh_transfer_matrix(new_xdmf_file)
+
             self._reinitialize(solver)
             self._check_imported_mesh_quality(solver)
 
@@ -671,3 +674,27 @@ class _MeshHandler:
         )
 
         check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)
+
+    def _update_mesh_transfer_matrix(self, xdmf_filename: str) -> None:
+        """Updates the transfer matrix for the global deformation after remeshing.
+
+        Args:
+            xdmf_filename: The filename for the new mesh (in XDMF format).
+
+        """
+        pre_log_level = (
+            _loggers._cashocs_logger.level  # pylint: disable=protected-access
+        )
+        _loggers.set_log_level(_loggers.LogLevel.WARNING)
+        mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
+        _loggers.set_log_level(pre_log_level)
+
+        deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
+        interpolator = _utils.Interpolator(
+            deformation_space, self.db.function_db.control_spaces[0]
+        )
+        new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
+            interpolator.transfer_matrix
+        )
+        self.db.geometry_db.old_transfer_matrix = self.db.geometry_db.transfer_matrix
+        self.db.geometry_db.transfer_matrix = new_transfer_matrix

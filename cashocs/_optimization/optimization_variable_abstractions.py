@@ -52,6 +52,7 @@ class OptimizationVariableAbstractions(abc.ABC):
         self.db = db
 
         self.form_handler = optimization_problem.form_handler
+        self.deformation = fenics.Function(self.db.function_db.control_spaces[0])
 
     @abc.abstractmethod
     def compute_decrease_measure(

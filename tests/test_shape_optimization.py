@@ -1098,3 +1098,20 @@ def test_stepsize2():
     with pytest.raises(NotConvergedError) as e_info:
         sop.solve(algorithm="ncg", rtol=1e-3, atol=0.0, max_iter=1000)
     assert "Armijo rule failed." in str(e_info.value)
+
+
+def test_global_deformation():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+    assert sop.solver.relative_norm < sop.solver.rtol
+
+    optimized_coordinates = mesh.coordinates().copy()
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop.mesh_handler.move_mesh(sop.global_deformation_function)
+    assert np.max(np.abs(optimized_coordinates - mesh.coordinates())) <= 1e-13
