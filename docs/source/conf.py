@@ -73,6 +73,7 @@ autodoc_mock_imports = [
     "fenics",
     "numpy",
     "petsc4py",
+    "mpi4py",
     "ufl",
     "meshio",
     "dolfin",
