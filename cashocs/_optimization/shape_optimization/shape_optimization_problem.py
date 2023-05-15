@@ -87,6 +87,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
@@ -130,6 +133,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -157,6 +164,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
             temp_dict=temp_dict,
             initial_function_values=initial_function_values,
@@ -248,14 +256,16 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 states,
                 adjoints,
                 boundaries,
-                config,
-                shape_scalar_product,
-                initial_guess,
-                ksp_options,
-                adjoint_ksp_options,
-                None,
-                temp_dict,
-                self.initial_function_values,
+                config=config,
+                shape_scalar_product=shape_scalar_product,
+                initial_guess=initial_guess,
+                ksp_options=ksp_options,
+                adjoint_ksp_options=adjoint_ksp_options,
+                gradient_ksp_options=gradient_ksp_options,
+                desired_weights=None,
+                temp_dict=temp_dict,
+                initial_function_values=self.initial_function_values,
+                preconditioner_forms=preconditioner_forms,
             )
 
     @__init__.register(CallableFunction)

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 
@@ -46,6 +46,7 @@ class Database:
         adjoints: List[fenics.Function],
         state_ksp_options: List[_typing.KspOption],
         adjoint_ksp_options: List[_typing.KspOption],
+        gradient_ksp_options: Optional[List[_typing.KspOption]],
         cost_functional_list: List[_typing.CostFunctional],
         state_forms: List[ufl.Form],
         bcs_list: List[List[fenics.DirichletBC]],
@@ -59,6 +60,7 @@ class Database:
             adjoints: The list of adjoint variables.
             state_ksp_options: The list of ksp options for the state system.
             adjoint_ksp_options: The list of ksp options for the adjoint system.
+            gradient_ksp_options: The list of ksp options for computing the gradient.
             cost_functional_list: The list of cost functionals.
             state_forms: The list of state forms.
             bcs_list: The list of Dirichlet boundary conditions for the state system.
@@ -76,6 +78,7 @@ class Database:
             config,
             state_ksp_options,
             adjoint_ksp_options,
+            gradient_ksp_options,
         )
         self.geometry_db = geometry_database.GeometryDatabase(self.function_db)
         self.form_db = form_database.FormDatabase(

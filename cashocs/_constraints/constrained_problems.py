@@ -345,7 +345,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             states,
             adjoints,
             constraint_list,
-            config,
+            config=config,
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,

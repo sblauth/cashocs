@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, TYPE_CHECKING
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -39,6 +39,7 @@ class ParameterDatabase:
         config: io.Config,
         state_ksp_options: List[_typing.KspOption],
         adjoint_ksp_options: List[_typing.KspOption],
+        gradient_ksp_options: Optional[List[_typing.KspOption]],
     ) -> None:
         """Initializes the database.
 
@@ -47,11 +48,13 @@ class ParameterDatabase:
             config: The configuration.
             state_ksp_options: The list of ksp options for the state system.
             adjoint_ksp_options: The list of ksp options for the adjoint system.
+            gradient_ksp_options: The list of ksp options for computing the gradient.
 
         """
         self.config = config
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.gradient_ksp_options = gradient_ksp_options
         self.temp_dict: Dict = {}
 
         self._problem_type = ""

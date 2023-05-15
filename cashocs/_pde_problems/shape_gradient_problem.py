@@ -75,18 +75,13 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
-        if gradient_method.casefold() == "direct":
+        if db.parameter_db.gradient_ksp_options is not None:
+            self.ksp_options = db.parameter_db.gradient_ksp_options[0]
+        elif gradient_method.casefold() == "direct":
             self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
         elif gradient_method.casefold() == "iterative":
-            self.ksp_options = {
-                "ksp_type": "cg",
-                "pc_type": "hypre",
-                "pc_hypre_type": "boomeramg",
-                "pc_hypre_boomeramg_strong_threshold": 0.7,
-                "ksp_rtol": gradient_tol,
-                "ksp_atol": 1e-50,
-                "ksp_max_it": 250,
-            }
+            self.ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
+            self.ksp_options["ksp_rtol"] = gradient_tol
 
         if (
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
@@ -225,18 +220,15 @@ class _PLaplaceProjector:
             )
 
             gradient_method = config.get("OptimizationRoutine", "gradient_method")
+            gradient_tol = config.get("OptimizationRoutine", "gradient_tol")
 
-            if gradient_method.casefold() == "direct":
+            if db.parameter_db.gradient_ksp_options is not None:
+                self.ksp_options = db.parameter_db.gradient_ksp_options[0]
+            elif gradient_method.casefold() == "direct":
                 self.ksp_options = copy.deepcopy(_utils.linalg.direct_ksp_options)
             elif gradient_method.casefold() == "iterative":
-                self.ksp_options = {
-                    "ksp_type": "cg",
-                    "pc_type": "hypre",
-                    "pc_hypre_type": "boomeramg",
-                    "ksp_rtol": 1e-16,
-                    "ksp_atol": 1e-50,
-                    "ksp_max_it": 100,
-                }
+                self.ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
+                self.ksp_options["ksp_rtol"] = gradient_tol
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
