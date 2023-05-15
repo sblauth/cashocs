@@ -97,6 +97,9 @@ class OptimizationProblem(abc.ABC):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         desired_weights: Optional[List[float]] = None,
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
@@ -132,6 +135,10 @@ class OptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -181,12 +188,14 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess,
             self.ksp_options,
             self.adjoint_ksp_options,
+            self.gradient_ksp_options,
             self.desired_weights,
             self.preconditioner_forms,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
             adjoint_ksp_options,
+            gradient_ksp_options,
             desired_weights,
             preconditioner_forms,
         )
@@ -205,6 +214,7 @@ class OptimizationProblem(abc.ABC):
             self.adjoints,
             self.ksp_options,
             self.adjoint_ksp_options,
+            self.gradient_ksp_options,
             self.cost_functional_list,
             self.state_forms,
             self.bcs_list,
@@ -280,12 +290,16 @@ class OptimizationProblem(abc.ABC):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ],
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ],
         desired_weights: Optional[Union[List[float], float]],
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]],
     ) -> Tuple[
         Optional[List[fenics.Function]],
         List[_typing.KspOption],
         List[_typing.KspOption],
+        Optional[List[_typing.KspOption]],
         Optional[List[float]],
         List[Optional[ufl.Form]],
     ]:
@@ -298,6 +312,8 @@ class OptimizationProblem(abc.ABC):
                 PETSc, used to solve the state systems.
             adjoint_ksp_options: A list of dicts corresponding to command line options
                 for PETSc, used to solve the adjoint systems.
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for computing the gradient with PETSc.
             desired_weights: A list of values for scaling the cost functional terms. If
                 this is supplied, the cost functional has to be given as list of
                 summands. The individual terms are then scaled, so that term `i` has the
@@ -327,6 +343,11 @@ class OptimizationProblem(abc.ABC):
             else _utils.enlist(adjoint_ksp_options)
         )
 
+        if gradient_ksp_options is None:
+            parsed_gradient_ksp_options = None
+        else:
+            parsed_gradient_ksp_options = _utils.enlist(gradient_ksp_options)
+
         if desired_weights is None:
             parsed_desired_weights = desired_weights
         else:
@@ -344,6 +365,7 @@ class OptimizationProblem(abc.ABC):
             parsed_initial_guess,
             parsed_ksp_options,
             parsed_adjoint_ksp_options,
+            parsed_gradient_ksp_options,
             parsed_desired_weights,
             parsed_preconditioner_forms,
         )

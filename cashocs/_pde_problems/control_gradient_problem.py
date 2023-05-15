@@ -72,22 +72,20 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 
-        if gradient_method.casefold() == "direct":
-            option: _typing.KspOption = copy.deepcopy(_utils.linalg.direct_ksp_options)
-        elif gradient_method.casefold() == "iterative":
-            option = {
-                "ksp_type": "cg",
-                "pc_type": "hypre",
-                "pc_hypre_type": "boomeramg",
-                "pc_hypre_boomeramg_strong_threshold": 0.7,
-                "ksp_rtol": gradient_tol,
-                "ksp_atol": 1e-50,
-                "ksp_max_it": 250,
-            }
+        if db.parameter_db.gradient_ksp_options is not None:
+            self.riesz_ksp_options = db.parameter_db.gradient_ksp_options
+        else:
+            if gradient_method.casefold() == "direct":
+                option: _typing.KspOption = copy.deepcopy(
+                    _utils.linalg.direct_ksp_options
+                )
+            elif gradient_method.casefold() == "iterative":
+                option = copy.deepcopy(_utils.linalg.iterative_ksp_options)
+                option["ksp_rtol"] = gradient_tol
 
-        self.riesz_ksp_options = []
-        for _ in range(len(self.db.function_db.gradient)):
-            self.riesz_ksp_options.append(option)
+            self.riesz_ksp_options = []
+            for _ in range(len(self.db.function_db.gradient)):
+                self.riesz_ksp_options.append(option)
 
         self.b_tensors = [
             fenics.PETScVector() for _ in range(len(self.db.function_db.gradient))
