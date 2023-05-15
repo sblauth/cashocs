@@ -189,6 +189,7 @@ def setup_petsc_options(
             from PETSc.
 
     """
+    fenics.PETScOptions.clear()
     opts = PETSc.Options()
 
     for i in range(len(ksps)):
