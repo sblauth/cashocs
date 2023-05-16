@@ -60,7 +60,7 @@ from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "2.0.0-rc0"
+__version__ = "2.0.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
