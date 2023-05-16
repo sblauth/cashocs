@@ -234,7 +234,7 @@ class _MeshHandler:
                 ]
             remesh_path = pathlib.Path(self.db.parameter_db.remesh_directory)
             if not remesh_path.is_dir():
-                remesh_path.mkdir()
+                remesh_path.mkdir(parents=True, exist_ok=True)
             self.remesh_geo_file = f"{self.db.parameter_db.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
