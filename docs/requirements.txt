@@ -1,4 +1,4 @@
-Sphinx==6.2.0
+Sphinx==6.2.1
 sphinx-argparse==0.4.0
 sphinx-copybutton==0.5.2
 meshio==5.3.4
