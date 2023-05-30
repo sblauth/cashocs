@@ -282,7 +282,10 @@ class OptimizationAlgorithm(abc.ABC):
         if self.iteration == 0:
             self.gradient_norm_initial = self.gradient_norm
         try:
-            self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            if self.gradient_norm > 0.0:
+                self.relative_norm = self.gradient_norm / self.gradient_norm_initial
+            else:
+                self.relative_norm = 0.0
         except ZeroDivisionError:
             self.relative_norm = 0.0
         if self.gradient_norm <= self.atol + self.rtol * self.gradient_norm_initial:
