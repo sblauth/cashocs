@@ -80,7 +80,9 @@ class Database:
             adjoint_ksp_options,
             gradient_ksp_options,
         )
-        self.geometry_db = geometry_database.GeometryDatabase(self.function_db)
+        self.geometry_db = geometry_database.GeometryDatabase(
+            self.function_db, self.parameter_db
+        )
         self.form_db = form_database.FormDatabase(
             cost_functional_list, state_forms, bcs_list, preconditioner_forms
         )

@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from petsc4py import PETSc
 
     from cashocs._database import function_database
+    from cashocs._database import parameter_database
 
 
 class GeometryDatabase:
@@ -38,11 +39,16 @@ class GeometryDatabase:
     transfer_matrix: PETSc.Mat
     old_transfer_matrix: PETSc.Mat
 
-    def __init__(self, function_db: function_database.FunctionDatabase) -> None:
+    def __init__(
+        self,
+        function_db: function_database.FunctionDatabase,
+        parameter_db: parameter_database.ParameterDatabase,
+    ) -> None:
         """Initializes the geometry database.
 
         Args:
             function_db: The database for function parameters.
+            parameter_db: The database for other parameters.
 
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
@@ -50,10 +56,17 @@ class GeometryDatabase:
         self.mpi_comm: mpi4py.MPI.Intracomm = self.mesh.mpi_comm()
 
         self.function_db = function_db
+        self.parameter_db = parameter_db
 
     def init_transfer_matrix(self) -> None:
         """Initializes the transfer matrix for computing the global deformation."""
-        interp = _utils.Interpolator(
-            self.function_db.control_spaces[0], self.function_db.control_spaces[0]
-        )
-        self.transfer_matrix = interp.transfer_matrix
+        if self.parameter_db.temp_dict:
+            self.transfer_matrix = self.parameter_db.temp_dict["transfer_matrix"].copy()
+            self.old_transfer_matrix = self.parameter_db.temp_dict[
+                "old_transfer_matrix"
+            ].copy()
+        else:
+            interp = _utils.Interpolator(
+                self.function_db.control_spaces[0], self.function_db.control_spaces[0]
+            )
+            self.transfer_matrix = interp.transfer_matrix

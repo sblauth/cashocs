@@ -696,5 +696,7 @@ class _MeshHandler:
         new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
             interpolator.transfer_matrix
         )
-        self.db.geometry_db.old_transfer_matrix = self.db.geometry_db.transfer_matrix
-        self.db.geometry_db.transfer_matrix = new_transfer_matrix
+        self.db.parameter_db.temp_dict["transfer_matrix"] = new_transfer_matrix.copy()
+        self.db.parameter_db.temp_dict[
+            "old_transfer_matrix"
+        ] = self.db.geometry_db.transfer_matrix.copy()
