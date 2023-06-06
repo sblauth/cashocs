@@ -58,9 +58,14 @@ class LineSearch(abc.ABC):
         self.cost_functional = optimization_problem.reduced_cost_functional
 
         if self.db.parameter_db.problem_type == "shape":
-            self.deformation_function = fenics.Function(
-                self.db.function_db.control_spaces[0]
-            )
+            if "deformation_function" in self.db.parameter_db.temp_dict.keys():
+                self.deformation_function = self.db.parameter_db.temp_dict[
+                    "deformation_function"
+                ]
+            else:
+                self.deformation_function = fenics.Function(
+                    self.db.function_db.control_spaces[0]
+                )
             self.global_deformation_vector = self.deformation_function.vector().vec()
 
         self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")

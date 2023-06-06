@@ -637,7 +637,7 @@ class _MeshHandler:
                 "gradient_norm_initial"
             ] = solver.gradient_norm_initial
 
-            self._update_mesh_transfer_matrix(new_xdmf_file)
+            self._update_mesh_transfer_matrix(new_xdmf_file, solver)
 
             self._reinitialize(solver)
             self._check_imported_mesh_quality(solver)
@@ -675,11 +675,14 @@ class _MeshHandler:
 
         check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)
 
-    def _update_mesh_transfer_matrix(self, xdmf_filename: str) -> None:
+    def _update_mesh_transfer_matrix(
+        self, xdmf_filename: str, solver: OptimizationAlgorithm
+    ) -> None:
         """Updates the transfer matrix for the global deformation after remeshing.
 
         Args:
             xdmf_filename: The filename for the new mesh (in XDMF format).
+            solver: The optimization algorithm.
 
         """
         pre_log_level = (
@@ -700,3 +703,6 @@ class _MeshHandler:
         self.db.parameter_db.temp_dict[
             "old_transfer_matrix"
         ] = self.db.geometry_db.transfer_matrix.copy()
+        self.db.parameter_db.temp_dict[
+            "deformation_function"
+        ] = solver.line_search.deformation_function.copy(True)
