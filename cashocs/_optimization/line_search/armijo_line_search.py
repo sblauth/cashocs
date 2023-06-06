@@ -24,6 +24,7 @@ from typing import List, Optional, Tuple
 import fenics
 from typing_extensions import TYPE_CHECKING
 
+from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
@@ -124,9 +125,9 @@ class ArmijoLineSearch(line_search.LineSearch):
             )
 
             current_function_value = solver.objective_value
-
-            self.state_problem.has_solution = False
-            objective_step = self.cost_functional.evaluate()
+            objective_step = self._compute_objective_at_new_iterate(
+                current_function_value
+            )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
@@ -176,3 +177,24 @@ class ArmijoLineSearch(line_search.LineSearch):
             return self.decrease_measure_w_o_step * self.stepsize
         else:
             return float("inf")
+
+    def _compute_objective_at_new_iterate(self, current_function_value: float) -> float:
+        """Computes the objective value for the new (trial) iterate.
+
+        Args:
+            current_function_value: The current function value.
+
+        Returns:
+            The value of the cost functional at the new iterate.
+
+        """
+        self.state_problem.has_solution = False
+        try:
+            objective_step = self.cost_functional.evaluate()
+        except (_exceptions.PETScKSPError, _exceptions.NotConvergedError) as error:
+            if self.config.getboolean("LineSearch", "fail_if_not_converged"):
+                raise error
+            else:
+                objective_step = 2.0 * current_function_value
+
+        return objective_step

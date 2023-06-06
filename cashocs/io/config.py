@@ -224,6 +224,9 @@ class Config(ConfigParser):
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
                 },
+                "fail_if_not_converged": {
+                    "type": "bool",
+                },
             },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
@@ -560,6 +563,7 @@ safeguard_stepsize = True
 polynomial_model = cubic
 factor_high = 0.5
 factor_low = 0.1
+fail_if_not_converged = False
 
 [ShapeGradient]
 lambda_lame = 0.0
