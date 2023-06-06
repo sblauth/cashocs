@@ -108,9 +108,9 @@ class LineSearch(abc.ABC):
             x = fenics.as_backend_type(deformation.vector()).vec()
 
             if not is_remeshed:
-                transfer_matrix = self.db.geometry_db.transfer_matrix
+                transfer_matrix = solver.db.geometry_db.transfer_matrix
             else:
-                transfer_matrix = self.db.geometry_db.old_transfer_matrix
+                transfer_matrix = solver.db.geometry_db.old_transfer_matrix
 
             transfer_matrix = cast(PETSc.Mat, transfer_matrix)
 
