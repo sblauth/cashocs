@@ -10,6 +10,12 @@ of the maintenance releases, please take a look at
 2.1.0 (in development)
 ----------------------
 
+* New configuration file parameters:
+
+  * Section LineSearch
+
+    * :ini:`fail_if_not_converged` determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.
+
 
 
 2.0.0 (May 16, 2023)
