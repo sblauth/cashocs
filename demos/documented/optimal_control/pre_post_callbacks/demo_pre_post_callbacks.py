@@ -169,7 +169,7 @@ ocp.inject_post_callback(post_callback)
 
 # ::::{note}
 # We can also save one line and use the code
-# :::python
+# :::{code-block} python
 # ocp.inject_pre_post_hook(pre_hook, post_hook)
 # :::
 #
