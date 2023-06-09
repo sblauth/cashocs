@@ -137,7 +137,7 @@ for gamma in gammas:
 # ::::{note}
 # We could have also defined the Moreau-Yosida regularization of the inequality
 # constraint directly, with the following code
-# :::python
+# :::{code-block} python
 # J = cashocs.IntegralFunctional(
 #     J_init_form
 #     + Constant(1 / (2 * gamma)) * pow(Max(0, Constant(gamma) * (y - y_bar)), 2) * dx

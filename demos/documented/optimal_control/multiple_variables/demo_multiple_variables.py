@@ -208,14 +208,14 @@ plt.tight_layout()
 # {ref}`demo_box_constraints`) or different Hilbert spaces, e.g., for boundary control
 # (see {ref}`demo_neumann_control`), the corresponding control constraints have also to
 # be put into a joint list, i.e.,
-# :::python
+# :::{code-block} python
 # cc_u = [u_a, u_b]
 # cc_v = [v_a, v_b]
 # cc = [cc_u, cc_v]
 # :::
 #
 # and the corresponding scalar products have to be treated analogously, i.e.,
-# :::python
+# :::{code-block} python
 # scalar_product_u = TrialFunction(V)*TestFunction(V)*dx
 # scalar_product_v = TrialFunction(V)*TestFunction(V)*dx
 # scalar_products = [scalar_product_u, scalar_produt_v]

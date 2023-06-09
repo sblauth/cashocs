@@ -144,7 +144,7 @@ bcs = []
 # ::::{hint}
 # Alternatively, we could have also written
 #
-# :::python
+# :::{code-block} python
 # bcs = None
 # :::
 #

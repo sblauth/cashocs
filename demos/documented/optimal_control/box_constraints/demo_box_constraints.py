@@ -103,7 +103,7 @@ cc = [u_a, u_b]
 # we only want to consider positive value for u, i.e., $0 \leq u \leq +\infty$ can be
 # realized via
 #
-# :::python
+# :::{code-block} python
 # u_a = 0
 # u_b = float('inf')
 # cc = [u_a, u_b]

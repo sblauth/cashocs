@@ -138,7 +138,7 @@ dJ = (
 #
 # ::::{hint}
 # Alternatively, one could define the variable {python}`vector_field` as follows
-# :::python
+# :::{code-block} python
 # space = VectorFunctionSpace(mesh, 'CG', 1)
 # vector_field = TestFunction(space)
 # :::

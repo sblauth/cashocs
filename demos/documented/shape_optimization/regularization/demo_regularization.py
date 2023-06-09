@@ -124,7 +124,7 @@ J = cashocs.IntegralFunctional(
 # cashocs can also treat the last two terms directly, making use of the
 # {py:class}`ScalarTrackingFunctional <cashocs.ScalarTrackingFunctional>`. Therefore,
 # one would use
-# :::python
+# :::{code-block} python
 # J_vol = cashocs.ScalarTrackingFunctional(Constant(1.0) * dx, 1.5, weight=1.0)
 # J_surf = cashocs.ScalarTrackingFunctional(Constant(1.0) * ds, 4.5, weight = 1.0)
 # :::
