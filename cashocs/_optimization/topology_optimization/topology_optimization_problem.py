@@ -80,6 +80,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: list[float] | None = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -132,6 +133,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
 
         """
         super().__init__(
@@ -146,6 +150,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
         )
 
         self.db.parameter_db.problem_type = "topology"
