@@ -80,6 +80,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: list[float] | None = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -132,6 +134,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         """
         super().__init__(
@@ -146,6 +152,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
         )
 
         self.db.parameter_db.problem_type = "topology"

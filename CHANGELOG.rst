@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 2.1.0 (in development)
 ----------------------
 
+* Add the keyword arguments :py:`pre_callback` and :py:`post_callback` to define callbacks when an optimization problem is instanciated.
+
 * New configuration file parameters:
 
   * Section LineSearch
