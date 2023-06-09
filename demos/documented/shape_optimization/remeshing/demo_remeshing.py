@@ -178,7 +178,7 @@ def parametrization(mesh_file: str):
 # The code inside the {python}`parametrization` function looks nearly identical to the
 # setup of the problem considered in {ref}`demo_shape_poisson`. First, we load the
 # config file and define the mesh with the commands
-# :::python
+# :::{code-block} python
 # config = cashocs.load_config("./config.ini")
 #
 # mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
@@ -186,27 +186,27 @@ def parametrization(mesh_file: str):
 #
 # Then, we define the {py:class}`fenics.FunctionSpace` and the
 # {py:class}`fenics.Function` objects used for the state and adjoint variables
-# :::python
+# :::{code-block} python
 # V = FunctionSpace(mesh, "CG", 1)
 # u = Function(V)
 # p = Function(V)
 # :::
 #
 # In the following lines, we define the UFL form of the right-hand side
-# :::python
+# :::{code-block} python
 # x = SpatialCoordinate(mesh)
 # f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 # :::
 #
 # Next, we define the weak form of the PDE constraint and the corresponding boundary
 # conditions
-# :::python
+# :::{code-block} python
 # e = inner(grad(u), grad(p)) * dx - f * p * dx
 # bcs = DirichletBC(V, Constant(0), boundaries, 1)
 # :::
 #
 # and then the cost functional
-# :::python
+# :::{code-block} python
 # J = cashocs.IntegralFunctional(u * dx)
 # :::
 #
@@ -219,14 +219,14 @@ def parametrization(mesh_file: str):
 # the unpacking operators {python}`*` and {python}`**` should yield the respective
 # arguments. In particular, the return values of the {python}`parametrization` function
 # have to be valid inputs so that
-# :::python
+# :::{code-block} python
 # mesh_file = ...
 # args, kwargs = parametrization(mesh_file)
 # sop = cashocs.ShapeOptimizationProblem(*args, **kwargs)
 # :::
 #
 # is well-defined. Therefore, in our code, we write
-# :::python
+# :::{code-block} python
 # args = (e, bcs, J, u, p, boundaries)
 # kwargs = {"config": config}
 #

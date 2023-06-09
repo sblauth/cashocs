@@ -101,7 +101,7 @@ controls = [u, v]
 # ::::{hint}
 # An alternative way of specifying the controls would be to reuse the mixed function
 # space and use
-# :::python
+# :::{code-block} python
 # controls = Function(V)
 # u, v = split(controls)
 # :::

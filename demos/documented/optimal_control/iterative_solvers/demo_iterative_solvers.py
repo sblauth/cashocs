@@ -98,7 +98,7 @@ ksp_options = {
 #
 # ::::{note}
 # For example, the first line
-# :::python
+# :::{code-block} python
 # "ksp_type": "cg",
 # :::
 #
@@ -108,7 +108,7 @@ ksp_options = {
 # https://petsc.org/release/docs/manualpages/KSP/KSPType/).
 # Here, we see that the above line corresponds to using the conjugate gradient method as
 # krylov solver. The following two lines
-# :::python
+# :::{code-block} python
 # "pc_type": "hypre",
 # "pc_hypre_type": "boomeramg",
 # :::
@@ -121,7 +121,7 @@ ksp_options = {
 # [PCHYPRE](
 # https://petsc.org/release/docs/manualpages/PC/PCHYPRE/).
 # Finally, the last three lines
-# :::python
+# :::{code-block} python
 # "ksp_rtol": 1e-10,
 # "ksp_atol": 1e-13,
 # "ksp_max_it": 100,
@@ -150,12 +150,12 @@ adjoint_ksp_options = {
 #
 # ::::{hint}
 # To verify that the options indeed are used, one can supply the option
-# :::python
+# :::{code-block} python
 # 'ksp_view': None,
 # :::
 #
 # which shows the detailed settings of the solvers, and also
-# :::python
+# :::{code-block} python
 # 'ksp_monitor_true_residual': None,
 # :::
 #

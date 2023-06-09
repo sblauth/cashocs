@@ -279,14 +279,14 @@ class FineModel(space_mapping.FineModel):
 # {py:meth}`solve_and_evaluate
 # <cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate>`
 # method, as defined here. First, an iteration counter is incremented with the line
-# :::python
+# :::{code-block} python
 # self.iter += 1
 # :::
 #
 # Next, the fine model mesh is saved to a file. This is done in order to be able to
 # re-import it with the correct physical tags as defined with Gmsh. This is done with
 # the lines
-# :::python
+# :::{code-block} python
 # cashocs.io.write_out_mesh(
 #     self.mesh, "./mesh/mesh.msh", f"./mesh/fine/mesh_{self.iter}.msh"
 # )
@@ -299,7 +299,7 @@ class FineModel(space_mapping.FineModel):
 # :::
 #
 # In the following lines, the fine model state constraint is defined and then solved
-# :::python
+# :::{code-block} python
 # V = FunctionSpace(mesh, "CG", 1)
 # u = Function(V)
 # u_des = Function(V)
@@ -317,14 +317,14 @@ class FineModel(space_mapping.FineModel):
 #
 # After solving the fine model PDE constraint, we re-interpolate the desired state to
 # the current mesh with the line
-# :::python
+# :::{code-block} python
 # LagrangeInterpolator.interpolate(u_des, self.u_des_fixed)
 # :::
 #
 # Here, {python}`u_des` is the desired state on the fine model mesh. Finally, we
 # evaluate the cost functional and store the solution of the PDE constraint with the
 # lines
-# :::python
+# :::{code-block} python
 # self.cost_functional_value = assemble(Constant(0.5) * pow(u - u_des, 2) * dx)
 # self.u = u
 # :::

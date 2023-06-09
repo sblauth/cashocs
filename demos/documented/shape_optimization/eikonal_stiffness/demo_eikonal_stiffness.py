@@ -73,7 +73,7 @@
 # :::
 #
 # The first line
-# :::ini
+# :::{code-block} ini
 # use_distance_mu = True
 # :::
 #
@@ -96,7 +96,7 @@
 # The values in-between are given by interpolation. Either a linear, continuous
 # interpolation is used, or a smooth $C^1$ interpolation given by a third order
 # polynomial. These can be selected with the option
-# :::ini
+# :::{code-block} ini
 # smooth_mu = False
 # :::
 #
@@ -104,7 +104,7 @@
 # {ini}`smooth_mu = False` uses the linear function.
 #
 # Finally, the line
-# :::ini
+# :::{code-block} ini
 # boundaries_dist = [4]
 # :::
 #

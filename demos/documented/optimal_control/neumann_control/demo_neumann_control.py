@@ -79,7 +79,7 @@ bcs = []
 
 # ::::{hint}
 # Alternatively, we could have also used
-# :::python
+# :::{code-block} python
 # bcs = None
 # :::
 # ::::
@@ -111,7 +111,7 @@ scalar_product = TrialFunction(V) * TestFunction(V) * ds
 # This means, that we could also define an alternative scalar product for
 # {ref}`demo_poisson`, using the space $H^1(\Omega)$ instead of
 # $L^2(\Omega)$ with the following
-# :::python
+# :::{code-block} python
 # scalar_product = (
 #     inner(grad(TrialFunction(V)), grad(TestFunction(V))) * dx
 #     + TrialFunction(V) * TestFunction(V) * dx

@@ -144,7 +144,7 @@ e = inner(grad(y), grad(p)) * dx - u * p * dx
 # For the clasical definition of this weak form with FEniCS
 # one would write the following code
 #
-# :::python
+# :::{code-block} python
 # y = TrialFunction(V)
 # p = TestFunction(V)
 # u = Function(V)
@@ -157,7 +157,7 @@ e = inner(grad(y), grad(p)) * dx - u * p * dx
 # In this case, the classical FEniCS formulation for this as
 # nonlinear problem would be
 #
-# :::python
+# :::{code-block} python
 # y = Function(V)
 # p = TestFunction(V)
 # u = Function(V)
@@ -187,7 +187,7 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 # ::::{hint}
 # Classically, these boundary conditions could also be defined via
 #
-# :::python
+# :::{code-block} python
 # def boundary(x, on_bdry):
 #     return on_boundary
 # bc = DirichletBC(V, Constant(0), boundary)
@@ -255,7 +255,7 @@ ocp.solve()
 #
 # Hence, we could also use the command
 #
-# :::python
+# :::{code-block} python
 # ocp.solve('lbfgs', 1e-3, 0.0, 100)
 # :::
 #

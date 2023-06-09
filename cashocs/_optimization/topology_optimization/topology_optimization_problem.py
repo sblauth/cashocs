@@ -80,6 +80,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
         desired_weights: list[float] | None = None,
+        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         pre_callback: Optional[Callable] = None,
         post_callback: Optional[Callable] = None,
     ) -> None:
@@ -134,6 +135,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 magnitude of `desired_weights[i]` for the initial iteration. In case
                 that `desired_weights` is `None`, no scaling is performed. Default is
                 `None`.
+            preconditioner_forms: The list of forms for the preconditioner. The default
+                is `None`, so that the preconditioner matrix is the same as the system
+                matrix.
             pre_callback: A function (without arguments) that will be called before each
                 solve of the state system
             post_callback: A function (without arguments) that will be called after the
@@ -152,6 +156,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             adjoint_ksp_options=adjoint_ksp_options,
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
             pre_callback=pre_callback,
             post_callback=post_callback,
         )

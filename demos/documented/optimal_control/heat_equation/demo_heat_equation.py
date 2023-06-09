@@ -199,19 +199,19 @@ for k in range(len(t_array)):
 # ::::{admonition} Description of the for-loop
 # At the beginning, the 'current' time t is determined from {python}`t_array`, and the
 # expression for the desired state is updated to reflect the current time with the code
-# :::python
+# :::{code-block} python
 # t = t_array[k]
 # y_d_expr.t = t
 # :::
 #
 # The following line sets the object {python}`y` to $y_{k+1}$
-# :::python
+# :::{code-block} python
 # y = states[k]
 # :::
 #
 # For the backward difference in the implicit Euler method, we also need $y_{k}$
 # which we define as follows
-# :::python
+# :::{code-block} python
 # if k == 0:
 #     y_prev = Function(V)
 # else:
@@ -222,13 +222,13 @@ for k in range(len(t_array)):
 # $y^{(0)} = 0$. Hence, {python}`y_prev` indeed corresponds to $y_{k}$.
 #
 # Moreover, we get the current control and adjoint state via
-# :::python
+# :::{code-block} python
 # p = adjoints[k]
 # u = controls[k]
 # :::
 #
 # This allows us to define the state equation at time t as
-# :::python
+# :::{code-block} python
 # state_eq = (
 #     Constant(1 / dt) * (y - y_prev) * p * dx
 #     + inner(grad(y), grad(p)) * dx
@@ -237,17 +237,17 @@ for k in range(len(t_array)):
 # :::
 #
 # This is then appended to the list of state constraints
-# :::python
+# :::{code-block} python
 # e.append(state_eq)
 # :::
 #
 # Further, we also put the current desired state into the respective list, i.e.,
-# :::python
+# :::{code-block} python
 # y_d.append(interpolate(y_d_expr, V))
 # :::
 #
 # Finally, we can define the k-th summand of the cost functional via
-# :::python
+# :::{code-block} python
 # J_list.append(
 #     cashocs.IntegralFunctional(
 #         Constant(0.5 * dt) * (y - y_d[k]) * (y - y_d[k]) * dx

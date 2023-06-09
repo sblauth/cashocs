@@ -318,12 +318,12 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # Let us investigate the fine model in more details in the following. The fine models
 # initialization starts with a call to its parent's {py:meth}`__init__` method, where
 # the mesh is passed
-# :::python
+# :::{code-block} python
 # super().__init__(mesh)
 # :::
 #
 # Next, a list of tracking goals is defined using the {python}`ctypes` module
-# :::python
+# :::{code-block} python
 # self.tracking_goals = [ctypes.c_double(0.0) for _ in range(5, 8)]
 # :::
 #
@@ -338,7 +338,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # Afterwards, we have standard initializations of an iteration counter, the Reynolds
 # number, the inlet flow rate, and an output list, which will be used to save the
 # progress of the space mapping method
-# :::python
+# :::{code-block} python
 # self.iter = 0
 # self.Re = Re
 # self.q_in = q_in
@@ -348,14 +348,14 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # Let us now take a look at the core of the fine model, its {py:meth}`solve_and_evaluate
 # <cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate>`
 # method. It starts by incrementing the iteration counter
-# :::python
+# :::{code-block} python
 # self.iter += 1
 # :::
 #
 # Next, the current mesh is exported to two Gmsh .msh files. The first is used for a
 # possible post-processing (so that the evolution of the geometries is saved) whereas
 # the second is used to define the fine model mesh
-# :::python
+# :::{code-block} python
 # cashocs.io.write_out_mesh(
 #     self.mesh, "./mesh/mesh.msh", f"./mesh/fine/mesh_{self.iter}.msh"
 # )
@@ -366,7 +366,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # problem, but we remesh the geometry of the fine model using a higher resolution. To do
 # so, the following Gmsh command is used, which is invoked via the {python}`subprocess`
 # module
-# :::python
+# :::{code-block} python
 # subprocess.run(
 #     ["gmsh", "./mesh/fine.geo", "-2", "-o", "./mesh/fine/fine.msh"],
 #     check=True,
@@ -377,13 +377,13 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 #
 # Finally, the mesh generated with the above command is converted to XDMF with
 # {py:func}`cashocs.convert`
-# :::python
+# :::{code-block} python
 # cashocs.convert("./mesh/fine/fine.msh", "./mesh/fine/fine.xdmf")
 # :::
 #
 # Now that we have the geometry of the problem, it is loaded into python and we define
 # the Taylor-Hood Function Space for the Navier-Stokes system
-# :::python
+# :::{code-block} python
 # mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
 #     "./mesh/fine/fine.xdmf"
 # )
@@ -398,7 +398,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # :::
 #
 # Next, we define the weak form of the problem and its boundary conditions
-# :::python
+# :::{code-block} python
 # F = (
 #     inner(grad(u), grad(v)) * dx
 #     + Constant(self.Re) * inner(grad(u) * u, v) * dx
@@ -417,13 +417,13 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # :::
 #
 # The problem is then solved with {py:func}`<cashocs.newton_solve>`
-# :::python
+# :::{code-block} python
 # cashocs.newton_solve(F, up, bcs, verbose=False)
 # :::
 #
 # Finally, after having solved the problem, we first save the solution for later
 # visualization by
-# :::python
+# :::{code-block} python
 # self.u, p = up.split(True)
 #
 # file = File(f"./pvd/u_{self.iter}.pvd")
@@ -431,7 +431,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # :::
 #
 # Next, we evaluate the cost functional with the lines
-# :::python
+# :::{code-block} python
 # J_list = [
 #     cashocs.ScalarTrackingFunctional(dot(self.u, n) * ds(i), self.q_in / 3)
 #     for i in range(5, 8)
@@ -444,7 +444,7 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # Finally, we save the values of the outlet flow rate first to our list
 # {python}`self.output_list` and second to the list {python}`self.tracking_goals`, so
 # that the parameter extraction can see the updated flow rates
-# :::python
+# :::{code-block} python
 # self.flow_values = [assemble(dot(self.u, n) * ds(i)) for i in range(5, 8)]
 # self.output_list.append(self.flow_values)
 #

@@ -79,7 +79,7 @@ J = cashocs.IntegralFunctional(
 # Note that for the regularization term we now do not use
 # {python}`Constant(0.5*alpha)*u*u*dx`,  which corresponds to the $L^2(\Omega)$ norm
 # squared, but rather
-# :::python
+# :::{code-block} python
 # Constant(0.5 * alpha) * abs(u) * dx
 # :::
 #

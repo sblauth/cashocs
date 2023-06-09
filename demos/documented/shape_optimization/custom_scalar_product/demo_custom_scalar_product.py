@@ -96,7 +96,7 @@ shape_scalar_product = (
 
 # ::::{note}
 # Note that we cannot use the formulation
-# :::python
+# :::{code-block} python
 # shape_scalar_product = inner((grad(TrialFunction(VCG))), (grad(TestFunction(VCG))))*dx
 # :::
 #
