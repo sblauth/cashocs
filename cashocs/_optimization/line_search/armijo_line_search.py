@@ -195,6 +195,6 @@ class ArmijoLineSearch(line_search.LineSearch):
             if self.config.getboolean("LineSearch", "fail_if_not_converged"):
                 raise error
             else:
-                objective_step = 2.0 * current_function_value
+                objective_step = 2.0 * abs(current_function_value)
 
         return objective_step
