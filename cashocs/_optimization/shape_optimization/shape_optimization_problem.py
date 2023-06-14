@@ -94,6 +94,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         """Initializes self.
 
@@ -152,6 +154,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         """
         super().__init__(
@@ -169,6 +175,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             temp_dict=temp_dict,
             initial_function_values=initial_function_values,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
         )
 
         if shape_scalar_product is None:
