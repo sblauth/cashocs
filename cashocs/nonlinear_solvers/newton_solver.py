@@ -358,6 +358,7 @@ class _NewtonSolver:
 
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
+        self.residual = fenics.PETScVector(self.comm)
         self.assembler.assemble(self.residual)
         if (
             self.shift is not None
