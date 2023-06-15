@@ -26,6 +26,7 @@ from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
 import h5py
+import meshio
 import numpy as np
 
 from cashocs import _exceptions
@@ -291,6 +292,27 @@ def parse_file(
                 info_section = True
 
 
+def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None:
+    """Checks, whether the supplied mesh file is compatible with the mesh used.
+
+    This function returns `None` if they are compatible and raises an exception
+    otherwise.
+
+    Args:
+        mesh: The mesh that is currently used.
+        original_mesh_file: The path to the mesh file.
+
+    """
+    mesh_collection = meshio.read(original_mesh_file)
+    points = mesh_collection.points
+
+    if mesh.num_vertices() != points.shape[0]:
+        raise _exceptions.CashocsException(
+            "The mesh supplied in the configuration file is not "
+            "compatible with the mesh used."
+        )
+
+
 def write_out_mesh(  # noqa: C901
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
@@ -311,6 +333,7 @@ def write_out_mesh(  # noqa: C901
         this is not tested or ensured in any way.
 
     """
+    check_mesh_compatibility(mesh, original_msh_file)
     dim = mesh.geometric_dimension()
 
     if not pathlib.Path(out_msh_file).parent.is_dir():
