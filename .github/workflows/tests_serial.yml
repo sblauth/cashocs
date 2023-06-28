@@ -27,7 +27,7 @@ jobs:
       uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: .github/micromamba/testenv.yml
-        create-args: fenics=2019 meshio">=5.0.0" pytest">=7.0.0" gmsh">=4.8" occt"<=7.7.0" python=${{ matrix.python-version }}
+        create-args: fenics=2019 meshio>=5.0.0 pytest>=7.0.0 gmsh>=4.8 occt<=7.7.0 python=${{ matrix.python-version }}
 
     - name: Install package
       run: |
