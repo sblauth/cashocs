@@ -67,7 +67,7 @@ we can recommend the textbooks
     - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
 - FEniCS
     - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
-    - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
+    - `The FEniCS demos <https://fenicsproject.org/olddocs/dolfin/2019.1.0/python/demos.html>`_
 
 .. readme_end_disclaimer
 
