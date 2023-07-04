@@ -33,7 +33,6 @@ jobs:
           pytest>=7.0.0
           gmsh>=4.8
           occt<=7.7.0
-          petsc<=3.17.4
 
     - name: Install package
       run: |
