@@ -280,6 +280,40 @@ def define_ksp_options(
     return options
 
 
+def setup_matrix_and_preconditioner(
+    ksp: PETSc.KSP,
+    A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+    P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+) -> PETSc.Mat:
+    """Set up the system matrix and preconditioner for a linear solve.
+
+    Args:
+        ksp: The KSP object used to solve the problem.
+        A: The system matrix or `None`.
+        P: The preconditioner matrix or `None`.
+
+    Returns:
+        The system matrix.
+
+    """
+    if A is not None:
+        if P is None:
+            ksp.setOperators(A)
+        else:
+            ksp.setOperators(A, P)
+    else:
+        A = ksp.getOperators()[0]
+        if A.size[0] == -1 and A.size[1] == -1:
+            raise _exceptions.InputError(
+                "cashocs._utils.solve_linear_problem",
+                "ksp",
+                "The KSP object has to be initialized with some Matrix in case A is "
+                "None.",
+            )
+
+    return A
+
+
 def solve_linear_problem(
     A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
     b: Optional[PETSc.Vec] = None,
@@ -318,20 +352,7 @@ def solve_linear_problem(
     comm = _initialize_comm(comm)
     ksp = PETSc.KSP().create(comm=comm)
 
-    if A is not None:
-        if P is None:
-            ksp.setOperators(A)
-        else:
-            ksp.setOperators(A, P)
-    else:
-        A = ksp.getOperators()[0]
-        if A.size[0] == -1 and A.size[1] == -1:
-            raise _exceptions.InputError(
-                "cashocs._utils.solve_linear_problem",
-                "ksp",
-                "The KSP object has to be initialized with some Matrix in case A is "
-                "None.",
-            )
+    A = setup_matrix_and_preconditioner(ksp, A, P)
 
     if b is None:
         return A.getVecs()[0]
@@ -354,6 +375,9 @@ def solve_linear_problem(
 
     if ksp.getConvergedReason() < 0:
         raise _exceptions.PETScKSPError(ksp.getConvergedReason())
+
+    if hasattr(PETSc, "garbage_cleanup"):
+        PETSc.garbage_cleanup(comm=comm)
 
     if fun is not None:
         fun.vector().apply("")
