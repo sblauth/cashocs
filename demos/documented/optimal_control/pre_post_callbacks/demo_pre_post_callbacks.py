@@ -142,10 +142,8 @@ def pre_callback():
 
 
 # where we solve the Navier-Stokes equations with a lower Reynolds number of
-# {python}`Re / 10.0`. Later on, we inject this {python}`pre_callback` into cashocs by
-# using the
-# {py:meth}`inject_pre_callback <cashocs.OptimalControlProblem.inject_pre_callback>`
-# method.
+# {python}`Re / 10.0`. Later on, we use this function as keyword argument for defining
+# the optimization problem.
 #
 # Additionally, cashocs implements the functionality of also performing a pre-defined
 # action after each gradient computation, given by a so-called {python}`post_callback`.
@@ -157,26 +155,39 @@ def post_callback():
     print("Performing an action after computing the gradient.")
 
 
-# Next, before we can inject these two callbacks, we first have to define the optimal
-# control problem
+# Next, we define the optimization and use the keyword arguments to define the callbacks
+# via
 
-ocp = cashocs.OptimalControlProblem(e, bcs, J, up, c, vq, config=config)
-
-# Finally, we can inject both hooks via
-
-ocp.inject_pre_callback(pre_callback)
-ocp.inject_post_callback(post_callback)
+ocp = cashocs.OptimalControlProblem(
+    e,
+    bcs,
+    J,
+    up,
+    c,
+    vq,
+    config=config,
+    pre_callback=pre_callback,
+    post_callback=post_callback,
+)
 
 # ::::{note}
-# We can also save one line and use the code
+# Alternatively, the pre- and post-callbacks can be injected to an already defined
+# optimization problem with the code
+#
+# :::{code-block} python
+# ocp.inject_pre_callback(pre_callback)
+# ocp.inject_post_callback(post_callback)
+# :::
+#
+# or, equivalently,
+#
 # :::{code-block} python
 # ocp.inject_pre_post_hook(pre_hook, post_hook)
 # :::
 #
-# which is equivalent to the above two lines.
 # ::::
-#
-# And in the end, we solve the problem with
+
+# In the end, we solve the problem with
 
 ocp.solve()
 

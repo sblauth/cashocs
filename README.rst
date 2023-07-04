@@ -67,7 +67,7 @@ we can recommend the textbooks
     - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
 - FEniCS
     - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
-    - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
+    - `The FEniCS demos <https://fenicsproject.org/olddocs/dolfin/2019.1.0/python/demos.html>`_
 
 .. readme_end_disclaimer
 
@@ -197,7 +197,7 @@ for the demo programs is located inside the "demos" folder.
 Citing
 ======
 
-If you use cashocs for your research, I would be grateful if you would cite the following paper
+If you use cashocs for your research, please cite the following paper
 
 .. code-block:: text
 
@@ -205,6 +205,15 @@ If you use cashocs for your research, I would be grateful if you would cite the 
 	Sebastian Blauth
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
+
+as well as the preprint
+
+.. code-block:: text
+
+	Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
+	Sebastian Blauth
+	https://doi.org/10.48550/arXiv.2306.09828
+
 
 Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper
 	
@@ -247,6 +256,18 @@ If you are using BibTeX, you can use the following entries
 	  doi      = {https://doi.org/10.1016/j.softx.2020.100646},
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
 	}
+
+.. code-block:: bibtex
+
+	@Misc{Blauth2023Version,
+	  author        = {Sebastian Blauth},
+	  title         = {{Version 2.0 -- cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
+	  year          = {2023},
+	  archiveprefix = {arXiv},
+	  eprint        = {2306.09828},
+	  primaryclass  = {math.OC},
+	}
+
 
 
 .. code-block:: bibtex
