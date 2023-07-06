@@ -356,6 +356,14 @@ For the polynomial models, we also have a safeguarding procedure, which ensures 
 
 and the values specified here are also the default values for these parameters.
 
+Finally, we have the parameter
+
+.. code-block:: ini
+
+    fail_if_not_converged = False
+
+which determines, whether the line search is terminated if the state system cannot be solved at the current iterate. If this is :ini:`fail_if_not_converged = True`, then an exception is raised. Otherwise, the iterate is counted as having too high of a function value and the stepsize is "halved" and a new iterate is formed.
+
 .. _config_shape_algolbfgs:
 
 Section AlgoLBFGS
@@ -1128,7 +1136,6 @@ in the following.
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
 
 
-
 [OptimizationRoutine]
 *********************
 
@@ -1178,7 +1185,8 @@ in the following.
       - Safeguard for stepsize, upper bound
     * - :ini:`factor_low = 0.1`
       - Safeguard for stepsize, lower bound
-
+    * - :ini:`fail_if_not_converged = False`
+      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
       
 [AlgoLBFGS]
 ***********
