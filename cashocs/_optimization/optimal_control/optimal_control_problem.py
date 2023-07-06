@@ -264,6 +264,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 desired_weights=None,
                 control_bcs_list=control_bcs_list,
                 preconditioner_forms=preconditioner_forms,
+                pre_callback=pre_callback,
+                post_callback=post_callback,
             )
 
     def _erase_pde_memory(self) -> None:
