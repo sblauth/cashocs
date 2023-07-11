@@ -963,7 +963,7 @@ Available options are
 (see :py:class:`MeshQuality <cashocs.MeshQuality>` for a detailed description).
 The default value is given by :ini:`measure = skewness`.
 
-Finally, the parameter :ini:`type` determines, whether the minimum quality over all
+The parameter :ini:`type` determines, whether the minimum quality over all
 elements (:ini:`type = min`) or the average quality over all elements (:ini:`type = avg`)
 shall be used. This is set via 
 
@@ -972,6 +972,14 @@ shall be used. This is set via
     type = min
 
 and defaults to :ini:`type = min`.
+
+Finally, we have the parameter :ini:`remesh_iter` in which the user can specify after how many iterations a remeshing should be performed. It is given by
+
+.. code-block:: ini
+
+    remesh_iter = 0
+
+where :ini:`remesh_iter = 0` means that no automatic remeshing is performed (this is the default), and :ini:`remesh_iter = n` means that remeshing is performed after each `n` iterations. Note that to use this parameter and avoid unexpected results, it might be beneficial to the the lower and upper mesh quality tolerances to a low value, so that the "quality based remeshing" does not interfere with the "iteration based remeshing", but both can be used in combination.
 
 .. _config_shape_output:
 
