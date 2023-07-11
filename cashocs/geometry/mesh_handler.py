@@ -24,6 +24,7 @@ import pathlib
 import subprocess  # nosec B404
 import tempfile
 from typing import List, TYPE_CHECKING
+import weakref
 
 import fenics
 import numpy as np
@@ -123,7 +124,7 @@ class _MeshHandler:
             a_posteriori_tester: The tester after mesh modification.
 
         """
-        self.db = db
+        self.db = weakref.proxy(db)
         self.form_handler = form_handler
         self.a_priori_tester = a_priori_tester
         self.a_posteriori_tester = a_posteriori_tester
