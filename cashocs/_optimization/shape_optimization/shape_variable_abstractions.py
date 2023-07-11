@@ -144,10 +144,22 @@ class ShapeVariableAbstractions(
             A boolean, which indicates whether remeshing is required.
 
         """
-        return bool(
+        mesh_quality_criterion = bool(
             self.mesh_handler.current_mesh_quality
             < self.mesh_handler.mesh_quality_tol_upper
         )
+
+        iteration = self.db.parameter_db.optimization_state["iteration"]
+        if self.db.config.getint("MeshQuality", "remesh_iter") > 0:
+            iteration_criterion = bool(
+                iteration > 0
+                and iteration % self.db.config.getint("MeshQuality", "remesh_iter") == 0
+            )
+        else:
+            iteration_criterion = False
+
+        requires_remeshing = mesh_quality_criterion or iteration_criterion
+        return requires_remeshing
 
     def project_ncg_search_direction(
         self, search_direction: List[fenics.Function]
