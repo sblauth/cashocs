@@ -224,6 +224,9 @@ class Config(ConfigParser):
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
                 },
+                "fail_if_not_converged": {
+                    "type": "bool",
+                },
             },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
@@ -459,6 +462,10 @@ class Config(ConfigParser):
                     "type": "str",
                     "possible_options": ["min", "avg", "minimum", "average"],
                 },
+                "remesh_iter": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
+                },
             },
             "TopologyOptimization": {
                 "angle_tol": {
@@ -560,6 +567,7 @@ safeguard_stepsize = True
 polynomial_model = cubic
 factor_high = 0.5
 factor_low = 0.1
+fail_if_not_converged = False
 
 [ShapeGradient]
 lambda_lame = 0.0
@@ -633,6 +641,7 @@ measure = skewness
 type = min
 volume_change = inf
 angle_change = inf
+remesh_iter = 0
 
 [TopologyOptimization]
 angle_tol = 1.0
