@@ -15,8 +15,7 @@ RUN micromamba install -y -n base -c conda-forge \
       "occt<=7.7.0" \
       coverage">=6.1.0" \
       mpich \
-      python=3.11 \
-      pip && \
+      python=3.11 && \
    micromamba clean --all --yes
 
 
@@ -26,8 +25,10 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 COPY . /root/cashocs
 
-RUN cd /root/cashocs && \
+RUN mamba activate base && \
+    cd /root/cashocs && \
     pip install .[all]
 
-RUN cd /root/cashocs && \
+RUN mamba activate base && \
+    cd /root/cashocs && \
     python3 -m pytest -vv tests/
