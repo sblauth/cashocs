@@ -21,7 +21,6 @@ jobs:
     - name: Delete current installation in docker image
       shell: bash -l {0}
       run: |
-        conda activate cashocs
         pip uninstall -y cashocs
         rm -R /root/cashocs
 
@@ -31,13 +30,11 @@ jobs:
     - name: Install cashocs
       shell: bash -l {0}
       run: |
-        conda activate cashocs
         pip install .[all]
 
     - name: Run tests
       shell: bash -l {0}
       run: |
-        conda activate cashocs
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io
