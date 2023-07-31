@@ -25,10 +25,10 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 COPY . /root/cashocs
 
-RUN mamba activate base && \
+RUN micromamba activate base && \
     cd /root/cashocs && \
     pip install .[all]
 
-RUN mamba activate base && \
+RUN micromamba activate base && \
     cd /root/cashocs && \
     python3 -m pytest -vv tests/
