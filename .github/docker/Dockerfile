@@ -7,6 +7,8 @@ RUN apt-get update --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+USER $MAMBA_USER
+
 RUN micromamba install -y -n base -c conda-forge \
       fenics=2019 \
       meshio">=5.0.0" \
