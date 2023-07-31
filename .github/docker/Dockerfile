@@ -23,10 +23,10 @@ RUN micromamba install -y -n base -c conda-forge \
 
 FROM test-env AS cashocs
 
-COPY . /root/cashocs
+COPY . "${HOME}/cashocs"
 
-RUN cd /root/cashocs && \
+RUN cd "${HOME}/cashocs" && \
     pip install .[all]
 
-RUN cd /root/cashocs && \
+RUN cd "${HOME}/cashocs" && \
     python3 -m pytest -vv tests/
