@@ -21,8 +21,6 @@ RUN micromamba install -y -n base -c conda-forge \
 
 FROM test-env AS cashocs
 
-SHELL ["/bin/bash", "--login", "-c"]
-
 COPY . /root/cashocs
 
 RUN micromamba activate base && \
