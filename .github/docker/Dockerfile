@@ -23,10 +23,8 @@ FROM test-env AS cashocs
 
 COPY . /root/cashocs
 
-RUN micromamba activate base && \
-    cd /root/cashocs && \
+RUN cd /root/cashocs && \
     pip install .[all]
 
-RUN micromamba activate base && \
-    cd /root/cashocs && \
+RUN cd /root/cashocs && \
     python3 -m pytest -vv tests/
