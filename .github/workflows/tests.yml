@@ -15,13 +15,13 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sblauth/cashocs:main
+      image: ghcr.io/sblauth/cashocs:cifix-dockerfile
 
     steps:
     - name: Delete current installation in docker image
       run: |
         pip uninstall -y cashocs
-        rm -R /root/cashocs
+        rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
       uses: actions/checkout@v3.5.3 
