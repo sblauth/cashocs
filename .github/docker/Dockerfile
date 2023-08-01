@@ -26,7 +26,9 @@ FROM test-env AS cashocs
 
 USER $MAMBA_USER
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER . "${HOME}/cashocs"
+COPY --chown=$MAMBA_USER:$MAMBA_USER . /tmp/cashocs
+
+RUN cp -R /tmp/cashocs "${HOME}/cashocs
 
 RUN cd "${HOME}/cashocs" && \
     pip install .[all]
