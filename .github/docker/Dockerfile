@@ -24,14 +24,12 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 FROM test-env AS cashocs
 
-USER $MAMBA_USER
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER . /tmp/cashocs
+COPY --chown=$MAMBA_USER:$MAMBA_USER . /home/mambauser/cashocs
 
-RUN cp -R /tmp/cashocs "${HOME}/cashocs
 
-RUN cd "${HOME}/cashocs" && \
+RUN cd /home/mambauser/cashocs && \
     pip install .[all]
 
-RUN cd "${HOME}/cashocs" && \
+RUN cd /home/mambauser/cashocs && \
     python3 -m pytest -vv tests/
