@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Delete current installation in docker image
-      shell: /usr/local/bin/_dockerfile_shell.sh {0}
+      shell: bash -l {0}
       run: |
         pip uninstall -y cashocs
         rm -R /home/mambauser/cashocs
@@ -28,12 +28,12 @@ jobs:
       uses: actions/checkout@v3.5.3 
 
     - name: Install cashocs
-      shell: /usr/local/bin/_dockerfile_shell.sh {0}
+      shell: bash -l {0}
       run: |
         pip install .[all]
 
     - name: Run tests
-      shell: /usr/local/bin/_dockerfile_shell.sh {0}
+      shell: bash -l {0}
       run: |
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
