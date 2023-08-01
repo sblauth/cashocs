@@ -20,6 +20,7 @@ jobs:
     steps:
     - name: Delete current installation in docker image
       run: |
+        micromamba activate base
         pip uninstall -y cashocs
         rm -R /home/mambauser/cashocs
 
