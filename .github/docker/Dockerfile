@@ -20,10 +20,13 @@ RUN micromamba install -y -n base -c conda-forge \
       python=3.11 && \
    micromamba clean --all --yes
 
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 FROM test-env AS cashocs
 
-COPY . "${HOME}/cashocs"
+USER $MAMBA_USER
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER . "${HOME}/cashocs"
 
 RUN cd "${HOME}/cashocs" && \
     pip install .[all]
