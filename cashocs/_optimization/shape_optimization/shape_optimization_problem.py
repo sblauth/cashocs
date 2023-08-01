@@ -274,6 +274,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 temp_dict=temp_dict,
                 initial_function_values=self.initial_function_values,
                 preconditioner_forms=preconditioner_forms,
+                pre_callback=pre_callback,
+                post_callback=post_callback,
             )
 
     @__init__.register(CallableFunction)

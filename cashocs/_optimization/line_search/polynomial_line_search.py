@@ -125,7 +125,7 @@ class PolynomialLineSearch(line_search.LineSearch):
             if self._check_for_nonconvergence(solver):
                 return (None, False)
 
-            if self.db.parameter_db.problem_type == "shape":
+            if self.problem_type == "shape":
                 self.decrease_measure_w_o_step = (
                     self.optimization_variable_abstractions.compute_decrease_measure(
                         search_direction
@@ -150,8 +150,11 @@ class PolynomialLineSearch(line_search.LineSearch):
                 objective_step, current_function_value, decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
-                    self.optimization_variable_abstractions.mesh_handler.remesh(solver)
-                    is_remeshed = True
+                    is_remeshed = (
+                        self.optimization_variable_abstractions.mesh_handler.remesh(
+                            solver
+                        )
+                    )
                     break
 
                 if solver.iteration == 0:
@@ -172,7 +175,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         if not has_curvature_info:
             self.stepsize /= self.factor_high
 
-        if self.db.parameter_db.problem_type == "shape":
+        if self.problem_type == "shape":
             return (self.optimization_variable_abstractions.deformation, is_remeshed)
         else:
             return (None, False)
@@ -301,11 +304,11 @@ class PolynomialLineSearch(line_search.LineSearch):
             The computed decrease measure.
 
         """
-        if self.db.parameter_db.problem_type in ["control", "topology"]:
+        if self.problem_type in ["control", "topology"]:
             return self.optimization_variable_abstractions.compute_decrease_measure(
                 search_direction
             )
-        elif self.db.parameter_db.problem_type == "shape":
+        elif self.problem_type == "shape":
             return self.decrease_measure_w_o_step * self.stepsize
         else:
             return float("inf")
