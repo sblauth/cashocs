@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/sblauth/cashocs:cifix-dockerfile
+      options: --user=root
 
     steps:
     - name: Delete current installation in docker image
@@ -26,7 +27,6 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      shell: bash
       uses: actions/checkout@v3.5.3 
 
     - name: Install cashocs
@@ -42,13 +42,11 @@ jobs:
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io
-      shell: bash
       uses: codecov/codecov-action@v3
       with:
         files: coverage.xml
 
     - name: Upload coverage to codacy
-      shell: bash
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
