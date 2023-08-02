@@ -15,7 +15,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sblauth/cashocs:cifix-dockerfile
+      image: ghcr.io/sblauth/cashocs:main
       options: --user=root
 
     steps:
