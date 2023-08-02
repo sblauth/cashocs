@@ -19,7 +19,9 @@ jobs:
 
     steps:
     - name: Delete current installation in docker image
+      shell: bash
       run: |
+        source /usr/local/bin/_entrypoint.sh
         pip uninstall -y cashocs
         rm -R /home/mambauser/cashocs
 
@@ -27,11 +29,15 @@ jobs:
       uses: actions/checkout@v3.5.3 
 
     - name: Install cashocs
+      shell: bash
       run: |
+        source /usr/local/bin/_entrypoint.sh
         pip install .[all]
 
     - name: Run tests
+      shell: bash
       run: |
+        source /usr/local/bin/_entrypoint.sh
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io

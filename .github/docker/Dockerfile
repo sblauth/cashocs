@@ -24,9 +24,7 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 FROM test-env AS cashocs
 
-
 COPY --chown=$MAMBA_USER:$MAMBA_USER . /home/mambauser/cashocs
-
 
 RUN cd /home/mambauser/cashocs && \
     pip install .[all]
