@@ -186,3 +186,43 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)
+
+
+def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
+    config_ocp.set("Output", "save_state", "True")
+
+    mesh_initial = u.function_space().mesh()
+    result_path = dir_path + "/out"
+    config_ocp.set("Output", "result_dir", result_path)
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
+    ocp.solve(algorithm="bfgs", rtol=1e-1)
+    MPI.barrier(MPI.comm_world)
+    assert pathlib.Path(dir_path + "/out").is_dir()
+
+    cashocs.io.extract_mesh_from_xdmf(f"{result_path}/xdmf/state_0.xdmf", iteration=3)
+    assert pathlib.Path(f"{result_path}/xdmf/state_0.msh").is_file()
+
+    cashocs.io.extract_mesh_from_xdmf(
+        f"{result_path}/xdmf/state_0.xdmf",
+        iteration=3,
+        outputfile=f"{result_path}/test.msh",
+    )
+    assert pathlib.Path(f"{result_path}/test.msh").is_file()
+
+    cashocs.convert(
+        f"{result_path}/test.msh",
+        output_file=f"{result_path}/test.xdmf",
+        mode="geometrical",
+    )
+    mesh, _, _, _, _, _ = cashocs.import_mesh(f"{result_path}/test.xdmf")
+
+    assert mesh.num_vertices() == mesh_initial.num_vertices()
+    assert mesh.num_cells() == mesh_initial.num_cells()
+
+    MPI.barrier(MPI.comm_world)
+
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
