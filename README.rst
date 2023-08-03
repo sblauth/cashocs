@@ -224,7 +224,7 @@ Additionally, if you are using the nonlinear conjugate gradient methods for shap
 	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
 	https://doi.org/10.1137/20M1367738
 
-If you are using the space mapping methods for shape optimization, please cite the preprint
+If you are using the space mapping methods for shape optimization, please cite the paper
 
 .. code-block:: text
 
