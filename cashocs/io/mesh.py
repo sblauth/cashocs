@@ -22,6 +22,9 @@ from __future__ import annotations
 import configparser
 import json
 import pathlib
+import subprocess  # nosec B404
+import tempfile
+import time
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
@@ -29,6 +32,8 @@ import h5py
 import numpy as np
 
 from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import _utils
 from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry import measure as measure_module
 from cashocs.geometry import mesh as mesh_module
@@ -387,3 +392,59 @@ def read_mesh_from_xdmf(
     fenics.MeshPartitioning.build_distributed_mesh(mesh)
 
     return mesh
+
+
+def extract_mesh_from_xdmf(
+    xdmffile: str,
+    iteration: int = 0,
+    outputfile: Optional[str] = None,
+    quiet: bool = False,
+) -> None:
+    """Extracts a Gmsh mesh file from an XDMF state file.
+
+    Args:
+        xdmffile: The path to the XDMF state file.
+        iteration: The iteration of interest (for a time series saved in the XDMF file),
+            default is 0.
+        outputfile: The path to the output Gmsh file. The default is `None` in which
+            case the output is saved in the same directory as the XDMF state file.
+        quiet: When this is set to `True`, verbose output is disabled. Default is
+            `False`.
+
+    """
+    start_time = time.time()
+
+    _utils.check_file_extension(xdmffile, "xdmf")
+    if outputfile is None:
+        outputfile = f"{xdmffile[:-5]}.msh"
+    _utils.check_file_extension(outputfile, "msh")
+
+    mesh = read_mesh_from_xdmf(xdmffile, step=iteration)
+
+    tempdir = tempfile.mkdtemp(prefix="cashocs_tmp_")
+    mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
+    try:
+        with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
+            file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
+
+        subprocess.run(  # nosec B603, B607
+            [
+                "meshio",
+                "convert",
+                "--output-format",
+                "gmsh",
+                "--ascii",
+                mesh_location_xdmf,
+                outputfile,
+            ],
+            check=True,
+        )
+    finally:
+        subprocess.run(["rm", "-R", tempdir], check=True)  # nosec B603, B607
+
+    end_time = time.time()
+    if not quiet:
+        _loggers.info(
+            f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
+            f" in {end_time - start_time:.2f} s"
+        )
