@@ -182,3 +182,37 @@ def test_wrong_formats(dir_path):
             )
         assert "due to wrong format." in str(e_info.value)
     fenics.MPI.barrier(fenics.MPI.comm_world)
+
+
+def test_extract_mesh_cli(dir_path):
+    tmp_path = pathlib.Path(f"{dir_path}/tmp")
+    tmp_path.mkdir(parents=True, exist_ok=True)
+
+    subprocess.run(
+        [
+            "cashocs-extract_mesh",
+            f"{dir_path}/xdmf_state/state_0.xdmf",
+            "-i",
+            "3",
+            "-o",
+            f"{dir_path}/tmp/test.msh",
+        ],
+        check=True,
+    )
+    assert pathlib.Path(f"{dir_path}/tmp/test.msh").is_file()
+
+    cashocs.convert(
+        f"{dir_path}/tmp/test.msh",
+        output_file=f"{dir_path}/tmp/test.xdmf",
+        mode="geometrical",
+    )
+    mesh, _, _, _, _, _ = cashocs.import_mesh(f"{dir_path}/tmp/test.xdmf")
+
+    assert mesh.num_vertices() == 121
+    assert mesh.num_cells() == 200
+
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/tmp"], check=True)
+    fenics.MPI.barrier(fenics.MPI.comm_world)
