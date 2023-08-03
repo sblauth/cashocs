@@ -230,7 +230,8 @@ If you are using the space mapping methods for shape optimization, please cite t
 
 	Space Mapping for PDE Constrained Shape Optimization
 	Sebastian Blauth
-	https://doi.org/10.48550/arXiv.2208.05747
+	SIAM Journal on Optimization, Volume 33, Issue 3, 2023
+	https://doi.org/10.1137/22M1515665
 
 and if you are using the topology optimization methods implemented in cashocs, please cite the preprint
 
@@ -287,12 +288,20 @@ If you are using BibTeX, you can use the following entries
 
 .. code-block:: bibtex
 
-	@article{Blauth2022Space,
-	  author    = {Sebastian Blauth},
-	  publisher = {arXiv},
-	  title     = {{Space Mapping for PDE Constrained Shape Optimization}},
-	  year      = {2022},
-	  doi       = {10.48550/ARXIV.2208.05747},
+	@Article{Blauth2023Space,
+	  author   = {Blauth, Sebastian},
+	  journal  = {SIAM J. Optim.},
+	  title    = {Space {M}apping for {PDE} {C}onstrained {S}hape {O}ptimization},
+	  year     = {2023},
+	  issn     = {1052-6234,1095-7189},
+	  number   = {3},
+	  pages    = {1707--1733},
+	  volume   = {33},
+	  doi      = {10.1137/22M1515665},
+	  fjournal = {SIAM Journal on Optimization},
+	  groups   = {My Publications, Shape Optimization, Space Mapping},
+	  mrclass  = {49Q10 (35Q93 49M41 65K05)},
+	  mrnumber = {4622415},
 	}
 
 
