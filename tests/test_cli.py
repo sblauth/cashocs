@@ -27,10 +27,10 @@ import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
 
-def test_cli(dir_path):
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
+def test_convert_output_arg(dir_path):
+    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/test.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh.xdmf"
+        dir_path + "/mesh/test.xdmf"
     )
 
     gmsh_coords = np.array(
@@ -63,20 +63,20 @@ def test_cli(dir_path):
         assert np.allclose(mesh_coords, gmsh_coords)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.h5"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
@@ -184,6 +184,10 @@ def test_wrong_formats(dir_path):
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
+@pytest.mark.skipif(
+    fenics.MPI.size(fenics.MPI.comm_world) > 1,
+    reason="This test cannot be run in parallel.",
+)
 def test_extract_mesh_cli(dir_path):
     tmp_path = pathlib.Path(f"{dir_path}/tmp")
     tmp_path.mkdir(parents=True, exist_ok=True)
