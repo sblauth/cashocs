@@ -51,6 +51,14 @@ def _generate_parser() -> argparse.ArgumentParser:
         metavar="outfile",
     )
     parser.add_argument(
+        "-g",
+        "--gmsh_file_original",
+        type=str,
+        help="Path to the original Gmsh file used to define the mesh.",
+        default=None,
+        metavar="gmsh_file_original",
+    )
+    parser.add_argument(
         "-q",
         "--quiet",
         action="store_true",
@@ -73,10 +81,15 @@ def extract_mesh(argv: Optional[List[str]] = None) -> None:
     xdmffile = args.xdmffile
     iteration = args.iteration
     outputfile = args.outfile
+    gmsh_file_original = args.gmsh_file_original
     quiet = args.quiet
 
     iomesh.extract_mesh_from_xdmf(
-        xdmffile, iteration=iteration, outputfile=outputfile, quiet=quiet
+        xdmffile,
+        iteration=iteration,
+        outputfile=outputfile,
+        original_gmsh_file=gmsh_file_original,
+        quiet=quiet,
     )
 
 

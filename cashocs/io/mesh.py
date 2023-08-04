@@ -398,6 +398,7 @@ def extract_mesh_from_xdmf(
     xdmffile: str,
     iteration: int = 0,
     outputfile: Optional[str] = None,
+    original_gmsh_file: Optional[str] = None,
     quiet: bool = False,
 ) -> None:
     """Extracts a Gmsh mesh file from an XDMF state file.
@@ -408,6 +409,11 @@ def extract_mesh_from_xdmf(
             default is 0.
         outputfile: The path to the output Gmsh file. The default is `None` in which
             case the output is saved in the same directory as the XDMF state file.
+        original_gmsh_file: The original gmsh .msh file used to create the mesh. This
+            can be used to generate output files which preserve, e.g., physical tags
+            and only updates the nodal positions. This will not work if the geometry
+            has been remeshed. The default is `None`, which uses a more robust (but
+            less detailed) approach.
         quiet: When this is set to `True`, verbose output is disabled. Default is
             `False`.
 
@@ -430,31 +436,34 @@ def extract_mesh_from_xdmf(
 
     mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
     fenics.MPI.barrier(fenics.MPI.comm_world)
-    try:
-        with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
-            file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
+    if original_gmsh_file is None:
+        try:
+            with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
+                file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
 
-        fenics.MPI.barrier(fenics.MPI.comm_world)
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            subprocess.run(  # nosec B603, B607
-                [
-                    "meshio",
-                    "convert",
-                    "--output-format",
-                    "gmsh",
-                    "--ascii",
-                    mesh_location_xdmf,
-                    outputfile,
-                ],
-                check=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                subprocess.run(  # nosec B603, B607
+                    [
+                        "meshio",
+                        "convert",
+                        "--output-format",
+                        "gmsh",
+                        "--ascii",
+                        mesh_location_xdmf,
+                        outputfile,
+                    ],
+                    check=True,
+                )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        finally:
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    finally:
-        fenics.MPI.barrier(fenics.MPI.comm_world)
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+    else:
+        write_out_mesh(mesh, original_gmsh_file, outputfile)
 
     end_time = time.time()
     if not quiet:
