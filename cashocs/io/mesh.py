@@ -421,26 +421,40 @@ def extract_mesh_from_xdmf(
 
     mesh = read_mesh_from_xdmf(xdmffile, step=iteration)
 
-    tempdir = tempfile.mkdtemp(prefix="cashocs_tmp_")
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        tmp = tempfile.mkdtemp(prefix="cashocs_tmp_")
+    else:
+        tmp = ""
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+    tempdir = fenics.MPI.comm_world.bcast(tmp, root=0)
+
     mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
+    fenics.MPI.barrier(fenics.MPI.comm_world)
     try:
         with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
             file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
 
-        subprocess.run(  # nosec B603, B607
-            [
-                "meshio",
-                "convert",
-                "--output-format",
-                "gmsh",
-                "--ascii",
-                mesh_location_xdmf,
-                outputfile,
-            ],
-            check=True,
-        )
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            subprocess.run(  # nosec B603, B607
+                [
+                    "meshio",
+                    "convert",
+                    "--output-format",
+                    "gmsh",
+                    "--ascii",
+                    mesh_location_xdmf,
+                    outputfile,
+                ],
+                check=True,
+            )
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+
     finally:
-        subprocess.run(["rm", "-R", tempdir], check=True)  # nosec B603, B607
+        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     end_time = time.time()
     if not quiet:

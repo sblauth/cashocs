@@ -97,7 +97,7 @@ def test_verification_remeshing():
 
 @pytest.mark.skipif(
     not has_gmsh,
-    reason="This test requires Gmsh and cannot be run in parallel",
+    reason="This test requires Gmsh.",
 )
 def test_remeshing():
     dir_path = str(pathlib.Path(__file__).parent)
