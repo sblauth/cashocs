@@ -307,6 +307,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
         original_mesh_file: The path to the mesh file.
 
     """
+    num_points = 0
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with open(original_mesh_file, "r", encoding="utf-8") as file:
             node_info = False
@@ -318,8 +319,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
 
                 if line == "$Nodes\n":
                     node_info = True
-    else:
-        num_points = 0
+
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
     number_of_points = int(fenics.MPI.comm_world.bcast(num_points, root=0))
