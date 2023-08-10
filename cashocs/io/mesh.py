@@ -296,6 +296,41 @@ def parse_file(
                 info_section = True
 
 
+def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None:
+    """Checks, whether the supplied mesh file is compatible with the mesh used.
+
+    This function returns `None` if they are compatible and raises an exception
+    otherwise.
+
+    Args:
+        mesh: The mesh that is currently used.
+        original_mesh_file: The path to the mesh file.
+
+    """
+    num_points = 0
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        with open(original_mesh_file, "r", encoding="utf-8") as file:
+            node_info = False
+            for line in file:
+                if node_info:
+                    split_line = line.split(" ")
+                    num_points = int(split_line[1])
+                    break
+
+                if line == "$Nodes\n":
+                    node_info = True
+
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+
+    number_of_points = int(fenics.MPI.comm_world.bcast(num_points, root=0))
+
+    if mesh.num_entities_global(0) != number_of_points:
+        raise _exceptions.CashocsException(
+            "The mesh supplied in the configuration file is not "
+            "compatible with the mesh used."
+        )
+
+
 def write_out_mesh(  # noqa: C901
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
@@ -316,6 +351,7 @@ def write_out_mesh(  # noqa: C901
         this is not tested or ensured in any way.
 
     """
+    check_mesh_compatibility(mesh, original_msh_file)
     dim = mesh.geometric_dimension()
 
     if not pathlib.Path(out_msh_file).parent.is_dir():
