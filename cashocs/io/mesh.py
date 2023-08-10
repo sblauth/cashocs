@@ -22,6 +22,9 @@ from __future__ import annotations
 import configparser
 import json
 import pathlib
+import subprocess  # nosec B404
+import tempfile
+import time
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
@@ -30,6 +33,8 @@ import meshio
 import numpy as np
 
 from cashocs import _exceptions
+from cashocs import _loggers
+from cashocs import _utils
 from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry import measure as measure_module
 from cashocs.geometry import mesh as mesh_module
@@ -410,3 +415,82 @@ def read_mesh_from_xdmf(
     fenics.MeshPartitioning.build_distributed_mesh(mesh)
 
     return mesh
+
+
+def extract_mesh_from_xdmf(
+    xdmffile: str,
+    iteration: int = 0,
+    outputfile: Optional[str] = None,
+    original_gmsh_file: Optional[str] = None,
+    quiet: bool = False,
+) -> None:
+    """Extracts a Gmsh mesh file from an XDMF state file.
+
+    Args:
+        xdmffile: The path to the XDMF state file.
+        iteration: The iteration of interest (for a time series saved in the XDMF file),
+            default is 0.
+        outputfile: The path to the output Gmsh file. The default is `None` in which
+            case the output is saved in the same directory as the XDMF state file.
+        original_gmsh_file: The original gmsh .msh file used to create the mesh. This
+            can be used to generate output files which preserve, e.g., physical tags
+            and only updates the nodal positions. This will not work if the geometry
+            has been remeshed. The default is `None`, which uses a more robust (but
+            less detailed) approach.
+        quiet: When this is set to `True`, verbose output is disabled. Default is
+            `False`.
+
+    """
+    start_time = time.time()
+
+    _utils.check_file_extension(xdmffile, "xdmf")
+    if outputfile is None:
+        outputfile = f"{xdmffile[:-5]}.msh"
+    _utils.check_file_extension(outputfile, "msh")
+
+    mesh = read_mesh_from_xdmf(xdmffile, step=iteration)
+
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        tmp = tempfile.mkdtemp(prefix="cashocs_tmp_")
+    else:
+        tmp = ""
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+    tempdir = fenics.MPI.comm_world.bcast(tmp, root=0)
+
+    mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+    if original_gmsh_file is None:
+        try:
+            with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
+                file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
+
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                subprocess.run(  # nosec B603, B607
+                    [
+                        "meshio",
+                        "convert",
+                        "--output-format",
+                        "gmsh",
+                        "--ascii",
+                        mesh_location_xdmf,
+                        outputfile,
+                    ],
+                    check=True,
+                )
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        finally:
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+
+    else:
+        write_out_mesh(mesh, original_gmsh_file, outputfile)
+
+    end_time = time.time()
+    if not quiet:
+        _loggers.info(
+            f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
+            f" in {end_time - start_time:.2f} s"
+        )

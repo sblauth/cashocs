@@ -462,6 +462,10 @@ class Config(ConfigParser):
                     "type": "str",
                     "possible_options": ["min", "avg", "minimum", "average"],
                 },
+                "remesh_iter": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
+                },
             },
             "TopologyOptimization": {
                 "angle_tol": {
@@ -637,6 +641,7 @@ measure = skewness
 type = min
 volume_change = inf
 angle_change = inf
+remesh_iter = 0
 
 [TopologyOptimization]
 angle_tol = 1.0

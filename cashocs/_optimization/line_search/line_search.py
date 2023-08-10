@@ -48,6 +48,7 @@ class LineSearch(abc.ABC):
 
         """
         self.db = db
+        self.problem_type = db.parameter_db.problem_type
 
         self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
@@ -57,7 +58,7 @@ class LineSearch(abc.ABC):
         )
         self.cost_functional = optimization_problem.reduced_cost_functional
 
-        if self.db.parameter_db.problem_type == "shape":
+        if self.problem_type == "shape":
             if "deformation_function" in self.db.parameter_db.temp_dict.keys():
                 self.deformation_function = self.db.parameter_db.temp_dict[
                     "deformation_function"
@@ -215,7 +216,7 @@ class LineSearch(abc.ABC):
             A boolean flag which is True in case the condition is satisfied.
 
         """
-        if not self.db.parameter_db.problem_type == "topology":
+        if not self.problem_type == "topology":
             val = bool(
                 objective_step
                 < current_function_value + self.epsilon_armijo * decrease_measure

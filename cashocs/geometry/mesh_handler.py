@@ -24,6 +24,7 @@ import pathlib
 import subprocess  # nosec B404
 import tempfile
 from typing import List, TYPE_CHECKING
+import weakref
 
 import fenics
 import numpy as np
@@ -123,7 +124,7 @@ class _MeshHandler:
             a_posteriori_tester: The tester after mesh modification.
 
         """
-        self.db = db
+        self.db = weakref.proxy(db)
         self.form_handler = form_handler
         self.a_priori_tester = a_priori_tester
         self.a_posteriori_tester = a_posteriori_tester
@@ -525,7 +526,7 @@ class _MeshHandler:
             line_search,
         )
 
-    def remesh(self, solver: OptimizationAlgorithm) -> None:
+    def remesh(self, solver: OptimizationAlgorithm) -> bool:
         """Remeshes the current geometry with Gmsh.
 
         Performs a remeshing of the geometry, and then restarts the optimization problem
@@ -533,6 +534,10 @@ class _MeshHandler:
 
         Args:
             solver: The optimization algorithm used to solve the problem.
+
+        Returns:
+            A boolean, which indicates whether the geometry was remeshed (`True`) or not
+            (`False`).
 
         """
         if self.do_remesh and self.db.parameter_db.temp_dict:
@@ -641,6 +646,11 @@ class _MeshHandler:
 
             self._reinitialize(solver)
             self._check_imported_mesh_quality(solver)
+
+            return True
+
+        else:
+            return False
 
     def _check_imported_mesh_quality(self, solver: OptimizationAlgorithm) -> None:
         """Checks the quality of an imported mesh.

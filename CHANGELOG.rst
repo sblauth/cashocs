@@ -10,13 +10,21 @@ of the maintenance releases, please take a look at
 2.1.0 (in development)
 ----------------------
 
-* Add the keyword arguments :py:`pre_callback` and :py:`post_callback` to define callbacks when an optimization problem is instanciated.
+* Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
+
+* Add a new function :py:func:`cashocs.io.extract_mesh_from_xdmf` which extracts (any, not only Gmsh) meshes from some XDMF state file (e.g. written by cashocs) and saves the underlying mesh in Gmsh file format.
+
+* Add a new command line interface :bash:`cashocs-extract_mesh` which can be used to invoke :py:func:`cashocs.io.extract_mesh_from_xdmf`.
 
 * New configuration file parameters:
 
   * Section LineSearch
 
     * :ini:`fail_if_not_converged` determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.
+
+  * Section MeshQuality
+
+    * :ini:`remesh_iter` is used to perform a remeshing after a certain amount of iterations.
 
 
 
