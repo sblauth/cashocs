@@ -29,7 +29,6 @@ from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
 import h5py
-import meshio
 import numpy as np
 
 from cashocs import _exceptions
@@ -308,10 +307,24 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
         original_mesh_file: The path to the mesh file.
 
     """
-    mesh_collection = meshio.read(original_mesh_file)
-    points = mesh_collection.points
+    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        with open(original_mesh_file, "r", encoding="utf-8") as file:
+            node_info = False
+            for line in file:
+                if node_info:
+                    split_line = line.split(" ")
+                    num_points = int(split_line[1])
+                    break
 
-    if mesh.num_vertices() != points.shape[0]:
+                if line == "$Nodes\n":
+                    node_info = True
+    else:
+        num_points = 0
+    fenics.MPI.barrier(fenics.MPI.comm_world)
+
+    number_of_points = int(fenics.MPI.comm_world.bcast(num_points, root=0))
+
+    if mesh.num_entities_global(0) != number_of_points:
         raise _exceptions.CashocsException(
             "The mesh supplied in the configuration file is not "
             "compatible with the mesh used."
