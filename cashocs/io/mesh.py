@@ -147,6 +147,122 @@ def import_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.Mesh
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
+@mesh_module._get_mesh_stats(mode="import")  # pylint:disable=protected-access
+def reimport_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.MeshTuple:
+    """Reimports a mesh file for use with cashocs / FEniCS.
+
+    In order to work properly, the mesh has to be exported with the
+    :py:func:`cashocs.io.export_mesh` function.
+
+    Args:
+        mesh_file: The location of the mesh file in .xdmf file format.
+        comm: MPI communicator that is to be used for creating the mesh. Optional,
+            default is `None` so that `fenics.MPI.comm_world` is used.
+
+    Returns:
+        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
+        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh
+        function for the boundaries, dx is a volume measure, ds is a surface measure,
+        and dS is a measure for the interior facets.
+
+    """
+    filepath = pathlib.Path(mesh_file)
+    if not filepath.is_file():
+        raise _exceptions.InputError(
+            "cashocs.io.mesh.reimport_mesh",
+            "mesh_file",
+            "The specified mesh file does not exist.",
+        )
+    folder_path = filepath.parent
+    filename = filepath.stem
+
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
+    mesh = fenics.Mesh(comm)
+    with fenics.XDMFFile(mesh.mpi_comm(), mesh_file) as file:
+        file.read(mesh)
+
+    subdomains_mvc = fenics.MeshValueCollection(
+        "size_t", mesh, mesh.geometric_dimension()
+    )
+    boundaries_mvc = fenics.MeshValueCollection(
+        "size_t", mesh, mesh.geometric_dimension() - 1
+    )
+
+    subdomains_path = pathlib.Path(f"{folder_path}/{filename}_subdomains.xdmf")
+    if subdomains_path.is_file():
+        with fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path)) as file:
+            file.read(subdomains_mvc)
+
+    boundaries_path = pathlib.Path(f"{folder_path}/{filename}_boundaries.xdmf")
+    if boundaries_path.is_file():
+        with fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path)) as file:
+            file.read(boundaries_mvc)
+
+    subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
+    boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
+
+    dx = measure_module.NamedMeasure("dx", domain=mesh, subdomain_data=subdomains)
+    ds = measure_module.NamedMeasure("ds", domain=mesh, subdomain_data=boundaries)
+    d_interior_facet = measure_module.NamedMeasure(
+        "dS", domain=mesh, subdomain_data=boundaries
+    )
+
+    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+
+
+def export_mesh(
+    mesh: fenics.Mesh,
+    mesh_file: str,
+    subdomains: Optional[fenics.MeshFunction],
+    boundaries: Optional[fenics.MeshFunction],
+    comm: Optional[MPI.Comm] = None,
+) -> None:
+    """Exports a mesh (together with its subdomains and boundaries).
+
+    This is useful so that the mesh can be reimported later on again. This is used for
+    checkpointing in cashocs, but also has other use cases, e.g., storing a function
+    on hard disk and later reimporting it to perform a post-processing.
+
+    Args:
+        mesh: The fenics mesh which shall be exported.
+        mesh_file: Filename / path to the exported mesh. Has to end in .xdmf. Boundaries
+            and subdomains will be named accordingly.
+        subdomains: The subdomains meshfunction corresponding to the mesh. Optional,
+            default is `None`, so that no subdomain information is used.
+        boundaries: The boundaries meshfunction corresponding to the mesh. Optional,
+            default is `None`, so that no boundary information is used.
+        comm: The MPI communicator used. Optional, default is `None`, so that the
+            `fenics.MPI.comm_world` is used.
+
+    """
+    if comm is None:
+        comm = fenics.MPI.comm_world
+
+    _utils.check_file_extension(mesh_file, "xdmf")
+
+    filepath = pathlib.Path(mesh_file)
+    folder_path = filepath.parent
+    filename = filepath.stem
+
+    if not folder_path.is_dir():
+        folder_path.mkdir(parents=True, exist_ok=True)
+
+    with fenics.XDMFFile(comm, mesh_file) as file:
+        file.write(mesh)
+
+    with fenics.XDMFFile(
+        comm, f"{str(folder_path)}/{filename}_subdomains.xdmf"
+    ) as file:
+        file.write(subdomains)
+
+    with fenics.XDMFFile(
+        comm, f"{str(folder_path)}/{filename}_boundaries.xdmf"
+    ) as file:
+        file.write(boundaries)
+
+
 def convert(
     input_file: str,
     output_file: Optional[str] = None,
