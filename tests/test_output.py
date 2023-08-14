@@ -105,14 +105,14 @@ def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
     assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -168,18 +168,18 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
     assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0_1.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/control_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/control_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_1.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0_1.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/gradient_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_1.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_1.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_1.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_1.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -201,11 +201,13 @@ def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(dir_path + "/out").is_dir()
 
-    cashocs.io.extract_mesh_from_xdmf(f"{result_path}/xdmf/state_0.xdmf", iteration=3)
-    assert pathlib.Path(f"{result_path}/xdmf/state_0.msh").is_file()
+    cashocs.io.extract_mesh_from_xdmf(
+        f"{result_path}/checkpoints/state_0.xdmf", iteration=3
+    )
+    assert pathlib.Path(f"{result_path}/checkpoints/state_0.msh").is_file()
 
     cashocs.io.extract_mesh_from_xdmf(
-        f"{result_path}/xdmf/state_0.xdmf",
+        f"{result_path}/checkpoints/state_0.xdmf",
         iteration=3,
         outputfile=f"{result_path}/test.msh",
     )

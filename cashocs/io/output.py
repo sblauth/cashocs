@@ -62,16 +62,17 @@ class OutputManager:
         save_state = self.config.getboolean("Output", "save_state")
         save_adjoint = self.config.getboolean("Output", "save_adjoint")
         save_gradient = self.config.getboolean("Output", "save_gradient")
-        save_xdmf = save_state or save_gradient or save_adjoint
-        has_output = save_txt or save_results or save_xdmf
+        save_mesh = self.config.getboolean("Output", "save_mesh")
+        save_checkpoints = save_state or save_gradient or save_adjoint or save_mesh
+        has_output = save_txt or save_results or save_checkpoints
 
         if not self.result_path.is_dir():
             if has_output:
                 self.result_path.mkdir(parents=True, exist_ok=True)
-            if save_xdmf:
-                pathlib.Path().joinpath(self.result_path, "xdmf").mkdir(
-                    parents=True, exist_ok=True
-                )
+
+        checkpoints_path = pathlib.Path().joinpath(self.result_path, "checkpoints")
+        if not checkpoints_path.is_dir() and save_checkpoints:
+            checkpoints_path.mkdir(parents=True, exist_ok=True)
 
         self.managers: List[managers.IOManager] = []
         if verbose:

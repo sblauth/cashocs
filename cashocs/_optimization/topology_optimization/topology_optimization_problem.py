@@ -164,7 +164,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.db.parameter_db.problem_type = "topology"
         self.mesh_parametrization = None
 
-        self.levelset_function = levelset_function
+        self.levelset_function: fenics.Function = levelset_function
         self.topological_derivative_pos = topological_derivative_pos
         self.topological_derivative_neg = topological_derivative_neg
         self.update_levelset = update_levelset
