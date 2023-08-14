@@ -16,6 +16,14 @@ of the maintenance releases, please take a look at
 
 * Add a new command line interface :bash:`cashocs-extract_mesh` which can be used to invoke :py:func:`cashocs.io.extract_mesh_from_xdmf`.
 
+* The output routines save the xdmf files not in a folder called `xdmf` anymore, but the folder is called `checkpoints`
+
+* The output parameter `save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
+
+* Added the function :py:func:`cashocs.io.import_function` which can be used to load a XDMF Function with a function space. This is very useful for checkpointing (first, read the saved mesh, define the function space, then call :py:func:`cashocs.io.import_function`.
+
+* :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
+
 * New configuration file parameters:
 
   * Section LineSearch
