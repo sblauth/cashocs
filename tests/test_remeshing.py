@@ -140,7 +140,7 @@ def test_remeshing():
     )
 
     assert pathlib.Path(dir_path + "/temp").is_dir()
-    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
     assert pathlib.Path(dir_path + "/temp/history.json").is_file()
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()

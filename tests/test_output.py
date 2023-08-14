@@ -102,7 +102,7 @@ def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
     assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
@@ -165,7 +165,7 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
     MPI.barrier(MPI.comm_world)
 
     assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
     assert pathlib.Path(dir_path + "/out/checkpoints/state_0_0.xdmf").is_file()

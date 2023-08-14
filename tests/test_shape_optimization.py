@@ -767,7 +767,7 @@ def test_save_xdmf_files():
     MPI.barrier(MPI.comm_world)
 
     assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
     assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
