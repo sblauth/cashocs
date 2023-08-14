@@ -144,12 +144,12 @@ def test_remeshing():
     assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
     assert pathlib.Path(dir_path + "/temp/history.json").is_file()
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:

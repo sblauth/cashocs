@@ -164,10 +164,14 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.db.parameter_db.problem_type = "topology"
         self.mesh_parametrization = None
 
-        self.levelset_function = levelset_function
-        self.topological_derivative_pos = topological_derivative_pos
-        self.topological_derivative_neg = topological_derivative_neg
-        self.update_levelset = update_levelset
+        self.levelset_function: fenics.Function = levelset_function
+        self.topological_derivative_pos: fenics.Function | ufl.Form = (
+            topological_derivative_pos
+        )
+        self.topological_derivative_neg: fenics.Function | ufl.Form = (
+            topological_derivative_neg
+        )
+        self.update_levelset: Callable = update_levelset
         self.riesz_scalar_products = riesz_scalar_products
 
         self.is_topology_problem = True

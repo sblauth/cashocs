@@ -92,7 +92,7 @@ sop.solve()
 # {py:func}`cashocs.io.read_function_from_xdmf`, which works as follows
 
 u_init = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/state_0.xdmf", "state_0", "CG", 1, step=0
+    "./results/checkpoints/state_0.xdmf", "state_0", "CG", 1, step=0
 )
 
 # The function works as follows. In the first argument, we have to specify the location
@@ -132,7 +132,7 @@ u_init = cashocs.io.read_function_from_xdmf(
 # line
 
 u_final = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/state_0.xdmf", "state_0", "CG", 1, step=11
+    "./results/checkpoints/state_0.xdmf", "state_0", "CG", 1, step=11
 )
 
 # Let us now compare these functions in python, with the help of matplotlib.
@@ -165,7 +165,7 @@ plt.tight_layout()
 # code
 
 shape_gradient = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/shape_gradient.xdmf",
+    "./results/checkpoints/shape_gradient.xdmf",
     "gradient_0",
     "CG",
     1,
