@@ -31,7 +31,6 @@ import fenics
 import h5py
 import numpy as np
 
-import cashocs
 from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
@@ -142,7 +141,7 @@ def _import_gmsh_mesh(
         and both can be used interchangeably.
 
     """
-    cashocs.convert(mesh_file, quiet=True)
+    convert(mesh_file, quiet=True)
     mesh_filename = f"{mesh_file[:-4]}.xdmf"
     mesh_tuple = _import_xdmf_mesh(mesh_filename, comm)
 
