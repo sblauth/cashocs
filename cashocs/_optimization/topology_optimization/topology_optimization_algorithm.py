@@ -33,6 +33,7 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
+from cashocs._optimization.topology_optimization import bisection
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -92,7 +93,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         self.projected_gradient: fenics.Function = fenics.Function(self.cg1_space)
         self.levelset_function_prev = fenics.Function(self.cg1_space)
+        self.dx = self._generate_measure()
         self.setup_assembler()
+
+        self.volume_restriction = optimization_problem.volume_restriction
+        self.projection = bisection.projection_levelset(self, db)
 
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
@@ -149,8 +154,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.form_handler.riesz_scalar_products
         )
         test = modified_scalar_product[0].arguments()[0]
-        dx = self._generate_measure()
-        rhs = self.topological_derivative_vertex * test * dx
+        rhs = self.topological_derivative_vertex * test * self.dx
         try:
             self.assembler = fenics.SystemAssembler(
                 modified_scalar_product[0], rhs, self.form_handler.control_bcs_list[0]
@@ -414,6 +418,8 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))
             while True:
                 self.move_levelset(self.stepsize)
+                self.projection.project()
+                self.normalize(self.levelset_function)
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()

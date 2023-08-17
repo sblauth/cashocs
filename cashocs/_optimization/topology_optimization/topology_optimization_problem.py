@@ -69,6 +69,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         topological_derivative_neg: fenics.Function | ufl.Form,
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
+        volume_restriction: Union[float, list[float]] | None = None,
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
@@ -231,6 +232,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             self._base_ocp.gradient_problem
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
+
+        self.volume_restriction = volume_restriction
+        if self.volume_restriction is not None:
+            self.volume_restriction = _utils.enlist(self.volume_restriction)
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()
