@@ -47,7 +47,9 @@ class projection_levelset:
                 self.volume_restriction = [self.volume_restriction[0], self.volume_restriction[0]]
 
     def evaluate(self, iterate, target):
-        self.levelset_function_temp.vector()[:] = self.levelset_function.vector()[:] + iterate
+        self.levelset_function_temp.vector().vec().aypx(
+            0.0, self.levelset_function.vector().vec() + iterate
+        )
         self.levelset_function_temp.vector().apply("")
         _utils.interpolate_levelset_function_to_cells(self.levelset_function_temp, 1.0, 0.0, self.indicator_omega)
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
@@ -64,14 +66,20 @@ class projection_levelset:
         if self.vol < self.volume_restriction[0]:
             max_levelset = abs(self.levelset_function.vector().max())
             iterate = scipy.optimize.bisect(self.evaluate, -max_levelset, 0., xtol=1e-4,
-                                            args=self.volume_restriction[0])
-            self.levelset_function.vector()[:] = self.levelset_function.vector()[:] + iterate
+                                            maxiter=100, args=self.volume_restriction[0])
+            self.levelset_function.vector().vec().aypx(
+                0.0, self.levelset_function.vector().vec() + iterate
+            )
+            self.levelset_function.vector().apply("")
             self.update_levelset()
         elif self.vol > self.volume_restriction[1]:
             min_levelset = abs(self.levelset_function.vector().min())
             iterate = scipy.optimize.bisect(self.evaluate, 0., min_levelset, xtol=1e-4,
-                                            args=self.volume_restriction[1])
-            self.levelset_function.vector()[:] = self.levelset_function.vector()[:] + iterate
+                                            maxiter=100, args=self.volume_restriction[1])
+            self.levelset_function.vector().vec().aypx(
+                0.0, self.levelset_function.vector().vec() + iterate
+            )
+            self.levelset_function.vector().apply("")
             self.update_levelset()
         else:
             return
