@@ -150,8 +150,11 @@ class PolynomialLineSearch(line_search.LineSearch):
                 objective_step, current_function_value, decrease_measure
             ):
                 if self.optimization_variable_abstractions.requires_remeshing():
-                    self.optimization_variable_abstractions.mesh_handler.remesh(solver)
-                    is_remeshed = True
+                    is_remeshed = (
+                        self.optimization_variable_abstractions.mesh_handler.remesh(
+                            solver
+                        )
+                    )
                     break
 
                 if solver.iteration == 0:
