@@ -59,7 +59,7 @@ class projection_levelset:
     def project(self):
         if self.volume_restriction is None or self.algorithm.iteration == 0:
             return
-
+        
         _utils.interpolate_levelset_function_to_cells(self.levelset_function, 1.0, 0.0, self.indicator_omega)
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
 
