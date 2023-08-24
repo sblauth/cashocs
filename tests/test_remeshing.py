@@ -201,3 +201,38 @@ def test_remesh_scaling():
             [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
         )
     MPI.barrier(MPI.comm_world)
+
+
+def test_remeshing_disabled():
+    dir_path = str(pathlib.Path(__file__).parent)
+    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+
+    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
+    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+    config.set("Mesh", "remesh", "False")
+    config.set("Output", "save_state", "False")
+    config.set("Output", "save_adjoint", "False")
+    config.set("Output", "save_gradient", "False")
+    config.set("Output", "save_mesh", "False")
+    config.set("Output", "save_results", "False")
+    config.set("Output", "save_txt", "False")
+    config.set("OptimizationRoutine", "soft_exit", "False")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
+
+    V = FunctionSpace(mesh, "CG", 1)
+    u = Function(V)
+    p = Function(V)
+
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+
+    J = cashocs.IntegralFunctional(u * dx)
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve(max_iter=7)

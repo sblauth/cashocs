@@ -536,8 +536,9 @@ class _MeshHandler:
             solver: The optimization algorithm used to solve the problem.
 
         Returns:
-            A boolean, which indicates whether the geometry was remeshed (`True`) or not
-            (`False`).
+            A boolean that indicated whether a remeshing has been performed successfully
+            (if it is `True`) or not (if it is `False`). A possible reason why remeshing
+            was not successful is that it is not activated in the configuration.
 
         """
         if self.do_remesh and self.db.parameter_db.temp_dict:
@@ -646,7 +647,6 @@ class _MeshHandler:
 
             self._reinitialize(solver)
             self._check_imported_mesh_quality(solver)
-
             return True
 
         else:
