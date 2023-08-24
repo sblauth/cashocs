@@ -1,6 +1,5 @@
 name: test
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - numpy

@@ -16,28 +16,29 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/sblauth/cashocs:main
+      options: --user=root
 
     steps:
     - name: Delete current installation in docker image
-      shell: bash -l {0}
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         pip uninstall -y cashocs
-        rm -R /root/cashocs
+        rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v3.5.2 
+      uses: actions/checkout@v3.5.3 
 
     - name: Install cashocs
-      shell: bash -l {0}
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         pip install .[all]
 
     - name: Run tests
-      shell: bash -l {0}
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io
