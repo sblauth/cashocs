@@ -60,34 +60,70 @@ from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-__version__ = "2.0.10"
+__version__ = "2.1.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
-    author   = {Sebastian Blauth},
-    journal  = {SoftwareX},
-    title    = {{cashocs: A Computational, Adjoint-Based Shape Optimization and
-        Optimal Control Software}},
-    year     = {2021},
-    issn     = {2352-7110},
-    pages    = {100646},
-    volume   = {13},
-    doi      = {https://doi.org/10.1016/j.softx.2020.100646},
-    keywords = {PDE constrained optimization, Adjoint approach, Shape optimization,
-        Optimal control},
+  author   = {Sebastian Blauth},
+  journal  = {SoftwareX},
+  title    = {{cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal
+  Control Software}},
+  year     = {2021},
+  issn     = {2352-7110},
+  pages    = {100646},
+  volume   = {13},
+  doi      = {https://doi.org/10.1016/j.softx.2020.100646},
+}
+
+@Misc{Blauth2023Version,
+  author        = {Sebastian Blauth},
+  title         = {{Version 2.0 -- cashocs: A Computational, Adjoint-Based Shape
+  Optimization and Optimal Control Software}},
+  year          = {2023},
+  archiveprefix = {arXiv},
+  eprint        = {2306.09828},
+  primaryclass  = {math.OC},
 }
 
 @Article{Blauth2021Nonlinear,
-    author   = {Sebastian Blauth},
-    journal  = {SIAM J. Optim.},
-    title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained
-        {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
-    year     = {2021},
-    number   = {3},
-    pages    = {1658--1689},
-    volume   = {31},
-    doi      = {10.1137/20M1367738},
-    fjournal = {SIAM Journal on Optimization},
+  author     = {Blauth, Sebastian},
+  journal    = {SIAM J. Optim.},
+  title      = {{Nonlinear Conjugate Gradient Methods for PDE Constrained Shape
+  Optimization Based on Steklov-Poincar\'{e}-Type Metrics}},
+  year       = {2021},
+  issn       = {1052-6234,1095-7189},
+  number     = {3},
+  pages      = {1658--1689},
+  volume     = {31},
+  doi        = {10.1137/20M1367738},
+  fjournal   = {SIAM Journal on Optimization},
+  groups     = {My Publications, Shape Optimization},
+  mrclass    = {49Q10 (35Q93 49M05 49M37 90C53)},
+  mrnumber   = {4281312},
+}
+
+@Article{Blauth2023Space,
+  author   = {Blauth, Sebastian},
+  journal  = {SIAM J. Optim.},
+  title    = {Space {M}apping for {PDE} {C}onstrained {S}hape {O}ptimization},
+  year     = {2023},
+  issn     = {1052-6234,1095-7189},
+  number   = {3},
+  pages    = {1707--1733},
+  volume   = {33},
+  doi      = {10.1137/22M1515665},
+  fjournal = {SIAM Journal on Optimization},
+  mrclass  = {49Q10 (35Q93 49M41 65K05)},
+  mrnumber = {4622415},
+}
+
+@article{Blauth2023Quasi,
+  author        = {Sebastian Blauth and Kevin Sturm},
+  title         = {{Quasi-Newton Methods for Topology Optimization Using a Level-Set
+  Method}},
+  year          = {2023},
+  publisher     = {arXiv},
+  doi           = {10.48550/arXiv.2303.15070},
 }
 """
 

@@ -33,6 +33,7 @@ import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _loggers
+from cashocs import _utils
 
 
 def _generate_parser() -> argparse.ArgumentParser:
@@ -64,14 +65,6 @@ def _generate_parser() -> argparse.ArgumentParser:
     )
 
     return parser
-
-
-def check_file_extension(file: str, required_extension: str) -> None:
-    """Checks whether a given file extension is correct."""
-    if not file.rsplit(".", 1)[-1] == required_extension:
-        raise _exceptions.CashocsException(
-            f"Cannot use {file} due to wrong format.",
-        )
 
 
 def check_mode(mode: str) -> None:
@@ -275,7 +268,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     args = parser.parse_args(argv)
 
     inputfile = args.infile
-    check_file_extension(inputfile, "msh")
+    _utils.check_file_extension(inputfile, "msh")
 
     mode = args.mode
     check_mode(mode)
@@ -283,7 +276,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     outputfile = args.outfile
     if outputfile is None:
         outputfile = f"{inputfile[:-4]}.xdmf"
-    check_file_extension(outputfile, "xdmf")
+    _utils.check_file_extension(outputfile, "xdmf")
 
     quiet = args.quiet
 

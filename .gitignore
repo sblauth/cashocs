@@ -12,6 +12,7 @@ htmlcov
 *.vtu
 *.pvtu
 
+**/checkpoints/
 **/xdmf/
 
 ### pip
