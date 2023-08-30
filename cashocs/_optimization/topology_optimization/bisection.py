@@ -6,7 +6,7 @@ import fenics
 import scipy.optimize
 
 from cashocs import _utils
-from cashocs._optimization.topology_optimization import topology_optimization_algorithm
+from cashocs._optimization.topology_optimization import topology_optimization_problem
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -15,16 +15,17 @@ class projection_levelset:
 
     def __init__(
         self,
-        algorithm: topology_optimization_algorithm.TopologyOptimizationAlgorithm,
+        optimization_problem: topology_optimization_problem.TopologyOptimizationProblem,
         db: database.Database,
     ) -> None:
         """Initializes self.
         Args:
-            algorithm: The corresponding optimization algorithm.
+            optimization_problem: The corresponding optimization problem which shall be
+                solved.
             db: The database of the problem.
         """
 
-        self.levelset_function: fenics.Function = algorithm.levelset_function
+        self.levelset_function: fenics.Function = optimization_problem.levelset_function
         self.levelset_function_temp = fenics.Function(
             self.levelset_function.function_space()
         )
@@ -33,15 +34,14 @@ class projection_levelset:
         )
         self.levelset_function_temp.vector().apply("")
 
-        self.dx = algorithm.dx
-        self.algorithm = algorithm
-        self.update_levelset = algorithm.update_levelset
+        self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
+        self.update_levelset = optimization_problem.update_levelset
 
-        self.indicator_omega = fenics.Function(self.algorithm.dg0_space)
+        self.indicator_omega = fenics.Function(optimization_problem.dg0_space)
         _utils.interpolate_levelset_function_to_cells(self.levelset_function, 1.0, 0.0, self.indicator_omega)
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
 
-        self.volume_restriction = algorithm.volume_restriction
+        self.volume_restriction = optimization_problem.volume_restriction
         if self.volume_restriction is not None:
             if len(self.volume_restriction) == 1:
                 self.volume_restriction = [self.volume_restriction[0], self.volume_restriction[0]]
@@ -60,6 +60,7 @@ class projection_levelset:
 
 
     def project(self):
+        print(self.volume_restriction)
         if abs(self.levelset_function.vector().max()-self.levelset_function.vector().min()) <= self.tolerance_bisect \
                 or self.volume_restriction is None:
             return

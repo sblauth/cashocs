@@ -34,6 +34,7 @@ from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 from cashocs._optimization.topology_optimization import topology_variable_abstractions
+from cashocs._optimization.topology_optimization import bisection
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -236,6 +237,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.volume_restriction = volume_restriction
         if self.volume_restriction is not None:
             self.volume_restriction = _utils.enlist(self.volume_restriction)
+        self.projection = bisection.projection_levelset(self, self.db)
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()

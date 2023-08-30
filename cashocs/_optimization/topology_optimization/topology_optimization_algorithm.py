@@ -33,7 +33,6 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
-from cashocs._optimization.topology_optimization import bisection
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -97,7 +96,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.setup_assembler()
 
         self.volume_restriction = optimization_problem.volume_restriction
-        self.projection = bisection.projection_levelset(self, db)
+        self.projection = optimization_problem.projection
 
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
