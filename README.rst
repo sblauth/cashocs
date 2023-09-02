@@ -239,7 +239,7 @@ and if you are using the topology optimization methods implemented in cashocs, p
 
 	Quasi-Newton Methods for Topology Optimization Using a Level-Set Method
 	Sebastian Blauth and Kevin Sturm
-    Structural and Multidisciplinary Optimization
+	Structural and Multidisciplinary Optimization
 	https://doi.org/10.1007/s00158-023-03653-2
 
 	
