@@ -233,13 +233,14 @@ If you are using the space mapping methods for shape optimization, please cite t
 	SIAM Journal on Optimization, Volume 33, Issue 3, 2023
 	https://doi.org/10.1137/22M1515665
 
-and if you are using the topology optimization methods implemented in cashocs, please cite the preprint
+and if you are using the topology optimization methods implemented in cashocs, please cite the paper
 
 .. code-block:: text
 
 	Quasi-Newton Methods for Topology Optimization Using a Level-Set Method
 	Sebastian Blauth and Kevin Sturm
-	https://doi.org/10.48550/arXiv.2303.15070
+    Structural and Multidisciplinary Optimization
+	https://doi.org/10.1007/s00158-023-03653-2
 
 	
 If you are using BibTeX, you can use the following entries
@@ -268,7 +269,6 @@ If you are using BibTeX, you can use the following entries
 	  eprint        = {2306.09828},
 	  primaryclass  = {math.OC},
 	}
-
 
 
 .. code-block:: bibtex
@@ -307,12 +307,14 @@ If you are using BibTeX, you can use the following entries
 
 .. code-block:: bibtex
 
-	@article{Blauth2023Quasi,
-	  author        = {Sebastian Blauth and Kevin Sturm},
-	  title         = {{Quasi-Newton Methods for Topology Optimization Using a Level-Set Method}},
-	  year          = {2023},
-	  publisher     = {arXiv},
-	  doi           = {10.48550/arXiv.2303.15070},
+	@Article{Blauth2023Quasi,
+	  author   = {Sebastian Blauth and Kevin Sturm},
+	  journal  = {Struct. Multidiscip. Optim.},
+	  title    = {Quasi-Newton methods for topology optimization using a level-set method},
+	  year     = {2023},
+	  volume   = {66},
+	  doi      = {10.1007/s00158-023-03653-2},
+	  fjournal = {Structural and Multidisciplinary Optimization},
 	}
 
 .. readme_end_citing
