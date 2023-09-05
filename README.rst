@@ -239,7 +239,7 @@ and if you are using the topology optimization methods implemented in cashocs, p
 
 	Quasi-Newton Methods for Topology Optimization Using a Level-Set Method
 	Sebastian Blauth and Kevin Sturm
-	Structural and Multidisciplinary Optimization, Volume 66, Issue 9, 2023
+	Structural and Multidisciplinary Optimization, Volume 66, 2023
 	https://doi.org/10.1007/s00158-023-03653-2
 
 	
@@ -308,13 +308,19 @@ If you are using BibTeX, you can use the following entries
 .. code-block:: bibtex
 
 	@Article{Blauth2023Quasi,
-	  author   = {Sebastian Blauth and Kevin Sturm},
+	  author   = {Blauth, Sebastian and Sturm, Kevin},
 	  journal  = {Struct. Multidiscip. Optim.},
-	  title    = {Quasi-Newton methods for topology optimization using a level-set method},
+	  title    = {Quasi-{N}ewton methods for topology optimization using a level-set method},
 	  year     = {2023},
+	  issn     = {1615-147X,1615-1488},
+	  number   = {9},
+	  pages    = {203},
 	  volume   = {66},
 	  doi      = {10.1007/s00158-023-03653-2},
 	  fjournal = {Structural and Multidisciplinary Optimization},
+	  groups   = {My Publications},
+	  mrclass  = {99-06},
+	  mrnumber = {4635978},
 	}
 
 .. readme_end_citing
