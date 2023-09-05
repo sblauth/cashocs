@@ -299,7 +299,6 @@ If you are using BibTeX, you can use the following entries
 	  volume   = {33},
 	  doi      = {10.1137/22M1515665},
 	  fjournal = {SIAM Journal on Optimization},
-	  groups   = {My Publications, Shape Optimization, Space Mapping},
 	  mrclass  = {49Q10 (35Q93 49M41 65K05)},
 	  mrnumber = {4622415},
 	}
@@ -318,7 +317,6 @@ If you are using BibTeX, you can use the following entries
 	  volume   = {66},
 	  doi      = {10.1007/s00158-023-03653-2},
 	  fjournal = {Structural and Multidisciplinary Optimization},
-	  groups   = {My Publications},
 	  mrclass  = {99-06},
 	  mrnumber = {4635978},
 	}
