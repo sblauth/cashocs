@@ -234,10 +234,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
 
-        self.volume_restriction = volume_restriction
-        if self.volume_restriction is not None:
-            self.volume_restriction = _utils.enlist(self.volume_restriction)
-        self.projection = bisection.projection_levelset(self, self.db)
+        self.projection = bisection.projection_levelset(self.levelset_function, self.update_levelset,
+                                                        volume_restriction)
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()

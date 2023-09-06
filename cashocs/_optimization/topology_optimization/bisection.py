@@ -15,8 +15,9 @@ class projection_levelset:
 
     def __init__(
         self,
-        optimization_problem: topology_optimization_problem.TopologyOptimizationProblem,
-        db: database.Database,
+        levelset_function: fenics.Function,
+        update_levelset: Callable,
+        volume_restriction: Union[float, list[float]] | None = None,
     ) -> None:
         """Initializes self.
         Args:
@@ -25,7 +26,7 @@ class projection_levelset:
             db: The database of the problem.
         """
 
-        self.levelset_function: fenics.Function = optimization_problem.levelset_function
+        self.levelset_function = levelset_function
         self.levelset_function_temp = fenics.Function(
             self.levelset_function.function_space()
         )
@@ -35,14 +36,16 @@ class projection_levelset:
         self.levelset_function_temp.vector().apply("")
 
         self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
-        self.update_levelset = optimization_problem.update_levelset
+        self.update_levelset = update_levelset
 
-        self.indicator_omega = fenics.Function(optimization_problem.dg0_space)
+        self.dg0_space = fenics.FunctionSpace(self.levelset_function.function_space().mesh(), "DG", 0)
+        self.indicator_omega = fenics.Function(self.dg0_space)
         _utils.interpolate_levelset_function_to_cells(self.levelset_function, 1.0, 0.0, self.indicator_omega)
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
 
-        self.volume_restriction = optimization_problem.volume_restriction
+        self.volume_restriction = volume_restriction
         if self.volume_restriction is not None:
+            self.volume_restriction = _utils.enlist(self.volume_restriction)
             if len(self.volume_restriction) == 1:
                 self.volume_restriction = [self.volume_restriction[0], self.volume_restriction[0]]
 
@@ -60,7 +63,6 @@ class projection_levelset:
 
 
     def project(self):
-        print(self.volume_restriction)
         if abs(self.levelset_function.vector().max()-self.levelset_function.vector().min()) <= self.tolerance_bisect \
                 or self.volume_restriction is None:
             return

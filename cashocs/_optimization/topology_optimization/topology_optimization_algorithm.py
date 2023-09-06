@@ -95,7 +95,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.dx = self._generate_measure()
         self.setup_assembler()
 
-        self.volume_restriction = optimization_problem.volume_restriction
         self.projection = optimization_problem.projection
 
     def _generate_measure(self) -> fenics.Measure:
