@@ -16,14 +16,14 @@ class projection_levelset:
     def __init__(
         self,
         levelset_function: fenics.Function,
-        update_levelset: Callable,
         volume_restriction: Union[float, list[float]] | None = None,
     ) -> None:
         """Initializes self.
         Args:
-            optimization_problem: The corresponding optimization problem which shall be
-                solved.
-            db: The database of the problem.
+            levelset_function: A :py:class:`fenics.Function` which represents the
+                levelset function.
+            volume_restriction: A volume restriction that the levelset function
+                should fulfill.
         """
 
         self.levelset_function = levelset_function
@@ -36,7 +36,6 @@ class projection_levelset:
         self.levelset_function_temp.vector().apply("")
 
         self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
-        self.update_levelset = update_levelset
 
         self.dg0_space = fenics.FunctionSpace(self.levelset_function.function_space().mesh(), "DG", 0)
         self.indicator_omega = fenics.Function(self.dg0_space)
@@ -78,7 +77,6 @@ class projection_levelset:
                 0.0, self.levelset_function.vector().vec() + iterate
             )
             self.levelset_function.vector().apply("")
-            self.update_levelset()
         elif self.vol > self.volume_restriction[1]:
             min_levelset = abs(self.levelset_function.vector().min())
             iterate = scipy.optimize.bisect(self.evaluate, 0., min_levelset, xtol=self.tolerance_bisect,
@@ -87,6 +85,5 @@ class projection_levelset:
                 0.0, self.levelset_function.vector().vec() + iterate
             )
             self.levelset_function.vector().apply("")
-            self.update_levelset()
         else:
             return
