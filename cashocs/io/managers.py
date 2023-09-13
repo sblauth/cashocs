@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import abc
 import json
+import os
+import shutil
 import subprocess  # nosec B404
 from typing import cast, List, TYPE_CHECKING, Union
 
@@ -362,6 +364,7 @@ class XDMFFileManager(IOManager):
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
+        self.save_mesh = self.config.getboolean("Output", "save_mesh")
 
         self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
@@ -444,10 +447,10 @@ class XDMFFileManager(IOManager):
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                lst.append(f"{self.result_dir}/xdmf/{name}_{j:d}.xdmf")
+                lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
             return lst
         else:
-            file = f"{self.result_dir}/xdmf/{name}.xdmf"
+            file = f"{self.result_dir}/checkpoints/{name}.xdmf"
             return file
 
     def _save_states(self, iteration: int) -> None:
@@ -535,6 +538,20 @@ class XDMFFileManager(IOManager):
                     iteration,
                 )
 
+    def _save_mesh(self, iteration: int) -> None:
+        """Saves the mesh as .xdmf and Gmsh .msh file.
+
+        Args:
+            iteration: The current iteration count.
+
+        """
+        if self.save_mesh:
+            iomesh.write_out_mesh(
+                self.db.geometry_db.mesh,
+                self.db.parameter_db.gmsh_file_path,
+                f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
+            )
+
     def _write_xdmf_step(
         self,
         filename: str,
@@ -556,14 +573,16 @@ class XDMFFileManager(IOManager):
         else:
             append = True
 
+        mesh = function.function_space().mesh()
+        comm = mesh.mpi_comm()
+
         if function.function_space().ufl_element().family() == "Real":
-            mesh = function.function_space().mesh()
             space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
         function.rename(function_name, function_name)
 
-        with fenics.XDMFFile(fenics.MPI.comm_world, filename) as file:
+        with fenics.XDMFFile(comm, filename) as file:
             file.parameters["flush_output"] = True
             file.parameters["functions_share_mesh"] = False
             file.write_checkpoint(
@@ -573,7 +592,7 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        fenics.MPI.barrier(comm)
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""
@@ -581,7 +600,20 @@ class XDMFFileManager(IOManager):
 
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
+        if iteration == 0:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                directory = f"{self.result_dir}/checkpoints/"
+                for files in os.listdir(directory):
+                    path = os.path.join(directory, files)
+                    try:
+                        shutil.rmtree(path)
+                    except OSError:
+                        os.remove(path)
+
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+
         self._save_states(iteration)
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
+        self._save_mesh(iteration)

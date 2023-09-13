@@ -7,6 +7,35 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
+2.1.0 (in development)
+----------------------
+
+* Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
+
+* Add a new function :py:func:`cashocs.io.extract_mesh_from_xdmf` which extracts (any, not only Gmsh) meshes from some XDMF state file (e.g. written by cashocs) and saves the underlying mesh in Gmsh file format.
+
+* Add a new command line interface :bash:`cashocs-extract_mesh` which can be used to invoke :py:func:`cashocs.io.extract_mesh_from_xdmf`.
+
+* The output routines save the xdmf files not in a folder called `xdmf` anymore, but the folder is called `checkpoints`
+
+* The output parameter `save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
+
+* Added the function :py:func:`cashocs.io.import_function` which can be used to load a XDMF Function with a function space. This is very useful for checkpointing (first, read the saved mesh, define the function space, then call :py:func:`cashocs.io.import_function`.
+
+* :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
+
+* New configuration file parameters:
+
+  * Section LineSearch
+
+    * :ini:`fail_if_not_converged` determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.
+
+  * Section MeshQuality
+
+    * :ini:`remesh_iter` is used to perform a remeshing after a certain amount of iterations.
+
+
+
 2.0.0 (May 16, 2023)
 --------------------
 

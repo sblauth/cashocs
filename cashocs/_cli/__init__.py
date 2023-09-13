@@ -18,5 +18,6 @@
 """Command line interface of cashocs."""
 
 from cashocs._cli._convert import convert
+from cashocs._cli._extract_mesh import extract_mesh
 
-__all__ = ["convert"]
+__all__ = ["convert", "extract_mesh"]

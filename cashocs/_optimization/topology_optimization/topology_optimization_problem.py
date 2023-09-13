@@ -81,6 +81,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         ] = None,
         desired_weights: list[float] | None = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -136,6 +138,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         """
         super().__init__(
@@ -151,15 +157,21 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
         )
 
         self.db.parameter_db.problem_type = "topology"
         self.mesh_parametrization = None
 
-        self.levelset_function = levelset_function
-        self.topological_derivative_pos = topological_derivative_pos
-        self.topological_derivative_neg = topological_derivative_neg
-        self.update_levelset = update_levelset
+        self.levelset_function: fenics.Function = levelset_function
+        self.topological_derivative_pos: fenics.Function | ufl.Form = (
+            topological_derivative_pos
+        )
+        self.topological_derivative_neg: fenics.Function | ufl.Form = (
+            topological_derivative_neg
+        )
+        self.update_levelset: Callable = update_levelset
         self.riesz_scalar_products = riesz_scalar_products
 
         self.is_topology_problem = True
