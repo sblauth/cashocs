@@ -127,8 +127,7 @@ html_theme_options = {
     "navbar_persistent": [],
     "show_nav_level": 2,
     "switcher": {
-        # "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
-        "json_url": "https://github.com/sblauth/cashocs/blob/main/docs/source/_static/version_switcher.json",
+        "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": switcher_version,
     },
     "primary_sidebar_end": [
@@ -137,6 +136,7 @@ html_theme_options = {
     ],
     "logo": {"text": "cashocs", "alt_text": "cashocs"},
     "navbar_align": "content",
+    "show_version_warning_banner": True,
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
