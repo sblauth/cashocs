@@ -87,17 +87,6 @@ h3 {
 
 }
 
-.version-switcher__button[data-active-version-name*="dev"] {
-   background-color: #E69F00;
-}
-
-.version-switcher__button[data-active-version-name*="stable"] {
-   background-color: var(--pst-color-success);
-}
-
-.version-switcher__button:not([data-activate-version-name*="dev"], [data-active-version-name*="stable"]) {
-   background-color: var(--pst-color-danger);
-
 
 /* Main page overview cards */
 
