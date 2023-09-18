@@ -25,26 +25,6 @@ h3 {
 }
 
 
-/* Background of others should be red */
-.version-switcher__container {
-  position: relative;
-}
-
-.version-switcher__container span {
-  color: var(--pst-color-danger);
-}
-
-.version-switcher__container span:before {
-  content: "";
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: var(--pst-color-danger);
-  opacity: 0.1;
-}
-
 /* Background of stable should be green */
 .version-switcher__container a[data-version-name*="stable"] {
   position: relative;
@@ -85,9 +65,26 @@ h3 {
   opacity: 0.1;
 }
 
+/* Background of others should be red */
+.version-switcher__container a:not([data-version-name*="dev"], [data-version-name*="stable"]) {
+  position: relative;
+}
 
-.version-switcher__button {
-   background-color: var(--pst-color-danger);
+.version-switcher__container a:not([data-version-name*="dev"], [data-version-name*="stable"]) span {
+  color: var(--pst-color-danger);
+}
+
+.version-switcher__container a:not([data-version-name*="dev"], [data-version-name*="stable"]) span:before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: var(--pst-color-danger);
+  opacity: 0.1;
+}
+
 }
 
 .version-switcher__button[data-active-version-name*="dev"] {
@@ -98,6 +95,8 @@ h3 {
    background-color: var(--pst-color-success);
 }
 
+.version-switcher__button:not([data-activate-version-name*="dev"], [data-active-version-name*="stable"]) {
+   background-color: var(--pst-color-danger);
 
 
 /* Main page overview cards */
