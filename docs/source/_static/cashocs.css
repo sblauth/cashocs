@@ -86,6 +86,18 @@ h3 {
 }
 
 
+.version-switcher__button {
+   background-color: var(--pst-color-danger);
+}
+
+.version-switcher__button[data-active-version-name*="dev"] {
+   background-color: #E69F00;
+}
+
+.version-switcher__button[data-active-version-name*="stable"] {
+   background-color: var(--pst-color-success);
+}
+
 
 
 /* Main page overview cards */
