@@ -7,8 +7,7 @@
     {
         "name": "2.0 (stable)",
         "version": "2.0.11",
-        "url": "https://cashocs.readthedocs.io/en/v2.0.11/",
-        "preferred": true
+        "url": "https://cashocs.readthedocs.io/en/v2.0.11/"
     },
     {
         "name": "1.8",
