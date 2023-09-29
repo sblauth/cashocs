@@ -19,12 +19,16 @@ class projection_levelset:
         levelset_function: fenics.Function,
         volume_restriction: Union[float, list[float]] | None = None,
     ) -> None:
-        """Initializes self.
+        """Initializes a class to project the levelset function for topology
+           optimization.
+
         Args:
             levelset_function: A :py:class:`fenics.Function` which represents the
                 levelset function.
-            volume_restriction: A volume restriction that the levelset function
-                should fulfill.
+            volume_restriction: A float or a list of floats that describes the
+                volume restriction that the levelset function should fulfill.
+                If this is ``None`` no projection is performed (default is ``None``).
+
         """
 
         self.levelset_function = levelset_function
@@ -48,25 +52,47 @@ class projection_levelset:
             self.volume_restriction = _utils.enlist(self.volume_restriction)
             if len(self.volume_restriction) == 1:
                 self.volume_restriction = [self.volume_restriction[0], self.volume_restriction[0]]
-
-        if self.volume_restriction[1] < self.volume_restriction[0]:
-            raise _exceptions.InputError("Bisection class", "volume_restriction",
-                                         "The lower bound of the volume restriction is bigger than the upper bound.")
+            if self.volume_restriction[1] < self.volume_restriction[0]:
+                raise _exceptions.InputError("Bisection class", "volume_restriction",
+                                             "The lower bound of the volume restriction is bigger than the upper "
+                                             "bound.")
 
         self.max_iter_bisect = 100
         self.tolerance_bisect = 1e-4
 
-    def evaluate(self, iterate, target):
+    def evaluate(self,
+                 iterate: float,
+                 target: float):
+        """A function that computes the volume of the shape that is represented by
+           the levelset funtion.
+
+        Args:
+            iterate: A float that describes the movement of the levelset function.
+                It is the iterate in the bisection procedure. If the volume of the
+                actual shape represented by the levelset function is desired it
+                should be set to zero.
+            target: The target for the projection procedure. If the volume of the
+                actual shape represented by the levelset function is desired it
+                should be set to zero.
+
+        Returns:
+            The volume of the shape represented by the levelset function moved by
+            iterate. It returns the volume difference to target.
+
+        """
         self.levelset_function_temp.vector().vec().aypx(
             0.0, self.levelset_function.vector().vec() + iterate
         )
         self.levelset_function_temp.vector().apply("")
         _utils.interpolate_levelset_function_to_cells(self.levelset_function_temp, 1.0, 0.0, self.indicator_omega)
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
-        return abs(self.vol - target)
+        return (self.vol - target)
 
 
     def project(self):
+        """Projects the levelset function onto the admissible set by a bisection
+           approach."""
+
         if abs(self.levelset_function.vector().max()-self.levelset_function.vector().min()) <= self.tolerance_bisect \
                 or self.volume_restriction is None:
             return
@@ -75,23 +101,33 @@ class projection_levelset:
         self.vol = fenics.assemble(self.indicator_omega * self.dx)
 
         if self.vol < self.volume_restriction[0]:
-            max_levelset = abs(self.levelset_function.vector().max())
-            #iterate = scipy.optimize.bisect(self.evaluate, -max_levelset, 0., xtol=self.tolerance_bisect,
-            #                                maxiter=self.max_iter_bisect, args=self.volume_restriction[0])
-            test = scipy.optimize.fmin(self.evaluate, 0., args=(self.volume_restriction[0],), ftol=self.tolerance_bisect,
-                                       maxiter=self.max_iter_bisect)
-            iterate = test[0]
+            lower = -abs(self.levelset_function.vector().max())
+            upper = 0.
+            xtol = self.tolerance_bisect
+            while True:
+                iterate = scipy.optimize.bisect(self.evaluate, lower, upper, xtol=xtol,
+                                                maxiter=self.max_iter_bisect, args=self.volume_restriction[0])
+                lower = iterate - self.tolerance_bisect
+                upper = iterate + self.tolerance_bisect
+                xtol *= 0.1
+                if self.evaluate(iterate, self.volume_restriction[0]) < self.tolerance_bisect:
+                    break
             self.levelset_function.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec() + iterate
             )
             self.levelset_function.vector().apply("")
         elif self.vol > self.volume_restriction[1]:
-            min_levelset = abs(self.levelset_function.vector().min())
-            #iterate = scipy.optimize.bisect(self.evaluate, 0., min_levelset, xtol=self.tolerance_bisect,
-            #                                maxiter=self.max_iter_bisect, args=self.volume_restriction[1])
-            test = scipy.optimize.fmin(self.evaluate, 0., args=(self.volume_restriction[1],), ftol=self.tolerance_bisect,
-                                       maxiter=self.max_iter_bisect)
-            iterate = test[0]
+            lower = 0.
+            upper = abs(self.levelset_function.vector().min())
+            xtol = self.tolerance_bisect
+            while True:
+                iterate = scipy.optimize.bisect(self.evaluate, lower, upper, xtol=xtol,
+                                                maxiter=self.max_iter_bisect, args=self.volume_restriction[1])
+                lower = iterate - self.tolerance_bisect
+                upper = iterate + self.tolerance_bisect
+                xtol *= 0.1
+                if self.evaluate(iterate, self.volume_restriction[1]) < self.tolerance_bisect:
+                    break
             self.levelset_function.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec() + iterate
             )
