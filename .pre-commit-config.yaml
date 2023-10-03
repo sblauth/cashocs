@@ -40,7 +40,7 @@ repos:
         
         
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.0.0a7
+    rev: v3.0.0
     hooks:
       - id: pylint
         files: cashocs/
