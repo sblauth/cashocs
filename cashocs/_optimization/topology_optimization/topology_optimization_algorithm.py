@@ -490,18 +490,18 @@ class SphereCombinationAlgorithm(LevelSetTopologyAlgorithm):
             / self.norm(self.topological_derivative_vertex)
         )
 
-        a = (
-            float(np.sin((1.0 - stepsize) * angle))
-            * self.levelset_function_prev.vector().vec()
+        self.levelset_function.vector().vec().axpby(
+            float(1.0 / np.sin(angle)) * float(np.sin((1.0 - stepsize) * angle)),
+            0.0,
+            self.levelset_function_prev.vector().vec(),
         )
-        b = (
-            float(
+        self.levelset_function.vector().vec().axpby(
+            float(1.0 / np.sin(angle))
+            * float(
                 np.sin(stepsize * angle) / self.norm(self.topological_derivative_vertex)
-            )
-            * self.topological_derivative_vertex.vector().vec()
-        )
-        self.levelset_function.vector().vec().aypx(
-            0.0, float(1.0 / np.sin(angle)) * (a + b)
+            ),
+            1.0,
+            self.topological_derivative_vertex.vector().vec(),
         )
         self.levelset_function.vector().apply("")
         if self.re_normalize_levelset:
