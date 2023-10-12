@@ -30,7 +30,7 @@ jobs:
           gmsh>=4.8
           occt<=7.7.0
           matplotlib
-          python=3.11
+          python=3.12
 
     - name: Install package
       run: |
@@ -69,7 +69,7 @@ jobs:
           occt<=7.7.0
           mpich
           matplotlib
-          python=3.11
+          python=3.12
 
     - name: Install package
       run: |
