@@ -4,8 +4,8 @@ cashocs Tutorial
 ================
 
 Welcome to the cashocs tutorial. In the following, we present several example
-programs that showcase how cashocs can be used to solve optimal control and
-shape optimization problems.
+programs that showcase how cashocs can be used to solve optimal control,
+shape optimization, and topology optimization problems.
 
 .. include:: ../../../README.rst
     :start-after: readme_start_disclaimer
@@ -25,6 +25,7 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
 
    demos/optimal_control/index
    demos/shape_optimization/index
+   demos/topology_optimization/index
    demos/cashocs_as_solver/index
    demos/misc/index
 

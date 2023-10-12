@@ -30,6 +30,7 @@ jobs:
           gmsh>=4.8
           occt<=7.7.0
           matplotlib
+          petsc"<=3.19"
           python=3.11
 
     - name: Install package
@@ -69,6 +70,7 @@ jobs:
           occt<=7.7.0
           mpich
           matplotlib
+          petsc"<=3.19"
           python=3.11
 
     - name: Install package

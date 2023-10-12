@@ -576,9 +576,10 @@ class SpaceMappingProblem:
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
-                    self.u[0].vector().vec().aypx(
+                    self.u[0].vector().vec().axpby(
+                        1.0 / divisor,
                         0.0,
-                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                        self.h[0].vector().vec() - self.v[0].vector().vec(),
                     )
                     self.u[0].vector().apply("")
 
@@ -587,9 +588,10 @@ class SpaceMappingProblem:
 
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
-                    self.u[0].vector().vec().aypx(
+                    self.u[0].vector().vec().axpby(
+                        1.0 / divisor,
                         0.0,
-                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                        self.h[0].vector().vec() - self.v[0].vector().vec(),
                     )
                     self.u[0].vector().apply("")
 
@@ -660,8 +662,8 @@ class SpaceMappingProblem:
                         "Space Mapping Backtracking Line Search",
                         "The line search did not converge.",
                     )
-                self.transformation.vector().vec().aypx(
-                    0.0, self.stepsize * self.h[0].vector().vec()
+                self.transformation.vector().vec().axpby(
+                    self.stepsize, 0.0, self.h[0].vector().vec()
                 )
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
@@ -854,10 +856,8 @@ class SpaceMappingProblem:
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                self.difference[0].vector().vec().aypx(
-                    0.0,
-                    -self.difference[0].vector().vec()
-                    - 2 * y2 / dy * out[0].vector().vec(),
+                self.difference[0].vector().vec().axpby(
+                    -2 * y2 / dy, -1.0, out[0].vector().vec()
                 )
                 self.difference[0].vector().apply("")
                 beta = -self._scalar_product(self.difference, q) / dy
