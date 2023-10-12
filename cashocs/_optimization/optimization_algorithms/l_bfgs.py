@@ -238,9 +238,10 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     - self.gradient_prev[i].vector().vec(),
                 )
                 self.y_k[i].vector().apply("")
-                self.s_k[i].vector().vec().aypx(
+                self.s_k[i].vector().vec().axpby(
+                    self.stepsize,
                     0.0,
-                    self.stepsize * self.search_direction[i].vector().vec(),
+                    self.search_direction[i].vector().vec(),
                 )
                 self.s_k[i].vector().apply("")
 
@@ -281,11 +282,12 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                     phi = (0.8 * gamma) / (gamma - curvature_condition)
 
                 for i in range(len(self.gradient)):
-                    self.r_k[i].vector().vec().aypx(
-                        0.0,
-                        phi * self.s_k[i].vector().vec()
-                        + (1.0 - phi)
-                        * self.approx_hessian_applied_to_y[i].vector().vec(),
+                    self.r_k[i].vector().vec().axpby(
+                        1.0, 0.0, self.approx_hessian_applied_to_y[i].vector().vec()
+                    )
+                    self.r_k[i].vector().apply("")
+                    self.r_k[i].vector().vec().axpby(
+                        phi, 1.0 - phi, self.s_k[i].vector().vec()
                     )
                     self.r_k[i].vector().apply("")
 
