@@ -17,6 +17,7 @@ RUN micromamba install -y -n base -c conda-forge \
       "occt<=7.7.0" \
       coverage">=6.1.0" \
       mpich \
+      petsc"<=3.19" \
       python=3.11 && \
    micromamba clean --all --yes
 

@@ -36,6 +36,7 @@ jobs:
           pytest">=7.0.0"
           gmsh">=4.8"
           occt"<=7.7.0"
+          petsc"<=3.19"
           ${{ matrix.mpi }}
           python=${{ matrix.python-version }}
 
