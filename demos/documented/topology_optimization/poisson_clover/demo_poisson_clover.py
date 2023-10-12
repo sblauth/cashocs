@@ -15,19 +15,6 @@
 # (demo_poisson_clover)=
 # # Topology Optimization with a Poisson Equation
 #
-# ## Some remarks about topology optimization
-#
-# As topology optimization problems are very involved from a theoretical point of view,
-# it is, at the moment, not possible to automatically derive topological derivatives.
-# Therefore, cashocs cannot be used as "black-box" solver for topology optimization
-# problems in general.
-#
-# Moreover, our framework for topology optimization of using a level-set function is
-# quite flexible, but requires a lot of theoretical understanding. In the following, we
-# briefly go over some theoretical foundations required for using cashocs' topology
-# optimization features. We refer the reader, e.g., to CITE for an exhaustive treatment
-# of these topics.
-#
 # ## Solving topology optimization problems with a level-set method
 #
 # The general form of a topology optimization problem is given by
@@ -116,8 +103,8 @@
 # derivative for this problem is given by
 #
 # $$
-# \mathcal{D}J(\Omega)(x) = (\alpha_\mathrm{out} - \alpha_\mathrm{in}) u(x)p(x)
-# - (f_\mathrm{out} - f_\mathrm{in})p(x),
+# \mathcal{D}J(\Omega)(x) = (\alpha_\mathrm{in} - \alpha_\mathrm{out}) u(x)p(x)
+# - (f_\mathrm{in} - f_\mathrm{out})p(x),
 # $$
 # where {math}`u` solves the state equation and {math}`p` solves the adjoint equation.
 #
@@ -171,21 +158,33 @@ DG0 = FunctionSpace(mesh, "DG", 0)
 psi = Function(V)
 psi.vector()[:] = 1.0
 
+# ### Definition of the Jumping Coefficients
 # We define the constants for the jumping coefficients as follows
 
 # +
-f_1 = 10.0
-f_2 = 1.0
-f_diff = f_1 - f_2
-
-alpha_1 = 10.0
-alpha_2 = 1.0
-alpha_diff = alpha_1 - alpha_2
-
+alpha_in = 10.0
+alpha_out = 1.0
 alpha = Function(DG0)
+
+f_in = 10.0
+f_out = 1.0
 f = Function(DG0)
 # -
+
+# :::{note}
+# As the jumping coefficients {math}`\alpha` and {math}`f` are piecewise constant for
+# each part of the considered domain, it is natural to represent them using piecewise
+# constant (in each mesh cell) functions from a discontinuous Lagrange FEM function
+# space. This approach is also mandatory for topology optimization. Note that cells,
+# which are "cut" by the level-set function, an average of the coefficients will be
+# computed, as detailed later.
+# :::
 #
+# ### Computation of the Desired State
+#
+# Next, we define the desired state {math}`u_\mathrm{des}` for our problem by solving
+# the state system for a prescribed desired shape. This is done in the following
+# function. We first state the code below and then go over the function in more details.
 
 
 def create_desired_state():
@@ -205,8 +204,8 @@ def create_desired_state():
     )
     psi_des = interpolate(f_expr, V)
 
-    cashocs.interpolate_levelset_function_to_cells(psi_des, alpha_1, alpha_2, alpha)
-    cashocs.interpolate_levelset_function_to_cells(psi_des, f_1, f_2, f)
+    cashocs.interpolate_levelset_function_to_cells(psi_des, alpha_in, alpha_out, alpha)
+    cashocs.interpolate_levelset_function_to_cells(psi_des, f_in, f_out, f)
 
     y_des = Function(V)
     v = TestFunction(V)
@@ -219,7 +218,66 @@ def create_desired_state():
     return y_des, psi_des
 
 
+# ::::{admonition} Descripion of the {python}`define_desired_state` function
+#
+# The above code starts with defining a level-set function based on a clover-type
+# shape, hence the name of this demo, which is done with the lines
+# :::{code-block} python
+# a = 4.0 / 5.0
+# b = 2
+#
+# f_expr = Expression(
+#     "0.1 * ( "
+#     + "(sqrt(pow(x[0] - a, 2) + b * pow(x[1], 2)) - 1)"
+#     + "* (sqrt(pow(x[0] + a, 2) + b * pow(x[1], 2)) - 1)"
+#     + "* (sqrt(b * pow(x[0], 2) + pow(x[1] - a, 2)) - 1)"
+#     + "* (sqrt(b * pow(x[0], 2) + pow(x[1] + a, 2)) - 1)"
+#     + "- 0.001)",
+#     degree=1,
+#     a=a,
+#     b=b,
+# )
+# psi_des = interpolate(f_expr, V)
+# :::
+#
+# Note, that this level-set function is taken from the [NGSolve Tutorials](https://docu.ngsolve.org/latest/i-tutorials/unit-7-optimization/04_Topological_Derivative_Levelset.html>)
+#
+# Then, the values of the jumping coefficients {math}`\alpha` and {math\`f` are
+# computed for this level-set function, using the
+# {py:func}`cashocs.interpolate_levelset_function_to_cells`, which sets the piecewise
+# constant functions `alpha` and `f` to the appropriate values according to the
+# level-set function:
+# :::{code-block} python
+# cashocs.interpolate_levelset_function_to_cells(psi_des, alpha_in, alpha_out, alpha)
+# cashocs.interpolate_levelset_function_to_cells(psi_des, f_in, f_out, f)
+# :::
+#
+# Finally, the state system corresponding to the desired shape is written out and
+# solved with cashocs using the lines
+# :::{code-block} python
+# y_des = Function(V)
+# v = TestFunction(V)
+#
+# F = dot(grad(y_des), grad(v)) * dx + alpha * y_des * v * dx - f * v * dx
+# bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
+#
+# cashocs.newton_solve(F, y_des, bcs, is_linear=True)
+#
+# return y_des, psi_des
+# :::
+#
+# and in the end, the desired state is returned together with the desired level-set
+# function (the latter is only used for visualization purposes).
+# ::::
+#
+# Now, the function we defined previously is called to compute the desired state.
+
 y_des, psi_des = create_desired_state()
+
+# ### Definition of the State Problem, Cost Functional, and Topological Derivative
+#
+# Next, we define the state problem, i.e., the PDE constraint for our minimization
+# problem, with the lines
 
 y = Function(V)
 p = Function(V)
@@ -227,10 +285,18 @@ F = dot(grad(y), grad(p)) * dx + alpha * y * p * dx - f * p * dx
 bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
 J = cashocs.IntegralFunctional(Constant(0.5) * pow(y - y_des, 2) * dx)
 
-# Now, we have to define the topological derivative of the problem, which we do with
+# Now, we define the generalized topological derivative of the problem, which is given
+# above. In python code, this can be done as follows
 
-dJ_in = Constant(alpha_diff) * y * p - Constant(f_diff) * p
-dJ_out = Constant(alpha_diff) * y * p - Constant(f_diff) * p
+dJ_in = Constant(alpha_in - alpha_out) * y * p - Constant(f_in - f_out) * p
+dJ_out = Constant(alpha_in - alpha_out) * y * p - Constant(f_in - f_out) * p
+
+# :::{attention}
+# There is a typo in our paper [Blauth and Sturm - Quasi-Newton methods for topology
+# optimization using a level-set method](https://doi.org/10.1007/s00158-023-03653-2),
+# i.e., in the paper a minus sign is missing. The topological derivative as stated
+# here is, in fact, correct.
+# :::
 
 # ::::{note}
 # We remark that the generalized topological derivative for this problem is identical
@@ -243,17 +309,45 @@ dJ_out = Constant(alpha_diff) * y * p - Constant(f_diff) * p
 # topological_derivative_is_identical = True
 # ```
 # ::::
+#
+# Finally, we have to define what happens, when the geometry, i.e., the level-set
+# function is updated. Of course, a change in the level-set function changes the
+# geometry, so that the jumping coefficients {math}`\alpha` and {math}`f` have to be
+# updated. This is, as before, done with the function
+# {py:func}`cashocs.interpolate_levelset_function_to_cells`, which is called twice, once
+# for updating `alpha` and once for `f`.
 
 
 def update_level_set():
-    cashocs.interpolate_levelset_function_to_cells(psi, alpha_1, alpha_2, alpha)
-    cashocs.interpolate_levelset_function_to_cells(psi, f_1, f_2, f)
+    cashocs.interpolate_levelset_function_to_cells(psi, alpha_in, alpha_out, alpha)
+    cashocs.interpolate_levelset_function_to_cells(psi, f_in, f_out, f)
 
+
+# ### Definition and Solution of the Topology Optimization Problem
+#
+# Now, defining a topology optimization problem is nearly as easy as defining a shape
+# optimization or optimal control problem, namely we instantiate a
+# {py:class}`cashocs.TopologyOptimizationProblem` and then can call it's
+# {py:meth}`solve <cashocs.TopologyOptimizationProblem.solve>` method.
 
 top = cashocs.TopologyOptimizationProblem(
     F, bcs, J, y, p, psi, dJ_in, dJ_out, update_level_set, config=cfg
 )
 top.solve(algorithm="bfgs", rtol=0.0, atol=0.0, angle_tol=1.0, max_iter=100)
+
+# :::{note}
+# Note, that there are several algorithms available for solving such topology
+# optimization problems. Among them are the usual "sphere combination" method of
+# [Amstutz and Andrä - A new algorithm for topology optimization using a level-set
+# method](https://doi.org/10.1016/j.jcp.2005.12.015), which is invoked with
+# `algorithm="sphere_combination"`, a convex combination approach, invoked with
+# `algorithm="convex_combination"`, and all optimizaton algorithms available for shape
+# optimization, i.e., gradient descent (`algorithm="gd"`), nonlinear CG
+# (`algorithm="ncg"`) and L-BFGS (`algorithm="bfgs"`) methods. For a comparison of these
+# optimization algorithms, we refer the reader to [Blauth
+# and Sturm - Quasi-Newton methods for topology optimization using a level-set
+# method](https://doi.org/10.1007/s00158-023-03653-2)
+# :::
 
 # We visualize the results with the following code
 
@@ -277,9 +371,14 @@ plt.tight_layout()
 
 # and the result looks like this
 # ![](/../../demos/documented/topology_optimization/poisson_clover/img_poisson_clover.png)
+# As we can see, the BFGS method is able to reconstruct the desired clover shape after
+# only about 100 iterations. We encourage readers to try the other (established) methods
+# to compare the novel BFGS approach to established techniques and see that the new
+# methods are significantly more efficient.
 #
 # :::{note}
 # The method {py:meth}`plot_shape <cashocs.TopologyOptimizationProblem.plot_shape>` can
 # be used to visualize the current shape based on the level-set function `psi`. Note
 # that the cells inside {math}`\Omega` are colored in yellow and the ones outside are
 # colored blue.
+# :::

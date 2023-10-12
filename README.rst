@@ -65,6 +65,9 @@ we can recommend the textbooks
 - Shape Optimization
     - `Delfour and Zolesio - Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
     - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
+- Topology Optimization
+    - `Sokolowski and Novotny - Topological Derivatives in Shape Optimization <https://doi.org/10.1007/978-3-642-35245-4>`_
+    - `Amstutz - An Introduction to the Topological Derivative <https://doi.org/10.1108/EC-07-2021-0433>`_
 - FEniCS
     - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
     - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
