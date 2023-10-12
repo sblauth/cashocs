@@ -91,21 +91,21 @@
 # ### Initialization and Setup
 #
 # As with all other demos, we start by importing FEniCS and cashocs.
-#
-# +
 
+# +
 from fenics import *
 
 import cashocs
 
 # -
-#
+
 # Next, we load the configuration file of the problem with the line
 
 cfg = cashocs.load_config("config.ini")
 
 # Following this, we define the computational domain, using the built-in
-# {py:func}`cashocs.regular_mesh` function, so that our hold-all domain is given by
+# {py:func}`regular_mesh <cashocs.regular_mesh>` function, so that our hold-all domain
+# is given by
 # {math}`\mathrm{D} = (0,2) \times (0,1)`.
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(
@@ -179,9 +179,8 @@ indicator_omega = Function(DG0)
 # In the following, we define two python functions which return Hooke's tensor and
 # the symmetrized gradient
 
+
 # +
-
-
 def eps(u):
     return Constant(0.5) * (grad(u) + grad(u).T)
 
@@ -191,7 +190,7 @@ def sigma(u):
 
 
 # -
-#
+
 # For the load applied to the system we use a unitary point load at (2, 0.5), i.e., in
 # the middle of the outer rightmost boundary. To do so, a Dirac-Delta function can be
 # defined via a FEniCS `UserExpression` as follows.
@@ -247,7 +246,6 @@ J = cashocs.IntegralFunctional(
 # derivative of the problem, which has been derived above. This is done with the lines
 
 # +
-
 kappa = (lambd + 3.0 * mu) / (lambd + mu)
 r_in = alpha_out / alpha_in
 r_out = alpha_in / alpha_out
@@ -272,11 +270,12 @@ dJ_out = (
 ) + Constant(gamma)
 
 # -
-#
+
 # As in {ref}`demo_poisson_clover`, we now only have to specify what needs to happen
 # when the level-set function is updated, i.e., when the geometry changes. Of course,
 # the jumping coefficient {math}`\alpha` needs to be updated with the
-# {py:func}`cashocs.interpolate_levelset_function_to_cells` function, but so does the
+# {py:func}`interpolate_levelset_function_to_cells
+# <cashocs.interpolate_levelset_function_to_cells>` function, but so does the
 # indicator function of the geometry. This is specified in the following function.
 
 

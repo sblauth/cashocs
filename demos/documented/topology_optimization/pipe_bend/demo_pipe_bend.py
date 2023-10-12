@@ -90,16 +90,15 @@
 # ### Initialization and Setup
 #
 # We start by importing cashocs and FEniCS into our script
-#
-# +
 
+# +
 from fenics import *
 import numpy as np
 
 import cashocs
 
 # -
-#
+
 # Next, we load the configuration file for the problem and define the mesh with the
 # lines
 
@@ -176,9 +175,8 @@ F = (
 # with the following expressions.Additionally, we specify the pressure at the point
 # {math}`x^* = (0,0)` to obtain uniqueness of the pressure.
 # Altogether, the boundary conditions are specified using the code
-#
-# +
 
+# +
 v_max = 1e0
 v_in = Expression(
     ("(x[1] >= 0.7 && x[1] <= 0.9) ? v_max*(1 - 100*pow(x[1] - 0.8, 2)) : 0.0", "0.0"),
@@ -200,9 +198,8 @@ bcs = cashocs.create_dirichlet_bcs(V.sub(0), v_in, boundaries, 1)
 bcs += cashocs.create_dirichlet_bcs(V.sub(0), v_out, boundaries, 3)
 bcs += cashocs.create_dirichlet_bcs(V.sub(0), Constant((0.0, 0.0)), boundaries, [2, 4])
 bcs += [DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")]
-
 # -
-#
+
 # ### Cost Functional and Topological Derivative
 #
 # Now, we define the cost functional of our problem as well as its corresponding
@@ -226,6 +223,18 @@ dJ_out = Constant(alpha_in - alpha_out) * (dot(u, v) + dot(u, u)) + Constant(lam
 # `update_level_set` function, which is defined below, the variable `vol` holds the
 # correct value in each iteration.
 # :::
+#
+# ::::{note}
+# As in {ref}`demo_poisson_clover`, the generalized topological derivative for this
+# problem is identical in {math}`\Omega` and {math}`\Omega^c`, which is usually not the
+# case. For this reason, the special structure of the problem can be exploited with the
+# following lines in the configuration file
+# ```{code-block} ini
+# :caption: config.ini
+# [TopologyOptimization]
+# topological_derivative_is_identical = True
+# ```
+# ::::
 
 # As in the previous demos, we have to specify the update routine of the level-set
 # function `update_level_set`, which we do as follows:
@@ -238,7 +247,8 @@ def update_level_set():
 
 
 # That is, in the `update_level_set` function, first the jumping coefficient is updated
-# with the {py:func}`cashocs.interpolate_levelset_function_to_cells` function.
+# with the {py:func}`interpolate_levelset_function_to_cells
+# <cashocs.interpolate_levelset_function_to_cells>` function.
 # Then, the indicator function is updated and used to compute the current volume of the
 # domain, which is written to the variable `vol`.
 #
@@ -261,9 +271,8 @@ top.solve(algorithm="bfgs", rtol=0.0, atol=0.0, angle_tol=5.0, max_iter=500)
 # :::
 #
 # We visualize the result with the code
-#
-# +
 
+# +
 import matplotlib.pyplot as plt
 
 top.plot_shape()
@@ -271,6 +280,14 @@ plt.title("Obtained Pipe Bend Design")
 plt.tight_layout()
 # plt.savefig("./img_pipe_bend.png", dpi=150, bbox_inches="tight")
 # -
-#
+
 # and the results looks as follows
 # ![](/../../demos/documented/topology_optimization/pipe_bend/img_pipe_bend.png)
+#
+# :::{note}
+# Note that this design is not final due to the following: First, the tolerance for
+# the optimization algorithm is chosen too large, as explained previously. Second,
+# the chosen mesh is rather coarse and, thus, the discretization of the shape is rather
+# coarse, too. These problems can be overcome by using a finer discretization and a
+# lower tolerance.
+# :::

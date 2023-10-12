@@ -108,6 +108,13 @@
 # $$
 # where {math}`u` solves the state equation and {math}`p` solves the adjoint equation.
 #
+# :::{attention}
+# There is a typo in our paper [Blauth and Sturm - Quasi-Newton methods for topology
+# optimization using a level-set method](https://doi.org/10.1007/s00158-023-03653-2),
+# i.e., in the paper a minus sign is missing. The topological derivative as stated
+# here is, in fact, correct.
+# :::
+#
 # ## Implementation
 #
 # The complete python code can be found in the file {download}`demo_poisson_clover.py
@@ -131,13 +138,14 @@ import cashocs
 cashocs.set_log_level(cashocs.LogLevel.INFO)
 
 # As with the other problem types, the solution algorithms of cashocs can be adapted
-# with the help of configuration files, which is loaded with the {py:func}`load_config <
-# cashocs.load_config>` function
+# with the help of configuration files, which is loaded with the
+# {py:func}`load_config <cashocs.load_config>` function
 
 cfg = cashocs.load_config("config.ini")
 
 # In the next step, we define the mesh used for discretization of the hold-all domain
-# {math}`\mathrm{D}`. To do so, we use the in-built {py:func}`cashocs.regular_box_mesh`
+# {math}`\mathrm{D}`. To do so, we use the built-in
+# {py:func}`regular_box_mesh <cashocs.regular_box_mesh>`
 # function, which gives us a discretization of {math}`\mathrm{D} = (-2, 2)^2`.
 
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_box_mesh(
@@ -242,9 +250,10 @@ def create_desired_state():
 #
 # Note, that this level-set function is taken from the [NGSolve Tutorials](https://docu.ngsolve.org/latest/i-tutorials/unit-7-optimization/04_Topological_Derivative_Levelset.html>)
 #
-# Then, the values of the jumping coefficients {math}`\alpha` and {math\`f` are
+# Then, the values of the jumping coefficients {math}`\alpha` and {math}`f` are
 # computed for this level-set function, using the
-# {py:func}`cashocs.interpolate_levelset_function_to_cells`, which sets the piecewise
+# {py:func}`interpolate_levelset_function_to_cells
+# <cashocs.interpolate_levelset_function_to_cells>`, which sets the piecewise
 # constant functions `alpha` and `f` to the appropriate values according to the
 # level-set function:
 # :::{code-block} python
@@ -291,13 +300,6 @@ J = cashocs.IntegralFunctional(Constant(0.5) * pow(y - y_des, 2) * dx)
 dJ_in = Constant(alpha_in - alpha_out) * y * p - Constant(f_in - f_out) * p
 dJ_out = Constant(alpha_in - alpha_out) * y * p - Constant(f_in - f_out) * p
 
-# :::{attention}
-# There is a typo in our paper [Blauth and Sturm - Quasi-Newton methods for topology
-# optimization using a level-set method](https://doi.org/10.1007/s00158-023-03653-2),
-# i.e., in the paper a minus sign is missing. The topological derivative as stated
-# here is, in fact, correct.
-# :::
-
 # ::::{note}
 # We remark that the generalized topological derivative for this problem is identical
 # in {math}`\Omega` and {math}`\Omega^c`, which is usually not the case. For this
@@ -314,7 +316,8 @@ dJ_out = Constant(alpha_in - alpha_out) * y * p - Constant(f_in - f_out) * p
 # function is updated. Of course, a change in the level-set function changes the
 # geometry, so that the jumping coefficients {math}`\alpha` and {math}`f` have to be
 # updated. This is, as before, done with the function
-# {py:func}`cashocs.interpolate_levelset_function_to_cells`, which is called twice, once
+# {py:func}`interpolate_levelset_function_to_cells
+# <cashocs.interpolate_levelset_function_to_cells>`, which is called twice, once
 # for updating `alpha` and once for `f`.
 
 
@@ -327,7 +330,8 @@ def update_level_set():
 #
 # Now, defining a topology optimization problem is nearly as easy as defining a shape
 # optimization or optimal control problem, namely we instantiate a
-# {py:class}`cashocs.TopologyOptimizationProblem` and then can call it's
+# {py:class}`TopologyOptimizationProblem <cashocs.TopologyOptimizationProblem>` and
+# then can call it's
 # {py:meth}`solve <cashocs.TopologyOptimizationProblem.solve>` method.
 
 top = cashocs.TopologyOptimizationProblem(
