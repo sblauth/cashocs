@@ -104,6 +104,8 @@ class OptimizationProblem(abc.ABC):
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -154,6 +156,10 @@ class OptimizationProblem(abc.ABC):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -220,6 +226,10 @@ class OptimizationProblem(abc.ABC):
             self.bcs_list,
             self.preconditioner_forms,
         )
+
+        self.db.callback.pre_callback = pre_callback
+        self.db.callback.post_callback = post_callback
+
         if temp_dict is not None:
             self.db.parameter_db.temp_dict.update(temp_dict)
             self.db.parameter_db.is_remeshed = True

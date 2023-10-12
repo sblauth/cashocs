@@ -28,7 +28,7 @@ copyright = "2020-2023, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.12"
+release = "2.1.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -136,6 +136,7 @@ html_theme_options = {
     ],
     "logo": {"text": "cashocs", "alt_text": "cashocs"},
     "navbar_align": "content",
+    "show_version_warning_banner": True,
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
