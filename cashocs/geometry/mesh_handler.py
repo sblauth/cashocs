@@ -505,7 +505,7 @@ class _MeshHandler:
 
     def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
         solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
-            solver.optimization_problem.mesh_parametrization,
+            solver.optimization_problem.mesh_parametrization,  # type: ignore
             self.db.parameter_db.temp_dict["mesh_file"],
         )
         solver.optimization_problem.initialize_solve_parameters()

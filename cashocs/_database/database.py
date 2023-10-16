@@ -72,17 +72,21 @@ class Database:
         self.config = config
         self.callback = cb.Callback()
 
-        self.function_db = function_database.FunctionDatabase(states, adjoints)
-        self.parameter_db = parameter_database.ParameterDatabase(
-            self.function_db,
-            config,
-            state_ksp_options,
-            adjoint_ksp_options,
-            gradient_ksp_options,
+        self.function_db: function_database.FunctionDatabase = (
+            function_database.FunctionDatabase(states, adjoints)
         )
-        self.geometry_db = geometry_database.GeometryDatabase(
-            self.function_db, self.parameter_db
+        self.parameter_db: parameter_database.ParameterDatabase = (
+            parameter_database.ParameterDatabase(
+                self.function_db,
+                config,
+                state_ksp_options,
+                adjoint_ksp_options,
+                gradient_ksp_options,
+            )
         )
-        self.form_db = form_database.FormDatabase(
+        self.geometry_db: geometry_database.GeometryDatabase = (
+            geometry_database.GeometryDatabase(self.function_db, self.parameter_db)
+        )
+        self.form_db: form_database.FormDatabase = form_database.FormDatabase(
             cost_functional_list, state_forms, bcs_list, preconditioner_forms
         )

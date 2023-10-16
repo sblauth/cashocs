@@ -55,7 +55,7 @@ class StateProblem(pde_problem.PDEProblem):
         self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
 
-        self.bcs_list = self.state_form_handler.bcs_list
+        self.bcs_list: List[List[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")

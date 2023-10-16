@@ -19,7 +19,11 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
+
+from cashocs import _exceptions
+from cashocs import _typing
+from cashocs import _utils
 
 
 class Callback:
@@ -27,15 +31,42 @@ class Callback:
 
     def __init__(self) -> None:
         """Initializes the callbacks."""
-        self.pre_callback: Optional[Callable] = None
-        self.post_callback: Optional[Callable] = None
+        self.pre_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None
+        self.post_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None
+        self.problem: Optional[_typing.OptimizationProblem] = None
 
     def call_pre(self) -> None:
         """Calls the callback intended before solving the state system."""
         if self.pre_callback is not None:
-            self.pre_callback()  # pylint: disable=not-callable
+            num_args = _utils.number_of_arguments(self.pre_callback)
+            if num_args == 0:
+                self.pre_callback()  # type: ignore
+            elif num_args == 1:
+                self.pre_callback(self.problem)  # type: ignore
+            else:
+                raise _exceptions.InputError(
+                    "OptimizationProblem",
+                    "pre_callback",
+                    "The number of arguments for the pre_callback function can either "
+                    "be one or zero.",
+                )
 
     def call_post(self) -> None:
         """Calls the callback intended after computing the gradient."""
         if self.post_callback is not None:
-            self.post_callback()  # pylint: disable=not-callable
+            num_args = _utils.number_of_arguments(self.post_callback)
+            if num_args == 0:
+                self.post_callback()  # type: ignore
+            elif num_args == 1:
+                self.post_callback(self.problem)  # type: ignore
+            else:
+                raise _exceptions.InputError(
+                    "OptimizationProblem",
+                    "post_callback",
+                    "The number of arguments for the pre_callback function can either "
+                    "be one or zero.",
+                )

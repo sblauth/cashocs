@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import configparser
 import inspect
-from typing import Callable, cast, List, Optional, TypeVar, Union
+from typing import Any, Callable, cast, List, Optional, TypeVar, Union
 
 import fenics
 
@@ -198,7 +198,7 @@ def check_file_extension(file: str, required_extension: str) -> None:
         )
 
 
-def number_of_arguments(function: Callable) -> int:
+def number_of_arguments(function: Callable[..., Any]) -> int:
     """Computes the number of arguments that a function has.
 
     Args:

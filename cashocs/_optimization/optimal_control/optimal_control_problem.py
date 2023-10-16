@@ -184,8 +184,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.mesh_parametrization = None
 
-        # riesz_scalar_products
-        self.riesz_scalar_products = self._parse_riesz_scalar_products(
+        self.riesz_scalar_products: List[ufl.Form] = self._parse_riesz_scalar_products(
             riesz_scalar_products
         )
 
