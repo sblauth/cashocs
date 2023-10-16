@@ -164,7 +164,8 @@ DG0 = FunctionSpace(mesh, "DG", 0)
 # initialize {math}`\Omega` to the empty set by setting {math}`\Psi = 1` with the lines
 
 psi = Function(V)
-psi.vector()[:] = 1.0
+psi.vector().vec().set(1.0)
+psi.vector().apply("")
 
 # ### Definition of the Jumping Coefficients
 # We define the constants for the jumping coefficients as follows
@@ -365,7 +366,8 @@ top.plot_shape()
 plt.title("Obtained shape")
 
 ax_u = plt.subplot(1, 2, 2)
-psi.vector()[:] = psi_des.vector()[:]
+psi.vector().vec().aypx(0.0, psi_des.vector().vec())
+psi.vector().apply("")
 top.plot_shape()
 plt.title("Desired shape")
 
