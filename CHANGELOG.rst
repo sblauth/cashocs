@@ -12,6 +12,8 @@ of the maintenance releases, please take a look at
 
 * Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
 
+* Callbacks can now have one parameter - the parameter supplied when being called during runtime is the optimization problem itself
+
 * Add a new function :py:func:`cashocs.io.extract_mesh_from_xdmf` which extracts (any, not only Gmsh) meshes from some XDMF state file (e.g. written by cashocs) and saves the underlying mesh in Gmsh file format.
 
 * Add a new command line interface :bash:`cashocs-extract_mesh` which can be used to invoke :py:func:`cashocs.io.extract_mesh_from_xdmf`.
