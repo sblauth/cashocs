@@ -245,7 +245,7 @@ class ResultManager(IOManager):
         ]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
-                json.dump(self.output_dict, file)
+                json.dump(self.output_dict, file, indent=4)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
