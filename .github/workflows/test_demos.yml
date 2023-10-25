@@ -30,6 +30,7 @@ jobs:
           gmsh>=4.8
           matplotlib
           petsc<=3.19
+          mpi4py<=3.1.4
           python=3.11
 
     - name: Install package
@@ -69,6 +70,7 @@ jobs:
           mpich
           matplotlib
           petsc<=3.19
+          mpi4py<=3.1.4
           python=3.11
 
     - name: Install package
