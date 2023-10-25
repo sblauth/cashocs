@@ -206,7 +206,7 @@ class HessianFormHandler:
         self.w_2: List[ufl.Form] = []
         self.w_3: List[ufl.Form] = []
         self.hessian_rhs: List[ufl.Form] = []
-        self.test_directions = _utils.create_function_list(
+        self.test_directions: list[fenics.Function] = _utils.create_function_list(
             [c.function_space() for c in self.db.function_db.controls]
         )
         self.test_functions_control = [
