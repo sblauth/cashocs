@@ -290,7 +290,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             mesh_name: The path to the initial mesh file.
 
         """
-        self.mesh_parametrization = mesh_parametrization
+        self.mesh_parametrization: Callable = mesh_parametrization
         self.mesh_name = mesh_name
 
         arguments = self.mesh_parametrization(self.mesh_name)

@@ -230,6 +230,15 @@ class ShapeFormHandler(form_handler.FormHandler):
     and the shape derivatives.
     """
 
+    use_fixed_dimensions: bool
+    bcs_shape: list[fenics.DirichletBC]
+    fe_shape_derivative_vector: fenics.PETScVector
+    shape_derivative: ufl.Form
+    fixed_indices: list[int]
+    assembler: fenics.SystemAssembler
+    scalar_product_matrix: fenics.PETScMatrix
+    modified_scalar_product: ufl.Form
+
     def __init__(
         self,
         optimization_problem: shape_optimization.ShapeOptimizationProblem,
@@ -269,7 +278,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)
-        self.mu_lame = fenics.Function(self.cg_function_space)
+        self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
         self.volumes = fenics.Function(self.dg_function_space)
 
         self.stiffness = Stiffness(
@@ -306,7 +315,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.shape_derivative = self._compute_shape_derivative()
 
         self.bcs_shape = self._setup_bcs_shape()
-        self.riesz_scalar_product = self._compute_shape_gradient_forms()
+        self.riesz_scalar_product: ufl.Form = self._compute_shape_gradient_forms()
 
         self.modified_scalar_product, self.assembler = self.setup_assembler(
             self.riesz_scalar_product, self.shape_derivative, self.bcs_shape

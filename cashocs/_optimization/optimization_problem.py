@@ -27,6 +27,7 @@ from __future__ import annotations
 import abc
 import copy
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+import weakref
 
 import fenics
 import numpy as np
@@ -104,8 +105,12 @@ class OptimizationProblem(abc.ABC):
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
+        pre_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
+        post_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -229,6 +234,7 @@ class OptimizationProblem(abc.ABC):
 
         self.db.callback.pre_callback = pre_callback
         self.db.callback.post_callback = post_callback
+        self.db.callback.problem = weakref.proxy(self)
 
         if temp_dict is not None:
             self.db.parameter_db.temp_dict.update(temp_dict)
