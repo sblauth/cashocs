@@ -19,11 +19,13 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, TYPE_CHECKING, Union
 
 from cashocs import _exceptions
-from cashocs import _typing
 from cashocs import _utils
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 class Callback:
