@@ -40,8 +40,8 @@
 
 |
 
-cashocs is a computational adjoint-based shape optimization and optimal control
-software for python.
+cashocs is a finite element software for the automated solution of shape optimization and optimal control problems. It is used to solve problems in fluid dynamics and multiphysics contexts. Its name is an acronym for computational adjoint-based shape optimization and optimal control software and the software is written in Python.
+
 
 .. contents:: :local:
 
@@ -52,6 +52,8 @@ cashocs is based on the finite element package `FEniCS
 <https://fenicsproject.org>`__ and uses its high-level unified form language UFL
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
+
+For some applications and further information about cashocs, we also refer to the website `Fluid Dynamical Shape Optimization with cashocs <https://www.itwm.fraunhofer.de/en/departments/tv/products-and-services/shape-optimization-cashocs-software.html>`_.
 
 .. readme_start_disclaimer
 
