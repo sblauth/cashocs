@@ -23,11 +23,12 @@ import copy
 from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
+from matplotlib import colors
+import numpy as np
 import ufl
 
 from cashocs import _exceptions
 from cashocs import _optimization
-from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
 from cashocs._optimization.optimal_control import optimal_control_problem
@@ -308,8 +309,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
 
     def plot_shape(self) -> None:
         """Visualize the current shape in a plot."""
-        shape = fenics.Function(self.dg0_space)
-        _utils.interpolate_levelset_function_to_cells(
-            self.levelset_function, 1.0, 0.0, shape
+        rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0
+        cmap = colors.LinearSegmentedColormap.from_list(
+            "tab10_colorblind", rgbvals, N=256
         )
-        fenics.plot(shape)
+        fenics.plot(self.levelset_function, vmin=-1e-10, vmax=1e-10, cmap=cmap)
