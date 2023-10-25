@@ -501,7 +501,7 @@ class SpaceMappingProblem:
         if self.converged:
             if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file)
+                    json.dump(self.space_mapping_history, file, indent=4)
             fenics.MPI.barrier(fenics.MPI.comm_world)
             output = (
                 f"\nStatistics --- "
