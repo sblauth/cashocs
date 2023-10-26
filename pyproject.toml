@@ -47,6 +47,7 @@ dependencies = [
 	"numpy",
 	"typing_extensions",
     "matplotlib",
+    "packaging",
 ]
 
 [project.urls]
@@ -136,5 +137,6 @@ module = [
 	"meshio",
 	"h5py",
     "matplotlib.*",
+    "packaging.*",
 ]
 ignore_missing_imports = true

@@ -24,10 +24,13 @@ from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
+from packaging import version
+import petsc4py
 from petsc4py import PETSc
 import ufl
 
 from cashocs import _exceptions
+from cashocs import _loggers
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
@@ -323,6 +326,7 @@ def solve_linear_problem(
     atol: Optional[float] = None,
     comm: Optional[MPI.Comm] = None,
     P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+    min_iter: int = 0,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -344,6 +348,8 @@ def solve_linear_problem(
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
         comm: The MPI communicator for the problem.
+        min_iter: The minimum number of iterations to use for the linear solver,
+            regardless of tolerances.
 
     Returns:
         The solution vector.
@@ -365,6 +371,14 @@ def solve_linear_problem(
     options = define_ksp_options(ksp_options)
 
     setup_fieldsplit_preconditioner(fun, ksp, options)
+    if min_iter > 0:
+        if version.parse(petsc4py.__version__) < version.parse("3.20"):
+            _loggers.warning(
+                "The ability to specify a minimum number of iterations for a linear "
+                "solver is only available with PETSc >= 3.20. The specified minimum "
+                "iteration number will be ignored."
+            )
+        options["ksp_min_it"] = min_iter
     setup_petsc_options([ksp], [options])
 
     if rtol is not None:

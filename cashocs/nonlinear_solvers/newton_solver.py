@@ -57,6 +57,7 @@ class _NewtonSolver:
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
         preconditioner_form: ufl.Form = None,
+        min_inner_iter: int = 0,
     ) -> None:
         r"""Initializes self.
 
@@ -95,6 +96,10 @@ class _NewtonSolver:
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
             preconditioner_form: A UFL form which defines the preconditioner matrix.
+            min_inner_iter: Minimum number of iterations for the inner (linear) solver
+                to perform. This parameter is only intended for being used with an
+                inexact Newton's method (there, in the first steps, only a small handful
+                of inner iterations are needed to satisfy the termination criterion).
 
         """
         self.nonlinear_form = nonlinear_form
@@ -115,6 +120,8 @@ class _NewtonSolver:
             self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
         else:
             self.preconditioner_form = preconditioner_form
+
+        self.min_inner_iter = min_inner_iter
 
         self.verbose = verbose if not self.is_linear else False
 
@@ -293,6 +300,7 @@ class _NewtonSolver:
                 atol=self.atol / 10.0,
                 comm=self.comm,
                 P=self.P_matrix,
+                min_iter=self.min_inner_iter,
             )
 
             if self.is_linear:
@@ -440,6 +448,7 @@ def newton_solve(
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
     preconditioner_form: ufl.Form = None,
+    min_inner_iter: int = 0,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 
@@ -475,6 +484,11 @@ def newton_solve(
             sub-problem.
         is_linear: A boolean flag, which indicates whether the problem is actually
             linear.
+        preconditioner_form: A UFL form which defines the preconditioner matrix.
+        min_inner_iter: Minimum number of iterations for the inner (linear) solver
+            to perform. This parameter is only intended for being used with an
+            inexact Newton's method (there, in the first steps, only a small handful
+            of inner iterations are needed to satisfy the termination criterion).
 
     Returns:
         The solution of the nonlinear variational problem, if converged. This overwrites
@@ -523,6 +537,7 @@ def newton_solve(
         b_tensor=b_tensor,
         is_linear=is_linear,
         preconditioner_form=preconditioner_form,
+        min_inner_iter=min_inner_iter,
     )
 
     solution = solver.solve()
