@@ -94,6 +94,7 @@ def picard_iteration(
     b_tensors: Optional[List[fenics.PETScVector]] = None,
     inner_is_linear: bool = False,
     preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+    min_inner_iter: int = 0,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
@@ -122,8 +123,10 @@ def picard_iteration(
         inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
             linear ones, and only a linear solver is used.
         preconditioner_forms: The list of forms for the preconditioner. The default
-                is `None`, so that the preconditioner matrix is the same as the system
-                matrix.
+            is `None`, so that the preconditioner matrix is the same as the system
+            matrix.
+        min_inner_iter: Minimum iterations the inner (linear) solver should perform
+            regardless of termination criteria.
 
     """
     is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -188,6 +191,7 @@ def picard_iteration(
                 b_tensor=b_tensor,
                 is_linear=inner_is_linear,
                 preconditioner_form=preconditioner_form_list[j],
+                min_inner_iter=min_inner_iter,
             )
 
     if is_printing:

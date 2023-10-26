@@ -129,6 +129,9 @@ class Config(ConfigParser):
                 "newton_inexact": {
                     "type": "bool",
                 },
+                "min_inner_iter": {
+                    "type": "int",
+                },
                 "newton_verbose": {
                     "type": "bool",
                 },
@@ -542,6 +545,7 @@ newton_atol = 1e-13
 newton_iter = 50
 newton_damped = False
 newton_inexact = False
+min_inner_iter = 0
 newton_verbose = False
 picard_iteration = False
 picard_rtol = 1e-10

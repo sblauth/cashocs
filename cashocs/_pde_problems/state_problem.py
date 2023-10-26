@@ -66,6 +66,7 @@ class StateProblem(pde_problem.PDEProblem):
         self.newton_atol = self.config.getfloat("StateSystem", "newton_atol")
         self.newton_damped = self.config.getboolean("StateSystem", "newton_damped")
         self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
+        self.min_inner_iter = self.config.getint("StateSystem", "min_inner_iter")
         self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
         self.newton_iter = self.config.getint("StateSystem", "newton_iter")
 
@@ -149,6 +150,7 @@ class StateProblem(pde_problem.PDEProblem):
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
+                            min_inner_iter=self.min_inner_iter,
                         )
 
             else:
