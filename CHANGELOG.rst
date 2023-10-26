@@ -26,7 +26,13 @@ of the maintenance releases, please take a look at
 
 * :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
 
+* Add a new parameter :python:`min_inner_iter` to :py:func:`cashocs.newton_solve`. This parameter is used to specify the minimum amount of iterations that the inner (i.e. linear) solver should perform, regardless of termination criteria.
+
 * New configuration file parameters:
+
+  * Section StateSystem
+
+    * :ini:`min_inner_iter` is a parameter controlling the minimum number of iterations that a inner (i.e. linear) solver should perform when using Newton's method. Mainly intended to be used for inexact Newton's method.
 
   * Section LineSearch
 

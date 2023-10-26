@@ -110,6 +110,14 @@ Additionally, we have the boolean parameter :ini:`newton_inexact`, defined via
 
 which sets up an inexact Newton method for solving nonlinear problems in case this is :ini:`newton_inexact = True`. The default is :ini:`newton_inexact = False`.
 
+For the inexact Newton's method, it can be beneficial to set a minimum number of iterations that have to be performed regardless of termination criteria. This is sensible, as the tolerance for the early iterations is usually very low, meaning that the linear solver converges in a handful of iterations. This leads to unwanted behavior, as the Jacobian is re-assembled very often initially. The parameter
+
+.. code-block:: ini
+
+    min_inner_iter = 0
+
+can be used to set the minimum amount of iterations that a linear solver should perform (when used in Newton's method). If this is :ini:`0` (which is the default), there is no minimum number of iterations prescribed.
+
 The parameter 
 
 .. code-block:: ini
@@ -633,6 +641,8 @@ in the following.
       - if :ini:`newton_damped = True`, damping is enabled
     * - :ini:`newton_inexact = False`
       - if :ini:`newton_inexact = True`, an inexact Newton's method is used
+    * - :ini:`min_inner_iter = 0`
+      - Specifies the minimum amount of iterations the inner (linear) solver has to perform in a Newton method
     * - :ini:`newton_verbose = False`
       - :ini:`newton_verbose = True` enables verbose output of Newton's method
     * - :ini:`picard_iteration = False`
