@@ -12,3 +12,4 @@ myst-parser==2.0.0
 jupytext==1.15.2
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
 sphinx-favicon==1.0.1
+matplotlib
