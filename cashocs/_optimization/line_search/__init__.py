@@ -22,5 +22,6 @@ from cashocs._optimization.line_search.line_search import LineSearch
 from cashocs._optimization.line_search.polynomial_line_search import (
     PolynomialLineSearch,
 )
+from cashocs._optimization.line_search.constrained_line_search import ConstrainedLineSearch
 
-__all__ = ["ArmijoLineSearch", "LineSearch", "PolynomialLineSearch"]
+__all__ = ["ArmijoLineSearch", "LineSearch", "PolynomialLineSearch", "ConstrainedLineSearch"]

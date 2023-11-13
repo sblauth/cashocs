@@ -166,6 +166,7 @@ class Config(ConfigParser):
                         "newton",
                         "sphere_combination",
                         "convex_combination",
+                        "projected_gradient_descent",
                         "none",
                     ],
                 },
@@ -467,6 +468,16 @@ class Config(ConfigParser):
                     "attributes": ["non_negative"],
                 },
             },
+            "MeshQualityConstraints": {
+                "min_angle": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
+                "tol": {
+                    "type": "float",
+                    "attributes": ["positive"],
+                },
+            },
             "TopologyOptimization": {
                 "angle_tol": {
                     "type": "float",
@@ -642,6 +653,10 @@ type = min
 volume_change = inf
 angle_change = inf
 remesh_iter = 0
+
+[MeshQualityConstraints]
+tol = 1e-2
+min_angle = 0.0
 
 [TopologyOptimization]
 angle_tol = 1.0

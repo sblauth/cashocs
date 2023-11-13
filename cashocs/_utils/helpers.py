@@ -147,6 +147,8 @@ def optimization_algorithm_configuration(
         internal_algorithm = "sphere_combination"
     elif algorithm.casefold() in ["convex_combination"]:
         internal_algorithm = "convex_combination"
+    elif algorithm.casefold() in ["projected_gradient_descent"]:
+        internal_algorithm = "projected_gradient_descent"
     elif algorithm.casefold() == "none":
         internal_algorithm = "none"
     else:

@@ -20,6 +20,9 @@
 from cashocs._optimization.optimization_algorithms.gradient_descent import (
     GradientDescentMethod,
 )
+from cashocs._optimization.optimization_algorithms.feasible_gradient_descent import (
+    ProjectedGradientDescent,
+)
 from cashocs._optimization.optimization_algorithms.l_bfgs import LBFGSMethod
 from cashocs._optimization.optimization_algorithms.ncg import NonlinearCGMethod
 from cashocs._optimization.optimization_algorithms.newton import NewtonMethod
@@ -33,4 +36,5 @@ __all__ = [
     "LBFGSMethod",
     "NonlinearCGMethod",
     "NewtonMethod",
+    "ProjectedGradientDescent",
 ]

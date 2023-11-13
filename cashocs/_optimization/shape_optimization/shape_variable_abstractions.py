@@ -23,6 +23,7 @@ from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
+from scipy import optimize
 
 from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
@@ -30,6 +31,7 @@ from cashocs._optimization import optimization_variable_abstractions
 if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._optimization import shape_optimization
+    from cashocs._optimization import mesh_constraints
 
 
 class ShapeVariableAbstractions(
@@ -41,6 +43,7 @@ class ShapeVariableAbstractions(
         self,
         optimization_problem: shape_optimization.ShapeOptimizationProblem,
         db: database.Database,
+        constraint_manager: mesh_constraints.ConstraintManager,
     ) -> None:
         """Initializes self.
 
@@ -52,6 +55,7 @@ class ShapeVariableAbstractions(
         super().__init__(optimization_problem, db)
         self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
+        self.constraint_manager = constraint_manager
 
     def compute_decrease_measure(
         self, search_direction: List[fenics.Function]
@@ -121,6 +125,161 @@ class ShapeVariableAbstractions(
                 stepsize /= beta
 
         return stepsize
+
+    def update_constrained_optimization_variables(
+        self,
+        search_direction: List[fenics.Function],
+        stepsize: float,
+        beta: float,
+        active_idx,
+        constraint_gradient,
+        dropped_idx,
+    ) -> float:
+        """Updates the optimization variables based on a line search.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current (trial) stepsize.
+            beta: The parameter for the line search, which "halves" the stepsize if the
+                test was not successful.
+
+        Returns:
+            The stepsize which was found to be acceptable.
+
+        """
+        while True:
+            coords_sequential = self.mesh_handler.mesh.coordinates().copy().reshape(-1)
+            search_direction_coordinate = (
+                self.mesh_handler.deformation_handler.dof_to_coordinate(
+                    search_direction[0]
+                ).reshape(-1)
+            )
+            if len(active_idx) > 0:
+                coords_feasible, stepsize = self.compute_step(
+                    coords_sequential,
+                    search_direction_coordinate,
+                    stepsize,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
+                )
+
+                coordinate_deformation = coords_feasible - coords_sequential
+                dof_deformation = (
+                    self.mesh_handler.deformation_handler.coordinate_to_dof(
+                        coordinate_deformation
+                    )
+                )
+
+                self.deformation.vector().vec().axpby(
+                    1.0, 0.0, dof_deformation.vector().vec()
+                )
+                self.deformation.vector().apply("")
+            else:
+                self.deformation.vector().vec().axpby(
+                    stepsize, 0.0, search_direction[0].vector().vec()
+                )
+                self.deformation.vector().apply("")
+
+            if self.mesh_handler.move_mesh(self.deformation):
+                if (
+                    self.mesh_handler.current_mesh_quality
+                    < self.mesh_handler.mesh_quality_tol_lower
+                ):
+                    stepsize /= beta
+                    self.mesh_handler.revert_transformation()
+                    continue
+                else:
+                    # ToDo: Check for feasibility, re-project to working set
+                    break
+            else:
+                stepsize /= beta
+
+        return stepsize
+
+    def project_to_working_set(
+        self,
+        coords_sequential,
+        search_direction_coordinate,
+        stepsize,
+        active_idx,
+        constraint_gradient,
+    ):
+        y_j = coords_sequential + stepsize * search_direction_coordinate
+        A = self.constraint_manager.compute_active_gradient(
+            active_idx, constraint_gradient
+        )
+        for i in range(10):
+            if not np.all(
+                self.constraint_manager.compute_active_set(coords_sequential)[
+                    active_idx
+                ]
+            ):
+                h = self.constraint_manager.evaluate_active(
+                    coords_sequential, active_idx
+                )
+
+                lambd = np.linalg.solve(A @ A.T, h)
+                y_j = y_j - A.T @ lambd
+
+            else:
+                return y_j
+
+    def compute_step(
+        self,
+        coords_sequential,
+        search_direction_coordinate,
+        stepsize,
+        active_idx,
+        constraint_gradient,
+        dropped_idx,
+    ):
+        def func(lambd):
+            projected_step = self.project_to_working_set(
+                coords_sequential,
+                search_direction_coordinate,
+                lambd,
+                active_idx,
+                constraint_gradient,
+            )
+            if not projected_step is None:
+                return np.max(
+                    self.constraint_manager.evaluate(projected_step)[
+                        np.logical_and(~active_idx, ~dropped_idx)
+                    ]
+                )
+            else:
+                return 100.0
+
+        while True:
+            trial_step = self.project_to_working_set(
+                coords_sequential,
+                search_direction_coordinate,
+                stepsize,
+                active_idx,
+                constraint_gradient,
+            )
+            if trial_step is None:
+                stepsize /= 2.0
+            else:
+                break
+
+        if not np.all(self.constraint_manager.is_feasible(trial_step)):
+            feasible_stepsize = optimize.root_scalar(
+                func, bracket=(0.0, stepsize), xtol=1e-10
+            ).root
+            feasible_step = self.project_to_working_set(
+                coords_sequential,
+                search_direction_coordinate,
+                feasible_stepsize,
+                active_idx,
+                constraint_gradient,
+            )
+
+            assert np.all(self.constraint_manager.is_feasible(feasible_step))
+            return feasible_step, feasible_stepsize
+        else:
+            return trial_step, stepsize
 
     def compute_a_priori_decreases(
         self, search_direction: List[fenics.Function], stepsize: float

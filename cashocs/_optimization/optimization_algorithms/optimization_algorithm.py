@@ -61,6 +61,7 @@ class OptimizationAlgorithm(abc.ABC):
         self.line_search_broken = False
         self.has_curvature_info = False
 
+        # ToDo: Make this a weakref.proxy
         self.optimization_problem = optimization_problem
         self.form_handler = optimization_problem.form_handler
         self.state_problem: _pde_problems.StateProblem = (
