@@ -109,9 +109,10 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             A = self.constraint_manager.compute_active_gradient(
                 active_idx, constraint_gradient
             )
+            S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
 
-            lambd = np.linalg.solve(A @ A.T, -A @ self.gradient[0].vector()[:])
-            p = -(self.gradient[0].vector()[:] + A.T @ lambd)
+            lambd = np.linalg.solve(A @ A.T, -A @ S @ self.gradient[0].vector()[:])
+            p = -(S @ self.gradient[0].vector()[:] + A.T @ lambd)
 
             if len(dropped_idx_list) > 0:
                 if not np.all(constraint_gradient[dropped_idx_list] @ p < 1e-12):
@@ -135,12 +136,10 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
                 active_idx[i_min_padded] = False
                 dropped_idx_list.append(i_min_padded)
-                print(f"Dropped constraint {i_min_padded}")
+                # print(f"Dropped constraint {i_min_padded}")
                 continue
             else:
                 break
-
-        print(f"{lambd_ineq.min() = :.3e}  {np.linalg.norm(p) = :.3e}")
 
         p_dof = fenics.Function(self.db.function_db.control_spaces[0])
         p_dof.vector()[:] = p
@@ -153,6 +152,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
             if lambda_min >= 0.0:
                 converged = True
+                print("Algorithm converged!")
             else:
                 pass
 

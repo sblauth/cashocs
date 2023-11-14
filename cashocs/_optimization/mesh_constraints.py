@@ -164,7 +164,8 @@ class TriangleAngleConstraint(MeshConstraint):
 
     # ToDo: Parallel implementation, subtract the minimum angle directly, c++
     #  implementation, maybe return a list, so that appending is faster
-    # ToDo: compute only the gradient for the active constraints?
+    #  Return only the csr values from the constraint and assemble them into a matrix in
+    #  the constraint manager
     def compute_gradient(self, coords_seq) -> np.ndarray:
         coords = coords_seq.reshape(-1, self.dim)
         rows = []

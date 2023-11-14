@@ -207,7 +207,7 @@ class ShapeVariableAbstractions(
         for i in range(10):
             if not np.all(
                 self.constraint_manager.compute_active_set(
-                    coords_dof[self.constraint_manager.v2d]
+                    y_j[self.constraint_manager.v2d]
                 )[active_idx]
             ):
                 h = self.constraint_manager.evaluate_active(
@@ -219,6 +219,8 @@ class ShapeVariableAbstractions(
 
             else:
                 return y_j
+
+        print("Failed projection!")
 
     def compute_step(
         self,
