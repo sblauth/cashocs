@@ -103,17 +103,13 @@ class FixedBoundaryConstraint(MeshConstraint):
 
     def compute_gradient(self, coords_seq) -> np.ndarray:
         if len(self.fixed_idcs) > 0:
-            gradient = []
-            for i in self.fixed_idcs:
-                row = np.zeros(len(coords_seq))
-                row[i] = 1.0
-                gradient.append(row)
-
             rows = np.arange(len(self.fixed_idcs))
             cols = self.fixed_idcs
             vals = np.ones(len(self.fixed_idcs))
-            csr = {"rows": rows, "cols": cols, "vals": vals}
-            return np.array(gradient)
+            csr = rows, cols, vals
+            gradient = sparse2np(csr, shape=(len(self.fixed_idcs), len(coords_seq)))
+
+            return gradient
         else:
             return np.empty((0, len(coords_seq)))
 
@@ -166,8 +162,10 @@ class TriangleAngleConstraint(MeshConstraint):
     #  implementation, maybe return a list, so that appending is faster
     # ToDo: compute only the gradient for the active constraints?
     def compute_gradient(self, coords_seq) -> np.ndarray:
-        gradient = np.zeros((int(3 * len(self.cells)), len(coords_seq)))
         coords = coords_seq.reshape(-1, self.dim)
+        rows = []
+        cols = []
+        vals = []
         for idx, cell in enumerate(self.cells):
             x_local = coords[cell]
             r_01 = x_local[0] - x_local[1]
@@ -211,17 +209,42 @@ class TriangleAngleConstraint(MeshConstraint):
                 1.0 / np.linalg.norm(r_02) * tp_c0 + 1.0 / np.linalg.norm(r_12) * tp_c1
             )
 
-            gradient[3 * idx, [2 * cell[0], 2 * cell[0] + 1]] = dad0[:-1]
-            gradient[3 * idx, [2 * cell[1], 2 * cell[1] + 1]] = dad1[:-1]
-            gradient[3 * idx, [2 * cell[2], 2 * cell[2] + 1]] = dad2[:-1]
+            rows += [3 * idx] * 6
+            cols += [
+                2 * cell[0],
+                2 * cell[0] + 1,
+                2 * cell[1],
+                2 * cell[1] + 1,
+                2 * cell[2],
+                2 * cell[2] + 1,
+            ]
+            vals += [dad0[0], dad0[1], dad1[0], dad1[1], dad2[0], dad2[1]]
 
-            gradient[3 * idx + 1, [2 * cell[0], 2 * cell[0] + 1]] = dbd0[:-1]
-            gradient[3 * idx + 1, [2 * cell[1], 2 * cell[1] + 1]] = dbd1[:-1]
-            gradient[3 * idx + 1, [2 * cell[2], 2 * cell[2] + 1]] = dbd2[:-1]
+            rows += [3 * idx + 1] * 6
+            cols += [
+                2 * cell[0],
+                2 * cell[0] + 1,
+                2 * cell[1],
+                2 * cell[1] + 1,
+                2 * cell[2],
+                2 * cell[2] + 1,
+            ]
+            vals += [dbd0[0], dbd0[1], dbd1[0], dbd1[1], dbd2[0], dbd2[1]]
 
-            gradient[3 * idx + 2, [2 * cell[0], 2 * cell[0] + 1]] = dcd0[:-1]
-            gradient[3 * idx + 2, [2 * cell[1], 2 * cell[1] + 1]] = dcd1[:-1]
-            gradient[3 * idx + 2, [2 * cell[2], 2 * cell[2] + 1]] = dcd2[:-1]
+            rows += [3 * idx + 2] * 6
+            cols += [
+                2 * cell[0],
+                2 * cell[0] + 1,
+                2 * cell[1],
+                2 * cell[1] + 1,
+                2 * cell[2],
+                2 * cell[2] + 1,
+            ]
+            vals += [dcd0[0], dcd0[1], dcd1[0], dcd1[1], dcd2[0], dcd2[1]]
+
+        gradient = sparse2np(
+            (rows, cols, vals), shape=(int(3 * len(self.cells)), len(coords_seq))
+        )
 
         return gradient
 
@@ -314,15 +337,18 @@ class ConstraintManager:
         )
 
 
-def sparse2np(csr) -> np.ndarray:
-    A_scipy = sparse2scipy(csr)
+def sparse2np(csr, shape=None) -> np.ndarray:
+    A_scipy = sparse2scipy(csr, shape=shape)
     A_np = A_scipy.todense()
     return A_np
 
 
 # ToDo: Handle the case when the input is zero
-def sparse2scipy(csr) -> sparse.csr_array:
-    A = sparse.csr_array((csr["vals"], (csr["rows"], csr["cols"])))
+def sparse2scipy(csr, shape=None) -> sparse.csr_array:
+    rows = csr[0]
+    cols = csr[1]
+    vals = csr[2]
+    A = sparse.csr_array((vals, (rows, cols)), shape=shape)
     return A
 
 
