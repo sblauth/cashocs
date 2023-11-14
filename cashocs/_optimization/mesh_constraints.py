@@ -18,6 +18,8 @@
 """Constraints for the mesh / shape in shape optimization."""
 
 import abc
+
+import fenics
 import numpy as np
 from scipy import sparse
 
@@ -27,8 +29,10 @@ from cashocs import _utils
 class MeshConstraint(abc.ABC):
     type = None
 
-    def __init__(self, mesh) -> None:
+    def __init__(self, mesh, deformation_space) -> None:
         self.mesh = mesh
+        self.v2d = fenics.vertex_to_dof_map(deformation_space)
+        self.d2v = fenics.dof_to_vertex_map(deformation_space)
 
     @abc.abstractmethod
     def evaluate(self, coords_sequential) -> None:
@@ -42,8 +46,8 @@ class MeshConstraint(abc.ABC):
 class FixedBoundaryConstraint(MeshConstraint):
     type = "equality"
 
-    def __init__(self, mesh, boundaries, config):
-        super().__init__(mesh)
+    def __init__(self, mesh, boundaries, config, deformation_space):
+        super().__init__(mesh, deformation_space)
         self.boundaries = boundaries
         self.config = config
 
@@ -104,7 +108,7 @@ class FixedBoundaryConstraint(MeshConstraint):
     def compute_gradient(self, coords_seq) -> np.ndarray:
         if len(self.fixed_idcs) > 0:
             rows = np.arange(len(self.fixed_idcs))
-            cols = self.fixed_idcs
+            cols = self.v2d[self.fixed_idcs]
             vals = np.ones(len(self.fixed_idcs))
             csr = rows, cols, vals
             gradient = sparse2np(csr, shape=(len(self.fixed_idcs), len(coords_seq)))
@@ -117,8 +121,8 @@ class FixedBoundaryConstraint(MeshConstraint):
 class TriangleAngleConstraint(MeshConstraint):
     type = "inequality"
 
-    def __init__(self, mesh, config):
-        super().__init__(mesh)
+    def __init__(self, mesh, config, deformation_space):
+        super().__init__(mesh, deformation_space)
         self.config = config
 
         self.dim = self.mesh.geometry().dim()
@@ -242,6 +246,7 @@ class TriangleAngleConstraint(MeshConstraint):
             ]
             vals += [dcd0[0], dcd0[1], dcd1[0], dcd1[1], dcd2[0], dcd2[1]]
 
+        cols = self.v2d[cols]
         gradient = sparse2np(
             (rows, cols, vals), shape=(int(3 * len(self.cells)), len(coords_seq))
         )
@@ -250,11 +255,13 @@ class TriangleAngleConstraint(MeshConstraint):
 
 
 class ConstraintManager:
-    def __init__(self, config, mesh, boundaries):
+    def __init__(self, config, mesh, boundaries, deformation_space):
         self.config = config
         self.mesh = mesh
         self.boundaries = boundaries
         self.has_constraints = False
+        self.v2d = fenics.vertex_to_dof_map(deformation_space)
+        self.d2v = fenics.dof_to_vertex_map(deformation_space)
 
         self.constraints = []
         self.constraint_tolerance = self.config.getfloat(
@@ -264,9 +271,13 @@ class ConstraintManager:
 
         if self.config.getfloat("MeshQualityConstraints", "min_angle") > 0.0:
             self.constraints.append(
-                FixedBoundaryConstraint(self.mesh, self.boundaries, self.config)
+                FixedBoundaryConstraint(
+                    self.mesh, self.boundaries, self.config, deformation_space
+                )
             )
-            self.constraints.append(TriangleAngleConstraint(self.mesh, self.config))
+            self.constraints.append(
+                TriangleAngleConstraint(self.mesh, self.config, deformation_space)
+            )
             self.has_constraints = True
 
         if self.has_constraints:

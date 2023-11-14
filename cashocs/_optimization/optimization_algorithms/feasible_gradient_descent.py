@@ -61,11 +61,6 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
-            self.coordinate_gradient = self.optimization_problem.mesh_handler.deformation_handler.dof_to_coordinate(
-                self.gradient[0]
-            ).reshape(
-                -1
-            )
 
             if self.convergence_test():
                 break
@@ -95,7 +90,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.search_direction[i].vector().apply("")
         else:
-            p, p_dof, converged, self.dropped_idx = self._compute_projected_gradient(
+            p_dof, converged, self.dropped_idx = self._compute_projected_gradient(
                 self.coords_sequential, self.active_idx, self.constraint_gradient
             )
             for i in range(len(self.db.function_db.gradient)):
@@ -104,7 +99,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_projected_gradient(
         self, coords_sequential, active_idx, constraint_gradient
-    ) -> tuple[np.ndarray, fenics.Function, bool, np.ndarray]:
+    ) -> tuple[fenics.Function, bool, np.ndarray]:
         converged = False
         no_constraints = len(constraint_gradient)
         dropped_idx_list = []
@@ -115,8 +110,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 active_idx, constraint_gradient
             )
 
-            lambd = np.linalg.solve(A @ A.T, -A @ self.coordinate_gradient)
-            p = -(self.coordinate_gradient + A.T @ lambd)
+            lambd = np.linalg.solve(A @ A.T, -A @ self.gradient[0].vector()[:])
+            p = -(self.gradient[0].vector()[:] + A.T @ lambd)
 
             if len(dropped_idx_list) > 0:
                 if not np.all(constraint_gradient[dropped_idx_list] @ p < 1e-12):
@@ -147,9 +142,9 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
         print(f"{lambd_ineq.min() = :.3e}  {np.linalg.norm(p) = :.3e}")
 
-        p_dof = self.optimization_problem.mesh_handler.deformation_handler.coordinate_to_dof(
-            p
-        )
+        p_dof = fenics.Function(self.db.function_db.control_spaces[0])
+        p_dof.vector()[:] = p
+
         if (
             np.sqrt(self.form_handler.scalar_product([p_dof], [p_dof]))
             <= self.atol + self.rtol * self.gradient_norm_initial
@@ -164,7 +159,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         dropped_idx = np.array([False] * len(self.active_idx))
         dropped_idx[dropped_idx_list] = True
 
-        return p, p_dof, converged, dropped_idx
+        return p_dof, converged, dropped_idx
 
     def _compute_active_constraints(self) -> None:
         pass

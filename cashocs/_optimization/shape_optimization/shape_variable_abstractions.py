@@ -149,27 +149,22 @@ class ShapeVariableAbstractions(
         """
         while True:
             coords_sequential = self.mesh_handler.mesh.coordinates().copy().reshape(-1)
-            search_direction_coordinate = (
-                self.mesh_handler.deformation_handler.dof_to_coordinate(
-                    search_direction[0]
-                ).reshape(-1)
-            )
+            coords_dof = coords_sequential[self.constraint_manager.d2v]
+            search_direction_dof = search_direction[0].vector()[:]
+
             if len(active_idx) > 0:
-                coords_feasible, stepsize = self.compute_step(
-                    coords_sequential,
-                    search_direction_coordinate,
+                coords_dof_feasible, stepsize = self.compute_step(
+                    coords_dof,
+                    search_direction_dof,
                     stepsize,
                     active_idx,
                     constraint_gradient,
                     dropped_idx,
                 )
 
-                coordinate_deformation = coords_feasible - coords_sequential
-                dof_deformation = (
-                    self.mesh_handler.deformation_handler.coordinate_to_dof(
-                        coordinate_deformation
-                    )
-                )
+                dof_deformation_vector = coords_dof_feasible - coords_dof
+                dof_deformation = fenics.Function(self.db.function_db.control_spaces[0])
+                dof_deformation.vector()[:] = dof_deformation_vector
 
                 self.deformation.vector().vec().axpby(
                     1.0, 0.0, dof_deformation.vector().vec()
@@ -199,24 +194,24 @@ class ShapeVariableAbstractions(
 
     def project_to_working_set(
         self,
-        coords_sequential,
-        search_direction_coordinate,
+        coords_dof,
+        search_direction_dof,
         stepsize,
         active_idx,
         constraint_gradient,
-    ):
-        y_j = coords_sequential + stepsize * search_direction_coordinate
+    ) -> np.ndarray:
+        y_j = coords_dof + stepsize * search_direction_dof
         A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
         )
         for i in range(10):
             if not np.all(
-                self.constraint_manager.compute_active_set(coords_sequential)[
-                    active_idx
-                ]
+                self.constraint_manager.compute_active_set(
+                    coords_dof[self.constraint_manager.v2d]
+                )[active_idx]
             ):
                 h = self.constraint_manager.evaluate_active(
-                    coords_sequential, active_idx
+                    coords_dof[self.constraint_manager.v2d], active_idx
                 )
 
                 lambd = np.linalg.solve(A @ A.T, h)
@@ -227,8 +222,8 @@ class ShapeVariableAbstractions(
 
     def compute_step(
         self,
-        coords_sequential,
-        search_direction_coordinate,
+        coords_dof,
+        search_direction_dof,
         stepsize,
         active_idx,
         constraint_gradient,
@@ -236,25 +231,25 @@ class ShapeVariableAbstractions(
     ):
         def func(lambd):
             projected_step = self.project_to_working_set(
-                coords_sequential,
-                search_direction_coordinate,
+                coords_dof,
+                search_direction_dof,
                 lambd,
                 active_idx,
                 constraint_gradient,
             )
             if not projected_step is None:
                 return np.max(
-                    self.constraint_manager.evaluate(projected_step)[
-                        np.logical_and(~active_idx, ~dropped_idx)
-                    ]
+                    self.constraint_manager.evaluate(
+                        projected_step[self.constraint_manager.v2d]
+                    )[np.logical_and(~active_idx, ~dropped_idx)]
                 )
             else:
                 return 100.0
 
         while True:
             trial_step = self.project_to_working_set(
-                coords_sequential,
-                search_direction_coordinate,
+                coords_dof,
+                search_direction_dof,
                 stepsize,
                 active_idx,
                 constraint_gradient,
@@ -264,19 +259,25 @@ class ShapeVariableAbstractions(
             else:
                 break
 
-        if not np.all(self.constraint_manager.is_feasible(trial_step)):
+        if not np.all(
+            self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
+        ):
             feasible_stepsize = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
             feasible_step = self.project_to_working_set(
-                coords_sequential,
-                search_direction_coordinate,
+                coords_dof,
+                search_direction_dof,
                 feasible_stepsize,
                 active_idx,
                 constraint_gradient,
             )
 
-            assert np.all(self.constraint_manager.is_feasible(feasible_step))
+            assert np.all(
+                self.constraint_manager.is_feasible(
+                    feasible_step[self.constraint_manager.v2d]
+                )
+            )
             return feasible_step, feasible_stepsize
         else:
             return trial_step, stepsize
