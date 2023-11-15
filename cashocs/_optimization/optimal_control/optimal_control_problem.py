@@ -194,7 +194,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.control_bcs_list_inhomogeneous = _utils.check_and_enlist_bcs(
                 control_bcs_list
             )
-            self.control_bcs_list = []  # type: ignore
+            self.control_bcs_list = []
             for list_bcs in self.control_bcs_list_inhomogeneous:
                 hom_bcs: List[fenics.DirichletBC] = [
                     fenics.DirichletBC(bc) for bc in list_bcs
