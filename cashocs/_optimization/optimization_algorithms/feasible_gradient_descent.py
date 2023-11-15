@@ -37,6 +37,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         self.mesh = optimization_problem.mesh_handler.mesh
         self.constraint_manager = optimization_problem.constraint_manager
         self.dropped_idx = np.array([False] * self.constraint_manager.no_constraints)
+        self.mode = self.config.get("MeshQualityConstraints", "mode")
 
     def run(self) -> None:
         """Performs the optimization with the gradient descent method."""
@@ -109,10 +110,16 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             A = self.constraint_manager.compute_active_gradient(
                 active_idx, constraint_gradient
             )
-            S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
-
-            lambd = np.linalg.solve(A @ A.T, -A @ S @ self.gradient[0].vector()[:])
-            p = -(S @ self.gradient[0].vector()[:] + A.T @ lambd)
+            if self.mode == "complete":
+                S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
+                S_inv = np.linalg.inv(S)
+                lambd = np.linalg.solve(
+                    A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:]
+                )
+                p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
+            else:
+                lambd = np.linalg.solve(A @ A.T, -A @ self.gradient[0].vector()[:])
+                p = -(self.gradient[0].vector()[:] + A.T @ lambd)
 
             if len(dropped_idx_list) > 0:
                 if not np.all(constraint_gradient[dropped_idx_list] @ p < 1e-12):

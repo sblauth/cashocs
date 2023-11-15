@@ -477,6 +477,10 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive"],
                 },
+                "mode": {
+                    "type": "str",
+                    "possible_options": ["approximate", "complete"],
+                },
             },
             "TopologyOptimization": {
                 "angle_tol": {
@@ -657,6 +661,7 @@ remesh_iter = 0
 [MeshQualityConstraints]
 tol = 1e-2
 min_angle = 0.0
+mode = approximate
 
 [TopologyOptimization]
 angle_tol = 1.0

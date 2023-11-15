@@ -56,6 +56,7 @@ class ShapeVariableAbstractions(
         self.form_handler = cast(_forms.ShapeFormHandler, self.form_handler)
         self.mesh_handler = optimization_problem.mesh_handler
         self.constraint_manager = constraint_manager
+        self.mode = self.db.config.get("MeshQualityConstraints", "mode")
 
     def compute_decrease_measure(
         self, search_direction: List[fenics.Function]
@@ -204,6 +205,10 @@ class ShapeVariableAbstractions(
         A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
         )
+        if self.mode == "complete":
+            S = self.form_handler.scalar_product_matrix[:, :]
+            S_inv = np.linalg.inv(S)
+
         for i in range(10):
             if not np.all(
                 self.constraint_manager.compute_active_set(
@@ -213,9 +218,12 @@ class ShapeVariableAbstractions(
                 h = self.constraint_manager.evaluate_active(
                     coords_dof[self.constraint_manager.v2d], active_idx
                 )
-
-                lambd = np.linalg.solve(A @ A.T, h)
-                y_j = y_j - A.T @ lambd
+                if self.mode == "complete":
+                    lambd = np.linalg.solve(A @ S_inv @ A.T, h)
+                    y_j = y_j - S_inv @ A.T @ lambd
+                else:
+                    lambd = np.linalg.solve(A @ A.T, h)
+                    y_j = y_j - A.T @ lambd
 
             else:
                 return y_j
