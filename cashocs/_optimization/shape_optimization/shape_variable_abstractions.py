@@ -31,7 +31,7 @@ from cashocs._optimization import optimization_variable_abstractions
 if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._optimization import shape_optimization
-    from cashocs._optimization import mesh_constraints
+    from cashocs._optimization.shape_optimization import mesh_constraints
 
 
 class ShapeVariableAbstractions(
