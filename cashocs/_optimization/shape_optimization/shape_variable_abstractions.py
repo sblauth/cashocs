@@ -27,6 +27,7 @@ from scipy import optimize, sparse
 
 from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
+from cashocs import _exceptions
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -222,8 +223,18 @@ class ShapeVariableAbstractions(
                     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
                     y_j = y_j - S_inv @ A.T @ lambd
                 else:
-                    # lambd = np.linalg.solve(A @ A.T, h)
-                    lambd = sparse.linalg.spsolve(A @ A.T, h)
+                    lambd, info = sparse.linalg.cg(
+                        A @ A.T,
+                        h,
+                        tol=self.constraint_manager.constraint_tolerance / 10.0,
+                        atol=1e-30,
+                        maxiter=1000,
+                    )
+                    if not info == 0:
+                        raise _exceptions.NotConvergedError(
+                            "Projection of inequality constraints.",
+                            "The projection of inequality constraints failed.",
+                        )
                     y_j = y_j - A.T @ lambd
 
             else:

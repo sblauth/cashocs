@@ -119,9 +119,18 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 )
                 p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
             else:
-                lambd = sparse.linalg.spsolve(
-                    A @ A.T, -A @ self.gradient[0].vector()[:]
+                lambd, info = sparse.linalg.cg(
+                    A @ A.T,
+                    -A @ self.gradient[0].vector()[:],
+                    tol=self.constraint_manager.constraint_tolerance / 10.0,
+                    atol=1e-30,
+                    maxiter=1000,
                 )
+                if not info == 0:
+                    raise _exceptions.NotConvergedError(
+                        "Projection of inequality constraints.",
+                        "The projection of inequality constraints failed.",
+                    )
                 p = -(self.gradient[0].vector()[:] + A.T @ lambd)
 
             if len(dropped_idx_list) > 0:
