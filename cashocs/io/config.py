@@ -369,6 +369,9 @@ class Config(ConfigParser):
                 "degree_estimation": {
                     "type": "bool",
                 },
+                "global_deformation": {
+                    "type": "bool",
+                },
             },
             "Regularization": {
                 "factor_volume": {
@@ -610,6 +613,7 @@ shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+global_deformation = False
 
 [Regularization]
 factor_volume = 0.0

@@ -695,24 +695,27 @@ class _MeshHandler:
             solver: The optimization algorithm.
 
         """
-        pre_log_level = (
-            _loggers._cashocs_logger.level  # pylint: disable=protected-access
-        )
-        _loggers.set_log_level(_loggers.LogLevel.WARNING)
-        mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
-        _loggers.set_log_level(pre_log_level)
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            pre_log_level = (
+                _loggers._cashocs_logger.level  # pylint: disable=protected-access
+            )
+            _loggers.set_log_level(_loggers.LogLevel.WARNING)
+            mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
+            _loggers.set_log_level(pre_log_level)
 
-        deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
-        interpolator = _utils.Interpolator(
-            deformation_space, self.db.function_db.control_spaces[0]
-        )
-        new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
-            interpolator.transfer_matrix
-        )
-        self.db.parameter_db.temp_dict["transfer_matrix"] = new_transfer_matrix.copy()
-        self.db.parameter_db.temp_dict[
-            "old_transfer_matrix"
-        ] = self.db.geometry_db.transfer_matrix.copy()
-        self.db.parameter_db.temp_dict[
-            "deformation_function"
-        ] = solver.line_search.deformation_function.copy(True)
+            deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
+            interpolator = _utils.Interpolator(
+                deformation_space, self.db.function_db.control_spaces[0]
+            )
+            new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
+                interpolator.transfer_matrix
+            )
+            self.db.parameter_db.temp_dict[
+                "transfer_matrix"
+            ] = new_transfer_matrix.copy()
+            self.db.parameter_db.temp_dict[
+                "old_transfer_matrix"
+            ] = self.db.geometry_db.transfer_matrix.copy()
+            self.db.parameter_db.temp_dict[
+                "deformation_function"
+            ] = solver.line_search.deformation_function.copy(True)
