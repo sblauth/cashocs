@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+import pathlib
+
+from fenics import *
 import numpy as np
+
 import cashocs
 from cashocs._optimization.shape_optimization.mesh_constraints import ConstraintManager
-import pathlib
-from fenics import *
 
 dir_path = str(pathlib.Path(__file__).parent)
 

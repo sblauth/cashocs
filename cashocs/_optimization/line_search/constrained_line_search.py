@@ -19,12 +19,11 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, cast
+from typing import cast, List, Optional, Tuple
 
 import fenics
-from typing_extensions import TYPE_CHECKING
 from petsc4py import PETSc
-
+from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _loggers

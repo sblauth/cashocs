@@ -25,9 +25,9 @@ import fenics
 import numpy as np
 from scipy import sparse
 
-from cashocs._optimization.optimization_algorithms import optimization_algorithm
-from cashocs import _utils
 from cashocs import _exceptions
+from cashocs import _utils
+from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 
 class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):

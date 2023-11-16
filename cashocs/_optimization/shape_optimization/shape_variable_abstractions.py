@@ -23,11 +23,12 @@ from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from scipy import optimize, sparse
+from scipy import optimize
+from scipy import sparse
 
+from cashocs import _exceptions
 from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
-from cashocs import _exceptions
 
 if TYPE_CHECKING:
     from cashocs._database import database
