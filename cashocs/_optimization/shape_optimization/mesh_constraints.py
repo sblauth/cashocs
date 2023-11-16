@@ -26,6 +26,76 @@ from scipy import sparse
 from cashocs import _utils
 
 
+cpp_code = """
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
+namespace py = pybind11;
+
+#include <tuple>
+
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/Vertex.h>
+#include <dolfin/mesh/MeshFunction.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Vertex.h>
+
+using namespace dolfin;
+
+void angles_triangle(const Cell& cell, std::vector<double>& angs)
+{
+    const Mesh& mesh = cell.mesh();
+    angs.resize(3);
+    const std::size_t i0 = cell.entities(0)[0];
+    const std::size_t i1 = cell.entities(0)[1];
+    const std::size_t i2 = cell.entities(0)[2];
+
+    const Point p0 = Vertex(mesh, i0).point();
+    const Point p1 = Vertex(mesh, i1).point();
+    const Point p2 = Vertex(mesh, i2).point();
+    Point e0 = p1 - p0;
+    Point e1 = p2 - p0;
+    Point e2 = p2 - p1;
+
+    e0 /= e0.norm();
+    e1 /= e1.norm();
+    e2 /= e2.norm();
+
+    angs[0] = acos(e0.dot(e1));
+    angs[1] = acos(-e0.dot(e2));
+    angs[2] = acos(e1.dot(e2));
+}
+
+py::array_t<double>
+compute_triangle_angles(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+    py::array_t<double> angles(3*n);
+    auto buf = angles.request();
+    double *ptr = (double *) buf.ptr;
+
+    std::vector<double> angs;
+
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        angles_triangle(*cell, angs);
+        ptr[3*idx] = angs[0];
+        ptr[3*idx+1] = angs[1];
+        ptr[3*idx+2] = angs[2];
+        idx += 1;
+    }
+    return angles;
+}
+
+PYBIND11_MODULE(SIGNATURE, m)
+{
+    m.def("compute_triangle_angles", &compute_triangle_angles);
+}
+"""
+mesh_quality = fenics.compile_cpp_code(cpp_code)
+
+
 class MeshConstraint(abc.ABC):
     type = None
 
@@ -141,32 +211,14 @@ class TriangleAngleConstraint(MeshConstraint):
     # ToDo: Parallel implementation,
     #  compute the minimum angle of each element directly and
     #  use this as threshold (scaled with a factor),
-    #  c++ implementation,
     #  maybe return a list, so that appending is faster
     def evaluate(self, coords_seq) -> np.ndarray:
-        values = []
-
-        coords = coords_seq.reshape(-1, self.dim)
-
-        for cell in self.cells:
-            x_local = coords[cell]
-            r_01 = x_local[0] - x_local[1]
-            r_02 = x_local[0] - x_local[2]
-            r_12 = x_local[1] - x_local[2]
-
-            alpha = np.arccos(
-                r_01.dot(r_02) / (np.linalg.norm(r_01) * np.linalg.norm(r_02))
-            )
-            beta = np.arccos(
-                r_01.dot(-r_12) / (np.linalg.norm(r_01) * np.linalg.norm(r_12))
-            )
-            gamma = np.arccos(
-                r_02.dot(r_12) / (np.linalg.norm(r_02) * np.linalg.norm(r_12))
-            )
-
-            values += [alpha, beta, gamma]
-
-        values = np.array(values)
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
+        values = mesh_quality.compute_triangle_angles(self.mesh)
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
         values = self.min_angle * 2 * np.pi / 360.0 - values
 
         return values
