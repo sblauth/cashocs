@@ -64,7 +64,9 @@ class FixedBoundaryConstraint(MeshConstraint):
             self.fixed_coordinates,
         ) = self._compute_fixed_coordinate_indices(shape_bdry_fix)
         self.no_constraints = len(self.fixed_idcs)
+        self.no_vertices = self.mesh.num_vertices()
         self.is_necessary = np.array([False] * self.no_constraints)
+        self.fixed_gradient = self._compute_fixed_gradient()
 
     def _compute_fixed_coordinate_indices(
         self, shape_bdry_fix: list[int] | int
@@ -105,18 +107,21 @@ class FixedBoundaryConstraint(MeshConstraint):
         else:
             return np.array([])
 
-    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
+    def _compute_fixed_gradient(self) -> sparse.csr_matrix:
         if len(self.fixed_idcs) > 0:
             rows = np.arange(len(self.fixed_idcs))
             cols = self.v2d[self.fixed_idcs]
             vals = np.ones(len(self.fixed_idcs))
             csr = rows, cols, vals
-            shape = (len(self.fixed_idcs), len(coords_seq))
+            shape = (len(self.fixed_idcs), self.no_vertices * self.dim)
             gradient = sparse2scipy(csr, shape)
         else:
-            shape = 0, len(coords_seq)
+            shape = (0, self.no_vertices * self.dim)
             gradient = sparse2scipy(([], [], []), shape)
         return gradient
+
+    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
+        return self.fixed_gradient
 
 
 class TriangleAngleConstraint(MeshConstraint):
