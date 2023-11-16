@@ -133,8 +133,11 @@ class TriangleAngleConstraint(MeshConstraint):
         self.no_constraints = 3 * len(self.cells)
         self.is_necessary = np.array([True] * self.no_constraints)
 
-    # ToDo: Parallel implementation, subtract the minimum angle directly, c++
-    #  implementation, maybe return a list, so that appending is faster
+    # ToDo: Parallel implementation,
+    #  compute the minimum angle of each element directly and
+    #  use this as threshold (scaled with a factor),
+    #  c++ implementation,
+    #  maybe return a list, so that appending is faster
     def evaluate(self, coords_seq) -> np.ndarray:
         values = []
 
@@ -163,8 +166,9 @@ class TriangleAngleConstraint(MeshConstraint):
 
         return values
 
-    # ToDo: Parallel implementation, subtract the minimum angle directly, c++
-    #  implementation, maybe return a list, so that appending is faster
+    # ToDo: Parallel implementation,
+    #  subtract the minimum angle directly,
+    #  c++ implementation
     def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
         coords = coords_seq.reshape(-1, self.dim)
         rows = []
@@ -331,28 +335,19 @@ class ConstraintManager:
     ) -> sparse.csr_matrix:
         return constraint_gradient[active_idx]
 
-    # ToDo: Vectorize this with numpy
     def compute_active_set(self, coords_seq) -> np.ndarray:
         function_values = self.evaluate(coords_seq)
-        return np.array(
-            [bool(abs(val) <= self.constraint_tolerance) for val in function_values]
-        )
+        result = np.abs(function_values) <= self.constraint_tolerance
+        return result
 
     def is_necessary(self, active_idx: np.ndarray) -> bool:
         return np.any(np.logical_and(self.necessary_constraints, active_idx))
 
-    # ToDo: Cache function and gradient evaluation when possible
     def is_feasible(self, coords_seq) -> np.ndarray:
         function_values = self.evaluate(coords_seq)
         return np.array(
             [bool(value <= self.constraint_tolerance) for value in function_values]
         )
-
-
-# def sparse2np(csr, shape=None) -> np.ndarray:
-#     A_scipy = sparse2scipy(csr, shape=shape)
-#     A_np = A_scipy.todense()
-#     return A_np
 
 
 def sparse2scipy(csr, shape=None) -> sparse.csr_matrix:

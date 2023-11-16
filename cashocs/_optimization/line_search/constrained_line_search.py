@@ -28,7 +28,7 @@ from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _loggers
-from cashocs._optimization.line_search import line_search
+from cashocs._optimization.line_search import armijo_line_search
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -36,56 +36,8 @@ if TYPE_CHECKING:
     from cashocs._optimization import optimization_algorithms
 
 
-class ConstrainedLineSearch(line_search.LineSearch):
+class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
     """Implementation of the Armijo line search procedure."""
-
-    def __init__(
-        self,
-        db: database.Database,
-        optimization_problem: _typing.OptimizationProblem,
-    ) -> None:
-        """Initializes self.
-
-        Args:
-            db: The database of the problem.
-            optimization_problem: The corresponding optimization problem.
-
-        """
-        super().__init__(db, optimization_problem)
-
-        self.armijo_stepsize_initial = self.stepsize
-        self.decrease_measure_w_o_step = 1.0
-
-    def _check_for_nonconvergence(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> bool:
-        """Checks, whether the line search failed to converge.
-
-        Args:
-            solver: The optimization algorithm, which uses the line search.
-
-        Returns:
-            A boolean, which is True if a termination / cancellation criterion is
-            satisfied.
-
-        """
-        if solver.iteration >= solver.max_iter:
-            return True
-
-        if self.stepsize * self.search_direction_inf <= 1e-8:
-            _loggers.error("Stepsize too small.")
-            solver.line_search_broken = True
-            return True
-        elif (
-            not self.is_newton_like
-            and not self.is_newton
-            and self.stepsize / self.armijo_stepsize_initial <= 1e-8
-        ):
-            _loggers.error("Stepsize too small.")
-            solver.line_search_broken = True
-            return True
-
-        return False
 
     def search(
         self,
@@ -199,7 +151,9 @@ class ConstrainedLineSearch(line_search.LineSearch):
             constraint_gradient,
             dropped_idx,
         )
-        if deformation is not None:
+        if deformation is not None and self.config.getboolean(
+            "ShapeGradient", "global_deformation"
+        ):
             x = fenics.as_backend_type(deformation.vector()).vec()
 
             if not is_remeshed:
@@ -215,45 +169,3 @@ class ConstrainedLineSearch(line_search.LineSearch):
             self.deformation_function.vector().apply("")
 
         self.post_line_search()
-
-    def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
-    ) -> float:
-        """Computes the decrease measure for use in the Armijo line search.
-
-        Args:
-            search_direction: The current search direction.
-
-        Returns:
-            The computed decrease measure.
-
-        """
-        if self.problem_type in ["control", "topology"]:
-            return self.optimization_variable_abstractions.compute_decrease_measure(
-                search_direction
-            )
-        elif self.problem_type == "shape":
-            return self.decrease_measure_w_o_step * self.stepsize
-        else:
-            return float("inf")
-
-    def _compute_objective_at_new_iterate(self, current_function_value: float) -> float:
-        """Computes the objective value for the new (trial) iterate.
-
-        Args:
-            current_function_value: The current function value.
-
-        Returns:
-            The value of the cost functional at the new iterate.
-
-        """
-        self.state_problem.has_solution = False
-        try:
-            objective_step = self.cost_functional.evaluate()
-        except (_exceptions.PETScKSPError, _exceptions.NotConvergedError) as error:
-            if self.config.getboolean("LineSearch", "fail_if_not_converged"):
-                raise error
-            else:
-                objective_step = 2.0 * abs(current_function_value)
-
-        return objective_step
