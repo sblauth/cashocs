@@ -23,6 +23,7 @@ import abc
 
 import fenics
 import numpy as np
+from scipy import sparse
 
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 from cashocs import _utils
@@ -102,7 +103,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         self, coords_sequential, active_idx, constraint_gradient
     ) -> tuple[fenics.Function, bool, np.ndarray]:
         converged = False
-        no_constraints = len(constraint_gradient)
+        no_constraints = constraint_gradient.shape[0]
         dropped_idx_list = []
         undroppable_idx = []
 
@@ -118,7 +119,9 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 )
                 p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
             else:
-                lambd = np.linalg.solve(A @ A.T, -A @ self.gradient[0].vector()[:])
+                lambd = sparse.linalg.spsolve(
+                    A @ A.T, -A @ self.gradient[0].vector()[:]
+                )
                 p = -(self.gradient[0].vector()[:] + A.T @ lambd)
 
             if len(dropped_idx_list) > 0:

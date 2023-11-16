@@ -23,7 +23,7 @@ from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from scipy import optimize
+from scipy import optimize, sparse
 
 from cashocs import _forms
 from cashocs._optimization import optimization_variable_abstractions
@@ -222,7 +222,8 @@ class ShapeVariableAbstractions(
                     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
                     y_j = y_j - S_inv @ A.T @ lambd
                 else:
-                    lambd = np.linalg.solve(A @ A.T, h)
+                    # lambd = np.linalg.solve(A @ A.T, h)
+                    lambd = sparse.linalg.spsolve(A @ A.T, h)
                     y_j = y_j - A.T @ lambd
 
             else:

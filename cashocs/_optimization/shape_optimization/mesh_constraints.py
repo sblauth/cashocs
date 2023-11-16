@@ -105,17 +105,18 @@ class FixedBoundaryConstraint(MeshConstraint):
         else:
             return np.array([])
 
-    def compute_gradient(self, coords_seq) -> np.ndarray:
+    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
         if len(self.fixed_idcs) > 0:
             rows = np.arange(len(self.fixed_idcs))
             cols = self.v2d[self.fixed_idcs]
             vals = np.ones(len(self.fixed_idcs))
             csr = rows, cols, vals
-            gradient = sparse2np(csr, shape=(len(self.fixed_idcs), len(coords_seq)))
-
-            return gradient
+            shape = (len(self.fixed_idcs), len(coords_seq))
+            gradient = sparse2scipy(csr, shape)
         else:
-            return np.empty((0, len(coords_seq)))
+            shape = 0, len(coords_seq)
+            gradient = sparse2scipy(([], [], []), shape)
+        return gradient
 
 
 class TriangleAngleConstraint(MeshConstraint):
@@ -164,9 +165,7 @@ class TriangleAngleConstraint(MeshConstraint):
 
     # ToDo: Parallel implementation, subtract the minimum angle directly, c++
     #  implementation, maybe return a list, so that appending is faster
-    #  Return only the csr values from the constraint and assemble them into a matrix in
-    #  the constraint manager
-    def compute_gradient(self, coords_seq) -> np.ndarray:
+    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
         coords = coords_seq.reshape(-1, self.dim)
         rows = []
         cols = []
@@ -248,9 +247,9 @@ class TriangleAngleConstraint(MeshConstraint):
             vals += [dcd0[0], dcd0[1], dcd1[0], dcd1[1], dcd2[0], dcd2[1]]
 
         cols = self.v2d[cols]
-        gradient = sparse2np(
-            (rows, cols, vals), shape=(int(3 * len(self.cells)), len(coords_seq))
-        )
+        csr = rows, cols, vals
+        shape = (int(3 * len(self.cells)), len(coords_seq))
+        gradient = sparse2scipy(csr, shape)
 
         return gradient
 
@@ -315,23 +314,24 @@ class ConstraintManager:
         function_values = self.evaluate(coords_seq)
         return function_values[active_idx]
 
-    def compute_gradient(self, coords_seq) -> np.ndarray:
+    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
         result = []
         for constraint in self.constraints:
             result.append(constraint.compute_gradient(coords_seq))
 
         if len(result) > 0:
-            self.gradient = np.vstack(result)
+            self.gradient = sparse.vstack(result)
         else:
             return np.array([])
 
         return self.gradient
 
     def compute_active_gradient(
-        self, active_idx, gradient_values: np.ndarray
-    ) -> np.ndarray:
-        return gradient_values[active_idx]
+        self, active_idx, constraint_gradient: sparse.csr_matrix
+    ) -> sparse.csr_matrix:
+        return constraint_gradient[active_idx]
 
+    # ToDo: Vectorize this with numpy
     def compute_active_set(self, coords_seq) -> np.ndarray:
         function_values = self.evaluate(coords_seq)
         return np.array(
@@ -349,18 +349,17 @@ class ConstraintManager:
         )
 
 
-def sparse2np(csr, shape=None) -> np.ndarray:
-    A_scipy = sparse2scipy(csr, shape=shape)
-    A_np = A_scipy.todense()
-    return A_np
+# def sparse2np(csr, shape=None) -> np.ndarray:
+#     A_scipy = sparse2scipy(csr, shape=shape)
+#     A_np = A_scipy.todense()
+#     return A_np
 
 
-# ToDo: Handle the case when the input is zero
-def sparse2scipy(csr, shape=None) -> sparse.csr_array:
+def sparse2scipy(csr, shape=None) -> sparse.csr_matrix:
     rows = csr[0]
     cols = csr[1]
     vals = csr[2]
-    A = sparse.csr_array((vals, (rows, cols)), shape=shape)
+    A = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
     return A
 
 
