@@ -278,8 +278,7 @@ class FixedBoundaryConstraint(MeshConstraint):
             idx_i = self.facets[self.boundaries.where_equal(i)]
             fixed_idcs += idx_i.reshape(-1).tolist()
 
-        fixed_idcs = np.array(list(set(fixed_idcs)))
-        fixed_idcs.sort()
+        fixed_idcs = np.unique(fixed_idcs)
 
         if self.dim == 2:
             fixed_idcs = np.array(
