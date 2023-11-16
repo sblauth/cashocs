@@ -67,7 +67,7 @@ void angles_triangle(const Cell& cell, std::vector<double>& angs)
 }
 
 py::array_t<double>
-compute_triangle_angles(std::shared_ptr<const Mesh> mesh)
+triangle_angles(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
@@ -88,9 +88,139 @@ compute_triangle_angles(std::shared_ptr<const Mesh> mesh)
     return angles;
 }
 
+std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
+triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+    
+    py::array_t<int> rows(18*n);
+    auto buf_rows = rows.request();
+    int *ptr_rows = (int *) buf_rows.ptr;
+    
+    py::array_t<int> cols(18*n);
+    auto buf_cols = cols.request();
+    int *ptr_cols = (int *) buf_cols.ptr;
+    
+    py::array_t<double> vals(18*n);
+    auto buf_vals = vals.request();
+    double *ptr_vals = (double *) buf_vals.ptr;
+    
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        const std::size_t i0 = cell->entities(0)[0];
+        const std::size_t i1 = cell->entities(0)[1];
+        const std::size_t i2 = cell->entities(0)[2];
+    
+        const Point p0 = Vertex(*mesh, i0).point();
+        const Point p1 = Vertex(*mesh, i1).point();
+        const Point p2 = Vertex(*mesh, i2).point();
+        Point e0 = p1 - p0;
+        Point e1 = p2 - p0;
+        Point e2 = p2 - p1;
+        
+        Point tpa1 = e0.cross(e0.cross(e1));
+        Point tpa2 = e1.cross(e1.cross(e0));
+        tpa1 /= tpa1.norm();
+        tpa2 /= tpa2.norm();
+        
+        Point tpb0 = e0.cross(e0.cross(e2));
+        Point tpb2 = e2.cross(e2.cross(-e0));
+        tpb0 /= tpb0.norm();
+        tpb2 /= tpb2.norm();
+        
+        Point tpc0 = e1.cross(e1.cross(-e2));
+        Point tpc1 = e2.cross(e2.cross(-e1));
+        tpc0 /= tpc0.norm();
+        tpc1 /= tpc1.norm();
+        
+        Point dad0 = 1.0 / e0.norm() * tpa1 + 1.0 / e1.norm() * tpa2;
+        Point dad1 = -1.0 / e0.norm() * tpa1;
+        Point dad2 = -1.0 / e1.norm() * tpa2;
+        
+        Point dbd0 = -1.0 / e0.norm() * tpb0;
+        Point dbd1 = 1.0 / e0.norm() * tpb0 + 1.0 / e2.norm() * tpb2;
+        Point dbd2 = -1.0 / e2.norm() * tpb2;
+        
+        Point dcd0 = -1.0 / e1.norm() * tpc0;
+        Point dcd1 = -1.0 / e2.norm() * tpc1;
+        Point dcd2 = 1.0 / e1.norm() * tpc0 + 1.0 / e2.norm() * tpc1;
+        
+        
+        ptr_rows[18*idx + 0] = 3*idx;
+        ptr_rows[18*idx + 1] = 3*idx;
+        ptr_rows[18*idx + 2] = 3*idx;
+        ptr_rows[18*idx + 3] = 3*idx;
+        ptr_rows[18*idx + 4] = 3*idx;
+        ptr_rows[18*idx + 5] = 3*idx;
+        
+        ptr_cols[18*idx + 0] = 2 * i0 + 0;
+        ptr_cols[18*idx + 1] = 2 * i0 + 1;
+        ptr_cols[18*idx + 2] = 2 * i1 + 0;
+        ptr_cols[18*idx + 3] = 2 * i1 + 1;
+        ptr_cols[18*idx + 4] = 2 * i2 + 0;
+        ptr_cols[18*idx + 5] = 2 * i2 + 1;
+        
+        ptr_vals[18*idx + 0] = dad0[0];
+        ptr_vals[18*idx + 1] = dad0[1];
+        ptr_vals[18*idx + 2] = dad1[0];
+        ptr_vals[18*idx + 3] = dad1[1];
+        ptr_vals[18*idx + 4] = dad2[0];
+        ptr_vals[18*idx + 5] = dad2[1];
+        
+        
+        ptr_rows[18*idx + 6] = 3*idx + 1;
+        ptr_rows[18*idx + 7] = 3*idx + 1;
+        ptr_rows[18*idx + 8] = 3*idx + 1;
+        ptr_rows[18*idx + 9] = 3*idx + 1;
+        ptr_rows[18*idx + 10] = 3*idx + 1;
+        ptr_rows[18*idx + 11] = 3*idx + 1;
+        
+        ptr_cols[18*idx + 6] = 2 * i0 + 0;
+        ptr_cols[18*idx + 7] = 2 * i0 + 1;
+        ptr_cols[18*idx + 8] = 2 * i1 + 0;
+        ptr_cols[18*idx + 9] = 2 * i1 + 1;
+        ptr_cols[18*idx + 10] = 2 * i2 + 0;
+        ptr_cols[18*idx + 11] = 2 * i2 + 1;
+        
+        ptr_vals[18*idx + 6] = dbd0[0];
+        ptr_vals[18*idx + 7] = dbd0[1];
+        ptr_vals[18*idx + 8] = dbd1[0];
+        ptr_vals[18*idx + 9] = dbd1[1];
+        ptr_vals[18*idx + 10] = dbd2[0];
+        ptr_vals[18*idx + 11] = dbd2[1];
+        
+        
+        ptr_rows[18*idx + 12] = 3*idx + 2;
+        ptr_rows[18*idx + 13] = 3*idx + 2;
+        ptr_rows[18*idx + 14] = 3*idx + 2;
+        ptr_rows[18*idx + 15] = 3*idx + 2;
+        ptr_rows[18*idx + 16] = 3*idx + 2;
+        ptr_rows[18*idx + 17] = 3*idx + 2;
+        
+        ptr_cols[18*idx + 12] = 2 * i0 + 0;
+        ptr_cols[18*idx + 13] = 2 * i0 + 1;
+        ptr_cols[18*idx + 14] = 2 * i1 + 0;
+        ptr_cols[18*idx + 15] = 2 * i1 + 1;
+        ptr_cols[18*idx + 16] = 2 * i2 + 0;
+        ptr_cols[18*idx + 17] = 2 * i2 + 1;
+        
+        ptr_vals[18*idx + 12] = dcd0[0];
+        ptr_vals[18*idx + 13] = dcd0[1];
+        ptr_vals[18*idx + 14] = dcd1[0];
+        ptr_vals[18*idx + 15] = dcd1[1];
+        ptr_vals[18*idx + 16] = dcd2[0];
+        ptr_vals[18*idx + 17] = dcd2[1];
+
+        idx += 1;
+    }
+    return std::make_tuple(rows, cols, vals);
+}
+
 PYBIND11_MODULE(SIGNATURE, m)
 {
-    m.def("compute_triangle_angles", &compute_triangle_angles);
+    m.def("triangle_angles", &triangle_angles);
+    m.def("triangle_angle_gradient", &triangle_angle_gradient);
 }
 """
 mesh_quality = fenics.compile_cpp_code(cpp_code)
@@ -211,101 +341,29 @@ class TriangleAngleConstraint(MeshConstraint):
     # ToDo: Parallel implementation,
     #  compute the minimum angle of each element directly and
     #  use this as threshold (scaled with a factor),
-    #  maybe return a list, so that appending is faster
     def evaluate(self, coords_seq) -> np.ndarray:
         old_coords = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
         self.mesh.bounding_box_tree().build(self.mesh)
-        values = mesh_quality.compute_triangle_angles(self.mesh)
+
+        values = mesh_quality.triangle_angles(self.mesh)
+        values = self.min_angle * 2 * np.pi / 360.0 - values
+
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
-        values = self.min_angle * 2 * np.pi / 360.0 - values
 
         return values
 
     # ToDo: Parallel implementation,
-    #  subtract the minimum angle directly,
-    #  c++ implementation
     def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
-        coords = coords_seq.reshape(-1, self.dim)
-        rows = []
-        cols = []
-        vals = []
-        for idx, cell in enumerate(self.cells):
-            x_local = coords[cell]
-            r_01 = x_local[0] - x_local[1]
-            r_02 = x_local[0] - x_local[2]
-            r_12 = x_local[1] - x_local[2]
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
 
-            r_01 = np.pad(r_01, (0, 1))
-            r_02 = np.pad(r_02, (0, 1))
-            r_12 = np.pad(r_12, (0, 1))
+        rows, cols, vals = mesh_quality.triangle_angle_gradient(self.mesh)
 
-            tp_a1 = np.cross(-r_01, np.cross(-r_01, -r_02))
-            tp_a2 = np.cross(-r_02, np.cross(-r_02, -r_01))
-            tp_a1 /= np.linalg.norm(tp_a1)
-            tp_a2 /= np.linalg.norm(tp_a2)
-
-            tp_b0 = np.cross(r_01, np.cross(r_01, -r_12))
-            tp_b2 = np.cross(-r_12, np.cross(-r_12, r_01))
-            tp_b0 /= np.linalg.norm(tp_b0)
-            tp_b2 /= np.linalg.norm(tp_b2)
-
-            tp_c0 = np.cross(r_02, np.cross(r_02, r_12))
-            tp_c1 = np.cross(r_12, np.cross(r_12, r_02))
-            tp_c0 /= np.linalg.norm(tp_c0)
-            tp_c1 /= np.linalg.norm(tp_c1)
-
-            dad0 = (
-                1.0 / np.linalg.norm(r_01) * tp_a1 + 1.0 / np.linalg.norm(r_02) * tp_a2
-            )
-            dad1 = -1.0 / np.linalg.norm(r_01) * tp_a1
-            dad2 = -1.0 / np.linalg.norm(r_02) * tp_a2
-
-            dbd0 = -1.0 / np.linalg.norm(r_01) * tp_b0
-            dbd1 = (
-                1.0 / np.linalg.norm(r_01) * tp_b0 + 1.0 / np.linalg.norm(r_12) * tp_b2
-            )
-            dbd2 = -1.0 / np.linalg.norm(r_12) * tp_b2
-
-            dcd0 = -1.0 / np.linalg.norm(r_02) * tp_c0
-            dcd1 = -1.0 / np.linalg.norm(r_12) * tp_c1
-            dcd2 = (
-                1.0 / np.linalg.norm(r_02) * tp_c0 + 1.0 / np.linalg.norm(r_12) * tp_c1
-            )
-
-            rows += [3 * idx] * 6
-            cols += [
-                2 * cell[0],
-                2 * cell[0] + 1,
-                2 * cell[1],
-                2 * cell[1] + 1,
-                2 * cell[2],
-                2 * cell[2] + 1,
-            ]
-            vals += [dad0[0], dad0[1], dad1[0], dad1[1], dad2[0], dad2[1]]
-
-            rows += [3 * idx + 1] * 6
-            cols += [
-                2 * cell[0],
-                2 * cell[0] + 1,
-                2 * cell[1],
-                2 * cell[1] + 1,
-                2 * cell[2],
-                2 * cell[2] + 1,
-            ]
-            vals += [dbd0[0], dbd0[1], dbd1[0], dbd1[1], dbd2[0], dbd2[1]]
-
-            rows += [3 * idx + 2] * 6
-            cols += [
-                2 * cell[0],
-                2 * cell[0] + 1,
-                2 * cell[1],
-                2 * cell[1] + 1,
-                2 * cell[2],
-                2 * cell[2] + 1,
-            ]
-            vals += [dcd0[0], dcd0[1], dcd1[0], dcd1[1], dcd2[0], dcd2[1]]
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
 
         cols = self.v2d[cols]
         csr = rows, cols, vals
