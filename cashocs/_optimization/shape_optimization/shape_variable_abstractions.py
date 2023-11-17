@@ -25,9 +25,11 @@ import fenics
 import numpy as np
 from scipy import optimize
 from scipy import sparse
+from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _forms
+from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
@@ -231,9 +233,12 @@ class ShapeVariableAbstractions(
 
         """
         y_j = coords_dof + stepsize * search_direction_dof
-        A = self.constraint_manager.compute_active_gradient(
+        A, A_scipy = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
         )
+        AT = A.copy().transpose()
+        B = A.matMult(AT)
+
         if self.mode == "complete":
             S = self.form_handler.scalar_product_matrix[:, :]
             S_inv = np.linalg.inv(S)
@@ -251,23 +256,41 @@ class ShapeVariableAbstractions(
                     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
                     y_j = y_j - S_inv @ A.T @ lambd
                 else:
-                    lambd, info = sparse.linalg.cg(
-                        A @ A.T,
-                        h,
-                        tol=self.constraint_manager.constraint_tolerance / 10.0,
-                        atol=1e-30,
-                        maxiter=1000,
+                    ksp = PETSc.KSP().create(
+                        comm=self.constraint_manager.mesh.mpi_comm()
                     )
-                    if not info == 0:
+
+                    options = {
+                        "ksp_type": "cg",
+                        "ksp_max_it": 1000,
+                        "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e1,
+                        "ksp_atol": 1e-30,
+                        "pc_type": "none",
+                        # "pc_hypre_type": "boomeramg",
+                        # "ksp_monitor_true_residual": None,
+                    }
+
+                    ksp.setOperators(B)
+                    _utils.setup_petsc_options([ksp], [options])
+
+                    lambd = B.createVecRight()
+                    h_petsc = B.createVecLeft()
+                    h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
+                    ksp.solve(h_petsc, lambd)
+
+                    if ksp.getConvergedReason() < 0:
                         raise _exceptions.NotConvergedError(
-                            "Projection of inequality constraints.",
-                            "The projection of inequality constraints failed.",
+                            "Gradient projection", "The gradient projection failed."
                         )
-                    y_j = y_j - A.T @ lambd
+
+                    y_petsc = AT.createVecLeft()
+                    AT.mult(lambd, y_petsc)
+                    y_j = y_j - y_petsc[:]
 
             else:
                 return y_j
 
+        print(f"Failed to project to working set.")
         return None
 
     def compute_step(

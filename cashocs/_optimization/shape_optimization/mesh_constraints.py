@@ -22,6 +22,8 @@ import abc
 import fenics
 import numpy as np
 from scipy import sparse
+from petsc4py import PETSc
+from mpi4py import MPI
 
 from cashocs import _utils
 import cashocs.io
@@ -241,8 +243,44 @@ class MeshConstraint(abc.ABC):
 
         """
         self.mesh = mesh
+        self.dim = self.mesh.geometry().dim()
+
         self.v2d = fenics.vertex_to_dof_map(deformation_space)
         self.d2v = fenics.dof_to_vertex_map(deformation_space)
+
+        dof_ownership_range = deformation_space.dofmap().ownership_range()
+        self.local_offset = dof_ownership_range[0]
+        self.no_vertices = self.mesh.num_entities_global(0)
+        self.l2g_dofs = deformation_space.dofmap().tabulate_local_to_global_dofs()
+
+        self._compute_parallel_relations()
+
+    def _compute_parallel_relations(self) -> None:
+        self.global_vertex_indices = self.mesh.topology().global_indices(0)
+        V = fenics.FunctionSpace(self.mesh, "CG", 1)
+        loc0, loc1 = V.dofmap().ownership_range()
+        d2v = fenics.dof_to_vertex_map(V)
+        self.global_vertex_indices_owned = self.global_vertex_indices[
+            d2v[: loc1 - loc0]
+        ]
+
+        if self.dim == 2:
+            self.cols_owned = np.array(
+                [
+                    self.dim * self.global_vertex_indices_owned,
+                    self.dim * self.global_vertex_indices_owned + 1,
+                ]
+            ).T.reshape(-1)
+        elif self.dim == 3:
+            self.cols_owned = np.array(
+                [
+                    self.dim * self.global_vertex_indices_owned,
+                    self.dim * self.global_vertex_indices_owned + 1,
+                    self.dim * self.global_vertex_indices_owned + 2,
+                ]
+            ).T.reshape(-1)
+
+        self.cols_owned.sort()
 
     @abc.abstractmethod
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
@@ -315,13 +353,12 @@ class FixedBoundaryConstraint(MeshConstraint):
         ).reshape(-1, self.dim)
 
         shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
-
         (
             self.fixed_idcs,
             self.fixed_coordinates,
         ) = self._compute_fixed_coordinate_indices(shape_bdry_fix)
+
         self.no_constraints = len(self.fixed_idcs)
-        self.no_vertices = self.mesh.num_vertices()
         self.is_necessary = np.array([False] * self.no_constraints)
         self.fixed_gradient = self._compute_fixed_gradient()
 
@@ -350,25 +387,37 @@ class FixedBoundaryConstraint(MeshConstraint):
 
         fixed_idcs = np.unique(fixed_idcs)
 
+        if len(fixed_idcs) > 0:
+            fixed_idcs_global = self.global_vertex_indices[fixed_idcs]
+        else:
+            fixed_idcs_global = []
+        mask = np.isin(fixed_idcs_global, self.global_vertex_indices_owned)
+        fixed_idcs_local_owned = fixed_idcs[mask]
+
         if self.dim == 2:
-            fixed_idcs = np.array(
-                [self.dim * fixed_idcs, self.dim * fixed_idcs + 1]
+            fixed_idcs_local = np.array(
+                [
+                    self.dim * fixed_idcs_local_owned,
+                    self.dim * fixed_idcs_local_owned + 1,
+                ]
             ).T.reshape(-1)
         elif self.dim == 3:
-            fixed_idcs = np.array(
+            fixed_idcs_local = np.array(
                 [
-                    self.dim * fixed_idcs,
-                    self.dim * fixed_idcs + 1,
-                    self.dim * fixed_idcs + 2,
+                    self.dim * fixed_idcs_local_owned,
+                    self.dim * fixed_idcs_local_owned + 1,
+                    self.dim * fixed_idcs_local_owned + 2,
                 ]
             ).T.reshape(-1)
 
-        if len(fixed_idcs) > 0:
-            fixed_coordinates = self.mesh.coordinates().copy().reshape(-1)[fixed_idcs]
+        if len(fixed_idcs_local) > 0:
+            fixed_coordinates = (
+                self.mesh.coordinates().copy().reshape(-1)[fixed_idcs_local]
+            )
         else:
             fixed_coordinates = None
 
-        return fixed_idcs, fixed_coordinates
+        return fixed_idcs_local, fixed_coordinates
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -403,7 +452,8 @@ class FixedBoundaryConstraint(MeshConstraint):
         """
         if len(self.fixed_idcs) > 0:
             rows = np.arange(len(self.fixed_idcs))
-            cols = self.v2d[self.fixed_idcs]
+
+            cols = self.l2g_dofs[self.v2d[self.fixed_idcs]]
             vals = np.ones(len(self.fixed_idcs))
             csr = rows, cols, vals
             shape = (len(self.fixed_idcs), self.no_vertices * self.dim)
@@ -460,8 +510,7 @@ class TriangleAngleConstraint(MeshConstraint):
         self.no_constraints = 3 * len(self.cells)
         self.is_necessary = np.array([True] * self.no_constraints)
 
-    # ToDo: Parallel implementation,
-    #  compute the minimum angle of each element directly and
+    # ToDo: compute the minimum angle of each element directly and
     #  use this as threshold (scaled with a factor),
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -491,7 +540,6 @@ class TriangleAngleConstraint(MeshConstraint):
 
         return values
 
-    # ToDo: Parallel implementation,
     def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
         """Computes the gradient of the constraint functions.
 
@@ -511,9 +559,11 @@ class TriangleAngleConstraint(MeshConstraint):
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
 
-        cols = self.v2d[cols]
+        cols_local = self.v2d[cols]
+        cols = self.l2g_dofs[cols_local]
+
         csr = rows, cols, vals
-        shape = (int(3 * len(self.cells)), len(coords_seq))
+        shape = (int(3 * len(self.cells)), self.no_vertices * self.dim)
         gradient = sparse2scipy(csr, shape)
 
         return gradient
@@ -665,7 +715,11 @@ class ConstraintManager:
             A sparse matrix of the constraint gradient w.r.t. the working set.
 
         """
-        return constraint_gradient[active_idx]
+        scipy_matrix = constraint_gradient[active_idx]
+        petsc_matrix = scipy2petsc(
+            scipy_matrix, scipy_matrix.shape, self.mesh.mpi_comm()
+        )
+        return petsc_matrix, scipy_matrix
 
     def compute_active_set(self, coords_seq: np.ndarray) -> np.ndarray:
         """Computes the working set.
@@ -737,11 +791,33 @@ def sparse2scipy(
     return A
 
 
-def sparse2petsc(csr: tuple[np.ndarray, np.ndarray, np.ndarray]) -> None:
+def scipy2petsc(scipy_matrix, shape, comm):
+    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
+    petsc_matrix = PETSc.Mat().createAIJ(
+        comm=comm,
+        size=((shape[0], no_rows_total), shape[1]),
+        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
+    )
+
+    return petsc_matrix
+
+
+def sparse2petsc(
+    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape=None, comm=None
+) -> None:
     """Converts a sparse matrix representation to a sparse PETSc matrix.
 
     Args:
         csr: The tuple making up the CSR matrix: `rows, cols, vals`.
 
     """
-    pass
+    scipy_matrix = sparse2scipy(csr, shape)
+
+    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
+    petsc_matrix = PETSc.Mat().createAIJ(
+        comm=comm,
+        size=((shape[0], no_rows_total), shape[1]),
+        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
+    )
+
+    return petsc_matrix

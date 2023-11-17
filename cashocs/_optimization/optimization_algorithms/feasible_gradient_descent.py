@@ -23,10 +23,12 @@ from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 from scipy import sparse
 
 from cashocs import _exceptions
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -129,9 +131,12 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         undroppable_idx = []
 
         while True:
-            A = self.constraint_manager.compute_active_gradient(
+            A, A_scipy = self.constraint_manager.compute_active_gradient(
                 active_idx, constraint_gradient
             )
+            AT = A.copy().transpose()
+            B = A.matMult(AT)
+
             if self.mode == "complete":
                 S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
                 S_inv = np.linalg.inv(S)
@@ -140,19 +145,33 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 )
                 p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
             else:
-                lambd, info = sparse.linalg.cg(
-                    A @ A.T,
-                    -A @ self.gradient[0].vector()[:],
-                    tol=self.constraint_manager.constraint_tolerance / 10.0,
-                    atol=1e-30,
-                    maxiter=1000,
-                )
-                if not info == 0:
+                b = A.createVecLeft()
+                A.mult(-self.gradient[0].vector().vec(), b)
+                ksp = PETSc.KSP().create(comm=self.constraint_manager.mesh.mpi_comm())
+                options = {
+                    "ksp_type": "cg",
+                    "ksp_max_it": 1000,
+                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e1,
+                    "ksp_atol": 1e-30,
+                    "pc_type": "none",
+                    # "pc_hypre_type": "boomeramg",
+                    # "ksp_monitor_true_residual": None,
+                }
+
+                ksp.setOperators(B)
+                _utils.setup_petsc_options([ksp], [options])
+
+                lambd = B.createVecRight()
+                ksp.solve(b, lambd)
+
+                if ksp.getConvergedReason() < 0:
                     raise _exceptions.NotConvergedError(
-                        "Projection of inequality constraints.",
-                        "The projection of inequality constraints failed.",
+                        "Gradient projection", "The gradient projection failed."
                     )
-                p = -(self.gradient[0].vector()[:] + A.T @ lambd)
+
+                p = AT.createVecLeft()
+                AT.mult(-lambd, p)
+                p.axpy(-1.0, self.gradient[0].vector().vec())
 
             if len(dropped_idx_list) > 0:
                 if not np.all(constraint_gradient[dropped_idx_list] @ p < 1e-12):
