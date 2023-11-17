@@ -20,10 +20,10 @@
 import abc
 
 import fenics
-import numpy as np
-from scipy import sparse
-from petsc4py import PETSc
 from mpi4py import MPI
+import numpy as np
+from petsc4py import PETSc
+from scipy import sparse
 
 from cashocs import _utils
 import cashocs.io
@@ -719,7 +719,7 @@ class ConstraintManager:
         petsc_matrix = scipy2petsc(
             scipy_matrix, scipy_matrix.shape, self.mesh.mpi_comm()
         )
-        return petsc_matrix, scipy_matrix
+        return petsc_matrix
 
     def compute_active_set(self, coords_seq: np.ndarray) -> np.ndarray:
         """Computes the working set.

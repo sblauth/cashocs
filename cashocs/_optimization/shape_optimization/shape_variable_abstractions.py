@@ -23,9 +23,9 @@ from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
+from petsc4py import PETSc
 from scipy import optimize
 from scipy import sparse
-from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -233,7 +233,7 @@ class ShapeVariableAbstractions(
 
         """
         y_j = coords_dof + stepsize * search_direction_dof
-        A, A_scipy = self.constraint_manager.compute_active_gradient(
+        A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
         )
         AT = A.copy().transpose()
@@ -263,10 +263,10 @@ class ShapeVariableAbstractions(
                     options = {
                         "ksp_type": "cg",
                         "ksp_max_it": 1000,
-                        "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e1,
+                        "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
                         "ksp_atol": 1e-30,
-                        "pc_type": "none",
-                        # "pc_hypre_type": "boomeramg",
+                        "pc_type": "hypre",
+                        "pc_hypre_type": "boomeramg",
                         # "ksp_monitor_true_residual": None,
                     }
 

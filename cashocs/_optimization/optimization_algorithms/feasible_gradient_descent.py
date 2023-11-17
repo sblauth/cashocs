@@ -27,8 +27,8 @@ from petsc4py import PETSc
 from scipy import sparse
 
 from cashocs import _exceptions
-from cashocs._optimization.optimization_algorithms import optimization_algorithm
 from cashocs import _utils
+from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -131,7 +131,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         undroppable_idx = []
 
         while True:
-            A, A_scipy = self.constraint_manager.compute_active_gradient(
+            A = self.constraint_manager.compute_active_gradient(
                 active_idx, constraint_gradient
             )
             AT = A.copy().transpose()
@@ -151,10 +151,10 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 options = {
                     "ksp_type": "cg",
                     "ksp_max_it": 1000,
-                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e1,
+                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
                     "ksp_atol": 1e-30,
-                    "pc_type": "none",
-                    # "pc_hypre_type": "boomeramg",
+                    "pc_type": "hypre",
+                    "pc_hypre_type": "boomeramg",
                     # "ksp_monitor_true_residual": None,
                 }
 
