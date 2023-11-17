@@ -19,21 +19,42 @@
 
 from __future__ import annotations
 
-import abc
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 from scipy import sparse
 
 from cashocs import _exceptions
-from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
+
+if TYPE_CHECKING:
+    from cashocs import _typing
+    from cashocs._database import database
+    from cashocs._optimization import line_search as ls
 
 
 class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
     """Projected gradient descent method."""
 
-    def __init__(self, db, optimization_problem, line_search) -> None:
+    def __init__(
+        self,
+        db: database.Database,
+        optimization_problem: _typing.OptimizationProblem,
+        line_search: ls.LineSearch,
+    ) -> None:
+        """This class is an implementation of the projected gradient descent method.
+
+        This is based on Rosen's projected gradient method and is used to enforce
+        constraints on the mesh quality in a semi-discrete setting.
+
+        Args:
+            db: The database of the problem.
+            optimization_problem: The underlying shape optimization problem to be
+                solved.
+            line_search: The line search used computing an update of the mesh.
+
+        """
         super().__init__(db, optimization_problem, line_search)
         self.mesh = optimization_problem.mesh_handler.mesh
         self.constraint_manager = optimization_problem.constraint_manager
@@ -93,14 +114,14 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[i].vector().apply("")
         else:
             p_dof, converged, self.dropped_idx = self._compute_projected_gradient(
-                self.coords_sequential, self.active_idx, self.constraint_gradient
+                self.active_idx, self.constraint_gradient
             )
             for i in range(len(self.db.function_db.gradient)):
                 self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
                 self.search_direction[i].vector().apply("")
 
     def _compute_projected_gradient(
-        self, coords_sequential, active_idx, constraint_gradient
+        self, active_idx, constraint_gradient
     ) -> tuple[fenics.Function, bool, np.ndarray]:
         converged = False
         no_constraints = constraint_gradient.shape[0]
@@ -145,7 +166,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             lambd_ineq = lambd_padded[self.constraint_manager.inequality_mask]
 
             gamma = -np.minimum(0.0, lambd_ineq.min())
-            if np.linalg.norm(p) <= gamma and not len(undroppable_idx) > 0:
+            if np.linalg.norm(p) <= gamma and len(undroppable_idx) == 0:
                 i_min_list = np.argsort(lambd_ineq)
                 i_min_list_padded = np.where(self.constraint_manager.inequality_mask)[
                     0

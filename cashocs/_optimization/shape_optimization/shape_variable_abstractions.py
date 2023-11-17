@@ -52,6 +52,7 @@ class ShapeVariableAbstractions(
         Args:
             optimization_problem: The corresponding optimization problem.
             db: The database of the problem.
+            constraint_manager: The constraint manager for mesh quality constraints.
 
         """
         super().__init__(optimization_problem, db)
@@ -134,17 +135,24 @@ class ShapeVariableAbstractions(
         search_direction: List[fenics.Function],
         stepsize: float,
         beta: float,
-        active_idx,
-        constraint_gradient,
-        dropped_idx,
+        active_idx: np.ndarray[bool],
+        constraint_gradient: np.ndarray,
+        dropped_idx: np.ndarray,
     ) -> float:
         """Updates the optimization variables based on a line search.
+
+        This variant is used when constraints are present and projects the step back
+        to the surface of the constraints in the active set.
 
         Args:
             search_direction: The current search direction.
             stepsize: The current (trial) stepsize.
             beta: The parameter for the line search, which "halves" the stepsize if the
                 test was not successful.
+            active_idx: A boolean mask corresponding to the working set.
+            constraint_gradient: The gradient of (all) constraints.
+            dropped_idx: A boolean mask indicating which constraints have been recently
+                dropped from the working set.
 
         Returns:
             The stepsize which was found to be acceptable.
@@ -197,12 +205,31 @@ class ShapeVariableAbstractions(
 
     def project_to_working_set(
         self,
-        coords_dof,
-        search_direction_dof,
-        stepsize,
-        active_idx,
-        constraint_gradient,
-    ) -> np.ndarray:
+        coords_dof: np.ndarray,
+        search_direction_dof: np.ndarray,
+        stepsize: float,
+        active_idx: np.ndarray[bool],
+        constraint_gradient: sparse.csr_matrix,
+    ) -> np.ndarray | None:
+        """Projects an (attempted) step back to the working set of active constraints.
+
+        The step is of the form: `coords_dof + stepsize * search_direction_dof`, the
+        working set is defined by `active_idx` and the gradient of (all) constraints is
+        given in `constraint_gradient`.
+
+        Args:
+            coords_dof: The current coordinates, ordered in a dof-based way.
+            search_direction_dof: The search direction, given also in a dof-based way.
+            stepsize: The trial size of the step.
+            active_idx: A boolean mask used to identify the constraints that are
+                currently in the working set.
+            constraint_gradient: The sparse matrix containing (all) gradients of the
+                constraints.
+
+        Returns:
+            The projected step (if the projection was successful) or `None` otherwise.
+
+        """
         y_j = coords_dof + stepsize * search_direction_dof
         A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
@@ -241,17 +268,37 @@ class ShapeVariableAbstractions(
             else:
                 return y_j
 
-        print("Failed projection!")
+        return None
 
     def compute_step(
         self,
-        coords_dof,
-        search_direction_dof,
-        stepsize,
-        active_idx,
-        constraint_gradient,
-        dropped_idx,
-    ):
+        coords_dof: np.ndarray,
+        search_direction_dof: np.ndarray,
+        stepsize: float,
+        active_idx: np.ndarray[bool],
+        constraint_gradient: sparse.csr_matrix,
+        dropped_idx: np.ndarray[bool],
+    ) -> tuple[np.ndarray, float]:
+        """Computes a feasible mesh movement subject to mesh quality constraints.
+
+        Args:
+            coords_dof: The current coordinates, ordered in a dof-based way.
+            search_direction_dof: The search direction, given also in a dof-based way.
+            stepsize: The trial size of the step.
+            active_idx: A boolean mask used to identify the constraints that are
+                currently in the working set.
+            constraint_gradient: The sparse matrix containing (all) gradients of the
+                constraints.
+            dropped_idx: A boolean mask of indices of constraints, which have been
+                dropped from the working set to generate larger descent.
+
+        Returns:
+            A tuple `feasible_step, feasible_stepsize`, where `feasible_step` is a
+            feasible mesh configuration (based on all constraints) and
+            `feasible_stepsize` is the corresponding stepsize taken.
+
+        """
+
         def func(lambd):
             projected_step = self.project_to_working_set(
                 coords_dof,
@@ -260,7 +307,7 @@ class ShapeVariableAbstractions(
                 active_idx,
                 constraint_gradient,
             )
-            if not projected_step is None:
+            if projected_step is not None:
                 return np.max(
                     self.constraint_manager.evaluate(
                         projected_step[self.constraint_manager.v2d]
@@ -296,7 +343,7 @@ class ShapeVariableAbstractions(
                 constraint_gradient,
             )
 
-            assert np.all(
+            assert np.all(  # nosec B101
                 self.constraint_manager.is_feasible(
                     feasible_step[self.constraint_manager.v2d]
                 )

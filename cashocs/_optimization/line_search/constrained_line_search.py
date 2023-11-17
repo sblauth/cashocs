@@ -25,13 +25,9 @@ import fenics
 from petsc4py import PETSc
 from typing_extensions import TYPE_CHECKING
 
-from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs._optimization.line_search import armijo_line_search
 
 if TYPE_CHECKING:
-    from cashocs import _typing
-    from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
 
 
@@ -64,17 +60,17 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
         is_remeshed = False
 
+        opt_var_abstr = self.optimization_variable_abstractions
+
         while True:
             if self._check_for_nonconvergence(solver):
                 return (None, False)
 
             if self.problem_type == "shape":
-                self.decrease_measure_w_o_step = (
-                    self.optimization_variable_abstractions.compute_decrease_measure(
-                        search_direction
-                    )
+                self.decrease_measure_w_o_step = opt_var_abstr.compute_decrease_measure(
+                    search_direction
                 )
-            self.stepsize = self.optimization_variable_abstractions.update_constrained_optimization_variables(
+            self.stepsize = opt_var_abstr.update_constrained_optimization_variables(
                 search_direction,
                 self.stepsize,
                 self.beta_armijo,

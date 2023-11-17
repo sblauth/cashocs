@@ -24,6 +24,7 @@ import numpy as np
 from scipy import sparse
 
 from cashocs import _utils
+import cashocs.io
 
 cpp_code = """
 #include <pybind11/pybind11.h>
@@ -92,118 +93,115 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
-    
+
     py::array_t<int> rows(18*n);
     auto buf_rows = rows.request();
     int *ptr_rows = (int *) buf_rows.ptr;
-    
+
     py::array_t<int> cols(18*n);
     auto buf_cols = cols.request();
     int *ptr_cols = (int *) buf_cols.ptr;
-    
+
     py::array_t<double> vals(18*n);
     auto buf_vals = vals.request();
     double *ptr_vals = (double *) buf_vals.ptr;
-    
+
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
         const std::size_t i0 = cell->entities(0)[0];
         const std::size_t i1 = cell->entities(0)[1];
         const std::size_t i2 = cell->entities(0)[2];
-    
+
         const Point p0 = Vertex(*mesh, i0).point();
         const Point p1 = Vertex(*mesh, i1).point();
         const Point p2 = Vertex(*mesh, i2).point();
         Point e0 = p1 - p0;
         Point e1 = p2 - p0;
         Point e2 = p2 - p1;
-        
+
         Point tpa1 = e0.cross(e0.cross(e1));
         Point tpa2 = e1.cross(e1.cross(e0));
         tpa1 /= tpa1.norm();
         tpa2 /= tpa2.norm();
-        
+
         Point tpb0 = e0.cross(e0.cross(e2));
         Point tpb2 = e2.cross(e2.cross(-e0));
         tpb0 /= tpb0.norm();
         tpb2 /= tpb2.norm();
-        
+
         Point tpc0 = e1.cross(e1.cross(-e2));
         Point tpc1 = e2.cross(e2.cross(-e1));
         tpc0 /= tpc0.norm();
         tpc1 /= tpc1.norm();
-        
+
         Point dad0 = 1.0 / e0.norm() * tpa1 + 1.0 / e1.norm() * tpa2;
         Point dad1 = -1.0 / e0.norm() * tpa1;
         Point dad2 = -1.0 / e1.norm() * tpa2;
-        
+
         Point dbd0 = -1.0 / e0.norm() * tpb0;
         Point dbd1 = 1.0 / e0.norm() * tpb0 + 1.0 / e2.norm() * tpb2;
         Point dbd2 = -1.0 / e2.norm() * tpb2;
-        
+
         Point dcd0 = -1.0 / e1.norm() * tpc0;
         Point dcd1 = -1.0 / e2.norm() * tpc1;
         Point dcd2 = 1.0 / e1.norm() * tpc0 + 1.0 / e2.norm() * tpc1;
-        
-        
+
         ptr_rows[18*idx + 0] = 3*idx;
         ptr_rows[18*idx + 1] = 3*idx;
         ptr_rows[18*idx + 2] = 3*idx;
         ptr_rows[18*idx + 3] = 3*idx;
         ptr_rows[18*idx + 4] = 3*idx;
         ptr_rows[18*idx + 5] = 3*idx;
-        
+
         ptr_cols[18*idx + 0] = 2 * i0 + 0;
         ptr_cols[18*idx + 1] = 2 * i0 + 1;
         ptr_cols[18*idx + 2] = 2 * i1 + 0;
         ptr_cols[18*idx + 3] = 2 * i1 + 1;
         ptr_cols[18*idx + 4] = 2 * i2 + 0;
         ptr_cols[18*idx + 5] = 2 * i2 + 1;
-        
+
         ptr_vals[18*idx + 0] = dad0[0];
         ptr_vals[18*idx + 1] = dad0[1];
         ptr_vals[18*idx + 2] = dad1[0];
         ptr_vals[18*idx + 3] = dad1[1];
         ptr_vals[18*idx + 4] = dad2[0];
         ptr_vals[18*idx + 5] = dad2[1];
-        
-        
+
         ptr_rows[18*idx + 6] = 3*idx + 1;
         ptr_rows[18*idx + 7] = 3*idx + 1;
         ptr_rows[18*idx + 8] = 3*idx + 1;
         ptr_rows[18*idx + 9] = 3*idx + 1;
         ptr_rows[18*idx + 10] = 3*idx + 1;
         ptr_rows[18*idx + 11] = 3*idx + 1;
-        
+
         ptr_cols[18*idx + 6] = 2 * i0 + 0;
         ptr_cols[18*idx + 7] = 2 * i0 + 1;
         ptr_cols[18*idx + 8] = 2 * i1 + 0;
         ptr_cols[18*idx + 9] = 2 * i1 + 1;
         ptr_cols[18*idx + 10] = 2 * i2 + 0;
         ptr_cols[18*idx + 11] = 2 * i2 + 1;
-        
+
         ptr_vals[18*idx + 6] = dbd0[0];
         ptr_vals[18*idx + 7] = dbd0[1];
         ptr_vals[18*idx + 8] = dbd1[0];
         ptr_vals[18*idx + 9] = dbd1[1];
         ptr_vals[18*idx + 10] = dbd2[0];
         ptr_vals[18*idx + 11] = dbd2[1];
-        
-        
+
         ptr_rows[18*idx + 12] = 3*idx + 2;
         ptr_rows[18*idx + 13] = 3*idx + 2;
         ptr_rows[18*idx + 14] = 3*idx + 2;
         ptr_rows[18*idx + 15] = 3*idx + 2;
         ptr_rows[18*idx + 16] = 3*idx + 2;
         ptr_rows[18*idx + 17] = 3*idx + 2;
-        
+
         ptr_cols[18*idx + 12] = 2 * i0 + 0;
         ptr_cols[18*idx + 13] = 2 * i0 + 1;
         ptr_cols[18*idx + 14] = 2 * i1 + 0;
         ptr_cols[18*idx + 15] = 2 * i1 + 1;
         ptr_cols[18*idx + 16] = 2 * i2 + 0;
         ptr_cols[18*idx + 17] = 2 * i2 + 1;
-        
+
         ptr_vals[18*idx + 12] = dcd0[0];
         ptr_vals[18*idx + 13] = dcd0[1];
         ptr_vals[18*idx + 14] = dcd1[0];
@@ -226,26 +224,86 @@ mesh_quality = fenics.compile_cpp_code(cpp_code)
 
 
 class MeshConstraint(abc.ABC):
+    """This class represents a generic constraint on the mesh quality."""
+
     type = None
 
-    def __init__(self, mesh, deformation_space) -> None:
+    def __init__(
+        self, mesh: fenics.Mesh, deformation_space: fenics.FunctionSpace
+    ) -> None:
+        """Abstract base class representing an interface for mesh quality constraints.
+
+        Args:
+            mesh: The underlying finite element mesh, which is subjected to the mesh
+            quality constraints.
+            deformation_space: A vector CG1 FEM function space used for defining
+                deformations of the mesh via perturbation of identity.
+
+        """
         self.mesh = mesh
         self.v2d = fenics.vertex_to_dof_map(deformation_space)
         self.d2v = fenics.dof_to_vertex_map(deformation_space)
 
     @abc.abstractmethod
-    def evaluate(self, coords_sequential) -> None:
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        r"""Evaluates the constaint function at the current iterate.
+
+        This computes :math:`g(x)` where the constraint is given by
+        :math:`g(x) \leq 0` and :math:`x` corresponds to mesh coordinates, i.e.,
+        `coords_seq`.
+
+        Args:
+            coords_seq: The (flattened) list of vertex coordinates of the mesh.
+
+        Returns:
+            A numpy array containing the values of the constraint functions.
+
+        """
         pass
 
     @abc.abstractmethod
-    def compute_gradient(self, coords_sequential) -> None:
+    def compute_gradient(self, coords_sequ: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
         pass
 
 
 class FixedBoundaryConstraint(MeshConstraint):
+    """A discrete mesh constraint for fixed boundaries in shape optimization.
+
+    This constraint is needed to incorporate other mesh constraints for the case that
+    some part of the boundary is fixed during optimization. By default, this is already
+    incorporated into the gradient deformation, so that this constraint alone is
+    not necessary, however, it becomes so when other constraints are considered.
+    The constraint is linear, so that the gradient only has to be computed once.
+    """
+
     type = "equality"
 
-    def __init__(self, mesh, boundaries, config, deformation_space):
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        boundaries: fenics.MeshFunction,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the fixed boundary mesh constraint.
+
+        Args:
+            mesh: The corresponding finite element mesh.
+            boundaries: The :py:class`fenics.MeshFunction` which is used to mark the
+                boundaries of the mesh.
+            config: The configuration of the optimization problem.
+            deformation_space: The space of vector CG1 elements for mesh deformations.
+
+        """
         super().__init__(mesh, deformation_space)
         self.boundaries = boundaries
         self.config = config
@@ -270,6 +328,19 @@ class FixedBoundaryConstraint(MeshConstraint):
     def _compute_fixed_coordinate_indices(
         self, shape_bdry_fix: list[int] | int
     ) -> tuple[np.ndarray, np.ndarray | None]:
+        """Computes the (flattened) indices of the mesh coordinates, which are fixed.
+
+        Args:
+            shape_bdry_fix: An index or list of indices of the boundaries, which are
+                fixed during shape optimization. This is specified in the configuration
+                of the problem.
+
+        Returns:
+            A tuple `fixed_indices, fixed_coordinates`, where `fixed_indices` is an
+            array containing the (flattened) indices of the fixed coordinates and
+            `fixed_coordinates` contains the corresponding values of the fixed vertices.
+
+        """
         bdry_fix_list = _utils.enlist(shape_bdry_fix)
 
         fixed_idcs = []
@@ -299,13 +370,37 @@ class FixedBoundaryConstraint(MeshConstraint):
 
         return fixed_idcs, fixed_coordinates
 
-    def evaluate(self, coords_seq) -> np.ndarray:
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        r"""Evaluates the constaint function at the current iterate.
+
+        This computes :math:`g(x)` where the constraint is given by
+        :math:`g(x) = 0` and :math:`x` corresponds to mesh coordinates, i.e.,
+        `coords_seq`. The constraint returns the mesh coordinates corresponding
+        to the boundaries that shall remain fixed during shape optimization.
+
+        Args:
+            coords_seq: The (flattened) list of vertex coordinates of the mesh.
+
+        Returns:
+            A numpy array containing the values of the constraint functions.
+
+        """
         if len(self.fixed_idcs) > 0:
             return coords_seq[self.fixed_idcs] - self.fixed_coordinates
         else:
             return np.array([])
 
     def _compute_fixed_gradient(self) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint function.
+
+        As the constraint is linear, the gradient is constant and, so, it is precomputed
+        with this method. Also, the gradient is independent of the actual values of the
+        mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the constraint gradient.
+
+        """
         if len(self.fixed_idcs) > 0:
             rows = np.arange(len(self.fixed_idcs))
             cols = self.v2d[self.fixed_idcs]
@@ -318,14 +413,43 @@ class FixedBoundaryConstraint(MeshConstraint):
             gradient = sparse2scipy(([], [], []), shape)
         return gradient
 
-    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
         return self.fixed_gradient
 
 
 class TriangleAngleConstraint(MeshConstraint):
+    r"""A mesh quality constraint for the angles of triangles in the mesh.
+
+    This ensures that the all angles :math:`\alpha` of the FEM mesh satisfy the
+    constraint :math:`\alpha \geq \alpha_{min}`, which is equivalently rewritten as
+    :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
+    the mesh coordinates.
+    """
     type = "inequality"
 
-    def __init__(self, mesh, config, deformation_space):
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the mesh quality constraint for the triangle angles.
+
+        Args:
+            mesh: The corresponding FEM mesh.
+            config: The configuration of the optimization problem.
+            deformation_space: A space of vector CG1 elements for mesh deformations.
+
+        """
         super().__init__(mesh, deformation_space)
         self.config = config
 
@@ -339,7 +463,22 @@ class TriangleAngleConstraint(MeshConstraint):
     # ToDo: Parallel implementation,
     #  compute the minimum angle of each element directly and
     #  use this as threshold (scaled with a factor),
-    def evaluate(self, coords_seq) -> np.ndarray:
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        r"""Evaluates the constaint function at the current iterate.
+
+        This computes :math:`g(x)` where the constraint is given by
+        :math:`g(x) <= 0` and :math:`x` corresponds to mesh coordinates, i.e.,
+        `coords_seq`. The constraint returns :math:`\alpha_{min} - \alpha`,
+        where :math:`\alpha` is one angle of a triangle and :math:`\alpha_{min}` is the
+        minimum feasible angle in each triangle.
+
+        Args:
+            coords_seq: The (flattened) list of vertex coordinates of the mesh.
+
+        Returns:
+            A numpy array containing the values of the constraint functions.
+
+        """
         old_coords = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -353,7 +492,16 @@ class TriangleAngleConstraint(MeshConstraint):
         return values
 
     # ToDo: Parallel implementation,
-    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
         old_coords = self.mesh.coordinates().copy()
         self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -372,7 +520,30 @@ class TriangleAngleConstraint(MeshConstraint):
 
 
 class ConstraintManager:
-    def __init__(self, config, mesh, boundaries, deformation_space):
+    """This class manages all (selected) mesh quality constraints.
+
+    It is used to treat arbitrary constraints (on the mesh coordinates) in a unified
+    manner.
+    """
+
+    def __init__(
+        self,
+        config: cashocs.io.Config,
+        mesh: fenics.Mesh,
+        boundaries: fenics.MeshFunction,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the constraint manager.
+
+        Args:
+            config: The configuration of the optimization problem.
+            mesh: The underlying FEM mesh.
+            boundaries: The :py:class`fenics.MeshFunction` used to mark the boundaries
+                of the mesh.
+            deformation_space: A :py:class`fenics.FunctionSpace` of vector CG1 elements
+                for mesh deformations.
+
+        """
         self.config = config
         self.mesh = mesh
         self.boundaries = boundaries
@@ -406,6 +577,13 @@ class ConstraintManager:
             self.necessary_constraints = np.concatenate(necessary_constraints)
 
     def _compute_inequality_mask(self) -> np.ndarray:
+        """Computes the mask which distinguishes between (in-)equality constaints.
+
+        Returns:
+            A boolean array (a mask) which is `True` when the corresponding constraint
+            is an inequality constraint.
+
+        """
         mask = []
         for constraint in self.constraints:
             if constraint.type == "equality":
@@ -415,7 +593,16 @@ class ConstraintManager:
 
         return np.array(mask)
 
-    def evaluate(self, coords_seq) -> np.ndarray:
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        """Evaluates all (selected) mesh quality constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A numpy array with the values of the constraint functions.
+
+        """
         result = []
         for constraint in self.constraints:
             result.append(constraint.evaluate(coords_seq))
@@ -427,11 +614,33 @@ class ConstraintManager:
 
         return self.function_values
 
-    def evaluate_active(self, coords_seq, active_idx) -> np.ndarray:
+    def evaluate_active(
+        self, coords_seq: np.ndarray, active_idx: np.ndarray
+    ) -> np.ndarray:
+        """Evaluates only the constraints corresponding to the working set.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+            active_idx: The mask of active indices corresponding to the working set.
+
+        Returns:
+            A numpy array containing only the values of the constraint functions that
+            are in the working set.
+
+        """
         function_values = self.evaluate(coords_seq)
         return function_values[active_idx]
 
-    def compute_gradient(self, coords_seq) -> sparse.csr_matrix:
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
         result = []
         for constraint in self.constraints:
             result.append(constraint.compute_gradient(coords_seq))
@@ -444,26 +653,83 @@ class ConstraintManager:
         return self.gradient
 
     def compute_active_gradient(
-        self, active_idx, constraint_gradient: sparse.csr_matrix
+        self, active_idx: np.ndarray, constraint_gradient: sparse.csr_matrix
     ) -> sparse.csr_matrix:
+        """Computes the gradient of those constraint functions that are active.
+
+        Args:
+            active_idx: The boolean array corresponding to the current working set.
+            constraint_gradient: The entire (sparse) constraint gradient.
+
+        Returns:
+            A sparse matrix of the constraint gradient w.r.t. the working set.
+
+        """
         return constraint_gradient[active_idx]
 
-    def compute_active_set(self, coords_seq) -> np.ndarray:
+    def compute_active_set(self, coords_seq: np.ndarray) -> np.ndarray:
+        """Computes the working set.
+
+        The working set is the set of constraints which are active at a given point.
+
+        Args:
+            coords_seq: The list of flattened mesh coordinates.
+
+        Returns:
+            A boolean array which is `True` in component `i` if constraint `i` is
+            active.
+
+        """
         function_values = self.evaluate(coords_seq)
         result = np.abs(function_values) <= self.constraint_tolerance
         return result
 
     def is_necessary(self, active_idx: np.ndarray) -> bool:
+        """Checks, whether constraint treatment is necessary based on the working set.
+
+        This can be `False`, e.g., when only fixed boundary constraints are active (as
+        these are directly treated in the gradient deformation) or no constraints are
+        currently active.
+
+        Args:
+            active_idx: The boolean array representing the working set.
+
+        Returns:
+            A boolean, which is `True` when active treatment of the constraints is
+            necessary and `False` otherwise.
+
+        """
         return np.any(np.logical_and(self.necessary_constraints, active_idx))
 
-    def is_feasible(self, coords_seq) -> np.ndarray:
+    def is_feasible(self, coords_seq: np.ndarray) -> np.ndarray:
+        """Checks, whether a given point is feasible w.r.t. all constraints.
+
+        Args:
+            coords_seq: The list of flattened mesh coordinates for the trial point.
+
+        Returns:
+            A boolean array, which is `True` in component `i` if the corresponding
+            constraint is not violated, else `False`.
+
+        """
         function_values = self.evaluate(coords_seq)
-        return np.array(
-            [bool(value <= self.constraint_tolerance) for value in function_values]
-        )
+        result = np.less_equal(function_values, self.constraint_tolerance)
+        return result
 
 
-def sparse2scipy(csr, shape=None) -> sparse.csr_matrix:
+def sparse2scipy(
+    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape=None
+) -> sparse.csr_matrix:
+    """Converts a sparse matrix representation to a sparse scipy matrix.
+
+    Args:
+        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
+        shape: The shape of the sparse matrix.
+
+    Returns:
+        The corresponding sparse scipy csr matrix.
+
+    """
     rows = csr[0]
     cols = csr[1]
     vals = csr[2]
@@ -471,5 +737,11 @@ def sparse2scipy(csr, shape=None) -> sparse.csr_matrix:
     return A
 
 
-def sparse2petsc(csr):
+def sparse2petsc(csr: tuple[np.ndarray, np.ndarray, np.ndarray]) -> None:
+    """Converts a sparse matrix representation to a sparse PETSc matrix.
+
+    Args:
+        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
+
+    """
     pass
