@@ -23,6 +23,7 @@ from typing import cast, List, TYPE_CHECKING
 
 import fenics
 import numpy as np
+import petsc4py
 from petsc4py import PETSc
 from mpi4py import MPI
 from scipy import optimize
@@ -164,7 +165,6 @@ class ShapeVariableAbstractions(
         while True:
             coords_sequential = self.mesh_handler.mesh.coordinates().copy().reshape(-1)
             coords_dof = coords_sequential[self.constraint_manager.d2v]
-            # search_direction_dof = search_direction[0].vector()[:]
             search_direction_vertex = (
                 self.mesh_handler.deformation_handler.dof_to_coordinate(
                     search_direction[0]
@@ -267,13 +267,10 @@ class ShapeVariableAbstractions(
             satisfies_previous_constraints = np.all(satisfies_previous_constraints)
 
             if not satisfies_previous_constraints:
-                # ToDo: Check this for correctness
                 h = self.constraint_manager.evaluate_active(
-                    coords_dof[self.constraint_manager.v2d], active_idx
+                    y_j[self.constraint_manager.v2d], active_idx
                 )
-                # h = self.constraint_manager.evaluate_active(
-                #     y_j[self.constraint_manager.v2d], active_idx
-                # )
+
                 if self.mode == "complete":
                     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
                     y_j = y_j - S_inv @ A.T @ lambd
@@ -297,7 +294,9 @@ class ShapeVariableAbstractions(
 
                     lambd = B.createVecRight()
                     h_petsc = B.createVecLeft()
-                    h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
+                    # ToDo: Is this correct? No!
+                    # h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
+                    h_petsc.array_w = h
                     h_petsc.assemble()
 
                     ksp.solve(h_petsc, lambd)
@@ -311,7 +310,7 @@ class ShapeVariableAbstractions(
                     AT.mult(lambd, y_petsc)
 
                     update = fenics.Function(self.db.function_db.control_spaces[0])
-                    update.vector().set_local(y_petsc.getArray())
+                    update.vector().vec().aypx(0.0, y_petsc)
                     update.vector().apply("")
 
                     update_vertex = (
@@ -319,12 +318,10 @@ class ShapeVariableAbstractions(
                     )
                     update_dof = update_vertex.reshape(-1)[self.constraint_manager.d2v]
                     y_j = y_j - update_dof
-                    print(f"Performed Update", flush=True)
 
             else:
                 return y_j
 
-        print(f"Failed to project to working set.", flush=True)
         return None
 
     def compute_step(

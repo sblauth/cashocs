@@ -201,7 +201,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 break
 
         p_dof = fenics.Function(self.db.function_db.control_spaces[0])
-        p_dof.vector()[:] = p
+        p_dof.vector().set_local(p.getArray())
+        p_dof.vector().apply("")
 
         if (
             np.sqrt(self.form_handler.scalar_product([p_dof], [p_dof]))
