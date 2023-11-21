@@ -247,6 +247,8 @@ class MeshConstraint(abc.ABC):
 
         self.v2d = fenics.vertex_to_dof_map(deformation_space)
         self.d2v = fenics.dof_to_vertex_map(deformation_space)
+        loc0, loc1 = deformation_space.dofmap().ownership_range()
+        self.d2v_local = self.d2v[: loc1 - loc0]
 
         dof_ownership_range = deformation_space.dofmap().ownership_range()
         self.local_offset = dof_ownership_range[0]
@@ -255,6 +257,7 @@ class MeshConstraint(abc.ABC):
 
         self._compute_parallel_relations()
 
+    # ToDo: Do we need this at all?
     def _compute_parallel_relations(self) -> None:
         self.global_vertex_indices = self.mesh.topology().global_indices(0)
         V = fenics.FunctionSpace(self.mesh, "CG", 1)
@@ -597,9 +600,16 @@ class ConstraintManager:
         self.config = config
         self.mesh = mesh
         self.boundaries = boundaries
+
         self.has_constraints = False
         self.v2d = fenics.vertex_to_dof_map(deformation_space)
         self.d2v = fenics.dof_to_vertex_map(deformation_space)
+        loc0, loc1 = deformation_space.dofmap().ownership_range()
+        self.d2v_local = self.d2v[: loc1 - loc0]
+
+        fun = fenics.Function(deformation_space)
+        self.local_petsc_size = fun.vector().vec().getSizes()[0]
+        self.comm = self.mesh.mpi_comm()
 
         self.constraints = []
         self.constraint_tolerance = self.config.getfloat(
@@ -704,7 +714,7 @@ class ConstraintManager:
 
     def compute_active_gradient(
         self, active_idx: np.ndarray, constraint_gradient: sparse.csr_matrix
-    ) -> sparse.csr_matrix:
+    ) -> PETSc.Mat:
         """Computes the gradient of those constraint functions that are active.
 
         Args:
@@ -716,8 +726,12 @@ class ConstraintManager:
 
         """
         scipy_matrix = constraint_gradient[active_idx]
+
         petsc_matrix = scipy2petsc(
-            scipy_matrix, scipy_matrix.shape, self.mesh.mpi_comm()
+            scipy_matrix,
+            scipy_matrix.shape,
+            self.mesh.mpi_comm(),
+            local_size=self.local_petsc_size,
         )
         return petsc_matrix
 
@@ -753,7 +767,14 @@ class ConstraintManager:
             necessary and `False` otherwise.
 
         """
-        return np.any(np.logical_and(self.necessary_constraints, active_idx))
+        necessary_constraints_gathered = self.comm.allgather(self.necessary_constraints)
+        necessary_constraints_global = np.concatenate(necessary_constraints_gathered)
+        active_idx_gathered = self.comm.allgather(active_idx)
+        active_idx_global = np.concatenate(active_idx_gathered)
+
+        result = np.any(np.logical_and(necessary_constraints_global, active_idx_global))
+
+        return result
 
     def is_feasible(self, coords_seq: np.ndarray) -> np.ndarray:
         """Checks, whether a given point is feasible w.r.t. all constraints.
@@ -767,7 +788,10 @@ class ConstraintManager:
 
         """
         function_values = self.evaluate(coords_seq)
-        result = np.less_equal(function_values, self.constraint_tolerance)
+        function_values_list = self.comm.allgather(function_values)
+        function_values_global = np.concatenate(function_values_list)
+
+        result = np.less_equal(function_values_global, self.constraint_tolerance)
         return result
 
 
@@ -791,11 +815,14 @@ def sparse2scipy(
     return A
 
 
-def scipy2petsc(scipy_matrix, shape, comm):
+def scipy2petsc(scipy_matrix, shape, comm, local_size=None) -> PETSc.Mat:
     no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
+    if local_size is None:
+        local_size = PETSc.DECIDE
+
     petsc_matrix = PETSc.Mat().createAIJ(
         comm=comm,
-        size=((shape[0], no_rows_total), shape[1]),
+        size=((shape[0], no_rows_total), (local_size, shape[1])),
         csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
     )
 

@@ -24,6 +24,7 @@ from typing import cast, List, TYPE_CHECKING
 import fenics
 import numpy as np
 from petsc4py import PETSc
+from mpi4py import MPI
 from scipy import optimize
 from scipy import sparse
 
@@ -163,7 +164,15 @@ class ShapeVariableAbstractions(
         while True:
             coords_sequential = self.mesh_handler.mesh.coordinates().copy().reshape(-1)
             coords_dof = coords_sequential[self.constraint_manager.d2v]
-            search_direction_dof = search_direction[0].vector()[:]
+            # search_direction_dof = search_direction[0].vector()[:]
+            search_direction_vertex = (
+                self.mesh_handler.deformation_handler.dof_to_coordinate(
+                    search_direction[0]
+                )
+            )
+            search_direction_dof = search_direction_vertex.reshape(-1)[
+                self.constraint_manager.d2v
+            ]
 
             if len(active_idx) > 0:
                 coords_dof_feasible, stepsize = self.compute_step(
@@ -177,7 +186,8 @@ class ShapeVariableAbstractions(
 
                 dof_deformation_vector = coords_dof_feasible - coords_dof
                 dof_deformation = fenics.Function(self.db.function_db.control_spaces[0])
-                dof_deformation.vector()[:] = dof_deformation_vector
+                dof_deformation.vector().set_local(dof_deformation_vector)
+                dof_deformation.vector().apply("")
 
                 self.deformation.vector().vec().axpby(
                     1.0, 0.0, dof_deformation.vector().vec()
@@ -232,6 +242,8 @@ class ShapeVariableAbstractions(
             The projected step (if the projection was successful) or `None` otherwise.
 
         """
+        comm = self.mesh_handler.mesh.mpi_comm()
+
         y_j = coords_dof + stepsize * search_direction_dof
         A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
@@ -244,14 +256,24 @@ class ShapeVariableAbstractions(
             S_inv = np.linalg.inv(S)
 
         for i in range(10):
-            if not np.all(
+            satisfies_previous_constraints_local = np.all(
                 self.constraint_manager.compute_active_set(
                     y_j[self.constraint_manager.v2d]
                 )[active_idx]
-            ):
+            )
+            satisfies_previous_constraints = comm.allgather(
+                satisfies_previous_constraints_local
+            )
+            satisfies_previous_constraints = np.all(satisfies_previous_constraints)
+
+            if not satisfies_previous_constraints:
+                # ToDo: Check this for correctness
                 h = self.constraint_manager.evaluate_active(
                     coords_dof[self.constraint_manager.v2d], active_idx
                 )
+                # h = self.constraint_manager.evaluate_active(
+                #     y_j[self.constraint_manager.v2d], active_idx
+                # )
                 if self.mode == "complete":
                     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
                     y_j = y_j - S_inv @ A.T @ lambd
@@ -276,6 +298,8 @@ class ShapeVariableAbstractions(
                     lambd = B.createVecRight()
                     h_petsc = B.createVecLeft()
                     h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
+                    h_petsc.assemble()
+
                     ksp.solve(h_petsc, lambd)
 
                     if ksp.getConvergedReason() < 0:
@@ -285,12 +309,22 @@ class ShapeVariableAbstractions(
 
                     y_petsc = AT.createVecLeft()
                     AT.mult(lambd, y_petsc)
-                    y_j = y_j - y_petsc[:]
+
+                    update = fenics.Function(self.db.function_db.control_spaces[0])
+                    update.vector().set_local(y_petsc.getArray())
+                    update.vector().apply("")
+
+                    update_vertex = (
+                        self.mesh_handler.deformation_handler.dof_to_coordinate(update)
+                    )
+                    update_dof = update_vertex.reshape(-1)[self.constraint_manager.d2v]
+                    y_j = y_j - update_dof
+                    print(f"Performed Update", flush=True)
 
             else:
                 return y_j
 
-        print(f"Failed to project to working set.")
+        print(f"Failed to project to working set.", flush=True)
         return None
 
     def compute_step(
@@ -321,6 +355,7 @@ class ShapeVariableAbstractions(
             `feasible_stepsize` is the corresponding stepsize taken.
 
         """
+        comm = self.mesh_handler.mesh.mpi_comm()
 
         def func(lambd):
             projected_step = self.project_to_working_set(
@@ -331,15 +366,19 @@ class ShapeVariableAbstractions(
                 constraint_gradient,
             )
             if projected_step is not None:
-                return np.max(
+                rval = np.max(
                     self.constraint_manager.evaluate(
                         projected_step[self.constraint_manager.v2d]
                     )[np.logical_and(~active_idx, ~dropped_idx)]
                 )
+                value = comm.allreduce(rval, op=MPI.MAX)
+
+                return value
             else:
                 return 100.0
 
         while True:
+            self.constraint_manager.comm.barrier()
             trial_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,
@@ -347,6 +386,7 @@ class ShapeVariableAbstractions(
                 active_idx,
                 constraint_gradient,
             )
+            self.constraint_manager.comm.barrier()
             if trial_step is None:
                 stepsize /= 2.0
             else:
@@ -355,9 +395,12 @@ class ShapeVariableAbstractions(
         if not np.all(
             self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
         ):
-            feasible_stepsize = optimize.root_scalar(
+            feasible_stepsize_lcoal = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
+
+            feasible_stepsize = comm.allreduce(feasible_stepsize_lcoal, op=MPI.MIN)
+
             feasible_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,

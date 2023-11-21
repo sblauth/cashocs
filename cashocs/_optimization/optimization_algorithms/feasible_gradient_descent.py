@@ -82,7 +82,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             self.active_idx = self.constraint_manager.compute_active_set(
                 self.coords_sequential
             )
-            print(f"No. active constraints: {sum(self.active_idx)}")
+            print(f"No. active constraints: {sum(self.active_idx)}", flush=True)
 
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
