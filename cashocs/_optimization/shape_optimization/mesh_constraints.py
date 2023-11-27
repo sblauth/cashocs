@@ -255,10 +255,6 @@ class MeshConstraint(abc.ABC):
         self.no_vertices = self.mesh.num_entities_global(0)
         self.l2g_dofs = deformation_space.dofmap().tabulate_local_to_global_dofs()
 
-        self._compute_parallel_relations()
-
-    # ToDo: Do we need this at all?
-    def _compute_parallel_relations(self) -> None:
         self.global_vertex_indices = self.mesh.topology().global_indices(0)
         V = fenics.FunctionSpace(self.mesh, "CG", 1)
         loc0, loc1 = V.dofmap().ownership_range()
@@ -266,24 +262,6 @@ class MeshConstraint(abc.ABC):
         self.global_vertex_indices_owned = self.global_vertex_indices[
             d2v[: loc1 - loc0]
         ]
-
-        if self.dim == 2:
-            self.cols_owned = np.array(
-                [
-                    self.dim * self.global_vertex_indices_owned,
-                    self.dim * self.global_vertex_indices_owned + 1,
-                ]
-            ).T.reshape(-1)
-        elif self.dim == 3:
-            self.cols_owned = np.array(
-                [
-                    self.dim * self.global_vertex_indices_owned,
-                    self.dim * self.global_vertex_indices_owned + 1,
-                    self.dim * self.global_vertex_indices_owned + 2,
-                ]
-            ).T.reshape(-1)
-
-        self.cols_owned.sort()
 
     @abc.abstractmethod
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
@@ -514,7 +492,7 @@ class TriangleAngleConstraint(MeshConstraint):
         self.is_necessary = np.array([True] * self.no_constraints)
 
     # ToDo: compute the minimum angle of each element directly and
-    #  use this as threshold (scaled with a factor),
+    #  use this as threshold (scaled with a factor)
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
 

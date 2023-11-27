@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 import fenics
 import numpy as np
 from petsc4py import PETSc
-from scipy import sparse
+from mpi4py import MPI
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -82,7 +82,16 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             self.active_idx = self.constraint_manager.compute_active_set(
                 self.coords_sequential
             )
-            print(f"No. active constraints: {sum(self.active_idx)}", flush=True)
+
+            no_active_constraints_local = sum(self.active_idx)
+            no_active_constraints_global = self.constraint_manager.comm.allreduce(
+                no_active_constraints_local, op=MPI.SUM
+            )
+            if self.constraint_manager.comm.rank == 0:
+                print(
+                    f"No. active constraints: {no_active_constraints_global}",
+                    flush=True,
+                )
 
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
