@@ -438,10 +438,10 @@ class FixedBoundaryConstraint(MeshConstraint):
             vals = np.ones(len(self.fixed_idcs))
             csr = rows, cols, vals
             shape = (len(self.fixed_idcs), self.no_vertices * self.dim)
-            gradient = sparse2scipy(csr, shape)
+            gradient = _utils.linalg.sparse2scipy(csr, shape)
         else:
             shape = (0, self.no_vertices * self.dim)
-            gradient = sparse2scipy(([], [], []), shape)
+            gradient = _utils.linalg.sparse2scipy(([], [], []), shape)
         return gradient
 
     def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
@@ -545,7 +545,7 @@ class TriangleAngleConstraint(MeshConstraint):
 
         csr = rows, cols, vals
         shape = (int(3 * len(self.cells)), self.no_vertices * self.dim)
-        gradient = sparse2scipy(csr, shape)
+        gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
 
@@ -705,7 +705,7 @@ class ConstraintManager:
         """
         scipy_matrix = constraint_gradient[active_idx]
 
-        petsc_matrix = scipy2petsc(
+        petsc_matrix = _utils.linalg.scipy2petsc(
             scipy_matrix,
             scipy_matrix.shape,
             self.mesh.mpi_comm(),
@@ -771,58 +771,3 @@ class ConstraintManager:
 
         result = np.less_equal(function_values_global, self.constraint_tolerance)
         return result
-
-
-def sparse2scipy(
-    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape=None
-) -> sparse.csr_matrix:
-    """Converts a sparse matrix representation to a sparse scipy matrix.
-
-    Args:
-        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
-        shape: The shape of the sparse matrix.
-
-    Returns:
-        The corresponding sparse scipy csr matrix.
-
-    """
-    rows = csr[0]
-    cols = csr[1]
-    vals = csr[2]
-    A = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
-    return A
-
-
-def scipy2petsc(scipy_matrix, shape, comm, local_size=None) -> PETSc.Mat:
-    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
-    if local_size is None:
-        local_size = PETSc.DECIDE
-
-    petsc_matrix = PETSc.Mat().createAIJ(
-        comm=comm,
-        size=((shape[0], no_rows_total), (local_size, shape[1])),
-        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
-    )
-
-    return petsc_matrix
-
-
-def sparse2petsc(
-    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape=None, comm=None
-) -> None:
-    """Converts a sparse matrix representation to a sparse PETSc matrix.
-
-    Args:
-        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
-
-    """
-    scipy_matrix = sparse2scipy(csr, shape)
-
-    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
-    petsc_matrix = PETSc.Mat().createAIJ(
-        comm=comm,
-        size=((shape[0], no_rows_total), shape[1]),
-        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
-    )
-
-    return petsc_matrix

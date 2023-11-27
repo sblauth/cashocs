@@ -22,9 +22,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from petsc4py import PETSc
-from mpi4py import MPI
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -135,6 +135,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         self, active_idx, constraint_gradient
     ) -> tuple[fenics.Function, bool, np.ndarray]:
         converged = False
+        has_dropped_constraints = False
+        has_undroppable_constraints = False
         no_constraints = constraint_gradient.shape[0]
         dropped_idx_list = []
         undroppable_idx = []
@@ -182,36 +184,60 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 AT.mult(-lambd, p)
                 p.axpy(-1.0, self.gradient[0].vector().vec())
 
-            if len(dropped_idx_list) > 0:
-                if not np.all(constraint_gradient[dropped_idx_list] @ p < 1e-12):
-                    relevant_idx = dropped_idx_list.pop()
-                    active_idx[relevant_idx] = True
-                    undroppable_idx.append(relevant_idx)
+            if has_dropped_constraints:
+                scipy_matrix = constraint_gradient[dropped_idx_list]
+                petsc_matrix = _utils.linalg.scipy2petsc(
+                    scipy_matrix,
+                    scipy_matrix.shape,
+                    self.constraint_manager.comm,
+                    local_size=self.constraint_manager.local_petsc_size,
+                )
+                res = petsc_matrix.getVecLeft()
+                petsc_matrix.mult(p, res)
+                directional_constraint_derivative_max = res.max()[1]
+                if not directional_constraint_derivative_max < 1e-12:
+                    if self.constraint_manager.comm.rank == lambda_min_rank:
+                        relevant_idx = dropped_idx_list.pop()
+                        active_idx[relevant_idx] = True
+                        undroppable_idx.append(relevant_idx)
+                    self.constraint_manager.comm.barrier()
+                    has_undroppable_constraints = True
                     continue
+
+            p_dof = fenics.Function(self.db.function_db.control_spaces[0])
+            p_dof.vector().set_local(p.getArray())
+            p_dof.vector().apply("")
 
             lambd_padded = np.zeros(no_constraints)
             lambd_padded[active_idx] = lambd
             lambd_ineq = lambd_padded[self.constraint_manager.inequality_mask]
 
-            gamma = -np.minimum(0.0, lambd_ineq.min())
-            if np.linalg.norm(p) <= gamma and len(undroppable_idx) == 0:
-                i_min_list = np.argsort(lambd_ineq)
-                i_min_list_padded = np.where(self.constraint_manager.inequality_mask)[
-                    0
-                ][i_min_list]
-                filter = ~np.in1d(i_min_list_padded, undroppable_idx)
-                i_min_padded = i_min_list_padded[filter][0]
+            lambda_min_list = self.constraint_manager.comm.allgather(lambd_ineq.min())
+            lambda_min_rank = np.argmin(lambda_min_list)
+            lambda_min = np.min(lambda_min_list)
+            gamma = -np.minimum(0.0, lambda_min)
 
-                active_idx[i_min_padded] = False
-                dropped_idx_list.append(i_min_padded)
-                print(f"Dropped constraint {i_min_padded}")
+            if (
+                np.sqrt(self.form_handler.scalar_product([p_dof], [p_dof])) <= gamma
+                and not has_undroppable_constraints
+            ):
+                if self.constraint_manager.comm.rank == lambda_min_rank:
+                    i_min_list = np.argsort(lambd_ineq)
+                    i_min_list_padded = np.where(
+                        self.constraint_manager.inequality_mask
+                    )[0][i_min_list]
+                    filter = ~np.in1d(i_min_list_padded, undroppable_idx)
+                    i_min_padded = i_min_list_padded[filter][0]
+
+                    active_idx[i_min_padded] = False
+                    dropped_idx_list.append(i_min_padded)
+                    print(f"Dropped constraint {i_min_padded}")
+
+                has_dropped_constraints = True
+                self.constraint_manager.comm.barrier()
                 continue
             else:
                 break
-
-        p_dof = fenics.Function(self.db.function_db.control_spaces[0])
-        p_dof.vector().set_local(p.getArray())
-        p_dof.vector().apply("")
 
         if (
             np.sqrt(self.form_handler.scalar_product([p_dof], [p_dof]))
