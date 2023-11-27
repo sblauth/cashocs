@@ -204,7 +204,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
                 active_idx[i_min_padded] = False
                 dropped_idx_list.append(i_min_padded)
-                # print(f"Dropped constraint {i_min_padded}")
+                print(f"Dropped constraint {i_min_padded}")
                 continue
             else:
                 break
