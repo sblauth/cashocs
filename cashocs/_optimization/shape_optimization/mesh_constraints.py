@@ -20,7 +20,6 @@
 import abc
 
 import fenics
-from mpi4py import MPI
 import numpy as np
 from petsc4py import PETSc
 from scipy import sparse
@@ -136,11 +135,9 @@ tetrahedron_angles(std::shared_ptr<const Mesh> mesh)
     py::array_t<double> angles(6*n);
     auto buf = angles.request();
     double *ptr = (double *) buf.ptr;
-    
-    std::vector<double> angs;
-    
 
-    
+    std::vector<double> angs;
+
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
         compute_dihedral_angles(*cell, angs);
@@ -316,7 +313,7 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
     Eigen::RowVector3d dddk;
     Eigen::RowVector3d dddl;
     Eigen::RowVector3d dedk;
-    Eigen::RowVector3d dedl;    
+    Eigen::RowVector3d dedl;
     Eigen::RowVector3d dfdk;
     Eigen::RowVector3d dfdl;
 
@@ -332,7 +329,7 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         const Point p1 = Vertex(*mesh, i1).point();
         const Point p2 = Vertex(*mesh, i2).point();
         const Point p3 = Vertex(*mesh, i3).point();
-        
+
         Point e10 = p1 - p0;
         Point e20 = p2 - p0;
         Point e30 = p3 - p0;
@@ -411,36 +408,36 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         dfdk << tpf0.x(), tpf0.y(), tpf0.z();
         dfdl << tpf1.x(), tpf1.y(), tpf1.z();
 
-        auto dad0 = dadk * (-skew_31) + dadl * (-skew_21); // 0=j
-        auto dad1 = dadk * (skew_10 + skew_31) + dadl * (skew_10 + skew_21); // 1=i
-        auto dad2 = dadl * (-skew_10); // 2=l
-        auto dad3 = dadk * (-skew_10); // 3=k
-        
-        auto dbd0 = dbdk * skew_21; // 0=k
-        auto dbd1 = dbdk * (-skew_21 - skew_10) + dbdl * (-skew_21 + skew_31); // 1=i
-        auto dbd2 = dbdk * skew_10 + dbdl * (-skew_31); // 2=j
-        auto dbd3 = dbdl * skew_21; // 3=l
+        auto dad0 = dadk * (-skew_31) + dadl * (-skew_21);
+        auto dad1 = dadk * (skew_10 + skew_31) + dadl * (skew_10 + skew_21);
+        auto dad2 = dadl * (-skew_10);
+        auto dad3 = dadk * (-skew_10);
 
-        auto dcd0 = dcdl * skew_31; // 0=l
-        auto dcd1 = dcdk * (-skew_31 + skew_21) + dcdl * (-skew_31 - skew_10); // 1=i
-        auto dcd2 = dcdk * skew_31; // 2=k
-        auto dcd3 = dcdk * (-skew_21) + dcdl * skew_10; // 3=j
+        auto dbd0 = dbdk * skew_21;
+        auto dbd1 = dbdk * (-skew_21 - skew_10) + dbdl * (-skew_21 + skew_31);
+        auto dbd2 = dbdk * skew_10 + dbdl * (-skew_31);
+        auto dbd3 = dbdl * skew_21;
 
-        auto ddd0 = dddk * (-skew_20 + skew_10) + dddl * (-skew_20 + skew_30); // 0=i
-        auto ddd1 = dddk * skew_20; // 1=k
-        auto ddd2 = dddk * (-skew_10) + dddl * (-skew_30); // 2=j
-        auto ddd3 = dddl * skew_20; // 3=l
+        auto dcd0 = dcdl * skew_31;
+        auto dcd1 = dcdk * (-skew_31 + skew_21) + dcdl * (-skew_31 - skew_10);
+        auto dcd2 = dcdk * skew_31;
+        auto dcd3 = dcdk * (-skew_21) + dcdl * skew_10;
 
-        auto ded0 = dedk * (-skew_30 + skew_10) + dedl * (-skew_30 + skew_20); // 0=i
-        auto ded1 = dedk * skew_30; // 1=k
-        auto ded2 = dedl * skew_30; // 2=l
-        auto ded3 = dedk * (-skew_10) + dedl * (-skew_20); // 3=j
+        auto ddd0 = dddk * (-skew_20 + skew_10) + dddl * (-skew_20 + skew_30);
+        auto ddd1 = dddk * skew_20;
+        auto ddd2 = dddk * (-skew_10) + dddl * (-skew_30);
+        auto ddd3 = dddl * skew_20;
 
-        auto dfd0 = dfdk * skew_32; // 0=k
-        auto dfd1 = dfdl * skew_32; // 1=l
-        auto dfd2 = dfdk * (-skew_32 - skew_20) + dfdl * (-skew_32 - skew_21); // 2=i
-        auto dfd3 = dfdk * skew_20 + dfdl * skew_21; // 3=j
-        
+        auto ded0 = dedk * (-skew_30 + skew_10) + dedl * (-skew_30 + skew_20);
+        auto ded1 = dedk * skew_30;
+        auto ded2 = dedl * skew_30;
+        auto ded3 = dedk * (-skew_10) + dedl * (-skew_20);
+
+        auto dfd0 = dfdk * skew_32;
+        auto dfd1 = dfdl * skew_32;
+        auto dfd2 = dfdk * (-skew_32 - skew_20) + dfdl * (-skew_32 - skew_21);
+        auto dfd3 = dfdk * skew_20 + dfdl * skew_21;
+
         ptr_rows[72*idx + 0] = 6 * idx;
         ptr_rows[72*idx + 1] = 6 * idx;
         ptr_rows[72*idx + 2] = 6 * idx;
@@ -479,8 +476,8 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[72*idx + 9] = dad3[0];
         ptr_vals[72*idx + 10] = dad3[1];
         ptr_vals[72*idx + 11] = dad3[2];
-        
-        
+
+
         ptr_rows[72*idx + 12] = 6 * idx + 1;
         ptr_rows[72*idx + 13] = 6 * idx + 1;
         ptr_rows[72*idx + 14] = 6 * idx + 1;
@@ -519,8 +516,8 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[72*idx + 21] = dbd3[0];
         ptr_vals[72*idx + 22] = dbd3[1];
         ptr_vals[72*idx + 23] = dbd3[2];
-        
-        
+
+
         ptr_rows[72*idx + 24] = 6 * idx + 2;
         ptr_rows[72*idx + 25] = 6 * idx + 2;
         ptr_rows[72*idx + 26] = 6 * idx + 2;
@@ -559,8 +556,8 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[72*idx + 33] = dcd3[0];
         ptr_vals[72*idx + 34] = dcd3[1];
         ptr_vals[72*idx + 35] = dcd3[2];
-        
-        
+
+
         ptr_rows[72*idx + 36] = 6 * idx + 3;
         ptr_rows[72*idx + 37] = 6 * idx + 3;
         ptr_rows[72*idx + 38] = 6 * idx + 3;
@@ -599,8 +596,8 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[72*idx + 45] = ddd3[0];
         ptr_vals[72*idx + 46] = ddd3[1];
         ptr_vals[72*idx + 47] = ddd3[2];
-        
-        
+
+
         ptr_rows[72*idx + 48] = 6 * idx + 4;
         ptr_rows[72*idx + 49] = 6 * idx + 4;
         ptr_rows[72*idx + 50] = 6 * idx + 4;
@@ -639,8 +636,8 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[72*idx + 57] = ded3[0];
         ptr_vals[72*idx + 58] = ded3[1];
         ptr_vals[72*idx + 59] = ded3[2];
-        
-        
+
+
         ptr_rows[72*idx + 60] = 6 * idx + 5;
         ptr_rows[72*idx + 61] = 6 * idx + 5;
         ptr_rows[72*idx + 62] = 6 * idx + 5;
@@ -727,9 +724,9 @@ class MeshConstraint(abc.ABC):
         self.l2g_dofs = deformation_space.dofmap().tabulate_local_to_global_dofs()
 
         self.global_vertex_indices = self.mesh.topology().global_indices(0)
-        V = fenics.FunctionSpace(self.mesh, "CG", 1)
-        loc0, loc1 = V.dofmap().ownership_range()
-        d2v = fenics.dof_to_vertex_map(V)
+        function_space = fenics.FunctionSpace(self.mesh, "CG", 1)
+        loc0, loc1 = function_space.dofmap().ownership_range()
+        d2v = fenics.dof_to_vertex_map(function_space)
         self.global_vertex_indices_owned = self.global_vertex_indices[
             d2v[: loc1 - loc0]
         ]
@@ -752,7 +749,7 @@ class MeshConstraint(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def compute_gradient(self, coords_sequ: np.ndarray) -> sparse.csr_matrix:
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
         """Computes the gradient of the constraint functions.
 
         Args:
@@ -1277,7 +1274,6 @@ class ConstraintManager:
 
         petsc_matrix = _utils.linalg.scipy2petsc(
             scipy_matrix,
-            scipy_matrix.shape,
             self.mesh.mpi_comm(),
             local_size=self.local_petsc_size,
         )

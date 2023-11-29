@@ -24,7 +24,6 @@ from typing import cast, List, TYPE_CHECKING
 import fenics
 from mpi4py import MPI
 import numpy as np
-import petsc4py
 from petsc4py import PETSc
 from scipy import optimize
 from scipy import sparse
@@ -245,17 +244,20 @@ class ShapeVariableAbstractions(
         comm = self.mesh_handler.mesh.mpi_comm()
 
         y_j = coords_dof + stepsize * search_direction_dof
+        # pylint: disable=invalid-name
         A = self.constraint_manager.compute_active_gradient(
             active_idx, constraint_gradient
         )
-        AT = A.copy().transpose()
-        B = A.matMult(AT)
+        AT = A.copy().transpose()  # pylint: disable=invalid-name
+        B = A.matMult(AT)  # pylint: disable=invalid-name
 
         if self.mode == "complete":
-            S = self.form_handler.scalar_product_matrix[:, :]
-            S_inv = np.linalg.inv(S)
+            S = self.form_handler.scalar_product_matrix[  # pylint: disable=invalid-name
+                :, :
+            ]
+            S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
 
-        for i in range(10):
+        for _ in range(10):
             satisfies_previous_constraints_local = np.all(
                 self.constraint_manager.compute_active_set(
                     y_j[self.constraint_manager.v2d]

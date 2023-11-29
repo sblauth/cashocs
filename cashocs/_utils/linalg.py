@@ -558,11 +558,29 @@ def sparse2scipy(
     rows = csr[0]
     cols = csr[1]
     vals = csr[2]
-    A = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
-    return A
+    matrix = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
+    return matrix
 
 
-def scipy2petsc(scipy_matrix, shape, comm, local_size=None) -> PETSc.Mat:
+def scipy2petsc(
+    scipy_matrix: sparse.csr_matrix,
+    comm: MPI.Comm,
+    local_size: int | None = None,
+) -> PETSc.Mat:
+    """Converts a sparse scipy matrix to a (sparse) PETSc matrix.
+
+    Args:
+        scipy_matrix: The sparse scipy matrix
+        comm: The MPI communicator used for distributing the mesh
+        local_size: The local size (number of rows) of the matrix, different for
+            each process. If this is `None` (the default), then PETSc.DECIDE is used.
+
+    Returns:
+        The corresponding sparse PETSc matrix.
+
+    """
+    shape = scipy_matrix.shape
+
     no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
     if local_size is None:
         local_size = PETSc.DECIDE

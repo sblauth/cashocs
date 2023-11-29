@@ -124,7 +124,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 )
                 self.search_direction[i].vector().apply("")
         else:
-            p_dof, converged, self.dropped_idx = self._compute_projected_gradient(
+            p_dof, _, self.dropped_idx = self._compute_projected_gradient(
                 self.active_idx, self.constraint_gradient
             )
             for i in range(len(self.db.function_db.gradient)):
@@ -140,17 +140,20 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         no_constraints = constraint_gradient.shape[0]
         dropped_idx_list = []
         undroppable_idx = []
+        lambda_min_rank = 0
 
         while True:
+            # pylint: disable=invalid-name
             A = self.constraint_manager.compute_active_gradient(
                 active_idx, constraint_gradient
             )
-            AT = A.copy().transpose()
-            B = A.matMult(AT)
+            AT = A.copy().transpose()  # pylint: disable=invalid-name
+            B = A.matMult(AT)  # pylint: disable=invalid-name
 
             if self.mode == "complete":
+                # pylint: disable=invalid-name
                 S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
-                S_inv = np.linalg.inv(S)
+                S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
                 lambd = np.linalg.solve(
                     A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:]
                 )
@@ -188,7 +191,6 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 scipy_matrix = constraint_gradient[dropped_idx_list]
                 petsc_matrix = _utils.linalg.scipy2petsc(
                     scipy_matrix,
-                    scipy_matrix.shape,
                     self.constraint_manager.comm,
                     local_size=self.constraint_manager.local_petsc_size,
                 )
@@ -226,8 +228,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                     i_min_list_padded = np.where(
                         self.constraint_manager.inequality_mask
                     )[0][i_min_list]
-                    filter = ~np.in1d(i_min_list_padded, undroppable_idx)
-                    i_min_padded = i_min_list_padded[filter][0]
+                    mask = ~np.in1d(i_min_list_padded, undroppable_idx)
+                    i_min_padded = i_min_list_padded[mask][0]
 
                     active_idx[i_min_padded] = False
                     dropped_idx_list.append(i_min_padded)
