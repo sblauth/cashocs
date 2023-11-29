@@ -961,7 +961,8 @@ class TriangleAngleConstraint(MeshConstraint):
         self.config = config
 
         self.dim = self.mesh.geometry().dim()
-        self.min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        self.min_angle = self._compute_minimum_angle()
+
         self.cells = self.mesh.cells()
 
         self.no_constraints = 3 * len(self.cells)
@@ -990,7 +991,7 @@ class TriangleAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.triangle_angles(self.mesh)
-        values = self.min_angle * 2 * np.pi / 360.0 - values
+        values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -1025,6 +1026,24 @@ class TriangleAngleConstraint(MeshConstraint):
 
         return gradient
 
+    def _compute_minimum_angle(self) -> np.ndarray:
+        constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        constant_min_angle *= 2 * np.pi / 360.0
+
+        feasible_angle_reduction_factor = self.config.getfloat(
+            "MeshQualityConstraints", "feasible_angle_reduction_factor"
+        )
+
+        initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 3)
+        minimum_initial_angles = np.min(initial_angles, axis=1)
+        minimum_angle = feasible_angle_reduction_factor * minimum_initial_angles
+        minimum_angle = np.repeat(minimum_angle, 3)
+
+        if constant_min_angle > 0.0:
+            minimum_angle = np.minimum(minimum_angle, constant_min_angle)
+
+        return minimum_angle
+
 
 class DihedralAngleConstraint(MeshConstraint):
     r"""A mesh quality constraint for the angles of triangles in the mesh.
@@ -1054,7 +1073,7 @@ class DihedralAngleConstraint(MeshConstraint):
         self.config = config
 
         self.dim = self.mesh.geometry().dim()
-        self.min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        self.min_angle = self._compute_minimum_angle()
         self.cells = self.mesh.cells()
 
         self.no_constraints = 6 * len(self.cells)
@@ -1083,7 +1102,7 @@ class DihedralAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.tetrahedron_angles(self.mesh)
-        values = self.min_angle * 2 * np.pi / 360.0 - values
+        values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -1117,6 +1136,24 @@ class DihedralAngleConstraint(MeshConstraint):
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
+
+    def _compute_minimum_angle(self) -> np.ndarray:
+        constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        constant_min_angle *= 2 * np.pi / 360.0
+
+        feasible_angle_reduction_factor = self.config.getfloat(
+            "MeshQualityConstraints", "feasible_angle_reduction_factor"
+        )
+
+        initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 6)
+        minimum_initial_angles = np.min(initial_angles, axis=1)
+        minimum_angle = feasible_angle_reduction_factor * minimum_initial_angles
+        minimum_angle = np.repeat(minimum_angle, 6)
+
+        if constant_min_angle > 0.0:
+            minimum_angle = np.minimum(minimum_angle, constant_min_angle)
+
+        return minimum_angle
 
 
 class ConstraintManager:

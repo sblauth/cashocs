@@ -484,6 +484,10 @@ class Config(ConfigParser):
                     "type": "str",
                     "possible_options": ["approximate"],
                 },
+                "feasible_angle_reduction_factor": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "non_negative"],
+                },
             },
             "TopologyOptimization": {
                 "angle_tol": {
@@ -663,8 +667,9 @@ angle_change = inf
 remesh_iter = 0
 
 [MeshQualityConstraints]
-tol = 1e-2
 min_angle = 0.0
+feasible_angle_reduction_factor = 0.0
+tol = 1e-2
 mode = approximate
 
 [TopologyOptimization]
