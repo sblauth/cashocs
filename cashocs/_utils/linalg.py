@@ -543,7 +543,7 @@ class Interpolator:
 
 
 def sparse2scipy(
-    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape=None
+    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape: tuple[int, int] | None = None
 ) -> sparse.csr_matrix:
     """Converts a sparse matrix representation to a sparse scipy matrix.
 

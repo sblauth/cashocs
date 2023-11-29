@@ -19,10 +19,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import fenics
 from mpi4py import MPI
+from scipy import sparse
 import numpy as np
 from petsc4py import PETSc
 
@@ -58,6 +59,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
         """
         super().__init__(db, optimization_problem, line_search)
+
         self.mesh = optimization_problem.mesh_handler.mesh
         self.constraint_manager = optimization_problem.constraint_manager
         self.dropped_idx = np.array([False] * self.constraint_manager.no_constraints)
@@ -132,13 +134,13 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[i].vector().apply("")
 
     def _compute_projected_gradient(
-        self, active_idx, constraint_gradient
+        self, active_idx: np.ndarray, constraint_gradient: sparse.csr_matrix
     ) -> tuple[fenics.Function, bool, np.ndarray]:
         converged = False
         has_dropped_constraints = False
         has_undroppable_constraints = False
         no_constraints = constraint_gradient.shape[0]
-        dropped_idx_list = []
+        dropped_idx_list: list[int] = []
         undroppable_idx = []
         lambda_min_rank = 0
 
@@ -150,54 +152,12 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             AT = A.copy().transpose()  # pylint: disable=invalid-name
             B = A.matMult(AT)  # pylint: disable=invalid-name
 
-            if self.mode == "complete":
-                # pylint: disable=invalid-name
-                S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
-                S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
-                lambd = np.linalg.solve(
-                    A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:]
-                )
-                p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
-            else:
-                b = A.createVecLeft()
-                A.mult(-self.gradient[0].vector().vec(), b)
-                ksp = PETSc.KSP().create(comm=self.constraint_manager.mesh.mpi_comm())
-                options = {
-                    "ksp_type": "cg",
-                    "ksp_max_it": 1000,
-                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
-                    "ksp_atol": 1e-30,
-                    "pc_type": "hypre",
-                    "pc_hypre_type": "boomeramg",
-                    # "ksp_monitor_true_residual": None,
-                }
-
-                ksp.setOperators(B)
-                _utils.setup_petsc_options([ksp], [options])
-
-                lambd = B.createVecRight()
-                ksp.solve(b, lambd)
-
-                if ksp.getConvergedReason() < 0:
-                    raise _exceptions.NotConvergedError(
-                        "Gradient projection", "The gradient projection failed."
-                    )
-
-                p = AT.createVecLeft()
-                AT.mult(-lambd, p)
-                p.axpy(-1.0, self.gradient[0].vector().vec())
+            p, lambd = self._project_gradient_to_tangent_space(A, AT, B)
 
             if has_dropped_constraints:
-                scipy_matrix = constraint_gradient[dropped_idx_list]
-                petsc_matrix = _utils.linalg.scipy2petsc(
-                    scipy_matrix,
-                    self.constraint_manager.comm,
-                    local_size=self.constraint_manager.local_petsc_size,
-                )
-                res = petsc_matrix.getVecLeft()
-                petsc_matrix.mult(p, res)
-                directional_constraint_derivative_max = res.max()[1]
-                if not directional_constraint_derivative_max < 1e-12:
+                if not self._check_for_feasibility_of_dropped_constraints(
+                    p, constraint_gradient, dropped_idx_list
+                ):
                     if self.constraint_manager.comm.rank == lambda_min_rank:
                         relevant_idx = dropped_idx_list.pop()
                         active_idx[relevant_idx] = True
@@ -215,7 +175,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             lambd_ineq = lambd_padded[self.constraint_manager.inequality_mask]
 
             lambda_min_list = self.constraint_manager.comm.allgather(lambd_ineq.min())
-            lambda_min_rank = np.argmin(lambda_min_list)
+            lambda_min_rank = int(np.argmin(lambda_min_list))
             lambda_min = np.min(lambda_min_list)
             gamma = -np.minimum(0.0, lambda_min)
 
@@ -257,6 +217,67 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         dropped_idx[dropped_idx_list] = True
 
         return p_dof, converged, dropped_idx
+
+    def _project_gradient_to_tangent_space(
+        self,
+        A: PETSc.Mat,  # pylint: disable=invalid-name
+        AT: PETSc.Mat,  # pylint: disable=invalid-name
+        B: PETSc.Mat,  # pylint: disable=invalid-name
+    ) -> tuple[PETSc.Vec, PETSc.Vec]:
+        # if self.mode == "complete":
+        #     pylint: disable=invalid-name
+        #     S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
+        #     S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
+        #     lambd = np.linalg.solve(A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:])
+        #     p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
+        # else:
+
+        b = A.createVecLeft()
+        A.mult(-self.gradient[0].vector().vec(), b)
+        ksp = PETSc.KSP().create(comm=self.constraint_manager.mesh.mpi_comm())
+        options: dict[str, float | int | str | None] = {
+            "ksp_type": "cg",
+            "ksp_max_it": 1000,
+            "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
+            "ksp_atol": 1e-30,
+            "pc_type": "hypre",
+            "pc_hypre_type": "boomeramg",
+            # "ksp_monitor_true_residual": None,
+        }
+
+        ksp.setOperators(B)
+        _utils.setup_petsc_options([ksp], [options])
+
+        lambd = B.createVecRight()
+        ksp.solve(b, lambd)
+
+        if ksp.getConvergedReason() < 0:
+            raise _exceptions.NotConvergedError(
+                "Gradient projection", "The gradient projection failed."
+            )
+
+        p = AT.createVecLeft()
+        AT.mult(-lambd, p)
+        p.axpy(-1.0, self.gradient[0].vector().vec())
+
+        return p, lambd
+
+    def _check_for_feasibility_of_dropped_constraints(
+        self,
+        p: PETSc.Vec,
+        constraint_gradient: sparse.csr_matrix,
+        dropped_idx_list: list[int],
+    ) -> bool:
+        scipy_matrix = constraint_gradient[dropped_idx_list]
+        petsc_matrix = _utils.linalg.scipy2petsc(
+            scipy_matrix,
+            self.constraint_manager.comm,
+            local_size=self.constraint_manager.local_petsc_size,
+        )
+        res = petsc_matrix.getVecLeft()
+        petsc_matrix.mult(p, res)
+        directional_constraint_derivative_max = res.max()[1]
+        return bool(directional_constraint_derivative_max < 1e-12)
 
     def _compute_active_constraints(self) -> None:
         pass

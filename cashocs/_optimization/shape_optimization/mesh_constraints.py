@@ -696,7 +696,7 @@ mesh_quality = fenics.compile_cpp_code(cpp_code)
 class MeshConstraint(abc.ABC):
     """This class represents a generic constraint on the mesh quality."""
 
-    type = None
+    type: str | None = None
 
     def __init__(
         self, mesh: fenics.Mesh, deformation_space: fenics.FunctionSpace
@@ -730,6 +730,9 @@ class MeshConstraint(abc.ABC):
         self.global_vertex_indices_owned = self.global_vertex_indices[
             d2v[: loc1 - loc0]
         ]
+
+        self.no_constraints = 0
+        self.is_necessary: np.ndarray = np.array([False])
 
     @abc.abstractmethod
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
@@ -829,12 +832,12 @@ class FixedBoundaryConstraint(MeshConstraint):
         """
         bdry_fix_list = _utils.enlist(shape_bdry_fix)
 
-        fixed_idcs = []
+        temp_fixed_idcs = []
         for i in bdry_fix_list:
             idx_i = self.facets[self.boundaries.where_equal(i)]
-            fixed_idcs += idx_i.reshape(-1).tolist()
+            temp_fixed_idcs += idx_i.reshape(-1).tolist()
 
-        fixed_idcs = np.unique(fixed_idcs)
+        fixed_idcs = np.unique(temp_fixed_idcs)
 
         if len(fixed_idcs) > 0:
             fixed_idcs_global = self.global_vertex_indices[fixed_idcs]
@@ -884,7 +887,10 @@ class FixedBoundaryConstraint(MeshConstraint):
 
         """
         if len(self.fixed_idcs) > 0:
-            return coords_seq[self.fixed_idcs] - self.fixed_coordinates
+            difference: np.ndarray = (
+                coords_seq[self.fixed_idcs] - self.fixed_coordinates
+            )
+            return difference
         else:
             return np.array([])
 
@@ -909,7 +915,9 @@ class FixedBoundaryConstraint(MeshConstraint):
             gradient = _utils.linalg.sparse2scipy(csr, shape)
         else:
             shape = (0, self.no_vertices * self.dim)
-            gradient = _utils.linalg.sparse2scipy(([], [], []), shape)
+            gradient = _utils.linalg.sparse2scipy(
+                (np.array([]), np.array([]), np.array([])), shape
+            )
         return gradient
 
     def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
@@ -981,7 +989,7 @@ class TriangleAngleConstraint(MeshConstraint):
         self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
         self.mesh.bounding_box_tree().build(self.mesh)
 
-        values = mesh_quality.triangle_angles(self.mesh)
+        values: np.ndarray = mesh_quality.triangle_angles(self.mesh)
         values = self.min_angle * 2 * np.pi / 360.0 - values
 
         self.mesh.coordinates()[:, :] = old_coords
@@ -1074,7 +1082,7 @@ class DihedralAngleConstraint(MeshConstraint):
         self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
         self.mesh.bounding_box_tree().build(self.mesh)
 
-        values = mesh_quality.tetrahedron_angles(self.mesh)
+        values: np.ndarray = mesh_quality.tetrahedron_angles(self.mesh)
         values = self.min_angle * 2 * np.pi / 360.0 - values
 
         self.mesh.coordinates()[:, :] = old_coords
@@ -1150,8 +1158,8 @@ class ConstraintManager:
         self.local_petsc_size = fun.vector().vec().getSizes()[0]
         self.comm = self.mesh.mpi_comm()
 
-        self.constraints = []
-        self.constraint_tolerance = self.config.getfloat(
+        self.constraints: list[MeshConstraint] = []
+        self.constraint_tolerance: float = self.config.getfloat(
             "MeshQualityConstraints", "tol"
         )
         self.no_constraints = 0
@@ -1213,7 +1221,7 @@ class ConstraintManager:
             result.append(constraint.evaluate(coords_seq))
 
         if len(result) > 0:
-            self.function_values = np.concatenate(result)
+            self.function_values: np.ndarray = np.concatenate(result)
         else:
             return np.array([])
 
@@ -1233,8 +1241,8 @@ class ConstraintManager:
             are in the working set.
 
         """
-        function_values = self.evaluate(coords_seq)
-        return function_values[active_idx]
+        function_values: np.ndarray = self.evaluate(coords_seq)[active_idx]
+        return function_values
 
     def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
         """Computes the gradient of the constraint functions.
@@ -1293,7 +1301,7 @@ class ConstraintManager:
 
         """
         function_values = self.evaluate(coords_seq)
-        result = np.abs(function_values) <= self.constraint_tolerance
+        result: np.ndarray = np.abs(function_values) <= self.constraint_tolerance
         return result
 
     def is_necessary(self, active_idx: np.ndarray) -> bool:
@@ -1316,7 +1324,9 @@ class ConstraintManager:
         active_idx_gathered = self.comm.allgather(active_idx)
         active_idx_global = np.concatenate(active_idx_gathered)
 
-        result = np.any(np.logical_and(necessary_constraints_global, active_idx_global))
+        result = bool(
+            np.any(np.logical_and(necessary_constraints_global, active_idx_global))
+        )
 
         return result
 
@@ -1335,5 +1345,7 @@ class ConstraintManager:
         function_values_list = self.comm.allgather(function_values)
         function_values_global = np.concatenate(function_values_list)
 
-        result = np.less_equal(function_values_global, self.constraint_tolerance)
+        result: np.ndarray = np.less_equal(
+            function_values_global, self.constraint_tolerance
+        )
         return result

@@ -482,7 +482,7 @@ class Config(ConfigParser):
                 },
                 "mode": {
                     "type": "str",
-                    "possible_options": ["approximate", "complete"],
+                    "possible_options": ["approximate"],
                 },
             },
             "TopologyOptimization": {

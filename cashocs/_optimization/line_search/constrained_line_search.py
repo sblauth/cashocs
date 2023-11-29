@@ -21,6 +21,8 @@ from __future__ import annotations
 
 from typing import cast, List, Optional, Tuple
 
+import numpy as np
+from scipy import sparse
 import fenics
 from petsc4py import PETSc
 from typing_extensions import TYPE_CHECKING
@@ -37,11 +39,11 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
-        active_idx,
-        constraint_gradient,
-        dropped_idx,
+        active_idx: np.ndarray,
+        constraint_gradient: sparse.csr_matrix,
+        dropped_idx: list[int],
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
@@ -120,9 +122,9 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
-        active_idx,
-        constraint_gradient,
-        dropped_idx,
+        active_idx: np.ndarray,
+        constraint_gradient: sparse.csr_matrix,
+        dropped_idx: list[int],
     ) -> None:
         """Performs a line search for the new iterate.
 

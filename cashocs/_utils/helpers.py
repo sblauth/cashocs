@@ -113,7 +113,7 @@ def check_and_enlist_control_constraints(
         )
 
 
-def optimization_algorithm_configuration(
+def optimization_algorithm_configuration(  # noqa: C901
     config: configparser.ConfigParser, algorithm: Optional[str] = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
