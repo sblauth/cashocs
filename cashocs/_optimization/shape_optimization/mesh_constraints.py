@@ -40,7 +40,6 @@ namespace py = pybind11;
 #include <dolfin/mesh/Vertex.h>
 #include <dolfin/mesh/MeshFunction.h>
 #include <dolfin/mesh/Cell.h>
-#include <dolfin/mesh/Vertex.h>
 
 using namespace dolfin;
 
@@ -68,6 +67,45 @@ void angles_triangle(const Cell& cell, std::vector<double>& angs)
     angs[2] = acos(e1.dot(e2));
 }
 
+void compute_dihedral_angles(const Cell& cell, std::vector<double>& angs)
+{
+    const Mesh& mesh = cell.mesh();
+    angs.resize(6);
+
+    const std::size_t i0 = cell.entities(0)[0];
+    const std::size_t i1 = cell.entities(0)[1];
+    const std::size_t i2 = cell.entities(0)[2];
+    const std::size_t i3 = cell.entities(0)[3];
+
+    const Point p0 = Vertex(mesh, i0).point();
+    const Point p1 = Vertex(mesh, i1).point();
+    const Point p2 = Vertex(mesh, i2).point();
+    const Point p3 = Vertex(mesh, i3).point();
+
+    Point e10 = p1 - p0;
+    Point e20 = p2 - p0;
+    Point e30 = p3 - p0;
+    Point e21 = p2 - p1;
+    Point e31 = p3 - p1;
+
+    Point n031 = e31.cross(e10);
+    Point n021 = e21.cross(e10);
+    Point n231 = e21.cross(e31);
+    Point n230 = e20.cross(e30);
+
+    n031 /= n031.norm();
+    n021 /= n021.norm();
+    n231 /= n231.norm();
+    n230 /= n230.norm();
+
+    angs[0] = acos(n031.dot(n021));
+    angs[1] = acos(-n021.dot(n231));
+    angs[2] = acos(n231.dot(n031));
+    angs[3] = acos(n021.dot(n230));
+    angs[4] = acos(n031.dot(-n230));
+    angs[5] = acos(n230.dot(n231));
+}
+
 py::array_t<double>
 triangle_angles(std::shared_ptr<const Mesh> mesh)
 {
@@ -85,6 +123,33 @@ triangle_angles(std::shared_ptr<const Mesh> mesh)
         ptr[3*idx] = angs[0];
         ptr[3*idx+1] = angs[1];
         ptr[3*idx+2] = angs[2];
+        idx += 1;
+    }
+    return angles;
+}
+
+py::array_t<double>
+tetrahedron_angles(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+    py::array_t<double> angles(6*n);
+    auto buf = angles.request();
+    double *ptr = (double *) buf.ptr;
+    
+    std::vector<double> angs;
+    
+
+    
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        compute_dihedral_angles(*cell, angs);
+        ptr[6*idx] = angs[0];
+        ptr[6*idx+1] = angs[1];
+        ptr[6*idx+2] = angs[2];
+        ptr[6*idx+3] = angs[3];
+        ptr[6*idx+4] = angs[4];
+        ptr[6*idx+5] = angs[5];
         idx += 1;
     }
     return angles;
@@ -110,9 +175,10 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
 
     for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
-        const std::size_t i0 = cell->entities(0)[0];
-        const std::size_t i1 = cell->entities(0)[1];
-        const std::size_t i2 = cell->entities(0)[2];
+        auto ents = cell->entities(0);
+        const std::size_t i0 = ents[0];
+        const std::size_t i1 = ents[1];
+        const std::size_t i2 = ents[2];
 
         const Point p0 = Vertex(*mesh, i0).point();
         const Point p1 = Vertex(*mesh, i1).point();
@@ -148,12 +214,12 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
         Point dcd1 = -1.0 / e2.norm() * tpc1;
         Point dcd2 = 1.0 / e1.norm() * tpc0 + 1.0 / e2.norm() * tpc1;
 
-        ptr_rows[18*idx + 0] = 3*idx;
-        ptr_rows[18*idx + 1] = 3*idx;
-        ptr_rows[18*idx + 2] = 3*idx;
-        ptr_rows[18*idx + 3] = 3*idx;
-        ptr_rows[18*idx + 4] = 3*idx;
-        ptr_rows[18*idx + 5] = 3*idx;
+        ptr_rows[18*idx + 0] = 3 * idx;
+        ptr_rows[18*idx + 1] = 3 * idx;
+        ptr_rows[18*idx + 2] = 3 * idx;
+        ptr_rows[18*idx + 3] = 3 * idx;
+        ptr_rows[18*idx + 4] = 3 * idx;
+        ptr_rows[18*idx + 5] = 3 * idx;
 
         ptr_cols[18*idx + 0] = 2 * i0 + 0;
         ptr_cols[18*idx + 1] = 2 * i0 + 1;
@@ -169,12 +235,12 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[18*idx + 4] = dad2[0];
         ptr_vals[18*idx + 5] = dad2[1];
 
-        ptr_rows[18*idx + 6] = 3*idx + 1;
-        ptr_rows[18*idx + 7] = 3*idx + 1;
-        ptr_rows[18*idx + 8] = 3*idx + 1;
-        ptr_rows[18*idx + 9] = 3*idx + 1;
-        ptr_rows[18*idx + 10] = 3*idx + 1;
-        ptr_rows[18*idx + 11] = 3*idx + 1;
+        ptr_rows[18*idx + 6] = 3 * idx + 1;
+        ptr_rows[18*idx + 7] = 3 * idx + 1;
+        ptr_rows[18*idx + 8] = 3 * idx + 1;
+        ptr_rows[18*idx + 9] = 3 * idx + 1;
+        ptr_rows[18*idx + 10] = 3 * idx + 1;
+        ptr_rows[18*idx + 11] = 3 * idx + 1;
 
         ptr_cols[18*idx + 6] = 2 * i0 + 0;
         ptr_cols[18*idx + 7] = 2 * i0 + 1;
@@ -190,12 +256,12 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
         ptr_vals[18*idx + 10] = dbd2[0];
         ptr_vals[18*idx + 11] = dbd2[1];
 
-        ptr_rows[18*idx + 12] = 3*idx + 2;
-        ptr_rows[18*idx + 13] = 3*idx + 2;
-        ptr_rows[18*idx + 14] = 3*idx + 2;
-        ptr_rows[18*idx + 15] = 3*idx + 2;
-        ptr_rows[18*idx + 16] = 3*idx + 2;
-        ptr_rows[18*idx + 17] = 3*idx + 2;
+        ptr_rows[18*idx + 12] = 3 * idx + 2;
+        ptr_rows[18*idx + 13] = 3 * idx + 2;
+        ptr_rows[18*idx + 14] = 3 * idx + 2;
+        ptr_rows[18*idx + 15] = 3 * idx + 2;
+        ptr_rows[18*idx + 16] = 3 * idx + 2;
+        ptr_rows[18*idx + 17] = 3 * idx + 2;
 
         ptr_cols[18*idx + 12] = 2 * i0 + 0;
         ptr_cols[18*idx + 13] = 2 * i0 + 1;
@@ -216,10 +282,415 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
     return std::make_tuple(rows, cols, vals);
 }
 
+std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
+tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+
+    py::array_t<int> rows(72*n);
+    auto buf_rows = rows.request();
+    int *ptr_rows = (int *) buf_rows.ptr;
+
+    py::array_t<int> cols(72*n);
+    auto buf_cols = cols.request();
+    int *ptr_cols = (int *) buf_cols.ptr;
+
+    py::array_t<double> vals(72*n);
+    auto buf_vals = vals.request();
+    double *ptr_vals = (double *) buf_vals.ptr;
+
+    Eigen::Matrix3d skew_10;
+    Eigen::Matrix3d skew_20;
+    Eigen::Matrix3d skew_30;
+    Eigen::Matrix3d skew_21;
+    Eigen::Matrix3d skew_31;
+    Eigen::Matrix3d skew_32;
+
+    Eigen::RowVector3d dadk;
+    Eigen::RowVector3d dadl;
+    Eigen::RowVector3d dbdk;
+    Eigen::RowVector3d dbdl;
+    Eigen::RowVector3d dcdk;
+    Eigen::RowVector3d dcdl;
+    Eigen::RowVector3d dddk;
+    Eigen::RowVector3d dddl;
+    Eigen::RowVector3d dedk;
+    Eigen::RowVector3d dedl;    
+    Eigen::RowVector3d dfdk;
+    Eigen::RowVector3d dfdl;
+
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        auto ents = cell->entities(0);
+        const std::size_t i0 = ents[0];
+        const std::size_t i1 = ents[1];
+        const std::size_t i2 = ents[2];
+        const std::size_t i3 = ents[3];
+
+        const Point p0 = Vertex(*mesh, i0).point();
+        const Point p1 = Vertex(*mesh, i1).point();
+        const Point p2 = Vertex(*mesh, i2).point();
+        const Point p3 = Vertex(*mesh, i3).point();
+        
+        Point e10 = p1 - p0;
+        Point e20 = p2 - p0;
+        Point e30 = p3 - p0;
+        Point e21 = p2 - p1;
+        Point e31 = p3 - p1;
+        Point e32 = p3 - p2;
+
+        skew_10 <<      0.0,  e10.z(), -e10.y(),
+                   -e10.z(),      0.0,  e10.x(),
+                    e10.y(), -e10.x(),      0.0;
+
+        skew_20 <<      0.0,  e20.z(), -e20.y(),
+                   -e20.z(),      0.0,  e20.x(),
+                    e20.y(), -e20.x(),      0.0;
+
+        skew_30 <<      0.0,  e30.z(), -e30.y(),
+                   -e30.z(),      0.0,  e30.x(),
+                    e30.y(), -e30.x(),      0.0;
+
+        skew_21 <<      0.0,  e21.z(), -e21.y(),
+                   -e21.z(),      0.0,  e21.x(),
+                    e21.y(), -e21.x(),      0.0;
+
+        skew_31 <<      0.0,  e31.z(), -e31.y(),
+                   -e31.z(),      0.0,  e31.x(),
+                    e31.y(), -e31.x(),      0.0;
+
+        skew_32 <<      0.0,  e32.z(), -e32.y(),
+                   -e32.z(),      0.0,  e32.x(),
+                    e32.y(), -e32.x(),      0.0;
+
+        Point n031 = e31.cross(e10);
+        Point n021 = e21.cross(e10);
+        Point n231 = e21.cross(e31);
+        Point n230 = e20.cross(e30);
+
+        Point tpa3 = n031.cross(n031.cross(n021));
+        Point tpa2 = n021.cross(n021.cross(n031));
+        tpa3 /= (tpa3.norm() * n031.norm());
+        tpa2 /= (tpa2.norm() * n021.norm());
+        dadk << tpa3.x(), tpa3.y(), tpa3.z();
+        dadl << tpa2.x(), tpa2.y(), tpa2.z();
+
+        Point tpb0 = n021.cross(n021.cross(n231));
+        Point tpb3 = n231.cross(n231.cross(-n021));
+        tpb0 /= (tpb0.norm() * n021.norm());
+        tpb3 /= (tpb3.norm() * n231.norm());
+        dbdk << tpb0.x(), tpb0.y(), tpb0.z();
+        dbdl << tpb3.x(), tpb3.y(), tpb3.z();
+
+        Point tpc2 = n231.cross(n231.cross(-n031));
+        Point tpc0 = n031.cross(n031.cross(-n231));
+        tpc2 /= (tpc2.norm() * n231.norm());
+        tpc0 /= (tpc0.norm() * n031.norm());
+        dcdk << tpc2.x(), tpc2.y(), tpc2.z();
+        dcdl << tpc0.x(), tpc0.y(), tpc0.z();
+
+        Point tpd1 = n021.cross(n021.cross(n230));
+        Point tpd3 = n230.cross(n230.cross(n021));
+        tpd1 /= (tpd1.norm() * n021.norm());
+        tpd3 /= (tpd3.norm() * n230.norm());
+        dddk << tpd1.x(), tpd1.y(), tpd1.z();
+        dddl << tpd3.x(), tpd3.y(), tpd3.z();
+
+        Point tpe1 = n031.cross(n031.cross(-n230));
+        Point tpe2 = n230.cross(n230.cross(n031));
+        tpe1 /= (tpe1.norm() * n031.norm());
+        tpe2 /= (tpe2.norm() * n230.norm());
+        dedk << tpe1.x(), tpe1.y(), tpe1.z();
+        dedl << tpe2.x(), tpe2.y(), tpe2.z();
+
+        Point tpf0 = n230.cross(n230.cross(n231));
+        Point tpf1 = n231.cross(n231.cross(n230));
+        tpf0 /= (tpf0.norm() * n230.norm());
+        tpf1 /= (tpf1.norm() * n231.norm());
+        dfdk << tpf0.x(), tpf0.y(), tpf0.z();
+        dfdl << tpf1.x(), tpf1.y(), tpf1.z();
+
+        auto dad0 = dadk * (-skew_31) + dadl * (-skew_21); // 0=j
+        auto dad1 = dadk * (skew_10 + skew_31) + dadl * (skew_10 + skew_21); // 1=i
+        auto dad2 = dadl * (-skew_10); // 2=l
+        auto dad3 = dadk * (-skew_10); // 3=k
+        
+        auto dbd0 = dbdk * skew_21; // 0=k
+        auto dbd1 = dbdk * (-skew_21 - skew_10) + dbdl * (-skew_21 + skew_31); // 1=i
+        auto dbd2 = dbdk * skew_10 + dbdl * (-skew_31); // 2=j
+        auto dbd3 = dbdl * skew_21; // 3=l
+
+        auto dcd0 = dcdl * skew_31; // 0=l
+        auto dcd1 = dcdk * (-skew_31 + skew_21) + dcdl * (-skew_31 - skew_10); // 1=i
+        auto dcd2 = dcdk * skew_31; // 2=k
+        auto dcd3 = dcdk * (-skew_21) + dcdl * skew_10; // 3=j
+
+        auto ddd0 = dddk * (-skew_20 + skew_10) + dddl * (-skew_20 + skew_30); // 0=i
+        auto ddd1 = dddk * skew_20; // 1=k
+        auto ddd2 = dddk * (-skew_10) + dddl * (-skew_30); // 2=j
+        auto ddd3 = dddl * skew_20; // 3=l
+
+        auto ded0 = dedk * (-skew_30 + skew_10) + dedl * (-skew_30 + skew_20); // 0=i
+        auto ded1 = dedk * skew_30; // 1=k
+        auto ded2 = dedl * skew_30; // 2=l
+        auto ded3 = dedk * (-skew_10) + dedl * (-skew_20); // 3=j
+
+        auto dfd0 = dfdk * skew_32; // 0=k
+        auto dfd1 = dfdl * skew_32; // 1=l
+        auto dfd2 = dfdk * (-skew_32 - skew_20) + dfdl * (-skew_32 - skew_21); // 2=i
+        auto dfd3 = dfdk * skew_20 + dfdl * skew_21; // 3=j
+        
+        ptr_rows[72*idx + 0] = 6 * idx;
+        ptr_rows[72*idx + 1] = 6 * idx;
+        ptr_rows[72*idx + 2] = 6 * idx;
+        ptr_rows[72*idx + 3] = 6 * idx;
+        ptr_rows[72*idx + 4] = 6 * idx;
+        ptr_rows[72*idx + 5] = 6 * idx;
+        ptr_rows[72*idx + 6] = 6 * idx;
+        ptr_rows[72*idx + 7] = 6 * idx;
+        ptr_rows[72*idx + 8] = 6 * idx;
+        ptr_rows[72*idx + 9] = 6 * idx;
+        ptr_rows[72*idx + 10] = 6 * idx;
+        ptr_rows[72*idx + 11] = 6 * idx;
+
+        ptr_cols[72*idx + 0] = 3 * i0 + 0;
+        ptr_cols[72*idx + 1] = 3 * i0 + 1;
+        ptr_cols[72*idx + 2] = 3 * i0 + 2;
+        ptr_cols[72*idx + 3] = 3 * i1 + 0;
+        ptr_cols[72*idx + 4] = 3 * i1 + 1;
+        ptr_cols[72*idx + 5] = 3 * i1 + 2;
+        ptr_cols[72*idx + 6] = 3 * i2 + 0;
+        ptr_cols[72*idx + 7] = 3 * i2 + 1;
+        ptr_cols[72*idx + 8] = 3 * i2 + 2;
+        ptr_cols[72*idx + 9] = 3 * i3 + 0;
+        ptr_cols[72*idx + 10] = 3 * i3 + 1;
+        ptr_cols[72*idx + 11] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 0] = dad0[0];
+        ptr_vals[72*idx + 1] = dad0[1];
+        ptr_vals[72*idx + 2] = dad0[2];
+        ptr_vals[72*idx + 3] = dad1[0];
+        ptr_vals[72*idx + 4] = dad1[1];
+        ptr_vals[72*idx + 5] = dad1[2];
+        ptr_vals[72*idx + 6] = dad2[0];
+        ptr_vals[72*idx + 7] = dad2[1];
+        ptr_vals[72*idx + 8] = dad2[2];
+        ptr_vals[72*idx + 9] = dad3[0];
+        ptr_vals[72*idx + 10] = dad3[1];
+        ptr_vals[72*idx + 11] = dad3[2];
+        
+        
+        ptr_rows[72*idx + 12] = 6 * idx + 1;
+        ptr_rows[72*idx + 13] = 6 * idx + 1;
+        ptr_rows[72*idx + 14] = 6 * idx + 1;
+        ptr_rows[72*idx + 15] = 6 * idx + 1;
+        ptr_rows[72*idx + 16] = 6 * idx + 1;
+        ptr_rows[72*idx + 17] = 6 * idx + 1;
+        ptr_rows[72*idx + 18] = 6 * idx + 1;
+        ptr_rows[72*idx + 19] = 6 * idx + 1;
+        ptr_rows[72*idx + 20] = 6 * idx + 1;
+        ptr_rows[72*idx + 21] = 6 * idx + 1;
+        ptr_rows[72*idx + 22] = 6 * idx + 1;
+        ptr_rows[72*idx + 23] = 6 * idx + 1;
+
+        ptr_cols[72*idx + 12] = 3 * i0 + 0;
+        ptr_cols[72*idx + 13] = 3 * i0 + 1;
+        ptr_cols[72*idx + 14] = 3 * i0 + 2;
+        ptr_cols[72*idx + 15] = 3 * i1 + 0;
+        ptr_cols[72*idx + 16] = 3 * i1 + 1;
+        ptr_cols[72*idx + 17] = 3 * i1 + 2;
+        ptr_cols[72*idx + 18] = 3 * i2 + 0;
+        ptr_cols[72*idx + 19] = 3 * i2 + 1;
+        ptr_cols[72*idx + 20] = 3 * i2 + 2;
+        ptr_cols[72*idx + 21] = 3 * i3 + 0;
+        ptr_cols[72*idx + 22] = 3 * i3 + 1;
+        ptr_cols[72*idx + 23] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 12] = dbd0[0];
+        ptr_vals[72*idx + 13] = dbd0[1];
+        ptr_vals[72*idx + 14] = dbd0[2];
+        ptr_vals[72*idx + 15] = dbd1[0];
+        ptr_vals[72*idx + 16] = dbd1[1];
+        ptr_vals[72*idx + 17] = dbd1[2];
+        ptr_vals[72*idx + 18] = dbd2[0];
+        ptr_vals[72*idx + 19] = dbd2[1];
+        ptr_vals[72*idx + 20] = dbd2[2];
+        ptr_vals[72*idx + 21] = dbd3[0];
+        ptr_vals[72*idx + 22] = dbd3[1];
+        ptr_vals[72*idx + 23] = dbd3[2];
+        
+        
+        ptr_rows[72*idx + 24] = 6 * idx + 2;
+        ptr_rows[72*idx + 25] = 6 * idx + 2;
+        ptr_rows[72*idx + 26] = 6 * idx + 2;
+        ptr_rows[72*idx + 27] = 6 * idx + 2;
+        ptr_rows[72*idx + 28] = 6 * idx + 2;
+        ptr_rows[72*idx + 29] = 6 * idx + 2;
+        ptr_rows[72*idx + 30] = 6 * idx + 2;
+        ptr_rows[72*idx + 31] = 6 * idx + 2;
+        ptr_rows[72*idx + 32] = 6 * idx + 2;
+        ptr_rows[72*idx + 33] = 6 * idx + 2;
+        ptr_rows[72*idx + 34] = 6 * idx + 2;
+        ptr_rows[72*idx + 35] = 6 * idx + 2;
+
+        ptr_cols[72*idx + 24] = 3 * i0 + 0;
+        ptr_cols[72*idx + 25] = 3 * i0 + 1;
+        ptr_cols[72*idx + 26] = 3 * i0 + 2;
+        ptr_cols[72*idx + 27] = 3 * i1 + 0;
+        ptr_cols[72*idx + 28] = 3 * i1 + 1;
+        ptr_cols[72*idx + 29] = 3 * i1 + 2;
+        ptr_cols[72*idx + 30] = 3 * i2 + 0;
+        ptr_cols[72*idx + 31] = 3 * i2 + 1;
+        ptr_cols[72*idx + 32] = 3 * i2 + 2;
+        ptr_cols[72*idx + 33] = 3 * i3 + 0;
+        ptr_cols[72*idx + 34] = 3 * i3 + 1;
+        ptr_cols[72*idx + 35] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 24] = dcd0[0];
+        ptr_vals[72*idx + 25] = dcd0[1];
+        ptr_vals[72*idx + 26] = dcd0[2];
+        ptr_vals[72*idx + 27] = dcd1[0];
+        ptr_vals[72*idx + 28] = dcd1[1];
+        ptr_vals[72*idx + 29] = dcd1[2];
+        ptr_vals[72*idx + 30] = dcd2[0];
+        ptr_vals[72*idx + 31] = dcd2[1];
+        ptr_vals[72*idx + 32] = dcd2[2];
+        ptr_vals[72*idx + 33] = dcd3[0];
+        ptr_vals[72*idx + 34] = dcd3[1];
+        ptr_vals[72*idx + 35] = dcd3[2];
+        
+        
+        ptr_rows[72*idx + 36] = 6 * idx + 3;
+        ptr_rows[72*idx + 37] = 6 * idx + 3;
+        ptr_rows[72*idx + 38] = 6 * idx + 3;
+        ptr_rows[72*idx + 39] = 6 * idx + 3;
+        ptr_rows[72*idx + 40] = 6 * idx + 3;
+        ptr_rows[72*idx + 41] = 6 * idx + 3;
+        ptr_rows[72*idx + 42] = 6 * idx + 3;
+        ptr_rows[72*idx + 43] = 6 * idx + 3;
+        ptr_rows[72*idx + 44] = 6 * idx + 3;
+        ptr_rows[72*idx + 45] = 6 * idx + 3;
+        ptr_rows[72*idx + 46] = 6 * idx + 3;
+        ptr_rows[72*idx + 47] = 6 * idx + 3;
+
+        ptr_cols[72*idx + 36] = 3 * i0 + 0;
+        ptr_cols[72*idx + 37] = 3 * i0 + 1;
+        ptr_cols[72*idx + 38] = 3 * i0 + 2;
+        ptr_cols[72*idx + 39] = 3 * i1 + 0;
+        ptr_cols[72*idx + 40] = 3 * i1 + 1;
+        ptr_cols[72*idx + 41] = 3 * i1 + 2;
+        ptr_cols[72*idx + 42] = 3 * i2 + 0;
+        ptr_cols[72*idx + 43] = 3 * i2 + 1;
+        ptr_cols[72*idx + 44] = 3 * i2 + 2;
+        ptr_cols[72*idx + 45] = 3 * i3 + 0;
+        ptr_cols[72*idx + 46] = 3 * i3 + 1;
+        ptr_cols[72*idx + 47] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 36] = ddd0[0];
+        ptr_vals[72*idx + 37] = ddd0[1];
+        ptr_vals[72*idx + 38] = ddd0[2];
+        ptr_vals[72*idx + 39] = ddd1[0];
+        ptr_vals[72*idx + 40] = ddd1[1];
+        ptr_vals[72*idx + 41] = ddd1[2];
+        ptr_vals[72*idx + 42] = ddd2[0];
+        ptr_vals[72*idx + 43] = ddd2[1];
+        ptr_vals[72*idx + 44] = ddd2[2];
+        ptr_vals[72*idx + 45] = ddd3[0];
+        ptr_vals[72*idx + 46] = ddd3[1];
+        ptr_vals[72*idx + 47] = ddd3[2];
+        
+        
+        ptr_rows[72*idx + 48] = 6 * idx + 4;
+        ptr_rows[72*idx + 49] = 6 * idx + 4;
+        ptr_rows[72*idx + 50] = 6 * idx + 4;
+        ptr_rows[72*idx + 51] = 6 * idx + 4;
+        ptr_rows[72*idx + 52] = 6 * idx + 4;
+        ptr_rows[72*idx + 53] = 6 * idx + 4;
+        ptr_rows[72*idx + 54] = 6 * idx + 4;
+        ptr_rows[72*idx + 55] = 6 * idx + 4;
+        ptr_rows[72*idx + 56] = 6 * idx + 4;
+        ptr_rows[72*idx + 57] = 6 * idx + 4;
+        ptr_rows[72*idx + 58] = 6 * idx + 4;
+        ptr_rows[72*idx + 59] = 6 * idx + 4;
+
+        ptr_cols[72*idx + 48] = 3 * i0 + 0;
+        ptr_cols[72*idx + 49] = 3 * i0 + 1;
+        ptr_cols[72*idx + 50] = 3 * i0 + 2;
+        ptr_cols[72*idx + 51] = 3 * i1 + 0;
+        ptr_cols[72*idx + 52] = 3 * i1 + 1;
+        ptr_cols[72*idx + 53] = 3 * i1 + 2;
+        ptr_cols[72*idx + 54] = 3 * i2 + 0;
+        ptr_cols[72*idx + 55] = 3 * i2 + 1;
+        ptr_cols[72*idx + 56] = 3 * i2 + 2;
+        ptr_cols[72*idx + 57] = 3 * i3 + 0;
+        ptr_cols[72*idx + 58] = 3 * i3 + 1;
+        ptr_cols[72*idx + 59] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 48] = ded0[0];
+        ptr_vals[72*idx + 49] = ded0[1];
+        ptr_vals[72*idx + 50] = ded0[2];
+        ptr_vals[72*idx + 51] = ded1[0];
+        ptr_vals[72*idx + 52] = ded1[1];
+        ptr_vals[72*idx + 53] = ded1[2];
+        ptr_vals[72*idx + 54] = ded2[0];
+        ptr_vals[72*idx + 55] = ded2[1];
+        ptr_vals[72*idx + 56] = ded2[2];
+        ptr_vals[72*idx + 57] = ded3[0];
+        ptr_vals[72*idx + 58] = ded3[1];
+        ptr_vals[72*idx + 59] = ded3[2];
+        
+        
+        ptr_rows[72*idx + 60] = 6 * idx + 5;
+        ptr_rows[72*idx + 61] = 6 * idx + 5;
+        ptr_rows[72*idx + 62] = 6 * idx + 5;
+        ptr_rows[72*idx + 63] = 6 * idx + 5;
+        ptr_rows[72*idx + 64] = 6 * idx + 5;
+        ptr_rows[72*idx + 65] = 6 * idx + 5;
+        ptr_rows[72*idx + 66] = 6 * idx + 5;
+        ptr_rows[72*idx + 67] = 6 * idx + 5;
+        ptr_rows[72*idx + 68] = 6 * idx + 5;
+        ptr_rows[72*idx + 69] = 6 * idx + 5;
+        ptr_rows[72*idx + 70] = 6 * idx + 5;
+        ptr_rows[72*idx + 71] = 6 * idx + 5;
+
+        ptr_cols[72*idx + 60] = 3 * i0 + 0;
+        ptr_cols[72*idx + 61] = 3 * i0 + 1;
+        ptr_cols[72*idx + 62] = 3 * i0 + 2;
+        ptr_cols[72*idx + 63] = 3 * i1 + 0;
+        ptr_cols[72*idx + 64] = 3 * i1 + 1;
+        ptr_cols[72*idx + 65] = 3 * i1 + 2;
+        ptr_cols[72*idx + 66] = 3 * i2 + 0;
+        ptr_cols[72*idx + 67] = 3 * i2 + 1;
+        ptr_cols[72*idx + 68] = 3 * i2 + 2;
+        ptr_cols[72*idx + 69] = 3 * i3 + 0;
+        ptr_cols[72*idx + 70] = 3 * i3 + 1;
+        ptr_cols[72*idx + 71] = 3 * i3 + 2;
+
+        ptr_vals[72*idx + 60] = dfd0[0];
+        ptr_vals[72*idx + 61] = dfd0[1];
+        ptr_vals[72*idx + 62] = dfd0[2];
+        ptr_vals[72*idx + 63] = dfd1[0];
+        ptr_vals[72*idx + 64] = dfd1[1];
+        ptr_vals[72*idx + 65] = dfd1[2];
+        ptr_vals[72*idx + 66] = dfd2[0];
+        ptr_vals[72*idx + 67] = dfd2[1];
+        ptr_vals[72*idx + 68] = dfd2[2];
+        ptr_vals[72*idx + 69] = dfd3[0];
+        ptr_vals[72*idx + 70] = dfd3[1];
+        ptr_vals[72*idx + 71] = dfd3[2];
+
+        idx += 1;
+    }
+    return std::make_tuple(rows, cols, vals);
+}
+
 PYBIND11_MODULE(SIGNATURE, m)
 {
     m.def("triangle_angles", &triangle_angles);
+    m.def("tetrahedron_angles", &tetrahedron_angles);
     m.def("triangle_angle_gradient", &triangle_angle_gradient);
+    m.def("tetrahedron_angle_gradient", &tetrahedron_angle_gradient);
 }
 """
 mesh_quality = fenics.compile_cpp_code(cpp_code)
@@ -550,6 +1021,99 @@ class TriangleAngleConstraint(MeshConstraint):
         return gradient
 
 
+class DihedralAngleConstraint(MeshConstraint):
+    r"""A mesh quality constraint for the angles of triangles in the mesh.
+
+    This ensures that the all angles :math:`\alpha` of the FEM mesh satisfy the
+    constraint :math:`\alpha \geq \alpha_{min}`, which is equivalently rewritten as
+    :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
+    the mesh coordinates.
+    """
+    type = "inequality"
+
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the mesh quality constraint for the triangle angles.
+
+        Args:
+            mesh: The corresponding FEM mesh.
+            config: The configuration of the optimization problem.
+            deformation_space: A space of vector CG1 elements for mesh deformations.
+
+        """
+        super().__init__(mesh, deformation_space)
+        self.config = config
+
+        self.dim = self.mesh.geometry().dim()
+        self.min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        self.cells = self.mesh.cells()
+
+        self.no_constraints = 6 * len(self.cells)
+        self.is_necessary = np.array([True] * self.no_constraints)
+
+    # ToDo: compute the minimum angle of each element directly and
+    #  use this as threshold (scaled with a factor)
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        r"""Evaluates the constaint function at the current iterate.
+
+        This computes :math:`g(x)` where the constraint is given by
+        :math:`g(x) <= 0` and :math:`x` corresponds to mesh coordinates, i.e.,
+        `coords_seq`. The constraint returns :math:`\alpha_{min} - \alpha`,
+        where :math:`\alpha` is one angle of a triangle and :math:`\alpha_{min}` is the
+        minimum feasible angle in each triangle.
+
+        Args:
+            coords_seq: The (flattened) list of vertex coordinates of the mesh.
+
+        Returns:
+            A numpy array containing the values of the constraint functions.
+
+        """
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        values = mesh_quality.tetrahedron_angles(self.mesh)
+        values = self.min_angle * 2 * np.pi / 360.0 - values
+
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        return values
+
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        rows, cols, vals = mesh_quality.tetrahedron_angle_gradient(self.mesh)
+
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        cols_local = self.v2d[cols]
+        cols = self.l2g_dofs[cols_local]
+
+        csr = rows, cols, vals
+        shape = (int(6 * len(self.cells)), self.no_vertices * self.dim)
+        gradient = _utils.linalg.sparse2scipy(csr, shape)
+
+        return gradient
+
+
 class ConstraintManager:
     """This class manages all (selected) mesh quality constraints.
 
@@ -601,9 +1165,15 @@ class ConstraintManager:
                     self.mesh, self.boundaries, self.config, deformation_space
                 )
             )
-            self.constraints.append(
-                TriangleAngleConstraint(self.mesh, self.config, deformation_space)
-            )
+
+            if self.mesh.geometry().dim() == 2:
+                self.constraints.append(
+                    TriangleAngleConstraint(self.mesh, self.config, deformation_space)
+                )
+            elif self.mesh.geometry().dim() == 3:
+                self.constraints.append(
+                    DihedralAngleConstraint(self.mesh, self.config, deformation_space)
+                )
             self.has_constraints = True
 
         if self.has_constraints:

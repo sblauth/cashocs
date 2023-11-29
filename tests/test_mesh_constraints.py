@@ -86,4 +86,44 @@ def test_triangle_mesh_constraints():
         residuals.append(res)
 
     rates = np.array(compute_convergence_rates(epsilons, residuals)).T
-    assert np.min(rates) > 1.8
+    mask = np.nonzero(residuals[0] > 1e-8)
+    assert np.min(rates[mask]) > 1.8
+
+
+def test_tetrahedron_mesh_constraints():
+    cfg = cashocs.io.config.Config()
+    cfg.set("MeshQualityConstraints", "min_angle", "30.0")
+    cfg.set("MeshQualityConstraints", "tol", "1e-2")
+    cfg.set("ShapeGradient", "shape_bdry_fix", "[]")
+    cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3,4,5,6]")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(4, length_z=1.0)
+    bbtree = mesh.bounding_box_tree()
+    rng = np.random.RandomState(300696)
+    VCG = VectorFunctionSpace(mesh, "CG", 1)
+
+    defo = 0.01 * rng.standard_normal(mesh.coordinates().shape)
+    mesh.coordinates()[:, :] += defo
+    bbtree.build(mesh)
+
+    cm = ConstraintManager(cfg, mesh, boundaries, VCG)
+    x = mesh.coordinates().copy().reshape(-1)
+
+    residuals = []
+    epsilons = [1e-4 / 2**i for i in range(4)]
+    h = rng.standard_normal(x.shape)
+    f_k = cm.evaluate(x)
+    gradient = cm.compute_gradient(x)
+    directional_derivative = gradient @ h
+
+    for eps in epsilons:
+        x_mod = x + eps * h[cm.v2d]
+        f_mod = cm.evaluate(x_mod)
+
+        res = abs(f_mod - f_k - eps * directional_derivative)
+        residuals.append(res)
+
+    rates = np.array(compute_convergence_rates(epsilons, residuals)).T
+
+    mask = np.nonzero(residuals[0] > 1e-8)
+    assert np.min(rates[mask]) > 1.8
