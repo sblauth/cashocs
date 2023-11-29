@@ -22,10 +22,10 @@ from __future__ import annotations
 from typing import cast, List, TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 import petsc4py
 from petsc4py import PETSc
-from mpi4py import MPI
 from scipy import optimize
 from scipy import sparse
 
