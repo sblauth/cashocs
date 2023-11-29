@@ -968,8 +968,6 @@ class TriangleAngleConstraint(MeshConstraint):
         self.no_constraints = 3 * len(self.cells)
         self.is_necessary = np.array([True] * self.no_constraints)
 
-    # ToDo: compute the minimum angle of each element directly and
-    #  use this as threshold (scaled with a factor)
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
 
@@ -1079,8 +1077,6 @@ class DihedralAngleConstraint(MeshConstraint):
         self.no_constraints = 6 * len(self.cells)
         self.is_necessary = np.array([True] * self.no_constraints)
 
-    # ToDo: compute the minimum angle of each element directly and
-    #  use this as threshold (scaled with a factor)
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
 
@@ -1144,14 +1140,19 @@ class DihedralAngleConstraint(MeshConstraint):
         feasible_angle_reduction_factor = self.config.getfloat(
             "MeshQualityConstraints", "feasible_angle_reduction_factor"
         )
-
         initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 6)
         minimum_initial_angles = np.min(initial_angles, axis=1)
-        minimum_angle = feasible_angle_reduction_factor * minimum_initial_angles
-        minimum_angle = np.repeat(minimum_angle, 6)
+        cellwise_minimum_angle = (
+            feasible_angle_reduction_factor * minimum_initial_angles
+        )
+        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 6)
 
-        if constant_min_angle > 0.0:
-            minimum_angle = np.minimum(minimum_angle, constant_min_angle)
+        if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
+            minimum_angle = np.minimum(cellwise_minimum_angle, constant_min_angle)
+        elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
+            minimum_angle = constant_min_angle
+        elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
+            minimum_angle = cellwise_minimum_angle
 
         return minimum_angle
 
