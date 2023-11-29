@@ -1140,7 +1140,7 @@ class DihedralAngleConstraint(MeshConstraint):
         feasible_angle_reduction_factor = self.config.getfloat(
             "MeshQualityConstraints", "feasible_angle_reduction_factor"
         )
-        initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 6)
+        initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(-1, 6)
         minimum_initial_angles = np.min(initial_angles, axis=1)
         cellwise_minimum_angle = (
             feasible_angle_reduction_factor * minimum_initial_angles
@@ -1186,7 +1186,14 @@ class ConstraintManager:
         self.mesh = mesh
         self.boundaries = boundaries
 
-        self.has_constraints = False
+        self.has_constraints = (
+            self.config.getfloat("MeshQualityConstraints", "min_angle") > 0.0
+        ) or (
+            self.config.getfloat(
+                "MeshQualityConstraints", "feasible_angle_reduction_factor"
+            )
+            > 0.0
+        )
         self.v2d = fenics.vertex_to_dof_map(deformation_space)
         self.d2v = fenics.dof_to_vertex_map(deformation_space)
         loc0, loc1 = deformation_space.dofmap().ownership_range()
@@ -1202,7 +1209,7 @@ class ConstraintManager:
         )
         self.no_constraints = 0
 
-        if self.config.getfloat("MeshQualityConstraints", "min_angle") > 0.0:
+        if self.has_constraints:
             self.constraints.append(
                 FixedBoundaryConstraint(
                     self.mesh, self.boundaries, self.config, deformation_space
@@ -1217,7 +1224,6 @@ class ConstraintManager:
                 self.constraints.append(
                     DihedralAngleConstraint(self.mesh, self.config, deformation_space)
                 )
-            self.has_constraints = True
 
         if self.has_constraints:
             self.inequality_mask = self._compute_inequality_mask()
