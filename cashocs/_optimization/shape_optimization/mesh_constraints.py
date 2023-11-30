@@ -810,13 +810,28 @@ class FixedBoundaryConstraint(MeshConstraint):
             self.fixed_coordinates,
         ) = self._compute_fixed_coordinate_indices(shape_bdry_fix)
 
+        shape_bdry_fix_x = self.config.getlist("ShapeGradient", "shape_bdry_fix_x")
+        shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
+        shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
+        (
+            self.partially_fixed_idcs,
+            self.partially_fixed_coordinates,
+        ) = self._compute_partially_fixed_coordinate_indices(
+            shape_bdry_fix_x, shape_bdry_fix_y, shape_bdry_fix_z
+        )
+
+        self.fixed_idcs = np.concatenate([self.fixed_idcs, self.partially_fixed_idcs])
+        self.fixed_coordinates = np.concatenate(
+            [self.fixed_coordinates, self.partially_fixed_coordinates]
+        )
+
         self.no_constraints = len(self.fixed_idcs)
         self.is_necessary = np.array([False] * self.no_constraints)
         self.fixed_gradient = self._compute_fixed_gradient()
 
     def _compute_fixed_coordinate_indices(
         self, shape_bdry_fix: list[int] | int
-    ) -> tuple[np.ndarray, np.ndarray | None]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Computes the (flattened) indices of the mesh coordinates, which are fixed.
 
         Args:
@@ -867,9 +882,112 @@ class FixedBoundaryConstraint(MeshConstraint):
                 self.mesh.coordinates().copy().reshape(-1)[fixed_idcs_local]
             )
         else:
-            fixed_coordinates = None
+            fixed_coordinates = np.array([])
 
         return fixed_idcs_local, fixed_coordinates
+
+    def _compute_partially_fixed_coordinate_indices(
+        self,
+        shape_bdry_fix_x: list[int] | int,
+        shape_bdry_fix_y: list[int] | int,
+        shape_bdry_fix_z: list[int] | int,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Computes the (flattened) indices of the mesh coordinates, which are fixed.
+
+        Args:
+            shape_bdry_fix_x: An index or list of indices of the boundaries, whose x
+                coordinates are fixed during shape optimization. This is specified in
+                the configuration of the problem.
+            shape_bdry_fix_y: An index or list of indices of the boundaries, whose y
+                coordinates are fixed during shape optimization. This is specified in
+                the configuration of the problem.
+            shape_bdry_fix_z: An index or list of indices of the boundaries, whose z
+                coordinates are fixed during shape optimization. This is specified in
+                the configuration of the problem.
+
+        Returns:
+            A tuple `partially_fixed_indices, partially_fixed_coordinates`, where
+            `partially_fixed_indices` is an array containing the (flattened) indices of
+            the (partially) fixed coordinates and `partially_fixed_coordinates` contains
+            the corresponding values of the fixed vertices.
+
+        """
+        bdry_fix_x_list = _utils.enlist(shape_bdry_fix_x)
+        bdry_fix_y_list = _utils.enlist(shape_bdry_fix_y)
+        bdry_fix_z_list = _utils.enlist(shape_bdry_fix_z)
+
+        temp_fixed_idcs_x = []
+        temp_fixed_idcs_y = []
+        temp_fixed_idcs_z = []
+        for i in bdry_fix_x_list:
+            idx_i = self.facets[self.boundaries.where_equal(i)]
+            temp_fixed_idcs_x += idx_i.reshape(-1).tolist()
+        for i in bdry_fix_y_list:
+            idx_i = self.facets[self.boundaries.where_equal(i)]
+            temp_fixed_idcs_y += idx_i.reshape(-1).tolist()
+        for i in bdry_fix_z_list:
+            idx_i = self.facets[self.boundaries.where_equal(i)]
+            temp_fixed_idcs_y += idx_i.reshape(-1).tolist()
+
+        fixed_idcs_x = np.unique(temp_fixed_idcs_x)
+        fixed_idcs_y = np.unique(temp_fixed_idcs_y)
+        fixed_idcs_z = np.unique(temp_fixed_idcs_z)
+
+        if len(fixed_idcs_x) > 0:
+            fixed_idcs_global_x = self.global_vertex_indices[fixed_idcs_x]
+        else:
+            fixed_idcs_global_x = []
+        if len(fixed_idcs_y) > 0:
+            fixed_idcs_global_y = self.global_vertex_indices[fixed_idcs_y]
+        else:
+            fixed_idcs_global_y = []
+        if len(fixed_idcs_z) > 0:
+            fixed_idcs_global_z = self.global_vertex_indices[fixed_idcs_z]
+        else:
+            fixed_idcs_global_z = []
+
+        mask_x = np.isin(fixed_idcs_global_x, self.global_vertex_indices_owned)
+        mask_y = np.isin(fixed_idcs_global_y, self.global_vertex_indices_owned)
+        mask_z = np.isin(fixed_idcs_global_z, self.global_vertex_indices_owned)
+        fixed_idcs_x_local_owned = fixed_idcs_x[mask_x]
+        fixed_idcs_y_local_owned = fixed_idcs_y[mask_y]
+        fixed_idcs_z_local_owned = fixed_idcs_z[mask_z]
+
+        if self.dim == 2:
+            fixed_idcs_local_x = np.array(
+                [self.dim * fixed_idcs_x_local_owned], dtype="int64"
+            ).T.reshape(-1)
+            fixed_idcs_local_y = np.array(
+                [self.dim * fixed_idcs_y_local_owned + 1], dtype="int64"
+            ).T.reshape(-1)
+
+            partially_fixed_idcs_local = np.concatenate(
+                [fixed_idcs_local_x, fixed_idcs_local_y],
+            )
+
+        elif self.dim == 3:
+            fixed_idcs_local_x = np.array(
+                [self.dim * fixed_idcs_x_local_owned], dtype="int64"
+            ).T.reshape(-1)
+            fixed_idcs_local_y = np.array(
+                [self.dim * fixed_idcs_y_local_owned + 1], dtype="int64"
+            ).T.reshape(-1)
+            fixed_idcs_local_z = np.array(
+                [self.dim * fixed_idcs_z_local_owned + 2], dtype="int64"
+            ).T.reshape(-1)
+
+            partially_fixed_idcs_local = np.concatenate(
+                [fixed_idcs_local_x, fixed_idcs_local_y, fixed_idcs_local_z],
+            )
+
+        if len(partially_fixed_idcs_local) > 0:
+            partially_fixed_coordinates = (
+                self.mesh.coordinates().copy().reshape(-1)[partially_fixed_idcs_local]
+            )
+        else:
+            partially_fixed_coordinates = np.array([])
+
+        return partially_fixed_idcs_local, partially_fixed_coordinates
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -1034,11 +1152,17 @@ class TriangleAngleConstraint(MeshConstraint):
 
         initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 3)
         minimum_initial_angles = np.min(initial_angles, axis=1)
-        minimum_angle = feasible_angle_reduction_factor * minimum_initial_angles
-        minimum_angle = np.repeat(minimum_angle, 3)
+        cellwise_minimum_angle = (
+            feasible_angle_reduction_factor * minimum_initial_angles
+        )
+        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 3)
 
-        if constant_min_angle > 0.0:
-            minimum_angle = np.minimum(minimum_angle, constant_min_angle)
+        if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
+            minimum_angle = np.minimum(cellwise_minimum_angle, constant_min_angle)
+        elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
+            minimum_angle = constant_min_angle
+        elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
+            minimum_angle = cellwise_minimum_angle
 
         return minimum_angle
 
