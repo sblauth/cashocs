@@ -234,12 +234,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             }
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.db.geometry_db.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(
-            self.db.geometry_db.mesh
-        )
+        intersection_tester = mesh_testing.IntersectionTester(self.db.geometry_db.mesh)
         # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
-            self.db, self.form_handler, a_priori_tester, a_posteriori_tester
+            self.db, self.form_handler, a_priori_tester, intersection_tester
         )
 
         self.state_spaces = self.db.function_db.state_spaces

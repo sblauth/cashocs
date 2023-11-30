@@ -372,6 +372,9 @@ class Config(ConfigParser):
                 "global_deformation": {
                     "type": "bool",
                 },
+                "test_for_intersections": {
+                    "type": "bool",
+                },
             },
             "Regularization": {
                 "factor_volume": {
@@ -618,6 +621,7 @@ shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
 global_deformation = False
+test_for_intersections = True
 
 [Regularization]
 factor_volume = 0.0
