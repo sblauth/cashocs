@@ -715,3 +715,21 @@ class ShapeFormHandler(form_handler.FormHandler):
         PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
         """
         self.stiffness.compute()
+
+    def apply_shape_bcs(self, function: fenics.Function) -> None:
+        """Applies the geometric boundary conditions / constraints to a function.
+
+        Args:
+            function: The function onto which the geometric constraints are imposed.
+                Must be a vector CG1 function.
+
+        """
+        for bc in self.bcs_shape:
+            bc.apply(function.vector())
+            function.vector().apply("")
+
+        if self.use_fixed_dimensions:
+            function.vector().vec()[self.fixed_indices] = np.array(
+                [0.0] * len(self.fixed_indices)
+            )
+            function.vector().apply("")

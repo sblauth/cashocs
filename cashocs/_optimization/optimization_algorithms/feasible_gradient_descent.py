@@ -171,6 +171,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             p_dof = fenics.Function(self.db.function_db.control_spaces[0])
             p_dof.vector().set_local(p.getArray())
             p_dof.vector().apply("")
+            self.form_handler.apply_shape_bcs(p_dof)
 
             lambd_padded = np.zeros(no_constraints)
             lambd_padded[active_idx] = lambd
