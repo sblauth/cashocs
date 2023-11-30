@@ -43,19 +43,20 @@ class DeformationHandler:
         self,
         mesh: fenics.Mesh,
         a_priori_tester: mesh_testing.APrioriMeshTester,
-        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
+        intersection_tester: mesh_testing.IntersectionTester,
     ) -> None:
         """Initializes self.
 
         Args:
             mesh: The fenics mesh which is to be deformed.
             a_priori_tester: The tester before mesh modification.
-            a_posteriori_tester: The tester after mesh modification.
+            intersection_tester: The tester after mesh modification (for (self)
+                intersections).
 
         """
         self.mesh = mesh
         self.a_priori_tester = a_priori_tester
-        self.a_posteriori_tester = a_posteriori_tester
+        self.intersection_tester = intersection_tester
 
         self.dim = self.mesh.geometric_dimension()
         self.dx = measure.NamedMeasure("dx", self.mesh)
@@ -87,6 +88,7 @@ class DeformationHandler:
         self,
         transformation: Union[fenics.Function, np.ndarray],
         validated_a_priori: bool = False,
+        test_for_intersections: bool = True,
     ) -> bool:
         r"""Transforms the mesh by perturbation of identity.
 
@@ -102,6 +104,9 @@ class DeformationHandler:
             validated_a_priori: A boolean flag, which indicates whether an a-priori
                 check has already been performed before moving the mesh. Default is
                 ``False``
+            test_for_intersections: A boolean flag which indicates whether an
+                a-posteriori check for (self)-intersections of the mesh should
+                be performed.
 
         Returns:
             ``True`` if the mesh movement was successful, ``False`` otherwise.
@@ -128,26 +133,19 @@ class DeformationHandler:
                     "Reason: Transformation would result in inverted mesh elements."
                 )
                 return False
-            else:
-                self.old_coordinates = self.mesh.coordinates().copy()
-                self.coordinates += coordinate_transformation
-                self.bbtree.build(self.mesh)
+        self.old_coordinates = self.mesh.coordinates().copy()
+        self.coordinates += coordinate_transformation
+        self.bbtree.build(self.mesh)
 
-                check = self.a_posteriori_tester.test()
-                if not check:
-                    self.revert_transformation()
-
-                return check
-        else:
-            self.old_coordinates = self.mesh.coordinates().copy()
-            self.coordinates += coordinate_transformation
-            self.bbtree.build(self.mesh)
-
-            check = self.a_posteriori_tester.test()
+        if test_for_intersections:
+            check = self.intersection_tester.test()
             if not check:
                 self.revert_transformation()
 
             return check
+
+        else:
+            return True
 
     def coordinate_to_dof(self, coordinate_deformation: np.ndarray) -> fenics.Function:
         """Converts a coordinate deformation to a deformation vector field (dof based).
@@ -204,7 +202,7 @@ class DeformationHandler:
         self.mesh.coordinates()[:, :] = coordinates[:, :]
         self.bbtree.build(self.mesh)
 
-        check = self.a_posteriori_tester.test()
+        check = self.intersection_tester.test()
         if not check:
             self.revert_transformation()
 
