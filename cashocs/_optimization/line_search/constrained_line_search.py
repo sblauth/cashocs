@@ -28,6 +28,7 @@ from petsc4py import PETSc
 from typing_extensions import TYPE_CHECKING
 
 from cashocs._optimization.line_search import armijo_line_search
+from cashocs import _loggers
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimization_algorithms
@@ -80,6 +81,7 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
                 constraint_gradient,
                 dropped_idx,
             )
+            _loggers.debug(f"Line search - Trial stepsize {self.stepsize:.3e}")
 
             current_function_value = solver.objective_value
             objective_step = self._compute_objective_at_new_iterate(

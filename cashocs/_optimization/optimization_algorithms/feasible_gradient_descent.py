@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import fenics
 from mpi4py import MPI
@@ -133,6 +133,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
                 self.search_direction[i].vector().apply("")
 
+    # ToDo: Ensure that Dirichlet boundary constraints are applied correctly for
+    #  the deformation
     def _compute_projected_gradient(
         self, active_idx: np.ndarray, constraint_gradient: sparse.csr_matrix
     ) -> tuple[fenics.Function, bool, np.ndarray]:

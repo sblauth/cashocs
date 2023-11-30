@@ -32,6 +32,7 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
+from cashocs import _loggers
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -321,6 +322,7 @@ class ShapeVariableAbstractions(
             else:
                 return y_j
 
+        _loggers.debug(f"Back-Projection failed.")
         return None
 
     def compute_step(
@@ -396,7 +398,9 @@ class ShapeVariableAbstractions(
             ).root
 
             feasible_stepsize = comm.allreduce(feasible_stepsize_local, op=MPI.MIN)
-
+            _loggers.debug(
+                f"Stepsize until constraint boundary: {feasible_stepsize:.6e}"
+            )
             feasible_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,
