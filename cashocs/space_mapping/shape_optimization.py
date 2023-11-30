@@ -252,9 +252,9 @@ class ParameterExtraction:
         self.coordinates_initial = coarse_model.coordinates_initial
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.mesh)
         self.deformation_handler = geometry.DeformationHandler(
-            self.mesh, a_priori_tester, a_posteriori_tester
+            self.mesh, a_priori_tester, intersection_tester
         )
 
         self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
@@ -368,15 +368,15 @@ class SpaceMappingProblem:
 
         self.deformation_space = fenics.VectorFunctionSpace(self.x, "CG", 1)
         a_priori_tester = mesh_testing.APrioriMeshTester(self.fine_model.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.fine_model.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.fine_model.mesh)
         self.deformation_handler_fine = geometry.DeformationHandler(
-            self.fine_model.mesh, a_priori_tester, a_posteriori_tester
+            self.fine_model.mesh, a_priori_tester, intersection_tester
         )
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.coarse_model.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.coarse_model.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.coarse_model.mesh)
         self.deformation_handler_coarse = geometry.DeformationHandler(
-            self.coarse_model.mesh, a_priori_tester, a_posteriori_tester
+            self.coarse_model.mesh, a_priori_tester, intersection_tester
         )
 
         self.z_star = [fenics.Function(self.deformation_space)]

@@ -113,7 +113,7 @@ class _MeshHandler:
         db: database.Database,
         form_handler: _forms.ShapeFormHandler,
         a_priori_tester: mesh_testing.APrioriMeshTester,
-        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
+        a_posteriori_tester: mesh_testing.IntersectionTester,
     ) -> None:
         """Initializes self.
 
@@ -143,6 +143,10 @@ class _MeshHandler:
         # setup from config
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
         self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
+
+        self.test_for_intersections = self.config.getboolean(
+            "ShapeGradient", "test_for_intersections"
+        )
 
         self.mesh_quality_tol_lower: float = self.config.getfloat(
             "MeshQuality", "tol_lower"
@@ -298,7 +302,9 @@ class _MeshHandler:
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(
-                transformation, validated_a_priori=True
+                transformation,
+                validated_a_priori=True,
+                test_for_intersections=self.test_for_intersections,
             )
             self.current_mesh_quality = quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
