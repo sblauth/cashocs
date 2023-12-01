@@ -765,7 +765,7 @@ class MeshConstraint(abc.ABC):
         pass
 
 
-class FixedBoundaryConstraint(MeshConstraint):
+class FixedVertexConstraint(MeshConstraint):
     """A discrete mesh constraint for fixed boundaries in shape optimization.
 
     This constraint is needed to incorporate other mesh constraints for the case that
@@ -806,33 +806,49 @@ class FixedBoundaryConstraint(MeshConstraint):
 
         shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
         (
-            self.fixed_idcs,
-            self.fixed_coordinates,
-        ) = self._compute_fixed_coordinate_indices(shape_bdry_fix)
+            self.fixed_boundary_idcs,
+            self.fixed_boundary_coordinates,
+        ) = self._compute_fixed_boundary_vertex_indices(shape_bdry_fix)
 
         shape_bdry_fix_x = self.config.getlist("ShapeGradient", "shape_bdry_fix_x")
         shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
         shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
         (
-            self.partially_fixed_idcs,
-            self.partially_fixed_coordinates,
-        ) = self._compute_partially_fixed_coordinate_indices(
+            self.partially_fixed_boundary_idcs,
+            self.partially_fixed_boundary_coordinates,
+        ) = self._compute_partially_fixed_boundary_vertex_indices(
             shape_bdry_fix_x, shape_bdry_fix_y, shape_bdry_fix_z
         )
 
-        self.fixed_idcs = np.concatenate([self.fixed_idcs, self.partially_fixed_idcs])
+        fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
+        (
+            self.fixed_dimension_idcs,
+            self.fixed_dimension_coordinates,
+        ) = self._compute_fixed_dimension_vertex_indices(fixed_dimensions)
+
+        self.fixed_idcs = np.concatenate(
+            [
+                self.fixed_boundary_idcs,
+                self.partially_fixed_boundary_idcs,
+                self.fixed_dimension_idcs,
+            ]
+        )
         self.fixed_coordinates = np.concatenate(
-            [self.fixed_coordinates, self.partially_fixed_coordinates]
+            [
+                self.fixed_boundary_coordinates,
+                self.partially_fixed_boundary_coordinates,
+                self.fixed_dimension_coordinates,
+            ]
         )
 
         self.no_constraints = len(self.fixed_idcs)
         self.is_necessary = np.array([False] * self.no_constraints)
         self.fixed_gradient = self._compute_fixed_gradient()
 
-    def _compute_fixed_coordinate_indices(
+    def _compute_fixed_boundary_vertex_indices(
         self, shape_bdry_fix: list[int] | int
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Computes the (flattened) indices of the mesh coordinates, which are fixed.
+        """Computes the indices of the mesh vertices on the boundary, which are fixed.
 
         Args:
             shape_bdry_fix: An index or list of indices of the boundaries, which are
@@ -886,13 +902,13 @@ class FixedBoundaryConstraint(MeshConstraint):
 
         return fixed_idcs_local, fixed_coordinates
 
-    def _compute_partially_fixed_coordinate_indices(
+    def _compute_partially_fixed_boundary_vertex_indices(
         self,
         shape_bdry_fix_x: list[int] | int,
         shape_bdry_fix_y: list[int] | int,
         shape_bdry_fix_z: list[int] | int,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Computes the (flattened) indices of the mesh coordinates, which are fixed.
+        """Computes the indices of the partially fixed vertices on the boundary.
 
         Args:
             shape_bdry_fix_x: An index or list of indices of the boundaries, whose x
@@ -988,6 +1004,45 @@ class FixedBoundaryConstraint(MeshConstraint):
             partially_fixed_coordinates = np.array([])
 
         return partially_fixed_idcs_local, partially_fixed_coordinates
+
+    def _compute_fixed_dimension_vertex_indices(
+        self, fixed_dimensions: list[int] | int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Computes the indices of the mesh vertices which are fixed.
+
+        These are fixed through the use of the fixed_dimensions configuration parameter,
+        which restricts deformations to some directions.
+
+        Args:
+            fixed_dimensions: The (list of) coordinate indices which are fixed. This
+                is 0 for x, 1 for y, and 2 for z.
+
+        Returns:
+            A tuple `fixed_indices, fixed_coordinates`, where `fixed_indices` is an
+            array containing the (flattened) indices of the fixed coordinates and
+            `fixed_coordinates` contains the corresponding values of the fixed vertices.
+
+        """
+        fixed_dimensions_list = _utils.enlist(fixed_dimensions)
+
+        fixed_idcs = np.arange(self.mesh.num_vertices())
+        fixed_idcs_global = self.global_vertex_indices[fixed_idcs]
+        mask = np.isin(fixed_idcs_global, self.global_vertex_indices_owned)
+        fixed_idcs_local_owned = fixed_idcs[mask]
+
+        fixed_idcs_local = np.array(
+            [self.dim * fixed_idcs_local_owned + i for i in fixed_dimensions_list],
+            dtype="int64",
+        ).T.reshape(-1)
+
+        if len(fixed_idcs_local) > 0:
+            fixed_coordinates = (
+                self.mesh.coordinates().copy().reshape(-1)[fixed_idcs_local]
+            )
+        else:
+            fixed_coordinates = np.array([])
+
+        return fixed_idcs_local, fixed_coordinates
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -1335,7 +1390,7 @@ class ConstraintManager:
 
         if self.has_constraints:
             self.constraints.append(
-                FixedBoundaryConstraint(
+                FixedVertexConstraint(
                     self.mesh, self.boundaries, self.config, deformation_space
                 )
             )
