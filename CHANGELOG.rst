@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 2.1.0 (in development)
 ----------------------
 
+* Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
+
 * Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
 
 * Callbacks can now have one parameter - the parameter supplied when being called during runtime is the optimization problem itself
@@ -36,6 +38,13 @@ of the maintenance releases, please take a look at
 
     * :ini:`remesh_iter` is used to perform a remeshing after a certain amount of iterations.
 
+  * Section ShapeGradient
+
+    * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
+
+  * Section MeshQualityConstraints
+
+    * This section includes parameters for the new mesh quality constraints for shape optimization
 
 
 2.0.0 (May 16, 2023)

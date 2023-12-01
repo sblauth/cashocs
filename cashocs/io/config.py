@@ -203,7 +203,6 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive"],
                 },
-                "safeguard_stepsize": {"type": "bool"},
                 "epsilon_armijo": {
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
@@ -212,18 +211,19 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive", "larger_than_one"],
                 },
+                "safeguard_stepsize": {"type": "bool"},
                 "polynomial_model": {
                     "type": "str",
                     "possible_options": ["cubic", "quadratic"],
-                },
-                "factor_low": {
-                    "type": "float",
-                    "attributes": ["less_than_one", "positive"],
                 },
                 "factor_high": {
                     "type": "float",
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
                 },
                 "fail_if_not_converged": {
                     "type": "bool",
@@ -299,6 +299,9 @@ class Config(ConfigParser):
                 "shape_bdry_fix_z": {
                     "type": "list",
                 },
+                "fixed_dimensions": {
+                    "type": "list",
+                },
                 "use_pull_back": {
                     "type": "bool",
                 },
@@ -362,9 +365,6 @@ class Config(ConfigParser):
                 "p_laplacian_stabilization": {
                     "type": "float",
                     "attributes": ["non_negative", "less_than_one"],
-                },
-                "fixed_dimensions": {
-                    "type": "list",
                 },
                 "degree_estimation": {
                     "type": "bool",
@@ -604,7 +604,6 @@ use_sqrt_mu = False
 use_p_laplacian = False
 p_laplacian_power = 2
 p_laplacian_stabilization = 0.0
-degree_estimation = True
 use_pull_back = True
 use_distance_mu = False
 mu_min = 1.0
@@ -620,6 +619,7 @@ shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+degree_estimation = True
 global_deformation = False
 test_for_intersections = True
 

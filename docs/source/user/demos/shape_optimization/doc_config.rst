@@ -580,6 +580,14 @@ boundaries should not be deformable in x-direction, but can be deformed in the y
 and z-directions. Of course you can constrain a boundary to be only variable in a
 single direction by adding the markers to the remaining lists.
 
+Furthermore, we have the parameter :ini:`fixed_dimensions`, which enables us to restrict the shape gradient to specific dimensions. It is set via 
+
+.. code-block:: ini
+
+    fixed_dimensions = []
+
+In case :ini:`fixed_dimensions = []`, there is no restriction on the shape gradient. However, if :ini:`fixed_dimensions = [i]`, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if :ini:`fixed_dimensions = [0, 2]`, we only have a deformation in the :math:`y`-component of the mesh. The default is :ini:`fixed_dimensions = []`.
+
 The next parameter is specified via
 
 .. code-block:: ini
@@ -736,14 +744,30 @@ Finally, there is the possibility to use a stabilized weak form for the :math:`p
 
 The default value of this parameter is :ini:`p_laplacian_stabilization = 0.0`. Note, that the parameter should be chosen comparatively small, i.e., significantly smaller than 1.
 
-
-Furthermore, we have the parameter :ini:`fixed_dimensions`, which enables us to restrict the shape gradient to specific dimensions. It is set via 
+Moreover, we have the parameter :ini:`degree_estimation` which is specified via
 
 .. code-block:: ini
 
-    fixed_dimensions = []
+    degree_estimation = True
 
-In case :ini:`fixed_dimensions = []`, there is no restriction on the shape gradient. However, if :ini:`fixed_dimensions = [i]`, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if :ini:`fixed_dimensions = [0, 2]`, we only have a deformation in the :math:`y`-component of the mesh. The default is :ini:`fixed_dimensions = []`.
+This parameter enables cashocs' default estimation of the quadrature degree for the shape derivative. If this is set to `False`, an error related to FEniCS may occur - so this should be always enabled.
+
+Next, we have the parameter :ini:`global_deformation` which is set via the line
+
+.. code-block:: ini
+
+    global_deformation = False
+
+If this is set to `True`, cashocs computes the deformation from the initial to the optimized mesh (even when remeshing has been performed). This can, however, lead to some unexpected errors with PETSc, so this should be used with care.
+
+We have the parameter :ini:`test_for_intersections`, which is specified via
+
+.. code-block:: ini
+
+    test_for_intersections = True
+
+If this parameter is set to `True`, cashocs will check the deformed meshes for (self) intersections, which would generate non-physical geometries and reject them - so that all generated designs are physically meaningful. This should not be set to `False`.
+
 
 .. _config_shape_regularization:
 
@@ -1291,6 +1315,12 @@ in the following.
       - The parameter :math:`p` of the :math:`p`-Laplacian
     * - :ini:`p_laplacian_stabilization = 0.0`
       - The stabilization parameter for the :math:`p`-Laplacian problem. No stabilization is used when this is :ini:`p_laplacian_stabilization = 0.0`.
+    * - :ini:`global_deformation = False`
+      - Computes the global deformation from initial to optimized mesh. This can lead to unexpected errors, use with care.
+    * - :ini:`degree_estimation = True`
+      - Estimate the required degree for quadrature of the shape derivative. This should be `True`, otherwise unexpected errors can happen.
+    * - :ini:`test_for_intersections = True`
+      - If enabled, the mesh is tested for intersections which would create non-physical meshes. This should always be enabled, otherwise the obtained results might be incorrect.
 
 
 [Regularization]
@@ -1349,9 +1379,26 @@ in the following.
       - determines which quality measure is used
     * - :ini:`type = min`
       - determines if minimal or average quality is considered
+    * - :ini:`remesh_iter`
+      - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
 
 
+[MeshQualityConstraints]
+************************
 
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Remarks
+    * - :ini:`min_angle = 0.0`
+      - The minimum feasible triangle / dihedral angle of the mesh cells. This is constant for all cells. If this is positive, the constraints are used. If this is 0, no constraints are used.
+    * - :ini:`tol = 1e-2`
+      - The tolerance for the mesh quality constraints. If `abs(g(x)) < tol`, then the constraint is considered active
+    * - :ini:`mode = approximate`
+      - The mode for calculating the (shape) derivatives of the constraint functions. At the moment, only "approximate" is supported.
+    * - :ini:`feasible_angle_reduction_factor = 0.0`
+      - A factor in the interval [0,1) which sets the feasible reduction of the triangle / dihedral angles. This means, that each cell is only allowed to have angles larger than this times the initial minimum angle.
 
 [Output]
 ********
