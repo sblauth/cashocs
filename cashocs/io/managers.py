@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import abc
 import json
+import os
+import shutil
 import subprocess  # nosec B404
 from typing import cast, List, TYPE_CHECKING, Union
 
@@ -243,7 +245,7 @@ class ResultManager(IOManager):
         ]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
-                json.dump(self.output_dict, file)
+                json.dump(self.output_dict, file, indent=4)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
@@ -331,6 +333,28 @@ class TempFileManager(IOManager):
 class MeshManager(IOManager):
     """Manages the output of meshes."""
 
+    def __init__(self, db: database.Database, result_dir: str) -> None:
+        """Initializes the MeshManager class.
+
+        Args:
+            db: The database of the problem.
+            result_dir: The folder where the results are saved.
+
+        """
+        super().__init__(db, result_dir)
+        self.save_mesh = self.config.getboolean("Output", "save_mesh")
+
+    def output(self) -> None:
+        """Saves the mesh as checkpoint for each iteration."""
+        if self.save_mesh:
+            iteration = int(self.db.parameter_db.optimization_state["iteration"])
+
+            iomesh.write_out_mesh(
+                self.db.geometry_db.mesh,
+                self.db.parameter_db.gmsh_file_path,
+                f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
+            )
+
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
         if self.db.parameter_db.problem_type == "shape":
@@ -363,7 +387,6 @@ class XDMFFileManager(IOManager):
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
 
-        self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
 
         self.state_xdmf_list: List[Union[str, List[str]]] = []
@@ -444,10 +467,10 @@ class XDMFFileManager(IOManager):
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                lst.append(f"{self.result_dir}/xdmf/{name}_{j:d}.xdmf")
+                lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
             return lst
         else:
-            file = f"{self.result_dir}/xdmf/{name}.xdmf"
+            file = f"{self.result_dir}/checkpoints/{name}.xdmf"
             return file
 
     def _save_states(self, iteration: int) -> None:
@@ -556,14 +579,16 @@ class XDMFFileManager(IOManager):
         else:
             append = True
 
+        mesh = function.function_space().mesh()
+        comm = mesh.mpi_comm()
+
         if function.function_space().ufl_element().family() == "Real":
-            mesh = function.function_space().mesh()
             space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
         function.rename(function_name, function_name)
 
-        with fenics.XDMFFile(fenics.MPI.comm_world, filename) as file:
+        with fenics.XDMFFile(comm, filename) as file:
             file.parameters["flush_output"] = True
             file.parameters["functions_share_mesh"] = False
             file.write_checkpoint(
@@ -573,13 +598,25 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        fenics.MPI.barrier(comm)
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""
         self._initialize_xdmf_lists()
 
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
+
+        if iteration == 0:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                directory = f"{self.result_dir}/checkpoints/"
+                for files in os.listdir(directory):
+                    path = os.path.join(directory, files)
+                    try:
+                        shutil.rmtree(path)
+                    except OSError:
+                        os.remove(path)
+
+            fenics.MPI.barrier(fenics.MPI.comm_world)
 
         self._save_states(iteration)
         self._save_controls(iteration)

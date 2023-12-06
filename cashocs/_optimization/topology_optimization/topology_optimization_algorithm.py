@@ -43,6 +43,8 @@ if TYPE_CHECKING:
 class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorithm):
     """Parent class for solution algorithms for topology optimization."""
 
+    form_handler: _forms.ControlFormHandler
+
     def __init__(
         self,
         db: database.Database,
@@ -101,7 +103,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             The fenics measure which is used for projecting the topological derivative.
 
         """
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         is_everywhere = False
         subdomain_id_list = []
         for integral in self.form_handler.riesz_scalar_products[0].integrals():

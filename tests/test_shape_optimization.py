@@ -170,15 +170,15 @@ def test_move_mesh(rng):
     deformed_coordinates = np.zeros(initial_coordinates.shape)
     deformed_coordinates[:, 0] = initial_coordinates[:, 0] + offset[0]
     deformed_coordinates[:, 1] = initial_coordinates[:, 1] + offset[1]
-    assert np.alltrue(abs(mesh.coordinates()[:, :] - deformed_coordinates) < 1e-15)
+    assert np.all(abs(mesh.coordinates()[:, :] - deformed_coordinates) < 1e-15)
 
     sop.mesh_handler.revert_transformation()
-    assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
+    assert np.all(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
     trafo.vector().set_local(rng.uniform(-1e3, 1e3, size=trafo.vector().local_size()))
     trafo.vector().apply("")
     sop.mesh_handler.move_mesh(trafo)
-    assert np.alltrue(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
+    assert np.all(abs(mesh.coordinates()[:, :] - initial_coordinates) < 1e-15)
 
 
 def test_shape_derivative_unconstrained(
@@ -767,15 +767,15 @@ def test_save_xdmf_files():
     MPI.barrier(MPI.comm_world)
 
     assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/out/history.txt").is_file()
     assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/xdmf/shape_gradient.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
@@ -1102,6 +1102,7 @@ def test_stepsize2():
 
 def test_global_deformation():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "global_deformation", "True")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

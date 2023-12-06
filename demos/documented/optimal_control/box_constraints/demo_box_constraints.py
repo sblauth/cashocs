@@ -134,7 +134,7 @@ ocp.solve()
 # +
 import numpy as np
 
-assert np.alltrue(u_a.vector()[:] <= u.vector()[:]) and np.alltrue(
+assert np.all(u_a.vector()[:] <= u.vector()[:]) and np.all(
     u.vector()[:] <= u_b.vector()[:]
 )
 # -

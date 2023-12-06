@@ -113,7 +113,7 @@ class _MeshHandler:
         db: database.Database,
         form_handler: _forms.ShapeFormHandler,
         a_priori_tester: mesh_testing.APrioriMeshTester,
-        a_posteriori_tester: mesh_testing.APosterioriMeshTester,
+        a_posteriori_tester: mesh_testing.IntersectionTester,
     ) -> None:
         """Initializes self.
 
@@ -143,6 +143,10 @@ class _MeshHandler:
         # setup from config
         self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
         self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
+
+        self.test_for_intersections = self.config.getboolean(
+            "ShapeGradient", "test_for_intersections"
+        )
 
         self.mesh_quality_tol_lower: float = self.config.getfloat(
             "MeshQuality", "tol_lower"
@@ -298,7 +302,9 @@ class _MeshHandler:
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(
-                transformation, validated_a_priori=True
+                transformation,
+                validated_a_priori=True,
+                test_for_intersections=self.test_for_intersections,
             )
             self.current_mesh_quality = quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
@@ -695,24 +701,27 @@ class _MeshHandler:
             solver: The optimization algorithm.
 
         """
-        pre_log_level = (
-            _loggers._cashocs_logger.level  # pylint: disable=protected-access
-        )
-        _loggers.set_log_level(_loggers.LogLevel.WARNING)
-        mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
-        _loggers.set_log_level(pre_log_level)
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            pre_log_level = (
+                _loggers._cashocs_logger.level  # pylint: disable=protected-access
+            )
+            _loggers.set_log_level(_loggers.LogLevel.WARNING)
+            mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
+            _loggers.set_log_level(pre_log_level)
 
-        deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
-        interpolator = _utils.Interpolator(
-            deformation_space, self.db.function_db.control_spaces[0]
-        )
-        new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
-            interpolator.transfer_matrix
-        )
-        self.db.parameter_db.temp_dict["transfer_matrix"] = new_transfer_matrix.copy()
-        self.db.parameter_db.temp_dict[
-            "old_transfer_matrix"
-        ] = self.db.geometry_db.transfer_matrix.copy()
-        self.db.parameter_db.temp_dict[
-            "deformation_function"
-        ] = solver.line_search.deformation_function.copy(True)
+            deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
+            interpolator = _utils.Interpolator(
+                deformation_space, self.db.function_db.control_spaces[0]
+            )
+            new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
+                interpolator.transfer_matrix
+            )
+            self.db.parameter_db.temp_dict[
+                "transfer_matrix"
+            ] = new_transfer_matrix.copy()
+            self.db.parameter_db.temp_dict[
+                "old_transfer_matrix"
+            ] = self.db.geometry_db.transfer_matrix.copy()
+            self.db.parameter_db.temp_dict[
+                "deformation_function"
+            ] = solver.line_search.deformation_function.copy(True)

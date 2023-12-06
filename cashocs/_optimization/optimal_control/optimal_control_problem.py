@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -87,6 +87,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             ]
         ] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -142,6 +144,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -161,6 +167,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
         )
 
         self.db.function_db.controls = _utils.enlist(controls)
@@ -176,8 +184,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.mesh_parametrization = None
 
-        # riesz_scalar_products
-        self.riesz_scalar_products = self._parse_riesz_scalar_products(
+        self.riesz_scalar_products: List[ufl.Form] = self._parse_riesz_scalar_products(
             riesz_scalar_products
         )
 
@@ -187,7 +194,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             self.control_bcs_list_inhomogeneous = _utils.check_and_enlist_bcs(
                 control_bcs_list
             )
-            self.control_bcs_list = []  # type: ignore
+            self.control_bcs_list = []
             for list_bcs in self.control_bcs_list_inhomogeneous:
                 hom_bcs: List[fenics.DirichletBC] = [
                     fenics.DirichletBC(bc) for bc in list_bcs
@@ -256,6 +263,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 desired_weights=None,
                 control_bcs_list=control_bcs_list,
                 preconditioner_forms=preconditioner_forms,
+                pre_callback=pre_callback,
+                post_callback=post_callback,
             )
 
     def _erase_pde_memory(self) -> None:

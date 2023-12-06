@@ -264,7 +264,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             if not self.damped:
                 self.history_y.appendleft([x.copy(True) for x in self.y_k])
                 self.history_s.appendleft([x.copy(True) for x in self.s_k])
-                if curvature_condition < 1e-4 * gamma:
+                if curvature_condition <= 0.0:
                     self.has_curvature_info = False
                     self.history_s.clear()
                     self.history_y.clear()

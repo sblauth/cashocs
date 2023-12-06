@@ -94,6 +94,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
     ) -> None:
         """Initializes self.
 
@@ -152,6 +154,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
 
         """
         super().__init__(
@@ -169,6 +175,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             temp_dict=temp_dict,
             initial_function_values=initial_function_values,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
         )
 
         if shape_scalar_product is None:
@@ -182,7 +190,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.Function(self.db.function_db.control_spaces[0])
         ]
         self.db.parameter_db.problem_type = "shape"
-        self.db.geometry_db.init_transfer_matrix()
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            self.db.geometry_db.init_transfer_matrix()
 
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh")
@@ -224,12 +233,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             }
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.db.geometry_db.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(
-            self.db.geometry_db.mesh
-        )
+        intersection_tester = mesh_testing.IntersectionTester(self.db.geometry_db.mesh)
         # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
-            self.db, self.form_handler, a_priori_tester, a_posteriori_tester
+            self.db, self.form_handler, a_priori_tester, intersection_tester
         )
 
         self.state_spaces = self.db.function_db.state_spaces
@@ -266,6 +273,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 temp_dict=temp_dict,
                 initial_function_values=self.initial_function_values,
                 preconditioner_forms=preconditioner_forms,
+                pre_callback=pre_callback,
+                post_callback=post_callback,
             )
 
     @__init__.register(CallableFunction)
@@ -280,7 +289,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             mesh_name: The path to the initial mesh file.
 
         """
-        self.mesh_parametrization = mesh_parametrization
+        self.mesh_parametrization: Callable = mesh_parametrization
         self.mesh_name = mesh_name
 
         arguments = self.mesh_parametrization(self.mesh_name)
@@ -340,8 +349,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 
-        self.global_deformation_vector = line_search.global_deformation_vector
-        self.global_deformation_function = line_search.deformation_function
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            self.global_deformation_vector = line_search.global_deformation_vector
+            self.global_deformation_function = line_search.deformation_function
 
         if self.algorithm.casefold() == "gradient_descent":
             solver: optimization_algorithms.OptimizationAlgorithm = (

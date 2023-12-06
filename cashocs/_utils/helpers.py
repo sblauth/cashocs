@@ -20,7 +20,8 @@
 from __future__ import annotations
 
 import configparser
-from typing import cast, List, Optional, TypeVar, Union
+import inspect
+from typing import Any, Callable, cast, List, Optional, TypeVar, Union
 
 import fenics
 
@@ -187,3 +188,26 @@ def create_function_list(
     ]
 
     return function_list
+
+
+def check_file_extension(file: str, required_extension: str) -> None:
+    """Checks whether a given file extension is correct."""
+    if not file.rsplit(".", 1)[-1] == required_extension:
+        raise _exceptions.CashocsException(
+            f"Cannot use {file} due to wrong format.",
+        )
+
+
+def number_of_arguments(function: Callable[..., Any]) -> int:
+    """Computes the number of arguments that a function has.
+
+    Args:
+        function: The function which is checked for its number of arguments.
+
+    Returns:
+        The number of arguments that the input function has.
+
+    """
+    sig = inspect.signature(function)
+
+    return len(sig.parameters)

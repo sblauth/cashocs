@@ -377,7 +377,9 @@ def solve_linear_problem(
         raise _exceptions.PETScKSPError(ksp.getConvergedReason())
 
     if hasattr(PETSc, "garbage_cleanup"):
+        ksp.destroy()
         PETSc.garbage_cleanup(comm=comm)
+        PETSc.garbage_cleanup()
 
     if fun is not None:
         fun.vector().apply("")

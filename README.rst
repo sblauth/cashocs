@@ -40,8 +40,8 @@
 
 |
 
-cashocs is a computational adjoint-based shape optimization and optimal control
-software for python.
+cashocs is a finite element software for the automated solution of shape optimization and optimal control problems. It is used to solve problems in fluid dynamics and multiphysics contexts. Its name is an acronym for computational adjoint-based shape optimization and optimal control software and the software is written in Python.
+
 
 .. contents:: :local:
 
@@ -52,6 +52,8 @@ cashocs is based on the finite element package `FEniCS
 <https://fenicsproject.org>`__ and uses its high-level unified form language UFL
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
+
+For some applications and further information about cashocs, we also refer to the website `Fluid Dynamical Shape Optimization with cashocs <https://www.itwm.fraunhofer.de/en/departments/tv/products-and-services/shape-optimization-cashocs-software.html>`_.
 
 .. readme_start_disclaimer
 
@@ -70,7 +72,7 @@ we can recommend the textbooks
     - `Amstutz - An Introduction to the Topological Derivative <https://doi.org/10.1108/EC-07-2021-0433>`_
 - FEniCS
     - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
-    - `The FEniCS demos <https://fenicsproject.org/docs/dolfin/latest/python/demos.html>`_
+    - `The FEniCS demos <https://fenicsproject.org/olddocs/dolfin/2019.1.0/python/demos.html>`_
 
 .. readme_end_disclaimer
 
@@ -200,7 +202,7 @@ for the demo programs is located inside the "demos" folder.
 Citing
 ======
 
-If you use cashocs for your research, I would be grateful if you would cite the following paper
+If you use cashocs for your research, please cite the following paper
 
 .. code-block:: text
 
@@ -208,6 +210,15 @@ If you use cashocs for your research, I would be grateful if you would cite the 
 	Sebastian Blauth
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
+
+as well as the preprint
+
+.. code-block:: text
+
+	Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
+	Sebastian Blauth
+	https://doi.org/10.48550/arXiv.2306.09828
+
 
 Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper
 	
@@ -218,21 +229,23 @@ Additionally, if you are using the nonlinear conjugate gradient methods for shap
 	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
 	https://doi.org/10.1137/20M1367738
 
-If you are using the space mapping methods for shape optimization, please cite the preprint
+If you are using the space mapping methods for shape optimization, please cite the paper
 
 .. code-block:: text
 
 	Space Mapping for PDE Constrained Shape Optimization
 	Sebastian Blauth
-	https://doi.org/10.48550/arXiv.2208.05747
+	SIAM Journal on Optimization, Volume 33, Issue 3, 2023
+	https://doi.org/10.1137/22M1515665
 
-and if you are using the topology optimization methods implemented in cashocs, please cite the preprint
+and if you are using the topology optimization methods implemented in cashocs, please cite the paper
 
 .. code-block:: text
 
 	Quasi-Newton Methods for Topology Optimization Using a Level-Set Method
 	Sebastian Blauth and Kevin Sturm
-	https://doi.org/10.48550/arXiv.2303.15070
+	Structural and Multidisciplinary Optimization, Volume 66, 2023
+	https://doi.org/10.1007/s00158-023-03653-2
 
 	
 If you are using BibTeX, you can use the following entries
@@ -251,41 +264,66 @@ If you are using BibTeX, you can use the following entries
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
 	}
 
+.. code-block:: bibtex
+
+	@Misc{Blauth2023Version,
+	  author        = {Sebastian Blauth},
+	  title         = {{Version 2.0 -- cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
+	  year          = {2023},
+	  archiveprefix = {arXiv},
+	  eprint        = {2306.09828},
+	  primaryclass  = {math.OC},
+	}
+
 
 .. code-block:: bibtex
 
 	@Article{Blauth2021Nonlinear,
-		author   = {Sebastian Blauth},
-		journal  = {SIAM J. Optim.},
-		title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
-		year     = {2021},
-		number   = {3},
-		pages    = {1658--1689},
-		volume   = {31},
-		doi      = {10.1137/20M1367738},
-		fjournal = {SIAM Journal on Optimization},
+	  author   = {Sebastian Blauth},
+	  journal  = {SIAM J. Optim.},
+	  title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
+	  year     = {2021},
+	  number   = {3},
+	  pages    = {1658--1689},
+	  volume   = {31},
+	  doi      = {10.1137/20M1367738},
+	  fjournal = {SIAM Journal on Optimization},
 	}
 
 
 .. code-block:: bibtex
 
-	@article{Blauth2022Space,
-		author    = {Sebastian Blauth},
-		publisher = {arXiv},
-		title     = {{Space Mapping for PDE Constrained Shape Optimization}},
-		year      = {2022},
-		doi       = {10.48550/ARXIV.2208.05747},
+	@Article{Blauth2023Space,
+	  author   = {Blauth, Sebastian},
+	  journal  = {SIAM J. Optim.},
+	  title    = {Space {M}apping for {PDE} {C}onstrained {S}hape {O}ptimization},
+	  year     = {2023},
+	  issn     = {1052-6234,1095-7189},
+	  number   = {3},
+	  pages    = {1707--1733},
+	  volume   = {33},
+	  doi      = {10.1137/22M1515665},
+	  fjournal = {SIAM Journal on Optimization},
+	  mrclass  = {49Q10 (35Q93 49M41 65K05)},
+	  mrnumber = {4622415},
 	}
 
 
 .. code-block:: bibtex
 
-	@article{Blauth2023Quasi,
-		author        = {Sebastian Blauth and Kevin Sturm},
-		title         = {{Quasi-Newton Methods for Topology Optimization Using a Level-Set Method}},
-		year          = {2023},
-		publisher     = {arXiv},
-		doi           = {10.48550/arXiv.2303.15070},
+	@Article{Blauth2023Quasi,
+	  author   = {Blauth, Sebastian and Sturm, Kevin},
+	  journal  = {Struct. Multidiscip. Optim.},
+	  title    = {Quasi-{N}ewton methods for topology optimization using a level-set method},
+	  year     = {2023},
+	  issn     = {1615-147X,1615-1488},
+	  number   = {9},
+	  pages    = {203},
+	  volume   = {66},
+	  doi      = {10.1007/s00158-023-03653-2},
+	  fjournal = {Structural and Multidisciplinary Optimization},
+	  mrclass  = {99-06},
+	  mrnumber = {4635978},
 	}
 
 .. readme_end_citing

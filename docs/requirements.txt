@@ -1,14 +1,16 @@
-Sphinx==6.2.1
+Sphinx==7.2.6
 sphinx-argparse==0.4.0
 sphinx-copybutton==0.5.2
 meshio==5.3.4
-docutils==0.19
-pydata-sphinx-theme==0.13.3
-sphinx-design==0.4.1
+docutils==0.20.1
+pydata-sphinx-theme==0.14.4
+sphinx-design==0.5.0
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
 typing_extensions
-myst-parser==1.0.0
-jupytext==1.14.5
+myst-parser==2.0.0
+jupytext==1.16.0
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
 sphinx-favicon==1.0.1
+matplotlib
+pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability

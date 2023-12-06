@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import cast, List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -39,6 +39,8 @@ class ControlVariableAbstractions(
 ):
     """Abstractions for optimization variables in the case of optimal control."""
 
+    form_handler: _forms.ControlFormHandler
+
     def __init__(
         self,
         optimization_problem: optimal_control.OptimalControlProblem,
@@ -56,7 +58,6 @@ class ControlVariableAbstractions(
         super().__init__(optimization_problem, db)
 
         self.box_constraints = box_constraints
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
 
         self.control_temp = _utils.create_function_list(
             self.db.function_db.control_spaces
