@@ -47,7 +47,7 @@ dependencies = [
 	"numpy",
     "scipy",
 	"typing_extensions",
-    "matplotlib",
+        "matplotlib",
 ]
 
 [project.urls]
