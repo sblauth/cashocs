@@ -81,11 +81,10 @@ class OutputManager:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
             self.managers.append(managers.XDMFFileManager(self.db, self.result_dir))
-        self.output_dict = {}
-        if save_results:
-            result_manager = managers.ResultManager(self.db, self.result_dir)
-            self.output_dict = result_manager.output_dict
-            self.managers.append(result_manager)
+
+        result_manager = managers.ResultManager(self.db, self.result_dir)
+        self.output_dict = result_manager.output_dict
+        self.managers.append(result_manager)
 
         self.managers.append(managers.MeshManager(self.db, self.result_dir))
         self.managers.append(managers.TempFileManager(self.db, self.result_dir))
