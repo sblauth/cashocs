@@ -242,6 +242,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
             self.db, self.form_handler, a_priori_tester, intersection_tester
         )
+        self._change_except_hook()
 
         self.state_spaces = self.db.function_db.state_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
@@ -451,8 +452,24 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.solver = self._setup_solver()
 
-        self.solver.run()
+        try:
+            self.solver.run()
+        finally:
+            self._clear_remesh_directory()
         self.solver.post_processing()
+
+    def _clear_remesh_directory(self) -> None:
+        _loggers.debug(
+            "An exception was raised, " "deleting the created temporary files."
+        )
+        if (
+            not self.config.getboolean("Debug", "remeshing")
+            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+        ):
+            subprocess.run(  # nosec B603, B607
+                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
+            )
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _change_except_hook(self) -> None:
         """Ensures that temporary files are deleted when an exception occurs.
