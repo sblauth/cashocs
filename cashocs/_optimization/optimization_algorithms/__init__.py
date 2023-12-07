@@ -17,7 +17,7 @@
 
 """Optimization algorithms for PDE constrained optimization."""
 
-from cashocs._optimization.optimization_algorithms.feasible_gradient_descent import (
+from cashocs._optimization.optimization_algorithms.projected_gradient_descent import (
     ProjectedGradientDescent,
 )
 from cashocs._optimization.optimization_algorithms.gradient_descent import (

@@ -84,16 +84,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             self.active_idx = self.constraint_manager.compute_active_set(
                 self.coords_sequential
             )
-
-            no_active_constraints_local = sum(self.active_idx)
-            no_active_constraints_global = self.constraint_manager.comm.allreduce(
-                no_active_constraints_local, op=MPI.SUM
-            )
-            if self.constraint_manager.comm.rank == 0:
-                print(
-                    f"No. active constraints: {no_active_constraints_global}",
-                    flush=True,
-                )
+            self._compute_number_of_active_constraints(self.active_idx)
 
             self.compute_gradient()
             self.gradient_norm = self.compute_gradient_norm()
@@ -102,8 +93,8 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 break
 
             self.evaluate_cost_functional()
-
             self.compute_search_direction()
+
             self.line_search.perform(
                 self,
                 self.search_direction,
@@ -133,8 +124,6 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
                 self.search_direction[i].vector().apply("")
 
-    # ToDo: Ensure that Dirichlet boundary constraints are applied correctly for
-    #  the deformation
     def _compute_projected_gradient(
         self, active_idx: np.ndarray, constraint_gradient: sparse.csr_matrix
     ) -> tuple[fenics.Function, bool, np.ndarray]:
@@ -174,6 +163,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             self.form_handler.apply_shape_bcs(p_dof)
 
             lambd_padded = np.zeros(no_constraints)
+
             lambd_padded[active_idx] = lambd
             lambd_ineq = lambd_padded[self.constraint_manager.inequality_mask]
 
@@ -284,3 +274,27 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
     def _compute_active_constraints(self) -> None:
         pass
+
+    def _compute_number_of_active_constraints(self, active_idx: np.ndarray) -> None:
+        no_active_equality_constraints_local = sum(
+            active_idx[~self.constraint_manager.inequality_mask]
+        )
+        no_active_inequality_constraints_local = sum(
+            active_idx[self.constraint_manager.inequality_mask]
+        )
+
+        no_active_equality_constraints_global = self.constraint_manager.comm.allreduce(
+            no_active_equality_constraints_local, op=MPI.SUM
+        )
+        no_active_inequality_constraints_global = (
+            self.constraint_manager.comm.allreduce(
+                no_active_inequality_constraints_local, op=MPI.SUM
+            )
+        )
+        if self.constraint_manager.comm.rank == 0:
+            print(
+                f"Info: {no_active_equality_constraints_global} equality "
+                f"and {no_active_inequality_constraints_global} inequality constraints "
+                "are currently active.",
+                flush=True,
+            )

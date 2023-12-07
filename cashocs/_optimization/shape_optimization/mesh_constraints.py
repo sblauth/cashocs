@@ -731,6 +731,10 @@ class MeshConstraint(abc.ABC):
             d2v[: loc1 - loc0]
         ]
 
+        self.ghost_offset = self.mesh.topology().ghost_offset(
+            self.mesh.topology().dim()
+        )
+
         self.no_constraints = 0
         self.is_necessary: np.ndarray = np.array([False])
 
@@ -1138,7 +1142,7 @@ class TriangleAngleConstraint(MeshConstraint):
 
         self.cells = self.mesh.cells()
 
-        self.no_constraints = 3 * len(self.cells)
+        self.no_constraints = 3 * self.ghost_offset
         self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
@@ -1162,6 +1166,7 @@ class TriangleAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.triangle_angles(self.mesh)
+        values = values[: 3 * self.ghost_offset]
         values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
@@ -1184,6 +1189,9 @@ class TriangleAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         rows, cols, vals = mesh_quality.triangle_angle_gradient(self.mesh)
+        rows = rows[: 18 * self.ghost_offset]
+        cols = cols[: 18 * self.ghost_offset]
+        vals = vals[: 18 * self.ghost_offset]
 
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -1192,7 +1200,7 @@ class TriangleAngleConstraint(MeshConstraint):
         cols = self.l2g_dofs[cols_local]
 
         csr = rows, cols, vals
-        shape = (int(3 * len(self.cells)), self.no_vertices * self.dim)
+        shape = (int(3 * self.ghost_offset), self.no_vertices * self.dim)
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
@@ -1206,6 +1214,8 @@ class TriangleAngleConstraint(MeshConstraint):
         )
 
         initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 3)
+        initial_angles = initial_angles[: self.ghost_offset]
+
         minimum_initial_angles = np.min(initial_angles, axis=1)
         cellwise_minimum_angle = (
             feasible_angle_reduction_factor * minimum_initial_angles
@@ -1253,7 +1263,7 @@ class DihedralAngleConstraint(MeshConstraint):
         self.min_angle = self._compute_minimum_angle()
         self.cells = self.mesh.cells()
 
-        self.no_constraints = 6 * len(self.cells)
+        self.no_constraints = 6 * self.ghost_offset
         self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
@@ -1277,6 +1287,7 @@ class DihedralAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.tetrahedron_angles(self.mesh)
+        values = values[: 6 * self.ghost_offset]
         values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
@@ -1299,6 +1310,9 @@ class DihedralAngleConstraint(MeshConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         rows, cols, vals = mesh_quality.tetrahedron_angle_gradient(self.mesh)
+        rows = rows[: 72 * self.ghost_offset]
+        cols = cols[: 72 * self.ghost_offset]
+        vals = vals[: 72 * self.ghost_offset]
 
         self.mesh.coordinates()[:, :] = old_coords
         self.mesh.bounding_box_tree().build(self.mesh)
@@ -1307,7 +1321,7 @@ class DihedralAngleConstraint(MeshConstraint):
         cols = self.l2g_dofs[cols_local]
 
         csr = rows, cols, vals
-        shape = (int(6 * len(self.cells)), self.no_vertices * self.dim)
+        shape = (int(6 * self.ghost_offset), self.no_vertices * self.dim)
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
@@ -1320,6 +1334,8 @@ class DihedralAngleConstraint(MeshConstraint):
             "MeshQualityConstraints", "feasible_angle_reduction_factor"
         )
         initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(-1, 6)
+        initial_angles = initial_angles[: self.ghost_offset]
+
         minimum_initial_angles = np.min(initial_angles, axis=1)
         cellwise_minimum_angle = (
             feasible_angle_reduction_factor * minimum_initial_angles
