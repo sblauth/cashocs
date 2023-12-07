@@ -26,6 +26,7 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
@@ -154,9 +155,17 @@ class LineSearch(abc.ABC):
         )
 
         if has_curvature_info:
+            _loggers.debug(
+                "Stepsize computation has curvature information. "
+                "Setting trial stepsize to 1.0."
+            )
             self.stepsize = 1.0
 
         if solver.is_restarted:
+            _loggers.debug(
+                "Solver has been restarted. "
+                "Using initial_stepsize from config as trial stepsize."
+            )
             self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
 
         num_decreases = (
@@ -164,6 +173,11 @@ class LineSearch(abc.ABC):
                 search_direction, self.stepsize
             )
         )
+        if num_decreases > 0:
+            _loggers.debug(
+                "Stepsize is too large for the angle_change parameter in "
+                "section MeshQuality. Making the step smaller to be feasible."
+            )
         self.stepsize /= pow(self.beta_armijo, num_decreases)
 
         if self.safeguard_stepsize and solver.iteration == 0:
@@ -172,6 +186,9 @@ class LineSearch(abc.ABC):
             )
             self.stepsize = float(
                 np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
+            )
+            _loggers.debug(
+                "Performed a safeguarding of the stepsize to avoid too large steps."
             )
 
     @abc.abstractmethod

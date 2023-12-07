@@ -123,6 +123,7 @@ class ArmijoLineSearch(line_search.LineSearch):
                     search_direction, self.stepsize, self.beta_armijo
                 )
             )
+            _loggers.debug(f"Using {self.stepsize:.3e} as trial stepsize")
 
             current_function_value = solver.objective_value
             objective_step = self._compute_objective_at_new_iterate(
@@ -134,7 +135,13 @@ class ArmijoLineSearch(line_search.LineSearch):
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
+                _loggers.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():
+                    _loggers.debug(
+                        "The mesh quality was sufficient for accepting the step, "
+                        "but the mesh cannot be used anymore for computing a gradient."
+                        "Performing a remeshing operation."
+                    )
                     is_remeshed = (
                         self.optimization_variable_abstractions.mesh_handler.remesh(
                             solver
@@ -147,6 +154,9 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
+                _loggers.debug(
+                    "Stepsize does not satisfy the Armijo decrease condition."
+                )
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
