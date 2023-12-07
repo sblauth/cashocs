@@ -51,7 +51,7 @@ jobs:
     - name: Get tag name
       id: tag_name
       run: |
-        echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+        echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
 
     - name: Check if release is a pre-release
@@ -73,6 +73,8 @@ jobs:
   build_and_publish:
     name: Build and publish python package
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs:
       - run_tests
 
@@ -93,6 +95,3 @@ jobs:
 
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
