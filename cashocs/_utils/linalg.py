@@ -25,7 +25,11 @@ from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from petsc4py import PETSc
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs._utils import forms as forms_module

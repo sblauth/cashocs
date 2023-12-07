@@ -24,8 +24,11 @@ from typing import Callable, cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    from ufl_legacy import algorithms as ufl_algorithms
+except ImportError:
+    from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -158,10 +161,10 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             )
         except (AssertionError, ValueError):
             estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
+                ufl_algorithms.estimate_total_polynomial_degree(
                     self.form_handler.riesz_scalar_products[0]
                 ),
-                ufl.algorithms.estimate_total_polynomial_degree(rhs),
+                ufl_algorithms.estimate_total_polynomial_degree(rhs),
             )
             self.assembler = fenics.SystemAssembler(
                 modified_scalar_product[0],

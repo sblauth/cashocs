@@ -28,8 +28,11 @@ from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Uni
 import dolfin.function.argument
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _forms
