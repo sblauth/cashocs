@@ -27,7 +27,11 @@ from mpi4py import MPI
 import numpy as np
 from petsc4py import PETSc
 from scipy import sparse
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs._utils import forms as forms_module

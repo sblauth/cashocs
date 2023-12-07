@@ -25,7 +25,11 @@ from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     import fenics
-    import ufl
+
+    try:
+        import ufl_legacy as ufl
+    except ImportError:
+        import ufl
 
     from cashocs import _typing
 

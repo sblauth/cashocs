@@ -24,7 +24,6 @@ from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-import ufl.core.expr
 
 from cashocs import _loggers
 from cashocs import _utils
@@ -32,6 +31,11 @@ from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    try:
+        from ufl_legacy.core import expr as ufl_expr
+    except ImportError:
+        from ufl.core import expr as ufl_expr
+
     from cashocs import _typing
     from cashocs._constraints import constrained_problems
 
@@ -180,7 +184,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
     def _project_pointwise_multiplier(
         self,
-        project_terms: Union[ufl.core.expr.Expr, List[ufl.core.expr.Expr]],
+        project_terms: Union[ufl_expr.Expr, List[ufl_expr.Expr]],
         measure: fenics.Measure,
         multiplier: fenics.Function,
         A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name

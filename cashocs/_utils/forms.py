@@ -22,7 +22,11 @@ from __future__ import annotations
 from typing import Any, List, Optional, Tuple, TypeVar, Union
 
 import fenics
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _loggers
