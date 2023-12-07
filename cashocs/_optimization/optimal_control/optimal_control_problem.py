@@ -23,7 +23,11 @@ from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _forms

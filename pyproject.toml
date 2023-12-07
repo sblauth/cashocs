@@ -130,6 +130,7 @@ warn_unused_ignores = true
 module = [
 	"fenics.*",
 	"ufl.*",
+    "ufl_legacy.*",
 	"dolfin.*",
 	"petsc4py",
     "mpi4py.*",

@@ -30,7 +30,10 @@ from cashocs._database import parameter_database
 from cashocs._optimization.optimization_algorithms import callback as cb
 
 if TYPE_CHECKING:
-    import ufl
+    try:
+        import ufl_legacy as ufl
+    except ImportError:
+        import ufl
 
     from cashocs import _typing
     from cashocs import io

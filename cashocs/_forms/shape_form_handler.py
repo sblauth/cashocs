@@ -24,8 +24,13 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    from ufl import algorithms as ufl_algorithms
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+    from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -35,7 +40,10 @@ from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
 
 if TYPE_CHECKING:
-    import ufl.core.expr
+    try:
+        from ufl_legacy.core import expr as ufl_expr
+    except ImportError:
+        from ufl.core import expr as ufl_expr
 
     from cashocs import _typing
     from cashocs import io
@@ -309,7 +317,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.fixed_indices = list(itertools.chain(*unpack_list))
 
         self.state_adjoint_ids: List[int] = []
-        self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
+        self.material_derivative_coeffs: List[ufl_expr.Expr] = []
 
         # Calculate the necessary UFL forms
         self.shape_derivative = self._compute_shape_derivative()
@@ -400,8 +408,8 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         """
         estimated_degree = np.maximum(
-            ufl.algorithms.estimate_total_polynomial_degree(modified_scalar_product),
-            ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
+            ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
+            ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
         )
         assembler = fenics.SystemAssembler(
             modified_scalar_product,
@@ -414,7 +422,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         return assembler
 
-    def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
+    def _check_coefficient_id(self, coeff: ufl_expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
 
         Args:
@@ -462,7 +470,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
 
-                material_derivative = ufl.algorithms.expand_derivatives(
+                material_derivative = ufl_algorithms.expand_derivatives(
                     material_derivative
                 )
 
@@ -563,7 +571,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.volumes.vector().vec().set(1.0)
                 self.volumes.vector().apply("")
 
-            def eps(u: fenics.Function) -> ufl.core.expr.Expr:
+            def eps(u: fenics.Function) -> ufl_expr.Expr:
                 """Computes the symmetric gradient of a vector field ``u``.
 
                 Args:

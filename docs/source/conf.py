@@ -75,6 +75,7 @@ autodoc_mock_imports = [
     "petsc4py",
     "mpi4py",
     "ufl",
+    "ufl_legacy",
     "meshio",
     "dolfin",
     "configparser",

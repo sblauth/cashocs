@@ -22,7 +22,11 @@ from __future__ import annotations
 from typing import List, Tuple, Union
 
 import fenics
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _utils
 from cashocs._database import database
