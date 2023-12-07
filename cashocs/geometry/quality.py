@@ -295,7 +295,9 @@ class SkewnessCalculator(MeshQualityCalculator):
 
         """
         comm = mesh.mpi_comm()
-        skewness_array = self._quality_object.skewness(mesh).array()
+
+        ghost_offset = mesh.topology().ghost_offset(mesh.topology().dim())
+        skewness_array = self._quality_object.skewness(mesh).array()[:ghost_offset]
         skewness_list: np.ndarray = comm.gather(skewness_array, root=0)
         if comm.rank == 0:
             skewness_list = np.concatenate(skewness_list, axis=None)
@@ -330,7 +332,10 @@ class MaximumAngleCalculator(MeshQualityCalculator):
 
         """
         comm = mesh.mpi_comm()
-        maximum_angle_array = self._quality_object.maximum_angle(mesh).array()
+        ghost_offset = mesh.topology().ghost_offset(mesh.topology().dim())
+        maximum_angle_array = self._quality_object.maximum_angle(mesh).array()[
+            :ghost_offset
+        ]
         maximum_angle_list: np.ndarray = comm.gather(maximum_angle_array, root=0)
         if comm.rank == 0:
             maximum_angle_list = np.concatenate(maximum_angle_list, axis=None)
@@ -362,7 +367,10 @@ class RadiusRatiosCalculator(MeshQualityCalculator):
 
         """
         comm = mesh.mpi_comm()
-        radius_ratios_array = fenics.MeshQuality.radius_ratios(mesh).array()
+        ghost_offset = mesh.topology().ghost_offset(mesh.topology().dim())
+        radius_ratios_array = fenics.MeshQuality.radius_ratios(mesh).array()[
+            :ghost_offset
+        ]
         radius_ratios_list: np.ndarray = comm.gather(radius_ratios_array, root=0)
         if comm.rank == 0:
             radius_ratios_list = np.concatenate(radius_ratios_list, axis=None)

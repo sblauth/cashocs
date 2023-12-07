@@ -71,6 +71,7 @@ autodoc_default_options = {
 autodoc_member_order = "alphabetical"
 autodoc_mock_imports = [
     "fenics",
+    "numpy",
     "petsc4py",
     "mpi4py",
     "ufl",

@@ -46,7 +46,7 @@ dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
 	"typing_extensions",
-    "matplotlib",
+        "matplotlib",
 ]
 
 [project.urls]
