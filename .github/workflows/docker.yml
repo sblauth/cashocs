@@ -23,9 +23,9 @@ jobs:
         run: |
           if [[ ${GITHUB_REF#refs/tags/} == v* ]]
           then
-            echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+            echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=TAG_PREFIX::latest"
+            echo "TAG_PREFIX=latest" >> $GITHUB_OUTPUT
           fi
 
       - name: Log into the Dockerhub registry

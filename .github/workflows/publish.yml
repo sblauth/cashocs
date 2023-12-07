@@ -51,7 +51,7 @@ jobs:
     - name: Get tag name
       id: tag_name
       run: |
-        echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+        echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
 
     - name: Check if release is a pre-release
