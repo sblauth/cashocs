@@ -567,9 +567,14 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.volumes.vector().vec().scale(1 / vol_max)
                 self.volumes.vector().apply("")
 
+                self.inhomogeneous_exponent = fenics.Constant(
+                    self.config.getfloat("ShapeGradient", "inhomogeneous_exponent")
+                )
             else:
                 self.volumes.vector().vec().set(1.0)
                 self.volumes.vector().apply("")
+
+                self.inhomogeneous_exponent = fenics.Constant(1.0)
 
             def eps(u: fenics.Function) -> ufl_expr.Expr:
                 """Computes the symmetric gradient of a vector field ``u``.
@@ -589,16 +594,16 @@ class ShapeFormHandler(form_handler.FormHandler):
             riesz_scalar_product = (
                 fenics.Constant(2)
                 * self.mu_lame
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.inner(eps(trial), eps(test))
                 * self.dx
                 + fenics.Constant(lambda_lame)
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.div(trial)
                 * fenics.div(test)
                 * self.dx
                 + fenics.Constant(damping_factor)
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.inner(trial, test)
                 * self.dx
             )

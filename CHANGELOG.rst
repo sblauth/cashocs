@@ -32,6 +32,10 @@ of the maintenance releases, please take a look at
 
     * :ini:`fail_if_not_converged` determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.
 
+  * Section ShapeGradient
+
+    * :ini:`inhomogeneous_exponent` is a float, which specifies an exponent for the inhomogeneous mesh stiffness
+
   * Section MeshQuality
 
     * :ini:`remesh_iter` is used to perform a remeshing after a certain amount of iterations.
