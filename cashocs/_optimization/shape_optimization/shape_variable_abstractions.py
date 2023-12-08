@@ -214,117 +214,6 @@ class ShapeVariableAbstractions(
 
         return stepsize
 
-    def project_to_working_set(
-        self,
-        coords_dof: np.ndarray,
-        search_direction_dof: np.ndarray,
-        stepsize: float,
-        active_idx: np.ndarray,
-        constraint_gradient: sparse.csr_matrix,
-    ) -> np.ndarray | None:
-        """Projects an (attempted) step back to the working set of active constraints.
-
-        The step is of the form: `coords_dof + stepsize * search_direction_dof`, the
-        working set is defined by `active_idx` and the gradient of (all) constraints is
-        given in `constraint_gradient`.
-
-        Args:
-            coords_dof: The current coordinates, ordered in a dof-based way.
-            search_direction_dof: The search direction, given also in a dof-based way.
-            stepsize: The trial size of the step.
-            active_idx: A boolean mask used to identify the constraints that are
-                currently in the working set.
-            constraint_gradient: The sparse matrix containing (all) gradients of the
-                constraints.
-
-        Returns:
-            The projected step (if the projection was successful) or `None` otherwise.
-
-        """
-        comm = self.mesh_handler.mesh.mpi_comm()
-
-        y_j: np.ndarray = coords_dof + stepsize * search_direction_dof
-        # pylint: disable=invalid-name
-        A = self.constraint_manager.compute_active_gradient(
-            active_idx, constraint_gradient
-        )
-        AT = A.copy().transpose()  # pylint: disable=invalid-name
-        B = A.matMult(AT)  # pylint: disable=invalid-name
-
-        # if self.mode == "complete":
-        #    S = self.form_handler.scalar_product_matrix[  # pylint: disable=invalid-name
-        #        :, :
-        #    ]
-        #    S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
-
-        for _ in range(10):
-            satisfies_previous_constraints_local = np.all(
-                self.constraint_manager.compute_active_set(
-                    y_j[self.constraint_manager.v2d]
-                )[active_idx]
-            )
-            satisfies_previous_constraints = comm.allgather(
-                satisfies_previous_constraints_local
-            )
-            satisfies_previous_constraints = np.all(satisfies_previous_constraints)
-
-            if not satisfies_previous_constraints:
-                h = self.constraint_manager.evaluate_active(
-                    y_j[self.constraint_manager.v2d], active_idx
-                )
-
-                # if self.mode == "complete":
-                #     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
-                #     y_j = y_j - S_inv @ A.T @ lambd
-                # else:
-                ksp = PETSc.KSP().create(comm=self.constraint_manager.mesh.mpi_comm())
-
-                options: dict[str, int | float | str | None] = {
-                    "ksp_type": "cg",
-                    "ksp_max_it": 1000,
-                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
-                    "ksp_atol": 1e-30,
-                    "pc_type": "hypre",
-                    "pc_hypre_type": "boomeramg",
-                    # "ksp_monitor_true_residual": None,
-                }
-
-                ksp.setOperators(B)
-                _utils.setup_petsc_options([ksp], [options])
-
-                lambd = B.createVecRight()
-                h_petsc = B.createVecLeft()
-                # ToDo: Is this correct? No!
-                # h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
-                h_petsc.array_w = h
-                h_petsc.assemble()
-
-                ksp.solve(h_petsc, lambd)
-
-                if ksp.getConvergedReason() < 0:
-                    raise _exceptions.NotConvergedError(
-                        "Gradient projection", "The gradient projection failed."
-                    )
-
-                y_petsc = AT.createVecLeft()
-                AT.mult(lambd, y_petsc)
-
-                update = fenics.Function(self.db.function_db.control_spaces[0])
-                update.vector().vec().aypx(0.0, y_petsc)
-                update.vector().apply("")
-
-                update_vertex = self.mesh_handler.deformation_handler.dof_to_coordinate(
-                    update
-                )
-                update_dof = update_vertex.reshape(-1)[self.constraint_manager.d2v]
-                y_j = y_j - update_dof
-
-            else:
-                return y_j
-
-        _loggers.debug(f"Back-Projection failed.")
-        return None
-
     def compute_step(
         self,
         coords_dof: np.ndarray,
@@ -377,6 +266,7 @@ class ShapeVariableAbstractions(
 
         while True:
             self.constraint_manager.comm.barrier()
+            _loggers.debug(f"Doing a trial step with the stepsize {stepsize:.3e}")
             trial_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,
@@ -388,11 +278,19 @@ class ShapeVariableAbstractions(
             if trial_step is None:
                 stepsize /= 2.0
             else:
+                _loggers.debug(
+                    f"Found a stepsize which is feasible for the "
+                    f"currently active constraints in the working set."
+                )
                 break
 
         if not np.all(
             self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
         ):
+            _loggers.debug(
+                f"The step violates some new constraints. "
+                f"Computing the maximum stepsize until the a new constraint is active."
+            )
             feasible_stepsize_local = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
@@ -418,6 +316,124 @@ class ShapeVariableAbstractions(
             return feasible_step, feasible_stepsize
         else:
             return trial_step, stepsize
+
+    def project_to_working_set(
+        self,
+        coords_dof: np.ndarray,
+        search_direction_dof: np.ndarray,
+        stepsize: float,
+        active_idx: np.ndarray,
+        constraint_gradient: sparse.csr_matrix,
+    ) -> np.ndarray | None:
+        """Projects an (attempted) step back to the working set of active constraints.
+
+        The step is of the form: `coords_dof + stepsize * search_direction_dof`, the
+        working set is defined by `active_idx` and the gradient of (all) constraints is
+        given in `constraint_gradient`.
+
+        Args:
+            coords_dof: The current coordinates, ordered in a dof-based way.
+            search_direction_dof: The search direction, given also in a dof-based way.
+            stepsize: The trial size of the step.
+            active_idx: A boolean mask used to identify the constraints that are
+                currently in the working set.
+            constraint_gradient: The sparse matrix containing (all) gradients of the
+                constraints.
+
+        Returns:
+            The projected step (if the projection was successful) or `None` otherwise.
+
+        """
+        comm = self.mesh_handler.mesh.mpi_comm()
+
+        y_j: np.ndarray = coords_dof + stepsize * search_direction_dof
+        # pylint: disable=invalid-name
+        A = self.constraint_manager.compute_active_gradient(
+            active_idx, constraint_gradient
+        )
+        AT = A.copy().transpose()  # pylint: disable=invalid-name
+        B = A.matMult(AT)  # pylint: disable=invalid-name
+
+        # if self.mode == "complete":
+        #    S = self.form_handler.scalar_product_matrix[  # pylint: disable=invalid-name
+        #        :, :
+        #    ]
+        #    S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
+
+        for iter in range(10):
+            trial_active_idx = self.constraint_manager.compute_active_set(
+                y_j[self.constraint_manager.v2d]
+            )[active_idx]
+            satisfies_previous_constraints_local = np.all(trial_active_idx)
+            satisfies_previous_constraints = comm.allgather(
+                satisfies_previous_constraints_local
+            )
+            satisfies_previous_constraints = np.all(satisfies_previous_constraints)
+
+            h = self.constraint_manager.evaluate_active(
+                y_j[self.constraint_manager.v2d], active_idx
+            )
+            residual = comm.allreduce(np.max(np.abs(h)), op=MPI.MAX)
+            _loggers.debug(
+                "Projection to the working set. "
+                f"Iteration: {iter}  Residual: {residual:.3e}"
+            )
+
+            if not satisfies_previous_constraints:
+                # if self.mode == "complete":
+                #     lambd = np.linalg.solve(A @ S_inv @ A.T, h)
+                #     y_j = y_j - S_inv @ A.T @ lambd
+                # else:
+                ksp = PETSc.KSP().create(comm=self.constraint_manager.mesh.mpi_comm())
+
+                options: dict[str, int | float | str | None] = {
+                    "ksp_type": "cg",
+                    "ksp_max_it": 1000,
+                    "ksp_rtol": self.constraint_manager.constraint_tolerance / 1e2,
+                    "ksp_atol": 1e-30,
+                    "pc_type": "hypre",
+                    "pc_hypre_type": "boomeramg",
+                    # "ksp_monitor_true_residual": None,
+                }
+
+                ksp.setOperators(B)
+                _utils.setup_petsc_options([ksp], [options])
+
+                lambd = B.createVecRight()
+                h_petsc = B.createVecLeft()
+                # ToDo: Is this correct? No!
+                # h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
+                h_petsc.array_w = h
+                h_petsc.assemble()
+
+                ksp.solve(h_petsc, lambd)
+
+                if ksp.getConvergedReason() < 0:
+                    raise _exceptions.NotConvergedError(
+                        "Gradient projection", "The gradient projection failed."
+                    )
+
+                y_petsc = AT.createVecLeft()
+                AT.mult(lambd, y_petsc)
+
+                update = fenics.Function(self.db.function_db.control_spaces[0])
+                update.vector().vec().aypx(0.0, y_petsc)
+                update.vector().apply("")
+
+                update_vertex = self.mesh_handler.deformation_handler.dof_to_coordinate(
+                    update
+                )
+                update_dof = update_vertex.reshape(-1)[self.constraint_manager.d2v]
+                y_j = y_j - update_dof
+
+            else:
+                _loggers.debug(
+                    f"Projection to the working set successful after {iter} iterations."
+                )
+                return y_j
+
+        _loggers.debug(f"Back-Projection failed.")
+        return None
 
     def compute_a_priori_decreases(
         self, search_direction: List[fenics.Function], stepsize: float
