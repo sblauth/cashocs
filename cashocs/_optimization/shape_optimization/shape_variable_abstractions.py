@@ -401,8 +401,6 @@ class ShapeVariableAbstractions(
 
                 lambd = B.createVecRight()
                 h_petsc = B.createVecLeft()
-                # ToDo: Is this correct? No!
-                # h_petsc.setValuesLocal(np.arange(len(h), dtype="int32"), h)
                 h_petsc.array_w = h
                 h_petsc.assemble()
 
@@ -418,6 +416,8 @@ class ShapeVariableAbstractions(
 
                 update = fenics.Function(self.db.function_db.control_spaces[0])
                 update.vector().vec().aypx(0.0, y_petsc)
+                update.vector().apply("")
+                self.form_handler.apply_shape_bcs(update)
                 update.vector().apply("")
 
                 update_vertex = self.mesh_handler.deformation_handler.dof_to_coordinate(

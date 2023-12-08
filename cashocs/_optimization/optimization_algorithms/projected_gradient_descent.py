@@ -30,6 +30,7 @@ from petsc4py import PETSc
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
+from cashocs import _loggers
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -161,6 +162,7 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
             p_dof.vector().set_local(p.getArray())
             p_dof.vector().apply("")
             self.form_handler.apply_shape_bcs(p_dof)
+            p_dof.vector().apply("")
 
             lambd_padded = np.zeros(no_constraints)
 
@@ -291,10 +293,9 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
                 no_active_inequality_constraints_local, op=MPI.SUM
             )
         )
-        if self.constraint_manager.comm.rank == 0:
-            print(
-                f"Info: {no_active_equality_constraints_global} equality "
-                f"and {no_active_inequality_constraints_global} inequality constraints "
-                "are currently active.",
-                flush=True,
-            )
+
+        _loggers.debug(
+            f"{no_active_equality_constraints_global} equality "
+            f"and {no_active_inequality_constraints_global} inequality constraints "
+            "are currently active."
+        )
