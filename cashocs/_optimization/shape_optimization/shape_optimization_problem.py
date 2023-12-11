@@ -452,9 +452,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             not self.config.getboolean("Debug", "remeshing")
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
-            subprocess.run(  # nosec B603, B607
-                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
-            )
+            if len(self.db.parameter_db.remesh_directory) > 0:
+                subprocess.run(  # nosec B603, B607
+                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
+                )
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _change_except_hook(self) -> None:
