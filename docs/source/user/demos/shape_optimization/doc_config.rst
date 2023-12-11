@@ -680,7 +680,7 @@ For the inhomogeneous mesh stiffness, we also have the parameter :ini:`inhomogen
     inhomogeneous_exponent = 1.0
 
 This parameter can be used to specify an exponent for the inhomogeneous mesh stiffness, so that the parameters
-:math:`\mu, \lambda` and :math:`\delta` are scaled by :math:`\left( \frac{1}{\text{vol} \right)^p`, where
+:math:`\mu, \lambda` and :math:`\delta` are scaled by :math:`\left( \frac{1}{\text{vol}} \right)^p`, where
 :math:`p` is specified in :ini:`inhomogeneous_exponent`. The default for this parameter is :ini:`inhomogeneous_exponent = 1.0`.
 
 There is also a different possibility to define the stiffness parameter :math:`\mu`
