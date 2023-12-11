@@ -938,7 +938,7 @@ class FixedVertexConstraint(MeshConstraint):
 
         temp_fixed_idcs_x = []
         temp_fixed_idcs_y = []
-        temp_fixed_idcs_z = []
+        temp_fixed_idcs_z: list[int] = []
         for i in bdry_fix_x_list:
             idx_i = self.facets[self.boundaries.where_equal(i)]
             temp_fixed_idcs_x += idx_i.reshape(-1).tolist()
@@ -1205,7 +1205,7 @@ class TriangleAngleConstraint(MeshConstraint):
 
         return gradient
 
-    def _compute_minimum_angle(self) -> np.ndarray:
+    def _compute_minimum_angle(self) -> np.ndarray | float:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
         constant_min_angle *= 2 * np.pi / 360.0
 
@@ -1223,7 +1223,9 @@ class TriangleAngleConstraint(MeshConstraint):
         cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 3)
 
         if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
-            minimum_angle = np.minimum(cellwise_minimum_angle, constant_min_angle)
+            minimum_angle: np.ndarray | float = np.minimum(
+                cellwise_minimum_angle, constant_min_angle
+            )
         elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
             minimum_angle = constant_min_angle
         elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
@@ -1326,7 +1328,7 @@ class DihedralAngleConstraint(MeshConstraint):
 
         return gradient
 
-    def _compute_minimum_angle(self) -> np.ndarray:
+    def _compute_minimum_angle(self) -> np.ndarray | float:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
         constant_min_angle *= 2 * np.pi / 360.0
 
@@ -1343,7 +1345,9 @@ class DihedralAngleConstraint(MeshConstraint):
         cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 6)
 
         if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
-            minimum_angle = np.minimum(cellwise_minimum_angle, constant_min_angle)
+            minimum_angle: np.ndarray | float = np.minimum(
+                cellwise_minimum_angle, constant_min_angle
+            )
         elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
             minimum_angle = constant_min_angle
         elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:

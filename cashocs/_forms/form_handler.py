@@ -107,3 +107,14 @@ class FormHandler(abc.ABC):
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
         pass
+
+    @abc.abstractmethod
+    def apply_shape_bcs(self, function: fenics.Function) -> None:
+        """Applies the geometric boundary conditions / constraints to a function.
+
+        Args:
+            function: The function onto which the geometric constraints are imposed.
+                Must be a vector CG1 function.
+
+        """
+        pass

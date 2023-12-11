@@ -252,11 +252,13 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.constraint_manager = mesh_constraints.ConstraintManager(
-            self.config,
-            self.mesh_handler.mesh,
-            self.boundaries,
-            self.db.function_db.control_spaces[0],
+        self.constraint_manager: mesh_constraints.ConstraintManager = (
+            mesh_constraints.ConstraintManager(
+                self.config,
+                self.mesh_handler.mesh,
+                self.boundaries,
+                self.db.function_db.control_spaces[0],
+            )
         )
 
         self.optimization_variable_abstractions = (

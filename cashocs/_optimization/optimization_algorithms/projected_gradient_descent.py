@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import fenics
 from mpi4py import MPI
@@ -60,6 +60,10 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
 
         """
         super().__init__(db, optimization_problem, line_search)
+
+        optimization_problem = cast(
+            _typing.ShapeOptimizationProblem, optimization_problem
+        )
 
         self.mesh = optimization_problem.mesh_handler.mesh
         self.constraint_manager = optimization_problem.constraint_manager
