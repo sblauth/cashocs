@@ -439,8 +439,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         try:
             self.solver.run()
-        finally:
+        except BaseException as e:
             self._clear_remesh_directory()
+            raise e
         self.solver.post_processing()
 
     def _clear_remesh_directory(self) -> None:
