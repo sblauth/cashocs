@@ -30,9 +30,9 @@ from scipy import sparse
 
 from cashocs import _exceptions
 from cashocs import _forms
+from cashocs import _loggers
 from cashocs import _utils
 from cashocs._optimization import optimization_variable_abstractions
-from cashocs import _loggers
 
 if TYPE_CHECKING:
     from cashocs._database import database

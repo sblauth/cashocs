@@ -23,14 +23,14 @@ from typing import TYPE_CHECKING
 
 import fenics
 from mpi4py import MPI
-from scipy import sparse
 import numpy as np
 from petsc4py import PETSc
+from scipy import sparse
 
 from cashocs import _exceptions
+from cashocs import _loggers
 from cashocs import _utils
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
-from cashocs import _loggers
 
 if TYPE_CHECKING:
     from cashocs import _typing

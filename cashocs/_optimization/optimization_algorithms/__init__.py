@@ -17,9 +17,6 @@
 
 """Optimization algorithms for PDE constrained optimization."""
 
-from cashocs._optimization.optimization_algorithms.projected_gradient_descent import (
-    ProjectedGradientDescent,
-)
 from cashocs._optimization.optimization_algorithms.gradient_descent import (
     GradientDescentMethod,
 )
@@ -28,6 +25,9 @@ from cashocs._optimization.optimization_algorithms.ncg import NonlinearCGMethod
 from cashocs._optimization.optimization_algorithms.newton import NewtonMethod
 from cashocs._optimization.optimization_algorithms.optimization_algorithm import (
     OptimizationAlgorithm,
+)
+from cashocs._optimization.optimization_algorithms.projected_gradient_descent import (
+    ProjectedGradientDescent,
 )
 
 __all__ = [

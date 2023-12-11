@@ -21,14 +21,14 @@ from __future__ import annotations
 
 from typing import cast, List, Optional, Tuple
 
-import numpy as np
-from scipy import sparse
 import fenics
+import numpy as np
 from petsc4py import PETSc
+from scipy import sparse
 from typing_extensions import TYPE_CHECKING
 
-from cashocs._optimization.line_search import armijo_line_search
 from cashocs import _loggers
+from cashocs._optimization.line_search import armijo_line_search
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimization_algorithms
