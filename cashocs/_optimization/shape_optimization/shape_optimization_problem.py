@@ -440,7 +440,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         try:
             self.solver.run()
         except BaseException as e:
-            self._clear_remesh_directory()
+            if len(self.db.parameter_db.remesh_directory) > 0:
+                self._clear_remesh_directory()
             raise e
         self.solver.post_processing()
 
@@ -452,10 +453,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             not self.config.getboolean("Debug", "remeshing")
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
-            if len(self.db.parameter_db.remesh_directory) > 0:
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
-                )
+            subprocess.run(  # nosec B603, B607
+                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
+            )
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _change_except_hook(self) -> None:
