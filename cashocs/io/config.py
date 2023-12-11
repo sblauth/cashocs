@@ -329,6 +329,10 @@ class Config(ConfigParser):
                 "update_inhomogeneous": {
                     "type": "bool",
                 },
+                "inhomogeneous_exponent": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
                 "use_distance_mu": {
                     "type": "bool",
                 },
@@ -597,7 +601,6 @@ fail_if_not_converged = False
 [ShapeGradient]
 lambda_lame = 0.0
 damping_factor = 0.0
-inhomogeneous = False
 mu_def = 1.0
 mu_fix = 1.0
 use_sqrt_mu = False
@@ -612,7 +615,9 @@ dist_min = 1.0
 dist_max = 1.0
 boundaries_dist = []
 smooth_mu = False
+inhomogeneous = False
 update_inhomogeneous = False
+inhomogeneous_exponent = 1.0
 fixed_dimensions = []
 shape_bdry_def = []
 shape_bdry_fix = []
