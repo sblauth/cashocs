@@ -21,9 +21,7 @@ from __future__ import annotations
 
 import functools
 import subprocess  # nosec B404
-import sys
-from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -241,7 +239,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
             self.db, self.form_handler, a_priori_tester, intersection_tester
         )
-        self._change_except_hook()
 
         self.state_spaces = self.db.function_db.state_spaces
         self.adjoint_spaces = self.db.function_db.adjoint_spaces
@@ -317,7 +314,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """Initializes self for remeshing."""
         if self.do_remesh:
             if not self.db.parameter_db.is_remeshed:
-                self._change_except_hook()
                 self.db.parameter_db.temp_dict.update(
                     {
                         "gmsh_file": self.config.get("Mesh", "gmsh_file"),
@@ -329,9 +325,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                         "output_dict": {},
                     }
                 )
-
-            else:
-                self._change_except_hook()
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -439,14 +432,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         try:
             self.solver.run()
-        finally:
-            self._clear_remesh_directory()
+        except BaseException as e:
+            if len(self.db.parameter_db.remesh_directory) > 0:
+                self._clear_remesh_directory()
+            raise e
         self.solver.post_processing()
 
     def _clear_remesh_directory(self) -> None:
-        _loggers.debug(
-            "An exception was raised, " "deleting the created temporary files."
-        )
+        _loggers.debug("An exception was raised, deleting the created temporary files.")
         if (
             not self.config.getboolean("Debug", "remeshing")
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -455,42 +448,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
             )
         fenics.MPI.barrier(fenics.MPI.comm_world)
-
-    def _change_except_hook(self) -> None:
-        """Ensures that temporary files are deleted when an exception occurs.
-
-        This modifies the sys.excepthook command so that it also deletes temp files
-        (only needed for remeshing)
-        """
-
-        def custom_except_hook(
-            exctype: Type[BaseException],
-            value: BaseException,
-            traceback: TracebackType,
-        ) -> Any:  # pragma: no cover
-            """A customized hook which is injected when an exception occurs.
-
-            Args:
-                exctype: The type of the exception.
-                value: The value of the exception.
-                traceback: The traceback of the exception.
-
-            """
-            _loggers.debug(
-                "An exception was raised by cashocs, "
-                "deleting the created temporary files."
-            )
-            if (
-                not self.config.getboolean("Debug", "remeshing")
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            sys.__excepthook__(exctype, value, traceback)
-
-        sys.excepthook = custom_except_hook  # type: ignore
 
     def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.
