@@ -220,11 +220,11 @@ class ProjectedGradientDescent(optimization_algorithm.OptimizationAlgorithm):
         B: PETSc.Mat,  # pylint: disable=invalid-name
     ) -> tuple[PETSc.Vec, PETSc.Vec]:
         # if self.mode == "complete":
-        #     pylint: disable=invalid-name
-        #     S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
-        #     S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
-        #     lambd = np.linalg.solve(A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:])
-        #     p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
+        #    pylint: disable=invalid-name
+        #    S = self.optimization_problem.form_handler.scalar_product_matrix[:, :]
+        #    S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
+        #    lambd = np.linalg.solve(A @ S_inv @ A.T, -A @ self.gradient[0].vector()[:])
+        #    p = -(self.gradient[0].vector()[:] + S_inv @ A.T @ lambd)
         # else:
 
         b = A.createVecLeft()

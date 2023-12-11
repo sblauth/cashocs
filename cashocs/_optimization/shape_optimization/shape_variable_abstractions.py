@@ -279,8 +279,8 @@ class ShapeVariableAbstractions(
                 stepsize /= 2.0
             else:
                 _loggers.debug(
-                    f"Found a stepsize which is feasible for the "
-                    f"currently active constraints in the working set."
+                    "Found a stepsize which is feasible for the "
+                    "currently active constraints in the working set."
                 )
                 break
 
@@ -288,8 +288,8 @@ class ShapeVariableAbstractions(
             self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
         ):
             _loggers.debug(
-                f"The step violates some new constraints. "
-                f"Computing the maximum stepsize until the a new constraint is active."
+                "The step violates some new constraints. "
+                "Computing the maximum stepsize until the a new constraint is active."
             )
             feasible_stepsize_local = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
@@ -306,7 +306,7 @@ class ShapeVariableAbstractions(
                 active_idx,
                 constraint_gradient,
             )
-            assert feasible_step is not None
+            assert feasible_step is not None  # nosec B101
 
             assert np.all(  # nosec B101
                 self.constraint_manager.is_feasible(
@@ -355,12 +355,12 @@ class ShapeVariableAbstractions(
         B = A.matMult(AT)  # pylint: disable=invalid-name
 
         # if self.mode == "complete":
-        #    S = self.form_handler.scalar_product_matrix[  # pylint: disable=invalid-name
-        #        :, :
-        #    ]
-        #    S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
+        #   S = self.form_handler.scalar_product_matrix[  # pylint: disable=invalid-name
+        #       :, :
+        #   ]
+        #   S_inv = np.linalg.inv(S)  # pylint: disable=invalid-name
 
-        for iter in range(10):
+        for its in range(10):
             trial_active_idx = self.constraint_manager.compute_active_set(
                 y_j[self.constraint_manager.v2d]
             )[active_idx]
@@ -376,7 +376,7 @@ class ShapeVariableAbstractions(
             residual = comm.allreduce(np.max(np.abs(h)), op=MPI.MAX)
             _loggers.debug(
                 "Projection to the working set. "
-                f"Iteration: {iter}  Residual: {residual:.3e}"
+                f"Iteration: {its}  Residual: {residual:.3e}"
             )
 
             if not satisfies_previous_constraints:
@@ -428,11 +428,11 @@ class ShapeVariableAbstractions(
 
             else:
                 _loggers.debug(
-                    f"Projection to the working set successful after {iter} iterations."
+                    f"Projection to the working set successful after {its} iterations."
                 )
                 return y_j
 
-        _loggers.debug(f"Back-Projection failed.")
+        _loggers.debug("Back-Projection failed.")
         return None
 
     def compute_a_priori_decreases(
