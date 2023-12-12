@@ -18,9 +18,6 @@
 """Line search algorithms."""
 
 from cashocs._optimization.line_search.armijo_line_search import ArmijoLineSearch
-from cashocs._optimization.line_search.constrained_line_search import (
-    ConstrainedLineSearch,
-)
 from cashocs._optimization.line_search.line_search import LineSearch
 from cashocs._optimization.line_search.polynomial_line_search import (
     PolynomialLineSearch,
@@ -30,5 +27,4 @@ __all__ = [
     "ArmijoLineSearch",
     "LineSearch",
     "PolynomialLineSearch",
-    "ConstrainedLineSearch",
 ]

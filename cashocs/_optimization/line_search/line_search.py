@@ -29,6 +29,8 @@ from petsc4py import PETSc
 from cashocs import _utils
 
 if TYPE_CHECKING:
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -92,23 +94,38 @@ class LineSearch(abc.ABC):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> None:
         """Performs a line search for the new iterate.
 
         Notes:
             This is the function that should be called in the optimization algorithm,
             it consists of a call to ``self.search`` and ``self.post_line_search``
-            afterwards.
+            afterward.
 
         Args:
             solver: The optimization algorithm.
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         """
         deformation, is_remeshed = self.search(
-            solver, search_direction, has_curvature_info
+            solver,
+            search_direction,
+            has_curvature_info,
+            active_idx,
+            constraint_gradient,
+            dropped_idx,
         )
         if deformation is not None and self.config.getboolean(
             "ShapeGradient", "global_deformation"
@@ -180,6 +197,9 @@ class LineSearch(abc.ABC):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs a line search.
 
@@ -188,6 +208,13 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The accepted deformation or None, in case the deformation was not

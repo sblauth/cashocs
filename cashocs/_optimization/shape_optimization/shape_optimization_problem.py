@@ -375,7 +375,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 self.db, self, line_search
             )
         elif self.algorithm.casefold() == "projected_gradient_descent":
-            line_search = ls.ConstrainedLineSearch(self.db, self)
             solver = optimization_algorithms.ProjectedGradientDescent(
                 self.db, self, line_search
             )

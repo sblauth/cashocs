@@ -108,6 +108,25 @@ class ShapeVariableAbstractions(
         constraint_gradient: np.ndarray | None = None,
         dropped_idx: np.ndarray | None = None,
     ) -> float:
+        """Updates the optimization variables based on a line search.
+
+        This variant is used when constraints are present and projects the step back
+        to the surface of the constraints in the active set.
+
+        Args:
+            search_direction: The current search direction.
+            stepsize: The current (trial) stepsize.
+            beta: The parameter for the line search, which "halves" the stepsize if the
+                test was not successful.
+            active_idx: A boolean mask corresponding to the working set.
+            constraint_gradient: The gradient of (all) constraints.
+            dropped_idx: A boolean mask indicating which constraints have been recently
+                dropped from the working set.
+
+        Returns:
+            The stepsize which was found to be acceptable.
+
+        """
         if (
             active_idx is not None
             and constraint_gradient is not None
