@@ -44,7 +44,7 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
         has_curvature_info: bool,
         active_idx: np.ndarray,
         constraint_gradient: sparse.csr_matrix,
-        dropped_idx: list[int],
+        dropped_idx: np.ndarray,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
@@ -73,7 +73,7 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
                 self.decrease_measure_w_o_step = opt_var_abstr.compute_decrease_measure(
                     search_direction
                 )
-            self.stepsize = opt_var_abstr.update_constrained_optimization_variables(
+            self.stepsize = opt_var_abstr.update_optimization_variables(
                 search_direction,
                 self.stepsize,
                 self.beta_armijo,
@@ -126,7 +126,7 @@ class ConstrainedLineSearch(armijo_line_search.ArmijoLineSearch):
         has_curvature_info: bool,
         active_idx: np.ndarray,
         constraint_gradient: sparse.csr_matrix,
-        dropped_idx: list[int],
+        dropped_idx: np.ndarray,
     ) -> None:
         """Performs a line search for the new iterate.
 
