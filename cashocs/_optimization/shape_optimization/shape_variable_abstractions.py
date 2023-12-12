@@ -414,14 +414,19 @@ class ShapeVariableAbstractions(
             )
             satisfies_previous_constraints = np.all(satisfies_previous_constraints)
 
-            h = self.constraint_manager.evaluate_active(
-                y_j[self.constraint_manager.v2d], active_idx
-            )
-            residual = comm.allreduce(np.max(np.abs(h)), op=MPI.MAX)
-            _loggers.debug(
-                "Projection to the working set. "
-                f"Iteration: {its}  Residual: {residual:.3e}"
-            )
+            has_active_constraints_local = np.any(active_idx)
+            has_active_constraints = comm.allgather(has_active_constraints_local)
+            has_active_constraints = np.any(has_active_constraints)
+
+            if has_active_constraints:
+                h = self.constraint_manager.evaluate_active(
+                    y_j[self.constraint_manager.v2d], active_idx
+                )
+                residual = comm.allreduce(np.max(np.abs(h)), op=MPI.MAX)
+                _loggers.debug(
+                    "Projection to the working set. "
+                    f"Iteration: {its}  Residual: {residual:.3e}"
+                )
 
             if not satisfies_previous_constraints:
                 # if self.mode == "complete":

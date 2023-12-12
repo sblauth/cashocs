@@ -335,6 +335,31 @@ def test_shape_gd():
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
+def test_shape_projected_gd_with_minimum_angle():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("MeshQualityConstraints", "min_angle", "35.0")
+    config.set("MeshQualityConstraints", "tol", "1e-2")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve(algorithm="projected_gradient_descent", rtol=1e-2, atol=0.0, max_iter=26)
+    assert sop.solver.relative_norm < sop.solver.rtol
+
+
+def test_shape_projected_gd_with_reduction_factor():
+    cashocs.set_log_level(cashocs.LogLevel.DEBUG)
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("MeshQualityConstraints", "tol", "1e-2")
+    config.set("MeshQualityConstraints", "feasible_angle_reduction_factor", "0.66")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve(algorithm="projected_gradient_descent", rtol=1e-2, atol=0.0, max_iter=46)
+    assert sop.solver.relative_norm < sop.solver.rtol
+
+
 def test_shape_cg_fr():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config.set("AlgoCG", "cg_method", "FR")
