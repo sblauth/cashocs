@@ -343,7 +343,7 @@ def test_shape_projected_gd_with_minimum_angle():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="projected_gradient_descent", rtol=1e-2, atol=0.0, max_iter=26)
+    sop.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=26)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
@@ -356,7 +356,7 @@ def test_shape_projected_gd_with_reduction_factor():
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="projected_gradient_descent", rtol=1e-2, atol=0.0, max_iter=46)
+    sop.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=46)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 

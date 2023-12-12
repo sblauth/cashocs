@@ -43,7 +43,7 @@ from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
-from cashocs._optimization.shape_optimization import mesh_constraints
+from cashocs._optimization.shape_optimization import mesh_constraint_manager
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs.geometry import mesh_testing
 
@@ -252,8 +252,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.constraint_manager: mesh_constraints.ConstraintManager = (
-            mesh_constraints.ConstraintManager(
+        self.constraint_manager: mesh_constraint_manager.ConstraintManager = (
+            mesh_constraint_manager.ConstraintManager(
                 self.config,
                 self.mesh_handler.mesh,
                 self.boundaries,
@@ -372,10 +372,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             solver = optimization_algorithms.LBFGSMethod(self.db, self, line_search)
         elif self.algorithm.casefold() == "conjugate_gradient":
             solver = optimization_algorithms.NonlinearCGMethod(
-                self.db, self, line_search
-            )
-        elif self.algorithm.casefold() == "projected_gradient_descent":
-            solver = optimization_algorithms.ProjectedGradientDescent(
                 self.db, self, line_search
             )
         elif self.algorithm.casefold() == "none":

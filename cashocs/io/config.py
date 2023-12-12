@@ -166,7 +166,6 @@ class Config(ConfigParser):
                         "newton",
                         "sphere_combination",
                         "convex_combination",
-                        "projected_gradient_descent",
                         "none",
                     ],
                 },

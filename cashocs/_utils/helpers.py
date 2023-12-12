@@ -113,7 +113,7 @@ def check_and_enlist_control_constraints(
         )
 
 
-def optimization_algorithm_configuration(  # noqa: C901
+def optimization_algorithm_configuration(
     config: configparser.ConfigParser, algorithm: Optional[str] = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
@@ -147,8 +147,6 @@ def optimization_algorithm_configuration(  # noqa: C901
         internal_algorithm = "sphere_combination"
     elif algorithm.casefold() in ["convex_combination"]:
         internal_algorithm = "convex_combination"
-    elif algorithm.casefold() in ["projected_gradient_descent"]:
-        internal_algorithm = "projected_gradient_descent"
     elif algorithm.casefold() == "none":
         internal_algorithm = "none"
     else:

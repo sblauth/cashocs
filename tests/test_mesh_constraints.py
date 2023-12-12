@@ -21,7 +21,9 @@ from fenics import *
 import numpy as np
 
 import cashocs
-from cashocs._optimization.shape_optimization.mesh_constraints import ConstraintManager
+from cashocs._optimization.shape_optimization.mesh_constraint_manager import (
+    ConstraintManager,
+)
 
 dir_path = str(pathlib.Path(__file__).parent)
 
@@ -75,7 +77,7 @@ def test_triangle_mesh_constraints():
     epsilons = [1e-4 / 2**i for i in range(6)]
     h = rng.standard_normal(x.shape)
     f_k = cm.evaluate(x)
-    gradient = cm.compute_gradient(x)
+    gradient = cm._compute_gradient(x)
     directional_derivative = gradient @ h
 
     for eps in epsilons:
@@ -113,7 +115,7 @@ def test_tetrahedron_mesh_constraints():
     epsilons = [1e-4 / 2**i for i in range(4)]
     h = rng.standard_normal(x.shape)
     f_k = cm.evaluate(x)
-    gradient = cm.compute_gradient(x)
+    gradient = cm._compute_gradient(x)
     directional_derivative = gradient @ h
 
     for eps in epsilons:

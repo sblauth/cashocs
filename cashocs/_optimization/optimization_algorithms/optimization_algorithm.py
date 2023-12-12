@@ -117,6 +117,8 @@ class OptimizationAlgorithm(abc.ABC):
         self.output_manager = optimization_problem.output_manager
         self.initialize_solver()
 
+        self.constraint_manager = optimization_problem.constraint_manager
+
     @property
     def iteration(self) -> int:
         """The number of iterations performed by the solver."""
