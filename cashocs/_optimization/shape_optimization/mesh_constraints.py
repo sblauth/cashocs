@@ -1111,7 +1111,79 @@ class FixedVertexConstraint(MeshConstraint):
         return self.fixed_gradient
 
 
-class TriangleAngleConstraint(MeshConstraint):
+class AngleConstraint(MeshConstraint):
+    """Base class for constraints on mesh cells based on angles."""
+
+    type = "inequality"
+
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the mesh quality constraint for the angles.
+
+        Args:
+            mesh: The corresponding FEM mesh.
+            config: The configuration of the optimization problem.
+            deformation_space: A space of vector CG1 elements for mesh deformations.
+
+        """
+        super().__init__(mesh, deformation_space)
+
+        self.config = config
+
+        self.dim = self.mesh.geometry().dim()
+        self.min_angle = self._compute_minimum_angle()
+
+        self.cells = self.mesh.cells()
+        self.is_necessary = np.array([True] * self.no_constraints)
+
+    def _compute_minimum_angle(self) -> np.ndarray | float:
+        constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
+        constant_min_angle *= 2 * np.pi / 360.0
+
+        feasible_angle_reduction_factor = self.config.getfloat(
+            "MeshQualityConstraints", "feasible_angle_reduction_factor"
+        )
+
+        if self.dim == 2:
+            no_angles = 3
+            initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(
+                -1, no_angles
+            )
+        elif self.dim == 3:
+            no_angles = 6
+            initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(
+                -1, no_angles
+            )
+        initial_angles = initial_angles[: self.ghost_offset]
+
+        minimum_initial_angles = np.min(initial_angles, axis=1)
+        cellwise_minimum_angle = (
+            feasible_angle_reduction_factor * minimum_initial_angles
+        )
+        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, no_angles)
+
+        if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
+            minimum_angle: np.ndarray | float = np.minimum(
+                cellwise_minimum_angle, constant_min_angle
+            )
+        elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
+            minimum_angle = constant_min_angle
+        elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
+            minimum_angle = cellwise_minimum_angle
+
+        self.constraint_tolerance = self.config.getfloat(
+            "MeshQualityConstraints", "tol"
+        )
+        minimum_angle = np.maximum(2 * self.constraint_tolerance, minimum_angle)
+
+        return minimum_angle
+
+
+class TriangleAngleConstraint(AngleConstraint):
     r"""A mesh quality constraint for the angles of triangles in the mesh.
 
     This ensures that the all angles :math:`\alpha` of the FEM mesh satisfy the
@@ -1119,7 +1191,6 @@ class TriangleAngleConstraint(MeshConstraint):
     :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
     the mesh coordinates.
     """
-    type = "inequality"
 
     def __init__(
         self,
@@ -1135,16 +1206,9 @@ class TriangleAngleConstraint(MeshConstraint):
             deformation_space: A space of vector CG1 elements for mesh deformations.
 
         """
-        super().__init__(mesh, deformation_space)
-        self.config = config
-
-        self.dim = self.mesh.geometry().dim()
-        self.min_angle = self._compute_minimum_angle()
-
-        self.cells = self.mesh.cells()
+        super().__init__(mesh, config, deformation_space)
 
         self.no_constraints = 3 * self.ghost_offset
-        self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -1206,36 +1270,8 @@ class TriangleAngleConstraint(MeshConstraint):
 
         return gradient
 
-    def _compute_minimum_angle(self) -> np.ndarray | float:
-        constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
-        constant_min_angle *= 2 * np.pi / 360.0
 
-        feasible_angle_reduction_factor = self.config.getfloat(
-            "MeshQualityConstraints", "feasible_angle_reduction_factor"
-        )
-
-        initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(-1, 3)
-        initial_angles = initial_angles[: self.ghost_offset]
-
-        minimum_initial_angles = np.min(initial_angles, axis=1)
-        cellwise_minimum_angle = (
-            feasible_angle_reduction_factor * minimum_initial_angles
-        )
-        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 3)
-
-        if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
-            minimum_angle: np.ndarray | float = np.minimum(
-                cellwise_minimum_angle, constant_min_angle
-            )
-        elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
-            minimum_angle = constant_min_angle
-        elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
-            minimum_angle = cellwise_minimum_angle
-
-        return minimum_angle
-
-
-class DihedralAngleConstraint(MeshConstraint):
+class DihedralAngleConstraint(AngleConstraint):
     r"""A mesh quality constraint for the angles of triangles in the mesh.
 
     This ensures that the all angles :math:`\alpha` of the FEM mesh satisfy the
@@ -1259,15 +1295,9 @@ class DihedralAngleConstraint(MeshConstraint):
             deformation_space: A space of vector CG1 elements for mesh deformations.
 
         """
-        super().__init__(mesh, deformation_space)
-        self.config = config
-
-        self.dim = self.mesh.geometry().dim()
-        self.min_angle = self._compute_minimum_angle()
-        self.cells = self.mesh.cells()
+        super().__init__(mesh, config, deformation_space)
 
         self.no_constraints = 6 * self.ghost_offset
-        self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -1328,30 +1358,3 @@ class DihedralAngleConstraint(MeshConstraint):
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
-
-    def _compute_minimum_angle(self) -> np.ndarray | float:
-        constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
-        constant_min_angle *= 2 * np.pi / 360.0
-
-        feasible_angle_reduction_factor = self.config.getfloat(
-            "MeshQualityConstraints", "feasible_angle_reduction_factor"
-        )
-        initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(-1, 6)
-        initial_angles = initial_angles[: self.ghost_offset]
-
-        minimum_initial_angles = np.min(initial_angles, axis=1)
-        cellwise_minimum_angle = (
-            feasible_angle_reduction_factor * minimum_initial_angles
-        )
-        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, 6)
-
-        if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
-            minimum_angle: np.ndarray | float = np.minimum(
-                cellwise_minimum_angle, constant_min_angle
-            )
-        elif constant_min_angle > 0.0 and feasible_angle_reduction_factor == 0.0:
-            minimum_angle = constant_min_angle
-        elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
-            minimum_angle = cellwise_minimum_angle
-
-        return minimum_angle
