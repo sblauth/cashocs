@@ -1136,9 +1136,7 @@ class AngleConstraint(MeshConstraint):
 
         self.dim = self.mesh.geometry().dim()
         self.min_angle = self._compute_minimum_angle()
-
         self.cells = self.mesh.cells()
-        self.is_necessary = np.array([True] * self.no_constraints)
 
     def _compute_minimum_angle(self) -> np.ndarray | float:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
@@ -1209,6 +1207,7 @@ class TriangleAngleConstraint(AngleConstraint):
         super().__init__(mesh, config, deformation_space)
 
         self.no_constraints = 3 * self.ghost_offset
+        self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
@@ -1279,7 +1278,6 @@ class DihedralAngleConstraint(AngleConstraint):
     :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
     the mesh coordinates.
     """
-    type = "inequality"
 
     def __init__(
         self,
@@ -1298,6 +1296,7 @@ class DihedralAngleConstraint(AngleConstraint):
         super().__init__(mesh, config, deformation_space)
 
         self.no_constraints = 6 * self.ghost_offset
+        self.is_necessary = np.array([True] * self.no_constraints)
 
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         r"""Evaluates the constaint function at the current iterate.
