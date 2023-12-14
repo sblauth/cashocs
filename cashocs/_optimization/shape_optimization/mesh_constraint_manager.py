@@ -90,26 +90,34 @@ class ConstraintManager:
         self.no_constraints = 0
 
         if self.has_constraints:
-            self.constraints.append(
-                mesh_constraints.FixedVertexConstraint(
-                    self.mesh, self.boundaries, self.config, deformation_space
-                )
-            )
-
             if self.mesh.geometry().dim() == 2:
-                self.constraints.append(
+                angle_constraint: mesh_constraints.AngleConstraint = (
                     mesh_constraints.TriangleAngleConstraint(
                         self.mesh, self.config, deformation_space
                     )
                 )
+
             elif self.mesh.geometry().dim() == 3:
-                self.constraints.append(
-                    mesh_constraints.DihedralAngleConstraint(
-                        self.mesh, self.config, deformation_space
-                    )
+                angle_constraint = mesh_constraints.DihedralAngleConstraint(
+                    self.mesh, self.config, deformation_space
                 )
 
-        if self.has_constraints:
+            self.constraints.append(angle_constraint)
+
+            additional_fixed_idcs = angle_constraint.bad_idcs
+            additional_fixed_coordinates = angle_constraint.bad_coordinates
+
+            self.constraints.append(
+                mesh_constraints.FixedVertexConstraint(
+                    self.mesh,
+                    self.boundaries,
+                    self.config,
+                    deformation_space,
+                    additional_fixed_idcs=additional_fixed_idcs,
+                    additional_fixed_coordinates=additional_fixed_coordinates,
+                )
+            )
+
             self.inequality_mask = self._compute_inequality_mask()
             self.no_constraints = len(self.inequality_mask)
             necessary_constraints = []

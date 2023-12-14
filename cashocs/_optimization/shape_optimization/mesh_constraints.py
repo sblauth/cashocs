@@ -25,6 +25,7 @@ import fenics
 import numpy as np
 from scipy import sparse
 
+from cashocs import _loggers
 from cashocs import _utils
 import cashocs.io
 
@@ -788,6 +789,8 @@ class FixedVertexConstraint(MeshConstraint):
         boundaries: fenics.MeshFunction,
         config: cashocs.io.Config,
         deformation_space: fenics.FunctionSpace,
+        additional_fixed_idcs: np.ndarray | None = None,
+        additional_fixed_coordinates: np.ndarray | None = None,
     ) -> None:
         """Initializes the fixed boundary mesh constraint.
 
@@ -797,6 +800,10 @@ class FixedVertexConstraint(MeshConstraint):
                 boundaries of the mesh.
             config: The configuration of the optimization problem.
             deformation_space: The space of vector CG1 elements for mesh deformations.
+            additional_fixed_idcs: Indices, whose repective
+                nodes should be fixed, in addition to the already fixed indices.
+            additional_fixed_coordinates: Vertex coordinates corresponding to
+                `additional_fixed_idcs`.
 
         """
         super().__init__(mesh, deformation_space)
@@ -831,11 +838,17 @@ class FixedVertexConstraint(MeshConstraint):
             self.fixed_dimension_coordinates,
         ) = self._compute_fixed_dimension_vertex_indices(fixed_dimensions)
 
+        if additional_fixed_idcs is None:
+            additional_fixed_idcs = np.array([], dtype="int64")
+        if additional_fixed_coordinates is None:
+            additional_fixed_coordinates = np.array([])
+
         self.fixed_idcs = np.concatenate(
             [
                 self.fixed_boundary_idcs,
                 self.partially_fixed_boundary_idcs,
                 self.fixed_dimension_idcs,
+                additional_fixed_idcs,
             ]
         )
         self.fixed_coordinates = np.concatenate(
@@ -843,8 +856,12 @@ class FixedVertexConstraint(MeshConstraint):
                 self.fixed_boundary_coordinates,
                 self.partially_fixed_boundary_coordinates,
                 self.fixed_dimension_coordinates,
+                additional_fixed_coordinates,
             ]
         )
+
+        self.fixed_idcs, unique_mask = np.unique(self.fixed_idcs, return_index=True)
+        self.fixed_coordinates = self.fixed_coordinates[unique_mask]
 
         self.no_constraints = len(self.fixed_idcs)
         self.is_necessary = np.array([False] * self.no_constraints)
@@ -1135,10 +1152,22 @@ class AngleConstraint(MeshConstraint):
         self.config = config
 
         self.dim = self.mesh.geometry().dim()
-        self.min_angle = self._compute_minimum_angle()
         self.cells = self.mesh.cells()
 
-    def _compute_minimum_angle(self) -> np.ndarray | float:
+        if self.dim == 2:
+            self.no_angles = 3
+        elif self.dim == 3:
+            self.no_angles = 6
+
+        (
+            self.min_angle,
+            self.bad_idcs,
+            self.bad_coordinates,
+        ) = self._compute_minimum_angle()
+
+    def _compute_minimum_angle(
+        self,
+    ) -> tuple[np.ndarray | float | None, np.ndarray | None, np.ndarray | None]:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
         constant_min_angle *= 2 * np.pi / 360.0
 
@@ -1147,22 +1176,24 @@ class AngleConstraint(MeshConstraint):
         )
 
         if self.dim == 2:
-            no_angles = 3
             initial_angles = mesh_quality.triangle_angles(self.mesh).reshape(
-                -1, no_angles
+                -1, self.no_angles
             )
         elif self.dim == 3:
-            no_angles = 6
             initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(
-                -1, no_angles
+                -1, self.no_angles
             )
         initial_angles = initial_angles[: self.ghost_offset]
 
         minimum_initial_angles = np.min(initial_angles, axis=1)
+        bad_idcs, bad_coordinates, self.constraint_filter = self._manage_bad_cells(
+            minimum_initial_angles
+        )
+
         cellwise_minimum_angle = (
             feasible_angle_reduction_factor * minimum_initial_angles
         )
-        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, no_angles)
+        cellwise_minimum_angle = np.repeat(cellwise_minimum_angle, self.no_angles)
 
         if constant_min_angle > 0.0 and feasible_angle_reduction_factor > 0.0:
             minimum_angle: np.ndarray | float = np.minimum(
@@ -1173,12 +1204,56 @@ class AngleConstraint(MeshConstraint):
         elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
             minimum_angle = cellwise_minimum_angle
 
-        self.constraint_tolerance = self.config.getfloat(
-            "MeshQualityConstraints", "tol"
-        )
-        minimum_angle = np.maximum(2 * self.constraint_tolerance, minimum_angle)
+        constraint_tolerance = self.config.getfloat("MeshQualityConstraints", "tol")
+        minimum_angle = np.maximum(2 * constraint_tolerance, minimum_angle)
 
-        return minimum_angle
+        return minimum_angle, bad_idcs, bad_coordinates
+
+    def _manage_bad_cells(
+        self, minimum_initial_angles: np.ndarray
+    ) -> tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None]:
+        constraint_tolerance = self.config.getfloat("MeshQualityConstraints", "tol")
+        bad_cell_idx = np.nonzero(minimum_initial_angles <= 2 * constraint_tolerance)[0]
+
+        constraint_filter = np.zeros(len(minimum_initial_angles), dtype=bool)
+        constraint_filter[bad_cell_idx] = True
+        constraint_filter = np.repeat(constraint_filter, self.no_angles)
+
+        if len(bad_cell_idx) > 0:
+            _loggers.debug(
+                "Found bad mesh cells in the initial mesh. "
+                "Fixating these cells for the optimization."
+            )
+            bad_vertex_idcs = self.cells[bad_cell_idx]
+            bad_vertex_idcs = np.unique(bad_vertex_idcs)
+
+            bad_vertex_idcs_global = self.global_vertex_indices[bad_vertex_idcs]
+            mask = np.isin(bad_vertex_idcs_global, self.global_vertex_indices_owned)
+            bad_vertex_idcs_local_owned = bad_vertex_idcs[mask]
+
+            if self.dim == 2:
+                bad_vertex_idcs_local = np.array(
+                    [
+                        self.dim * bad_vertex_idcs_local_owned,
+                        self.dim * bad_vertex_idcs_local_owned + 1,
+                    ]
+                ).T.reshape(-1)
+            elif self.dim == 3:
+                bad_vertex_idcs_local = np.array(
+                    [
+                        self.dim * bad_vertex_idcs_local_owned,
+                        self.dim * bad_vertex_idcs_local_owned + 1,
+                        self.dim * bad_vertex_idcs_local_owned + 2,
+                    ]
+                ).T.reshape(-1)
+
+            bad_coordinates = (
+                self.mesh.coordinates().copy().reshape(-1)[bad_vertex_idcs_local]
+            )
+
+            return bad_vertex_idcs_local, bad_coordinates, constraint_filter
+        else:
+            return None, None, None
 
 
 class TriangleAngleConstraint(AngleConstraint):
@@ -1230,6 +1305,10 @@ class TriangleAngleConstraint(AngleConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.triangle_angles(self.mesh)
+
+        if self.constraint_filter is not None:
+            values[self.constraint_filter] = 100.0
+
         values = values[: 3 * self.ghost_offset]
         values = self.min_angle - values
 
@@ -1319,6 +1398,10 @@ class DihedralAngleConstraint(AngleConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.tetrahedron_angles(self.mesh)
+
+        if self.constraint_filter is not None:
+            values[self.constraint_filter] = 100.0
+
         values = values[: 6 * self.ghost_offset]
         values = self.min_angle - values
 
