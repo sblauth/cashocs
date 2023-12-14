@@ -21,15 +21,16 @@ from __future__ import annotations
 
 import functools
 import subprocess  # nosec B404
-import sys
-from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -190,7 +191,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.Function(self.db.function_db.control_spaces[0])
         ]
         self.db.parameter_db.problem_type = "shape"
-        self.db.geometry_db.init_transfer_matrix()
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            self.db.geometry_db.init_transfer_matrix()
 
         # Initialize the remeshing behavior, and a temp file
         self.do_remesh = self.config.getboolean("Mesh", "remesh")
@@ -232,12 +234,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             }
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.db.geometry_db.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(
-            self.db.geometry_db.mesh
-        )
+        intersection_tester = mesh_testing.IntersectionTester(self.db.geometry_db.mesh)
         # pylint: disable=protected-access
         self.mesh_handler: geometry._MeshHandler = geometry._MeshHandler(
-            self.db, self.form_handler, a_priori_tester, a_posteriori_tester
+            self.db, self.form_handler, a_priori_tester, intersection_tester
         )
 
         self.state_spaces = self.db.function_db.state_spaces
@@ -290,7 +290,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             mesh_name: The path to the initial mesh file.
 
         """
-        self.mesh_parametrization = mesh_parametrization
+        self.mesh_parametrization: Callable = mesh_parametrization
         self.mesh_name = mesh_name
 
         arguments = self.mesh_parametrization(self.mesh_name)
@@ -314,7 +314,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """Initializes self for remeshing."""
         if self.do_remesh:
             if not self.db.parameter_db.is_remeshed:
-                self._change_except_hook()
                 self.db.parameter_db.temp_dict.update(
                     {
                         "gmsh_file": self.config.get("Mesh", "gmsh_file"),
@@ -326,9 +325,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                         "output_dict": {},
                     }
                 )
-
-            else:
-                self._change_except_hook()
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -350,8 +346,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 
-        self.global_deformation_vector = line_search.global_deformation_vector
-        self.global_deformation_function = line_search.deformation_function
+        if self.config.getboolean("ShapeGradient", "global_deformation"):
+            self.global_deformation_vector = line_search.global_deformation_vector
+            self.global_deformation_function = line_search.deformation_function
 
         if self.algorithm.casefold() == "gradient_descent":
             solver: optimization_algorithms.OptimizationAlgorithm = (
@@ -433,44 +430,24 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.solver = self._setup_solver()
 
-        self.solver.run()
+        try:
+            self.solver.run()
+        except BaseException as e:
+            if len(self.db.parameter_db.remesh_directory) > 0:
+                self._clear_remesh_directory()
+            raise e
         self.solver.post_processing()
 
-    def _change_except_hook(self) -> None:
-        """Ensures that temporary files are deleted when an exception occurs.
-
-        This modifies the sys.excepthook command so that it also deletes temp files
-        (only needed for remeshing)
-        """
-
-        def custom_except_hook(
-            exctype: Type[BaseException],
-            value: BaseException,
-            traceback: TracebackType,
-        ) -> Any:  # pragma: no cover
-            """A customized hook which is injected when an exception occurs.
-
-            Args:
-                exctype: The type of the exception.
-                value: The value of the exception.
-                traceback: The traceback of the exception.
-
-            """
-            _loggers.debug(
-                "An exception was raised by cashocs, "
-                "deleting the created temporary files."
+    def _clear_remesh_directory(self) -> None:
+        _loggers.debug("An exception was raised, deleting the created temporary files.")
+        if (
+            not self.config.getboolean("Debug", "remeshing")
+            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+        ):
+            subprocess.run(  # nosec B603, B607
+                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
             )
-            if (
-                not self.config.getboolean("Debug", "remeshing")
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            sys.__excepthook__(exctype, value, traceback)
-
-        sys.excepthook = custom_except_hook  # type: ignore
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.

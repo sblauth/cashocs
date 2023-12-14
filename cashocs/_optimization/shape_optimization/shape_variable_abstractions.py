@@ -103,8 +103,8 @@ class ShapeVariableAbstractions(
 
         """
         while True:
-            self.deformation.vector().vec().aypx(
-                0.0, stepsize * search_direction[0].vector().vec()
+            self.deformation.vector().vec().axpby(
+                stepsize, 0.0, search_direction[0].vector().vec()
             )
             self.deformation.vector().apply("")
             if self.mesh_handler.move_mesh(self.deformation):

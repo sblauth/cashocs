@@ -45,8 +45,9 @@ classifiers = [
 dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
-	"typing_extensions"
-	"scipy"
+	"typing_extensions",
+        "matplotlib",
+        "scipy"
 ]
 
 [project.urls]
@@ -77,8 +78,7 @@ docs = [
     "jupytext",
     "myst-parser"
 ]
-demos = ["matplotlib"]
-all = ["cashocs[tests,docs,demos]"]
+all = ["cashocs[tests,docs]"]
 
 [tool.setuptools.packages]
 find = {}
@@ -131,10 +131,12 @@ warn_unused_ignores = true
 module = [
 	"fenics.*",
 	"ufl.*",
+    "ufl_legacy.*",
 	"dolfin.*",
 	"petsc4py",
     "mpi4py.*",
 	"meshio",
 	"h5py",
+    "matplotlib.*",
 ]
 ignore_missing_imports = true

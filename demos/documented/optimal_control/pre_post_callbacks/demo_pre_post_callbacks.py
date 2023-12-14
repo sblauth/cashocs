@@ -186,6 +186,15 @@ ocp = cashocs.OptimalControlProblem(
 # :::
 #
 # ::::
+#
+# :::{note}
+# The callback functions are allowed to have one argument. In case an argument is
+# supplied, the callback function is called with the optimization problem itself
+# as an argument during runtime. This allows in-depth manipulation of the optimization
+# algorithms and optimization problems during runtime. This feature should only be used
+# with care!
+# :::
+#
 
 # In the end, we solve the problem with
 

@@ -10,29 +10,30 @@ jobs:
     name: Run tests before publishing
     runs-on: ubuntu-latest
     container:
-      image: sblauth/cashocs:latest
+      image: ghcr.io/sblauth/cashocs:main
+      options: --user=root
 
     steps:
-    - name: Delete old installation
-      shell: bash -l {0}
+    - name: Delete current installation in docker image
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         pip uninstall -y cashocs
-        rm -R /root/cashocs
+        rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v3.5.3 
+      uses: actions/checkout@v4.1.1 
 
-    - name: Update cashocs installation
-      shell: bash -l {0}
+    - name: Install cashocs
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         pip install .[all]
 
     - name: Run tests
-      shell: bash -l {0}
+      shell: bash
       run: |
-        conda activate cashocs
+        source /usr/local/bin/_entrypoint.sh
         python3 -m pytest -vv tests/
 
 
@@ -44,13 +45,13 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v4.1.1
     
 
     - name: Get tag name
       id: tag_name
       run: |
-        echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+        echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
 
     - name: Check if release is a pre-release
@@ -72,15 +73,17 @@ jobs:
   build_and_publish:
     name: Build and publish python package
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs:
       - run_tests
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v4.1.1
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
 
@@ -92,6 +95,3 @@ jobs:
 
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}

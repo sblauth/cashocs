@@ -221,7 +221,10 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"].append(
                 self.db.parameter_db.optimization_state["mesh_quality"]
             )
-        if self.db.parameter_db.problem_type == "topology":
+        if (
+            self.db.parameter_db.problem_type == "topology"
+            and self.db.config.getboolean("Output", "save_results")
+        ):
             self.output_dict["angle"].append(
                 self.db.parameter_db.optimization_state["angle"]
             )
@@ -245,7 +248,7 @@ class ResultManager(IOManager):
         ]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
-                json.dump(self.output_dict, file)
+                json.dump(self.output_dict, file, indent=4)
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
@@ -333,6 +336,28 @@ class TempFileManager(IOManager):
 class MeshManager(IOManager):
     """Manages the output of meshes."""
 
+    def __init__(self, db: database.Database, result_dir: str) -> None:
+        """Initializes the MeshManager class.
+
+        Args:
+            db: The database of the problem.
+            result_dir: The folder where the results are saved.
+
+        """
+        super().__init__(db, result_dir)
+        self.save_mesh = self.config.getboolean("Output", "save_mesh")
+
+    def output(self) -> None:
+        """Saves the mesh as checkpoint for each iteration."""
+        if self.save_mesh:
+            iteration = int(self.db.parameter_db.optimization_state["iteration"])
+
+            iomesh.write_out_mesh(
+                self.db.geometry_db.mesh,
+                self.db.parameter_db.gmsh_file_path,
+                f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
+            )
+
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
         if self.db.parameter_db.problem_type == "shape":
@@ -364,9 +389,7 @@ class XDMFFileManager(IOManager):
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
-        self.save_mesh = self.config.getboolean("Output", "save_mesh")
 
-        self.has_output = self.save_state or self.save_adjoint or self.save_gradient
         self.is_initialized = False
 
         self.state_xdmf_list: List[Union[str, List[str]]] = []
@@ -538,20 +561,6 @@ class XDMFFileManager(IOManager):
                     iteration,
                 )
 
-    def _save_mesh(self, iteration: int) -> None:
-        """Saves the mesh as .xdmf and Gmsh .msh file.
-
-        Args:
-            iteration: The current iteration count.
-
-        """
-        if self.save_mesh:
-            iomesh.write_out_mesh(
-                self.db.geometry_db.mesh,
-                self.db.parameter_db.gmsh_file_path,
-                f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
-            )
-
     def _write_xdmf_step(
         self,
         filename: str,
@@ -616,4 +625,3 @@ class XDMFFileManager(IOManager):
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
-        self._save_mesh(iteration)

@@ -29,7 +29,11 @@ from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _loggers
 from cashocs import _utils
@@ -129,10 +133,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.p_laplace_projector.solve()
                 self.has_solution = True
 
-                self.gradient_norm_squared = self.form_handler.scalar_product(
-                    self.db.function_db.gradient, self.db.function_db.gradient
-                )
-
             else:
                 self.form_handler.assembler.assemble(
                     self.form_handler.fe_shape_derivative_vector
@@ -153,11 +153,11 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
                 self.has_solution = True
 
-                self.gradient_norm_squared = self.form_handler.scalar_product(
-                    self.db.function_db.gradient, self.db.function_db.gradient
-                )
-
             self.db.callback.call_post()
+
+            self.gradient_norm_squared = self.form_handler.scalar_product(
+                self.db.function_db.gradient, self.db.function_db.gradient
+            )
 
         return self.db.function_db.gradient
 

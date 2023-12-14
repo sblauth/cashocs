@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v4.1.1
 
     - name: Install micromamba
       uses: mamba-org/setup-micromamba@v1
@@ -25,12 +25,12 @@ jobs:
         environment-file: .github/micromamba/testenv.yml
         create-args: >-
           fenics=2019
-          meshio>=5.0.0
-          pytest>=7.0.0
+          meshio>=5.3.0
+          pytest>=7.2.0
           gmsh>=4.8
           scipy
-          occt<=7.7.0
           matplotlib
+          petsc<=3.19
           python=3.11
 
     - name: Install package
@@ -56,7 +56,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v4.1.1
 
     - name: Install micromamba
       uses: mamba-org/setup-micromamba@v1
@@ -64,13 +64,13 @@ jobs:
         environment-file: .github/micromamba/testenv.yml
         create-args: >-
           fenics=2019
-          meshio>=5.0.0
-          pytest>=7.0.0
+          meshio>=5.3.0
+          pytest>=7.2.0
           gmsh>=4.8
           scipy
-          occt<=7.7.0
           mpich
           matplotlib
+          petsc<=3.19
           python=3.11
 
     - name: Install package

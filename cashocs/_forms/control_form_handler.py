@@ -24,8 +24,13 @@ from typing import List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from petsc4py import PETSc
-import ufl
-import ufl.algorithms
+
+try:
+    import ufl_legacy as ufl
+    import ufl_legacy.algorithms as ufl_algorithms
+except ImportError:
+    import ufl
+    import ufl.algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -108,10 +113,10 @@ class ControlFormHandler(form_handler.FormHandler):
             self.assemblers.clear()
             for i in range(len(self.riesz_scalar_products)):
                 estimated_degree = np.maximum(
-                    ufl.algorithms.estimate_total_polynomial_degree(
+                    ufl_algorithms.estimate_total_polynomial_degree(
                         self.riesz_scalar_products[i]
                     ),
-                    ufl.algorithms.estimate_total_polynomial_degree(
+                    ufl_algorithms.estimate_total_polynomial_degree(
                         self.gradient_forms_rhs[i]
                     ),
                 )
@@ -206,7 +211,7 @@ class HessianFormHandler:
         self.w_2: List[ufl.Form] = []
         self.w_3: List[ufl.Form] = []
         self.hessian_rhs: List[ufl.Form] = []
-        self.test_directions = _utils.create_function_list(
+        self.test_directions: list[fenics.Function] = _utils.create_function_list(
             [c.function_space() for c in self.db.function_db.controls]
         )
         self.test_functions_control = [

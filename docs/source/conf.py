@@ -75,6 +75,7 @@ autodoc_mock_imports = [
     "petsc4py",
     "mpi4py",
     "ufl",
+    "ufl_legacy",
     "meshio",
     "dolfin",
     "configparser",
@@ -136,6 +137,7 @@ html_theme_options = {
     ],
     "logo": {"text": "cashocs", "alt_text": "cashocs"},
     "navbar_align": "content",
+    "show_version_warning_banner": True,
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}

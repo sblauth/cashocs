@@ -1102,6 +1102,7 @@ def test_stepsize2():
 
 def test_global_deformation():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "global_deformation", "True")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)

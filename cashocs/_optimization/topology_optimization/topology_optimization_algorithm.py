@@ -24,8 +24,11 @@ from typing import Callable, cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    from ufl_legacy import algorithms as ufl_algorithms
+except ImportError:
+    from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -42,6 +45,8 @@ if TYPE_CHECKING:
 
 class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorithm):
     """Parent class for solution algorithms for topology optimization."""
+
+    form_handler: _forms.ControlFormHandler
 
     def __init__(
         self,
@@ -104,7 +109,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             The fenics measure which is used for projecting the topological derivative.
 
         """
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         is_everywhere = False
         subdomain_id_list = []
         for integral in self.form_handler.riesz_scalar_products[0].integrals():
@@ -159,10 +163,10 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             )
         except (AssertionError, ValueError):
             estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
+                ufl_algorithms.estimate_total_polynomial_degree(
                     self.form_handler.riesz_scalar_products[0]
                 ),
-                ufl.algorithms.estimate_total_polynomial_degree(rhs),
+                ufl_algorithms.estimate_total_polynomial_degree(rhs),
             )
             self.assembler = fenics.SystemAssembler(
                 modified_scalar_product[0],
@@ -342,9 +346,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         gamma = self.scalar_product(self.levelset_function, self.levelset_function)
         self.projected_gradient.vector().vec().aypx(
-            0.0,
-            self.topological_derivative_vertex.vector().vec()
-            - beta / gamma * self.levelset_function.vector().vec(),
+            0.0, self.topological_derivative_vertex.vector().vec()
+        )
+        self.projected_gradient.vector().apply("")
+        self.projected_gradient.vector().vec().axpby(
+            -beta / gamma, 1.0, self.levelset_function.vector().vec()
         )
         self.projected_gradient.vector().apply("")
 
@@ -461,12 +467,14 @@ class ConvexCombinationAlgorithm(LevelSetTopologyAlgorithm):
             stepsize: The stepsize which is used to update the levelset function.
 
         """
-        self.levelset_function.vector().vec().aypx(
+        self.levelset_function.vector().vec().axpby(
+            stepsize / self.norm(self.topological_derivative_vertex),
             0.0,
-            (1.0 - stepsize) * self.levelset_function_prev.vector().vec()
-            + stepsize
-            * self.topological_derivative_vertex.vector().vec()
-            / self.norm(self.topological_derivative_vertex),
+            self.topological_derivative_vertex.vector().vec(),
+        )
+        self.levelset_function.vector().apply("")
+        self.levelset_function.vector().vec().axpy(
+            1.0 - stepsize, self.levelset_function_prev.vector().vec()
         )
         self.levelset_function.vector().apply("")
         if self.re_normalize_levelset:
@@ -491,18 +499,18 @@ class SphereCombinationAlgorithm(LevelSetTopologyAlgorithm):
             / self.norm(self.topological_derivative_vertex)
         )
 
-        a = (
-            float(np.sin((1.0 - stepsize) * angle))
-            * self.levelset_function_prev.vector().vec()
+        self.levelset_function.vector().vec().axpby(
+            float(1.0 / np.sin(angle)) * float(np.sin((1.0 - stepsize) * angle)),
+            0.0,
+            self.levelset_function_prev.vector().vec(),
         )
-        b = (
-            float(
+        self.levelset_function.vector().vec().axpby(
+            float(1.0 / np.sin(angle))
+            * float(
                 np.sin(stepsize * angle) / self.norm(self.topological_derivative_vertex)
-            )
-            * self.topological_derivative_vertex.vector().vec()
-        )
-        self.levelset_function.vector().vec().aypx(
-            0.0, float(1.0 / np.sin(angle)) * (a + b)
+            ),
+            1.0,
+            self.topological_derivative_vertex.vector().vec(),
         )
         self.levelset_function.vector().apply("")
         if self.re_normalize_levelset:

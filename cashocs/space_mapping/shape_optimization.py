@@ -27,7 +27,11 @@ from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from typing_extensions import Literal
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -252,9 +256,9 @@ class ParameterExtraction:
         self.coordinates_initial = coarse_model.coordinates_initial
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.mesh)
         self.deformation_handler = geometry.DeformationHandler(
-            self.mesh, a_priori_tester, a_posteriori_tester
+            self.mesh, a_priori_tester, intersection_tester
         )
 
         self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
@@ -368,15 +372,15 @@ class SpaceMappingProblem:
 
         self.deformation_space = fenics.VectorFunctionSpace(self.x, "CG", 1)
         a_priori_tester = mesh_testing.APrioriMeshTester(self.fine_model.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.fine_model.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.fine_model.mesh)
         self.deformation_handler_fine = geometry.DeformationHandler(
-            self.fine_model.mesh, a_priori_tester, a_posteriori_tester
+            self.fine_model.mesh, a_priori_tester, intersection_tester
         )
 
         a_priori_tester = mesh_testing.APrioriMeshTester(self.coarse_model.mesh)
-        a_posteriori_tester = mesh_testing.APosterioriMeshTester(self.coarse_model.mesh)
+        intersection_tester = mesh_testing.IntersectionTester(self.coarse_model.mesh)
         self.deformation_handler_coarse = geometry.DeformationHandler(
-            self.coarse_model.mesh, a_priori_tester, a_posteriori_tester
+            self.coarse_model.mesh, a_priori_tester, intersection_tester
         )
 
         self.z_star = [fenics.Function(self.deformation_space)]
@@ -553,7 +557,7 @@ class SpaceMappingProblem:
         if self.converged:
             if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file)
+                    json.dump(self.space_mapping_history, file, indent=4)
             fenics.MPI.barrier(fenics.MPI.comm_world)
             output = (
                 f"\nStatistics --- "
@@ -576,9 +580,10 @@ class SpaceMappingProblem:
             if self.memory_size > 0:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
-                    self.u[0].vector().vec().aypx(
+                    self.u[0].vector().vec().axpby(
+                        1.0 / divisor,
                         0.0,
-                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                        self.h[0].vector().vec() - self.v[0].vector().vec(),
                     )
                     self.u[0].vector().apply("")
 
@@ -587,9 +592,10 @@ class SpaceMappingProblem:
 
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
-                    self.u[0].vector().vec().aypx(
+                    self.u[0].vector().vec().axpby(
+                        1.0 / divisor,
                         0.0,
-                        (self.h[0].vector().vec() - self.v[0].vector().vec()) / divisor,
+                        self.h[0].vector().vec() - self.v[0].vector().vec(),
                     )
                     self.u[0].vector().apply("")
 
@@ -660,8 +666,8 @@ class SpaceMappingProblem:
                         "Space Mapping Backtracking Line Search",
                         "The line search did not converge.",
                     )
-                self.transformation.vector().vec().aypx(
-                    0.0, self.stepsize * self.h[0].vector().vec()
+                self.transformation.vector().vec().axpby(
+                    self.stepsize, 0.0, self.h[0].vector().vec()
                 )
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
@@ -854,10 +860,8 @@ class SpaceMappingProblem:
                 dy = -self._scalar_product(out, self.difference)
                 y2 = self._scalar_product(self.difference, self.difference)
 
-                self.difference[0].vector().vec().aypx(
-                    0.0,
-                    -self.difference[0].vector().vec()
-                    - 2 * y2 / dy * out[0].vector().vec(),
+                self.difference[0].vector().vec().axpby(
+                    -2 * y2 / dy, -1.0, out[0].vector().vec()
                 )
                 self.difference[0].vector().apply("")
                 beta = -self._scalar_product(self.difference, q) / dy

@@ -27,7 +27,11 @@ from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from typing_extensions import Literal
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -418,10 +422,10 @@ class SpaceMappingProblem:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
         for i in range(len(self.x)):
-            self.x[i].vector().vec().aypx(
+            self.x[i].vector().vec().axpby(
+                self.scaling_factor,
                 0.0,
-                self.scaling_factor
-                * self.ips_to_fine[i].interpolate(self.z_star[i]).vector().vec(),
+                self.ips_to_fine[i].interpolate(self.z_star[i]).vector().vec(),
             )
             self.x[i].vector().apply("")
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
@@ -501,7 +505,7 @@ class SpaceMappingProblem:
         if self.converged:
             if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file)
+                    json.dump(self.space_mapping_history, file, indent=4)
             fenics.MPI.barrier(fenics.MPI.comm_world)
             output = (
                 f"\nStatistics --- "
@@ -527,10 +531,10 @@ class SpaceMappingProblem:
                 if self.broyden_type == "good":
                     divisor = self._scalar_product(self.h, self.v)
                     for i in range(len(self.u)):
-                        self.u[i].vector().vec().aypx(
+                        self.u[i].vector().vec().axpby(
+                            1.0 / divisor,
                             0.0,
-                            (self.h[i].vector().vec() - self.v[i].vector().vec())
-                            / divisor,
+                            self.h[i].vector().vec() - self.v[i].vector().vec(),
                         )
                         self.u[i].vector().apply("")
 
@@ -540,10 +544,10 @@ class SpaceMappingProblem:
                 elif self.broyden_type == "bad":
                     divisor = self._scalar_product(self.temp, self.temp)
                     for i in range(len(self.u)):
-                        self.u[i].vector().vec().aypx(
+                        self.u[i].vector().vec().axpby(
+                            1.0 / divisor,
                             0.0,
-                            (self.h[i].vector().vec() - self.v[i].vector().vec())
-                            / divisor,
+                            self.h[i].vector().vec() - self.v[i].vector().vec(),
                         )
                         self.u[i].vector().apply("")
 
@@ -813,10 +817,8 @@ class SpaceMappingProblem:
                 y2 = self._scalar_product(self.difference, self.difference)
 
                 for i in range(len(self.difference)):
-                    self.difference[i].vector().vec().aypx(
-                        0.0,
-                        -self.difference[i].vector().vec()
-                        - 2 * y2 / dy * out[i].vector().vec(),
+                    self.difference[i].vector().vec().axpby(
+                        -2 * y2 / dy, -1.0, out[i].vector().vec()
                     )
                     self.difference[i].vector().apply("")
                 beta = -self._scalar_product(self.difference, q) / dy
