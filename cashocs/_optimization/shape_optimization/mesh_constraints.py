@@ -22,6 +22,7 @@ from __future__ import annotations
 import abc
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from scipy import sparse
 
@@ -1219,11 +1220,14 @@ class AngleConstraint(MeshConstraint):
         constraint_filter[bad_cell_idx] = True
         constraint_filter = np.repeat(constraint_filter, self.no_angles)
 
-        if len(bad_cell_idx) > 0:
+        total_bad_cells = self.mesh.mpi_comm().allreduce(len(bad_cell_idx), op=MPI.SUM)
+        if total_bad_cells > 0:
             _loggers.debug(
-                "Found bad mesh cells in the initial mesh. "
+                f"Found {total_bad_cells} bad mesh cells in the initial mesh. "
                 "Fixating these cells for the optimization."
             )
+
+        if len(bad_cell_idx) > 0:
             bad_vertex_idcs = self.cells[bad_cell_idx]
             bad_vertex_idcs = np.unique(bad_vertex_idcs)
 
@@ -1305,11 +1309,11 @@ class TriangleAngleConstraint(AngleConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.triangle_angles(self.mesh)
+        values = values[: 3 * self.ghost_offset]
 
         if self.constraint_filter is not None:
             values[self.constraint_filter] = 100.0
 
-        values = values[: 3 * self.ghost_offset]
         values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
@@ -1398,11 +1402,11 @@ class DihedralAngleConstraint(AngleConstraint):
         self.mesh.bounding_box_tree().build(self.mesh)
 
         values: np.ndarray = mesh_quality.tetrahedron_angles(self.mesh)
+        values = values[: 6 * self.ghost_offset]
 
         if self.constraint_filter is not None:
             values[self.constraint_filter] = 100.0
 
-        values = values[: 6 * self.ghost_offset]
         values = self.min_angle - values
 
         self.mesh.coordinates()[:, :] = old_coords
