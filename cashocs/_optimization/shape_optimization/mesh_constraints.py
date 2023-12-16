@@ -1444,3 +1444,217 @@ class DihedralAngleConstraint(AngleConstraint):
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
+
+
+class CurvatureConstraint(MeshConstraint):
+    type = "inequality"
+
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        boundaries: fenics.MeshFunction,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        super().__init__(mesh, deformation_space)
+
+        self.config = config
+        self.boundaries = boundaries
+
+        self.dim = self.mesh.geometry().dim()
+        self.mesh.init(self.mesh.topology().dim() - 1, 0)
+        self.facets = np.array(
+            self.mesh.topology()(self.mesh.topology().dim() - 1, 0)()
+        ).reshape(-1, self.dim)
+        self.bbtree = self.mesh.bounding_box_tree()
+        self.cells = self.mesh.cells()
+
+        self.curvature_boundary_idx = [1]
+        self.curvature_idcs, self.curvature_vertex_idcs = self._compute_curvature_idx(
+            self.curvature_boundary_idx
+        )
+
+        self.signum, self.neighboring_cells_list = self._compute_signum()
+
+    def _compute_signum(self) -> np.ndarray:
+        coordinates = self.mesh.coordinates().copy()
+        neighboring_cells_list = []
+        S = np.array([[0.0, 1.0], [-1.0, 0.0]])
+
+        signum = []
+        for i in self.curvature_vertex_idcs:
+            x_i = coordinates[i]
+            neighboring_cells_idx = np.array(
+                self.bbtree.compute_entity_collisions(fenics.Point(x_i))
+            )
+            mask = (
+                np.isin(
+                    self.cells[neighboring_cells_idx], self.curvature_vertex_idcs
+                ).sum(axis=1)
+                == self.dim
+            )
+            neighboring_cells_idx = neighboring_cells_idx[mask]
+            neighboring_cells_list.append(neighboring_cells_idx)
+
+            neighbor_vertices = self.cells[neighboring_cells_idx]
+            # ToDo: Check that the reshape also works in 3D
+            neighbor_vertices = neighbor_vertices[neighbor_vertices != i].reshape(
+                -1, self.dim
+            )
+
+            mask = np.isin(neighbor_vertices, self.curvature_vertex_idcs)
+            surface_vertices = neighbor_vertices[mask].reshape(-1, self.dim - 1)
+            interior_vertices = neighbor_vertices[~mask]
+
+            if self.dim == 3:
+                sign_i = []
+                for j in range(len(interior_vertices)):
+                    x_j = coordinates[surface_vertices[j][0]]
+                    x_k = coordinates[surface_vertices[j][1]]
+
+                    r_ij = x_i - x_j
+                    r_ik = x_i - x_k
+
+                    n = np.cross(r_ij, r_ik)
+                    sgn = np.sign(np.dot(n, x_i - coordinates[interior_vertices[j]]))
+
+                    sign_i.append(sgn)
+
+                signum.append(sign_i)
+
+            elif self.dim == 2:
+                x_i = x
+                x_j = coordinates[surface_vertices[0]]
+                x_j_int = coordinates[interior_vertices[0]]
+                x_k = coordinates[surface_vertices[1]]
+                x_k_int = coordinates[interior_vertices[1]]
+
+                r_ij = x_i - x_j
+                r_ik = x_i - x_k
+
+                n_ij = S @ r_ij
+                n_ik = S @ r_ik
+
+                signum_j = np.sign(np.dot(n_ij, (x_i - x_j_int)))
+                signum_k = np.sign(np.dot(n_ik, (x_i - x_k_int)))
+
+                signum.append([signum_j, signum_k])
+
+        return signum, neighboring_cells_list
+
+    def _compute_curvature_idx(
+        self, curvature_boundary_idx: list[int]
+    ) -> tuple[np.ndarray, np.ndarray]:
+        temp_curvature_idx = []
+        for i in curvature_boundary_idx:
+            idx_i = self.facets[self.boundaries.where_equal(i)]
+            temp_curvature_idx += idx_i.reshape(-1).tolist()
+
+        curvature_vertex_idcs = np.unique(temp_curvature_idx)
+
+        if len(curvature_vertex_idcs) > 0:
+            curvature_idcs_global = self.global_vertex_indices[curvature_vertex_idcs]
+        else:
+            curvature_idcs_global = []
+
+        mask = np.isin(curvature_idcs_global, self.global_vertex_indices_owned)
+        curvature_idcs_local_owned = curvature_vertex_idcs[mask]
+
+        if self.dim == 2:
+            curvature_idcs_local = np.array(
+                [
+                    self.dim * curvature_idcs_local_owned,
+                    self.dim * curvature_idcs_local_owned + 1,
+                ]
+            ).T.reshape(-1)
+        elif self.dim == 3:
+            curvature_idcs_local = np.array(
+                [
+                    self.dim * curvature_idcs_local_owned,
+                    self.dim * curvature_idcs_local_owned + 1,
+                    self.dim * curvature_idcs_local_owned + 2,
+                ]
+            ).T.reshape(-1)
+
+        return curvature_idcs_local, curvature_vertex_idcs
+
+    def _compute_curvature(self):
+        pass
+
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        coordinates = coords_seq.reshape(-1, self.dim)
+        S = np.array([[0.0, 1.0], [-1.0, 0.0]])
+
+        curvatures = []
+        for m, i in enumerate(self.curvature_vertex_idcs):
+            x_i = coordinates[i]
+            neighboring_cells = self.neighboring_cells_list[m]
+            signum = self.signum[m]
+
+            neighbor_vertices = self.cells[neighboring_cells]
+            neighbor_vertices = neighbor_vertices[neighbor_vertices != i].reshape(
+                -1, self.dim
+            )
+
+            mask = np.isin(neighbor_vertices, self.curvature_vertex_idcs)
+            surface_vertices = neighbor_vertices[mask].reshape(-1, self.dim - 1)
+            interior_vertices = neighbor_vertices[~mask]
+
+            if self.dim == 2:
+                x_j = coordinates[surface_vertices[0]]
+                x_k = coordinates[surface_vertices[1]]
+
+                r_ij = x_i - x_j
+                r_ik = x_i - x_k
+
+                n_ij = signum[0] * S @ r_ij
+                n_ik = signum[1] * S @ r_ik
+
+                n_i = n_ij + n_ik
+
+                kappa_j = (
+                    2
+                    * np.dot(n_i, r_ij)
+                    / (np.linalg.norm(r_ij) ** 2 * np.linalg.norm(n_i))
+                )
+                kappa_k = (
+                    2
+                    * np.dot(n_i, r_ik)
+                    / (np.linalg.norm(r_ik) ** 2 * np.linalg.norm(n_i))
+                )
+
+                kappa = 0.5 * (kappa_j + kappa_k)
+                curvatures.append(kappa)
+
+            elif self.dim == 3:
+                n_i = np.zeros(3)
+                for j in range(len(interior_vertices)):
+                    x_j = coordinates[surface_vertices[j][0]]
+                    x_k = coordinates[surface_vertices[j][1]]
+
+                    r_ij = x_i - x_j
+                    r_ik = x_i - x_k
+
+                    n = signum[j] * np.cross(r_ij, r_ik)
+                    n_i += n
+
+                unique_neighbors = np.unique(surface_vertices)
+                kappa = 0.0
+                for neighbor in unique_neighbors:
+                    x_neighbor = coordinates[neighbor]
+                    r_ij = x_i - x_neighbor
+
+                    kappa_normal = (
+                        2
+                        * np.dot(n_i, r_ij)
+                        / (np.linalg.norm(r_ij) ** 2 * np.linalg.norm(n_i))
+                    )
+                    kappa += kappa_normal
+
+                kappa /= len(unique_neighbors)
+                curvatures.append(kappa)
+
+        return curvatures
+
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        pass
