@@ -1497,7 +1497,6 @@ class CurvatureConstraint(MeshConstraint):
             neighboring_cells_list.append(neighboring_cells_idx)
 
             neighbor_vertices = self.cells[neighboring_cells_idx]
-            # ToDo: Check that the reshape also works in 3D
             neighbor_vertices = neighbor_vertices[neighbor_vertices != i].reshape(
                 -1, self.dim
             )
@@ -1506,7 +1505,24 @@ class CurvatureConstraint(MeshConstraint):
             surface_vertices = neighbor_vertices[mask].reshape(-1, self.dim - 1)
             interior_vertices = neighbor_vertices[~mask]
 
-            if self.dim == 3:
+            if self.dim == 2:
+                x_j = coordinates[surface_vertices[0][0]]
+                x_j_int = coordinates[interior_vertices[0]]
+                x_k = coordinates[surface_vertices[1][0]]
+                x_k_int = coordinates[interior_vertices[1]]
+
+                r_ij = x_i - x_j
+                r_ik = x_i - x_k
+
+                n_ij = S @ r_ij
+                n_ik = S @ r_ik
+
+                signum_j = np.sign(np.dot(n_ij, (x_i - x_j_int)))
+                signum_k = np.sign(np.dot(n_ik, (x_i - x_k_int)))
+
+                signum.append([signum_j, signum_k])
+
+            elif self.dim == 3:
                 sign_i = []
                 for j in range(len(interior_vertices)):
                     x_j = coordinates[surface_vertices[j][0]]
@@ -1521,24 +1537,6 @@ class CurvatureConstraint(MeshConstraint):
                     sign_i.append(sgn)
 
                 signum.append(sign_i)
-
-            elif self.dim == 2:
-                x_i = x
-                x_j = coordinates[surface_vertices[0]]
-                x_j_int = coordinates[interior_vertices[0]]
-                x_k = coordinates[surface_vertices[1]]
-                x_k_int = coordinates[interior_vertices[1]]
-
-                r_ij = x_i - x_j
-                r_ik = x_i - x_k
-
-                n_ij = S @ r_ij
-                n_ik = S @ r_ik
-
-                signum_j = np.sign(np.dot(n_ij, (x_i - x_j_int)))
-                signum_k = np.sign(np.dot(n_ik, (x_i - x_k_int)))
-
-                signum.append([signum_j, signum_k])
 
         return signum, neighboring_cells_list
 
@@ -1578,9 +1576,6 @@ class CurvatureConstraint(MeshConstraint):
 
         return curvature_idcs_local, curvature_vertex_idcs
 
-    def _compute_curvature(self):
-        pass
-
     def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
         coordinates = coords_seq.reshape(-1, self.dim)
         S = np.array([[0.0, 1.0], [-1.0, 0.0]])
@@ -1601,8 +1596,8 @@ class CurvatureConstraint(MeshConstraint):
             interior_vertices = neighbor_vertices[~mask]
 
             if self.dim == 2:
-                x_j = coordinates[surface_vertices[0]]
-                x_k = coordinates[surface_vertices[1]]
+                x_j = coordinates[surface_vertices[0][0]]
+                x_k = coordinates[surface_vertices[1][0]]
 
                 r_ij = x_i - x_j
                 r_ik = x_i - x_k
@@ -1623,8 +1618,8 @@ class CurvatureConstraint(MeshConstraint):
                     / (np.linalg.norm(r_ik) ** 2 * np.linalg.norm(n_i))
                 )
 
-                kappa = 0.5 * (kappa_j + kappa_k)
-                curvatures.append(kappa)
+                curvatures.append(kappa_j)
+                # curvatures.append(kappa_k)
 
             elif self.dim == 3:
                 n_i = np.zeros(3)
@@ -1654,7 +1649,122 @@ class CurvatureConstraint(MeshConstraint):
                 kappa /= len(unique_neighbors)
                 curvatures.append(kappa)
 
-        return curvatures
+        return np.array(curvatures)
+
+    def _compute_gradient_2D_py(self, coords_seq):
+        coordinates = coords_seq.reshape(-1, self.dim)
+        S = np.array([[0.0, 1.0], [-1.0, 0.0]])
+
+        rows = []
+        cols = []
+        vals = []
+
+        for m, i in enumerate(self.curvature_vertex_idcs):
+            x_i = coordinates[i]
+            neighboring_cells = self.neighboring_cells_list[m]
+            signum = self.signum[m]
+
+            neighbor_vertices = self.cells[neighboring_cells]
+            neighbor_vertices = neighbor_vertices[neighbor_vertices != i].reshape(
+                -1, self.dim
+            )
+
+            mask = np.isin(neighbor_vertices, self.curvature_vertex_idcs)
+            surface_vertices = neighbor_vertices[mask].reshape(-1, self.dim - 1)
+            interior_vertices = neighbor_vertices[~mask]
+
+            if self.dim == 2:
+                j = surface_vertices[0][0]
+                k = surface_vertices[1][0]
+                x_j = coordinates[j]
+                x_k = coordinates[k]
+
+                r_ij = x_i - x_j
+                r_ik = x_i - x_k
+
+                n_ij = signum[0] * S @ r_ij
+                n_ik = signum[1] * S @ r_ik
+                n_i = n_ij + n_ik
+
+                d_rijvec_dj = -np.identity(2)
+                d_rij_dj = r_ij / np.linalg.norm(r_ij) @ d_rijvec_dj
+                d_nivec_dj = signum[0] * S @ d_rijvec_dj
+                d_ni_dj = signum[0] * n_i / np.linalg.norm(n_i) @ S @ d_rijvec_dj
+
+                dkappa_dj = (
+                    2.0
+                    / (np.linalg.norm(r_ij) ** 2 * np.linalg.norm(n_i))
+                    * (
+                        n_i @ d_rijvec_dj
+                        + r_ij @ d_nivec_dj
+                        - 2.0 / np.linalg.norm(r_ij) * np.dot(r_ij, n_i) * d_rij_dj
+                        - 1.0 / np.linalg.norm(n_i) * np.dot(r_ij, n_i) * d_ni_dj
+                    )
+                )
+
+                d_rikvec_dk = -np.identity(2)
+                d_nivec_dk = signum[1] * S @ d_rikvec_dk
+                d_ni_dk = signum[1] * n_i / np.linalg.norm(n_i) @ S @ d_rikvec_dk
+                dkappa_dk = (
+                    2.0
+                    / (np.linalg.norm(r_ij) ** 2 * np.linalg.norm(n_i))
+                    * (
+                        r_ij @ d_nivec_dk
+                        - 1.0 / np.linalg.norm(n_i) * np.dot(r_ij, n_i) * d_ni_dk
+                    )
+                )
+
+                d_rijvec_di = np.identity(2)
+                d_rikvec_di = np.identity(2)
+                d_rij_di = r_ij / np.linalg.norm(r_ij) @ d_rijvec_di
+                d_nivec_di = S @ (signum[0] * d_rijvec_di + signum[1] * d_rikvec_di)
+                d_ni_di = (
+                    n_i
+                    / np.linalg.norm(n_i)
+                    @ S
+                    @ (signum[0] * d_rijvec_di + signum[1] * d_rikvec_di)
+                )
+
+                dkappa_di = (
+                    2.0
+                    / (np.linalg.norm(r_ij) ** 2 * np.linalg.norm(n_i))
+                    * (
+                        n_i @ d_rijvec_di
+                        + r_ij @ d_nivec_di
+                        - 2.0 / np.linalg.norm(r_ij) * np.dot(r_ij, n_i) * d_rij_di
+                        - 1.0 / np.linalg.norm(n_i) * np.dot(r_ij, n_i) * d_ni_di
+                    )
+                )
+
+                # rows += [2 * m, 2 * m, 2 * m, 2 * m, 2 * m, 2 * m]
+                rows += [m, m, m, m, m, m]
+                cols += [
+                    2 * i + 0,
+                    2 * i + 1,
+                    2 * j + 0,
+                    2 * j + 1,
+                    2 * k + 0,
+                    2 * k + 1,
+                ]
+                vals += [
+                    dkappa_di[0],
+                    dkappa_di[1],
+                    dkappa_dj[0],
+                    dkappa_dj[1],
+                    dkappa_dk[0],
+                    dkappa_dk[1],
+                ]
+        return rows, cols, vals
 
     def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
-        pass
+        rows, cols, vals = self._compute_gradient_2D_py(coords_seq)
+
+        # cols_local = self.v2d[cols]
+        # cols = self.l2g_dofs[cols_local]
+
+        csr = rows, cols, vals
+        shape = (int(len(self.curvature_vertex_idcs)), self.no_vertices * self.dim)
+
+        gradient = _utils.linalg.sparse2scipy(csr, shape)
+
+        return gradient
