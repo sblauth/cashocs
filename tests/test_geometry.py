@@ -311,7 +311,7 @@ def test_convert_coordinate_defo_to_dof_defo():
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
     intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
+    deformation_handler = cashocs.geometry.DeformationHandler(
         mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
@@ -334,7 +334,7 @@ def test_convert_dof_defo_to_coordinate_defo(rng):
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
     intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
+    deformation_handler = cashocs.geometry.DeformationHandler(
         mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
@@ -357,7 +357,7 @@ def test_move_mesh():
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
     intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
+    deformation_handler = cashocs.geometry.DeformationHandler(
         mesh, a_priori_tester, intersection_tester
     )
 
