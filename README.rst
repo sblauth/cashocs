@@ -217,7 +217,7 @@ as well as
 
 	Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
 	Sebastian Blauth
-    SoftwareX, Volume 24, 2023
+	SoftwareX, Volume 24, 2023
 	https://doi.org/10.1016/j.softx.2023.101577
 
 
