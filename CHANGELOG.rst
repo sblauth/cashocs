@@ -12,6 +12,8 @@ of the maintenance releases, please take a look at
 
 * Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
 
+* The class :py:class:`cashocs.DeformationHandler` cannot be used anymore. Instead, use the class by calling :py:class:`cashocs.geometry.DeformationHandler`. 
+
 * Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
 
 * Callbacks can now have one parameter - the parameter supplied when being called during runtime is the optimization problem itself

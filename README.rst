@@ -202,7 +202,7 @@ for the demo programs is located inside the "demos" folder.
 Citing
 ======
 
-If you use cashocs for your research, please cite the following paper
+If you use cashocs for your research, please cite the following papers
 
 .. code-block:: text
 
@@ -211,13 +211,14 @@ If you use cashocs for your research, please cite the following paper
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
 
-as well as the preprint
+as well as
 
 .. code-block:: text
 
 	Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
 	Sebastian Blauth
-	https://doi.org/10.48550/arXiv.2306.09828
+	SoftwareX, Volume 24, 2023
+	https://doi.org/10.1016/j.softx.2023.101577
 
 
 Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper
@@ -266,13 +267,16 @@ If you are using BibTeX, you can use the following entries
 
 .. code-block:: bibtex
 
-	@Misc{Blauth2023Version,
-	  author        = {Sebastian Blauth},
-	  title         = {{Version 2.0 -- cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
-	  year          = {2023},
-	  archiveprefix = {arXiv},
-	  eprint        = {2306.09828},
-	  primaryclass  = {math.OC},
+	@Article{Blauth2023Version,
+	  author   = {Sebastian Blauth},
+	  journal  = {SoftwareX},
+	  title    = {{Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
+	  year     = {2023},
+	  issn     = {2352-7110},
+	  pages    = {101577},
+	  volume   = {24},
+	  doi      = {https://doi.org/10.1016/j.softx.2023.101577},
+	  keywords = {PDE constrained optimization, Shape optimization, Topology optimization, Space mapping},
 	}
 
 
@@ -281,7 +285,7 @@ If you are using BibTeX, you can use the following entries
 	@Article{Blauth2021Nonlinear,
 	  author   = {Sebastian Blauth},
 	  journal  = {SIAM J. Optim.},
-	  title    = {{N}onlinear {C}onjugate {G}radient {M}ethods for {PDE} {C}onstrained {S}hape {O}ptimization {B}ased on {S}teklov-{P}oincaré-{T}ype {M}etrics},
+	  title    = {{Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics}},
 	  year     = {2021},
 	  number   = {3},
 	  pages    = {1658--1689},
@@ -296,7 +300,7 @@ If you are using BibTeX, you can use the following entries
 	@Article{Blauth2023Space,
 	  author   = {Blauth, Sebastian},
 	  journal  = {SIAM J. Optim.},
-	  title    = {Space {M}apping for {PDE} {C}onstrained {S}hape {O}ptimization},
+	  title    = {{Space Mapping for PDE Constrained Shape Optimization}},
 	  year     = {2023},
 	  issn     = {1052-6234,1095-7189},
 	  number   = {3},
@@ -314,7 +318,7 @@ If you are using BibTeX, you can use the following entries
 	@Article{Blauth2023Quasi,
 	  author   = {Blauth, Sebastian and Sturm, Kevin},
 	  journal  = {Struct. Multidiscip. Optim.},
-	  title    = {Quasi-{N}ewton methods for topology optimization using a level-set method},
+	  title    = {{Quasi-Newton methods for topology optimization using a level-set method}},
 	  year     = {2023},
 	  issn     = {1615-147X,1615-1488},
 	  number   = {9},

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -49,7 +49,6 @@ from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import interpolate_levelset_function_to_cells
 from cashocs._utils import Interpolator
 from cashocs.geometry import compute_mesh_quality
-from cashocs.geometry import DeformationHandler
 from cashocs.geometry import interval_mesh
 from cashocs.geometry import regular_box_mesh
 from cashocs.geometry import regular_mesh
@@ -132,7 +131,6 @@ __all__ = [
     "LogLevel",
     "regular_mesh",
     "regular_box_mesh",
-    "DeformationHandler",
     "compute_mesh_quality",
     "newton_solve",
     "picard_iteration",
