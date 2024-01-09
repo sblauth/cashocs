@@ -29,15 +29,14 @@
 # \begin{alignedat}{2}
 #     -\text{div}(\alpha_\Omega \sigma(u)) &= f \quad &&\text{ in } \mathrm{D},\\
 #     u &= 0 \quad &&\text{ on } \Gamma_D,\\
-#     \alpha_\Omega \sigma(u)n &= g \quad &&\text{ on } \Gamma_N,
-# \end{alignedat} \\
-# & \qquad V_L \leq |\Omega| \leq V_U. 
+#     \alpha_\Omega \sigma(u)n &= g \quad &&\text{ on } \Gamma_N,\\
+#     V_L &\leq |\Omega| \leq V_U.
+# \end{alignedat} 
 # \end{align}
 # $$
 #
 # As before, {math}`u` is the deformation of a linear elastic material, {math}`\sigma(u)`
-# is Hooke's tensor. As in {ref}`demo_cantilever`, the coefficient
-# {math}`\alpha_\Omega` is given by {math}`\alpha_\Omega(x) =
+# is Hooke's tensor. The coefficient {math}`\alpha_\Omega` is given by {math}`\alpha_\Omega(x) =
 # \chi_\Omega(x)\alpha_\mathrm{in} + \chi_{\Omega^c}(x) \alpha_\mathrm{out}` and it
 # models the elasticity of the material. In contrast to before, where we used a 
 # penalization of the used volume, we introduce an actual volume constraint here
@@ -198,7 +197,7 @@ top = cashocs.TopologyOptimizationProblem(
 
 # Additionally, in contrast to the previous demos, we need to specify the volume
 # constraint. For that we have to call the Projection class 
-# {py:class}`Projection_levelset <cashocs.projection_levelset>`. We choose the 
+# {py:class}`projection_levelset <cashocs.projection_levelset>`. We choose the 
 # lower border of the volume restriction as 0.5 and the upper one as 1.25, respectively.
 
 vol_low = 0.5
