@@ -37,10 +37,10 @@ from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
 from cashocs._optimization.optimal_control import optimal_control_problem
+from cashocs._optimization.topology_optimization import bisection
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 from cashocs._optimization.topology_optimization import topology_variable_abstractions
-from cashocs._optimization.topology_optimization import bisection
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -240,7 +240,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
 
-        self.projection = bisection.projection_levelset(self.levelset_function, volume_restriction)
+        self.projection = bisection.projection_levelset(
+            self.levelset_function, volume_restriction
+        )
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()

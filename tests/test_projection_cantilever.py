@@ -1,16 +1,17 @@
-from fenics import *
-import pytest
 import random
+
+from fenics import *
 import numpy as np
+import pytest
 
 import cashocs
 from cashocs._optimization.topology_optimization import bisection
 
 rng = np.random.RandomState(300696)
 
+
 @pytest.fixture
 def cantilever_problem(config_top):
-
     E = 1.0
     nu = 0.3
     plane_stress = True
@@ -64,33 +65,27 @@ def cantilever_problem(config_top):
     F = alpha * inner(sigma(u), eps(v)) * dx - dot(g, v) * ds(2)
     bcs = cashocs.create_dirichlet_bcs(V, Constant((0.0, 0.0)), boundaries, 1)
 
-    J = cashocs.IntegralFunctional(
-        alpha * inner(sigma(u), eps(u)) * dx
-    )
+    J = cashocs.IntegralFunctional(alpha * inner(sigma(u), eps(u)) * dx)
 
     kappa = (lambd + 3.0 * mu) / (lambd + mu)
     r_in = alpha_out / alpha_in
     r_out = alpha_in / alpha_out
 
-    dJ_in = (
-        Constant(alpha_in * (r_in - 1.0) / (kappa * r_in + 1.0) * (kappa + 1.0) / 2.0)
-        * (
-            Constant(2.0) * inner(sigma(u), eps(u))
-            + Constant((r_in - 1.0) * (kappa - 2.0) / (kappa + 2 * r_in - 1.0))
-            * tr(sigma(u))
-            * tr(eps(u))
-        )
+    dJ_in = Constant(
+        alpha_in * (r_in - 1.0) / (kappa * r_in + 1.0) * (kappa + 1.0) / 2.0
+    ) * (
+        Constant(2.0) * inner(sigma(u), eps(u))
+        + Constant((r_in - 1.0) * (kappa - 2.0) / (kappa + 2 * r_in - 1.0))
+        * tr(sigma(u))
+        * tr(eps(u))
     )
-    dJ_out = (
-        Constant(
-            -alpha_out * (r_out - 1.0) / (kappa * r_out + 1.0) * (kappa + 1.0) / 2.0
-        )
-        * (
-            Constant(2.0) * inner(sigma(u), eps(u))
-            + Constant((r_out - 1.0) * (kappa - 2.0) / (kappa + 2 * r_out - 1.0))
-            * tr(sigma(u))
-            * tr(eps(u))
-        )
+    dJ_out = Constant(
+        -alpha_out * (r_out - 1.0) / (kappa * r_out + 1.0) * (kappa + 1.0) / 2.0
+    ) * (
+        Constant(2.0) * inner(sigma(u), eps(u))
+        + Constant((r_out - 1.0) * (kappa - 2.0) / (kappa + 2 * r_out - 1.0))
+        * tr(sigma(u))
+        * tr(eps(u))
     )
 
     def update_level_set():
@@ -106,10 +101,10 @@ def cantilever_problem(config_top):
 @pytest.mark.parametrize(
     "algorithm,vol",
     [
-        ("sphere_combination", [rng.rand(), rng.rand() + 1.]),
-        ("convex_combination", [rng.rand(), rng.rand() + 1.]),
-        ("gradient_descent", [rng.rand(), rng.rand() + 1.]),
-        ("bfgs", [rng.rand(), rng.rand() + 1.]),
+        ("sphere_combination", [rng.rand(), rng.rand() + 1.0]),
+        ("convex_combination", [rng.rand(), rng.rand() + 1.0]),
+        ("gradient_descent", [rng.rand(), rng.rand() + 1.0]),
+        ("bfgs", [rng.rand(), rng.rand() + 1.0]),
         ("sphere_combination", [2 * rng.rand()]),
         ("convex_combination", [2 * rng.rand()]),
         ("gradient_descent", [2 * rng.rand()]),
@@ -119,15 +114,15 @@ def cantilever_problem(config_top):
 def test_topology_optimization_algorithms_for_cantilever(
     cantilever_problem, algorithm, vol
 ):
-    cantilever_problem.projection = bisection.projection_levelset(cantilever_problem.levelset_function,
-                                                                  volume_restriction=vol)
-    cantilever_problem.solve(
-        algorithm=algorithm, max_iter=2
+    cantilever_problem.projection = bisection.projection_levelset(
+        cantilever_problem.levelset_function, volume_restriction=vol
     )
-    volume = cantilever_problem.projection.evaluate(0., 0.)
+    cantilever_problem.solve(algorithm=algorithm, max_iter=2)
+    volume = cantilever_problem.projection.evaluate(0.0, 0.0)
     if len(vol) == 1:
         assert abs(volume - vol[0]) < cantilever_problem.projection.tolerance_bisect
     else:
-        res = (volume + cantilever_problem.projection.tolerance_bisect - vol[0]) * \
-              (volume - cantilever_problem.projection.tolerance_bisect - vol[1])
+        res = (volume + cantilever_problem.projection.tolerance_bisect - vol[0]) * (
+            volume - cantilever_problem.projection.tolerance_bisect - vol[1]
+        )
         assert res < 0
