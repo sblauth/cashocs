@@ -12,7 +12,7 @@ setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerabil
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
 typing_extensions
 myst-parser==2.0.0
-jupytext==1.16.0
+jupytext==1.16.1
 sphinx-favicon==1.0.1
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability
