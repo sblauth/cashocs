@@ -17,7 +17,7 @@ class projection_levelset:
     def __init__(
         self,
         levelset_function: fenics.Function,
-        volume_restriction: Union[float, list[float]] | None = None,
+        volume_restriction: Union[float, tuple[float]] | None = None,
     ) -> None:
         """Initializes a class to project the levelset function for topology
            optimization.
@@ -25,9 +25,11 @@ class projection_levelset:
         Args:
             levelset_function: A :py:class:`fenics.Function` which represents the
                 levelset function.
-            volume_restriction: A float or a list of floats that describes the
+            volume_restriction: A float or a tuple of floats that describes the
                 volume restriction that the levelset function should fulfill.
                 If this is ``None`` no projection is performed (default is ``None``).
+                For a float we have a equality constraint for the volume and for a
+                tuple a inequlity constraint for the volume.
 
         """
 
@@ -54,8 +56,8 @@ class projection_levelset:
                 self.volume_restriction = [self.volume_restriction[0], self.volume_restriction[0]]
             if self.volume_restriction[1] < self.volume_restriction[0]:
                 raise _exceptions.InputError("Bisection class", "volume_restriction",
-                                             "The lower bound of the volume restriction is bigger than the upper "
-                                             "bound.")
+                                             "The lower bound of the volume restriction is bigger
+                                             than the upper bound.")
 
         self.max_iter_bisect = 100
         self.tolerance_bisect = 1e-4
@@ -67,12 +69,12 @@ class projection_levelset:
            the levelset funtion.
 
         Args:
-            iterate: A float that describes the movement of the levelset function.
+            iterate: A float that describes the shift parameter for the levelset function.
                 It is the iterate in the bisection procedure. If the volume of the
                 actual shape represented by the levelset function is desired it
                 should be set to zero.
-            target: The target for the projection procedure. If the volume of the
-                actual shape represented by the levelset function is desired it
+            target: The target / desired volume for the projection procedure. If the volume 
+                of the actual shape represented by the levelset function is desired it
                 should be set to zero.
 
         Returns:
@@ -133,4 +135,4 @@ class projection_levelset:
             )
             self.levelset_function.vector().apply("")
         else:
-            return
+            return None
