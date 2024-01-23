@@ -95,8 +95,7 @@ def linear_solve(
     else:
         P_matrix = None  # pylint: disable=invalid-name
 
-    _utils.solve_linear_problem(
-        A=A_matrix, b=b, fun=u, ksp_options=ksp_options, comm=comm, P=P_matrix
-    )
+    linear_solver = _utils.linalg.LinearSolver(comm)
+    linear_solver.solve(A=A_matrix, b=b, fun=u, ksp_options=ksp_options, P=P_matrix)
 
     return u

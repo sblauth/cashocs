@@ -115,6 +115,7 @@ class OptimizationProblem(abc.ABC):
         post_callback: Optional[
             Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
         ] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -169,6 +170,8 @@ class OptimizationProblem(abc.ABC):
                 solve of the state system
             post_callback: A function (without arguments) that will be called after the
                 computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -236,6 +239,8 @@ class OptimizationProblem(abc.ABC):
             self.preconditioner_forms,
         )
 
+        self.linear_solver = linear_solver
+
         self.db.callback.pre_callback = pre_callback
         self.db.callback.post_callback = post_callback
         self.db.callback.problem = weakref.proxy(self)
@@ -249,11 +254,13 @@ class OptimizationProblem(abc.ABC):
             self.db,
             self.general_form_handler.state_form_handler,
             self.initial_guess,
+            linear_solver=self.linear_solver,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
             self.general_form_handler.adjoint_form_handler,
             self.state_problem,
+            linear_solver=self.linear_solver,
         )
         self.output_manager = io.OutputManager(self.db)
 

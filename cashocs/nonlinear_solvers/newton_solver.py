@@ -60,7 +60,8 @@ class _NewtonSolver:
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
-        preconditioner_form: ufl.Form = None,
+        preconditioner_form: Optional[ufl.Form] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -99,6 +100,8 @@ class _NewtonSolver:
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
             preconditioner_form: A UFL form which defines the preconditioner matrix.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE
 
         """
         self.nonlinear_form = nonlinear_form
@@ -173,6 +176,11 @@ class _NewtonSolver:
         self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
 
         self.P_fenics = fenics.PETScMatrix(self.comm)
+
+        if linear_solver is None:
+            self.linear_solver = _utils.linalg.LinearSolver(self.comm)
+        else:
+            self.linear_solver = linear_solver
 
         self.assembler_shift: Optional[fenics.SystemAssembler] = None
         self.residual_shift: Optional[fenics.PETScVector] = None
@@ -288,14 +296,13 @@ class _NewtonSolver:
             self.u_save.vector().apply("")
 
             self._compute_eta_inexact()
-            _utils.solve_linear_problem(
+            self.linear_solver.solve(
                 A=self.A_matrix,
                 b=self.b,
                 fun=self.du,
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
-                comm=self.comm,
                 P=self.P_matrix,
             )
 
@@ -395,14 +402,13 @@ class _NewtonSolver:
                 self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
                 self.u.vector().apply("")
                 self._compute_residual()
-                _utils.solve_linear_problem(
+                self.linear_solver.solve(
                     A=self.A_matrix,
                     b=self.b,
                     fun=self.ddu,
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,
-                    comm=self.comm,
                     P=self.P_matrix,
                 )
 
@@ -443,7 +449,8 @@ def newton_solve(
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
-    preconditioner_form: ufl.Form = None,
+    preconditioner_form: Optional[ufl.Form] = None,
+    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 
@@ -479,6 +486,9 @@ def newton_solve(
             sub-problem.
         is_linear: A boolean flag, which indicates whether the problem is actually
             linear.
+        preconditioner_form: A UFL form which defines the preconditioner matrix.
+        linear_solver: The linear solver (KSP) which is used to solve the linear
+            systems arising from the discretized PDE.
 
     Returns:
         The solution of the nonlinear variational problem, if converged. This overwrites
@@ -527,6 +537,7 @@ def newton_solve(
         b_tensor=b_tensor,
         is_linear=is_linear,
         preconditioner_form=preconditioner_form,
+        linear_solver=linear_solver,
     )
 
     solution = solver.solve()

@@ -33,6 +33,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _optimization
+from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
 from cashocs._optimization.optimal_control import optimal_control_problem
@@ -88,6 +89,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         pre_callback: Optional[Callable] = None,
         post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -147,6 +149,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 solve of the state system
             post_callback: A function (without arguments) that will be called after the
                 computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
 
         """
         super().__init__(
@@ -164,6 +168,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             preconditioner_forms=preconditioner_forms,
             pre_callback=pre_callback,
             post_callback=post_callback,
+            linear_solver=linear_solver,
         )
 
         self.db.parameter_db.problem_type = "topology"
@@ -221,6 +226,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
             desired_weights=desired_weights,
+            linear_solver=linear_solver,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (

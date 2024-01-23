@@ -32,6 +32,7 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
+from cashocs import _loggers
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
@@ -232,7 +233,7 @@ def setup_fieldsplit_preconditioner(
                 )
 
             pc = ksp.getPC()
-            pc.setType("fieldsplit")
+            pc.setType(PETSc.PC.Type.FIELDSPLIT)
             idx = []
             name = []
             for i in range(function_space.num_sub_spaces()):
@@ -327,6 +328,7 @@ def solve_linear_problem(
     atol: Optional[float] = None,
     comm: Optional[MPI.Comm] = None,
     P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+    linear_solver: Optional[LinearSolver] = None,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
@@ -353,42 +355,16 @@ def solve_linear_problem(
         The solution vector.
 
     """
-    comm = _initialize_comm(comm)
-    ksp = PETSc.KSP().create(comm=comm)
+    _loggers.warning(
+        "The function cashocs._utils.linalg.solve_linear_problem is "
+        "deprecated and will be removed in a future version. Please use"
+        "the solve method of cashocs._utils.linalg.LinearSolver instead."
+    )
 
-    A = setup_matrix_and_preconditioner(ksp, A, P)
+    if linear_solver is None:
+        linear_solver = LinearSolver(comm)
 
-    if b is None:
-        return A.getVecs()[0]
-
-    if fun is None:
-        x, _ = A.getVecs()
-    else:
-        x = fun.vector().vec()
-
-    options = define_ksp_options(ksp_options)
-
-    setup_fieldsplit_preconditioner(fun, ksp, options)
-    setup_petsc_options([ksp], [options])
-
-    if rtol is not None:
-        ksp.rtol = rtol
-    if atol is not None:
-        ksp.atol = atol
-    ksp.solve(b, x)
-
-    if ksp.getConvergedReason() < 0:
-        raise _exceptions.PETScKSPError(ksp.getConvergedReason())
-
-    if hasattr(PETSc, "garbage_cleanup"):
-        ksp.destroy()
-        PETSc.garbage_cleanup(comm=comm)
-        PETSc.garbage_cleanup()
-
-    if fun is not None:
-        fun.vector().apply("")
-
-    return x
+    return linear_solver.solve(A, b, fun, ksp_options, rtol, atol, P)
 
 
 def assemble_and_solve_linear(
@@ -403,6 +379,7 @@ def assemble_and_solve_linear(
     atol: Optional[float] = None,
     comm: Optional[MPI.Comm] = None,
     preconditioner_form: Optional[ufl.Form] = None,
+    linear_solver: Optional[LinearSolver] = None,
 ) -> PETSc.Vec:
     """Assembles and solves a linear system.
 
@@ -437,18 +414,105 @@ def assemble_and_solve_linear(
         b_tensor=b,
         preconditioner_form=preconditioner_form,
     )
-    solution = solve_linear_problem(
+
+    if linear_solver is None:
+        linear_solver = LinearSolver(comm)
+
+    solution = linear_solver.solve(
         A=A_matrix,
         b=b_vector,
         fun=fun,
         ksp_options=ksp_options,
         rtol=rtol,
         atol=atol,
-        comm=comm,
         P=P_matrix,
     )
 
     return solution
+
+
+class LinearSolver:
+    """A solver for linear problems arising from discretized PDEs."""
+
+    def __init__(self, comm: Optional[MPI.Comm] = None) -> None:
+        """Initializes the linear solver.
+
+        Args:
+            comm: The MPI communicator used for distributing the mesh (in parallel).
+
+        """
+        self.comm = _initialize_comm(comm)
+
+    def solve(
+        self,
+        A: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+        b: Optional[PETSc.Vec] = None,
+        fun: Optional[fenics.Function] = None,
+        ksp_options: Optional[_typing.KspOption] = None,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        P: Optional[PETSc.Mat] = None,  # pylint: disable=invalid-name
+    ) -> PETSc.Vec:
+        """Solves a finite dimensional linear problem arising from a discretized PDE.
+
+        Args:
+            A: The PETSc matrix corresponding to the left-hand side of the problem. If
+                this is None, then the matrix stored in the ksp object is used. Raises
+                an error if no matrix is stored. Default is None.
+            b: The PETSc vector corresponding to the right-hand side of the problem.
+                If this is None, then a zero right-hand side is assumed, and a zero
+                vector is returned. Default is None.
+            fun: The function which will store the solution of the problem. If this is
+                None, then a new vector will be created (and returned).
+            ksp_options: The options for the PETSc ksp object. If this is None (the
+                default) a direct method is used.
+            rtol: The relative tolerance used in case an iterative solver is used for
+                solving the linear problem. Overrides the specification in the ksp
+                object and ksp_options.
+            atol: The absolute tolerance used in case an iterative solver is used for
+                solving the linear problem. Overrides the specification in the ksp
+                object and ksp_options.
+
+        Returns:
+            The solution vector.
+
+        """
+        ksp = PETSc.KSP().create(self.comm)
+
+        A = setup_matrix_and_preconditioner(ksp, A, P)
+
+        if b is None:
+            return A.getVecs()[0]
+
+        if fun is None:
+            x, _ = A.getVecs()
+        else:
+            x = fun.vector().vec()
+
+        options = define_ksp_options(ksp_options)
+
+        setup_fieldsplit_preconditioner(fun, ksp, options)
+        setup_petsc_options([ksp], [options])
+
+        if rtol is not None:
+            ksp.rtol = rtol
+        if atol is not None:
+            ksp.atol = atol
+
+        ksp.solve(b, x)
+
+        if ksp.getConvergedReason() < 0:
+            raise _exceptions.PETScKSPError(ksp.getConvergedReason())
+
+        if hasattr(PETSc, "garbage_cleanup"):
+            ksp.destroy()
+            PETSc.garbage_cleanup(comm=self.comm)
+            PETSc.garbage_cleanup()
+
+        if fun is not None:
+            fun.vector().apply("")
+
+        return x
 
 
 class Interpolator:
