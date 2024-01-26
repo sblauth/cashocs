@@ -140,6 +140,8 @@ class HessianProblem:
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
+        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+
     def hessian_application(
         self, h: List[fenics.Function], out: List[fenics.Function]
     ) -> None:
@@ -234,12 +236,11 @@ class HessianProblem:
                 fenics.assemble(self.form_handler.hessian_form_handler.hessian_rhs[i])
             ).vec()
 
-            _utils.solve_linear_problem(
+            self.linear_solver.solve(
                 A=self.form_handler.riesz_projection_matrices[i],
                 b=b,
                 fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
-                comm=self.db.geometry_db.mpi_comm,
             )
 
         self.no_sensitivity_solves += 2

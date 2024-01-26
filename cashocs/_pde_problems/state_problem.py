@@ -40,6 +40,7 @@ class StateProblem(pde_problem.PDEProblem):
         db: database.Database,
         state_form_handler: _forms.StateFormHandler,
         initial_guess: Optional[List[fenics.Function]],
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         """Initializes self.
 
@@ -48,9 +49,11 @@ class StateProblem(pde_problem.PDEProblem):
             state_form_handler: The form handler for the state problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
 
         """
-        super().__init__(db)
+        super().__init__(db, linear_solver=linear_solver)
 
         self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
@@ -129,6 +132,7 @@ class StateProblem(pde_problem.PDEProblem):
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
                             comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
+                            linear_solver=self.linear_solver,
                         )
 
                 else:
@@ -149,6 +153,7 @@ class StateProblem(pde_problem.PDEProblem):
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
+                            linear_solver=self.linear_solver,
                         )
 
             else:
@@ -169,6 +174,7 @@ class StateProblem(pde_problem.PDEProblem):
                     b_tensors=self.b_tensors,
                     inner_is_linear=self.config.getboolean("StateSystem", "is_linear"),
                     preconditioner_forms=self.db.form_db.preconditioner_forms,
+                    linear_solver=self.linear_solver,
                 )
 
             self.has_solution = True
