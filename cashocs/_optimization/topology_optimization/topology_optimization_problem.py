@@ -90,6 +90,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         pre_callback: Optional[Callable] = None,
         post_callback: Optional[Callable] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -151,6 +152,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 computation of the gradient.
             linear_solver: The linear solver (KSP) which is used to solve the linear
                 systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
 
         """
         super().__init__(
@@ -169,6 +172,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             pre_callback=pre_callback,
             post_callback=post_callback,
             linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
         )
 
         self.db.parameter_db.problem_type = "topology"

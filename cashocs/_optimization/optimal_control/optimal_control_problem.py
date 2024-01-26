@@ -94,6 +94,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         pre_callback: Optional[Callable] = None,
         post_callback: Optional[Callable] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -155,6 +156,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 computation of the gradient.
             linear_solver: The linear solver (KSP) which is used to solve the linear
                 systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -177,6 +180,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             pre_callback=pre_callback,
             post_callback=post_callback,
             linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
         )
 
         self.db.function_db.controls = _utils.enlist(controls)
