@@ -47,8 +47,7 @@ class MyFunctional(cashocs.Functional):
             * (self.numerator_value / self.denominator_value - self.target)
             * (
                 (1 / self.denominator_value) * self.numerator
-                - (self.numerator_value / self.denominator_value**2)
-                * self.denominator
+                - (self.numerator_value / self.denominator_value**2) * self.denominator
             ),
             argument,
             direction,

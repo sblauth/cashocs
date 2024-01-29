@@ -65,9 +65,11 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
     def __init__(  # pylint: disable=unused-argument
         self,
         state_forms: list[ufl.Form] | ufl.Form,
-        bcs_list: list[list[fenics.DirichletBC]]
-        | list[fenics.DirichletBC]
-        | fenics.DirichletBC,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
         cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
         states: list[fenics.Function] | fenics.Function,
         adjoints: list[fenics.Function] | fenics.Function,
