@@ -138,5 +138,6 @@ module = [
 	"meshio",
 	"h5py",
     "matplotlib.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true

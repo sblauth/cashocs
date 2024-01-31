@@ -97,7 +97,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         self.projected_gradient: fenics.Function = fenics.Function(self.cg1_space)
         self.levelset_function_prev = fenics.Function(self.cg1_space)
-        self.dx = self._generate_measure()
         self.setup_assembler()
 
         self.projection = optimization_problem.projection
@@ -156,7 +155,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.form_handler.riesz_scalar_products
         )
         test = modified_scalar_product[0].arguments()[0]
-        rhs = self.topological_derivative_vertex * test * self.dx
+        dx = self._generate_measure()
+        rhs = self.topological_derivative_vertex * test * dx
         try:
             self.assembler = fenics.SystemAssembler(
                 modified_scalar_product[0], rhs, self.form_handler.control_bcs_list[0]
