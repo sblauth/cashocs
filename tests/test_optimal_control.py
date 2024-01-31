@@ -633,11 +633,7 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     F = y * p * geometry.dx
 
     J = cashocs.IntegralFunctional(
-        (
-            20
-            + (u0**2 - 10 * cos(2 * np.pi * u0))
-            + (u1**2 - 10 * cos(2 * np.pi * u1))
-        )
+        (20 + (u0**2 - 10 * cos(2 * np.pi * u0)) + (u1**2 - 10 * cos(2 * np.pi * u1)))
         * geometry.dx
     )
 
